@@ -32,7 +32,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
             body: {
               data: {
-                orderId: superResult.ecommerceModuleOrderId,
+                ecommerce: {
+                  order: {
+                    id: superResult.ecommerceModuleOrderId,
+                  },
+                },
+                notification: {
+                  topic: {
+                    title: "Information",
+                  },
+                  template: {
+                    variant: "order-status-changed-to-paid",
+                  },
+                  notification: {
+                    data: JSON.stringify({
+                      title: "Order status updated",
+                      subject: "Order status updated",
+                      id: superResult.ecommerceModuleOrderId,
+                    }),
+                  },
+                },
               },
             },
           },

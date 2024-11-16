@@ -717,9 +717,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    if (data.orderId) {
+    if (data.ecommerce?.["order"]?.["id"]) {
       const order = await ecommerceOrderApi.findById({
-        id: data.orderId,
+        id: data.ecommerce.order.id,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -738,6 +738,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         });
       }
 
+      if (!data.notification?.["topic"]?.["title"]) {
+        throw new HTTPException(400, {
+          message: "No topic title provided",
+        });
+      }
+
       let topics = await notificationTopicApi.find({
         params: {
           filters: {
@@ -745,7 +751,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               {
                 column: "title",
                 method: "eq",
-                value: "Information",
+                value: data.notification.topic.title,
               },
             ],
           },
@@ -764,7 +770,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         topics = [
           await notificationTopicApi.create({
             data: {
-              title: "Information",
+              title: data.notification.topic.title,
             },
             options: {
               headers: {
@@ -778,6 +784,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         ];
       }
 
+      if (!data.notification?.["template"]?.["variant"]) {
+        throw new HTTPException(400, {
+          message: "No template variant provided",
+        });
+      }
+
       const templates = await notificationTemplateApi.find({
         params: {
           filters: {
@@ -785,7 +797,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               {
                 column: "variant",
                 method: "eq",
-                value: "order-status-changed-to-paid",
+                value: data.notification.template.variant,
               },
             ],
           },
@@ -809,11 +821,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           const notification = await notificationNotificationApi.create({
             data: {
               reciever: identity.email,
-              data: JSON.stringify({
-                title: "Order status updated",
-                subject: "Order status updated",
-                id: data.orderId,
-              }),
+              data: data.notification?.["notification"]?.["data"],
               method: "email",
               attachments: order?.receipt
                 ? JSON.stringify([{ type: "image", url: order.receipt }])
