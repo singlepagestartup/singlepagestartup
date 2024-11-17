@@ -1,5 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as WebsiteBuilder } from "@sps/website-builder/models/widget/frontend/component";
+import { Component as RbacProfileButtonDefault } from "../rbac/profile-button-default/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -30,7 +31,14 @@ export function Component(props: IComponentPropsExtended) {
               hostUrl={props.hostUrl}
               data={widget}
               variant={widget.variant as any}
-            />
+            >
+              {widget.variant.includes("navbar") ? (
+                <RbacProfileButtonDefault
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                />
+              ) : null}
+            </WebsiteBuilder>
           );
         });
       }}

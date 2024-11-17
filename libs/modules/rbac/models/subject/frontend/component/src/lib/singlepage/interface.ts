@@ -14,6 +14,7 @@ import { IComponentProps as IEthereumVirtualMachineComponentProps } from "./ethe
 import { IComponentProps as IMeComponentProps } from "./me";
 import { IComponentProps as IGetEmailsComponentProps } from "./get-emails";
 import { IComponentProps as IEcommerceProductOneStepCheckoutComponentProps } from "./ecommerce-product-one-step-checkout";
+import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -32,4 +33,5 @@ export type IComponentProps =
   | IMeComponentProps
   | IGetEmailsComponentProps
   | IEcommerceProductOneStepCheckoutComponentProps
+  | IProfileButtonDefaultComponentProps
   | never;

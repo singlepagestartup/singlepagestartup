@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import Cookie from "js-cookie";
 import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
-  const router = useRouter();
+  // const router = useRouter();
   const refresh = api.refresh();
   const init = api.init({
     reactQueryOptions: {
@@ -18,35 +19,25 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
   const [jwtCookies] = useCookies(["rbac.subject.jwt"]);
-  const refreshStorage = useMemo(() => {
-    if (typeof localStorage === "undefined") {
-      return "";
-    }
-
-    return localStorage.getItem("rbac.subject.refresh");
-  }, []);
+  const refreshToken = useLocalStorage("rbac.subject.refresh");
 
   const token = useJwt<{
     exp: number;
     iat: number;
     subject: { id: string };
   }>(jwtCookies["rbac.subject.jwt"]);
-  const refreshToken = useJwt<{
+  const refreshTokenDecoded = useJwt<{
     exp: number;
     iat: number;
-  }>(refreshStorage || "");
+  }>(refreshToken || "");
 
   useEffect(() => {
-    if (!jwtCookies["rbac.subject.jwt"]) {
+    if (!refreshToken) {
       init.refetch();
     }
-  }, [token]);
+  }, [refreshToken]);
 
   useEffect(() => {
-    if (init.status == "success") {
-      return;
-    }
-
     if (!token.decodedToken) {
       return;
     }
@@ -59,7 +50,7 @@ export function Component(props: IComponentPropsExtended) {
         return;
       }
 
-      if (refreshToken.isExpired || !refreshStorage) {
+      if (refreshTokenDecoded.isExpired || !refreshToken) {
         Cookie.remove("rbac.subject.jwt");
         localStorage.removeItem("rbac.subject.refresh");
 
@@ -68,15 +59,16 @@ export function Component(props: IComponentPropsExtended) {
 
       refresh.mutate({
         data: {
-          refresh: refreshStorage,
+          refresh: refreshToken,
         },
       });
     }
   }, [
     init.status,
     token.decodedToken,
-    refreshToken.isExpired,
-    refreshToken.decodedToken,
+    refreshToken,
+    refreshTokenDecoded.isExpired,
+    refreshTokenDecoded.decodedToken,
   ]);
 
   useEffect(() => {
@@ -86,11 +78,11 @@ export function Component(props: IComponentPropsExtended) {
     }
   }, [refresh.status]);
 
-  useEffect(() => {
-    if (init.status === "success") {
-      router.refresh();
-    }
-  }, [init.status]);
+  // useEffect(() => {
+  //   if (init.status === "success") {
+  //     router.refresh();
+  //   }
+  // }, [init.status]);
 
   return (
     <div

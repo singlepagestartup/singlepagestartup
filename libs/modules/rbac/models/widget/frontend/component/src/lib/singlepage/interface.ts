@@ -10,6 +10,7 @@ import { IComponentProps as ILoginComponentProps } from "./login";
 import { IComponentProps as ILogoutComponentProps } from "./logout";
 import { IComponentProps as IRegistrationComponentProps } from "./registration";
 import { IComponentProps as IResetPasswordComponentProps } from "./reset-password";
+
 export type IComponentProps =
   | IFindComponentProps
   | IAdminTableRowComponentProps

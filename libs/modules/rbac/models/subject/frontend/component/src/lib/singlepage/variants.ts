@@ -14,6 +14,7 @@ import { Component as EthereumVirtualMachine } from "./ethereum-virtual-machine"
 import { Component as Me } from "./me";
 import { Component as GetEmails } from "./get-emails";
 import { Component as EcommerceProductOneStepCheckout } from "./ecommerce-product-one-step-checkout";
+import { Component as ProfileButtonDefault } from "./profile-button-default";
 
 export const variants = {
   find: Find,
@@ -32,4 +33,5 @@ export const variants = {
   me: Me,
   "get-emails": GetEmails,
   "ecommerce-product-one-step-checkout": EcommerceProductOneStepCheckout,
+  "profile-button-default": ProfileButtonDefault,
 };
