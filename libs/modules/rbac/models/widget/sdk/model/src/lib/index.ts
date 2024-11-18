@@ -15,6 +15,9 @@ export const variants = [
   "logout",
   "registration",
   "reset-password",
+  "identities-update-default",
+  "subject-overview-default",
+  "subjects-list-default",
 ];
 export const host = BACKEND_URL;
 export const query = {};

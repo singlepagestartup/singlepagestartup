@@ -1,5 +1,5 @@
-import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -8,7 +8,10 @@ export function Component(props: IComponentPropsExtended) {
       data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn(
+        "w-full flex flex-col max-w-7xl mx-auto",
+        props.data.className,
+      )}
     >
       {props.children}
     </div>

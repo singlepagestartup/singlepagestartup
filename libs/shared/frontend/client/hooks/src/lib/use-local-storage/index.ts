@@ -4,7 +4,20 @@ import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function useLocalStorage(key: string) {
-  const [storedValue, setStoredValue] = useState<string | undefined>();
+  /**
+   * Debounce makes the first render with undefined, but subject.init component issues
+   * the new subject. To prevent that initially we set the value to empty string and check
+   * value by
+   *
+   * ```typescript
+   * if (!refreshToken && typeof refreshToken !== "string") {
+   *  init.refetch();
+   * }
+   * ```
+   *
+   * Without that every refresh of the page will trigger the refetch subject creation.
+   */
+  const [storedValue, setStoredValue] = useState<string | undefined>("");
 
   const handleStorageChange = useDebouncedCallback(() => {
     const newValue = localStorage.getItem(key);

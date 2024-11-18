@@ -5,14 +5,12 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="rbac"
-      data-model="identity"
+      data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn("w-full flex flex-col max-w-7xl mx-auto", props.className)}
     >
-      {props.data.provider === "login_and_password" ? (
-        <p className="text-3xl font-bold">{props.data.email}</p>
-      ) : null}
+      {props.children}
     </div>
   );
 }

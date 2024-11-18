@@ -3,6 +3,8 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
 import { Component as LogoutButton } from "../../../logout-button";
+import { Button } from "@sps/shared-ui-shadcn";
+import Link from "next/link";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -14,6 +16,9 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className || "")}
     >
       <p>{props.data.id}</p>
+      <Button variant="outline" asChild={true}>
+        <Link href="/rbac/settings">Settings</Link>
+      </Button>
       <SubjectsToIdentities
         isServer={props.isServer}
         hostUrl={props.hostUrl}

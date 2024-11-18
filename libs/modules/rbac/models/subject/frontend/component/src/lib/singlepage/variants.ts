@@ -15,6 +15,8 @@ import { Component as Me } from "./me";
 import { Component as GetEmails } from "./get-emails";
 import { Component as EcommerceProductOneStepCheckout } from "./ecommerce-product-one-step-checkout";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
+import { Component as OverviewDefault } from "./overview-default";
+import { Component as IdentitiesUpdateDefault } from "./identities-update-default";
 
 export const variants = {
   find: Find,
@@ -34,4 +36,6 @@ export const variants = {
   "get-emails": GetEmails,
   "ecommerce-product-one-step-checkout": EcommerceProductOneStepCheckout,
   "profile-button-default": ProfileButtonDefault,
+  "overview-default": OverviewDefault,
+  "identities-update-default": IdentitiesUpdateDefault,
 };

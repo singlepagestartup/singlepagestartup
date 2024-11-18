@@ -32,7 +32,7 @@ export function Component(props: IComponentPropsExtended) {
   }>(refreshToken || "");
 
   useEffect(() => {
-    if (!refreshToken) {
+    if (!refreshToken && typeof refreshToken !== "string") {
       init.refetch();
     }
   }, [refreshToken]);

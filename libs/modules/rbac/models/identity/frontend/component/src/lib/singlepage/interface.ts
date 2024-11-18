@@ -5,7 +5,8 @@ import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-sele
 import { IComponentProps as IAdminFormComponentProps } from "./admin-form";
 import { IComponentProps as IDefaultComponentProps } from "./default";
 import { IComponentProps as ICreateByEmailComponentProps } from "./create-by-email";
-import { IComponentProps as IEditDefaultComponentProps } from "./edit-default";
+import { IComponentProps as IUpdateDefaultComponentProps } from "./update-default";
+
 export type IComponentProps =
   | IFindComponentProps
   | IAdminTableRowComponentProps
@@ -14,5 +15,5 @@ export type IComponentProps =
   | IAdminFormComponentProps
   | IDefaultComponentProps
   | ICreateByEmailComponentProps
-  | IEditDefaultComponentProps
+  | IUpdateDefaultComponentProps
   | never;

@@ -1,20 +1,19 @@
-import Link from "next/link";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Button } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="rbac"
-      data-model="subject"
+      data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn(
+        "w-full flex flex-col max-w-7xl mx-auto",
+        props.data.className,
+      )}
     >
-      <Button variant="outline" asChild={true}>
-        <Link href={`/rbac/subjects/${props.data.id}`}>{props.data.id}</Link>
-      </Button>
+      {props.children}
     </div>
   );
 }
