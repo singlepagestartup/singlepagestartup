@@ -61,23 +61,24 @@ export class Middleware {
             options: { ttl: KV_TTL },
           });
         }
-        if (["POST", "PUT", "PATCH"].includes(method)) {
+
+        if (["PUT", "PATCH"].includes(method)) {
           await new StoreProvider({
             type: this.storeProvider,
             prefix: path,
           }).delByPrefix();
+        }
 
-          const UUIDRegex = new RegExp(
-            /([a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12})/,
+        if (["POST", "DELETE"].includes(method)) {
+          const pathWithoutId = path.replace(
+            /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
+            "",
           );
-          const lastItem = path.split("/").pop();
 
-          if (lastItem && UUIDRegex.test(lastItem)) {
-            await new StoreProvider({
-              type: this.storeProvider,
-              prefix: path.split("/").slice(0, -1).join("/"),
-            }).delByPrefix();
-          }
+          await new StoreProvider({
+            type: this.storeProvider,
+            prefix: pathWithoutId,
+          }).delByPrefix();
         }
       }
 

@@ -95,6 +95,7 @@
     "telegraf": "4.16.3",
     "tslib": "2.6.3",
     "typescript": "5.4.5",
+    "use-debounce": "10.0.4",
     "viem": "2.19.4",
     "wagmi": "2.12.5",
     "zod": "3.23.8",

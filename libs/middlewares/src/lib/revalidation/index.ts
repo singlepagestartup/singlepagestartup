@@ -48,8 +48,11 @@ export class Middleware {
             expireTag(path);
           }
 
-          if (["DELETE"].includes(method)) {
-            const pathWithoutId = path.replace(/\/[a-zA-Z0-9-]+$/, "");
+          if (["POST", "DELETE"].includes(method)) {
+            const pathWithoutId = path.replace(
+              /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
+              "",
+            );
 
             await channelApi.pushMessage({
               data: {
