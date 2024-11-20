@@ -10,7 +10,7 @@ import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 
 import { exit } from "process";
-import { BACKEND_URL } from "@sps/shared-utils";
+import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
@@ -212,7 +212,20 @@ import { BACKEND_URL } from "@sps/shared-utils";
   } else {
     seeds.push(startupRelationsSeeds);
   }
-  await fetch(BACKEND_URL + "/api/http-cache/clear");
+  if (!RBAC_SECRET_KEY) {
+    return;
+  }
+
+  await fetch(BACKEND_URL + "/api/http-cache/clear", {
+    headers: {
+      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    },
+  });
+  await fetch(BACKEND_URL + "/api/relation/revalidate?path=/&type=layout", {
+    headers: {
+      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    },
+  });
 })()
   .then(() => {
     exit(0);

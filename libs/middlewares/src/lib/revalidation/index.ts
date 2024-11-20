@@ -114,13 +114,18 @@ export class Middleware {
     app.get("/revalidation/revalidate", async (c: Context<any, any, {}>) => {
       const tag = c.req.query("tag");
       const path = c.req.query("path");
+      const type = c.req.query("type");
 
       if (tag) {
         expireTag(tag);
       }
 
       if (path) {
-        expirePath(path);
+        if (type && (type === "page" || type === "layout")) {
+          expirePath(path, type);
+        } else {
+          expirePath(path);
+        }
       }
 
       return c.json({
