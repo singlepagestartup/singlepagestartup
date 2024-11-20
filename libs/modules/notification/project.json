@@ -41,7 +41,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/notification:models:template:repository-generate"
@@ -61,7 +61,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/notification:relations:notifications-to-templates:repository-generate"
@@ -75,7 +75,7 @@
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/notification:models:template:repository-migrate"
@@ -95,7 +95,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/notification:relations:notifications-to-templates:repository-migrate"

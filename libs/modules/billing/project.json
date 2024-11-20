@@ -41,7 +41,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/billing:models:currency:repository-generate"
@@ -61,7 +61,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-generate"
@@ -76,7 +76,7 @@
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/billing:models:currency:repository-migrate"
@@ -96,7 +96,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-migrate"

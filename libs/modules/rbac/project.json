@@ -42,7 +42,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:models:identity:repository-generate"
@@ -68,7 +68,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:relations:roles-to-ecommerce-module-products:repository-generate"
@@ -100,7 +100,7 @@
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:models:identity:repository-migrate"
@@ -126,7 +126,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:relations:roles-to-ecommerce-module-products:repository-migrate"

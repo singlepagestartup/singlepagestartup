@@ -41,7 +41,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/crm:models:customer:repository-generate"
@@ -55,14 +55,14 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": []
       }
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/crm:models:customer:repository-migrate"
@@ -76,7 +76,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": []
       }
     },

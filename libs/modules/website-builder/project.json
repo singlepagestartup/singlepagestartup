@@ -24,7 +24,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/website-builder:models:button:repository-generate"
@@ -56,7 +56,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/website-builder:relations:buttons-arrays-to-buttons:repository-generate"
@@ -120,7 +120,7 @@
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/website-builder:models:button:repository-migrate"
@@ -152,7 +152,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/website-builder:relations:buttons-arrays-to-buttons:repository-migrate"
