@@ -88,6 +88,21 @@ export class Middleware {
             prefix: pathWithoutId,
           }).delByPrefix();
         }
+      } else {
+        await new StoreProvider({
+          type: this.storeProvider,
+          prefix: path,
+        }).delByPrefix();
+
+        const pathWithoutId = path.replace(
+          /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
+          "",
+        );
+
+        await new StoreProvider({
+          type: this.storeProvider,
+          prefix: pathWithoutId,
+        }).delByPrefix();
       }
 
       return;
