@@ -54,6 +54,10 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     regexPath: /\/api\/http-cache\/clear/,
     methods: ["GET"],
   },
+  {
+    regexPath: /\/api\/revalidation\/revalidate/,
+    methods: ["GET"],
+  },
 ];
 
 export class Middleware {

@@ -38,9 +38,9 @@ app.use(new ObserverMiddleware().init());
  * Now added "Cache-Control": "no-cache" for preventing caching of authorized requests,
  * but it should be added to the request
  */
+new HTTPCacheMiddleware().setRoutes(app);
 if (MIDDLEWARE_HTTP_CACHE === "true") {
   app.use(new HTTPCacheMiddleware().init());
-  new HTTPCacheMiddleware().setRoutes(app);
 }
 
 app.use(new IsAuthorizedMiddleware().init());

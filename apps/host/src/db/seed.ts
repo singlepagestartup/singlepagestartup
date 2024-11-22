@@ -10,7 +10,7 @@ import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 
 import { exit } from "process";
-import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
@@ -212,20 +212,50 @@ import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(startupRelationsSeeds);
   }
+
   if (!RBAC_SECRET_KEY) {
     return;
   }
+
+  await fetch(HOST_URL)
+    .then((res) => {
+      return res.text();
+    })
+    .catch((error) => {
+      console.error(`🚀 ~ HOST_URL error:`, error);
+    });
 
   await fetch(BACKEND_URL + "/api/http-cache/clear", {
     headers: {
       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
     },
-  });
-  await fetch(BACKEND_URL + "/api/relation/revalidate?path=/&type=layout", {
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .catch((error) => {
+      console.error(`🚀 ~ /api/http-cache/clear error:`, error);
+    });
+
+  await fetch(BACKEND_URL + "/api/revalidation/revalidate?path=/&type=layout", {
     headers: {
       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
     },
-  });
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      console.error(`🚀 ~ /api/revalidation/revalidate error:`, error);
+    });
+
+  setTimeout(async () => {
+    await fetch(HOST_URL)
+      .then((res) => {
+        return res.text();
+      })
+      .catch((error) => {
+        console.error(`🚀 ~ HOST_URL error:`, error);
+      });
+  }, 10000);
 })()
   .then(() => {
     exit(0);

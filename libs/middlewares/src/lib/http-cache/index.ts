@@ -22,6 +22,14 @@ export class Middleware {
       const method = c.req.method;
       const cacheControl = c.req.header("Cache-Control");
 
+      if (path.includes("revalidation")) {
+        return await next();
+      }
+
+      if (path.includes("http-cache")) {
+        return await next();
+      }
+
       if (path.includes("rbac")) {
         return await next();
       }
