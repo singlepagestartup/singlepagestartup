@@ -6,7 +6,6 @@ import { api } from "@sps/host/models/page/sdk/server";
 import { NextFontWithVariable } from "next/dist/compiled/@next/font";
 import { IModel } from "@sps/host/models/page/sdk/model";
 import { Button } from "@sps/shared-ui-shadcn";
-import { useRouter } from "next/navigation";
 
 export function Component({
   error,
