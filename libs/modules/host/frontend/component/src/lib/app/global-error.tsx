@@ -5,6 +5,8 @@ import { Component as Page } from "@sps/host/models/page/frontend/component";
 import { api } from "@sps/host/models/page/sdk/server";
 import { NextFontWithVariable } from "next/dist/compiled/@next/font";
 import { IModel } from "@sps/host/models/page/sdk/model";
+import { Button } from "@sps/shared-ui-shadcn";
+import { useRouter } from "next/navigation";
 
 export function Component({
   error,
@@ -53,6 +55,13 @@ export function Component({
       });
   }, []);
 
+  async function revalidate() {
+    await fetch("/api/revalidation/revalidate?path=/&type=layout").then(() => {
+      reset();
+      window.location.href = "/";
+    });
+  }
+
   if (page) {
     return (
       <html className="scroll-smooth">
@@ -75,10 +84,19 @@ export function Component({
   }
 
   return (
-    <html>
-      <body>
-        <div>
+    <html className="scroll-smooth">
+      <body
+        className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
+      >
+        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center w-full text-center gap-3 min-h-screen">
           <p className="text-sm">{error?.message}</p>
+          <Button
+            variant="default"
+            onClick={revalidate}
+            className="w-fit mx-auto"
+          >
+            Reload
+          </Button>
         </div>
       </body>
     </html>
