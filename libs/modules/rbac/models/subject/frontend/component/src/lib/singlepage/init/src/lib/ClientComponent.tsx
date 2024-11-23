@@ -38,30 +38,20 @@ export function Component(props: IComponentPropsExtended) {
   }, [refreshToken]);
 
   useEffect(() => {
-    if (!token.decodedToken) {
-      return;
-    }
-
-    if (token.isExpired) {
-      if (!refreshToken) {
+    if (token.decodedToken && token.isExpired) {
+      if (!refreshToken && typeof refreshToken !== "string") {
         Cookie.remove("rbac.subject.jwt");
         localStorage.removeItem("rbac.subject.refresh");
-
         return;
       }
 
-      if (refreshTokenDecoded.isExpired || !refreshToken) {
-        Cookie.remove("rbac.subject.jwt");
-        localStorage.removeItem("rbac.subject.refresh");
-
-        return;
+      if (refreshToken.length) {
+        refresh.mutate({
+          data: {
+            refresh: refreshToken,
+          },
+        });
       }
-
-      refresh.mutate({
-        data: {
-          refresh: refreshToken,
-        },
-      });
     }
   }, [
     init.status,

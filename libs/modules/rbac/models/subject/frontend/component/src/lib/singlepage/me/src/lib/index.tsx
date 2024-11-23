@@ -9,10 +9,11 @@ import { Error } from "./Error";
 
 export function Component(props: IComponentProps) {
   const Comp: any = props.isServer ? Server : Client;
+  const skeleton = props.skeleton || <Skeleton />;
 
   return (
     <ErrorBoundary fallback={Error}>
-      <Suspense fallback={<Skeleton />}>
+      <Suspense fallback={skeleton}>
         <Provider>
           <Comp {...props} />
         </Provider>

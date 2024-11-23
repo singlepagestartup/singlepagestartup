@@ -148,6 +148,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   async me(c: Context, next: any): Promise<Response> {
     const token = authorization(c);
 
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+
     if (!token) {
       return c.json(
         {
