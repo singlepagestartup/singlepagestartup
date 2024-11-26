@@ -3,7 +3,7 @@ import "client-only";
 
 import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
 import Cookie from "js-cookie";
@@ -15,7 +15,6 @@ export default function Client(props: IComponentProps) {
     reactQueryOptions: { enabled: false },
     mute: true,
   });
-  // const [jwt, setJwt] = useState<string | undefined>();
   const [jwtCookies] = useCookies(["rbac.subject.jwt"]);
 
   const token = useJwt<{
@@ -24,21 +23,15 @@ export default function Client(props: IComponentProps) {
     subject: { id: string };
   }>(jwtCookies["rbac.subject.jwt"]);
 
-  // useEffect(() => {
-  //   if (jwtCookies["rbac.subject.jwt"] !== jwt) {
-  //     setJwt(jwtCookies["rbac.subject.jwt"]);
-  //   }
-  // }, [jwtCookies["rbac.subject.jwt"]]);
-
   useEffect(() => {
     if (
-      token &&
+      token.decodedToken &&
       !token.isExpired &&
       data?.["id"] !== token.decodedToken?.["subject"]?.["id"]
     ) {
       refetch();
     }
-  }, [token, data]);
+  }, [token.isExpired, token.decodedToken, data]);
 
   useEffect(() => {
     if (isError) {
