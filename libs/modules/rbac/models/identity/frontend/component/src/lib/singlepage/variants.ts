@@ -5,7 +5,7 @@ import { Component as AdminSelectInput } from "./admin-select-input";
 import { Component as AdminForm } from "./admin-form";
 import { Component as Default } from "./default";
 import { Component as CreateByEmail } from "./create-by-email";
-import { Component as UpdateDefault } from "./update-default";
+import { Component as FormFieldDefault } from "./form-field-default";
 
 export const variants = {
   find: Find,
@@ -15,5 +15,5 @@ export const variants = {
   "admin-form": AdminForm,
   default: Default,
   "create-by-email": CreateByEmail,
-  "update-default": UpdateDefault,
+  "form-field-default": FormFieldDefault,
 };

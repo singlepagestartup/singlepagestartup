@@ -16,6 +16,7 @@ import {
 import * as jwt from "hono/jwt";
 import { authorization } from "@sps/sps-backend-utils";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
+import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
@@ -38,6 +39,8 @@ import { api as ecommerceAttributeKeyApi } from "@sps/ecommerce/models/attribute
 import { IModel as IEcommerceAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
 import { api as ecommerceAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { mainnet } from "viem/chains";
+import { createPublicClient, http } from "viem";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -100,7 +103,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "GET",
         path: "/:uuid/identities",
-        handler: this.identities,
+        handler: this.identitiesList,
       },
       {
         method: "POST",
@@ -139,8 +142,18 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "PATCH",
-        path: "/:uuid/identities/:identity",
+        path: "/:uuid/identities/:identityUuid",
         handler: this.identitiesUpdate,
+      },
+      {
+        method: "POST",
+        path: "/:uuid/identities",
+        handler: this.identitiesCreate,
+      },
+      {
+        method: "DELETE",
+        path: "/:uuid/identities/:identityUuid",
+        handler: this.identitiesDelete,
       },
     ]);
   }
@@ -257,7 +270,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  async identities(c: Context, next: any): Promise<Response> {
+  async identitiesList(c: Context, next: any): Promise<Response> {
     if (!RBAC_SECRET_KEY) {
       throw new HTTPException(400, {
         message: "RBAC secret key not found",
@@ -436,8 +449,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     try {
       this.service.clearAnonymusSessions();
 
-      const entity = await this.service.create({
+      const entity = await api.create({
         data: {},
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
       });
 
       const jwtToken = await jwt.sign(
@@ -2069,9 +2090,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+    if (!RBAC_SECRET_KEY) {
       throw new HTTPException(400, {
-        message: "RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS not set",
+        message: "RBAC_SECRET_KEY not set",
       });
     }
 
@@ -2088,39 +2109,440 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       );
     }
 
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    const uuid = c.req.param("uuid");
+    const identityUuid = c.req.param("identityUuid");
+
+    if (decoded?.["subject"]?.["id"] !== uuid) {
+      throw new HTTPException(403, {
+        message: "Only identity owner can update identity.",
+      });
+    }
+
     const body = await c.req.parseBody();
 
     if (typeof body["data"] !== "string") {
-      return next();
+      throw new HTTPException(400, {
+        message: "Invalid body",
+      });
     }
 
     const data = JSON.parse(body["data"]);
 
+    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: uuid,
+            },
+            {
+              column: "identityId",
+              method: "eq",
+              value: identityUuid,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!subjectsToIdentities?.length) {
+      throw new HTTPException(404, {
+        message: "No subjects to identities found",
+      });
+    }
+
+    if (subjectsToIdentities.length > 1) {
+      throw new HTTPException(400, {
+        message: "Multiple subjects to identities found",
+      });
+    }
+
     try {
-      // const entity = await this.service.refresh({
-      //   refresh: data["refresh"],
-      // });
+      const identity = await identityApi.findById({
+        id: identityUuid,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
 
-      // const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
+      if (!identity) {
+        throw new HTTPException(404, {
+          message: "No identity found",
+        });
+      }
 
-      // if (!decoded.exp) {
-      //   throw new HTTPException(400, {
-      //     message: "Invalid token issued",
-      //   });
-      // }
-
-      // setCookie(c, "rbac.subject.jwt", entity.jwt, {
-      //   path: "/",
-      //   secure: true,
-      //   httpOnly: false,
-      //   maxAge: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-      //   expires: new Date(decoded.exp),
-      //   sameSite: "Strict",
-      // });
+      if (identity.provider === "login_and_password") {
+        if (data.password && data.newPassword) {
+          const updated = await identityApi.changePassword({
+            id: identity.id,
+            data: {
+              password: data.password,
+              newPassword: data.newPassword,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+        } else {
+          const updated = await identityApi.update({
+            id: identity.id,
+            data: {
+              ...identity,
+              ...data,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+        }
+      }
 
       return c.json(
         {
           data,
+        },
+        201,
+      );
+    } catch (error: any) {
+      throw new HTTPException(400, {
+        message: error.message,
+      });
+    }
+  }
+
+  async identitiesCreate(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    const uuid = c.req.param("uuid");
+
+    if (decoded?.["subject"]?.["id"] !== uuid) {
+      throw new HTTPException(403, {
+        message: "Only identity owner can create identity.",
+      });
+    }
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      throw new HTTPException(400, {
+        message: "Invalid body",
+      });
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    const provider = data.provider.replaceAll("-", "_");
+
+    if (!provider) {
+      throw new HTTPException(400, {
+        message: "No provider provided",
+      });
+    }
+
+    try {
+      if (provider === "ethereum_virtual_machine") {
+        const { message, signature, address } = data;
+
+        if (!message || !signature) {
+          throw new Error("Invalid message or signature");
+        }
+
+        const isActualDateInMessage =
+          Date.now() - parseInt(message) < 1000 * 60 * 5;
+
+        if (!isActualDateInMessage) {
+          throw new Error("Invalid date in message");
+        }
+
+        const publicClient = createPublicClient({
+          chain: mainnet,
+          transport: http(),
+        });
+
+        const valid = await publicClient.verifyMessage({
+          message,
+          signature,
+          address,
+        });
+
+        if (!valid) {
+          throw new Error("Invalid signature");
+        }
+
+        const identities = await identityApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "account",
+                  method: "eq",
+                  value: address.toLowerCase(),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (identities?.length) {
+          throw new Error("Account already exists");
+        }
+
+        const identity = await identityApi.create({
+          data: {
+            account: address.toLowerCase(),
+            provider: "ethereum_virtual_machine",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        await subjectsToIdentitiesApi.create({
+          data: {
+            identityId: identity.id,
+            subjectId: uuid,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        const entity = await api.findById({
+          id: uuid,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        return c.json(
+          {
+            data: entity,
+          },
+          201,
+        );
+      }
+
+      throw new Error("Invalid provider");
+    } catch (error: any) {
+      throw new HTTPException(400, {
+        message: error.message,
+      });
+    }
+  }
+
+  async identitiesDelete(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    const uuid = c.req.param("uuid");
+    const identityUuid = c.req.param("identityUuid");
+
+    if (decoded?.["subject"]?.["id"] !== uuid) {
+      throw new HTTPException(403, {
+        message: "Only identity owner can create identity.",
+      });
+    }
+
+    try {
+      const subjectsToAllIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (subjectsToAllIdentities?.length === 1) {
+        throw new Error("Cannot delete last identity");
+      }
+
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+              {
+                column: "identityId",
+                method: "eq",
+                value: identityUuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!subjectsToIdentities?.length) {
+        throw new Error("No subjects to identities found");
+      }
+
+      if (subjectsToIdentities.length > 1) {
+        throw new Error("Multiple subjects to identities found");
+      }
+
+      await subjectsToIdentitiesApi.delete({
+        id: subjectsToIdentities[0].id,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      await identityApi.delete({
+        id: identityUuid,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      const entity = await api.findById({
+        id: uuid,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      return c.json(
+        {
+          data: entity,
         },
         201,
       );

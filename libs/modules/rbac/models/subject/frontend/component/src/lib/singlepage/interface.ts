@@ -17,6 +17,7 @@ import { IComponentProps as IEcommerceProductOneStepCheckoutComponentProps } fro
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default";
 import { IComponentProps as IIdentitiesUpdateDefaultComponentProps } from "./identities-update-default";
+import { IComponentProps as IIdentitiesCreateDefaultComponentProps } from "./identities-create-default";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -38,4 +39,5 @@ export type IComponentProps =
   | IProfileButtonDefaultComponentProps
   | IOverviewDefaultComponentProps
   | IIdentitiesUpdateDefaultComponentProps
+  | IIdentitiesCreateDefaultComponentProps
   | never;

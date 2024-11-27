@@ -5,6 +5,7 @@ import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-sele
 import { IComponentProps as IAdminFormComponentProps } from "./admin-form";
 import { IComponentProps as IDefaultComponentProps } from "./default";
 import { IComponentProps as IIdentitiesUpdateDefaultComponentProps } from "./identities-update-default";
+import { IComponentProps as IIdentitiesCreateDefaultComponentProps } from "./identities-create-default";
 import { IComponentProps as IForgotPasswordComponentProps } from "./forgot-password";
 import { IComponentProps as ILoginComponentProps } from "./login";
 import { IComponentProps as ILogoutComponentProps } from "./logout";
@@ -28,4 +29,5 @@ export type IComponentProps =
   | IResetPasswordComponentProps
   | ISubjectOverviewDefaultComponentProps
   | ISubjectsListDefaultComponentProps
+  | IIdentitiesCreateDefaultComponentProps
   | never;

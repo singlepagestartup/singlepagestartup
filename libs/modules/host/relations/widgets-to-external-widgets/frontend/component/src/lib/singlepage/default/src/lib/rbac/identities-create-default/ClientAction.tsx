@@ -16,7 +16,7 @@ export function Component(props: ISpsComponentBase) {
             <Subject
               isServer={false}
               hostUrl={props.hostUrl}
-              variant="identities-update-default"
+              variant="identities-create-default"
               data={{
                 id: data.id,
               }}

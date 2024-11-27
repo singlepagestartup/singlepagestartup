@@ -7,6 +7,7 @@ import {
   options,
 } from "@sps/rbac/models/identity/sdk/model";
 import { action as loginAndPassword } from "./actions/login-and-password";
+import { action as changePassword } from "./actions/change-password";
 
 export const api = {
   ...factory<IModel>({
@@ -16,4 +17,5 @@ export const api = {
     params: query,
   }),
   loginAndPassword,
+  changePassword,
 };

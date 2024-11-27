@@ -1,8 +1,5 @@
-import {
-  Provider,
-  api as clientApi,
-} from "@sps/rbac/models/identity/sdk/client";
-import { api as serverApi } from "@sps/rbac/models/identity/sdk/server";
+import { Provider, api as clientApi } from "@sps/rbac/models/widget/sdk/client";
+import { api as serverApi } from "@sps/rbac/models/widget/sdk/server";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import { Component as ChildComponent } from "./Component";

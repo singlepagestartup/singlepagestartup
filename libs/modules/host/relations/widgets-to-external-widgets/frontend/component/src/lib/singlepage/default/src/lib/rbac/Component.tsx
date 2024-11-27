@@ -1,6 +1,7 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as RbacWidget } from "@sps/rbac/models/widget/frontend/component";
 import { Component as IdentitiesUpdateDefault } from "./identities-update-default/Component";
+import { Component as IdentitiesCreateDefault } from "./identities-create-default/Component";
 import { Component as SubjectOverviewDefault } from "./subject-overview-default/Component";
 import { Component as SubjectsListDefault } from "./subjects-list-default/Component";
 
@@ -36,6 +37,24 @@ export function Component(props: IComponentPropsExtended) {
                 data={entity}
               >
                 <IdentitiesUpdateDefault
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                  key={index}
+                />
+              </RbacWidget>
+            );
+          }
+
+          if (entity.variant === "identities-create-default") {
+            return (
+              <RbacWidget
+                key={index}
+                isServer={props.isServer}
+                hostUrl={props.hostUrl}
+                variant={entity.variant as any}
+                data={entity}
+              >
+                <IdentitiesCreateDefault
                   isServer={props.isServer}
                   hostUrl={props.hostUrl}
                   key={index}

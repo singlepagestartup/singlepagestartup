@@ -18,6 +18,7 @@ export const variants = [
   "identities-update-default",
   "subject-overview-default",
   "subjects-list-default",
+  "identities-create-default",
 ];
 export const host = BACKEND_URL;
 export const query = {};

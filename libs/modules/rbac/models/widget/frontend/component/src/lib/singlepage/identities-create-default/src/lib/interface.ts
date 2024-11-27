@@ -1,11 +1,11 @@
-export { type IModel } from "@sps/rbac/models/identity/sdk/model";
-import { IModel } from "@sps/rbac/models/identity/sdk/model";
+export { type IModel } from "@sps/rbac/models/widget/sdk/model";
+import { IModel } from "@sps/rbac/models/widget/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 
-export const variant = "update-default" as const;
+export const variant = "identities-create-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {}

@@ -69,6 +69,33 @@ export interface IEcommerceProductOneStepCheckoutMutationFunctionProps {
   options?: NextRequestOptions;
 }
 
+export interface IIdentitiesDeleteMutationFunctionProps {
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IIdentitiesUpdateMutationFunctionProps {
+  data: {
+    [key: string]: any;
+  };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IIdentitiesCreateMutationFunctionProps {
+  data: {
+    [key: string]: any;
+  };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
 export interface IRefreshMutationFunctionProps {
   data: {
     refresh: string;
@@ -643,6 +670,145 @@ export const api = {
         globalActionsStore.getState().addAction({
           type: "mutation",
           name: `${route}/${props.id}/ecommerce/products/${props.productId || "productId"}/one-step-checkout`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  identitiesUpdate: (props: {
+    id: string;
+    identityId: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IModel,
+      DefaultError,
+      IIdentitiesUpdateMutationFunctionProps
+    >({
+      mutationKey: [`${route}/${props.id}/identities/${props.identityId}`],
+      mutationFn: async (
+        mutationFunctionProps: IIdentitiesUpdateMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.identitiesUpdate({
+            id: props.id,
+            identityId: props.identityId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/identities/${props.identityId}`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  identitiesDelete: (props: {
+    id: string;
+    identityId: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IModel,
+      DefaultError,
+      IIdentitiesDeleteMutationFunctionProps
+    >({
+      mutationKey: [`${route}/${props.id}/identities/${props.identityId}`],
+      mutationFn: async (
+        mutationFunctionProps: IIdentitiesDeleteMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.identitiesDelete({
+            id: props.id,
+            identityId: props.identityId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/identities/${props.identityId}`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  identitiesCreate: (props: {
+    id: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IModel,
+      DefaultError,
+      IIdentitiesCreateMutationFunctionProps
+    >({
+      mutationKey: [`${route}/${props.id}/identities`],
+      mutationFn: async (
+        mutationFunctionProps: IIdentitiesCreateMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.identitiesCreate({
+            id: props.id,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/identities`,
           props: this,
           result: data,
           timestamp: Date.now(),

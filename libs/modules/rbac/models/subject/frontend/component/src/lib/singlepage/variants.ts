@@ -17,6 +17,7 @@ import { Component as EcommerceProductOneStepCheckout } from "./ecommerce-produc
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentitiesUpdateDefault } from "./identities-update-default";
+import { Component as IdentitiesCreateDefault } from "./identities-create-default";
 
 export const variants = {
   find: Find,
@@ -38,4 +39,5 @@ export const variants = {
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
   "identities-update-default": IdentitiesUpdateDefault,
+  "identities-create-default": IdentitiesCreateDefault,
 };

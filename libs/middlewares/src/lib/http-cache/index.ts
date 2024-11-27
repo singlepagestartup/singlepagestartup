@@ -30,7 +30,11 @@ export class Middleware {
         return await next();
       }
 
-      if (path.includes("rbac")) {
+      if (
+        path.includes("rbac/subjects/me") ||
+        path.includes("rbac/subjects/init") ||
+        path.includes("rbac/subjects/is-authorized")
+      ) {
         return await next();
       }
 
