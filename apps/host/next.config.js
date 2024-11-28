@@ -85,6 +85,14 @@ function makeConfig() {
     },
     webpack: (config) => {
       config.externals.push("pino-pretty", "lokijs", "encoding");
+      config.module.rules.push({
+        test: /\.d\.ts$/,
+        use: "ignore-loader",
+      });
+      config.module.rules.push({
+        test: /\.map$/,
+        use: "ignore-loader",
+      });
       return config;
     },
     logging: false,

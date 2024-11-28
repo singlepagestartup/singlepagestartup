@@ -137,6 +137,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
+        path: "/:id/ecommerce/orders/:orderId/checkout",
+        handler: this.ecommerceOrderCheckout,
+      },
+      {
+        method: "PATCH",
+        path: "/:id/ecommerce/orders/:orderId",
+        handler: this.ecommerceOrdersUpdate,
+      },
+      {
+        method: "DELETE",
+        path: "/:id/ecommerce/orders/:orderId",
+        handler: this.ecommerceOrdersDelete,
+      },
+      {
+        method: "POST",
         path: "/:uuid/ecommerce/products/:productId/enforce",
         handler: this.ecommerceProductEnforce,
       },
@@ -2551,5 +2566,736 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         message: error.message,
       });
     }
+  }
+
+  async ecommerceOrdersUpdate(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const id = c.req.param("id");
+
+    if (!id) {
+      throw new HTTPException(400, {
+        message: "No id provided",
+      });
+    }
+
+    const orderId = c.req.param("orderId");
+
+    if (!orderId) {
+      throw new HTTPException(400, {
+        message: "No orderId provided",
+      });
+    }
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return c.json(
+        {
+          message: "Invalid body",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    if (decoded?.["subject"]?.["id"] !== id) {
+      throw new HTTPException(403, {
+        message: "Only order owner can update order",
+      });
+    }
+
+    const entity = await this.service.findById({
+      id,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "No entity found",
+      });
+    }
+
+    const order = await ecommerceOrderApi.findById({
+      id: orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!order) {
+      throw new HTTPException(404, {
+        message: "No order found",
+      });
+    }
+
+    if (order.status !== "new") {
+      throw new HTTPException(400, {
+        message: "Order is not in 'new' status",
+      });
+    }
+
+    const quantity = data.quantity;
+
+    if (!quantity) {
+      throw new HTTPException(400, {
+        message: "No quantity provided",
+      });
+    }
+
+    if (quantity < 1) {
+      throw new HTTPException(400, {
+        message: "Quantity must be greater than 0",
+      });
+    }
+
+    const ordersToProducts = await ecommerceOrdersToProductsApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: orderId,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!ordersToProducts?.length) {
+      throw new HTTPException(404, {
+        message: "No orders to products found",
+      });
+    }
+
+    const orderToProduct = ordersToProducts[0];
+
+    await ecommerceOrdersToProductsApi.update({
+      id: orderToProduct.id,
+      data: {
+        ...orderToProduct,
+        quantity,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    return c.json({
+      data: {
+        ...entity,
+        data,
+      },
+    });
+  }
+
+  async ecommerceOrdersDelete(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const id = c.req.param("id");
+
+    if (!id) {
+      throw new HTTPException(400, {
+        message: "No id provided",
+      });
+    }
+
+    const orderId = c.req.param("orderId");
+
+    if (!orderId) {
+      throw new HTTPException(400, {
+        message: "No orderId provided",
+      });
+    }
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    if (decoded?.["subject"]?.["id"] !== id) {
+      throw new HTTPException(403, {
+        message: "Only order owner can update order",
+      });
+    }
+
+    const entity = await this.service.findById({
+      id,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "No entity found",
+      });
+    }
+
+    const order = await ecommerceOrderApi.findById({
+      id: orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!order) {
+      throw new HTTPException(404, {
+        message: "No order found",
+      });
+    }
+
+    if (order.status !== "new") {
+      throw new HTTPException(400, {
+        message: "Order is not in 'new' status",
+      });
+    }
+
+    const ordersToProducts = await ecommerceOrdersToProductsApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: orderId,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (ordersToProducts?.length) {
+      for (const orderToProduct of ordersToProducts) {
+        await ecommerceOrdersToProductsApi.delete({
+          id: orderToProduct.id,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
+    }
+
+    await ecommerceOrderApi.delete({
+      id: orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    return c.json({
+      data: {
+        ...entity,
+      },
+    });
+  }
+
+  async ecommerceOrderCheckout(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const id = c.req.param("id");
+
+    if (!id) {
+      throw new HTTPException(400, {
+        message: "No id provided",
+      });
+    }
+
+    const orderId = c.req.param("orderId");
+
+    if (!orderId) {
+      throw new HTTPException(400, {
+        message: "No orderId provided",
+      });
+    }
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return c.json(
+        {
+          message: "Invalid body",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    if (decoded?.["subject"]?.["id"] !== id) {
+      throw new HTTPException(403, {
+        message: "Only order owner can update order",
+      });
+    }
+
+    const entity = await this.service.findById({
+      id,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "No entity found",
+      });
+    }
+
+    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!subjectsToIdentities?.length) {
+      const identity = await identityApi.create({
+        data: {
+          email: data.email,
+          provider: "login_and_password",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      await subjectsToIdentitiesApi.create({
+        data: {
+          subjectId: id,
+          identityId: identity.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+    } else {
+      const identities = await identityApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+              {
+                column: "email",
+                method: "eq",
+                value: data.email,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!identities?.length) {
+        const identity = await identityApi.create({
+          data: {
+            email: data.email,
+            provider: "login_and_password",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        await subjectsToIdentitiesApi.create({
+          data: {
+            subjectId: id,
+            identityId: identity.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+      }
+    }
+
+    const order = await ecommerceOrderApi.findById({
+      id: orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!order) {
+      throw new HTTPException(404, {
+        message: "No order found",
+      });
+    }
+
+    if (order.status !== "new") {
+      throw new HTTPException(400, {
+        message: "Order is not in 'new' status",
+      });
+    }
+
+    if (!data["email"]) {
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!subjectsToIdentities?.length) {
+        throw new HTTPException(404, {
+          message: "No subjects to identities found",
+        });
+      }
+
+      const identities = await identityApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+              {
+                column: "email",
+                method: "isNotNull",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!identities?.length) {
+        throw new HTTPException(404, {
+          message: "No identities found",
+        });
+      }
+
+      data["email"] = identities[0].email;
+    }
+
+    await ecommerceOrderApi.checkout({
+      id: orderId,
+      data,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    const updatedOrder = await ecommerceOrderApi.findById({
+      id: order.id,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    const subjectsToEcommerceModuleOrders =
+      await subjectsToEcommerceModuleOrdersApi.create({
+        data: {
+          subjectId: id,
+          ecommerceModuleOrderId: order.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    const ordersToBillingModulePaymentIntents =
+      await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "eq",
+                value: order.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!ordersToBillingModulePaymentIntents?.length) {
+      throw new HTTPException(404, {
+        message: "No payment intents found",
+      });
+    }
+
+    const billingPaymentIntentsToInvoices =
+      await billingPaymentIntentsToInvoicesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "paymentIntentId",
+                method: "inArray",
+                value: ordersToBillingModulePaymentIntents.map(
+                  (item) => item.billingModulePaymentIntentId,
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!billingPaymentIntentsToInvoices?.length) {
+      throw new HTTPException(404, {
+        message: "No payment intents to invoices found",
+      });
+    }
+
+    const invoices = await billingInvoiceApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: billingPaymentIntentsToInvoices.map(
+                (item) => item.invoiceId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!invoices?.length) {
+      throw new HTTPException(404, {
+        message: "No invoices found",
+      });
+    }
+
+    return c.json({
+      data: {
+        ...entity,
+        subjectsToEcommerceModuleOrders: [
+          {
+            ...subjectsToEcommerceModuleOrders,
+            order: {
+              ...updatedOrder,
+              ordersToBillingModulePaymentIntents:
+                ordersToBillingModulePaymentIntents.map(
+                  (orderToBillingModulePaymentIntent) => {
+                    return {
+                      ...orderToBillingModulePaymentIntent,
+                      billingModulePaymentIntent: {
+                        id: orderToBillingModulePaymentIntent.billingModulePaymentIntentId,
+                        invoices: invoices.map((invoice) => {
+                          return {
+                            ...invoice,
+                          };
+                        }),
+                      },
+                    };
+                  },
+                ),
+            },
+          },
+        ],
+      },
+    });
   }
 }

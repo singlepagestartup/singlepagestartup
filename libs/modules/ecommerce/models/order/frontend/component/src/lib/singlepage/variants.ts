@@ -5,8 +5,6 @@ import { Component as AdminSelectInput } from "./admin-select-input";
 import { Component as AdminForm } from "./admin-form";
 import { Component as Default } from "./default";
 import { Component as Create } from "./create";
-import { Component as Cart } from "./cart";
-import { Component as Checkout } from "./checkout";
 import { Component as Delete } from "./delete";
 
 export const variants = {
@@ -17,7 +15,5 @@ export const variants = {
   "admin-form": AdminForm,
   default: Default,
   create: Create,
-  cart: Cart,
-  checkout: Checkout,
   delete: Delete,
 };

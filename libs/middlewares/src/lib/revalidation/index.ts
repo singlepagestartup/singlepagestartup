@@ -2,7 +2,7 @@ import { RBAC_SECRET_KEY, STALE_TIME } from "@sps/shared-utils";
 import { Context, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { expirePath, expireTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
 
 export type IMiddlewareGeneric = unknown;
@@ -45,7 +45,7 @@ export class Middleware {
                 },
               },
             });
-            expireTag(path);
+            revalidateTag(path);
           }
 
           if (["POST", "DELETE"].includes(method)) {
@@ -69,7 +69,7 @@ export class Middleware {
                 },
               },
             });
-            expireTag(pathWithoutId);
+            revalidateTag(pathWithoutId);
           }
 
           const expiredMessages = await messageApi.find({
@@ -117,14 +117,14 @@ export class Middleware {
       const type = c.req.query("type");
 
       if (tag) {
-        expireTag(tag);
+        revalidateTag(tag);
       }
 
       if (path) {
         if (type && (type === "page" || type === "layout")) {
-          expirePath(path, type);
+          revalidatePath(path, type);
         } else {
-          expirePath(path);
+          revalidatePath(path);
         }
       }
 

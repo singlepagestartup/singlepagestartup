@@ -131,7 +131,7 @@ export class Middleware {
                   options.body = formData;
                 }
 
-                await fetch(payload.callback.url, options).then(async (res) => {
+                fetch(payload.callback.url, options).then(async (res) => {
                   if (res.status >= 200 && res.status < 300) {
                     if (!RBAC_SECRET_KEY) {
                       throw Error(

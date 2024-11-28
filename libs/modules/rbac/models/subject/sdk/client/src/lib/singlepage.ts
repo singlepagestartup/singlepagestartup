@@ -25,6 +25,7 @@ import Cookies from "js-cookie";
 import { Address, Hex } from "viem";
 import { api as serverApi } from "../../../server";
 import { IExtendedModel as IEcommerceProductOneStepCheckoutResult } from "../../../server/src/lib/actions/ecommerce-product-one-step-checkout";
+import { IExtendedModel as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
 
 export interface IMeProps {
   params?: {
@@ -63,6 +64,34 @@ export interface IEcommerceProductOneStepCheckoutMutationFunctionProps {
     quantity: number;
     provider: string;
   };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IEcommerceOrdersUpdateMutationFunctionProps {
+  data: {
+    quantity: number;
+  };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IEcommerceOrdersCheckoutMutationFunctionProps {
+  data: {
+    provider: string;
+    email?: string;
+  };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IEcommerceOrdersDeleteMutationFunctionProps {
   params?: {
     [key: string]: any;
   };
@@ -670,6 +699,151 @@ export const api = {
         globalActionsStore.getState().addAction({
           type: "mutation",
           name: `${route}/${props.id}/ecommerce/products/${props.productId || "productId"}/one-step-checkout`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  ecommerceOrdersUpdate: (props: {
+    id: string;
+    orderId?: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IModel,
+      DefaultError,
+      IEcommerceOrdersUpdateMutationFunctionProps
+    >({
+      mutationKey: [
+        `${route}/${props.id}/ecommerce/orders/${props?.orderId || "orderId"}`,
+      ],
+      mutationFn: async (
+        mutationFunctionProps: IEcommerceOrdersUpdateMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.ecommerceOrdersUpdate({
+            id: props.id,
+            orderId: props.orderId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/ecommerce/orders/${props.orderId || "orderId"}`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  ecommerceOrdersCheckout: (props: {
+    id: string;
+    orderId: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IEcommerceOrdersCheckoutResult,
+      DefaultError,
+      IEcommerceOrdersCheckoutMutationFunctionProps
+    >({
+      mutationKey: [
+        `${route}/${props.id}/ecommerce/orders/${props.orderId}/checkout`,
+      ],
+      mutationFn: async (
+        mutationFunctionProps: IEcommerceOrdersCheckoutMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.ecommerceOrdersCheckout({
+            id: props.id,
+            orderId: props.orderId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/ecommerce/orders/${props.orderId}/checkout`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  ecommerceOrdersDelete: (props: {
+    id: string;
+    orderId: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IModel,
+      DefaultError,
+      IEcommerceOrdersDeleteMutationFunctionProps
+    >({
+      mutationKey: [`${route}/${props.id}/ecommerce/orders/${props.orderId}`],
+      mutationFn: async (
+        mutationFunctionProps: IEcommerceOrdersDeleteMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.ecommerceOrdersDelete({
+            id: props.id,
+            orderId: props.orderId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/ecommerce/orders/${props.orderId}`,
           props: this,
           result: data,
           timestamp: Date.now(),

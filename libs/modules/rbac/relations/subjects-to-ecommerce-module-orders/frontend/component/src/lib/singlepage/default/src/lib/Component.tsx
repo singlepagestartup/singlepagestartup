@@ -41,7 +41,7 @@ export function Component(props: IComponentPropsExtended) {
                 key={index}
                 isServer={props.isServer}
                 hostUrl={props.hostUrl}
-                variant="cart"
+                variant="default"
                 data={entity}
               />
             );

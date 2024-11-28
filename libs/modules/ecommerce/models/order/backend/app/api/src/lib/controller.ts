@@ -451,6 +451,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-cache",
         },
         next: {
           cache: "no-store",

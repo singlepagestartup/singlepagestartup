@@ -4,10 +4,9 @@ import { Component as AdminTable } from "./admin-table";
 import { Component as AdminSelectInput } from "./admin-select-input";
 import { Component as AdminForm } from "./admin-form";
 import { Component as Default } from "./default";
-import { Component as Quantity } from "./quantity";
+import { Component as EntityField } from "./entity-field-default";
 import { Component as Amount } from "./amount";
 import { Component as Create } from "./create";
-import { Component as Delete } from "./delete";
 
 export const variants = {
   find: Find,
@@ -16,8 +15,7 @@ export const variants = {
   "admin-select-input": AdminSelectInput,
   "admin-form": AdminForm,
   default: Default,
-  quantity: Quantity,
+  "entity-field-default": EntityField,
   amount: Amount,
   create: Create,
-  delete: Delete,
 };

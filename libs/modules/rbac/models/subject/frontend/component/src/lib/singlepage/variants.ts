@@ -14,6 +14,7 @@ import { Component as EthereumVirtualMachine } from "./ethereum-virtual-machine"
 import { Component as Me } from "./me";
 import { Component as GetEmails } from "./get-emails";
 import { Component as EcommerceProductOneStepCheckout } from "./ecommerce-product-one-step-checkout";
+import { Component as EcommerceProductCart } from "./ecommerce-product-cart";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentitiesUpdateDefault } from "./identities-update-default";
@@ -40,4 +41,5 @@ export const variants = {
   "overview-default": OverviewDefault,
   "identities-update-default": IdentitiesUpdateDefault,
   "identities-create-default": IdentitiesCreateDefault,
+  "ecommerce-product-cart": EcommerceProductCart,
 };
