@@ -10,6 +10,7 @@ import { action as me } from "./actions/me";
 import { action as isAuthorized } from "./actions/is-authorized";
 import { action as identities } from "./actions/identities";
 import { action as ecommerceProductOneStepCheckout } from "./actions/ecommerce-product-one-step-checkout";
+import { action as ecommerceProductsCart } from "./actions/ecommerce-products-cart";
 import { action as ecommerceOrdersUpdate } from "./actions/ecommerce-orders-update";
 import { action as ecommerceOrdersDelete } from "./actions/ecommerce-orders-delete";
 import { action as ecommerceOrdersCheckout } from "./actions/ecommerce-orders-checkout";
@@ -34,4 +35,5 @@ export const api = {
   ecommerceOrdersUpdate,
   ecommerceOrdersDelete,
   ecommerceOrdersCheckout,
+  ecommerceProductsCart,
 };

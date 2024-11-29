@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_identity" ALTER COLUMN "provider" SET DEFAULT 'email';

@@ -8,6 +8,13 @@
       "when": 1721913856379,
       "tag": "0000_loving_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1732917587072,
+      "tag": "0001_brave_shard",
+      "breakpoints": true
     }
   ]
 }

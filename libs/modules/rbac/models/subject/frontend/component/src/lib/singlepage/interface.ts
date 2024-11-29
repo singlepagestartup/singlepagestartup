@@ -14,7 +14,7 @@ import { IComponentProps as IEthereumVirtualMachineComponentProps } from "./ethe
 import { IComponentProps as IMeComponentProps } from "./me";
 import { IComponentProps as IGetEmailsComponentProps } from "./get-emails";
 import { IComponentProps as IEcommerceProductOneStepCheckoutComponentProps } from "./ecommerce-product-one-step-checkout";
-import { IComponentProps as IEcommerceProductCartComponentProps } from "./ecommerce-product-cart";
+import { IComponentProps as IEcommerceProductsCartComponentProps } from "./ecommerce-products-cart";
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default";
 import { IComponentProps as IIdentitiesUpdateDefaultComponentProps } from "./identities-update-default";
@@ -41,5 +41,5 @@ export type IComponentProps =
   | IOverviewDefaultComponentProps
   | IIdentitiesUpdateDefaultComponentProps
   | IIdentitiesCreateDefaultComponentProps
-  | IEcommerceProductCartComponentProps
+  | IEcommerceProductsCartComponentProps
   | never;

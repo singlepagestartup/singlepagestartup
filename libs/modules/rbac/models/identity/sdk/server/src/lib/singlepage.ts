@@ -8,6 +8,7 @@ import {
 } from "@sps/rbac/models/identity/sdk/model";
 import { action as loginAndPassword } from "./actions/login-and-password";
 import { action as changePassword } from "./actions/change-password";
+import { action as findOrCreate } from "./actions/find-or-create";
 
 export const api = {
   ...factory<IModel>({
@@ -18,4 +19,5 @@ export const api = {
   }),
   loginAndPassword,
   changePassword,
+  findOrCreate,
 };

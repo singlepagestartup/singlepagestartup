@@ -25,6 +25,7 @@ import Cookies from "js-cookie";
 import { Address, Hex } from "viem";
 import { api as serverApi } from "../../../server";
 import { IExtendedModel as IEcommerceProductOneStepCheckoutResult } from "../../../server/src/lib/actions/ecommerce-product-one-step-checkout";
+import { IExtendedModel as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-products-cart";
 import { IExtendedModel as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
 
 export interface IMeProps {
@@ -63,6 +64,16 @@ export interface IEcommerceProductOneStepCheckoutMutationFunctionProps {
   data: {
     quantity: number;
     provider: string;
+  };
+  params?: {
+    [key: string]: any;
+  };
+  options?: NextRequestOptions;
+}
+
+export interface IEcommerceProductsCartMutationFunctionProps {
+  data: {
+    quantity?: number;
   };
   params?: {
     [key: string]: any;
@@ -699,6 +710,55 @@ export const api = {
         globalActionsStore.getState().addAction({
           type: "mutation",
           name: `${route}/${props.id}/ecommerce/products/${props.productId || "productId"}/one-step-checkout`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  ecommerceProductsCart: (props: {
+    id: string;
+    productId: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IEcommerceProductsCartResult,
+      DefaultError,
+      IEcommerceProductsCartMutationFunctionProps
+    >({
+      mutationKey: [
+        `${route}/${props.id}/ecommerce/products/${props?.productId}/cart`,
+      ],
+      mutationFn: async (
+        mutationFunctionProps: IEcommerceProductsCartMutationFunctionProps,
+      ) => {
+        try {
+          const result = serverApi.ecommerceProductsCart({
+            id: props.id,
+            productId: props.productId,
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/${props.id}/ecommerce/products/${props.productId}/cart`,
           props: this,
           result: data,
           timestamp: Date.now(),

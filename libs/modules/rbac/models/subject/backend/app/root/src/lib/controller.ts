@@ -137,6 +137,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
+        path: "/:id/ecommerce/products/:productId/cart",
+        handler: this.ecommerceProductsCart,
+      },
+      {
+        method: "POST",
         path: "/:id/ecommerce/orders/:orderId/checkout",
         handler: this.ecommerceOrderCheckout,
       },
@@ -1314,10 +1319,38 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     });
 
     if (!subjectsToIdentities?.length) {
-      const identity = await identityApi.create({
+      // const identity = await identityApi.create({
+      //   data: {
+      //     email: data.email,
+      //     provider: "email",
+      //   },
+      //   options: {
+      //     headers: {
+      //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //     },
+      //     next: {
+      //       cache: "no-store",
+      //     },
+      //   },
+      // });
+
+      // await subjectsToIdentitiesApi.create({
+      //   data: {
+      //     subjectId: uuid,
+      //     identityId: identity.id,
+      //   },
+      //   options: {
+      //     headers: {
+      //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //     },
+      //     next: {
+      //       cache: "no-store",
+      //     },
+      //   },
+      // });
+      const identity = await identityApi.findOrCreate({
         data: {
           email: data.email,
-          provider: "login_and_password",
         },
         options: {
           headers: {
@@ -1329,20 +1362,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       });
 
-      await subjectsToIdentitiesApi.create({
-        data: {
-          subjectId: uuid,
-          identityId: identity.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
+      console.log(`🚀 ~ identity:`, identity);
     } else {
       const identities = await identityApi.find({
         params: {
@@ -1375,7 +1395,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         const identity = await identityApi.create({
           data: {
             email: data.email,
-            provider: "login_and_password",
+            provider: "email",
           },
           options: {
             headers: {
@@ -2729,6 +2749,225 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     });
   }
 
+  async ecommerceProductsCart(c: Context, next: any): Promise<Response> {
+    if (!RBAC_JWT_SECRET) {
+      throw new HTTPException(400, {
+        message: "RBAC_JWT_SECRET not set",
+      });
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET_KEY not set",
+      });
+    }
+
+    const id = c.req.param("id");
+
+    if (!id) {
+      throw new HTTPException(400, {
+        message: "No id provided",
+      });
+    }
+
+    const productId = c.req.param("productId");
+
+    if (!productId) {
+      throw new HTTPException(400, {
+        message: "No productId provided",
+      });
+    }
+
+    const token = authorization(c);
+
+    if (!token) {
+      return c.json(
+        {
+          data: null,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return c.json(
+        {
+          message: "Invalid body",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    if (decoded?.["subject"]?.["id"] !== id) {
+      throw new HTTPException(403, {
+        message: "Only order owner can update order",
+      });
+    }
+
+    const entity = await this.service.findById({
+      id,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "No entity found",
+      });
+    }
+
+    const existingOrdersToProducts = await ecommerceOrdersToProductsApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "productId",
+              method: "eq",
+              value: productId,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    const existingOrdersToSubjects =
+      await subjectsToEcommerceModuleOrdersApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+    if (existingOrdersToProducts?.length) {
+      if (existingOrdersToSubjects?.length) {
+        const subjectToProductOrders = existingOrdersToProducts.filter(
+          (orderToProduct) => {
+            return existingOrdersToSubjects.find((orderToSubject) => {
+              return (
+                orderToProduct.orderId === orderToSubject.ecommerceModuleOrderId
+              );
+            });
+          },
+        );
+
+        if (subjectToProductOrders.length) {
+          const ordersWithSubjectAndProduct = await ecommerceOrderApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: subjectToProductOrders.map(
+                      (orderToProduct) => orderToProduct.orderId,
+                    ),
+                  },
+                  {
+                    column: "status",
+                    method: "eq",
+                    value: "new",
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+          if (ordersWithSubjectAndProduct?.length) {
+            throw new HTTPException(400, {
+              message: "Order already exists",
+            });
+          }
+        }
+      }
+    }
+
+    const order = await ecommerceOrderApi.create({
+      data: {},
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!order) {
+      throw new HTTPException(404, {
+        message: "No order found",
+      });
+    }
+
+    await subjectsToEcommerceModuleOrdersApi.create({
+      data: {
+        subjectId: id,
+        ecommerceModuleOrderId: order.id,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    const ordersToProducts = await ecommerceOrdersToProductsApi.create({
+      data: {
+        orderId: order.id,
+        productId: productId,
+        quantity: data.quantity || 1,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!ordersToProducts) {
+      throw new HTTPException(404, {
+        message: "No orders to products found",
+      });
+    }
+
+    return c.json({
+      data: {
+        ...entity,
+        data,
+      },
+    });
+  }
+
   async ecommerceOrdersDelete(c: Context, next: any): Promise<Response> {
     if (!RBAC_JWT_SECRET) {
       throw new HTTPException(400, {
@@ -2962,7 +3201,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       const identity = await identityApi.create({
         data: {
           email: data.email,
-          provider: "login_and_password",
+          provider: "email",
         },
         options: {
           headers: {
@@ -2989,22 +3228,35 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       });
     } else {
-      const identities = await identityApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: subjectsToIdentities.map((item) => item.identityId),
-              },
-              {
-                column: "email",
-                method: "eq",
-                value: data.email,
-              },
-            ],
-          },
+      // const identities = await identityApi.find({
+      //   params: {
+      //     filters: {
+      //       and: [
+      //         {
+      //           column: "id",
+      //           method: "inArray",
+      //           value: subjectsToIdentities.map((item) => item.identityId),
+      //         },
+      //         {
+      //           column: "email",
+      //           method: "eq",
+      //           value: data.email,
+      //         },
+      //       ],
+      //     },
+      //   },
+      //   options: {
+      //     headers: {
+      //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //     },
+      //     next: {
+      //       cache: "no-store",
+      //     },
+      //   },
+      // });
+      await identityApi.findOrCreate({
+        data: {
+          email: data.email,
         },
         options: {
           headers: {
@@ -3016,37 +3268,37 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       });
 
-      if (!identities?.length) {
-        const identity = await identityApi.create({
-          data: {
-            email: data.email,
-            provider: "login_and_password",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
+      // if (!identities?.length) {
+      //   const identity = await identityApi.create({
+      //     data: {
+      //       email: data.email,
+      //       provider: "email",
+      //     },
+      //     options: {
+      //       headers: {
+      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //       },
+      //       next: {
+      //         cache: "no-store",
+      //       },
+      //     },
+      //   });
 
-        await subjectsToIdentitiesApi.create({
-          data: {
-            subjectId: id,
-            identityId: identity.id,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
-      }
+      //   await subjectsToIdentitiesApi.create({
+      //     data: {
+      //       subjectId: id,
+      //       identityId: identity.id,
+      //     },
+      //     options: {
+      //       headers: {
+      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //       },
+      //       next: {
+      //         cache: "no-store",
+      //       },
+      //     },
+      //   });
+      // }
     }
 
     const order = await ecommerceOrderApi.findById({

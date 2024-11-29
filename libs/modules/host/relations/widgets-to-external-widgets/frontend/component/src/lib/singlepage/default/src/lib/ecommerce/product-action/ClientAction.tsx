@@ -28,7 +28,7 @@ export function Component(
             <RbacSubject
               isServer={false}
               hostUrl={props.hostUrl}
-              variant="ecommerce-product-cart"
+              variant="ecommerce-products-cart"
               data={subject}
               product={props.product}
             />

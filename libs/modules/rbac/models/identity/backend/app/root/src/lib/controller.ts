@@ -35,6 +35,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.create,
       },
       {
+        method: "POST",
+        path: "/find-or-create",
+        handler: this.findOrCreate,
+      },
+      {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
@@ -112,5 +117,26 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         message: error.message,
       });
     }
+  }
+
+  async findOrCreate(c: Context, next: any): Promise<Response> {
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return next();
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    const entity = await this.service.findOrCreate({
+      data,
+    });
+
+    return c.json(
+      {
+        data: entity,
+      },
+      201,
+    );
   }
 }
