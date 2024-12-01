@@ -21,7 +21,7 @@ export interface IActionProps {
   data: any;
 }
 
-export async function action(props: IActionProps): Promise<IModel | undefined> {
+export async function action(props: IActionProps): Promise<IModel> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const { params, options, data } = props;
@@ -63,7 +63,7 @@ export async function action(props: IActionProps): Promise<IModel | undefined> {
   });
 
   if (!json) {
-    return;
+    throw new Error("No data returned from the server");
   }
 
   const transformedData = transformResponseItem<IModel>(json);

@@ -4,7 +4,7 @@ import { IFindByIdActionProps } from "@sps/shared-frontend-api";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 
-export const variant = "ecommerce-product-one-step-checkout" as const;
+export const variant = "ecommerce-product-checkout" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;

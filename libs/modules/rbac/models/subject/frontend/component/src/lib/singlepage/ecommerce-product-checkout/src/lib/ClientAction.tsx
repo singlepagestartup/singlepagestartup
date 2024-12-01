@@ -38,7 +38,7 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const oneStepCheckout = api.ecommerceProductOneStepCheckout({
+  const productCheckout = api.ecommerceProductCheckout({
     id: props.data.id,
     productId: props.product.id,
   });
@@ -54,20 +54,20 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    oneStepCheckout.mutate({
+    productCheckout.mutate({
       data,
     });
   }
 
   useEffect(() => {
-    if (oneStepCheckout.isSuccess) {
+    if (productCheckout.isSuccess) {
       const paymentUrl =
-        oneStepCheckout.data.subjectsToEcommerceModuleOrders[0].order
+        productCheckout.data.subjectsToEcommerceModuleOrders[0].order
           .ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent
           .invoices[0].paymentUrl;
       window.location.href = paymentUrl;
     }
-  }, [oneStepCheckout.isSuccess]);
+  }, [productCheckout.isSuccess]);
 
   return (
     <div

@@ -10,14 +10,16 @@ import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 
 export interface IActionProps {
   id: string;
-  productId: string;
   tag?: string;
   revalidate?: number;
   params?: {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data?: any;
+  data: {
+    productId: string;
+    quantity: number;
+  };
 }
 
 export interface IExtendedModel extends IModel {
@@ -34,11 +36,6 @@ export interface IExtendedModel extends IModel {
 
 export async function action(props: IActionProps): Promise<IExtendedModel> {
   const { id, params, data, options } = props;
-  const productId = props.productId;
-
-  if (!productId) {
-    throw new Error("productId is required");
-  }
 
   const formData = prepareFormDataToSend({ data });
 
@@ -57,7 +54,7 @@ export async function action(props: IActionProps): Promise<IExtendedModel> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/ecommerce/products/${productId}/cart?${stringifiedQuery}`,
+    `${host}${route}/${id}/ecommerce/orders?${stringifiedQuery}`,
     requestOptions,
   );
 

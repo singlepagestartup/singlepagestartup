@@ -5,6 +5,7 @@ import {
   IUpdateActionProps,
   ICreateActionProps,
   IDeleteActionProps,
+  IFindOrCreateActionProps,
 } from "@sps/shared-frontend-api";
 
 export interface IFactoryProps {
@@ -63,6 +64,17 @@ export function factory<T>(params: IFactoryProps) {
       props: Omit<ICreateActionProps, "model" | "route" | "host">,
     ) => {
       return await actions.create<T>({
+        params: params.params,
+        options: params.options,
+        route: params.route,
+        host: params.host,
+        ...props,
+      });
+    },
+    findOrCreate: async (
+      props: Omit<IFindOrCreateActionProps, "model" | "route" | "host">,
+    ) => {
+      return await actions.findOrCreate<T>({
         params: params.params,
         options: params.options,
         route: params.route,

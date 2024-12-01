@@ -10,6 +10,7 @@ import {
   DeleteHandler,
   DumpHandler,
   SeedHandler,
+  FindOrCreateHandler,
 } from "./handler";
 import { type IService } from "../../service";
 import { DI } from "../../di/constants";
@@ -46,6 +47,11 @@ export class Controller<DTO extends Record<string, unknown>>
         handler: this.create,
       },
       {
+        method: "POST",
+        path: "/find-or-create",
+        handler: this.findOrCreate,
+      },
+      {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
@@ -70,6 +76,11 @@ export class Controller<DTO extends Record<string, unknown>>
 
   public async create(c: Context, next: any): Promise<Response> {
     const handler = new CreateHandler<Context, DTO>(this.service);
+    return handler.execute(c, next);
+  }
+
+  public async findOrCreate(c: Context, next: any): Promise<Response> {
+    const handler = new FindOrCreateHandler<Context, DTO>(this.service);
     return handler.execute(c, next);
   }
 

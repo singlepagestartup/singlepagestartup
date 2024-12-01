@@ -5,7 +5,7 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
-import { Component as AddToCart } from "./actions/AddToCart";
+import { Component as OrdersCreate } from "./actions/OrdersCreate";
 import { Component as OrdersUpdate } from "./actions/OrdersUpdate";
 import { Component as OrdersDelete } from "./actions/OrdersDelete";
 import { Component as OrdersCheckout } from "./actions/OrdersCheckout";
@@ -39,7 +39,7 @@ export function Component(props: IComponentPropsExtended) {
       >
         {({ data: subjectsToEcommerceOrders }) => {
           if (!subjectsToEcommerceOrders) {
-            return <AddToCart {...props} />;
+            return <OrdersCreate {...props} />;
           }
 
           return (
@@ -70,7 +70,7 @@ export function Component(props: IComponentPropsExtended) {
             >
               {({ data }) => {
                 if (!data || !data?.length) {
-                  return <AddToCart {...props} />;
+                  return <OrdersCreate {...props} />;
                 }
 
                 return (
@@ -97,7 +97,7 @@ export function Component(props: IComponentPropsExtended) {
                         !ordersWithCurrentProduct ||
                         !ordersWithCurrentProduct?.length
                       ) {
-                        return <AddToCart {...props} />;
+                        return <OrdersCreate {...props} />;
                       }
 
                       const cartOrdersWithCurrentProduct =
@@ -112,7 +112,7 @@ export function Component(props: IComponentPropsExtended) {
                         );
 
                       if (!cartOrdersWithCurrentProduct.length) {
-                        return <AddToCart {...props} />;
+                        return <OrdersCreate {...props} />;
                       }
 
                       return data?.map((order, index) => {

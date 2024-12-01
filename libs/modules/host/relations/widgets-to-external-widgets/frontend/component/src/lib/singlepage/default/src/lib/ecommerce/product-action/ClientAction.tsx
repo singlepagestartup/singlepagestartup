@@ -21,14 +21,14 @@ export function Component(
             <RbacSubject
               isServer={false}
               hostUrl={props.hostUrl}
-              variant="ecommerce-product-one-step-checkout"
+              variant="ecommerce-product-checkout"
               data={subject}
               product={props.product}
             />
             <RbacSubject
               isServer={false}
               hostUrl={props.hostUrl}
-              variant="ecommerce-products-cart"
+              variant="ecommerce-product-cart"
               data={subject}
               product={props.product}
             />

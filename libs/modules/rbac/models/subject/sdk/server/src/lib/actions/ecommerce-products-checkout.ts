@@ -57,7 +57,7 @@ export async function action(props: IActionProps): Promise<IExtendedModel> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/ecommerce/products/${productId}/one-step-checkout?${stringifiedQuery}`,
+    `${host}${route}/${id}/ecommerce/products/${productId}/checkout?${stringifiedQuery}`,
     requestOptions,
   );
 

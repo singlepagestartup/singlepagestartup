@@ -15,10 +15,6 @@ import { getCookie } from "hono/cookie";
  */
 const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
-    regexPath: /\/api\/rbac\/subjects\/(is-authorized|me|init)/,
-    methods: ["GET"],
-  },
-  {
     regexPath: /\/api\/broadcast\/(channels|messages)/,
     methods: ["GET"],
   },
@@ -27,19 +23,7 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["POST"],
   },
   {
-    regexPath: /\/api\/rbac\/sessions\/init/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects\/logout/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/widgets\/?/,
-    methods: ["GET"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects\/me/,
+    regexPath: /\/api\/rbac\/subjects\/(is-authorized|me|init|logout)/,
     methods: ["GET"],
   },
   {

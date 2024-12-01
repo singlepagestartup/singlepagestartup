@@ -5,4 +5,5 @@ export type {
   IFindActionProps,
   IFindByIdActionProps,
   IUpdateActionProps,
+  IFindOrCreateActionProps,
 } from "./lib/actions";

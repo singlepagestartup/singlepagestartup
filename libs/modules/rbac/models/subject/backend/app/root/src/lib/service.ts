@@ -4,11 +4,13 @@ import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Repository } from "./repository";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import {
+  HOST_URL,
   RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
+import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
@@ -21,6 +23,12 @@ import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-
 import { createPublicClient, http, Address, Hex } from "viem";
 import { mainnet } from "viem/chains";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
+import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
+import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
+import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 
 export interface IRegistrationLoginAndPasswordDTO {
   type: "registration";
@@ -520,9 +528,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       {
         exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
         iat: Math.floor(Date.now() / 1000),
-        subject: {
-          id: subject.id,
-        },
+        subject,
       },
       RBAC_JWT_SECRET,
     );
@@ -861,5 +867,412 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     } catch (error) {
       console.error(`🚀 ~ clearAnonymusSessions ~ error:`, error);
     }
+  }
+
+  async deanonymize(props: {
+    id: IModel["id"];
+    email: string;
+  }): Promise<IModel> {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("RBAC_SECRET is not defined in the service");
+    }
+
+    const entity = await this.findById({
+      id: props.id,
+    });
+
+    if (!entity) {
+      throw new Error("No entity found");
+    }
+
+    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: props.id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!subjectsToIdentities?.length) {
+      const identity = await identityApi.findOrCreate({
+        data: {
+          email: props.email,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      console.log(`🚀 ~ identity:`, identity);
+
+      await subjectsToIdentitiesApi.create({
+        data: {
+          subjectId: props.id,
+          identityId: identity.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+    } else {
+      const identities = await identityApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+              {
+                column: "email",
+                method: "eq",
+                value: props.email,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!identities?.length) {
+        const identity = await identityApi.create({
+          data: {
+            email: props.email,
+            provider: "email",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        await subjectsToIdentitiesApi.create({
+          data: {
+            subjectId: props.id,
+            identityId: identity.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+      }
+    }
+
+    return entity;
+  }
+
+  async ecommerceOrdersCheckout(props: {
+    orderId: string;
+    id: string;
+    data: any;
+  }): Promise<any> {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+    }
+
+    const entity = await this.findById({
+      id: props.id,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "No entity found",
+      });
+    }
+
+    await ecommerceOrderApi.checkout({
+      id: props.orderId,
+      data: props.data,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    const updatedOrder = await ecommerceOrderApi.findById({
+      id: props.orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    const subjectToEcommerceModuleOrder =
+      await subjectsToEcommerceModuleOrdersApi.findOrCreate({
+        data: {
+          subjectId: props.id,
+          ecommerceModuleOrderId: props.orderId,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    const ordersToBillingModulePaymentIntents =
+      await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "eq",
+                value: props.orderId,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!ordersToBillingModulePaymentIntents?.length) {
+      throw new HTTPException(404, {
+        message: "No payment intents found",
+      });
+    }
+
+    const billingPaymentIntentsToInvoices =
+      await billingPaymentIntentsToInvoicesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "paymentIntentId",
+                method: "inArray",
+                value: ordersToBillingModulePaymentIntents.map(
+                  (item) => item.billingModulePaymentIntentId,
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!billingPaymentIntentsToInvoices?.length) {
+      throw new HTTPException(404, {
+        message: "No payment intents to invoices found",
+      });
+    }
+
+    const invoices = await billingInvoiceApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: billingPaymentIntentsToInvoices.map(
+                (item) => item.invoiceId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!invoices?.length) {
+      throw new HTTPException(404, {
+        message: "No invoices found",
+      });
+    }
+
+    if (!updatedOrder) {
+      throw new Error("No updated order found");
+    }
+
+    await broadcastChannelApi.pushMessage({
+      data: {
+        channelName: "observer",
+        payload: JSON.stringify({
+          action: {
+            type: "request",
+            method: "PATCH",
+            url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          },
+          callback: {
+            type: "request",
+            method: "POST",
+            url: `${HOST_URL}/api/rbac/subjects/${props.id}/notify`,
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            body: {
+              data: {
+                ecommerce: {
+                  order: {
+                    id: updatedOrder.id,
+                  },
+                },
+                notification: {
+                  topic: {
+                    slug: "information",
+                  },
+                  template: {
+                    variant: "order-status-changed-to-paid",
+                  },
+                  notification: {
+                    data: JSON.stringify({
+                      title: "Order status updated",
+                      subject: "Order status updated",
+                      id: updatedOrder.id,
+                    }),
+                  },
+                },
+              },
+            },
+          },
+        }),
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    await broadcastChannelApi.pushMessage({
+      data: {
+        channelName: "observer",
+        payload: JSON.stringify({
+          action: {
+            type: "request",
+            method: "PATCH",
+            url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          },
+          callback: {
+            type: "request",
+            method: "POST",
+            url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            body: {
+              data: {
+                ecommerce: {
+                  order: {
+                    id: updatedOrder.id,
+                  },
+                },
+              },
+            },
+          },
+        }),
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    return {
+      ...entity,
+      subjectsToEcommerceModuleOrders: [
+        {
+          ...subjectToEcommerceModuleOrder,
+          order: {
+            ...updatedOrder,
+            ordersToBillingModulePaymentIntents:
+              ordersToBillingModulePaymentIntents.map(
+                (orderToBillingModulePaymentIntent) => {
+                  return {
+                    ...orderToBillingModulePaymentIntent,
+                    billingModulePaymentIntent: {
+                      id: orderToBillingModulePaymentIntent.billingModulePaymentIntentId,
+                      invoices: invoices.map((invoice) => {
+                        return {
+                          ...invoice,
+                        };
+                      }),
+                    },
+                  };
+                },
+              ),
+          },
+        },
+      ],
+    };
   }
 }

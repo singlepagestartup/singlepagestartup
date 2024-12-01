@@ -118,25 +118,4 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
   }
-
-  async findOrCreate(c: Context, next: any): Promise<Response> {
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      return next();
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const entity = await this.service.findOrCreate({
-      data,
-    });
-
-    return c.json(
-      {
-        data: entity,
-      },
-      201,
-    );
-  }
 }

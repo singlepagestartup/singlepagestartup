@@ -24,8 +24,8 @@ import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { Address, Hex } from "viem";
 import { api as serverApi } from "../../../server";
-import { IExtendedModel as IEcommerceProductOneStepCheckoutResult } from "../../../server/src/lib/actions/ecommerce-product-one-step-checkout";
-import { IExtendedModel as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-products-cart";
+import { IExtendedModel as IEcommerceProductCheckoutResult } from "../../../server/src/lib/actions/ecommerce-products-checkout";
+import { IExtendedModel as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-orders-create";
 import { IExtendedModel as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
 
 export interface IMeProps {
@@ -60,10 +60,12 @@ export interface ILoginAndPasswordMutationFunctionProps {
   options?: NextRequestOptions;
 }
 
-export interface IEcommerceProductOneStepCheckoutMutationFunctionProps {
+export interface IEcommerceProductCheckoutMutationFunctionProps {
   data: {
     quantity: number;
     provider: string;
+    email?: string;
+    comment?: string;
   };
   params?: {
     [key: string]: any;
@@ -73,7 +75,8 @@ export interface IEcommerceProductOneStepCheckoutMutationFunctionProps {
 
 export interface IEcommerceProductsCartMutationFunctionProps {
   data: {
-    quantity?: number;
+    productId: string;
+    quantity: number;
   };
   params?: {
     [key: string]: any;
@@ -672,7 +675,7 @@ export const api = {
       ...props?.reactQueryOptions,
     });
   },
-  ecommerceProductOneStepCheckout: (props: {
+  ecommerceProductCheckout: (props: {
     id: string;
     productId?: string;
     params?: {
@@ -682,18 +685,18 @@ export const api = {
     reactQueryOptions?: any;
   }) => {
     return useMutation<
-      IEcommerceProductOneStepCheckoutResult,
+      IEcommerceProductCheckoutResult,
       DefaultError,
-      IEcommerceProductOneStepCheckoutMutationFunctionProps
+      IEcommerceProductCheckoutMutationFunctionProps
     >({
       mutationKey: [
-        `${route}/${props.id}/ecommerce/products/${props?.productId || "productId"}/one-step-checkout`,
+        `${route}/${props.id}/ecommerce/products/${props?.productId || "productId"}/checkout`,
       ],
       mutationFn: async (
-        mutationFunctionProps: IEcommerceProductOneStepCheckoutMutationFunctionProps,
+        mutationFunctionProps: IEcommerceProductCheckoutMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceProductOneStepCheckout({
+          const result = serverApi.ecommerceProductsCheckout({
             id: props.id,
             productId: props.productId,
             ...mutationFunctionProps,
@@ -709,7 +712,7 @@ export const api = {
       onSuccess(data) {
         globalActionsStore.getState().addAction({
           type: "mutation",
-          name: `${route}/${props.id}/ecommerce/products/${props.productId || "productId"}/one-step-checkout`,
+          name: `${route}/${props.id}/ecommerce/products/${props.productId || "productId"}/checkout`,
           props: this,
           result: data,
           timestamp: Date.now(),
@@ -721,9 +724,8 @@ export const api = {
       ...props?.reactQueryOptions,
     });
   },
-  ecommerceProductsCart: (props: {
+  ecommerceOrdersCreate: (props: {
     id: string;
-    productId: string;
     params?: {
       [key: string]: any;
     };
@@ -735,16 +737,13 @@ export const api = {
       DefaultError,
       IEcommerceProductsCartMutationFunctionProps
     >({
-      mutationKey: [
-        `${route}/${props.id}/ecommerce/products/${props?.productId}/cart`,
-      ],
+      mutationKey: [`${route}/${props.id}/ecommerce/orders`],
       mutationFn: async (
         mutationFunctionProps: IEcommerceProductsCartMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceProductsCart({
+          const result = serverApi.ecommerceOrdersCreate({
             id: props.id,
-            productId: props.productId,
             ...mutationFunctionProps,
           });
 
@@ -758,7 +757,7 @@ export const api = {
       onSuccess(data) {
         globalActionsStore.getState().addAction({
           type: "mutation",
-          name: `${route}/${props.id}/ecommerce/products/${props.productId}/cart`,
+          name: `${route}/${props.id}/ecommerce/orders`,
           props: this,
           result: data,
           timestamp: Date.now(),

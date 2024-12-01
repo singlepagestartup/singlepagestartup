@@ -15,6 +15,13 @@
       "when": 1724548175706,
       "tag": "0001_wakeful_lenny_balinger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733079160798,
+      "tag": "0002_sad_clea",
+      "breakpoints": true
     }
   ]
 }

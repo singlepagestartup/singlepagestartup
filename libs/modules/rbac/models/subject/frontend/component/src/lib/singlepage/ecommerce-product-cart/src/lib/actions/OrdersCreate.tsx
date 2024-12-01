@@ -11,18 +11,19 @@ import { Button, Form } from "@sps/shared-ui-shadcn";
 
 const formSchema = z.object({
   quantity: z.number(),
+  productId: z.string(),
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const ecommerceProductsCart = api.ecommerceProductsCart({
+  const ecommerceProductsCart = api.ecommerceOrdersCreate({
     id: props.data.id,
-    productId: props.product.id,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       quantity: 1,
+      productId: props.product.id,
     },
   });
 

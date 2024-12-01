@@ -8,12 +8,14 @@ import {
   DeleteAction,
   DumpAction,
   SeedAction,
+  FindOrCreateAction,
 } from "./actions";
 import { DI } from "../../di/constants";
 import { type IRepository } from "../../repository/interface";
 import { IService } from "../interface";
 import { FindServiceProps } from "../../services/interfaces";
 import { IDumpResult, ISeedResult } from "../../configuration";
+import { StatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class Service<DTO extends Record<string, unknown>>
@@ -37,6 +39,13 @@ export class Service<DTO extends Record<string, unknown>>
 
   async create(props: { data: any }): Promise<DTO> {
     const action = new CreateAction(this.repository);
+    return action.execute(props);
+  }
+
+  async findOrCreate(props: {
+    data: any;
+  }): Promise<{ entity: DTO; statusCode: StatusCode }> {
+    const action = new FindOrCreateAction(this.repository);
     return action.execute(props);
   }
 

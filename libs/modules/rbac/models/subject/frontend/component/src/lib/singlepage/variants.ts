@@ -13,8 +13,8 @@ import { Component as SelectMethod } from "./select-method";
 import { Component as EthereumVirtualMachine } from "./ethereum-virtual-machine";
 import { Component as Me } from "./me";
 import { Component as GetEmails } from "./get-emails";
-import { Component as EcommerceProductOneStepCheckout } from "./ecommerce-product-one-step-checkout";
-import { Component as EcommerceProductsCart } from "./ecommerce-products-cart";
+import { Component as EcommerceProductCheckout } from "./ecommerce-product-checkout";
+import { Component as EcommerceProductCart } from "./ecommerce-product-cart";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentitiesUpdateDefault } from "./identities-update-default";
@@ -36,10 +36,10 @@ export const variants = {
   "ethereum-virtual-machine": EthereumVirtualMachine,
   me: Me,
   "get-emails": GetEmails,
-  "ecommerce-product-one-step-checkout": EcommerceProductOneStepCheckout,
+  "ecommerce-product-checkout": EcommerceProductCheckout,
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
   "identities-update-default": IdentitiesUpdateDefault,
   "identities-create-default": IdentitiesCreateDefault,
-  "ecommerce-products-cart": EcommerceProductsCart,
+  "ecommerce-product-cart": EcommerceProductCart,
 };

@@ -8,6 +8,8 @@ import { action as find } from "./find";
 export type { IActionProps as IFindActionProps } from "./find";
 import { action as update } from "./update";
 export type { IActionProps as IUpdateActionProps } from "./update";
+import { action as findOrCreate } from "./find-or-create";
+export type { IActionProps as IFindOrCreateActionProps } from "./find-or-create";
 
 export const actions = {
   findById,
@@ -15,4 +17,5 @@ export const actions = {
   delete: remove,
   find,
   update,
+  findOrCreate,
 };
