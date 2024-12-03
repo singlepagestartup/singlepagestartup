@@ -11,12 +11,14 @@ export function Component({
   error,
   reset,
   fonts,
+  children,
 }: {
   fonts: {
     defaultFont: NextFontWithVariable;
     primaryFont: NextFontWithVariable;
   };
   error: Error & { digest?: string };
+  children?: React.ReactNode;
   reset: () => void;
 }) {
   const [page, setPage] = useState<IModel>();
@@ -93,6 +95,16 @@ export function Component({
         </body>
       </html>
     );
+  }
+
+  if (children) {
+    <html className="scroll-smooth">
+      <body
+        className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
+      >
+        {children}
+      </body>
+    </html>;
   }
 
   return (
