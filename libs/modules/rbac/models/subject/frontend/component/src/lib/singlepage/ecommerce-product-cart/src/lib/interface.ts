@@ -4,7 +4,7 @@ import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/default/interface";
+} from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 
 export const variant = "ecommerce-product-cart" as const;
 

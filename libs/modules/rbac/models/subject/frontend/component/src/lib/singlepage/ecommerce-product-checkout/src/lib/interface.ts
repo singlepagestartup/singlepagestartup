@@ -1,23 +1,23 @@
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
-import { IFindByIdActionProps } from "@sps/shared-frontend-api";
-import { ISpsComponentBase } from "@sps/ui-adapter";
+import {
+  IComponentProps as IParentComponentProps,
+  IComponentPropsExtended as IParentComponentPropsExtended,
+} from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 
 export const variant = "ecommerce-product-checkout" as const;
 
-export interface IComponentProps extends ISpsComponentBase {
-  variant: typeof variant;
-  data: Partial<IModel>;
-  apiProps?: {
-    params?: IFindByIdActionProps["params"];
-    options?: IFindByIdActionProps["options"];
-  };
+export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {
   product: IProduct;
-  className?: string;
-  children?: ({ data }: { data?: string | null }) => any;
 }
 
-export interface IComponentPropsExtended extends IComponentProps {
-  data: IModel;
+export interface IComponentPropsExtended
+  extends IParentComponentPropsExtended<
+    IModel,
+    typeof variant,
+    IComponentProps
+  > {
+  product: IProduct;
 }
