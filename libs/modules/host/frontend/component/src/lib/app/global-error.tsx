@@ -57,9 +57,22 @@ export function Component({
   async function revalidate() {
     await fetch("/api/revalidation/revalidate?path=/&type=layout").then(() => {
       reset();
-      window.location.href = "/";
+      window.location.reload();
     });
   }
+
+  useEffect(() => {
+    if (
+      error.message.includes(
+        "An error occurred in the Server Components render.",
+      )
+    ) {
+      fetch("/api/revalidation/revalidate?path=/&type=layout").then(() => {
+        reset();
+        window.location.reload();
+      });
+    }
+  }, [error.message]);
 
   if (page) {
     return (

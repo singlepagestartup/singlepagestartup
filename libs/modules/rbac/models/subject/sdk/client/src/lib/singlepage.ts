@@ -61,6 +61,7 @@ export interface ILoginAndPasswordMutationFunctionProps {
 }
 
 export interface IEcommerceProductCheckoutMutationFunctionProps {
+  productId?: string;
   data: {
     quantity: number;
     provider: string;
@@ -698,7 +699,7 @@ export const api = {
         try {
           const result = serverApi.ecommerceProductsCheckout({
             id: props.id,
-            productId: props.productId,
+            productId: props.productId || mutationFunctionProps.productId,
             ...mutationFunctionProps,
           });
 
