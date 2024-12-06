@@ -8,4 +8,5 @@ export const fields = {
   title: pgCore.text("title"),
   className: pgCore.text("class_name"),
   description: pgCore.text("description"),
+  slug: pgCore.text("slug").unique(),
 };

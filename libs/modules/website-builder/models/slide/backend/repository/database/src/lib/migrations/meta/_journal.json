@@ -8,6 +8,13 @@
       "when": 1721860219339,
       "tag": "0000_foamy_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733508581481,
+      "tag": "0001_lazy_fantastic_four",
+      "breakpoints": true
     }
   ]
 }

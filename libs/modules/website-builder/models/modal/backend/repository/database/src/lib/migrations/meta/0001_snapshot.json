@@ -1,0 +1,65 @@
+{
+  "id": "5468d285-d8d7-4893-9184-e2ddab68e5c0",
+  "prevId": "56152948-7e81-447d-b46c-ac49fdd03484",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_w_b_modal": {
+      "name": "sps_w_b_modal",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sps_w_b_modal_slug_unique": {
+          "name": "sps_w_b_modal_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

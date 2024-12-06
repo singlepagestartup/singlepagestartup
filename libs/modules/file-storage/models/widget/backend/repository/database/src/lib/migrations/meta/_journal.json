@@ -8,6 +8,13 @@
       "when": 1721923215820,
       "tag": "0000_smart_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733508575822,
+      "tag": "0001_absurd_jean_grey",
+      "breakpoints": true
     }
   ]
 }

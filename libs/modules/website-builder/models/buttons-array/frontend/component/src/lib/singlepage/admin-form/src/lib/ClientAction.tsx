@@ -23,6 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || "",
       className: props.data?.className || "",
       description: props.data?.description || "",
+      slug: props.data?.slug || "",
     },
   });
 
@@ -55,6 +56,15 @@ export function Component(props: IComponentPropsExtended) {
           name="title"
           form={form}
           placeholder="Type title"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
+          form={form}
+          placeholder="Type slug"
         />
 
         <FormField

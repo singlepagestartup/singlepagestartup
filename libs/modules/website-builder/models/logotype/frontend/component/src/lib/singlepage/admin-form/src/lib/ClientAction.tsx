@@ -22,6 +22,7 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       url: props.data?.url || "",
       className: props.data?.className || "",
+      slug: props.data?.slug || "",
     },
   });
 
@@ -53,8 +54,17 @@ export function Component(props: IComponentPropsExtended) {
           label="Variant"
           name="variant"
           form={form}
-          placeholder="Type title"
+          placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
+          form={form}
+          placeholder="Type slug"
         />
 
         <FormField

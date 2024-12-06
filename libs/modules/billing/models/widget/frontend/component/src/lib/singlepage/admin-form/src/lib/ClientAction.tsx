@@ -17,6 +17,7 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
+      slug: props.data?.slug || "",
     },
   });
 
@@ -42,6 +43,15 @@ export function Component(props: IComponentPropsExtended) {
       name="widget"
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
+          form={form}
+          placeholder="Type slug"
+        />
+
         <FormField
           ui="shadcn"
           type="select"

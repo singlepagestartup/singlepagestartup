@@ -15,6 +15,13 @@
       "when": 1723421343355,
       "tag": "0001_unique_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733508589076,
+      "tag": "0002_normal_magma",
+      "breakpoints": true
     }
   ]
 }

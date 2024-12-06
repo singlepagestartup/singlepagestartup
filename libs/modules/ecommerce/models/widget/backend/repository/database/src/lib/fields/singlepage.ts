@@ -10,4 +10,5 @@ export const fields = {
   subtitle: pgCore.text("subtitle"),
   description: pgCore.text("description"),
   anchor: pgCore.text("anchor"),
+  slug: pgCore.text("slug").unique(),
 };

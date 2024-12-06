@@ -8,4 +8,5 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   className: pgCore.text("class_name"),
   orderIndex: pgCore.integer("order_index"),
+  slug: pgCore.text("slug").unique(),
 };
