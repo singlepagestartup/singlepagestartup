@@ -13,9 +13,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/billing:repository-generate"
-          },
-          {
             "command": "nx run @sps/billing:models:repository-migrate"
           },
           {

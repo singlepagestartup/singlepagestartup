@@ -27,9 +27,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/crm:repository-generate"
-          },
-          {
             "command": "nx run @sps/crm:models:repository-migrate"
           },
           {

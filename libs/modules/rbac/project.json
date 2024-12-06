@@ -13,9 +13,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/rbac:repository-generate"
-          },
-          {
             "command": "nx run @sps/rbac:models:repository-migrate"
           },
           {

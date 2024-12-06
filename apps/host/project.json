@@ -47,6 +47,48 @@
         ]
       }
     },
+    "db:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "apps/host",
+        "commands": [
+          {
+            "command": "npx nx run @sps/file-storage:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/broadcast:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/website-builder:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/notification:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/crm:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/billing:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/blog:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/ecommerce:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/startup:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/rbac:repository-generate"
+          },
+          {
+            "command": "npx nx run @sps/host:repository-generate"
+          }
+        ]
+      }
+    },
     "db:dump": {
       "executor": "nx:run-commands",
       "dependsOn": ["db:prepare"],

@@ -7,6 +7,20 @@
   "targets": {
     "lint": {},
     "tsc:build": {},
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/website-builder:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/website-builder:relations:repository-migrate"
+          }
+        ]
+      }
+    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -96,23 +110,6 @@
           },
           {
             "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-widgets:repository-generate"
-          }
-        ]
-      }
-    },
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/website-builder:repository-generate"
-          },
-          {
-            "command": "nx run @sps/website-builder:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/website-builder:relations:repository-migrate"
           }
         ]
       }

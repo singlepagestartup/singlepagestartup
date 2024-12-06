@@ -27,9 +27,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/host:repository-generate"
-          },
-          {
             "command": "nx run @sps/host:models:repository-migrate"
           },
           {

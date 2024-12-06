@@ -27,9 +27,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/notification:repository-generate"
-          },
-          {
             "command": "nx run @sps/notification:models:repository-migrate"
           },
           {

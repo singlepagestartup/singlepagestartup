@@ -45,9 +45,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/startup:repository-generate"
-          },
-          {
             "command": "nx run @sps/startup:models:repository-migrate"
           },
           {

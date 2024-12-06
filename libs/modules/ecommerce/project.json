@@ -13,9 +13,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/ecommerce:repository-generate"
-          },
-          {
             "command": "nx run @sps/ecommerce:models:repository-migrate"
           },
           {

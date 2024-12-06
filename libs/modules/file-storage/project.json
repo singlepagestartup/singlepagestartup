@@ -13,9 +13,6 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/file-storage:repository-generate"
-          },
-          {
             "command": "nx run @sps/file-storage:models:repository-migrate"
           },
           {
