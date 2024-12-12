@@ -1,3 +1,4 @@
+import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
@@ -7,7 +8,9 @@ export function Component(props: IComponentPropsExtended) {
       data-model="role"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className="bg-white mx-auto max-w-7xl py-16 px-4 sm:py-24 sm:px-6 lg:px-8"
-    ></div>
+      className={cn("flex flex-col", props.className)}
+    >
+      <p className="text-xs">{props.data.title}</p>
+    </div>
   );
 }

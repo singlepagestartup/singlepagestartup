@@ -20,6 +20,7 @@ export interface IComponentProps extends ISpsComponentBase {
     options?: NextRequestOptions;
   };
   className?: string;
+  fallback?: ReactNode;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

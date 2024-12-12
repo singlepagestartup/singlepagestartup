@@ -267,11 +267,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         });
 
-        console.log(
-          `🚀 ~ getCheckoutAttributes ~ priceAttribute:`,
-          priceAttribute,
-        );
-
         if (!priceAttribute) {
           throw new Error("Price attribute not found");
         }

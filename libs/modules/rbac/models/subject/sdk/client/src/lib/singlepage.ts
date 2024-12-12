@@ -557,36 +557,30 @@ export const api = {
     return useQuery<IModel>({
       queryKey: [`${route}/is-authorized`],
       queryFn: async () => {
-        try {
-          const stringifiedQuery = QueryString.stringify(props?.params, {
-            encodeValuesOnly: true,
-          });
+        const stringifiedQuery = QueryString.stringify(props?.params, {
+          encodeValuesOnly: true,
+        });
 
-          const requestOptions: NextRequestOptions = {
-            credentials: "include",
-            ...options,
-            next: {
-              ...options?.next,
-            },
-          };
+        const requestOptions: NextRequestOptions = {
+          credentials: "include",
+          ...options,
+          next: {
+            ...options?.next,
+          },
+        };
 
-          const res = await fetch(
-            `${host}${route}/is-authorized?${stringifiedQuery}`,
-            requestOptions,
-          );
+        const res = await fetch(
+          `${host}${route}/is-authorized?${stringifiedQuery}`,
+          requestOptions,
+        );
 
-          const json = await responsePipe<{ data: IModel }>({
-            res,
-          });
+        const json = await responsePipe<{ data: IModel }>({
+          res,
+        });
 
-          const transformedData = transformResponseItem<IModel>(json);
+        const transformedData = transformResponseItem<IModel>(json);
 
-          return transformedData;
-        } catch (error: any) {
-          toast.error(error.message);
-
-          throw error;
-        }
+        return transformedData;
       },
       select(data) {
         globalActionsStore.getState().addAction({

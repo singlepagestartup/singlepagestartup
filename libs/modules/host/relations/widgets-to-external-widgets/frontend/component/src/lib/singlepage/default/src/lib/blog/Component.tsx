@@ -1,6 +1,7 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as BlogWidget } from "@sps/blog/models/widget/frontend/component";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -53,13 +54,12 @@ export function Component(props: IComponentPropsExtended) {
           }
 
           return (
-            <BlogWidget
+            <ClientComponent
               key={index}
               isServer={props.isServer}
               hostUrl={props.hostUrl}
-              data={entity}
-              variant={entity.variant as any}
-            />
+              widget={entity}
+            ></ClientComponent>
           );
         });
       }}

@@ -1,10 +1,12 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
+import { Component as SubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
 import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
 import { Component as LogoutButton } from "../../../logout-button";
 import { Button } from "@sps/shared-ui-shadcn";
 import Link from "next/link";
+import { Component as Role } from "@sps/rbac/models/role/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -73,6 +75,39 @@ export function Component(props: IComponentPropsExtended) {
           });
         }}
       </SubjectsToIdentities>
+      <SubjectsToRoles
+        isServer={props.isServer}
+        hostUrl={props.hostUrl}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: props.data.id,
+                },
+              ],
+            },
+          },
+        }}
+      >
+        {({ data }) => {
+          return data?.map((subjectToRole, index) => {
+            return (
+              <Role
+                isServer={props.isServer}
+                hostUrl={props.hostUrl}
+                variant="default"
+                data={{
+                  id: subjectToRole.roleId,
+                }}
+              />
+            );
+          });
+        }}
+      </SubjectsToRoles>
       <LogoutButton
         hostUrl={props.hostUrl}
         isServer={props.isServer}

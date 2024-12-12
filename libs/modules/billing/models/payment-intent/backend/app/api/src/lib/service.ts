@@ -131,8 +131,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           action: "create";
           email: string;
           metadata: {
-            orderId: string;
             email: string;
+            paymentIntentId: string;
           };
         }
       | {
@@ -266,8 +266,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           success_url: `${STRIPE_RETURN_URL}`,
           cancel_url: `${STRIPE_RETURN_URL}`,
           metadata: {
-            orderId: props.metadata.orderId,
             email: props.metadata.email,
+            paymentIntentId: props.metadata.paymentIntentId,
           },
         });
       }
@@ -454,52 +454,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               },
             });
 
-            // if (subscription?.metadata?.["orderId"]) {
-            //   const ecommerceOrdersToBillingModulePaymentIntents =
-            //     await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
-            //       params: {
-            //         filters: {
-            //           and: [
-            //             {
-            //               column: "orderId",
-            //               method: "eq",
-            //               value: subscription.metadata["orderId"],
-            //             },
-            //           ],
-            //         },
-            //       },
-            //       options: {
-            //         headers: {
-            //           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            //         },
-            //         next: {
-            //           cache: "no-store",
-            //         },
-            //       },
-            //     });
-
-            //   if (
-            //     ecommerceOrdersToBillingModulePaymentIntents?.length &&
-            //     ecommerceOrdersToBillingModulePaymentIntents.length === 1
-            //   ) {
-            //     await paymentIntentsToInvoicesApi.create({
-            //       data: {
-            //         paymentIntentId:
-            //           ecommerceOrdersToBillingModulePaymentIntents[0]
-            //             .billingModulePaymentIntentId,
-            //         invoiceId: invoice.id,
-            //       },
-            //       options: {
-            //         headers: {
-            //           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            //         },
-            //         next: {
-            //           cache: "no-store",
-            //         },
-            //       },
-            //     });
-            //   }
-            // }
+            if (subscription?.metadata?.["paymentIntentId"]) {
+              await paymentIntentsToInvoicesApi.create({
+                data: {
+                  paymentIntentId: subscription.metadata["paymentIntentId"],
+                  invoiceId: invoice.id,
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                  next: {
+                    cache: "no-store",
+                  },
+                },
+              });
+            }
           }
 
           console.log(`🚀 ~ invoice:`, invoice);
@@ -547,7 +517,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           action: "create";
           email: string;
           metadata: {
-            orderId: string;
+            paymentIntentId: string;
           };
         }
       | {
@@ -798,7 +768,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           action: "create";
           email: string;
           metadata: {
-            orderId: string;
+            paymentIntentId: string;
           };
         }
       | {
@@ -839,7 +809,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       formData.append("currency", "USDT");
       formData.append("amountusd", `${props.entity.amount}`);
-      formData.append("BillingId", `${props.metadata.orderId}`);
+      formData.append("BillingId", `${props.metadata.paymentIntentId}`);
       formData.append("ClientId", `${props.email}`);
       formData.append("MerchantId", `${O_X_PROCESSING_SHOP_ID}`);
       formData.append("email", `${props.email}`);

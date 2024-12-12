@@ -7,6 +7,7 @@ import {
   options,
 } from "@sps/ecommerce/models/order/sdk/model";
 import { action as checkout } from "./actions/checkout";
+import { action as checkoutAttributes } from "./actions/checkout-attributes";
 
 export const api = {
   ...factory<IModel>({
@@ -16,4 +17,5 @@ export const api = {
     params: query,
   }),
   checkout,
+  checkoutAttributes,
 };

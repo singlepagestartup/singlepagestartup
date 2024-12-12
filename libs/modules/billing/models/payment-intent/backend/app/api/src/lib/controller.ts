@@ -122,8 +122,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           action: "create",
           email: data.metadata.email,
           metadata: {
-            orderId: data.metadata.orderId,
             email: data.metadata.email,
+            paymentIntentId: uuid,
           },
         });
       } else if (provider === "0xprocessing") {
@@ -137,7 +137,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           action: "create",
           email: data.metadata.email,
           metadata: {
-            orderId: data.metadata.orderId,
+            paymentIntentId: uuid,
           },
           entity,
         });

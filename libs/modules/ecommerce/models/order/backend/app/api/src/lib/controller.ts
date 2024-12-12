@@ -6,6 +6,8 @@ import { Service } from "./service";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
@@ -37,6 +39,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:uuid",
         handler: this.findById,
+      },
+      {
+        method: "GET",
+        path: "/:uuid/checkout-attributes",
+        handler: this.checkoutAttributes,
       },
       {
         method: "POST",
@@ -405,94 +412,369 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const ordersToBillingModulePaymentIntents =
-      await ordersToBillingModulePaymentIntentsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-    if (!ordersToBillingModulePaymentIntents?.length) {
-      throw new HTTPException(404, {
-        message: "Orders to billing module payment intents not found",
-      });
-    }
-
-    const paymentIntents = await billingPaymentIntentApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ordersToBillingModulePaymentIntents.map(
-                (order) => order.billingModulePaymentIntentId,
-              ),
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-cache",
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!paymentIntents?.length) {
-      throw new HTTPException(404, {
-        message: "Payment intents not found",
-      });
-    }
-
-    const paymentIntentIsSucceeded = paymentIntents.find((paymentIntent) => {
-      return paymentIntent.status === "succeeded";
-    });
-
-    if (!paymentIntentIsSucceeded) {
-      throw new HTTPException(400, {
-        message: "Payment intent is not succeeded",
-      });
-    }
-
-    const order = await api.update({
+    const entity = await this.service.findById({
       id: uuid,
+    });
+
+    if (!entity) {
+      throw new HTTPException(404, {
+        message: "Order not found",
+      });
+    }
+
+    if (entity.status === "paying") {
+      const updatedAt = new Date(entity.updatedAt).getTime();
+      const expiredPayment =
+        updatedAt < new Date(Date.now() - 1000 * 60 * 24).getTime();
+
+      if (expiredPayment) {
+        await api.update({
+          id: uuid,
+          data: {
+            ...entity,
+            status: "canceled",
+            type: "history",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+      } else {
+        const ordersToBillingModulePaymentIntents =
+          await ordersToBillingModulePaymentIntentsApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: uuid,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+
+        if (!ordersToBillingModulePaymentIntents?.length) {
+          throw new HTTPException(404, {
+            message: "Orders to billing module payment intents not found",
+          });
+        }
+
+        const paymentIntents = await billingPaymentIntentApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ordersToBillingModulePaymentIntents.map(
+                    (order) => order.billingModulePaymentIntentId,
+                  ),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-cache",
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!paymentIntents?.length) {
+          throw new HTTPException(404, {
+            message: "Payment intents not found",
+          });
+        }
+
+        const paymentIntentIsSucceeded = paymentIntents.find(
+          (paymentIntent) => {
+            return paymentIntent.status === "succeeded";
+          },
+        );
+
+        if (!paymentIntentIsSucceeded) {
+          throw new HTTPException(400, {
+            message: "Payment intent is not succeeded",
+          });
+        }
+
+        const attributes = await this.service.getCheckoutAttributes({
+          id: uuid,
+        });
+
+        await api.update({
+          id: uuid,
+          data: {
+            ...entity,
+            status:
+              attributes.type === "subscription" ? "delivering" : "approving",
+            type: "history",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+      }
+    } else if (entity.status === "delivering") {
+      const attributes = await this.service.getCheckoutAttributes({
+        id: uuid,
+      });
+
+      if (attributes.interval) {
+        const minuteIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setMinutes(
+            new Date(entity.updatedAt).getMinutes() + 1,
+          ),
+        );
+        const hourIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setHours(
+            new Date(entity.updatedAt).getHours() + 1,
+          ),
+        );
+        const dayIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setDate(
+            new Date(entity.updatedAt).getDate() + 1,
+          ),
+        );
+        const weekIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setDate(
+            new Date(entity.updatedAt).getDate() + 7,
+          ),
+        );
+        const monthIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setMonth(
+            new Date(entity.updatedAt).getMonth() + 1,
+          ),
+        );
+        const yearIntervalDeadline = new Date(
+          new Date(entity.updatedAt).setFullYear(
+            new Date(entity.updatedAt).getFullYear() + 1,
+          ),
+        );
+
+        const intervalDeadline =
+          attributes.interval === "minute"
+            ? minuteIntervalDeadline
+            : attributes.interval === "hour"
+              ? hourIntervalDeadline
+              : attributes.interval === "day"
+                ? dayIntervalDeadline
+                : attributes.interval === "week"
+                  ? weekIntervalDeadline
+                  : attributes.interval === "month"
+                    ? monthIntervalDeadline
+                    : yearIntervalDeadline;
+
+        const isExpired = new Date() > intervalDeadline;
+
+        console.log(`🚀 ~ check ~ new Date():`, new Date());
+
+        console.log(`🚀 ~ check ~ intervalDeadline:`, intervalDeadline);
+
+        console.log(`🚀 ~ check ~ isExpired:`, isExpired);
+
+        if (isExpired) {
+          const ordersToBillingModulePaymentIntents =
+            await ordersToBillingModulePaymentIntentsApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "orderId",
+                      method: "eq",
+                      value: uuid,
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+                next: {
+                  cache: "no-store",
+                },
+              },
+            });
+
+          if (!ordersToBillingModulePaymentIntents?.length) {
+            throw new HTTPException(404, {
+              message: "Orders to billing module payment intents not found",
+            });
+          }
+
+          const paymentIntents = await billingPaymentIntentApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: ordersToBillingModulePaymentIntents.map(
+                      (order) => order.billingModulePaymentIntentId,
+                    ),
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-cache",
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+
+          if (!paymentIntents?.length) {
+            throw new HTTPException(404, {
+              message: "Payment intents not found",
+            });
+          }
+
+          const paymentIntentsToInvoices =
+            await billingPaymentIntentsToInvoicesApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "paymentIntentId",
+                      method: "inArray",
+                      value: paymentIntents.map(
+                        (paymentIntent) => paymentIntent.id,
+                      ),
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+                next: {
+                  cache: "no-store",
+                },
+              },
+            });
+
+          if (!paymentIntentsToInvoices?.length) {
+            throw new HTTPException(404, {
+              message: "Payment intents to invoices not found",
+            });
+          }
+
+          const invoices = await billingInvoiceApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: paymentIntentsToInvoices.map(
+                      (paymentIntentToInvoice) =>
+                        paymentIntentToInvoice.invoiceId,
+                    ),
+                  },
+                  {
+                    column: "createdAt",
+                    method: "gt",
+                    value: new Date(intervalDeadline).toISOString(),
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+
+          console.log(`🚀 ~ check ~ invoices:`, invoices);
+
+          if (!invoices?.length) {
+            await api.update({
+              id: uuid,
+              data: {
+                ...entity,
+                status: "delivered",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+                next: {
+                  cache: "no-store",
+                },
+              },
+            });
+          }
+        }
+      }
+    }
+
+    return c.json({
       data: {
-        status: "approving",
-        type: "history",
+        ok: true,
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    });
+  }
+
+  async checkoutAttributes(c: Context, next: any): Promise<Response> {
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC secret key not found",
+      });
+    }
+
+    const uuid = c.req.param("uuid");
+
+    if (!uuid) {
+      return c.json(
+        {
+          message: "Invalid id",
         },
-        next: {
-          cache: "no-store",
+        {
+          status: 400,
         },
-      },
+      );
+    }
+
+    const attributes = await this.service.getCheckoutAttributes({
+      id: uuid,
     });
 
     return c.json({
-      data: order,
+      data: attributes,
     });
   }
 }

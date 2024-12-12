@@ -139,7 +139,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/:uuid/check",
-        handler: this.notify,
+        handler: this.check,
       },
       {
         method: "POST",
@@ -1265,24 +1265,19 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      return c.json(
-        {
-          message: "Invalid body",
+    const subjectsToEcommerceModuleOrders =
+      await subjectsToEcommerceModuleOrdersApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
         },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    if (data?.ecommerce?.order?.id) {
-      const order = await ecommerceOrderApi.findById({
-        id: data.ecommerce.order.id,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -1293,34 +1288,56 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       });
 
-      if (!order) {
-        throw new HTTPException(404, {
-          message: "No order found",
-        });
-      }
+    if (!subjectsToEcommerceModuleOrders?.length) {
+      return c.json({
+        data: {
+          ok: true,
+        },
+      });
+    }
 
-      const subjectsToEcommerceModuleOrders =
-        await subjectsToEcommerceModuleOrdersApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "ecommerceModuleOrderId",
-                  method: "eq",
-                  value: data.ecommerce.order.id,
-                },
-              ],
+    const orders = await ecommerceOrderApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: subjectsToEcommerceModuleOrders.map(
+                (item) => item.ecommerceModuleOrderId,
+              ),
             },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!orders?.length) {
+      throw new HTTPException(404, {
+        message: "No orders found",
+      });
+    }
+
+    for (const order of orders) {
+      const orderAttributes = await ecommerceOrderApi.checkoutAttributes({
+        id: order.id,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
+          next: {
+            cache: "no-store",
           },
-        });
+        },
+      });
 
       const ordersToProducts = await ecommerceOrdersToProductsApi.find({
         params: {
@@ -1329,7 +1346,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               {
                 column: "orderId",
                 method: "eq",
-                value: data.ecommerce.order.id,
+                value: order.id,
               },
             ],
           },
@@ -1434,7 +1451,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               roleToEcommerceModuleProduct.roleId,
           );
 
-          if (order.status === "approving") {
+          if (order.status === "delivering") {
             const newRolesIds = productRolesIds?.filter(
               (productRoleId) => !existingRolesIds?.includes(productRoleId),
             );
@@ -1492,22 +1509,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           }
         }
       }
-
-      console.log(`🚀 ~ check ~ data:`, data);
-    }
-
-    const entity = await this.service.findById({
-      id: uuid,
-    });
-
-    if (!entity) {
-      throw new HTTPException(404, {
-        message: "No entity found",
-      });
     }
 
     return c.json({
-      data: entity,
+      data: {
+        ok: true,
+      },
     });
   }
 
