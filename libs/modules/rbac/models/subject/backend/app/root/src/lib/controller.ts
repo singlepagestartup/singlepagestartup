@@ -41,6 +41,7 @@ import { api as ecommerceAttributeApi } from "@sps/ecommerce/models/attribute/sd
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { mainnet } from "viem/chains";
 import { createPublicClient, http } from "viem";
+import bcrypt from "bcrypt";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -109,6 +110,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/",
         handler: this.create,
+      },
+      {
+        method: "POST",
+        path: "/forgot-password",
+        handler: this.forgotPassword,
+      },
+      {
+        method: "POST",
+        path: "/reset-password",
+        handler: this.resetPassword,
       },
       {
         method: "PATCH",
@@ -381,6 +392,251 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       return c.json({
         data,
       });
+    } catch (error: any) {
+      throw new HTTPException(400, {
+        message: error.message,
+      });
+    }
+  }
+
+  async forgotPassword(c: Context, next: any): Promise<Response> {
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET not set",
+      });
+    }
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return next();
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    const identities = await identityApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "email",
+              method: "eq",
+              value: data.email,
+            },
+            {
+              column: "provider",
+              method: "eq",
+              value: "login_and_password",
+            },
+          ],
+        },
+      },
+    });
+
+    if (!identities?.length) {
+      throw new HTTPException(404, {
+        message: "No identities found",
+      });
+    }
+
+    if (identities.length > 1) {
+      throw new HTTPException(400, {
+        message: "Multiple identities found",
+      });
+    }
+
+    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "identityId",
+              method: "eq",
+              value: identities[0].id,
+            },
+          ],
+        },
+      },
+    });
+
+    if (!subjectsToIdentities?.length) {
+      throw new HTTPException(404, {
+        message: "No subjects to identities found",
+      });
+    }
+
+    const code = bcrypt.genSaltSync(10).replaceAll("/", "");
+
+    await identityApi.update({
+      id: identities[0].id,
+      data: {
+        ...identities[0],
+        code,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    await api.notify({
+      id: subjectsToIdentities[0].subjectId,
+      data: {
+        notification: {
+          notification: {
+            method: "email",
+            data: JSON.stringify({
+              code,
+            }),
+          },
+          template: {
+            variant: "reset-password-email-default",
+          },
+          topic: {
+            slug: "security",
+          },
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    try {
+      return c.json(
+        {
+          data: {
+            ok: true,
+          },
+        },
+        201,
+      );
+    } catch (error: any) {
+      throw new HTTPException(400, {
+        message: error.message,
+      });
+    }
+  }
+
+  async resetPassword(c: Context, next: any): Promise<Response> {
+    if (!RBAC_SECRET_KEY) {
+      throw new HTTPException(400, {
+        message: "RBAC_SECRET not set",
+      });
+    }
+
+    const body = await c.req.parseBody();
+
+    if (typeof body["data"] !== "string") {
+      return next();
+    }
+
+    const data = JSON.parse(body["data"]);
+
+    if (!data.code) {
+      throw new HTTPException(400, {
+        message: "No code provided",
+      });
+    }
+
+    const identities = await identityApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "code",
+              method: "eq",
+              value: data.code,
+            },
+            {
+              column: "provider",
+              method: "eq",
+              value: "login_and_password",
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!identities?.length) {
+      throw new HTTPException(404, {
+        message: "No identities found",
+      });
+    }
+
+    const identity = identities[0];
+
+    const updatedAt = new Date(identity.updatedAt).getTime();
+
+    const codeExpired = new Date().getTime() - updatedAt < 3600000;
+
+    if (!codeExpired) {
+      throw new HTTPException(400, {
+        message: "Code is expired. Resend again.",
+      });
+    }
+
+    if (!data.password) {
+      throw new HTTPException(400, {
+        message: "No password provided",
+      });
+    }
+
+    if (data.password !== data.passwordConfirmation) {
+      throw new HTTPException(400, {
+        message: "Passwords do not match",
+      });
+    }
+
+    if (!identity.salt) {
+      throw new HTTPException(400, {
+        message: "No salt found for this identity",
+      });
+    }
+
+    await identityApi.update({
+      id: identity.id,
+      data: {
+        ...identity,
+        code: null,
+        password: await bcrypt.hash(data.password, identity.salt),
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    try {
+      return c.json(
+        {
+          data: {
+            ok: true,
+          },
+        },
+        201,
+      );
     } catch (error: any) {
       throw new HTTPException(400, {
         message: error.message,
@@ -771,6 +1027,99 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
+    console.log(`🚀 ~ notify ~ data:`, data);
+
+    if (!data.notification?.notification?.method) {
+      throw new HTTPException(400, {
+        message: "No notification.notification.method provided",
+      });
+    }
+
+    if (!data.notification?.topic?.slug) {
+      throw new HTTPException(400, {
+        message: "No notification.topic.slug provided",
+      });
+    }
+
+    const topics = await notificationTopicApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "slug",
+              method: "eq",
+              value: data.notification.topic.slug,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!topics?.length) {
+      throw new HTTPException(404, {
+        message: "No topic found",
+      });
+    }
+
+    const topic = topics[0];
+
+    if (!data.notification?.template?.variant) {
+      throw new HTTPException(400, {
+        message: "No template variant provided",
+      });
+    }
+
+    if (!["email"].includes(data.notification.notification.method)) {
+      throw new HTTPException(400, {
+        message: "Invalid notification method",
+      });
+    }
+
+    const templates = await notificationTemplateApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "variant",
+              method: "eq",
+              value: data.notification.template.variant,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!templates?.length) {
+      throw new HTTPException(404, {
+        message: "No template found",
+      });
+    }
+
+    const template = templates[0];
+
+    const notifications: {
+      data: string;
+      method: string;
+      reciever: string;
+      attachments: string;
+    }[] = [];
+
     if (data.ecommerce?.order?.id) {
       const order = await ecommerceOrderApi.findById({
         id: data.ecommerce.order.id,
@@ -790,140 +1139,100 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         });
       }
 
-      if (!data.notification?.topic?.slug) {
-        throw new HTTPException(400, {
-          message: "No topic slug provided",
-        });
-      }
-
-      const topics = await notificationTopicApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "slug",
-                method: "eq",
-                value: data.notification.topic.slug,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (!topics?.length) {
-        throw new HTTPException(404, {
-          message: "No topic found",
-        });
-      }
-
-      if (!data.notification?.template?.variant) {
-        throw new HTTPException(400, {
-          message: "No template variant provided",
-        });
-      }
-
-      const templates = await notificationTemplateApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "variant",
-                method: "eq",
-                value: data.notification.template.variant,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (templates?.length) {
-        for (const identity of identities) {
+      for (const identity of identities) {
+        if (data.notification.notification.method === "email") {
           if (!identity.email) {
             continue;
           }
 
-          const notification = await notificationNotificationApi.create({
-            data: {
-              reciever: identity.email,
-              data: data.notification?.["notification"]?.["data"],
-              method: "email",
-              attachments: order?.receipt
-                ? JSON.stringify([{ type: "image", url: order.receipt }])
-                : "[]",
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
-              },
-            },
+          notifications.push({
+            ...data.notification.notification,
+            reciever: identity.email,
+            attachments: order?.receipt
+              ? JSON.stringify([{ type: "image", url: order.receipt }])
+              : "[]",
           });
-
-          if (!notification) {
+        }
+      }
+    } else {
+      for (const identity of identities) {
+        if (data.notification.notification.method === "email") {
+          if (!identity.email) {
             continue;
           }
 
-          await notificationNotificationsToTemplatesApi.create({
-            data: {
-              notificationId: notification.id,
-              templateId: templates[0].id,
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
-              },
-            },
+          notifications.push({
+            ...data.notification.notification,
+            reciever: identity.email,
+            attachments: "[]",
           });
-
-          const topicToNotification =
-            await notificationTopicsToNotificationsApi.create({
-              data: {
-                topicId: topics[0].id,
-                notificationId: notification.id,
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
-                },
-              },
-            });
         }
-
-        await notificationTopicApi.sendAll({
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
       }
+    }
+
+    for (const notification of notifications) {
+      const createdNotification = await notificationNotificationApi.create({
+        data: {
+          ...notification,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!createdNotification) {
+        continue;
+      }
+
+      await notificationNotificationsToTemplatesApi.create({
+        data: {
+          notificationId: createdNotification.id,
+          templateId: template.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      await notificationTopicsToNotificationsApi.create({
+        data: {
+          topicId: topic.id,
+          notificationId: createdNotification.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+    }
+
+    try {
+      await notificationTopicApi.sendAll({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error(`~ notify ~ error:`, error);
     }
 
     const entity = await this.service.findById({

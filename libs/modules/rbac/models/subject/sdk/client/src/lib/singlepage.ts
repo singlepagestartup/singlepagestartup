@@ -26,6 +26,14 @@ import { Address, Hex } from "viem";
 import { api as serverApi } from "../../../server";
 import { IExtendedModel as IEcommerceProductCheckoutResult } from "../../../server/src/lib/actions/ecommerce-products-checkout";
 import { IExtendedModel as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-orders-create";
+import {
+  IActionProps as IForgotPasswordProps,
+  IResult as IForgotPasswordResult,
+} from "../../../server/src/lib/actions/forgot-password";
+import {
+  IActionProps as IResetPasswordProps,
+  IResult as IResetPasswordResult,
+} from "../../../server/src/lib/actions/reset-password";
 import { IExtendedModel as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
 
 export interface IMeProps {
@@ -769,6 +777,86 @@ export const api = {
       },
       ...props?.reactQueryOptions,
     });
+  },
+  forgotPassword: (props: {
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<
+      IForgotPasswordResult,
+      DefaultError,
+      IForgotPasswordProps
+    >({
+      mutationKey: [`${route}/forgot-password`],
+      mutationFn: async (mutationFunctionProps: IForgotPasswordProps) => {
+        try {
+          const result = serverApi.forgotPassword({
+            ...mutationFunctionProps,
+          });
+
+          return result;
+        } catch (error: any) {
+          toast.error(error.message);
+
+          throw error;
+        }
+      },
+      onSuccess(data) {
+        globalActionsStore.getState().addAction({
+          type: "mutation",
+          name: `${route}/forgot-password`,
+          props: this,
+          result: data,
+          timestamp: Date.now(),
+          requestId: createId(),
+        });
+
+        return data;
+      },
+      ...props?.reactQueryOptions,
+    });
+  },
+  resetPassword: (props: {
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  }) => {
+    return useMutation<IResetPasswordResult, DefaultError, IResetPasswordProps>(
+      {
+        mutationKey: [`${route}/reset-password`],
+        mutationFn: async (mutationFunctionProps: IResetPasswordProps) => {
+          try {
+            const result = serverApi.resetPassword({
+              ...mutationFunctionProps,
+            });
+
+            return result;
+          } catch (error: any) {
+            toast.error(error.message);
+
+            throw error;
+          }
+        },
+        onSuccess(data) {
+          globalActionsStore.getState().addAction({
+            type: "mutation",
+            name: `${route}/reset-password`,
+            props: this,
+            result: data,
+            timestamp: Date.now(),
+            requestId: createId(),
+          });
+
+          return data;
+        },
+        ...props?.reactQueryOptions,
+      },
+    );
   },
   ecommerceOrdersUpdate: (props: {
     id: string;

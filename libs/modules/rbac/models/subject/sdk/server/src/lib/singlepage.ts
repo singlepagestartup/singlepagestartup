@@ -17,6 +17,9 @@ import { action as ecommerceOrdersCheckout } from "./actions/ecommerce-orders-ch
 import { action as identitiesUpdate } from "./actions/identities-update";
 import { action as identitiesCreate } from "./actions/identities-create";
 import { action as identitiesDelete } from "./actions/identities-delete";
+import { action as forgotPassword } from "./actions/forgot-password";
+import { action as resetPassword } from "./actions/reset-password";
+import { action as notify } from "./actions/notify";
 
 export const api = {
   ...factory<IModel>({
@@ -36,4 +39,7 @@ export const api = {
   ecommerceOrdersDelete,
   ecommerceOrdersCheckout,
   ecommerceOrdersCreate,
+  forgotPassword,
+  resetPassword,
+  notify,
 };

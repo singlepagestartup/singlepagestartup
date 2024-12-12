@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { id, injectable } from "inversify";
+import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/identity/backend/repository/database";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
@@ -43,6 +43,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 method: "eq",
                 value: props.data.login.toLowerCase(),
               },
+              {
+                column: "provider",
+                method: "eq",
+                value: "login_and_password",
+              },
             ],
           },
         },
@@ -68,6 +73,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         data: {
           email: props.data.login.toLowerCase(),
           password: saltedPassword,
+          provider: "login_and_password",
           salt,
         },
         options: {
@@ -91,6 +97,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               column: "email",
               method: "eq",
               value: props.data.login.toLowerCase(),
+            },
+            {
+              column: "provider",
+              method: "eq",
+              value: "login_and_password",
             },
           ],
         },
@@ -128,12 +139,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Invalid credentials");
     }
 
+    if (identity.code) {
+      await api.update({
+        id: identity.id,
+        data: {
+          ...identity,
+          code: null,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+    }
+
     return identity;
   }
 
   async changePassword(props: IChangePassword): Promise<IModel> {
-    console.log(`🚀 ~ changePassword ~ props:`, props);
-
     if (!RBAC_SECRET_KEY) {
       throw new Error("RBAC_SECRET_KEY is not defined in the service");
     }

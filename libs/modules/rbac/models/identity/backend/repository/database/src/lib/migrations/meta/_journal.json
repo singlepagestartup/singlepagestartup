@@ -15,6 +15,13 @@
       "when": 1732917587072,
       "tag": "0001_brave_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733951395973,
+      "tag": "0002_reflective_george_stacy",
+      "breakpoints": true
     }
   ]
 }

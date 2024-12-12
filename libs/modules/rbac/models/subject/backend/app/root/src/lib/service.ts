@@ -1187,6 +1187,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                     variant: "order-status-changed-to-paid",
                   },
                   notification: {
+                    method: "email",
                     data: JSON.stringify({
                       title: "Order status updated",
                       subject: "Order status updated",
@@ -1209,43 +1210,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    await broadcastChannelApi.pushMessage({
-      data: {
-        channelName: "observer",
-        payload: JSON.stringify({
-          action: {
-            type: "request",
-            method: "PATCH",
-            url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-          },
-          callback: {
-            type: "request",
-            method: "POST",
-            url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            body: {
-              data: {
-                ecommerce: {
-                  order: {
-                    id: updatedOrder.id,
-                  },
-                },
-              },
-            },
-          },
-        }),
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
+    // await broadcastChannelApi.pushMessage({
+    //   data: {
+    //     channelName: "observer",
+    //     payload: JSON.stringify({
+    //       action: {
+    //         type: "request",
+    //         method: "PATCH",
+    //         url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+    //       },
+    //       callback: {
+    //         type: "request",
+    //         method: "POST",
+    //         url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
+    //         headers: {
+    //           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    //         },
+    //         body: {
+    //           data: {
+    //             ecommerce: {
+    //               order: {
+    //                 id: updatedOrder.id,
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     }),
+    //   },
+    //   options: {
+    //     headers: {
+    //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    //     },
+    //     next: {
+    //       cache: "no-store",
+    //     },
+    //   },
+    // });
 
     return {
       ...entity,

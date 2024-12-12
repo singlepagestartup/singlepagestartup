@@ -173,8 +173,6 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecord;
     } catch (error: any) {
-      console.error(error);
-
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
       }
@@ -397,7 +395,11 @@ export class Database<T extends PgTableWithColumns<any>>
         },
       );
 
-      if (filledFilters) {
+      /**
+       * For temporary purposes, old projects doesn't have slug in widgets, that throws error
+       * Slug will be required for widgets and website-builder models
+       */
+      if (filledFilters && filledFilters.every((f) => f.value)) {
         const filteredEntities = await this.find({
           params: {
             filters: {

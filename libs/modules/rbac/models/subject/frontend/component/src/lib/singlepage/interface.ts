@@ -19,6 +19,8 @@ import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profil
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default";
 import { IComponentProps as IIdentitiesUpdateDefaultComponentProps } from "./identities-update-default";
 import { IComponentProps as IIdentitiesCreateDefaultComponentProps } from "./identities-create-default";
+import { IComponentProps as IForgotPasswordComponentProps } from "./forgot-password";
+import { IComponentProps as IResetPasswordComponentProps } from "./reset-password";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -42,4 +44,6 @@ export type IComponentProps =
   | IIdentitiesUpdateDefaultComponentProps
   | IIdentitiesCreateDefaultComponentProps
   | IEcommerceProductCartComponentProps
+  | IForgotPasswordComponentProps
+  | IResetPasswordComponentProps
   | never;

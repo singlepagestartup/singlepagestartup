@@ -4,13 +4,17 @@ import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
 import { AWS } from "@sps/shared-third-parties";
 import { api } from "@sps/notification/models/notification/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { AWS_SES_FROM_EMAIL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  async provider(props: { provider: "email"; id: string }) {
+  async provider(props: {
+    method: "email";
+    provider: "Amazon SES";
+    id: string;
+  }) {
     try {
       if (!RBAC_SECRET_KEY) {
         throw new Error("Secret key not found");
@@ -54,37 +58,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Template not found");
       }
 
-      const attachments: { type: "image"; url: string }[] =
-        JSON.parse(entity.attachments || "[]") || [];
+      if (entity.method === "email") {
+        if (props.provider === "Amazon SES") {
+          if (!AWS_SES_FROM_EMAIL) {
+            throw new Error("AWS SES from email not found");
+          }
 
-      const renderResult = await templateApi.render({
-        id: notificationToTemplates[0].templateId,
-        data: entity.data ? JSON.parse(entity.data) : {},
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
+          const attachments: { type: "image"; url: string }[] =
+            JSON.parse(entity.attachments || "[]") || [];
 
-      // console.log(`🚀 ~ provider ~ renderResult:`, renderResult);
+          const renderResult = await templateApi.render({
+            id: notificationToTemplates[0].templateId,
+            data: entity.data ? JSON.parse(entity.data) : {},
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
 
-      if (!renderResult) {
-        throw new Error("Template not rendered");
+          if (!renderResult) {
+            throw new Error("Template not rendered");
+          }
+
+          const aws = new AWS();
+
+          await aws.ses.sendEmail({
+            to: entity.reciever,
+            subject: entity.title || "Notification from Single Page Startup",
+            html: renderResult,
+            from: AWS_SES_FROM_EMAIL,
+            filePaths: attachments.map((attachment) => attachment.url),
+          });
+        }
       }
-
-      const aws = new AWS();
-
-      await aws.ses.sendEmail({
-        to: entity.reciever,
-        subject: entity.title || "Notification from Single Page Startup",
-        html: renderResult,
-        from: "no-reply@mail.singlepagestartup.com",
-        filePaths: attachments.map((attachment) => attachment.url),
-      });
 
       await this.update({
         id: entity.id,
@@ -141,7 +151,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (notification.method === "email") {
       return await this.provider({
-        provider: "email",
+        method: notification.method,
+        provider: "Amazon SES",
         id: params.id,
       });
     }
