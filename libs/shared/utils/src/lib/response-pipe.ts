@@ -18,7 +18,7 @@ async function util<T>(props: {
 
     if (json.data) {
       if ("catchErrors" in props && props.catchErrors) {
-        console.error(json);
+        console.error(props, json);
 
         return undefined;
       } else {
@@ -35,7 +35,7 @@ async function util<T>(props: {
       );
 
       if ("catchErrors" in props && props.catchErrors) {
-        console.error(`${requestError.message} | ${requestError}`);
+        console.error(`${props} | ${requestError.message} | ${requestError}`);
 
         return;
       } else {
@@ -48,7 +48,7 @@ async function util<T>(props: {
 
   if (json.error) {
     if ("catchErrors" in props && props.catchErrors) {
-      console.error(json.error);
+      console.error(props, json.error);
 
       return;
     } else {

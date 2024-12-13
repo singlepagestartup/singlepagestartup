@@ -6,6 +6,7 @@ import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-sele
 import { IComponentProps as IDefaultComponentProps } from "./default";
 import { IComponentProps as IArticlesListDefaultComponentProps } from "./articles-list-default";
 import { IComponentProps as IArticleOverviewDefaultComponentProps } from "./article-overview-default";
+import { IComponentProps as IArticleOverviewWithPrivateContentDefaultComponentProps } from "./article-overview-with-private-content-default";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -16,4 +17,5 @@ export type IComponentProps =
   | IDefaultComponentProps
   | IArticlesListDefaultComponentProps
   | IArticleOverviewDefaultComponentProps
+  | IArticleOverviewWithPrivateContentDefaultComponentProps
   | never;

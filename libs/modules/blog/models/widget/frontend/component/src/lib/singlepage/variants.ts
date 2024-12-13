@@ -6,6 +6,7 @@ import { Component as AdminSelectInput } from "./admin-select-input";
 import { Component as Default } from "./default";
 import { Component as ArticlesListDefault } from "./articles-list-default";
 import { Component as ArticleOverviewDefault } from "./article-overview-default";
+import { Component as ArticleOverviewWithPrivateContentDefault } from "./article-overview-with-private-content-default";
 
 export const variants = {
   find: Find,
@@ -16,4 +17,6 @@ export const variants = {
   default: Default,
   "articles-list-default": ArticlesListDefault,
   "article-overview-default": ArticleOverviewDefault,
+  "article-overview-with-private-content-default":
+    ArticleOverviewWithPrivateContentDefault,
 };

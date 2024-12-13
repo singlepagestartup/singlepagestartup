@@ -1,15 +1,15 @@
-import { IComponentPropsExtended } from "../interface";
-import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as ProductAction } from "./product-action/Component";
+import { Component as Article } from "@sps/blog/models/article/frontend/component";
 import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as ClientComponent } from "./ClientComponent";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: ISpsComponentBase) {
   return (
     <Page
       isServer={props.isServer}
       hostUrl={props.hostUrl}
       variant="url-segment-value"
-      segment="ecommerce.products.id"
+      segment="blog.articles.id"
     >
       {({ data }) => {
         if (!data) {
@@ -17,7 +17,7 @@ export function Component(props: IComponentPropsExtended) {
         }
 
         return (
-          <Product
+          <Article
             isServer={props.isServer}
             hostUrl={props.hostUrl}
             variant="find"
@@ -36,29 +36,31 @@ export function Component(props: IComponentPropsExtended) {
             }}
           >
             {({ data }) => {
-              if (!data) {
-                return;
-              }
-
-              return data.map((entity, index) => {
+              return data?.map((entity, index) => {
                 return (
-                  <Product
+                  <Article
                     key={index}
                     isServer={props.isServer}
                     hostUrl={props.hostUrl}
-                    variant="overview-default"
+                    variant="overview-with-private-content-default"
                     data={entity}
                   >
-                    <ProductAction
+                    <Article
                       isServer={props.isServer}
                       hostUrl={props.hostUrl}
-                      product={entity}
+                      data={entity}
+                      variant="default"
                     />
-                  </Product>
+                    <ClientComponent
+                      isServer={props.isServer}
+                      hostUrl={props.hostUrl}
+                      data={entity}
+                    />
+                  </Article>
                 );
               });
             }}
-          </Product>
+          </Article>
         );
       }}
     </Page>

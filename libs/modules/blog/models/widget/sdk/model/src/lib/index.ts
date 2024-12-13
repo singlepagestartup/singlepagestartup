@@ -11,6 +11,7 @@ export const variants = [
   "default",
   "articles-list-default",
   "article-overview-default",
+  "article-overview-with-private-content-default",
 ] as const;
 export const host = BACKEND_URL;
 export const query = {};

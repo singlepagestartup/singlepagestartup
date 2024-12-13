@@ -1,8 +1,8 @@
-import { IComponentPropsExtended } from "../interface";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as ProductAction } from "./product-action/Component";
+import { Component as ProductAction } from "../product-action/Component";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: ISpsComponentBase) {
   return (
     <Product isServer={props.isServer} hostUrl={props.hostUrl} variant="find">
       {({ data }) => {

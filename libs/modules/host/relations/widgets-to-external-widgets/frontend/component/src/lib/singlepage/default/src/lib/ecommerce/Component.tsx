@@ -1,9 +1,9 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
-import { Component as ProductsList } from "./ProductsList";
-import { Component as StoresList } from "./StoresList";
-import { Component as ProductOverview } from "./ProductOverview";
-import { Component as CategoryOverview } from "./CategoryOverview";
+import { Component as ProductsList } from "./products-list/Component";
+import { Component as StoresList } from "./stores-list/Component";
+import { Component as ProductOverview } from "./product-overview/Component";
+import { Component as CategoryOverview } from "./category-overview/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -36,16 +36,25 @@ export function Component(props: IComponentPropsExtended) {
               data={entity}
             >
               {entity.variant.includes("products-list") ? (
-                <ProductsList {...props} />
+                <ProductsList
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                />
               ) : null}
               {entity.variant.includes("stores-list") ? (
-                <StoresList {...props} />
+                <StoresList isServer={props.isServer} hostUrl={props.hostUrl} />
               ) : null}
               {entity.variant.includes("product-overview") ? (
-                <ProductOverview {...props} />
+                <ProductOverview
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                />
               ) : null}
               {entity.variant.includes("category-overview") ? (
-                <CategoryOverview {...props} />
+                <CategoryOverview
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                />
               ) : null}
             </EcommerceWidget>
           );

@@ -1,10 +1,10 @@
 "use client";
 
-import { IComponentPropsExtended } from "../interface";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: ISpsComponentBase) {
   return (
     <RbacSubject isServer={false} hostUrl={props.hostUrl} variant="me">
       {({ data: subject }) => {

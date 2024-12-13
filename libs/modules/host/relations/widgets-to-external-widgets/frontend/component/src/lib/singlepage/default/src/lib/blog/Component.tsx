@@ -1,7 +1,8 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as BlogWidget } from "@sps/blog/models/widget/frontend/component";
-import { Component as Page } from "@sps/host/models/page/frontend/component";
-import { Component as ClientComponent } from "./ClientComponent";
+import { Component as ArticlesList } from "./articles-list/Component";
+import { Component as ArticleOverviewWithPrivateContent } from "./article-overview-with-private-content/Component";
+import { Component as ArticleOverview } from "./article-overview/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -25,41 +26,34 @@ export function Component(props: IComponentPropsExtended) {
     >
       {({ data }) => {
         return data?.map((entity, index) => {
-          if (entity.variant === "article-overview-default") {
-            return (
-              <Page
-                key={index}
-                isServer={props.isServer}
-                hostUrl={props.hostUrl}
-                variant="url-segment-value"
-                segment="blog.articles.id"
-              >
-                {({ data }) => {
-                  if (!data) {
-                    return;
-                  }
-
-                  return (
-                    <BlogWidget
-                      isServer={props.isServer}
-                      hostUrl={props.hostUrl}
-                      variant="article-overview-default"
-                      id={data}
-                      data={entity}
-                    />
-                  );
-                }}
-              </Page>
-            );
-          }
-
           return (
-            <ClientComponent
+            <BlogWidget
               key={index}
               isServer={props.isServer}
               hostUrl={props.hostUrl}
-              widget={entity}
-            ></ClientComponent>
+              variant={entity.variant as any}
+              data={entity}
+            >
+              {entity.variant.includes("articles-list") ? (
+                <ArticlesList
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                />
+              ) : null}
+              {entity.variant.includes("article-overview") ? (
+                entity.variant.includes("with-private-content") ? (
+                  <ArticleOverviewWithPrivateContent
+                    isServer={props.isServer}
+                    hostUrl={props.hostUrl}
+                  />
+                ) : (
+                  <ArticleOverview
+                    isServer={props.isServer}
+                    hostUrl={props.hostUrl}
+                  />
+                )
+              ) : null}
+            </BlogWidget>
           );
         });
       }}

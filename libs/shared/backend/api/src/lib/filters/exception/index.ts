@@ -14,21 +14,21 @@ export class Filter implements IFilter {
     error: Error | HTTPResponseError,
     c: Context<any>,
   ): Response | Promise<Response> {
-    console.error("Exception Filter | ", error.message);
+    console.error("Exception Filter | ", c.req.url, error.message);
 
     if (error instanceof HTTPException) {
       try {
         const parsedError = JSON.parse(error.message);
         return c.json(
           {
-            data: parsedError,
+            data: `${c.req.url} | ` + parsedError,
           },
           error.status,
         );
       } catch (e) {
         return c.json(
           {
-            data: error.message,
+            data: `${c.req.url} | ` + error.message,
           },
           error.status,
         );
@@ -38,14 +38,14 @@ export class Filter implements IFilter {
         const parsedError = JSON.parse(error.message);
         return c.json(
           {
-            data: parsedError,
+            data: `${c.req.url} | ` + parsedError,
           },
           500,
         );
       } catch (e) {
         return c.json(
           {
-            data: error.message,
+            data: `${c.req.url} | ` + error.message,
           },
           500,
         );

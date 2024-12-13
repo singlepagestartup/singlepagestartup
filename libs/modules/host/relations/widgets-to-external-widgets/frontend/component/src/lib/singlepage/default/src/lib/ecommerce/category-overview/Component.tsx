@@ -1,23 +1,34 @@
-import { IComponentPropsExtended } from "../interface";
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as ProductAction } from "./product-action/Component";
+import { Component as ProductAction } from "../product-action/Component";
+import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
+import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: ISpsComponentBase) {
   return (
-    <Store isServer={props.isServer} hostUrl={props.hostUrl} variant="find">
+    <Page
+      isServer={props.isServer}
+      hostUrl={props.hostUrl}
+      variant="url-segment-value"
+      segment="ecommerce.categories.id"
+    >
       {({ data }) => {
-        return data?.map((entity, index) => {
-          return (
-            <Store
-              key={index}
-              isServer={props.isServer}
-              hostUrl={props.hostUrl}
-              variant="default"
-              data={entity}
-            >
-              <StoresToProducts
+        if (!data) {
+          return;
+        }
+
+        return (
+          <Category
+            isServer={props.isServer}
+            hostUrl={props.hostUrl}
+            variant="overview-default"
+            data={{
+              id: data,
+            }}
+          >
+            <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <CategoriesToProducts
                 isServer={props.isServer}
                 hostUrl={props.hostUrl}
                 variant="find"
@@ -26,9 +37,9 @@ export function Component(props: IComponentPropsExtended) {
                     filters: {
                       and: [
                         {
-                          column: "storeId",
+                          column: "categoryId",
                           method: "eq",
-                          value: entity.id,
+                          value: data,
                         },
                       ],
                     },
@@ -36,7 +47,7 @@ export function Component(props: IComponentPropsExtended) {
                 }}
               >
                 {({ data }) => {
-                  return data?.map((storeToProduct, index) => {
+                  return data?.map((entity, index) => {
                     return (
                       <Product
                         key={index}
@@ -50,7 +61,7 @@ export function Component(props: IComponentPropsExtended) {
                                 {
                                   column: "id",
                                   method: "eq",
-                                  value: storeToProduct.productId,
+                                  value: entity.productId,
                                 },
                               ],
                             },
@@ -58,19 +69,23 @@ export function Component(props: IComponentPropsExtended) {
                         }}
                       >
                         {({ data }) => {
-                          return data?.map((product, index) => {
+                          if (!data) {
+                            return;
+                          }
+
+                          return data.map((entity, index) => {
                             return (
                               <Product
                                 key={index}
                                 isServer={props.isServer}
                                 hostUrl={props.hostUrl}
                                 variant="default"
-                                data={product}
+                                data={entity}
                               >
                                 <ProductAction
                                   isServer={props.isServer}
                                   hostUrl={props.hostUrl}
-                                  product={product}
+                                  product={entity}
                                 />
                               </Product>
                             );
@@ -80,11 +95,11 @@ export function Component(props: IComponentPropsExtended) {
                     );
                   });
                 }}
-              </StoresToProducts>
-            </Store>
-          );
-        });
+              </CategoriesToProducts>
+            </div>
+          </Category>
+        );
       }}
-    </Store>
+    </Page>
   );
 }
