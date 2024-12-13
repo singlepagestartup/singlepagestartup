@@ -467,7 +467,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     const code = bcrypt.genSaltSync(10).replaceAll("/", "");
 
-    await identityApi.update({
+    const identity = await identityApi.update({
       id: identities[0].id,
       data: {
         ...identities[0],
@@ -483,6 +483,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
     });
 
+    if (!identity) {
+      throw new HTTPException(400, {
+        message: "Could not update identity",
+      });
+    }
+
     await api.notify({
       id: subjectsToIdentities[0].subjectId,
       data: {
@@ -490,11 +496,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           notification: {
             method: "email",
             data: JSON.stringify({
-              code,
+              rbac: {
+                identity,
+              },
             }),
           },
           template: {
-            variant: "reset-password-email-default",
+            variant: "reset-password",
           },
           topic: {
             slug: "security",

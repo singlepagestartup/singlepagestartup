@@ -1,7 +1,7 @@
-import { Component as OrderStatusChangedToPaid } from "./order-status-changed-to-paid";
-import { Component as ResetPasswordEmailDefault } from "./reset-password-email-default";
+import { Component as OrderStatusChanged } from "./order-status-changed";
+import { Component as ResetPassword } from "./reset-password";
 
 export const variants = {
-  "order-status-changed-to-paid": OrderStatusChangedToPaid,
-  "reset-password-email-default": ResetPasswordEmailDefault,
+  "order-status-changed": OrderStatusChanged,
+  "reset-password": ResetPassword,
 };

@@ -1156,48 +1156,74 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("No updated order found");
     }
 
+    const checkoutAttributes = await ecommerceOrderApi.checkoutAttributes({
+      id: props.orderId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
     await broadcastChannelApi.pushMessage({
       data: {
         channelName: "observer",
         payload: JSON.stringify({
-          action: {
+          trigger: {
             type: "request",
             method: "PATCH",
             url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
           },
-          callback: {
-            type: "request",
-            method: "POST",
-            url: `${HOST_URL}/api/rbac/subjects/${props.id}/notify`,
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          pipe: [
+            {
+              type: "request",
+              method: "GET",
+              url: `${HOST_URL}/api/rbac/orders/${updatedOrder.id}`,
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
             },
-            body: {
-              data: {
-                ecommerce: {
-                  order: {
-                    id: updatedOrder.id,
-                  },
-                },
-                notification: {
-                  topic: {
-                    slug: "information",
-                  },
-                  template: {
-                    variant: "order-status-changed-to-paid",
+            {
+              type: "request",
+              method: "POST",
+              url: `${HOST_URL}/api/rbac/subjects/${props.id}/notify`,
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              body: {
+                data: {
+                  ecommerce: {
+                    order: {
+                      id: updatedOrder.id,
+                    },
                   },
                   notification: {
-                    method: "email",
-                    data: JSON.stringify({
-                      title: "Order status updated",
-                      subject: "Order status updated",
-                      id: updatedOrder.id,
-                    }),
+                    topic: {
+                      slug: "information",
+                    },
+                    template: {
+                      variant: "order-status-changed",
+                    },
+                    notification: {
+                      method: "email",
+                      data: JSON.stringify({
+                        ecommerce: {
+                          order: {
+                            ...updatedOrder,
+                            status: "[triggerResult.data.status]",
+                            checkoutAttributes,
+                          },
+                        },
+                      }),
+                    },
                   },
                 },
               },
             },
-          },
+          ],
         }),
       },
       options: {
@@ -1214,19 +1240,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       data: {
         channelName: "observer",
         payload: JSON.stringify({
-          action: {
+          trigger: {
             type: "request",
             method: "PATCH",
             url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
           },
-          callback: {
-            type: "request",
-            method: "POST",
-            url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          pipe: [
+            {
+              type: "request",
+              method: "POST",
+              url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
             },
-          },
+          ],
         }),
       },
       options: {

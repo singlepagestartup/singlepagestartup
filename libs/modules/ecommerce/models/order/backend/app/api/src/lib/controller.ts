@@ -281,19 +281,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         data: {
           channelName: "observer",
           payload: JSON.stringify({
-            action: {
+            trigger: {
               type: "request",
               method: "POST",
               url: `${HOST_URL}/api/billing/payment-intents/${provider}/webhook`,
             },
-            callback: {
-              type: "request",
-              method: "POST",
-              url: `${HOST_URL}/api/ecommerce/orders/${uuid}/check`,
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            pipe: [
+              {
+                type: "request",
+                method: "POST",
+                url: `${HOST_URL}/api/ecommerce/orders/${uuid}/check`,
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
               },
-            },
+            ],
           }),
         },
         options: {

@@ -1,9 +1,9 @@
-export const variant = "order-status-changed-to-paid" as const;
+export const variant = "reset-password" as const;
 
 export interface IComponentProps {
   variant: typeof variant;
   data: {
-    id: string;
+    code: string;
   };
 }
 

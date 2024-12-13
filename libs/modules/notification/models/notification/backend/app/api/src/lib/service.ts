@@ -67,8 +67,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           const attachments: { type: "image"; url: string }[] =
             JSON.parse(entity.attachments || "[]") || [];
 
-          const renderResult = await templateApi.render({
+          const template = await templateApi.findById({
             id: notificationToTemplates[0].templateId,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+
+          if (!template) {
+            throw new Error("Template not found");
+          }
+
+          const renderResult = await templateApi.render({
+            id: template.id,
             data: entity.data ? JSON.parse(entity.data) : {},
             options: {
               headers: {
@@ -88,7 +104,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
           await aws.ses.sendEmail({
             to: entity.reciever,
-            subject: entity.title || "Notification from Single Page Startup",
+            subject:
+              entity.title ||
+              template.title ||
+              "Notification from Single Page Startup",
             html: renderResult,
             from: AWS_SES_FROM_EMAIL,
             filePaths: attachments.map((attachment) => attachment.url),

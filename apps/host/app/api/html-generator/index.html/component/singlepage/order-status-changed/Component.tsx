@@ -6,12 +6,17 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <>
       <Head />
-      <Preview>Order Status Is Changed To Paid</Preview>
+      <Preview>
+        Order Status Is Changed To {props.data.ecommerce.order.status}
+      </Preview>
 
       <Body>
         <Container>
-          <Text>Order Id: {props.data.id}</Text>
-          <Text>Status: Paid</Text>
+          <Text>Order Id: {props.data.ecommerce.order.id}</Text>
+          <Text>Status: {props.data.ecommerce.order.status}</Text>
+          <Text>
+            Amount: {props.data.ecommerce.order.checkoutAttributes.amount}
+          </Text>
           <Text>Component payload: {JSON.stringify(props)}</Text>
         </Container>
       </Body>

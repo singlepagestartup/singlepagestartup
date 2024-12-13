@@ -1,6 +1,6 @@
-import { IComponentProps as IOrderStatusChangedToPaidComponentProps } from "./order-status-changed-to-paid";
-import { IComponentProps as IResetPasswordEmailDefaultComponentProps } from "./reset-password-email-default";
+import { IComponentProps as IOrderStatusChangedComponentProps } from "./order-status-changed";
+import { IComponentProps as IResetPasswordComponentProps } from "./reset-password";
 
 export type IComponentProps =
-  | IOrderStatusChangedToPaidComponentProps
-  | IResetPasswordEmailDefaultComponentProps;
+  | IOrderStatusChangedComponentProps
+  | IResetPasswordComponentProps;
