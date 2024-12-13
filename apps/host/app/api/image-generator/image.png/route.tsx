@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ParentComponent } from "./component";
+import pako from "pako";
 
 const fontsURLs: {
   [key in "Default" | "Primary"]: {
@@ -338,6 +339,18 @@ export const GET = async (request: NextRequest) => {
       ? Number(parsedParams["height"])
       : 512;
 
+    let data;
+
+    if (typeof parsedParams.data === "string") {
+      const decodedBuffer = Buffer.from(parsedParams.data, "base64");
+
+      const uint8Array = new Uint8Array(decodedBuffer);
+
+      const inflatedData = pako.inflate(uint8Array, { to: "string" });
+
+      data = JSON.parse(inflatedData);
+    }
+
     const fonts: {
       name: string;
       data: Buffer | ArrayBuffer;
@@ -368,11 +381,14 @@ export const GET = async (request: NextRequest) => {
       }
     }
 
-    return new ImageResponse(createElement(Component, parsedParams as any), {
-      width,
-      height,
-      fonts,
-    });
+    return new ImageResponse(
+      createElement(Component, { ...parsedParams, data } as any),
+      {
+        width,
+        height,
+        fonts,
+      },
+    );
   } catch (error: any) {
     return NextResponse.json(
       {

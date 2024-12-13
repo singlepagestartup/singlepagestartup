@@ -2,12 +2,17 @@ import "reflect-metadata";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/template/backend/repository/database";
-import { BACKEND_URL } from "@sps/shared-utils";
+import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import QueryString from "qs";
+import pako from "pako";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async render(params: { id: string; type: "html"; payload?: any }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Secret key not found");
+    }
+
     if (!BACKEND_URL) {
       throw new Error("Backend URL not found");
     }
@@ -21,10 +26,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (params.type === "html") {
+      let queryData: undefined | string;
+
+      if (params?.payload) {
+        const deflatedData = pako.deflate(JSON.stringify(params.payload));
+
+        const stringifiedData = Buffer.from(deflatedData).toString("base64");
+
+        queryData = stringifiedData;
+      }
+
       const query = QueryString.stringify(
         {
           variant: template.variant,
-          data: params?.payload,
+          data: queryData,
         },
         {
           encodeValuesOnly: true,
@@ -33,6 +48,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const data = await fetch(
         BACKEND_URL + "/api/html-generator/index.html?" + query,
+        {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
       ).then((res) => res.text());
 
       return data;

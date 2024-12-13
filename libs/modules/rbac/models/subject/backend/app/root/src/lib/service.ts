@@ -29,6 +29,9 @@ import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/eco
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
+import { userStories } from "@sps/sps-business-logic";
+import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
+import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 
 export interface IRegistrationLoginAndPasswordDTO {
   type: "registration";
@@ -1156,6 +1159,64 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("No updated order found");
     }
 
+    const ordersToProducts = await ordersToProductsApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: updatedOrder.id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!ordersToProducts?.length) {
+      throw new HTTPException(404, {
+        message: "Orders to products not found",
+      });
+    }
+
+    const products = await productApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ordersToProducts.map(
+                (orderToProduct) => orderToProduct.productId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!products?.length) {
+      throw new HTTPException(404, {
+        message: "Products not found",
+      });
+    }
+
     const checkoutAttributes = await ecommerceOrderApi.checkoutAttributes({
       id: props.orderId,
       options: {
@@ -1205,7 +1266,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                       slug: "information",
                     },
                     template: {
-                      variant: "order-status-changed",
+                      variant:
+                        userStories.subjectCreateOrder.afterInvoiceCreated
+                          .notification.template.variant,
                     },
                     notification: {
                       method: "email",
@@ -1215,6 +1278,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                             ...updatedOrder,
                             status: "[triggerResult.data.status]",
                             checkoutAttributes,
+                            ordersToProducts: ordersToProducts.map(
+                              (orderToProduct) => {
+                                return {
+                                  ...orderToProduct,
+                                  product: products.find(
+                                    (product) =>
+                                      product.id === orderToProduct.productId,
+                                  ),
+                                };
+                              },
+                            ),
                           },
                         },
                       }),

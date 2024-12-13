@@ -1035,8 +1035,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    console.log(`🚀 ~ notify ~ data:`, data);
-
     if (!data.notification?.notification?.method) {
       throw new HTTPException(400, {
         message: "No notification.notification.method provided",

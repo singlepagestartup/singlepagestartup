@@ -18,6 +18,16 @@ export function Component(props: IComponentPropsExtended) {
             Amount: {props.data.ecommerce.order.checkoutAttributes.amount}
           </Text>
           <Text>Component payload: {JSON.stringify(props)}</Text>
+          {props.data.ecommerce.order.ordersToProducts.map(
+            (orderToProduct, index) => {
+              return (
+                <Text key={index}>
+                  {orderToProduct.product.title} Quantity:{" "}
+                  {orderToProduct.quantity}
+                </Text>
+              );
+            },
+          )}
         </Container>
       </Body>
     </>

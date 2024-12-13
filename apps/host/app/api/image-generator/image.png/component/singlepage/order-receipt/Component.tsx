@@ -33,7 +33,39 @@ export function Component(props: IComponentPropsExtended) {
             fontSize: "1rem",
           }}
         >
-          {props.data.id ?? "id"}
+          {props.data.ecommerce.order.id}
+        </p>
+        {props.data.ecommerce.order.ordersToProducts.map(
+          (orderToProduct, index) => {
+            return (
+              <p
+                key={index}
+                style={{
+                  fontFamily: "Default",
+                  fontSize: "1rem",
+                }}
+              >
+                {orderToProduct.product.title} Quantity:{" "}
+                {orderToProduct.quantity}
+              </p>
+            );
+          },
+        )}
+        <p
+          style={{
+            fontFamily: "Default",
+            fontSize: "1rem",
+          }}
+        >
+          Amount: {props.data.ecommerce.order.checkoutAttributes.amount}
+        </p>
+        <p
+          style={{
+            fontFamily: "Default",
+            fontSize: "1rem",
+          }}
+        >
+          props.data: {JSON.stringify(props.data)}
         </p>
       </div>
     </div>

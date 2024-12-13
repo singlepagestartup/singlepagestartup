@@ -14,7 +14,10 @@ import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/re
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import QueryString from "qs";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
+import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
+import { userStories } from "@sps/sps-business-logic";
+import pako from "pako";
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -116,8 +119,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       const data = JSON.parse(body["data"]);
 
       const provider = data["provider"] ?? "stripe";
-
-      console.log(`🚀 ~ checkout ~ provider:`, provider);
 
       if (!data["email"]) {
         throw new HTTPException(400, {
@@ -355,10 +356,108 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
       let entity = await this.service.update({ id: uuid, data });
 
+      const checkoutAttributes = await api.checkoutAttributes({
+        id: uuid,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
       if (entity?.status === "approving") {
+        const ordersToProducts = await ordersToProductsApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!ordersToProducts?.length) {
+          throw new HTTPException(404, {
+            message: "Orders to products not found",
+          });
+        }
+
+        const products = await productApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ordersToProducts.map(
+                    (orderToProduct) => orderToProduct.productId,
+                  ),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!products?.length) {
+          throw new HTTPException(404, {
+            message: "Products not found",
+          });
+        }
+
+        const deflatedData = pako.deflate(
+          JSON.stringify({
+            ecommerce: {
+              order: {
+                ...entity,
+                checkoutAttributes,
+                ordersToProducts: ordersToProducts.map((orderToProduct) => {
+                  return {
+                    ...orderToProduct,
+                    product: products.find(
+                      (product) => product.id === orderToProduct.productId,
+                    ),
+                  };
+                }),
+              },
+            },
+          }),
+        );
+
+        const queryData = Buffer.from(deflatedData).toString("base64");
+
         const query = QueryString.stringify({
-          variant: "order-receipt",
-          data: entity,
+          variant:
+            userStories.subjectCreateOrder.order.update.approving.receipt
+              .variant,
+          width:
+            userStories.subjectCreateOrder.order.update.approving.receipt.width,
+          height:
+            userStories.subjectCreateOrder.order.update.approving.receipt
+              .height,
+          data: queryData,
         });
 
         const receiptFile = await fileStorageFileApi.createFromUrl({

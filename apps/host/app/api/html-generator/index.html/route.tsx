@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { Component } from "./component";
 import { Html, render } from "@react-email/components";
+import pako from "pako";
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -12,6 +13,18 @@ export const GET = async (request: NextRequest) => {
 
     if (!HOST_URL) {
       throw new Error("Host URL not found");
+    }
+
+    let data;
+
+    if (typeof parsedParams.data === "string") {
+      const decodedBuffer = Buffer.from(parsedParams.data, "base64");
+
+      const uint8Array = new Uint8Array(decodedBuffer);
+
+      const inflatedData = pako.inflate(uint8Array, { to: "string" });
+
+      data = JSON.parse(inflatedData);
     }
 
     const html = await render(
@@ -26,6 +39,7 @@ export const GET = async (request: NextRequest) => {
           <Component
             variant={parsedParams.variant as any}
             {...(parsedParams as any)}
+            data={data}
           />
         ) : null}
       </Html>,
