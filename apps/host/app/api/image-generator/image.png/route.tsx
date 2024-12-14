@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { createElement } from "react";
-import { Component as ParentComponent } from "./component";
+import { Component as ChildComponent } from "./component";
 import pako from "pako";
 
 const fontsURLs: {
@@ -319,7 +319,7 @@ function Component(props: any) {
         alignItems: "stretch",
       }}
     >
-      <ParentComponent {...props} />
+      <ChildComponent {...props} />
     </div>
   );
 }

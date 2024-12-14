@@ -80,7 +80,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
       const data = await this.service.render({
         id: uuid,
-        type: "html",
+        type: "email",
         payload: payloadData,
       });
 

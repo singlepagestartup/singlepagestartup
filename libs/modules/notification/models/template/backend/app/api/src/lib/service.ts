@@ -8,7 +8,7 @@ import pako from "pako";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  async render(params: { id: string; type: "html"; payload?: any }) {
+  async render(params: { id: string; type: "email"; payload?: any }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Secret key not found");
     }
@@ -25,7 +25,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Template not found");
     }
 
-    if (params.type === "html") {
+    if (params.type === "email") {
       let queryData: undefined | string;
 
       if (params?.payload) {
@@ -47,7 +47,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
 
       const data = await fetch(
-        BACKEND_URL + "/api/html-generator/index.html?" + query,
+        BACKEND_URL + "/api/email-generator/index.html?" + query,
         {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

@@ -1,7 +1,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { TipTap } from "@sps/shared-ui-shadcn";
-import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-widgets/frontend/component";
+// import { TipTap } from "@sps/shared-ui-shadcn";
+// import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-widgets/frontend/component";
 import Link from "next/link";
 
 export function Component(props: IComponentPropsExtended) {
@@ -17,7 +17,7 @@ export function Component(props: IComponentPropsExtended) {
         href={`/blog/articles/${props.data.id}`}
         className="flex flex-col w-full gap-3 cursor-pointer"
       >
-        <div className="w-full">
+        {/* <div className="w-full">
           <ArticlesToFileStorageModuleWidgets
             isServer={props.isServer}
             hostUrl={props.hostUrl}
@@ -50,13 +50,13 @@ export function Component(props: IComponentPropsExtended) {
               });
             }}
           </ArticlesToFileStorageModuleWidgets>
-        </div>
+        </div> */}
 
         <p className="font-bold text-4xl">{props.data.title}</p>
 
-        {props.data.description ? (
+        {/* {props.data.description ? (
           <TipTap value={props.data.description} />
-        ) : null}
+        ) : null} */}
       </Link>
     </div>
   );

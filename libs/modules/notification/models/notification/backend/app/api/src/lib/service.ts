@@ -15,134 +15,130 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     provider: "Amazon SES";
     id: string;
   }) {
-    try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Secret key not found");
-      }
-
-      const entity = await this.findById({
-        id: props.id,
-      });
-
-      if (!entity) {
-        throw new Error("Notification not found");
-      }
-
-      if (!entity.reciever) {
-        throw new Error("Reciever not found");
-      }
-
-      const notificationToTemplates = await notificationsToTemplatesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "notificationId",
-                method: "eq",
-                value: entity.id,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (!notificationToTemplates?.length) {
-        throw new Error("Template not found");
-      }
-
-      if (entity.method === "email") {
-        if (props.provider === "Amazon SES") {
-          if (!AWS_SES_FROM_EMAIL) {
-            throw new Error("AWS SES from email not found");
-          }
-
-          const attachments: { type: "image"; url: string }[] =
-            JSON.parse(entity.attachments || "[]") || [];
-
-          const template = await templateApi.findById({
-            id: notificationToTemplates[0].templateId,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
-              },
-            },
-          });
-
-          if (!template) {
-            throw new Error("Template not found");
-          }
-
-          const renderResult = await templateApi.render({
-            id: template.id,
-            data: entity.data ? JSON.parse(entity.data) : {},
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
-              },
-            },
-          });
-
-          if (!renderResult) {
-            throw new Error("Template not rendered");
-          }
-
-          const aws = new AWS();
-
-          await aws.ses.sendEmail({
-            to: entity.reciever,
-            subject:
-              entity.title ||
-              template.title ||
-              "Notification from Single Page Startup",
-            html: renderResult,
-            from: AWS_SES_FROM_EMAIL,
-            filePaths: attachments.map((attachment) => attachment.url),
-          });
-        }
-      }
-
-      await this.update({
-        id: entity.id,
-        data: {
-          ...entity,
-          status: "sent",
-        },
-      });
-
-      await api.update({
-        id: entity.id,
-        data: {
-          ...entity,
-          status: "sent",
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      return { ok: true };
-    } catch (error: any) {
-      throw new Error(error.message, error.stack);
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Secret key not found");
     }
+
+    const entity = await this.findById({
+      id: props.id,
+    });
+
+    if (!entity) {
+      throw new Error("Notification not found");
+    }
+
+    if (!entity.reciever) {
+      throw new Error("Reciever not found");
+    }
+
+    const notificationToTemplates = await notificationsToTemplatesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "notificationId",
+              method: "eq",
+              value: entity.id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!notificationToTemplates?.length) {
+      throw new Error("Template not found");
+    }
+
+    if (entity.method === "email") {
+      if (props.provider === "Amazon SES") {
+        if (!AWS_SES_FROM_EMAIL) {
+          throw new Error("AWS SES from email not found");
+        }
+
+        const attachments: { type: "image"; url: string }[] =
+          JSON.parse(entity.attachments || "[]") || [];
+
+        const template = await templateApi.findById({
+          id: notificationToTemplates[0].templateId,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!template) {
+          throw new Error("Template not found");
+        }
+
+        const renderResult = await templateApi.render({
+          id: template.id,
+          data: entity.data ? JSON.parse(entity.data) : {},
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!renderResult) {
+          throw new Error("Template not rendered");
+        }
+
+        const aws = new AWS();
+
+        await aws.ses.sendEmail({
+          to: entity.reciever,
+          subject:
+            entity.title ||
+            template.title ||
+            "Notification from Single Page Startup",
+          html: renderResult,
+          from: AWS_SES_FROM_EMAIL,
+          filePaths: attachments.map((attachment) => attachment.url),
+        });
+      }
+    }
+
+    await this.update({
+      id: entity.id,
+      data: {
+        ...entity,
+        status: "sent",
+      },
+    });
+
+    await api.update({
+      id: entity.id,
+      data: {
+        ...entity,
+        status: "sent",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    return { ok: true };
   }
 
   async send(params: { id: string }) {
