@@ -42,6 +42,10 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     regexPath: /\/api\/revalidation\/revalidate/,
     methods: ["GET"],
   },
+  {
+    regexPath: /\/api\/telegram/,
+    methods: ["GET", "POST"],
+  },
 ];
 
 export class Middleware {

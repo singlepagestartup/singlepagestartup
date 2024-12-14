@@ -57,6 +57,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Template not found");
     }
 
+    const template = await templateApi.findById({
+      id: notificationToTemplates[0].templateId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
+
+    if (!template) {
+      throw new Error("Template not found");
+    }
+
     if (entity.method === "email") {
       if (props.provider === "Amazon SES") {
         if (!AWS_SES_FROM_EMAIL) {
@@ -65,22 +81,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         const attachments: { type: "image"; url: string }[] =
           JSON.parse(entity.attachments || "[]") || [];
-
-        const template = await templateApi.findById({
-          id: notificationToTemplates[0].templateId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
-
-        if (!template) {
-          throw new Error("Template not found");
-        }
 
         const renderResult = await templateApi.render({
           id: template.id,

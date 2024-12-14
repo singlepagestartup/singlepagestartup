@@ -22,6 +22,7 @@ import {
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { ParseQueryMiddleware } from "@sps/shared-backend-api";
+import { run, stop, webhookHandler } from "./bot";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -47,6 +48,20 @@ app.use(new IsAuthorizedMiddleware().init());
 app.use(new RevalidationMiddleware().init());
 new RevalidationMiddleware().setRoutes(app);
 app.use(new ParseQueryMiddleware().init());
+
+app.post("/telegram", webhookHandler);
+
+app.post("/telegram/stop", async (c) => {
+  const res = stop();
+
+  return c.json(res);
+});
+
+app.post("/telegram/run", async (c) => {
+  const res = run();
+
+  return c.json(res);
+});
 
 app.mount("/host", hostApp.hono.fetch);
 app.mount("/rbac", rbacApp.hono.fetch);

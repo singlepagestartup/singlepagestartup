@@ -154,3 +154,7 @@ export const GOOGLE_ANALYTICS_ID =
 
 export const CLOUDPAYMENTS_PUBLIC_ID = process.env["CLOUDPAYMENTS_PUBLIC_ID"];
 export const CLOUDPAYMENTS_API_SECRET = process.env["CLOUDPAYMENTS_API_SECRET"];
+
+export const TELEGRAM_BOT_TOKEN = process.env["TELEGRAM_BOT_TOKEN"];
+export const TELEGRAM_BOT_BACKEND_URL =
+  process.env["TELEGRAM_BOT_BACKEND_URL"] ?? BACKEND_URL;

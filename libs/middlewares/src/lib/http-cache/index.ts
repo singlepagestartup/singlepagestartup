@@ -33,7 +33,8 @@ export class Middleware {
       if (
         path.includes("rbac/subjects/me") ||
         path.includes("rbac/subjects/init") ||
-        path.includes("rbac/subjects/is-authorized")
+        path.includes("rbac/subjects/is-authorized") ||
+        path.includes("api/telegram")
       ) {
         return await next();
       }
