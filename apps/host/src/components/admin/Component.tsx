@@ -5,6 +5,7 @@ import { useState } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { useSearchParams } from "next/navigation";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
+import { AdminComponent as Telegram } from "@sps/telegram/frontend/component";
 import { AdminComponent as Host } from "@sps/host/frontend/component";
 import { AdminComponent as WebsiteBuilder } from "@sps/website-builder/frontend/component";
 import { AdminComponent as Billing } from "@sps/billing/frontend/component";
@@ -123,6 +124,13 @@ export function Component(props: IComponentPropsExtended) {
                 }}
                 active={widget === "blog"}
               />
+              <Button
+                title="telegram"
+                onClick={() => {
+                  setWidget("telegram");
+                }}
+                active={widget === "telegram"}
+              />
             </div>
             <div className="bg-white rounded-b-lg">
               {widget === "host" ? (
@@ -207,6 +215,14 @@ export function Component(props: IComponentPropsExtended) {
               ) : null}
               {widget === "ecommerce" ? (
                 <Ecommerce
+                  {...props}
+                  isServer={false}
+                  hostUrl={props.hostUrl}
+                  variant="default"
+                />
+              ) : null}
+              {widget === "telegram" ? (
+                <Telegram
                   {...props}
                   isServer={false}
                   hostUrl={props.hostUrl}

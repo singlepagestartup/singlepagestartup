@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { type NextRequest } from "next/server";
+import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
@@ -22,7 +23,6 @@ import {
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE, TELEGRAM_BOT_TOKEN } from "@sps/shared-utils";
 import { ParseQueryMiddleware } from "@sps/shared-backend-api";
-import { run, stop, webhookHandler } from "./bot";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -49,22 +49,7 @@ app.use(new RevalidationMiddleware().init());
 new RevalidationMiddleware().setRoutes(app);
 app.use(new ParseQueryMiddleware().init());
 
-if (TELEGRAM_BOT_TOKEN) {
-  app.post("/telegram", webhookHandler);
-
-  app.post("/telegram/stop", async (c) => {
-    const res = stop();
-
-    return c.json(res);
-  });
-
-  app.post("/telegram/run", async (c) => {
-    const res = run();
-
-    return c.json(res);
-  });
-}
-
+app.mount("/telegram", telegramApp.hono.fetch);
 app.mount("/host", hostApp.hono.fetch);
 app.mount("/rbac", rbacApp.hono.fetch);
 app.mount("/startup", startupApp.hono.fetch);

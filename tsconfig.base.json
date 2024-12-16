@@ -71,6 +71,7 @@
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],
       "@sps/crm/*": ["libs/modules/crm/*"],
+      "@sps/telegram/*": ["libs/modules/telegram/*"],
       "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],
       "@sps/file-storage/*": ["libs/modules/file-storage/*"],
       "@sps/sps-generator-plugin": [
