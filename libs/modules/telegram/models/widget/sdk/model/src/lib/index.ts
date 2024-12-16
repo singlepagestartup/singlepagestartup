@@ -6,7 +6,7 @@ export {
 } from "@sps/telegram/models/widget/backend/repository/database";
 import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
-export const route = "/api/crm/widgets";
+export const route = "/api/telegram/widgets";
 export const variants = ["default"];
 export const host = BACKEND_URL;
 export const query = {};

@@ -1,5 +1,5 @@
-export { type IModel } from "@sps/host/relations/pages-to-widgets/sdk/model";
-import { IModel } from "@sps/host/relations/pages-to-widgets/sdk/model";
+export { type IModel } from "@sps/telegram/relations/pages-to-widgets/sdk/model";
+import { IModel } from "@sps/telegram/relations/pages-to-widgets/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,

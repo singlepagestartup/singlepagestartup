@@ -51,7 +51,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
-      module="host"
+      module="telegram"
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}

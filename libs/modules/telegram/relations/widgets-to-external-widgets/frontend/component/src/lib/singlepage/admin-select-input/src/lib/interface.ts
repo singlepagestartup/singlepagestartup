@@ -1,5 +1,5 @@
-export { type IModel } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
-import { IModel } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
+export { type IModel } from "@sps/telegram/relations/widgets-to-external-widgets/sdk/model";
+import { IModel } from "@sps/telegram/relations/widgets-to-external-widgets/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,

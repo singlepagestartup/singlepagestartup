@@ -44,7 +44,7 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
   },
   {
     regexPath: /\/api\/telegram/,
-    methods: ["GET", "POST"],
+    methods: ["POST"],
   },
 ];
 

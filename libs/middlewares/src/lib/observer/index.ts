@@ -36,7 +36,7 @@ export class Middleware {
 
       await next();
 
-      if (path.includes("/api/broadcast") || path.includes("/api/telegram")) {
+      if (path.includes("/api/broadcast")) {
         return;
       }
 

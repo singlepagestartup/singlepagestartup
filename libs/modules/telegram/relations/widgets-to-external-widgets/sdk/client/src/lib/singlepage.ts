@@ -5,7 +5,7 @@ import {
   route,
   host,
   options,
-} from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
+} from "@sps/telegram/relations/widgets-to-external-widgets/sdk/model";
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 

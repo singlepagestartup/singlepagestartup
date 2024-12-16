@@ -4,7 +4,7 @@ import {
   IModel,
   host,
   options,
-} from "@sps/host/relations/pages-to-widgets/sdk/model";
+} from "@sps/telegram/relations/pages-to-widgets/sdk/model";
 
 export const api = factory<IModel>({
   route,
