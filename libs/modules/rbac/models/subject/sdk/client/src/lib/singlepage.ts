@@ -412,6 +412,7 @@ export const api = {
     };
     options?: NextRequestOptions;
     reactQueryOptions?: any;
+    mute?: boolean;
   }) => {
     return useMutation<
       { jwt: string; refresh: string },
@@ -467,7 +468,9 @@ export const api = {
 
           return transformedData;
         } catch (error: any) {
-          toast.error(error.message);
+          if (!props?.mute) {
+            toast.error(error.message);
+          }
 
           throw error;
         }

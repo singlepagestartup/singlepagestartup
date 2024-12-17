@@ -11,7 +11,9 @@ import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
 import { useDebouncedCallback } from "use-debounce";
 
 export function Component(props: IComponentPropsExtended) {
-  const refresh = api.refresh();
+  const refresh = api.refresh({
+    mute: true,
+  });
   const init = api.init({
     reactQueryOptions: {
       enabled: false,
