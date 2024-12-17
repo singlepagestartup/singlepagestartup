@@ -1,9 +1,8 @@
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
+import { injectable } from "inversify";
 import { Service } from "./service";
 import { Context } from "hono";
-import { DI } from "@sps/shared-backend-api";
-import { Bot } from "./bot";
+import { TelegarmBot } from "./telegram-bot";
 
 @injectable()
 export class Controller {
@@ -13,14 +12,11 @@ export class Controller {
     path: string;
     handler: (c: Context, next: any) => Promise<Response>;
   }[];
-  bot: Bot;
+  telegramBot: TelegarmBot;
 
-  constructor(
-    @inject(DI.IService) service: Service,
-    @inject(DI.ITelegramBot) bot: Bot,
-  ) {
+  constructor(service: Service, telegramBot: TelegarmBot) {
     this.service = service;
-    this.bot = bot;
+    this.telegramBot = telegramBot;
     this.bindRoutes([
       {
         method: "POST",
@@ -41,11 +37,11 @@ export class Controller {
   }
 
   async webhook(c: Context): Promise<Response> {
-    return await this.bot.webhookHandler(c);
+    return await this.telegramBot.webhookHandler(c);
   }
 
   async run(c: Context): Promise<Response> {
-    const result = await this.bot.run();
+    const result = await this.telegramBot.run();
 
     return c.json({
       ok: result,
@@ -53,7 +49,7 @@ export class Controller {
   }
 
   async stop(c: Context): Promise<Response> {
-    const result = await this.bot.stop();
+    const result = await this.telegramBot.stop();
 
     return c.json({
       ok: result,

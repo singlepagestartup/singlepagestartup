@@ -56,8 +56,8 @@ export class App<SCHEMA extends Record<string, unknown>>
     this.useRoutes();
   }
 
-  async dump(props?: { dumps: IDumpResult[] }) {
-    const dumpResult = await this.controller.service.dump(props);
+  async dump() {
+    const dumpResult = await this.controller.service.dump();
 
     return dumpResult;
   }

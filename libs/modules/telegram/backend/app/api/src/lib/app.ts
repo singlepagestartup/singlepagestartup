@@ -9,6 +9,9 @@ import {
 import { inject, injectable } from "inversify";
 import { Controller } from "./controller";
 import { Apps } from "./apps";
+import { TelegarmBot } from "./telegram-bot";
+import { Middleware } from "grammy";
+import { Service } from "./service";
 
 @injectable()
 export class App {
@@ -16,14 +19,15 @@ export class App {
   exceptionFilter: IExceptionFilter;
   controller: Controller;
   apps: Apps;
+  telegramBot: TelegarmBot;
 
-  constructor(
-    @inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter,
-    @inject(DI.IController) controller: Controller,
-  ) {
+  constructor(@inject(DI.IExceptionFilter) exceptionFilter: IExceptionFilter) {
     this.hono = new Hono<Env>();
     this.exceptionFilter = exceptionFilter;
-    this.controller = controller;
+
+    this.telegramBot = new TelegarmBot();
+    const service = new Service();
+    this.controller = new Controller(service, this.telegramBot);
   }
 
   public async init() {
@@ -31,6 +35,7 @@ export class App {
     this.apps = apps;
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
     this.useRoutes();
+    this.useTelegamRoutes();
   }
 
   async dump(props?: { type?: "model" | "relation"; dumps: IDumpResult[] }) {
@@ -39,7 +44,7 @@ export class App {
     await Promise.all(
       this.apps.apps.map(async (app) => {
         if (app.type === props?.type) {
-          const appDumps = await app.app.dump(props);
+          const appDumps = await app.app.dump();
 
           dumps.push(appDumps);
         }
@@ -72,5 +77,24 @@ export class App {
     this.apps.apps.forEach((app) => {
       this.hono.mount(app.route, app.app.hono.fetch);
     });
+  }
+
+  useTelegamRoutes() {
+    if (!this.telegramBot.instance) {
+      return;
+    }
+
+    const telegramRoutes: { path: string; handler: Middleware }[] = [];
+
+    this.apps.apps.forEach((app) => {
+      app.app.controller.telegramRoutes?.map((route) => {
+        telegramRoutes.push({
+          path: route.path,
+          handler: route.handler,
+        });
+      });
+    });
+
+    this.telegramBot.addRoutes(telegramRoutes);
   }
 }

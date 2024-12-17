@@ -1,8 +1,8 @@
 import {
   Provider,
   api as clientApi,
-} from "@sps/telegram/models/widget/sdk/client";
-import { api as serverApi } from "@sps/telegram/models/widget/sdk/server";
+} from "@sps/telegram/models/page/sdk/client";
+import { api as serverApi } from "@sps/telegram/models/page/sdk/server";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/default";
 import { Component as ChildComponent } from "./Component";

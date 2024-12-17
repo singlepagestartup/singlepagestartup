@@ -35,7 +35,7 @@ export class App implements IDefaultApp<Env> {
     await Promise.all(
       this.apps.apps.map(async (app) => {
         if (app.type === props?.type) {
-          const appDumps = await app.app.dump(props);
+          const appDumps = await app.app.dump();
 
           dumps.push(appDumps);
         }

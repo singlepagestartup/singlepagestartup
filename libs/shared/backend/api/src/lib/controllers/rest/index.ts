@@ -20,12 +20,14 @@ import { IController } from "../interface";
 export class Controller<DTO extends Record<string, unknown>>
   implements IController<DTO>
 {
-  routes: IController<DTO>["routes"] = [];
   service: IService<DTO>;
+  routes: IController<DTO>["routes"] = [];
+  httpRoutes: IController<DTO>["httpRoutes"] = [];
+  telegramRoutes: IController<DTO>["telegramRoutes"];
 
   constructor(@inject(DI.IService) service: IService<DTO>) {
     this.service = service;
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "GET",
         path: "/",
@@ -62,6 +64,7 @@ export class Controller<DTO extends Record<string, unknown>>
         handler: this.delete,
       },
     ]);
+    this.bindRoutes(this.httpRoutes);
   }
 
   public async find(c: Context, next: any): Promise<Response> {
@@ -104,14 +107,32 @@ export class Controller<DTO extends Record<string, unknown>>
     return handler.execute(c, next);
   }
 
-  protected bindRoutes(routes: IController<DTO>["routes"]) {
-    this.routes = [];
+  protected bindHttpRoutes(routes: IController<DTO>["routes"]) {
+    this.httpRoutes = [];
 
     for (const route of routes) {
       const handler = route.handler.bind(this);
-      this.routes.push({
+      this.httpRoutes.push({
         ...route,
         handler,
+      });
+    }
+  }
+
+  /**
+   * @deprecated Use bindHttpRoutes instead
+   */
+  protected bindRoutes(routes: IController<DTO>["routes"]) {
+    this.bindHttpRoutes(routes);
+    this.routes = this.httpRoutes;
+  }
+
+  protected bindTelegramRoutes(routes: IController<DTO>["telegramRoutes"]) {
+    this.telegramRoutes = [];
+
+    for (const route of routes) {
+      this.telegramRoutes.push({
+        ...route,
       });
     }
   }
