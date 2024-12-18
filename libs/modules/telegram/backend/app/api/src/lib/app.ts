@@ -10,8 +10,13 @@ import { inject, injectable } from "inversify";
 import { Controller } from "./controller";
 import { Apps } from "./apps";
 import { TelegarmBot } from "./telegram-bot";
-import { Middleware } from "grammy";
+import { Middleware, Context as GrammyContext } from "grammy";
 import { Service } from "./service";
+import {
+  Conversation,
+  ConversationFlavor as GrammyConversationFlavor,
+} from "@grammyjs/conversations";
+import { app as pageApp } from "@sps/telegram/models/page/backend/app/api";
 
 @injectable()
 export class App {
@@ -34,8 +39,8 @@ export class App {
     const apps = new Apps();
     this.apps = apps;
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
-    this.useRoutes();
-    this.useTelegamRoutes();
+    this.useHttpRoutes();
+    await this.useTelegamRoutes();
   }
 
   async dump(props?: { type?: "model" | "relation"; dumps: IDumpResult[] }) {
@@ -70,7 +75,7 @@ export class App {
     return seeds;
   }
 
-  useRoutes() {
+  useHttpRoutes() {
     this.controller.routes.map((route) => {
       this.hono.on(route.method, route.path, route.handler);
     });
@@ -79,12 +84,19 @@ export class App {
     });
   }
 
-  useTelegamRoutes() {
+  async useTelegamRoutes() {
     if (!this.telegramBot.instance) {
       return;
     }
 
     const telegramRoutes: { path: string; handler: Middleware }[] = [];
+    const telegramConversations: {
+      path: string;
+      handler: (
+        conversation: Conversation<any>,
+        ctx: GrammyContext & GrammyConversationFlavor,
+      ) => void;
+    }[] = [];
 
     this.apps.apps.forEach((app) => {
       app.app.controller.telegramRoutes?.map((route) => {
@@ -93,8 +105,19 @@ export class App {
           handler: route.handler,
         });
       });
+      app.app.controller.telegramConversations?.map((conversation) => {
+        telegramConversations.push({
+          path: conversation.path,
+          handler: conversation.handler,
+        });
+      });
     });
 
+    const commands = await pageApp.controller.telegramCommands();
+    console.log(`🚀 ~ useTelegamRoutes ~ commands:`, commands);
+
     this.telegramBot.addRoutes(telegramRoutes);
+    this.telegramBot.addConversations(telegramConversations);
+    this.telegramBot.init();
   }
 }

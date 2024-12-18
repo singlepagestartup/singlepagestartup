@@ -2,7 +2,14 @@ import { Context, Handler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { BlankInput, HandlerResponse } from "hono/types";
 import { IService } from "../service";
-import { Middleware } from "grammy";
+import {
+  Middleware as GrammyMiddleware,
+  Context as GrammyContext,
+} from "grammy";
+import {
+  ConversationFlavor as GrammyConversationFlavor,
+  Conversation as GrammyConversation,
+} from "@grammyjs/conversations";
 
 export interface IHttpRoute {
   path: string;
@@ -15,7 +22,15 @@ export interface IRoute extends IHttpRoute {}
 
 export interface ITelegramRoute {
   path: string;
-  handler: Middleware;
+  handler: GrammyMiddleware;
+}
+
+export interface ITelegramConversation {
+  path: string;
+  handler: (
+    conversation: GrammyConversation<any>,
+    ctx: GrammyContext & GrammyConversationFlavor,
+  ) => void;
 }
 
 export interface IController<DTO extends Record<string, unknown>> {
@@ -23,6 +38,7 @@ export interface IController<DTO extends Record<string, unknown>> {
   routes: IRoute[];
   httpRoutes: IRoute[];
   telegramRoutes: ITelegramRoute[];
+  telegramConversations: ITelegramConversation[];
   find: (c: Context, next: any) => Response | Promise<Response>;
   findById: (c: Context, next: any) => Response | Promise<Response>;
   create: (c: Context, next: any) => Response | Promise<Response>;

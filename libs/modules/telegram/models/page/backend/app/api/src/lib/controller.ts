@@ -2,8 +2,14 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/telegram/models/page/backend/repository/database";
+import { api } from "@sps/telegram/models/page/sdk/server";
 import { Service } from "./service";
 import { Context as GrammyContext, NextFunction } from "grammy";
+import {
+  ConversationFlavor as GrammyConversationFlavor,
+  Conversation as GrammyConversation,
+} from "@grammyjs/conversations";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -43,18 +49,74 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.delete,
       },
     ]);
-    this.bindTelegramRoutes([
+    this.bindTelegramRoutes([]);
+    this.bindTelegramConversations([
       {
-        path: "pages",
-        handler: this.telegramIndex,
+        path: "/pages/create",
+        handler: this.telegramCreate,
       },
     ]);
   }
 
-  async telegramIndex(ctx: GrammyContext, next: NextFunction): Promise<void> {
+  async telegramCommands(): Promise<
+    | {
+        path: string;
+        handler: (
+          conversation: GrammyConversation<any>,
+          ctx: GrammyContext & GrammyConversationFlavor,
+        ) => Promise<void>;
+      }[]
+    | undefined
+  > {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("RBAC_SECRET_KEY is not defined");
+    }
+
+    const pages = await api.find({
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+    console.log(`🚀 ~ pages:`, pages);
+
+    if (!pages) {
+      return;
+    }
+
+    const pagesWithHandlers = pages.map((page) => {
+      return {
+        path: page.url,
+        handler: this.telegramIndex,
+      };
+    });
+
+    return pagesWithHandlers;
+  }
+
+  async telegramIndex(
+    conversation: GrammyConversation<any>,
+    ctx: GrammyContext & GrammyConversationFlavor,
+  ): Promise<void> {
     ctx.reply("Hello from pages");
     await ctx.answerCallbackQuery();
+  }
 
-    await next();
+  async telegramCreate(
+    conversation: GrammyConversation<any>,
+    ctx: GrammyContext & GrammyConversationFlavor,
+  ) {
+    await ctx.reply("Create page. Type name:", {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "Create Widget", callback_data: "/widgets/create" }],
+          [{ text: "Widgets", callback_data: "/widgets" }],
+        ],
+      },
+    });
+    const { message } = await conversation.waitFor(":text");
+    console.log(`🚀 ~ message:`, message);
+    await ctx.reply(`Created page - ${message.text}!`);
   }
 }

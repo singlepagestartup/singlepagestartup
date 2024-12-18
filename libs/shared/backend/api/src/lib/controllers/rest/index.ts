@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import { Context } from "hono";
-import { StatusCode } from "hono/utils/http-status";
 import { inject, injectable } from "inversify";
 import {
   FindHandler,
@@ -24,6 +23,7 @@ export class Controller<DTO extends Record<string, unknown>>
   routes: IController<DTO>["routes"] = [];
   httpRoutes: IController<DTO>["httpRoutes"] = [];
   telegramRoutes: IController<DTO>["telegramRoutes"];
+  telegramConversations: IController<DTO>["telegramConversations"];
 
   constructor(@inject(DI.IService) service: IService<DTO>) {
     this.service = service;
@@ -131,8 +131,25 @@ export class Controller<DTO extends Record<string, unknown>>
     this.telegramRoutes = [];
 
     for (const route of routes) {
+      const handler = (route.handler as unknown as Function).bind(this);
       this.telegramRoutes.push({
         ...route,
+        handler: handler as IController<DTO>["telegramRoutes"][0]["handler"],
+      });
+    }
+  }
+
+  protected bindTelegramConversations(
+    routes: IController<DTO>["telegramConversations"],
+  ) {
+    this.telegramConversations = [];
+
+    for (const route of routes) {
+      const handler = (route.handler as unknown as Function).bind(this);
+      this.telegramConversations.push({
+        ...route,
+        handler:
+          handler as IController<DTO>["telegramConversations"][0]["handler"],
       });
     }
   }
