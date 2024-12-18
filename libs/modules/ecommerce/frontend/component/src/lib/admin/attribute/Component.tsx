@@ -4,6 +4,7 @@ import { Component as ParentComponent } from "@sps/ecommerce/models/attribute/fr
 import { Component as AttributesToAttributeKeys } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as StoresToAttributes } from "@sps/ecommerce/relations/stores-to-attributes/frontend/component";
+import { Component as AttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component";
 
 export function Component() {
   return (
@@ -77,6 +78,36 @@ export function Component() {
 
               return (
                 <StoresToAttributes
+                  isServer={isServer}
+                  hostUrl={hostUrl}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "attributeId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            attributesToBillingModuleCurrencies={({
+              data,
+              hostUrl,
+              isServer,
+            }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <AttributesToBillingModuleCurrencies
                   isServer={isServer}
                   hostUrl={hostUrl}
                   variant="admin-table"

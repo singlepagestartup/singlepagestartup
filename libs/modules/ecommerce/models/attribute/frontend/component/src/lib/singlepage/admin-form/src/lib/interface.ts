@@ -20,6 +20,9 @@ export interface IComponentProps
   storesToAttributes?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  attributesToBillingModuleCurrencies?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

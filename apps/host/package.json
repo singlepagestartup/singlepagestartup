@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.658.1",
     "@aws-sdk/client-ses": "3.637.0",
+    "@grammyjs/conversations": "1.2.0",
     "@grammyjs/router": "2.0.0",
     "@headlessui/react": "1.7.19",
     "@heroicons/react": "2.1.3",

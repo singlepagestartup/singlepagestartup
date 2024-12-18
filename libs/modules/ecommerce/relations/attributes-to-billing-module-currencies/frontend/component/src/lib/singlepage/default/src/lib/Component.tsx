@@ -1,29 +1,28 @@
 import { IComponentPropsExtended } from "./interface";
+import { Component as BillingModuleCurrency } from "@sps/billing/models/currency/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as AttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="ecommerce"
-      data-model="attribute"
+      data-relation="attributes-to-billing-module-currencies"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-row gap-0.5", props.className || "")}
+      className={cn("w-full flex", props.data.className)}
     >
-      <p>{props.data[props.field]}</p>
-      <AttributesToBillingModuleCurrencies
+      <BillingModuleCurrency
+        variant="find"
         isServer={props.isServer}
         hostUrl={props.hostUrl}
-        variant="find"
         apiProps={{
           params: {
             filters: {
               and: [
                 {
-                  column: "attributeId",
+                  column: "id",
                   method: "eq",
-                  value: props.data.id,
+                  value: props.data.billingModuleCurrencyId,
                 },
               ],
             },
@@ -33,17 +32,17 @@ export function Component(props: IComponentPropsExtended) {
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <AttributesToBillingModuleCurrencies
+              <BillingModuleCurrency
                 key={index}
                 isServer={props.isServer}
                 hostUrl={props.hostUrl}
-                variant="default"
+                variant={entity.variant as any}
                 data={entity}
               />
             );
           });
         }}
-      </AttributesToBillingModuleCurrencies>
+      </BillingModuleCurrency>
     </div>
   );
 }
