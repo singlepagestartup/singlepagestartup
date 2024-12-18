@@ -892,18 +892,18 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    const token = authorization(c);
+    // const token = authorization(c);
 
-    if (!token) {
-      return c.json(
-        {
-          data: null,
-        },
-        {
-          status: 401,
-        },
-      );
-    }
+    // if (!token) {
+    //   return c.json(
+    //     {
+    //       data: null,
+    //     },
+    //     {
+    //       status: 401,
+    //     },
+    //   );
+    // }
 
     const body = await c.req.parseBody();
 

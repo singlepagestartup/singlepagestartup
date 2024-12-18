@@ -3,6 +3,7 @@ import { injectable } from "inversify";
 import { Service } from "./service";
 import { Context } from "hono";
 import { TelegarmBot } from "./telegram-bot";
+import { HTTPException } from "hono/http-exception";
 
 @injectable()
 export class Controller {
@@ -37,10 +38,22 @@ export class Controller {
   }
 
   async webhook(c: Context): Promise<Response> {
-    return await this.telegramBot.webhookHandler(c);
+    if (this.telegramBot.instance) {
+      return await this.telegramBot.webhookHandler(c);
+    }
+
+    throw new HTTPException(400, {
+      message: "Telegram bot is not running",
+    });
   }
 
   async run(c: Context): Promise<Response> {
+    if (!this.telegramBot.instance) {
+      throw new HTTPException(400, {
+        message: "Telegram bot is not running",
+      });
+    }
+
     const result = await this.telegramBot.run();
 
     return c.json({
@@ -49,6 +62,12 @@ export class Controller {
   }
 
   async stop(c: Context): Promise<Response> {
+    if (!this.telegramBot.instance) {
+      throw new HTTPException(400, {
+        message: "Telegram bot is not running",
+      });
+    }
+
     const result = await this.telegramBot.stop();
 
     return c.json({
