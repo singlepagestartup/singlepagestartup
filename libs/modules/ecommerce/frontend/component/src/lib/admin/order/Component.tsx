@@ -2,7 +2,8 @@
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as OrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
-import { Component as OrdersToBillingPaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/frontend/component";
+import { Component as OrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/frontend/component";
+import { Component as OrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/frontend/component";
 
 export function Component() {
   return (
@@ -43,13 +44,43 @@ export function Component() {
                 />
               );
             }}
-            ordersToBillingPaymentIntents={({ data, hostUrl, isServer }) => {
+            ordersToBillingModulePaymentIntents={({
+              data,
+              hostUrl,
+              isServer,
+            }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <OrdersToBillingPaymentIntents
+                <OrdersToBillingModulePaymentIntents
+                  isServer={isServer}
+                  hostUrl={hostUrl}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "orderId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            ordersToBillingModuleCurrencies={({ data, hostUrl, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <OrdersToBillingModuleCurrencies
                   isServer={isServer}
                   hostUrl={hostUrl}
                   variant="admin-table"

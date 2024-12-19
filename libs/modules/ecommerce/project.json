@@ -88,6 +88,9 @@
             "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-generate"
           },
           {
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-generate"
+          },
+          {
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-generate"
           },
           {
@@ -150,6 +153,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-migrate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-migrate"
@@ -488,6 +494,34 @@
         "parallel": false,
         "envFile": "apps/host/.env.local",
         "cwd": "libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-billing-module-currencies:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/orders-to-billing-module-currencies/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-billing-module-currencies:repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "envFile": "apps/host/.env.local",
+        "cwd": "libs/modules/ecommerce/relations/orders-to-billing-module-currencies/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

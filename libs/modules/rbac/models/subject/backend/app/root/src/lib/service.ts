@@ -32,6 +32,7 @@ import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/se
 import { userStories } from "@sps/sps-business-logic";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 
 export interface IRegistrationLoginAndPasswordDTO {
   type: "registration";
@@ -1217,8 +1218,39 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
+    const ecommerceOrdersToBillingModuleCurrencies =
+      await ordersToBillingModuleCurrenciesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "eq",
+                value: updatedOrder.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
+      throw new HTTPException(404, {
+        message: "Orders to billing module currencies not found",
+      });
+    }
+
     const checkoutAttributes = await ecommerceOrderApi.checkoutAttributes({
       id: props.orderId,
+      billingModuleCurrencyId:
+        ecommerceOrdersToBillingModuleCurrencies[0].billingModuleCurrencyId,
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

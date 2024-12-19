@@ -76,7 +76,7 @@ export class App {
   }
 
   useHttpRoutes() {
-    this.controller.routes.map((route) => {
+    this.controller.httpRroutes.map((route) => {
       this.hono.on(route.method, route.path, route.handler);
     });
     this.apps.apps.forEach((app) => {

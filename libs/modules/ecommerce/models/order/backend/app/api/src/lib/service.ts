@@ -12,6 +12,7 @@ import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as productsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { api as attributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
 import { api as attributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
+import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -81,7 +82,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  async getCheckoutAttributes(props: { id: string }) {
+  async getCheckoutAttributes(props: {
+    id: string;
+    billingModuleCurrencyId: string;
+  }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("RBAC_SECRET_KEY is not defined");
     }
@@ -219,20 +223,56 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const productPrices: IAttribute[] = [];
 
-      for (const productToAttribute of productToAttributes) {
-        const productPriceAttributes = await attributeKeysToAttributesApi.find({
+      const productPriceAttributes = await attributeKeysToAttributesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeId",
+                method: "inArray",
+                value: productToAttributes.map(
+                  (productToAttribute) => productToAttribute.attributeId,
+                ),
+              },
+              {
+                column: "attributeKeyId",
+                method: "eq",
+                value: priceAttributeKey.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!productPriceAttributes?.length) {
+        throw new Error("Product does not have any price attributes");
+      }
+
+      const targetPriceAttributes =
+        await attributesToBillingModuleCurrenciesApi.find({
           params: {
             filters: {
               and: [
                 {
                   column: "attributeId",
-                  method: "eq",
-                  value: productToAttribute.attributeId,
+                  method: "inArray",
+                  value: productPriceAttributes.map(
+                    (productPriceAttribute) =>
+                      productPriceAttribute.attributeId,
+                  ),
                 },
                 {
-                  column: "attributeKeyId",
+                  column: "billingModuleCurrencyId",
                   method: "eq",
-                  value: priceAttributeKey.id,
+                  value: props.billingModuleCurrencyId,
                 },
               ],
             },
@@ -247,32 +287,31 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         });
 
-        if (!productPriceAttributes?.length) {
-          continue;
-        }
-
-        if (productPriceAttributes.length > 1) {
-          throw new Error("Product has multiple price attributes");
-        }
-
-        const priceAttribute = await attributeApi.findById({
-          id: productPriceAttributes[0].attributeId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
-
-        if (!priceAttribute) {
-          throw new Error("Price attribute not found");
-        }
-
-        productPrices.push(priceAttribute);
+      if (!targetPriceAttributes?.length) {
+        throw new Error("Product does not have any target price attributes");
       }
+
+      if (targetPriceAttributes.length > 1) {
+        throw new Error("Product has multiple target price attributes");
+      }
+
+      const priceAttribute = await attributeApi.findById({
+        id: targetPriceAttributes[0].attributeId,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!priceAttribute) {
+        throw new Error("Price attribute not found");
+      }
+
+      productPrices.push(priceAttribute);
 
       if (!productPrices.length) {
         throw new Error("Product does not have any price attributes");

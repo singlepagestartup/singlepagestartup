@@ -14,7 +14,10 @@ export interface IComponentProps
   ordersToProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-  ordersToBillingPaymentIntents?: (
+  ordersToBillingModulePaymentIntents?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+  ordersToBillingModuleCurrencies?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
 }

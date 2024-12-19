@@ -702,7 +702,7 @@ export const api = {
         mutationFunctionProps: IEcommerceProductCheckoutMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceProductsCheckout({
+          const result = await serverApi.ecommerceProductsCheckout({
             id: props.id,
             productId: props.productId || mutationFunctionProps.productId,
             ...mutationFunctionProps,
@@ -748,7 +748,7 @@ export const api = {
         mutationFunctionProps: IEcommerceProductsCartMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceOrdersCreate({
+          const result = await serverApi.ecommerceOrdersCreate({
             id: props.id,
             ...mutationFunctionProps,
           });
@@ -790,7 +790,7 @@ export const api = {
       mutationKey: [`${route}/forgot-password`],
       mutationFn: async (mutationFunctionProps: IForgotPasswordProps) => {
         try {
-          const result = serverApi.forgotPassword({
+          const result = await serverApi.forgotPassword({
             ...mutationFunctionProps,
           });
 
@@ -828,7 +828,7 @@ export const api = {
         mutationKey: [`${route}/reset-password`],
         mutationFn: async (mutationFunctionProps: IResetPasswordProps) => {
           try {
-            const result = serverApi.resetPassword({
+            const result = await serverApi.resetPassword({
               ...mutationFunctionProps,
             });
 
@@ -876,7 +876,7 @@ export const api = {
         mutationFunctionProps: IEcommerceOrdersUpdateMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceOrdersUpdate({
+          const result = await serverApi.ecommerceOrdersUpdate({
             id: props.id,
             orderId: props.orderId,
             ...mutationFunctionProps,
@@ -925,7 +925,7 @@ export const api = {
         mutationFunctionProps: IEcommerceOrdersCheckoutMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceOrdersCheckout({
+          const result = await serverApi.ecommerceOrdersCheckout({
             id: props.id,
             orderId: props.orderId,
             ...mutationFunctionProps,
@@ -972,7 +972,7 @@ export const api = {
         mutationFunctionProps: IEcommerceOrdersDeleteMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.ecommerceOrdersDelete({
+          const result = await serverApi.ecommerceOrdersDelete({
             id: props.id,
             orderId: props.orderId,
             ...mutationFunctionProps,
@@ -1019,7 +1019,7 @@ export const api = {
         mutationFunctionProps: IIdentitiesUpdateMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.identitiesUpdate({
+          const result = await serverApi.identitiesUpdate({
             id: props.id,
             identityId: props.identityId,
             ...mutationFunctionProps,
@@ -1066,7 +1066,7 @@ export const api = {
         mutationFunctionProps: IIdentitiesDeleteMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.identitiesDelete({
+          const result = await serverApi.identitiesDelete({
             id: props.id,
             identityId: props.identityId,
             ...mutationFunctionProps,
@@ -1112,7 +1112,7 @@ export const api = {
         mutationFunctionProps: IIdentitiesCreateMutationFunctionProps,
       ) => {
         try {
-          const result = serverApi.identitiesCreate({
+          const result = await serverApi.identitiesCreate({
             id: props.id,
             ...mutationFunctionProps,
           });

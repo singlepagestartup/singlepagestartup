@@ -35,7 +35,6 @@ export interface ITelegramConversation {
 
 export interface IController<DTO extends Record<string, unknown>> {
   service: IService<DTO>;
-  routes: IRoute[];
   httpRoutes: IRoute[];
   telegramRoutes: ITelegramRoute[];
   telegramConversations: ITelegramConversation[];

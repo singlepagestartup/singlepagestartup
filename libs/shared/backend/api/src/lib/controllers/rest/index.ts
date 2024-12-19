@@ -20,7 +20,6 @@ export class Controller<DTO extends Record<string, unknown>>
   implements IController<DTO>
 {
   service: IService<DTO>;
-  routes: IController<DTO>["routes"] = [];
   httpRoutes: IController<DTO>["httpRoutes"] = [];
   telegramRoutes: IController<DTO>["telegramRoutes"];
   telegramConversations: IController<DTO>["telegramConversations"];
@@ -64,7 +63,6 @@ export class Controller<DTO extends Record<string, unknown>>
         handler: this.delete,
       },
     ]);
-    this.bindRoutes(this.httpRoutes);
   }
 
   public async find(c: Context, next: any): Promise<Response> {
@@ -107,7 +105,7 @@ export class Controller<DTO extends Record<string, unknown>>
     return handler.execute(c, next);
   }
 
-  protected bindHttpRoutes(routes: IController<DTO>["routes"]) {
+  protected bindHttpRoutes(routes: IController<DTO>["httpRoutes"]) {
     this.httpRoutes = [];
 
     for (const route of routes) {
@@ -117,14 +115,6 @@ export class Controller<DTO extends Record<string, unknown>>
         handler,
       });
     }
-  }
-
-  /**
-   * @deprecated Use bindHttpRoutes instead
-   */
-  protected bindRoutes(routes: IController<DTO>["routes"]) {
-    this.bindHttpRoutes(routes);
-    this.routes = this.httpRoutes;
   }
 
   protected bindTelegramRoutes(routes: IController<DTO>["telegramRoutes"]) {

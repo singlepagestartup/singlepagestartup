@@ -50,7 +50,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   constructor(@inject(DI.IService) service: Service) {
     super(service);
     this.service = service;
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "GET",
         path: "/",
@@ -1333,18 +1333,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     }
 
     for (const order of orders) {
-      const orderAttributes = await ecommerceOrderApi.checkoutAttributes({
-        id: order.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
       const ordersToProducts = await ecommerceOrdersToProductsApi.find({
         params: {
           filters: {

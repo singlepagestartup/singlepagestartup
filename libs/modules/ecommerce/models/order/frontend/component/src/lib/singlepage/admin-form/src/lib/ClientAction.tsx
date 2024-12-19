@@ -97,8 +97,16 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
-        {props.ordersToBillingPaymentIntents
-          ? props.ordersToBillingPaymentIntents({
+        {props.ordersToBillingModuleCurrencies
+          ? props.ordersToBillingModuleCurrencies({
+              data: props.data,
+              hostUrl: props.hostUrl,
+              isServer: props.isServer,
+            })
+          : null}
+
+        {props.ordersToBillingModulePaymentIntents
+          ? props.ordersToBillingModulePaymentIntents({
               data: props.data,
               hostUrl: props.hostUrl,
               isServer: props.isServer,

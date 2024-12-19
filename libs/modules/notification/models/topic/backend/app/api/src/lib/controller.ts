@@ -18,7 +18,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     this.service = service;
 
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "GET",
         path: "/",

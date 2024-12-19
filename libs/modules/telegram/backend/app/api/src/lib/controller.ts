@@ -8,7 +8,7 @@ import { HTTPException } from "hono/http-exception";
 @injectable()
 export class Controller {
   service: Service;
-  routes: {
+  httpRroutes: {
     method: "GET" | "POST" | "PATCH" | "DELETE";
     path: string;
     handler: (c: Context, next: any) => Promise<Response>;
@@ -18,7 +18,7 @@ export class Controller {
   constructor(service: Service, telegramBot: TelegarmBot) {
     this.service = service;
     this.telegramBot = telegramBot;
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "POST",
         path: "/",
@@ -75,12 +75,12 @@ export class Controller {
     });
   }
 
-  protected bindRoutes(routes: Controller["routes"]) {
-    this.routes = [];
+  protected bindHttpRoutes(routes: Controller["httpRroutes"]) {
+    this.httpRroutes = [];
 
     for (const route of routes) {
       const handler = route.handler.bind(this);
-      this.routes.push({
+      this.httpRroutes.push({
         ...route,
         handler,
       });

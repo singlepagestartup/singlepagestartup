@@ -8,6 +8,7 @@ import { HTTPException } from "hono/http-exception";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
+import { api as billingPaymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
@@ -18,6 +19,7 @@ import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { userStories } from "@sps/sps-business-logic";
 import pako from "pako";
+import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -27,7 +29,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     this.service = service;
 
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "GET",
         path: "/",
@@ -45,7 +47,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/:uuid/checkout-attributes",
+        path: "/:uuid/checkout-attributes/:billingModuleCurrencyId",
         handler: this.checkoutAttributes,
       },
       {
@@ -126,6 +128,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         });
       }
 
+      if (!data["billingModuleCurrencyId"]) {
+        throw new HTTPException(400, {
+          message: "CurrencyId is not provided",
+        });
+      }
+
       const metadata = {
         orderId: uuid,
         email: data["email"],
@@ -182,6 +190,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       const { amount, type, interval } =
         await this.service.getCheckoutAttributes({
           id: uuid,
+          billingModuleCurrencyId: data["billingModuleCurrencyId"],
         });
 
       const paymentIntent = await billingPaymentIntentApi.create({
@@ -243,6 +252,36 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         data: {
           orderId: uuid,
           billingModulePaymentIntentId: paymentIntent.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      await ordersToBillingModuleCurrenciesApi.create({
+        data: {
+          orderId: uuid,
+          billingModuleCurrencyId: data["billingModuleCurrencyId"],
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      await billingPaymentIntentsToCurrenciesApi.create({
+        data: {
+          paymentIntentId: paymentIntent.id,
+          currencyId: data["billingModuleCurrencyId"],
         },
         options: {
           headers: {
@@ -356,19 +395,50 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
       let entity = await this.service.update({ id: uuid, data });
 
-      const checkoutAttributes = await api.checkoutAttributes({
-        id: uuid,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
       if (entity?.status === "approving") {
+        const ordersToBillingModuleCurrencies =
+          await ordersToBillingModuleCurrenciesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: uuid,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+
+        if (!ordersToBillingModuleCurrencies?.length) {
+          throw new HTTPException(404, {
+            message: "Orders to billing module currencies not found",
+          });
+        }
+
+        const checkoutAttributes = await api.checkoutAttributes({
+          id: uuid,
+          billingModuleCurrencyId:
+            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
         const ordersToProducts = await ordersToProductsApi.find({
           params: {
             filters: {
@@ -523,6 +593,35 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
+    const ordersToBillingModuleCurrencies =
+      await ordersToBillingModuleCurrenciesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+    if (!ordersToBillingModuleCurrencies?.length) {
+      throw new HTTPException(404, {
+        message: "Orders to billing module currencies not found",
+      });
+    }
+
     if (entity.status === "paying") {
       const updatedAt = new Date(entity.updatedAt).getTime();
       const expiredPayment =
@@ -620,6 +719,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
         const attributes = await this.service.getCheckoutAttributes({
           id: uuid,
+          billingModuleCurrencyId:
+            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
         });
 
         await api.update({
@@ -643,6 +744,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     } else if (entity.status === "delivering") {
       const attributes = await this.service.getCheckoutAttributes({
         id: uuid,
+        billingModuleCurrencyId:
+          ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
       });
 
       if (attributes.interval) {
@@ -870,8 +973,22 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       );
     }
 
+    const billingModuleCurrencyId = c.req.param("billingModuleCurrencyId");
+
+    if (!billingModuleCurrencyId) {
+      return c.json(
+        {
+          message: "Invalid billing module currency id",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     const attributes = await this.service.getCheckoutAttributes({
       id: uuid,
+      billingModuleCurrencyId,
     });
 
     return c.json({

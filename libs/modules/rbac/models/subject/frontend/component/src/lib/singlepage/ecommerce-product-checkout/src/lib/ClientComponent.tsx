@@ -9,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { FormField } from "@sps/ui-adapter";
+import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 
 const providers = [
   "stripe",
@@ -35,6 +36,7 @@ const formSchema = z.object({
   email: z.string().email(),
   quantity: z.number().int().positive(),
   comment: z.string().optional(),
+  billingModuleCurrencyId: z.string(),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -50,6 +52,7 @@ export function Component(props: IComponentPropsExtended) {
       email: "",
       quantity: 1,
       comment: "",
+      billingModuleCurrencyId: "",
     },
   });
 
@@ -79,6 +82,14 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Form {...form}>
         <div className="flex flex-col gap-3">
+          <BillingCurrency
+            isServer={false}
+            hostUrl={props.hostUrl}
+            variant="admin-select-input"
+            form={form}
+            formFieldName="billingModuleCurrencyId"
+            renderField="id"
+          />
           <FormField
             ui="shadcn"
             type="select"

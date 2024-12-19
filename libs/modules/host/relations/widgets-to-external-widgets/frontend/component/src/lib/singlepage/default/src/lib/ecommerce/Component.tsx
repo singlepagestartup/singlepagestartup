@@ -41,7 +41,7 @@ export function Component(props: IComponentPropsExtended) {
                   hostUrl={props.hostUrl}
                 />
               ) : null}
-              {entity.variant.includes("stores-list") ? (
+              {/* {entity.variant.includes("stores-list") ? (
                 <StoresList isServer={props.isServer} hostUrl={props.hostUrl} />
               ) : null}
               {entity.variant.includes("product-overview") ? (
@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
                   isServer={props.isServer}
                   hostUrl={props.hostUrl}
                 />
-              ) : null}
+              ) : null} */}
             </EcommerceWidget>
           );
         });

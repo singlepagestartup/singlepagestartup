@@ -69,7 +69,7 @@ export class App<SCHEMA extends Record<string, unknown>>
   }
 
   useRoutes() {
-    this.controller.routes.map((route) => {
+    this.controller.httpRoutes.map((route) => {
       if (route.middlewares) {
         route.middlewares.forEach((middleware) => {
           this.hono.use(route.path, middleware);
