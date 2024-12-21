@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
-import { Repository } from "./repository";
+import { Repository } from "../repository";
 import Stripe from "stripe";
 import {
   STRIPE_RETURN_URL,
@@ -32,6 +32,14 @@ import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
 // import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
+import {
+  Service as Cloudpayments,
+  IServiceProceedProps as ICloudpaymentsProceedProps,
+} from "./cloudpayments";
+import {
+  Service as Tiptoppay,
+  IServiceProceedProps as ITiptippayProceedProps,
+} from "./tiptoppay";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -130,6 +138,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           entity: (typeof Table)["$inferSelect"];
           action: "create";
           email: string;
+          currency: string;
           metadata: {
             email: string;
             paymentIntentId: string;
@@ -190,6 +199,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const priceQuery = await stripe.prices.list({
           product: stripeProduct.id,
           active: true,
+          currency: props.currency,
           limit: 100,
         });
 
@@ -205,7 +215,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         } else {
           stripePrice = await stripe.prices.create({
             unit_amount: +props.entity.amount * 100,
-            currency: "usd",
+            currency: props.currency,
             recurring: { interval: props.entity.interval as any },
             product: stripeProduct.id,
           });
@@ -251,13 +261,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           stripeProduct = stripeProduct.data[0];
         }
 
-        stripePrice = stripeProduct.default_price_data
-          ? stripeProduct.default_price_data
-          : await stripe.prices.create({
-              unit_amount: +props.entity.amount * 100,
-              currency: "usd",
-              product: stripeProduct.id,
-            });
+        const prices = await stripe.prices.list({
+          product: stripeProduct.id,
+          active: true,
+          currency: props.currency,
+          limit: 100,
+        });
+
+        if (prices.data.length) {
+          stripePrice = prices.data[0];
+        } else {
+          stripePrice = await stripe.prices.create({
+            unit_amount: +props.entity.amount * 100,
+            currency: props.currency,
+            product: stripeProduct.id,
+          });
+        }
 
         checkout = await stripe.checkout.sessions.create({
           line_items: [{ price: stripePrice.id, quantity: 1 }],
@@ -510,255 +529,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  async cloudpayments(
-    props:
-      | {
-          entity: (typeof Table)["$inferSelect"];
-          action: "create";
-          email: string;
-          metadata: {
-            paymentIntentId: string;
-          };
-        }
-      | {
-          action: "webhook";
-          data: {
-            TransactionId: string;
-            Amount: number;
-            Currency: "RUB" | "USD" | "EUR" | "GBP";
-            PaymentAmount: string;
-            PaymentCurrency: "RUB" | "USD" | "EUR" | "GBP";
-            DateTime: string;
-            CardId?: string;
-            CardFirstSix?: string;
-            CardLastFour?: string;
-            CardType: "Visa" | "Mastercard" | "Maestro" | "МИР";
-            CardExpDate: string;
-            TestMode: boolean;
-            Status: "Authorized" | "Completed";
-            OperationType: "Payment" | "CardPayout";
-            GatewayName?: string;
-            InvoiceId?: string;
-            AccountId?: string;
-            SubscriptionId?: string;
-            CustomFields: any;
-            Data: string;
-          };
-          rawBody: string;
-          headers: {
-            "x-content-hmac": string;
-            "content-hmac": string;
-          };
-        },
-  ) {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
-    }
+  async cloudpayments(props: ICloudpaymentsProceedProps) {
+    const cloudpayments = new Cloudpayments();
+    return cloudpayments.proceed(props);
+  }
 
-    if (!CLOUDPAYMENTS_PUBLIC_ID) {
-      throw new Error("CloudPayments public id not found");
-    }
-
-    if (!CLOUDPAYMENTS_API_SECRET) {
-      throw new Error("CloudPayments API secret not found");
-    }
-
-    if (props.action === "create") {
-      let invoice = await invoiceApi.create({
-        data: {
-          amount: props.entity.amount,
-          status: "open",
-          successUrl: HOST_URL,
-          cancelUrl: HOST_URL,
-          provider: "cloudpayments",
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      const checkoutData: {
-        Amount: number;
-        Currency: "RUB" | "USD" | "EUR" | "GBP";
-        Description: string;
-        Email: string;
-        RequireConfirmation?: boolean;
-        SendEmail?: boolean;
-        InvoiceId?: string;
-        AccountId?: string;
-        OfferUri?: string;
-        Phone?: string;
-        SendSms?: boolean;
-        SendViber?: boolean;
-        CultureName?: "ru-RU" | "en-US";
-        SubscriptionBehavior?: "CreateWeekly" | "CreateMonthly";
-        SuccessRedirectUrl?: string;
-        FailRedirectUrl?: string;
-        JsonData?: any;
-      } = {
-        Amount: props.entity.amount,
-        Currency: "RUB",
-        Description: `Checkout invoice id: ${props.entity.id}`,
-        Email: props.email,
-        JsonData: { ...props.metadata, invoiceId: invoice.id },
-      };
-
-      const checkout: {
-        Model: {
-          Id: string;
-          Number: number;
-          Amount: number;
-          Currency: (typeof checkoutData)["Currency"];
-          CurrencyCode: number;
-          Email: (typeof checkoutData)["Email"];
-          Phone: (typeof checkoutData)["Phone"];
-          Description: (typeof checkoutData)["Description"];
-          RequireConfirmation: (typeof checkoutData)["RequireConfirmation"];
-          Url: string;
-          CultureName: (typeof checkoutData)["CultureName"];
-          CreatedDate: string;
-          CreatedDateIso: string;
-          PaymentDate: null;
-          PaymentDateIso: null;
-          StatusCode: number;
-          Status: string;
-          InternalId: number;
-        };
-        Success: boolean;
-        Message: null;
-      } = await fetch("https://api.cloudpayments.ru/orders/create", {
-        method: "POST",
-        body: JSON.stringify(checkoutData),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${Buffer.from(`${CLOUDPAYMENTS_PUBLIC_ID}:${CLOUDPAYMENTS_API_SECRET}`).toString("base64")}`,
-        },
-      }).then((res) => res.json());
-
-      console.log(`🚀 ~ checkout:`, checkout);
-
-      invoice = await invoiceApi.update({
-        id: invoice.id,
-        data: {
-          ...invoice,
-          providerId: `${checkout.Model.InternalId}`,
-          paymentUrl: checkout.Model.Url,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (!invoice) {
-        throw new Error("Invoice not found");
-      }
-
-      await paymentIntentsToInvoicesApi.create({
-        data: {
-          paymentIntentId: props.entity.id,
-          invoiceId: invoice.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      return invoice;
-    } else {
-      const parsedData:
-        | {
-            orderId: string;
-            invoiceId: string;
-          }
-        | undefined = JSON.parse(props.data?.Data);
-
-      if (!parsedData) {
-        throw new Error("Data in transaction not found");
-      }
-
-      const invoices = await invoiceApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "eq",
-                value: parsedData.invoiceId,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (!invoices?.length) {
-        throw new Error("Invoice not found");
-      }
-
-      if (invoices.length > 1) {
-        throw new Error("Multiple invoices found");
-      }
-
-      let invoice = invoices[0];
-
-      const signature = crypto
-        .createHmac("sha256", CLOUDPAYMENTS_API_SECRET)
-        .update(props.rawBody)
-        .digest("base64");
-
-      if (signature !== props.headers["content-hmac"]) {
-        throw new Error("Signature mismatch");
-      }
-
-      if (props.data.Status === "Completed") {
-        invoice = await invoiceApi.update({
-          id: invoice.id,
-          data: {
-            ...invoice,
-            amount: parseInt(props.data.PaymentAmount),
-            status: "paid",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
-
-        if (!invoice) {
-          throw new Error("Invoice not found");
-        }
-
-        await this.updatePaymentIntentStatus({ invoice });
-      }
-
-      return { code: 0 };
-    }
+  async tiptoppay(props: ITiptippayProceedProps) {
+    const tiptoppay = new Tiptoppay();
+    return tiptoppay.proceed(props);
   }
 
   async OxProcessing(

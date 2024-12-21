@@ -20,6 +20,7 @@ import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { userStories } from "@sps/sps-business-logic";
 import pako from "pako";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
+import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -298,6 +299,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         data: {
           provider,
           metadata,
+          currencyId: data["billingModuleCurrencyId"],
         },
         options: {
           headers: {
@@ -425,6 +427,36 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           });
         }
 
+        const billingCurrencies = await billingCurrencyApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: ordersToBillingModuleCurrencies.map(
+                    (order) => order.billingModuleCurrencyId,
+                  ),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!billingCurrencies?.length) {
+          throw new HTTPException(404, {
+            message: "Billing currencies not found",
+          });
+        }
+
         const checkoutAttributes = await api.checkoutAttributes({
           id: uuid,
           billingModuleCurrencyId:
@@ -511,6 +543,19 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
                     ),
                   };
                 }),
+                ordersToBillingModuleCurrencies:
+                  ordersToBillingModuleCurrencies.map(
+                    (orderToBillingModuleCurrency) => {
+                      return {
+                        ...orderToBillingModuleCurrency,
+                        billingModuleCurrency: billingCurrencies.find(
+                          (billingCurrency) =>
+                            billingCurrency.id ===
+                            orderToBillingModuleCurrency.billingModuleCurrencyId,
+                        ),
+                      };
+                    },
+                  ),
               },
             },
           }),

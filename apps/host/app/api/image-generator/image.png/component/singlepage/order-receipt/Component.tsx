@@ -65,6 +65,18 @@ export function Component(props: IComponentPropsExtended) {
             fontSize: "1rem",
           }}
         >
+          Currency:{" "}
+          {
+            props.data.ecommerce.order.ordersToBillingModuleCurrencies[0]
+              .billingModuleCurrency.symbol
+          }
+        </p>
+        <p
+          style={{
+            fontFamily: "Default",
+            fontSize: "1rem",
+          }}
+        >
           props.data: {JSON.stringify(props.data)}
         </p>
       </div>

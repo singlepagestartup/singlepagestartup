@@ -17,6 +17,13 @@ export function Component(props: IComponentPropsExtended) {
           <Text>
             Amount: {props.data.ecommerce.order.checkoutAttributes.amount}
           </Text>
+          <Text>
+            Currency:{" "}
+            {
+              props.data.ecommerce.order.ordersToBillingModuleCurrencies[0]
+                .billingModuleCurrency.symbol
+            }
+          </Text>
           <Text>Component payload: {JSON.stringify(props)}</Text>
           {props.data.ecommerce.order.ordersToProducts.map(
             (orderToProduct, index) => {

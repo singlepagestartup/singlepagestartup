@@ -19,14 +19,12 @@ export interface IActionProps {
   tag?: string;
   revalidate?: number;
   id: string;
-  params?: {
-    amount: number;
-    subjectId: string;
-  };
+  params?: any;
   options?: NextRequestOptions;
   data: {
     [key: string]: any;
     provider: string;
+    currencyId: string;
   };
 }
 

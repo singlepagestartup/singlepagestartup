@@ -42,6 +42,7 @@ import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-inte
 import { mainnet } from "viem/chains";
 import { createPublicClient, http } from "viem";
 import bcrypt from "bcrypt";
+import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -1226,20 +1227,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    try {
-      await notificationTopicApi.sendAll({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
+    await notificationTopicApi.sendAll({
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-      });
-    } catch (error: any) {
-      console.error(`~ notify ~ error:`, error);
-    }
+        next: {
+          cache: "no-store",
+        },
+      },
+    });
 
     const entity = await this.service.findById({
       id: uuid,
@@ -3156,6 +3153,32 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         //   },
         // });
 
+        const ecommerceOrdersToBillingModuleCurrencies =
+          await ecommerceOrdersToBillingModuleCurrenciesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: order.id,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
+          throw new HTTPException(404, {
+            message: "No ecommerce orders to billing module currencies found",
+          });
+        }
+
         if (
           latestInvoice.provider &&
           providesWithSubscriptions.includes(latestInvoice.provider)
@@ -3171,6 +3194,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           id: paymentIntentId,
           data: {
             provider: latestInvoice.provider,
+            currencyId:
+              ecommerceOrdersToBillingModuleCurrencies[0]
+                .billingModuleCurrencyId,
             metadata: {
               email: identities[0].email,
             },

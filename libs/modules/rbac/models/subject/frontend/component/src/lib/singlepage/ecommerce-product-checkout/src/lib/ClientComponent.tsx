@@ -16,6 +16,7 @@ const providers = [
   "0xprocessing",
   "payselection",
   "payselection-international",
+  "tiptoppay",
   "cloudpayments",
   "dummy",
 ] as const;
@@ -30,6 +31,7 @@ const formSchema = z.object({
         value === "payselection" ||
         value === "payselection-international" ||
         value === "cloudpayments" ||
+        value === "tiptoppay" ||
         value === "dummy",
       "Invalid provider",
     ),
@@ -88,7 +90,6 @@ export function Component(props: IComponentPropsExtended) {
             variant="admin-select-input"
             form={form}
             formFieldName="billingModuleCurrencyId"
-            renderField="id"
           />
           <FormField
             ui="shadcn"

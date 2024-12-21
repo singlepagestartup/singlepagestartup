@@ -12,6 +12,7 @@ import {
 } from "@sps/shared-utils";
 import Stripe from "stripe";
 import { HTTPException } from "hono/http-exception";
+import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -107,6 +108,31 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
+    if (!data.currencyId) {
+      throw new HTTPException(400, {
+        message: "Currency is required",
+      });
+    }
+
+    const currency = await billingCurrencyApi.findById({
+      id: data.currencyId,
+      params: {
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      },
+    });
+
+    if (!currency) {
+      throw new HTTPException(400, {
+        message: "Currency not found",
+      });
+    }
+
+    console.log(`🚀 ~ provider ~ currency:`, currency);
+
     try {
       let result: any;
 
@@ -121,6 +147,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           entity,
           action: "create",
           email: data.metadata.email,
+          currency: currency.slug,
           metadata: {
             email: data.metadata.email,
             paymentIntentId: uuid,
@@ -167,6 +194,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         result = await this.service.cloudpayments({
           entity,
           action: "create",
+          currency: currency.slug,
+          email: data.metadata.email,
+          metadata: data.metadata,
+        });
+      } else if (provider === "tiptoppay") {
+        if (!data.metadata?.email) {
+          throw new HTTPException(400, {
+            message: "Email is required",
+          });
+        }
+
+        result = await this.service.tiptoppay({
+          entity,
+          action: "create",
+          currency: currency.slug,
           email: data.metadata.email,
           metadata: data.metadata,
         });
@@ -287,6 +329,20 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
             "x-content-hmac": headers["x-content-hmac"],
             "content-hmac": headers["content-hmac"],
           },
+          callback: this.service.updatePaymentIntentStatus,
+        });
+      }
+    } else if (provider === "tiptoppay") {
+      if ("x-content-hmac" in headers && "content-hmac" in headers) {
+        result = await this.service.tiptoppay({
+          data,
+          action: "webhook",
+          rawBody,
+          headers: {
+            "x-content-hmac": headers["x-content-hmac"],
+            "content-hmac": headers["content-hmac"],
+          },
+          callback: this.service.updatePaymentIntentStatus,
         });
       }
     } else if (provider === "dummy") {
