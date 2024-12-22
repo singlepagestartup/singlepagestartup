@@ -52,7 +52,7 @@ export class Configuration extends ParentConfiguration {
                     (seed) =>
                       seed.name === "currency" &&
                       seed.type === "model" &&
-                      seed.module === "billing-module",
+                      seed.module === "billing",
                   )
                   ?.seeds?.filter(
                     (seed) =>

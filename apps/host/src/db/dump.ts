@@ -2,6 +2,7 @@ import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
@@ -27,6 +28,11 @@ import { exit } from "process";
   });
 
   await blogApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await billingApp.dump({
     type: "model",
     dumps: [],
   });
@@ -72,6 +78,11 @@ import { exit } from "process";
   });
 
   await blogApp.dump({
+    type: "relation",
+    dumps: [],
+  });
+
+  await billingApp.dump({
     type: "relation",
     dumps: [],
   });

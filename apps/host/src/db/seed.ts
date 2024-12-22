@@ -3,6 +3,7 @@ import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
@@ -68,6 +69,17 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     });
   } else {
     seeds.push(notificationModelsSeeds);
+  }
+  const billingModelsSeeds = await billingApp.seed({
+    type: "model",
+    seeds,
+  });
+  if (Array.isArray(billingModelsSeeds)) {
+    billingModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(billingModelsSeeds);
   }
   const ecommerceModelsSeeds = await ecommerceApp.seed({
     type: "model",
@@ -167,6 +179,17 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     });
   } else {
     seeds.push(crmRelationsSeeds);
+  }
+  const billingRelationsSeeds = await billingApp.seed({
+    type: "relation",
+    seeds,
+  });
+  if (Array.isArray(billingRelationsSeeds)) {
+    billingRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(billingRelationsSeeds);
   }
   const ecommerceRelationsSeeds = await ecommerceApp.seed({
     type: "relation",

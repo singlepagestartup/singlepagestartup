@@ -17,12 +17,12 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: false,
+          active: true,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: false,
+          active: true,
           module: "notification",
           name: "topic",
           type: "model",
