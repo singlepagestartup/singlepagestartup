@@ -14,7 +14,7 @@ export class Filter implements IFilter {
     error: Error | HTTPResponseError,
     c: Context<any>,
   ): Response | Promise<Response> {
-    console.error("Exception Filter | ", c.req.url, error.message);
+    console.error("Exception Filter | ", c.req.path, error);
 
     if (error instanceof HTTPException) {
       try {
