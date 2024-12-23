@@ -37,7 +37,7 @@ export class Handler {
     }
 
     try {
-      this.service.clearAnonymusSessions();
+      this.service.deleteAnonymousSubjects();
 
       const entity = await api.create({
         data: {},

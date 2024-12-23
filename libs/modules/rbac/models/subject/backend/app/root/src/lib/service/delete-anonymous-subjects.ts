@@ -12,7 +12,7 @@ export class Service {
     this.repository = repository;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props?: IExecuteProps) {
     try {
       if (!RBAC_SECRET_KEY) {
         throw new Error("RBAC_SECRET_KEY is not defined in the service");

@@ -79,7 +79,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new EthereumVirtualMachine(this.repository).execute(props);
   }
 
-  async deleteAnonymousSubjects(props: IDeleteAnonymousSubjectsExecuteProps) {
+  async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {
     return new DeleteAnonymousSubjects(this.repository).execute(props);
   }
 
