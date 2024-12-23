@@ -1,9 +1,0 @@
-{
-  "id": "c886c702-f5e5-428e-81c9-ba37c4d0ab75",
-  "createdAt": "2024-08-16T20:30:24.253Z",
-  "updatedAt": "2024-08-16T20:30:24.253Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "DELETE",
-  "path": "/api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]"
-}

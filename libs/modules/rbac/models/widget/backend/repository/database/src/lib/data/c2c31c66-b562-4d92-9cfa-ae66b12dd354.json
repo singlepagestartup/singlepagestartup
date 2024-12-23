@@ -4,5 +4,6 @@
   "id": "c2c31c66-b562-4d92-9cfa-ae66b12dd354",
   "createdAt": "2024-10-01T23:03:41.597Z",
   "updatedAt": "2024-10-01T23:03:46.966Z",
-  "variant": "login"
+  "variant": "login",
+  "slug": null
 }

@@ -1,9 +1,10 @@
 {
-  "title": "Welcome",
+  "title": "Website Builder Welcome",
   "id": "7d500540-8a1b-407f-8103-9489d9ac5ce0",
   "createdAt": "2024-08-16T20:30:24.150Z",
-  "updatedAt": "2024-08-16T20:30:24.150Z",
+  "updatedAt": "2024-11-18T22:00:58.522Z",
   "variant": "default",
   "className": "",
-  "orderIndex": null
+  "orderIndex": null,
+  "slug": null
 }

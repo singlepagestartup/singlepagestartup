@@ -1,9 +1,10 @@
 {
-  "title": "Stores List",
+  "title": "Ecommerce Stores List",
   "id": "90529f3d-c2b9-4195-8883-bd226d13fe62",
   "createdAt": "2024-11-09T22:21:05.843Z",
-  "updatedAt": "2024-11-09T22:21:05.843Z",
+  "updatedAt": "2024-11-18T22:00:17.320Z",
   "variant": "default",
   "className": "",
-  "orderIndex": null
+  "orderIndex": null,
+  "slug": null
 }

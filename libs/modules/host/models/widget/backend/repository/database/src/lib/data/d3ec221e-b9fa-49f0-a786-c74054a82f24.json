@@ -1,9 +1,10 @@
 {
-  "title": "Footer",
+  "title": "Website Builder Footer",
   "id": "d3ec221e-b9fa-49f0-a786-c74054a82f24",
   "createdAt": "2024-08-16T20:30:24.151Z",
-  "updatedAt": "2024-08-16T20:30:24.151Z",
+  "updatedAt": "2024-11-18T22:00:40.341Z",
   "variant": "default",
   "className": "",
-  "orderIndex": null
+  "orderIndex": null,
+  "slug": null
 }

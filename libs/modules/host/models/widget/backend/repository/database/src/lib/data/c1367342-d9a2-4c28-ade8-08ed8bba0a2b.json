@@ -1,9 +1,10 @@
 {
-  "title": "Registration",
+  "title": "Rbac Registration",
   "id": "c1367342-d9a2-4c28-ade8-08ed8bba0a2b",
   "createdAt": "2024-10-01T23:07:33.080Z",
-  "updatedAt": "2024-10-01T23:07:33.080Z",
+  "updatedAt": "2024-11-18T22:00:23.433Z",
   "variant": "default",
   "className": "",
-  "orderIndex": null
+  "orderIndex": null,
+  "slug": null
 }

@@ -1,9 +1,0 @@
-{
-  "id": "c3c40b64-ceb2-4e42-b1dc-977377d8cc59",
-  "createdAt": "2024-11-07T12:47:41.524Z",
-  "updatedAt": "2024-11-07T12:47:41.524Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "PATCH",
-  "path": "/api/rbac/identities/[rbac.identities.id]/change-password"
-}

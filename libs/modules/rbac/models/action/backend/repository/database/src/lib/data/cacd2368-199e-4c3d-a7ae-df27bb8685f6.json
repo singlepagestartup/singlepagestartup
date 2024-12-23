@@ -1,0 +1,9 @@
+{
+  "id": "cacd2368-199e-4c3d-a7ae-df27bb8685f6",
+  "createdAt": "2024-11-27T18:21:42.002Z",
+  "updatedAt": "2024-11-27T19:00:07.665Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/identities"
+}

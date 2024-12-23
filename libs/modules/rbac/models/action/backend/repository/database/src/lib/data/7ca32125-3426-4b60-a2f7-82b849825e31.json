@@ -1,9 +1,0 @@
-{
-  "id": "7ca32125-3426-4b60-a2f7-82b849825e31",
-  "createdAt": "2024-08-16T20:30:24.253Z",
-  "updatedAt": "2024-08-16T20:30:24.253Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "DELETE",
-  "path": "/api/ecommerce/orders/[ecommerce.orders.id]"
-}

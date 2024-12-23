@@ -4,5 +4,6 @@
   "title": "Article Overview",
   "createdAt": "2024-09-07T21:09:37.532Z",
   "updatedAt": "2024-09-07T21:09:42.093Z",
-  "variant": "article-overview-default"
+  "variant": "article-overview-default",
+  "slug": null
 }
