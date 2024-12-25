@@ -3,6 +3,7 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
+import { SelectSeparator } from "@sps/shared-ui-shadcn";
 
 export function Component(
   props: ISpsComponentBase & {
@@ -17,7 +18,7 @@ export function Component(
         }
 
         return (
-          <div className="flex flex-col gap-2">
+          <div className="w-full flex flex-col gap-4">
             <RbacSubject
               isServer={false}
               hostUrl={props.hostUrl}
@@ -25,6 +26,7 @@ export function Component(
               data={subject}
               product={props.product}
             />
+            <SelectSeparator className="my-2" />
             <RbacSubject
               isServer={false}
               hostUrl={props.hostUrl}

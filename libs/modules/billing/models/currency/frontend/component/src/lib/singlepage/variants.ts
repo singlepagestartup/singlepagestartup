@@ -4,6 +4,7 @@ import { Component as AdminTable } from "./admin-table";
 import { Component as AdminSelectInput } from "./admin-select-input";
 import { Component as AdminForm } from "./admin-form";
 import { Component as Default } from "./default";
+import { Component as ToggleGroupDefault } from "./toggle-group-default";
 
 export const variants = {
   "admin-table-row": AdminTableRow,
@@ -12,4 +13,5 @@ export const variants = {
   "admin-form": AdminForm,
   default: Default,
   find: find,
+  "toggle-group-default": ToggleGroupDefault,
 };

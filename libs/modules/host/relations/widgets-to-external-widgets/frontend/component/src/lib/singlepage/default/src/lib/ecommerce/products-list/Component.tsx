@@ -12,7 +12,7 @@ export function Component(props: ISpsComponentBase) {
               key={index}
               isServer={props.isServer}
               hostUrl={props.hostUrl}
-              variant="default"
+              variant="card-default"
               data={entity}
             >
               <ProductAction

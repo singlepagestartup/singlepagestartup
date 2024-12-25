@@ -60,6 +60,13 @@ export type TTypedProps =
       radioGroupItemClassName?: string;
       labelClassName?: string;
       itemClassName?: string;
+    }
+  | {
+      type: "toggle-group";
+      options: [value: string, title: string | TRenderComponent][];
+      toggleGroupItemClassName?: string;
+      labelClassName?: string;
+      itemClassName?: string;
     };
 
 export type IComponentProps = IUniversalProps & TTypedProps;

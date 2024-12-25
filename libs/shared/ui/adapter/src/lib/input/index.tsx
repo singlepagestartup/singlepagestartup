@@ -15,6 +15,8 @@ import {
   RadioGroup,
   RadioGroupItem,
   Label,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@sps/shared-ui-shadcn";
 import { IComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
@@ -196,6 +198,30 @@ export const Component = (props: IComponentProps) => {
           );
         })}
       </RadioGroup>
+    );
+  }
+
+  if (props.type === "toggle-group") {
+    return (
+      <ToggleGroup
+        type="single"
+        onValueChange={props.field.onChange}
+        defaultValue={props.field.value}
+        disabled={props.disabled}
+        className={props.className}
+      >
+        {props.options.map((option, index) => {
+          return (
+            <ToggleGroupItem
+              key={index}
+              className={props.itemClassName}
+              value={option[0]}
+            >
+              {typeof option[1] === "function" ? option[1](option) : option[1]}
+            </ToggleGroupItem>
+          );
+        })}
+      </ToggleGroup>
     );
   }
 

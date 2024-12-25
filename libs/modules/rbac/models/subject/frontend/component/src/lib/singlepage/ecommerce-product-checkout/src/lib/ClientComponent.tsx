@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { FormField } from "@sps/ui-adapter";
 import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
+import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 
 const providers = [
   "stripe",
@@ -83,18 +84,18 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className)}
     >
       <Form {...form}>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <BillingCurrency
             isServer={false}
             hostUrl={props.hostUrl}
-            variant="admin-select-input"
+            variant="toggle-group-default"
             form={form}
             formFieldName="billingModuleCurrencyId"
+            className="w-fit"
           />
           <FormField
             ui="shadcn"
             type="select"
-            label="Provider"
             name="provider"
             form={form}
             placeholder="Select provider"
@@ -103,24 +104,43 @@ export function Component(props: IComponentPropsExtended) {
           <FormField
             ui="shadcn"
             type="text"
-            label="Email"
             name="email"
             form={form}
-            placeholder="Type your email"
+            placeholder="Email for a bill"
             className="w-full"
           />
           <FormField
             ui="shadcn"
             type="text"
-            label="Comment"
             name="comment"
             form={form}
-            placeholder="Type comment"
+            placeholder="Comment"
             className="w-full"
           />
 
-          <Button onClick={form.handleSubmit(onSubmit)} variant="primary">
-            One step checkout
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            variant="primary"
+            disabled={productCheckout.isPending}
+          >
+            <div className="w-full flex justify-center items-center gap-1">
+              One step checkout
+              {form.watch("billingModuleCurrencyId") ? (
+                <div className="w-fit flex items-center gap-2">
+                  for
+                  <EcommerceProduct
+                    isServer={false}
+                    hostUrl={props.hostUrl}
+                    variant="price-default"
+                    data={props.product}
+                    className="text-white"
+                    billingModuleCurrencyId={form.watch(
+                      "billingModuleCurrencyId",
+                    )}
+                  />
+                </div>
+              ) : null}
+            </div>
           </Button>
         </div>
       </Form>
