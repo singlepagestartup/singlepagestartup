@@ -8,6 +8,7 @@ import { SelectSeparator } from "@sps/shared-ui-shadcn";
 export function Component(
   props: ISpsComponentBase & {
     product: IProduct;
+    billingModuleCurrencyId?: string;
   },
 ) {
   return (
@@ -25,6 +26,7 @@ export function Component(
               variant="ecommerce-product-checkout"
               data={subject}
               product={props.product}
+              billingModuleCurrencyId={props.billingModuleCurrencyId}
             />
             <SelectSeparator className="my-2" />
             <RbacSubject

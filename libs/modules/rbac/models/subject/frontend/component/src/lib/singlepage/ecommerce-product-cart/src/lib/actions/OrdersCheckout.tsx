@@ -9,6 +9,7 @@ import { z } from "zod";
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
+import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 
 const providers = [
   "stripe",
@@ -31,6 +32,7 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.string().email(),
+  billingModuleCurrencyId: z.string(),
 });
 
 export function Component(
@@ -48,6 +50,7 @@ export function Component(
     defaultValues: {
       provider: "stripe",
       email: "",
+      billingModuleCurrencyId: "",
     },
   });
 
@@ -69,11 +72,18 @@ export function Component(
 
   return (
     <Form {...form}>
-      <div className="flex flex-col w-full gap-1">
+      <div className="flex flex-col w-full gap-2">
+        <BillingCurrency
+          isServer={false}
+          hostUrl={props.hostUrl}
+          variant="toggle-group-default"
+          form={form}
+          formFieldName="billingModuleCurrencyId"
+          className="w-fit"
+        />
         <FormField
           ui="shadcn"
           type="select"
-          label="Provider"
           name="provider"
           form={form}
           placeholder="Select provider"
@@ -82,15 +92,15 @@ export function Component(
         <FormField
           ui="shadcn"
           type="text"
-          label="Email for invoice"
           name="email"
           form={form}
-          placeholder="Type email"
+          placeholder="Email for invoice"
         />
         <Button
           onClick={form.handleSubmit(onSubmit)}
           variant="primary"
           className="w-full flex flex-shrink-0"
+          disabled={checkoutEntity.isPending}
         >
           Checkout
         </Button>

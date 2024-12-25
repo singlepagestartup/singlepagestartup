@@ -11,6 +11,7 @@ export const variant = "ecommerce-product-checkout" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   product: IProduct;
+  billingModuleCurrencyId?: string;
 }
 
 export interface IComponentPropsExtended

@@ -4,6 +4,7 @@ import { Component as ProductsList } from "./products-list/Component";
 import { Component as StoresList } from "./stores-list/Component";
 import { Component as ProductOverview } from "./product-overview/Component";
 import { Component as CategoryOverview } from "./category-overview/Component";
+import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -36,10 +37,34 @@ export function Component(props: IComponentPropsExtended) {
               data={entity}
             >
               {entity.variant.includes("products-list") ? (
-                <ProductsList
+                <BillingCurrency
                   isServer={props.isServer}
                   hostUrl={props.hostUrl}
-                />
+                  variant="find"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "isDefault",
+                            method: "eq",
+                            value: true,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                >
+                  {({ data }) => {
+                    return (
+                      <ProductsList
+                        isServer={props.isServer}
+                        hostUrl={props.hostUrl}
+                        billingModuleCurrencyId={data?.[0]?.id}
+                      />
+                    );
+                  }}
+                </BillingCurrency>
               ) : null}
               {/* {entity.variant.includes("stores-list") ? (
                 <StoresList isServer={props.isServer} hostUrl={props.hostUrl} />

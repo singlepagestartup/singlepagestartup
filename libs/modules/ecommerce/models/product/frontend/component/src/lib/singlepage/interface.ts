@@ -7,6 +7,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default";
 import { IComponentProps as ICardDefaultComponentProps } from "./card-default";
 import { IComponentProps as IPriceDefaultComponentProps } from "./price-default";
+import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency-toggle-group-default";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -18,4 +19,5 @@ export type IComponentProps =
   | IOverviewDefaultComponentProps
   | ICardDefaultComponentProps
   | IPriceDefaultComponentProps
+  | ICurrencyToggleGroupDefaultComponentProps
   | never;

@@ -5,6 +5,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export function Component(
   props: ISpsComponentBase & {
     product: IProduct;
+    billingModuleCurrencyId?: string;
   },
 ) {
   return (
@@ -14,6 +15,7 @@ export function Component(
       product={props.product}
       className={props.className}
       skeleton={props.skeleton}
+      billingModuleCurrencyId={props.billingModuleCurrencyId}
     />
   );
 }

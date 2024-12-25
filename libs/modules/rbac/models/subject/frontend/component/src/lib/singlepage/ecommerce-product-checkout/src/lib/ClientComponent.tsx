@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
       email: "",
       quantity: 1,
       comment: "",
-      billingModuleCurrencyId: "",
+      billingModuleCurrencyId: props.billingModuleCurrencyId || "",
     },
   });
 
@@ -85,13 +85,14 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Form {...form}>
         <div className="flex flex-col gap-2">
-          <BillingCurrency
+          <EcommerceProduct
             isServer={false}
             hostUrl={props.hostUrl}
-            variant="toggle-group-default"
+            variant="currency-toggle-group-default"
             form={form}
             formFieldName="billingModuleCurrencyId"
             className="w-fit"
+            data={props.product}
           />
           <FormField
             ui="shadcn"

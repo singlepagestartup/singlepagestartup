@@ -2,7 +2,11 @@ import { Component as Product } from "@sps/ecommerce/models/product/frontend/com
 import { Component as ProductAction } from "../product-action/Component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(
+  props: ISpsComponentBase & {
+    billingModuleCurrencyId?: string;
+  },
+) {
   return (
     <Product isServer={props.isServer} hostUrl={props.hostUrl} variant="find">
       {({ data }) => {
@@ -19,6 +23,7 @@ export function Component(props: ISpsComponentBase) {
                 isServer={props.isServer}
                 hostUrl={props.hostUrl}
                 product={entity}
+                billingModuleCurrencyId={props.billingModuleCurrencyId}
               />
             </Product>
           );

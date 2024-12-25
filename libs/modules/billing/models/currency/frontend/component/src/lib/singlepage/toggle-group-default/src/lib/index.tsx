@@ -11,7 +11,7 @@ export function Component(props: IComponentProps) {
 
   return (
     <ErrorBoundary fallback={Error}>
-      <Suspense fallback={props.Skeleton ?? <Skeleton />}>
+      <Suspense fallback={props.skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} />
         </Provider>
