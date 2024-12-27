@@ -6,19 +6,21 @@ import { z } from "zod";
 export const insertSchema = createInsertSchema(Table, {
   date: z
     .string()
-    .refine((val) => /^\d{4}-\d{2}-\d{2}$/.test(val), {
+    .nullable()
+    .refine((val) => val && /^\d{4}-\d{2}-\d{2}$/.test(val), {
       message: "Invalid date format, expected YYYY-MM-DD",
     })
-    .refine((val) => !isNaN(Date.parse(val)), {
+    .refine((val) => val && !isNaN(Date.parse(val)), {
       message: "Invalid date",
     })
-    .transform((val) => new Date(val)),
+    .transform((val) => (val ? new Date(val) : null)),
   datetime: z
     .string()
-    .refine((val) => !isNaN(Date.parse(val)), {
+    .nullable()
+    .refine((val) => val && !isNaN(Date.parse(val)), {
       message: "Invalid date format",
     })
-    .transform((val) => new Date(val)),
+    .transform((val) => (val ? new Date(val) : null)),
 });
 export const selectSchema = createSelectSchema(Table);
 export type ISelectSchema = typeof Table.$inferSelect;

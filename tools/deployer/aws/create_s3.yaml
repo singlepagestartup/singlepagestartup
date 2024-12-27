@@ -26,8 +26,7 @@
               pip:
                 name: "{{ item }}"
                 state: present
-                executable: pip3
-                extra_args: --no-build-isolation --break-system-packages
+                virtualenv: /opt/venv
               loop:
                 - boto
                 - boto3
@@ -41,8 +40,7 @@
               pip:
                 name: "{{ item }}"
                 state: present
-                executable: pip3
-                extra_args: --no-build-isolation
+                virtualenv: /opt/venv
               loop:
                 - boto
                 - boto3

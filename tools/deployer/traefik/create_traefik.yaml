@@ -62,8 +62,8 @@
         - name: Install jsondiff Python package
           pip:
             name: jsondiff
-            executable: pip3
-            extra_args: --no-build-isolation --break-system-packages
+            state: present
+            virtualenv: /opt/venv
       when: ansible_system_vendor == "DigitalOcean"
 
     - name: If not DigitalOcean
@@ -71,8 +71,8 @@
         - name: Install jsondiff Python package
           pip:
             name: jsondiff
-            executable: pip3
-            extra_args: --no-build-isolation
+            state: present
+            virtualenv: /opt/venv
       when: ansible_system_vendor != "DigitalOcean"
 
     - name: Run Traefik service
