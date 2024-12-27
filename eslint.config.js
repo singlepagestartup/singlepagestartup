@@ -1,6 +1,6 @@
-import { defineConfig } from "eslint-define-config";
+const { defineConfig } = require("eslint-define-config");
 
-export default defineConfig({
+module.exports = defineConfig({
   root: true,
   plugins: ["@nx", "@typescript-eslint", "prettier"],
   extends: ["eslint:recommended", "prettier"],
@@ -31,17 +31,17 @@ export default defineConfig({
         "plugin:@nx/typescript",
       ],
       rules: {
-        "@typescript-eslint/no-explicit-any": ["warn"],
-        "@typescript-eslint/no-unused-vars": ["warn"],
-        "@typescript-eslint/ban-ts-comment": ["warn"],
-        "@typescript-eslint/no-empty-function": ["off"],
-        "@typescript-eslint/no-non-null-asserted-optional-chain": ["warn"],
-        "@typescript-eslint/no-var-requires": ["off"],
-        "@typescript-eslint/consistent-type-definitions": ["off"],
-        "@typescript-eslint/no-empty-interface": ["off"],
-        "@typescript-eslint/no-unused-expressions": ["off"],
-        "no-prototype-builtins": ["warn"],
-        "no-self-assign": ["warn"],
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-unused-vars": "warn",
+        "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "no-prototype-builtins": "warn",
+        "no-self-assign": "warn",
         "@typescript-eslint/ban-types": "off",
         "@nx/enforce-module-boundaries": [
           "off",
@@ -63,9 +63,9 @@ export default defineConfig({
       files: ["*.js", "*.jsx"],
       extends: ["plugin:@nx/javascript"],
       rules: {
-        "@typescript-eslint/no-unused-vars": ["warn"],
-        "no-prototype-builtins": ["warn"],
-        "no-self-assign": ["warn"],
+        "@typescript-eslint/no-unused-vars": "warn",
+        "no-prototype-builtins": "warn",
+        "no-self-assign": "warn",
         "@nx/enforce-module-boundaries": [
           "error",
           {
@@ -92,15 +92,16 @@ export default defineConfig({
   ],
   rules: {
     "prettier/prettier": "error",
-    "comma-dangle": ["off"],
+    "comma-dangle": "off",
     quotes: ["warn", "double"],
-    semi: ["off"],
+    semi: "off",
     "no-duplicate-imports": "error",
-    "no-empty-pattern": ["off"],
-    "array-callback-return": ["off"],
-    indent: ["off"],
-    "multiline-ternary": ["off"],
-    "no-loss-of-precision": ["off"],
-    "no-prototype-builtins": ["warn"],
+    "no-empty-pattern": "off",
+    "array-callback-return": "off",
+    indent: "off",
+    "multiline-ternary": "off",
+    "no-loss-of-precision": "off",
+    "no-prototype-builtins": "warn",
   },
+  ignores: ["node_modules", ".nx", "dist", "tmp"],
 });

@@ -3,11 +3,10 @@
   "targetDefaults": {
     "eslint:lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
       "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
       "options": {
-        "ignorePath": ".eslintignore",
-        "eslintConfig": ".eslintrc.json",
+        "eslintConfig": "eslint.config.js",
         "quiet": false
       }
     },
@@ -47,7 +46,7 @@
     }
   },
   "namedInputs": {
-    "default": [],
+    "default": ["{projectRoot}/**/*"],
     "production": [],
     "sharedGlobals": []
   },
