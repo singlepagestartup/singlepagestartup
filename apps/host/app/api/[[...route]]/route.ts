@@ -13,7 +13,7 @@ import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
-import { ExceptionFilter } from "@sps/shared-backend-api";
+import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
 import { ErrorHandler } from "hono/types";
 import {
   IsAuthorizedMiddleware,
@@ -21,8 +21,7 @@ import {
   HTTPCacheMiddleware,
   ObserverMiddleware,
 } from "@sps/middlewares";
-import { MIDDLEWARE_HTTP_CACHE, TELEGRAM_BOT_TOKEN } from "@sps/shared-utils";
-import { ParseQueryMiddleware } from "@sps/shared-backend-api";
+import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

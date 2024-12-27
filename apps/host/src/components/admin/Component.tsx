@@ -21,6 +21,7 @@ import { AdminComponent as Startup } from "@sps/startup/frontend/component";
 export function Component(props: IComponentPropsExtended) {
   const params = useSearchParams();
   const adminQueryParams = params.get("admin");
+  const z = "";
 
   const [widget, setWidget] = useState<string>("host");
 

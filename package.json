@@ -7,7 +7,7 @@
     "host:dev": "nx run host:next:dev",
     "host:production": "NODE_ENV=production npm run host:build && npm run host:start",
     "host:start": "nx run host:next:start",
-    "lint": "nx run-many --target=lint --parallel=2 --all",
+    "lint": "nx run-many --target=eslint:lint --parallel=2 --all",
     "prepare": "husky"
   },
   "dependencies": {

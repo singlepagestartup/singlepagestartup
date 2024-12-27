@@ -13,9 +13,8 @@ import { Component as SpsRbacSubject } from "@sps/rbac/models/subject/frontend/c
 import { Provider as SpsRbacProvider } from "@sps/rbac/frontend/component";
 import { App as SpsBroadcast } from "@sps/broadcast/frontend/component";
 import Loading from "./loading";
-import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID } from "@sps/shared-utils";
-import { GoogleAnalytics } from "@next/third-parties/google";
 
 export default async function RootLayout({
   children,

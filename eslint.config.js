@@ -1,107 +1,100 @@
-const { defineConfig } = require("eslint-define-config");
+const { defineFlatConfig } = require("eslint-define-config");
+const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
+const typescriptParser = require("@typescript-eslint/parser");
+const jsoncParser = require("jsonc-eslint-parser");
+const prettier = require("eslint-plugin-prettier");
 
-module.exports = defineConfig({
-  root: true,
-  plugins: ["@nx", "@typescript-eslint", "prettier"],
-  extends: ["eslint:recommended", "prettier"],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: ["./tsconfig.base.json"],
+module.exports = defineFlatConfig([
+  {
+    ignores: ["node_modules/", ".nx/", "dist/", "tmp/", "apps/host/.next/"],
   },
-  settings: {
-    "import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"],
-    },
-    "import/resolver": {
-      typescript: {
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
         project: ["./tsconfig.base.json"],
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
-  },
-  overrides: [
-    {
-      files: ["*.json"],
-      parser: "jsonc-eslint-parser",
-      rules: {},
+    plugins: {
+      "@typescript-eslint": typescriptPlugin,
+      prettier: prettier,
     },
-    {
-      files: ["*.ts", "*.tsx"],
-      extends: [
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@nx/typescript",
+    rules: {
+      ...typescriptPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+      "@typescript-eslint/no-var-requires": "off",
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "@typescript-eslint/no-empty-interface": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/ban-types": "off",
+      "prettier/prettier": "error",
+      "@typescript-eslint/no-empty-object-type": "off",
+    },
+  },
+  {
+    files: ["**/*.js", "**/*.jsx"],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+    },
+    plugins: {
+      "@nx": require("@nx/eslint-plugin"),
+    },
+    rules: {
+      "no-prototype-builtins": "warn",
+      "no-self-assign": "warn",
+      "@nx/enforce-module-boundaries": [
+        "error",
+        {
+          enforceBuildableLibDependency: false,
+          banTransitiveDependencies: true,
+          allow: [],
+          depConstraints: [
+            {
+              sourceTag: "*",
+              onlyDependOnLibsWithTags: ["*"],
+            },
+          ],
+        },
       ],
-      rules: {
-        "@typescript-eslint/no-explicit-any": "warn",
-        "@typescript-eslint/no-unused-vars": "warn",
-        "@typescript-eslint/ban-ts-comment": "warn",
-        "@typescript-eslint/no-empty-function": "off",
-        "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
-        "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/consistent-type-definitions": "off",
-        "@typescript-eslint/no-empty-interface": "off",
-        "@typescript-eslint/no-unused-expressions": "off",
-        "no-prototype-builtins": "warn",
-        "no-self-assign": "warn",
-        "@typescript-eslint/ban-types": "off",
-        "@nx/enforce-module-boundaries": [
-          "off",
-          {
-            enforceBuildableLibDependency: false,
-            banTransitiveDependencies: true,
-            allow: [],
-            depConstraints: [
-              {
-                sourceTag: "*",
-                onlyDependOnLibsWithTags: ["*"],
-              },
-            ],
-          },
-        ],
-      },
     },
-    {
-      files: ["*.js", "*.jsx"],
-      extends: ["plugin:@nx/javascript"],
-      rules: {
-        "@typescript-eslint/no-unused-vars": "warn",
-        "no-prototype-builtins": "warn",
-        "no-self-assign": "warn",
-        "@nx/enforce-module-boundaries": [
-          "error",
-          {
-            enforceBuildableLibDependency: false,
-            banTransitiveDependencies: true,
-            allow: [],
-            depConstraints: [
-              {
-                sourceTag: "*",
-                onlyDependOnLibsWithTags: ["*"],
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      files: ["./package.json", "./generators.json"],
-      parser: "jsonc-eslint-parser",
-      rules: {
-        "@nx/nx-plugin-checks": "warn",
-      },
-    },
-  ],
-  rules: {
-    "prettier/prettier": "error",
-    "comma-dangle": "off",
-    quotes: ["warn", "double"],
-    semi: "off",
-    "no-duplicate-imports": "error",
-    "no-empty-pattern": "off",
-    "array-callback-return": "off",
-    indent: "off",
-    "multiline-ternary": "off",
-    "no-loss-of-precision": "off",
-    "no-prototype-builtins": "warn",
   },
-  ignores: ["node_modules", ".nx", "dist", "tmp"],
-});
+  {
+    files: ["**/*.json"],
+    languageOptions: {
+      parser: jsoncParser,
+    },
+    rules: {},
+  },
+  {
+    files: ["./package.json", "./generators.json"],
+    languageOptions: {
+      parser: jsoncParser,
+    },
+    rules: {
+      "@nx/nx-plugin-checks": "warn",
+    },
+  },
+  {
+    rules: {
+      "comma-dangle": "off",
+      quotes: ["warn", "double"],
+      semi: "off",
+      "no-duplicate-imports": "error",
+      "no-empty-pattern": "off",
+      "array-callback-return": "off",
+      indent: "off",
+      "multiline-ternary": "off",
+      "no-loss-of-precision": "off",
+      "no-prototype-builtins": "warn",
+    },
+  },
+]);
