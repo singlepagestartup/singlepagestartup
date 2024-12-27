@@ -21,12 +21,12 @@
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
+    "next-env.d.ts",
     "../../apps/host/.next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
