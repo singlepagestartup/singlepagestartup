@@ -37,6 +37,7 @@ module.exports = defineFlatConfig([
       "@typescript-eslint/ban-types": "off",
       "prettier/prettier": "error",
       "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-unsafe-function-type": "warn",
     },
   },
   {
