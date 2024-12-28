@@ -146,7 +146,7 @@
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-migrate"
@@ -170,9 +170,6 @@
             "command": "nx run @sps/ecommerce:relations:stores-to-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate"
-          },
-          {
             "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-migrate"
           },
           {
@@ -189,6 +186,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate"
           }
         ]
       }

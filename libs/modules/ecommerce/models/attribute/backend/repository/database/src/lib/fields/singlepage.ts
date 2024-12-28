@@ -8,6 +8,6 @@ export const fields = {
   string: pgCore.text("string"),
   number: pgCore.numeric("number"),
   boolean: pgCore.boolean("boolean"),
-  date: pgCore.date("date"),
+  date: pgCore.timestamp("date"),
   datetime: pgCore.timestamp("datetime"),
 };

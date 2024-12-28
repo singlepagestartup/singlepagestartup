@@ -156,7 +156,10 @@ export class Database<T extends PgTableWithColumns<any>>
           data[key] = new Date();
         }
 
-        if (["expiresAt"].includes(key) && typeof data[key] === "string") {
+        if (
+          ["expiresAt", "date", "datetime", "sendAfter"].includes(key) &&
+          typeof data[key] === "string"
+        ) {
           data[key] = new Date(data[key]);
         }
       });
@@ -237,7 +240,10 @@ export class Database<T extends PgTableWithColumns<any>>
           data[key] = new Date();
         }
 
-        if (["expiresAt"].includes(key) && typeof data[key] === "string") {
+        if (
+          ["expiresAt", "date", "datetime", "sendAfter"].includes(key) &&
+          typeof data[key] === "string"
+        ) {
           data[key] = new Date(data[key]);
         }
       });
