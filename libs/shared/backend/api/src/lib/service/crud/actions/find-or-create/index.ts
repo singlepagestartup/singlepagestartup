@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { type IRepository } from "../../../../repository";
 import { DI } from "../../../../di/constants";
 import { QueryBuilderFilterMethods } from "../../../../configuration";
-import { StatusCode } from "hono/utils/http-status";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class Action<SCHEMA extends Record<string, unknown>> {
@@ -31,11 +31,11 @@ export class Action<SCHEMA extends Record<string, unknown>> {
     });
 
     if (findResult?.length) {
-      return { entity: findResult[0], statusCode: 200 as StatusCode };
+      return { entity: findResult[0], statusCode: 200 as ContentfulStatusCode };
     }
 
     const result = await this.repository.insert(data);
 
-    return { entity: result, statusCode: 201 as StatusCode };
+    return { entity: result, statusCode: 201 as ContentfulStatusCode };
   }
 }

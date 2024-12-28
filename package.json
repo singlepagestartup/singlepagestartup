@@ -1,5 +1,5 @@
 {
-  "name": "sps-lite",
+  "name": "singlepagestartup",
   "private": true,
   "scripts": {
     "format": "nx format:write --all",

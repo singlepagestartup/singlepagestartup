@@ -15,7 +15,7 @@ import { type IRepository } from "../../repository/interface";
 import { IService } from "../interface";
 import { FindServiceProps } from "../../services/interfaces";
 import { IDumpResult, ISeedResult } from "../../configuration";
-import { StatusCode } from "hono/utils/http-status";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 
 @injectable()
 export class Service<DTO extends Record<string, unknown>>
@@ -44,7 +44,7 @@ export class Service<DTO extends Record<string, unknown>>
 
   async findOrCreate(props: {
     data: any;
-  }): Promise<{ entity: DTO; statusCode: StatusCode }> {
+  }): Promise<{ entity: DTO; statusCode: ContentfulStatusCode }> {
     const action = new FindOrCreateAction(this.repository);
     return action.execute(props);
   }

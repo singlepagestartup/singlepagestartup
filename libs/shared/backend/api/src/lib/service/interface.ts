@@ -1,4 +1,4 @@
-import { StatusCode } from "hono/utils/http-status";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 import { IDumpResult, ISeedResult } from "../configuration";
 import { FindServiceProps } from "../services/interfaces";
 
@@ -12,5 +12,5 @@ export interface IService<DTO extends Record<string, unknown>> {
   seed: (props?: { seeds: ISeedResult[] }) => Promise<ISeedResult>;
   findOrCreate: (props: {
     data: DTO;
-  }) => Promise<{ entity: DTO; statusCode: StatusCode }>;
+  }) => Promise<{ entity: DTO; statusCode: ContentfulStatusCode }>;
 }
