@@ -26,6 +26,22 @@ export class Configuration extends ParentConfiguration {
           module: "rbac",
           name: "action",
           type: "model",
+          filters: [
+            {
+              column: "path",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.path;
+              },
+            },
+            {
+              column: "method",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.method;
+              },
+            },
+          ],
         },
       },
     });

@@ -249,7 +249,7 @@ export const api = {
       select(data) {
         globalActionsStore.getState().addAction({
           type: "query",
-          name: `${route}/is-authorized`,
+          name: `${route}/init`,
           props: this,
           result: data,
           timestamp: Date.now(),

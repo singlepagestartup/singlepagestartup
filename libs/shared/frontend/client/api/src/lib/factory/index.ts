@@ -55,6 +55,67 @@ export interface IFactoryProps<T> {
 
 type SetRequestId = (requestId: string) => void;
 
+const activeSubscriptions = new Set<string>();
+
+function subscription(route: string, queryClient: QueryClient) {
+  if (activeSubscriptions.has(route)) {
+    return;
+  }
+
+  activeSubscriptions.add(route);
+
+  const triggeredActions: IAction[] = [];
+  let revalidationChannel: IAction | null = null;
+  const mountTime = Date.now();
+
+  globalActionsStore.subscribe((state) => {
+    const broadcastChannels = state.getActionsFromStoreByName(
+      "/api/broadcast/channels",
+    );
+
+    const channels = broadcastChannels || [];
+    for (const channel of channels) {
+      if (
+        !revalidationChannel &&
+        channel.result?.["title"] === "revalidation"
+      ) {
+        revalidationChannel = channel.result;
+      }
+    }
+
+    const broadcastMessages = state.getActionsFromStoreByName(
+      "/api/broadcast/messages",
+    );
+
+    const messages = broadcastMessages || [];
+    for (const message of messages) {
+      if (
+        new Date(message.result["createdAt"]).getTime() > mountTime &&
+        revalidationChannel
+      ) {
+        const isTriggered = triggeredActions.some(
+          (triggeredAction) =>
+            JSON.stringify(triggeredAction) === JSON.stringify(message),
+        );
+
+        if (!isTriggered) {
+          triggeredActions.push(message);
+
+          if (
+            message.result?.["payload"] &&
+            typeof message.result?.["payload"] === "string" &&
+            message.result["payload"].includes(route)
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: [message.result["payload"]],
+            });
+          }
+        }
+      }
+    }
+  });
+}
+
 export function factory<T>(factoryProps: IFactoryProps<T>) {
   const api = {
     findById: (props: {
@@ -63,6 +124,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindByIdQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useQuery<T | undefined>({
         queryKey: props.id
           ? [
@@ -102,6 +165,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useQuery<T[] | undefined>({
         queryKey: [
           `${factoryProps.route}`,
@@ -136,6 +201,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, ICreateMutationFunctionProps>({
         mutationKey: [`${factoryProps.route}`],
         mutationFn: (mutationFunctionProps: ICreateMutationFunctionProps) => {
@@ -163,6 +230,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, IUpdateMutationFunctionProps>({
         mutationKey: props?.id
           ? [`${factoryProps.route}/${props.id}`]
@@ -191,6 +260,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IDeleteMutationProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, IDeleteMutationFunctionProps>({
         mutationKey: props?.id
           ? [`${factoryProps.route}/${props.id}`]
@@ -213,62 +284,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       });
     },
   };
-
-  function subscription() {
-    const triggeredActions: IAction[] = [];
-    let revalidationChannel: any;
-    const mountTime = Date.now();
-
-    globalActionsStore.subscribe((state) => {
-      const broadcastChannels = state.getActionsFromStoreByName(
-        "/api/broadcast/channels",
-      );
-
-      broadcastChannels?.forEach((channel) => {
-        if (revalidationChannel) {
-          return;
-        }
-
-        if (channel.result?.["title"] === "revalidation") {
-          revalidationChannel = channel.result;
-        }
-      });
-
-      const broadcastMessages = state.getActionsFromStoreByName(
-        "/api/broadcast/messages",
-      );
-
-      broadcastMessages
-        ?.filter((message) => {
-          return new Date(message.result["createdAt"]).getTime() > mountTime;
-        })
-        .forEach((message) => {
-          if (!revalidationChannel) {
-            return;
-          }
-
-          const isTriggered = triggeredActions.some((triggeredAction) => {
-            return JSON.stringify(triggeredAction) === JSON.stringify(message);
-          });
-
-          if (!isTriggered) {
-            triggeredActions.push(message);
-            if (
-              message.result?.["payload"] &&
-              typeof message.result?.["payload"] === "string"
-            ) {
-              if (message.result["payload"].includes(factoryProps.route)) {
-                factoryProps.queryClient.invalidateQueries({
-                  queryKey: [message.result["payload"]],
-                });
-              }
-            }
-          }
-        });
-    });
-  }
-
-  subscription();
 
   return api;
 }

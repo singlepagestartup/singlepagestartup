@@ -3,27 +3,13 @@ import "client-only";
 
 import { IComponentProps } from "./interface";
 import { api } from "@sps/broadcast/relations/channels-to-messages/sdk/client";
-import { useEffect, useState } from "react";
-import { STALE_TIME } from "@sps/shared-utils";
-import { globalActionsStore, IAction } from "@sps/shared-frontend-client-store";
+import { useEffect } from "react";
+import { globalActionsStore } from "@sps/shared-frontend-client-store";
 
 export default function Client(props: IComponentProps) {
-  const [ping, setPing] = useState<number>(STALE_TIME);
+  const processedActions = new Set<string>();
 
-  const { data, isFetching, isLoading, dataUpdatedAt, refetch } = api.find(
-    props.apiProps,
-  );
-
-  useEffect(() => {
-    const refreshTimeout = setTimeout(() => {
-      refetch();
-      clearTimeout(refreshTimeout);
-    }, ping);
-
-    return () => {
-      clearTimeout(refreshTimeout);
-    };
-  }, [dataUpdatedAt]);
+  const { data, isFetching, isLoading, refetch } = api.find(props.apiProps);
 
   useEffect(() => {
     if (props.set && typeof props.set === "function") {
@@ -32,36 +18,40 @@ export default function Client(props: IComponentProps) {
   }, [data, props]);
 
   useEffect(() => {
-    const triggeredActions: IAction[] = [];
     const mountTime = Date.now();
 
-    globalActionsStore.subscribe((state) => {
+    const unsubscribe = globalActionsStore.subscribe((state) => {
+      let shouldRefetch = false;
+
       Object.keys(state.stores).forEach((key) => {
         const store = state.stores[key];
-        const newStoreActions = store.actions
-          .filter((action) => {
-            return action.timestamp > mountTime;
-          })
-          .filter((action) => {
-            const isTriggered = triggeredActions.some((triggeredAction) => {
-              return JSON.stringify(triggeredAction) === JSON.stringify(action);
-            });
 
-            return !isTriggered;
-          })
-          .filter((action) => {
-            return action.type === "mutation";
-          });
+        const newActions = store.actions.filter((action) => {
+          const isNewAction =
+            action.timestamp > mountTime &&
+            !processedActions.has(action.requestId);
+          const isRelevantAction = action.type === "mutation";
 
-        if (newStoreActions.length) {
-          newStoreActions.forEach((action) => {
-            triggeredActions.push(action);
-          });
+          return isNewAction && isRelevantAction;
+        });
 
-          refetch();
+        newActions.forEach((action) => {
+          processedActions.add(action.requestId);
+        });
+
+        if (newActions.length > 0) {
+          shouldRefetch = true;
         }
       });
+
+      if (shouldRefetch) {
+        refetch();
+      }
     });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (isFetching || isLoading) {

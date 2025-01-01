@@ -1,11 +1,7 @@
-import { Mutate, StoreApi, create } from "zustand";
-import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
+"use client";
 
-export type StoreWithPersist = Mutate<
-  StoreApi<State & Actions>,
-  [["zustand/persist", unknown]]
->;
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
 export interface IAction {
   type: string;
@@ -23,80 +19,57 @@ export interface ActionsStore {
 
 export interface State {
   stores: {
-    [key in string]: ActionsStore;
+    [key: string]: ActionsStore;
   };
 }
 
 export interface Actions {
   addAction: (action: IAction) => void;
-  getActionsFromStoreByName: (name: string) => ActionsStore["actions"];
+  getActionsFromStoreByName: (
+    name: string,
+  ) => ActionsStore["actions"] | undefined;
   reset: () => void;
 }
 
-const initialState: State = {
-  stores: {},
+const STORAGE_KEY = "global-actions-store";
+const MAX_ACTIONS = 10;
+
+const saveToSessionStorage = (stores: State["stores"]) => {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stores));
+  } catch (error) {
+    console.error("Error saving data to sessionStorage:", error);
+  }
 };
 
-const name = "global-actions-store";
-
 export const globalActionsStore = create<State & Actions>()(
-  devtools(
-    immer(
-      persist(
-        (set: any, get: any) => ({
-          ...initialState,
-          getActionsFromStoreByName: (name: string) => {
-            return get().stores[name]?.actions;
-          },
-          addAction: (action: IAction) => {
-            set((state: State) => {
-              if (!state.stores[action.name]) {
-                state.stores[action.name] = {
-                  name: action.name,
-                  actions: [],
-                };
-              }
-
-              state.stores[action.name].actions = [
-                ...state.stores[action.name].actions.slice(-10),
-                action,
-              ];
-            });
-
-            window.dispatchEvent(new StorageEvent("storage", { key: name }));
-          },
-          reset: () => {
-            set(initialState);
-          },
-        }),
-        {
-          name,
-          storage: createJSONStorage(() => sessionStorage),
-        },
-      ),
-    ),
-    {
-      name,
+  immer((set, get) => ({
+    stores: {},
+    getActionsFromStoreByName: (name: string) => {
+      return get().stores[name]?.actions;
     },
-  ),
+    addAction: (action: IAction) => {
+      set((state: State) => {
+        if (!state.stores[action.name]) {
+          state.stores[action.name] = {
+            name: action.name,
+            actions: [],
+          };
+        }
+
+        state.stores[action.name].actions = [
+          ...state.stores[action.name].actions.slice(-MAX_ACTIONS),
+          action,
+        ];
+      });
+
+      saveToSessionStorage(get().stores);
+    },
+    reset: () => {
+      set({ stores: {} });
+      sessionStorage.removeItem(STORAGE_KEY);
+    },
+  })),
 );
 
 export const useGlobalActionsStore = globalActionsStore;
-
-export const withStorageDOMEvents = (store: StoreWithPersist) => {
-  if (typeof window === "undefined") return;
-
-  const storageEventCallback = (e: StorageEvent) => {
-    if (e.key === store.persist.getOptions().name) {
-      store.persist.rehydrate();
-    }
-  };
-
-  window.addEventListener("storage", storageEventCallback);
-
-  return () => {
-    window.removeEventListener("storage", storageEventCallback);
-  };
-};
-
-withStorageDOMEvents(globalActionsStore);
