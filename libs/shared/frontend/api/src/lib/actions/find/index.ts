@@ -6,7 +6,7 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
-export interface IActionProps {
+export interface IProps {
   route: string;
   host: string;
   catchErrors?: boolean;
@@ -18,7 +18,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
+export type IResult<T> = T[] | undefined;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const { params, route, options, host } = props;
@@ -50,7 +52,7 @@ export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: T[] }>({
+  const json = await responsePipe<{ data: IResult<T> }>({
     res,
     catchErrors: props.catchErrors || productionBuild,
   });
@@ -59,7 +61,7 @@ export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
     return;
   }
 
-  const transformedData = transformResponseItem<T[]>(json);
+  const transformedData = transformResponseItem<IResult<T>>(json);
 
   return transformedData;
 }

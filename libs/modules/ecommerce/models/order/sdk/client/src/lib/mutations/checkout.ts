@@ -2,23 +2,20 @@
 
 import { IModel } from "@sps/ecommerce/models/order/sdk/model";
 import { toast } from "sonner";
-import {
-  action,
-  IActionProps,
-} from "../../../../server/src/lib/actions/checkout";
+import { action, IProps } from "../../../../server/src/lib/actions/checkout";
 
 export interface IMutationProps {
-  id: IActionProps["id"];
-  options?: IActionProps["options"];
-  params?: IActionProps["params"];
+  id: IProps["id"];
+  options?: IProps["options"];
+  params?: IProps["params"];
   cb?: (data: IModel) => void;
 }
 
 export interface IMutationFunctionProps {
-  id?: IActionProps["id"];
-  data: IActionProps["data"];
-  options?: IActionProps["options"];
-  params?: IActionProps["params"];
+  id?: IProps["id"];
+  data: IProps["data"];
+  options?: IProps["options"];
+  params?: IProps["params"];
 }
 
 export function mutation(

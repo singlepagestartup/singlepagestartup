@@ -2,7 +2,7 @@ export { type IModel } from "@sps/host/relations/pages-to-layouts/sdk/model";
 import { IModel } from "@sps/host/relations/pages-to-layouts/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { ReactNode } from "react";
-import { IFindByIdActionProps } from "@sps/shared-frontend-api";
+import { IFindByIdProps } from "@sps/shared-frontend-api";
 
 export const variant = "default" as const;
 
@@ -11,8 +11,8 @@ export interface IComponentProps extends ISpsComponentBase {
   data: Partial<IModel>;
   children?: ReactNode;
   apiProps?: {
-    params?: IFindByIdActionProps["params"];
-    options?: IFindByIdActionProps["options"];
+    params?: IFindByIdProps["params"];
+    options?: IFindByIdProps["options"];
   };
 }
 

@@ -1,13 +1,13 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindActionProps } from "@sps/shared-frontend-api";
+import { IFindProps } from "@sps/shared-frontend-api";
 import { ReactNode } from "react";
 
 export interface IComponentProps<M extends { id?: string }, V>
   extends ISpsComponentBase {
   variant: V;
   apiProps?: {
-    params?: IFindActionProps["params"];
-    options?: IFindActionProps["options"];
+    params?: IFindProps["params"];
+    options?: IFindProps["options"];
   };
   className?: string;
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;

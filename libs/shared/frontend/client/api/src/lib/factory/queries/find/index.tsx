@@ -1,11 +1,11 @@
 "use client";
 
-import { actions, IFindActionProps } from "@sps/shared-frontend-api";
+import { actions, IFindProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
 
 export interface IQueryProps<T> {
-  params?: IFindActionProps["params"];
-  options?: IFindActionProps["options"];
+  params?: IFindProps["params"];
+  options?: IFindProps["options"];
   host: string;
   route: string;
   cb?: (data: T[] | undefined) => void;

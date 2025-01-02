@@ -24,17 +24,17 @@ import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { Address, Hex } from "viem";
 import { api as serverApi } from "../../../server";
-import { IExtendedModel as IEcommerceProductCheckoutResult } from "../../../server/src/lib/actions/ecommerce-products-checkout";
-import { IExtendedModel as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-orders-create";
+import { IResult as IEcommerceProductCheckoutResult } from "../../../server/src/lib/actions/ecommerce-products-checkout";
+import { IResult as IEcommerceProductsCartResult } from "../../../server/src/lib/actions/ecommerce-orders-create";
 import {
-  IActionProps as IForgotPasswordProps,
+  IProps as IForgotPasswordProps,
   IResult as IForgotPasswordResult,
 } from "../../../server/src/lib/actions/forgot-password";
 import {
-  IActionProps as IResetPasswordProps,
+  IProps as IResetPasswordProps,
   IResult as IResetPasswordResult,
 } from "../../../server/src/lib/actions/reset-password";
-import { IExtendedModel as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
+import { IResult as IEcommerceOrdersCheckoutResult } from "../../../server/src/lib/actions/ecommerce-orders-checkout";
 
 export interface IMeProps {
   params?: {

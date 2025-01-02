@@ -1,20 +1,20 @@
 "use client";
 
-import { actions, ICreateActionProps } from "@sps/shared-frontend-api";
+import { actions, ICreateProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
-  options?: ICreateActionProps["options"];
-  params?: ICreateActionProps["params"];
+  options?: ICreateProps["options"];
+  params?: ICreateProps["params"];
   host: string;
   route: string;
   cb?: (data: T) => void;
 }
 
 export interface IMutationFunctionProps {
-  data: ICreateActionProps["data"];
-  options?: ICreateActionProps["options"];
-  params?: ICreateActionProps["params"];
+  data: ICreateProps["data"];
+  options?: ICreateProps["options"];
+  params?: ICreateProps["params"];
 }
 
 export function mutation<T>(

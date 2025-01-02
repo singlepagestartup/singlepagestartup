@@ -1,7 +1,7 @@
 export { type IModel } from "@sps/website-builder/models/modal/sdk/model";
 import { IModel } from "@sps/website-builder/models/modal/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindByIdActionProps } from "@sps/shared-frontend-api";
+import { IFindByIdProps } from "@sps/shared-frontend-api";
 
 export const variant = "default" as const;
 
@@ -11,8 +11,8 @@ export interface IComponentProps extends ISpsComponentBase {
   isOpen: boolean;
   close: () => void;
   apiProps?: {
-    params?: IFindByIdActionProps["params"];
-    options?: IFindByIdActionProps["options"];
+    params?: IFindByIdProps["params"];
+    options?: IFindByIdProps["options"];
   };
 }
 

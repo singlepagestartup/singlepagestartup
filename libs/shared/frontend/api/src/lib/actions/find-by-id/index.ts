@@ -6,7 +6,7 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   route: string;
   tag?: string;
@@ -18,7 +18,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export async function action<T>(props: IActionProps): Promise<T | undefined> {
+export type IResult<T> = T | undefined;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const { id, params, route, options, host } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
@@ -48,11 +50,11 @@ export async function action<T>(props: IActionProps): Promise<T | undefined> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: T }>({
+  const json = await responsePipe<{ data: IResult<T> }>({
     res,
   });
 
-  const transformedData = transformResponseItem<T>(json);
+  const transformedData = transformResponseItem<IResult<T>>(json);
 
   return transformedData;
 }

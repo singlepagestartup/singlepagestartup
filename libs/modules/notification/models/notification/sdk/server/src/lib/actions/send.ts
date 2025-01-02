@@ -11,7 +11,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   tag?: string;
   revalidate?: number;
@@ -22,7 +22,9 @@ export interface IActionProps {
   data?: any;
 }
 
-export async function action(props: IActionProps): Promise<IModel> {
+export type IResult = IModel;
+
+export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options } = props;
 
   const formData = prepareFormDataToSend({ data });
@@ -46,11 +48,11 @@ export async function action(props: IActionProps): Promise<IModel> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IModel }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
   });
 
-  const transformedData = transformResponseItem<IModel>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }

@@ -10,7 +10,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import QueryString from "qs";
 import { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   catchErrors?: boolean;
   params?: {
@@ -19,9 +19,9 @@ export interface IActionProps {
   options?: NextRequestOptions;
 }
 
-export async function action(
-  props: IActionProps,
-): Promise<IIdentity[] | undefined> {
+export type IResult = IIdentity[] | undefined;
+
+export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const { params, options, id } = props;
@@ -53,7 +53,7 @@ export async function action(
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IIdentity[] }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
     catchErrors: props.catchErrors || productionBuild,
   });
@@ -62,7 +62,7 @@ export async function action(
     return;
   }
 
-  const transformedData = transformResponseItem<IIdentity[]>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }

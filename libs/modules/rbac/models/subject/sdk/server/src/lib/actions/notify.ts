@@ -7,7 +7,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   tag?: string;
   revalidate?: number;
@@ -20,9 +20,9 @@ export interface IActionProps {
   };
 }
 
-export interface IResult extends IModel {}
+export type IResult = IModel;
 
-export async function action(props: IActionProps): Promise<IResult> {
+export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options } = props;
 
   const formData = prepareFormDataToSend({ data });

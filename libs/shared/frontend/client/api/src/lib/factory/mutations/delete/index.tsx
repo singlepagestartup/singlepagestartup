@@ -1,21 +1,21 @@
 "use client";
 
-import { actions, IDeleteActionProps } from "@sps/shared-frontend-api";
+import { actions, IDeleteProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
-  id?: IDeleteActionProps["id"];
-  options?: IDeleteActionProps["options"];
-  params?: IDeleteActionProps["params"];
+  id?: IDeleteProps["id"];
+  options?: IDeleteProps["options"];
+  params?: IDeleteProps["params"];
   host: string;
   route: string;
   cb?: (data: T) => void;
 }
 
 export interface IMutationFunctionProps {
-  id?: IDeleteActionProps["id"];
-  options?: IDeleteActionProps["options"];
-  params?: IDeleteActionProps["params"];
+  id?: IDeleteProps["id"];
+  options?: IDeleteProps["options"];
+  params?: IDeleteProps["params"];
 }
 
 export function mutation<T>(

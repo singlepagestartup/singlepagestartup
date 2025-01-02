@@ -66,7 +66,8 @@ export class Database<T extends PgTableWithColumns<any>>
         .select()
         .from(this.Table)
         .where(filters)
-        .limit(props?.params?.limit as number)
+        .limit(Number(props?.params?.limit) as number)
+        .offset(Number(props?.params?.offset) as number)
         .orderBy(order)
         .execute();
 

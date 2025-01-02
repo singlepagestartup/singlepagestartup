@@ -9,7 +9,7 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
-export interface IActionProps {
+export interface IProps {
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
@@ -23,9 +23,9 @@ export interface IActionProps {
   options?: NextRequestOptions;
 }
 
-export async function action(
-  props: IActionProps,
-): Promise<{ ok: true } | undefined> {
+export type IResult = { ok: true } | undefined;
+
+export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const { params, options } = props;
@@ -57,7 +57,7 @@ export async function action(
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: { ok: true } }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
     catchErrors: props.catchErrors || productionBuild,
   });
@@ -66,7 +66,7 @@ export async function action(
     return;
   }
 
-  const transformedData = transformResponseItem<{ ok: true }>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }

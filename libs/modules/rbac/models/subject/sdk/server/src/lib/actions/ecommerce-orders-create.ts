@@ -8,7 +8,7 @@ import {
 import QueryString from "qs";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   tag?: string;
   revalidate?: number;
@@ -22,7 +22,7 @@ export interface IActionProps {
   };
 }
 
-export interface IExtendedModel extends IModel {
+export type IResult = IModel & {
   subjectsToEcommerceModuleOrders: {
     order: {
       ordersToBillingModulePaymentIntents: {
@@ -32,9 +32,9 @@ export interface IExtendedModel extends IModel {
       }[];
     };
   }[];
-}
+};
 
-export async function action(props: IActionProps): Promise<IExtendedModel> {
+export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options } = props;
 
   const formData = prepareFormDataToSend({ data });
@@ -58,11 +58,11 @@ export async function action(props: IActionProps): Promise<IExtendedModel> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IExtendedModel }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
   });
 
-  const transformedData = transformResponseItem<IExtendedModel>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }

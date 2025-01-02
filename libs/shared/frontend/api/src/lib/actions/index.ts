@@ -1,15 +1,15 @@
 import { action as findById } from "./find-by-id";
-export type { IActionProps as IFindByIdActionProps } from "./find-by-id";
+export type { IProps as IFindByIdProps } from "./find-by-id";
 import { action as create } from "./create";
-export type { IActionProps as ICreateActionProps } from "./create";
+export type { IProps as ICreateProps } from "./create";
 import { action as remove } from "./delete";
-export type { IActionProps as IDeleteActionProps } from "./delete";
+export type { IProps as IDeleteProps } from "./delete";
 import { action as find } from "./find";
-export type { IActionProps as IFindActionProps } from "./find";
+export type { IProps as IFindProps } from "./find";
 import { action as update } from "./update";
-export type { IActionProps as IUpdateActionProps } from "./update";
+export type { IProps as IUpdateProps } from "./update";
 import { action as findOrCreate } from "./find-or-create";
-export type { IActionProps as IFindOrCreateActionProps } from "./find-or-create";
+export type { IProps as IFindOrCreateProps } from "./find-or-create";
 
 export const actions = {
   findById,

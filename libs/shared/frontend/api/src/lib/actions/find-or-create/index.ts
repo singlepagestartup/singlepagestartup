@@ -6,7 +6,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   route: string;
   host: string;
   tag?: string;
@@ -18,7 +18,9 @@ export interface IActionProps {
   data: any;
 }
 
-export async function action<T>(props: IActionProps): Promise<T> {
+export type IResult<T> = T;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const { data, params, route, options, host } = props;
 
   const formData = prepareFormDataToSend({ data });
@@ -42,11 +44,11 @@ export async function action<T>(props: IActionProps): Promise<T> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: T }>({
+  const json = await responsePipe<{ data: IResult<T> }>({
     res,
   });
 
-  const transformedData = transformResponseItem<T>(json);
+  const transformedData = transformResponseItem<IResult<T>>(json);
 
   return transformedData;
 }

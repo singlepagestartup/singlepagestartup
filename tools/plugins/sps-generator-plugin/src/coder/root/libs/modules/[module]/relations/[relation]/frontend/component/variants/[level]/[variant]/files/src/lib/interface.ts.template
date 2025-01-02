@@ -1,7 +1,7 @@
 import { IModel } from "<%= root_contracts_import_path %>";
 import { IModel as IModelExtended } from "<%= extended_contracts_import_path %>";
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindByIdActionProps } from "@sps/shared-frontend-api";
+import { IFindByIdProps } from "@sps/shared-frontend-api";
 
 export const variant = "<%= variant %>" as const;
 
@@ -9,8 +9,8 @@ export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   data: Partial<IModel>;
   apiProps?: {
-    params?: IFindByIdActionProps["params"];
-    options?: IFindByIdActionProps["options"];
+    params?: IFindByIdProps["params"];
+    options?: IFindByIdProps["options"];
   };
 }
 

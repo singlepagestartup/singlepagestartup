@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { host, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -7,7 +7,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: {
@@ -19,11 +19,11 @@ export interface IActionProps {
   };
 }
 
-export interface IResult {
+export type IResult = {
   ok: boolean;
-}
+};
 
-export async function action(props: IActionProps): Promise<IResult> {
+export async function action(props: IProps): Promise<IResult> {
   const { params, data, options } = props;
 
   const formData = prepareFormDataToSend({ data });

@@ -1,22 +1,22 @@
 "use client";
 
-import { actions, IUpdateActionProps } from "@sps/shared-frontend-api";
+import { actions, IUpdateProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
   host: string;
   route: string;
-  id?: IUpdateActionProps["id"];
-  options?: IUpdateActionProps["options"];
-  params?: IUpdateActionProps["params"];
+  id?: IUpdateProps["id"];
+  options?: IUpdateProps["options"];
+  params?: IUpdateProps["params"];
   cb?: (data: T) => void;
 }
 
 export interface IMutationFunctionProps {
-  id?: IUpdateActionProps["id"];
-  data: IUpdateActionProps["data"];
-  options?: IUpdateActionProps["options"];
-  params?: IUpdateActionProps["params"];
+  id?: IUpdateProps["id"];
+  data: IUpdateProps["data"];
+  options?: IUpdateProps["options"];
+  params?: IUpdateProps["params"];
 }
 
 export function mutation<T>(

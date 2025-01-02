@@ -9,7 +9,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
@@ -20,7 +20,9 @@ export interface IActionProps {
   data: any;
 }
 
-export async function action(props: IActionProps): Promise<IModel | undefined> {
+export type IResult = IModel;
+
+export async function action(props: IProps): Promise<IResult | undefined> {
   const { params, options, data } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
@@ -44,7 +46,7 @@ export async function action(props: IActionProps): Promise<IModel | undefined> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IModel }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
     catchErrors: props.catchErrors || false,
   });
@@ -53,7 +55,7 @@ export async function action(props: IActionProps): Promise<IModel | undefined> {
     return;
   }
 
-  const transformedData = transformResponseItem<IModel>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }

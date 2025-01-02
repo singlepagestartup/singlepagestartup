@@ -1,13 +1,12 @@
 import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
-  prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   orderId: string;
   tag?: string;
@@ -18,9 +17,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export interface IExtendedModel extends IModel {}
+export type IResult = IModel;
 
-export async function action(props: IActionProps): Promise<IExtendedModel> {
+export async function action(props: IProps): Promise<IResult> {
   const { id, params, options } = props;
   const orderId = props.orderId;
 
@@ -46,11 +45,11 @@ export async function action(props: IActionProps): Promise<IExtendedModel> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: IExtendedModel }>({
+  const json = await responsePipe<{ data: IResult }>({
     res,
   });
 
-  const transformedData = transformResponseItem<IExtendedModel>(json);
+  const transformedData = transformResponseItem<IResult>(json);
 
   return transformedData;
 }
