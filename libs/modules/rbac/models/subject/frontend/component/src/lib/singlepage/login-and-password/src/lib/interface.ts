@@ -6,7 +6,6 @@ export const variant = "login-and-password" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
-  type: "authentication" | "registration";
   className?: string;
 }
 

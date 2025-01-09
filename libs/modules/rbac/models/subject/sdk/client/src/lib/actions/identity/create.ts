@@ -1,8 +1,11 @@
 "use client";
 
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { NextRequestOptions } from "@sps/shared-utils";
-import { DefaultError, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  DefaultError,
+  useMutation,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -13,12 +16,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 
 export type IProps = {
-  id: IParentProps["IIdentityCreateProps"]["id"];
-  params?: {
-    [key: string]: any;
-  };
-  options?: NextRequestOptions;
-  reactQueryOptions?: Parameters<typeof useQuery>[1];
+  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
 export type IResult = { jwt: string; refresh: string };
@@ -29,7 +27,7 @@ export function action(props: IProps) {
     DefaultError,
     IParentProps["IIdentityCreateProps"]
   >({
-    mutationKey: [`${route}/${props.id}/identities`],
+    mutationKey: [`${route}/:id/identities`],
     mutationFn: async (
       mutationFunctionProps: IParentProps["IIdentityCreateProps"],
     ) => {
@@ -48,7 +46,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/${props.id}/identities`,
+        name: `${route}/:id/identities`,
         props: this,
         result: data,
         timestamp: Date.now(),

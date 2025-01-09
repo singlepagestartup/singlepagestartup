@@ -1,6 +1,13 @@
 import { IComponentPropsExtended } from "./interface";
-import { Component as ClientAction } from "./ClientAction";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
-  return <ClientAction {...props} />;
+  return (
+    <ClientComponent
+      isServer={props.isServer}
+      hostUrl={props.hostUrl}
+      variant={props.variant}
+      className={props.className}
+    />
+  );
 }

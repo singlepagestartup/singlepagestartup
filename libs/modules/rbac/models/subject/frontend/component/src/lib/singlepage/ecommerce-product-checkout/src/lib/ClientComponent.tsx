@@ -43,10 +43,7 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const productCheckout = api.ecommerceProductCheckout({
-    id: props.data.id,
-    productId: props.product.id,
-  });
+  const productCheckout = api.ecommerceProductCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,6 +58,8 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     productCheckout.mutate({
+      id: props.data.id,
+      productId: props.product.id,
       data,
     });
   }

@@ -7,7 +7,6 @@ import { Component } from "./Component";
 import { Component as Logotype } from "./assets/logotype";
 import { Component as Content } from "./assets/content";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   if (!props.data.id) {
     return <></>;

@@ -24,9 +24,7 @@ export function Component(props: IComponentPropsExtended) {
   const ConnectWallet = ethereumVirtualMachine.ConnectWalletButton;
   const [isClient, setIsClient] = useState(false);
 
-  const authenticateEthereumVirtualMachine = api.identitiesCreate({
-    id: props.data.id,
-  });
+  const authenticateEthereumVirtualMachine = api.identityCreate({});
   const account = useAccount();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -61,6 +59,7 @@ export function Component(props: IComponentPropsExtended) {
       );
 
       authenticateEthereumVirtualMachine.mutate({
+        id: props.data.id,
         data: {
           ...data,
           signature: signedMessage,

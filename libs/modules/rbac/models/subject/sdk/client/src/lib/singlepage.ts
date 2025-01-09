@@ -10,15 +10,15 @@ import {
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 import {
-  action as init,
-  type IProps as IInitProps,
-  type IResult as IInitResult,
-} from "./actions/init";
+  action as authenticationInit,
+  type IProps as IAuthenticationInitProps,
+  type IResult as IAuthenticationInitResult,
+} from "./actions/authentication/init";
 import {
-  action as me,
-  type IProps as IMeProps,
-  type IResult as IMeResult,
-} from "./actions/me";
+  action as authenticationMe,
+  type IProps as IAuthenticationMeProps,
+  type IResult as IAuthenticationMeResult,
+} from "./actions/authentication/me";
 import {
   action as authenticationLoginAndPasswordAuthentication,
   type IProps as IAuthenticationLoginAndPasswordAuthenticationProps,
@@ -30,25 +30,25 @@ import {
   type IResult as IAuthenticationLoginAndPasswordRegistrationResult,
 } from "./actions/authentication/login-and-password/registration";
 import {
-  action as refresh,
-  type IProps as IRefreshProps,
-  type IResult as IRefreshResult,
-} from "./actions/refresh";
+  action as authenticationRefresh,
+  type IProps as IAuthenticationRefreshProps,
+  type IResult as IAuthenticationRefreshResult,
+} from "./actions/authentication/refresh";
 import {
-  action as forgotPassword,
-  type IProps as IForgotPasswordProps,
-  type IResult as IForgotPasswordResult,
-} from "./actions/forgot-password";
+  action as authenticationLoginAndPasswordForgotPassword,
+  type IProps as IAuthenticationLoginAndPasswordForgotPasswordProps,
+  type IResult as IAuthenticationLoginAndPasswordForgotPasswordResult,
+} from "./actions/authentication/login-and-password/forgot-password";
 import {
-  action as logout,
-  type IProps as ILogoutProps,
-  type IResult as ILogoutResult,
-} from "./actions/logout";
+  action as authenticationLogout,
+  type IProps as IAuthenticationLogoutProps,
+  type IResult as IAuthenticationLogoutResult,
+} from "./actions/authentication/logout";
 import {
-  action as isAuthorized,
-  type IProps as IIsAuthorizedProps,
-  type IResult as IIsAuthorizedResult,
-} from "./actions/is-authorized";
+  action as authenticationIsAuthorized,
+  type IProps as IAuthenticationIsAuthorizedProps,
+  type IResult as IAuthenticationIsAuthorizedResult,
+} from "./actions/authentication/is-authorized";
 import {
   action as authenticationEthereumVirtualMachine,
   type IProps as IAuthenticationEthereumVirtualMachineProps,
@@ -65,10 +65,10 @@ import {
   type IResult as IEcommerceOrderCreateResult,
 } from "./actions/ecommerce/order/create";
 import {
-  action as resetPassword,
-  type IProps as IResetPasswordProps,
-  type IResult as IResetPasswordResult,
-} from "./actions/reset-password";
+  action as authenticationLoginAndPasswordResetPassword,
+  type IProps as IAuthenticationLoginAndPasswordResetPasswordProps,
+  type IResult as IAuthenticationLoginAndPasswordResetPasswordResult,
+} from "./actions/authentication/login-and-password/reset-password";
 import {
   action as ecommerceOrderUpdate,
   type IProps as IEcommerceOrderUpdateProps,
@@ -101,45 +101,45 @@ import {
 } from "./actions/identity/create";
 
 export type IProps = {
-  IInitProps: IInitProps;
-  IMeProps: IMeProps;
-  IRefreshProps: IRefreshProps;
-  ILogoutProps: ILogoutProps;
-  IIsAuthorizedProps: IIsAuthorizedProps;
+  IAuthenticationInitProps: IAuthenticationInitProps;
+  IAuthenticationMeProps: IAuthenticationMeProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
-  IEcommerceProductCheckoutProps: IEcommerceProductCheckoutProps;
-  IEcommerceOrderCreateProps: IEcommerceOrderCreateProps;
-  IForgotPasswordProps: IForgotPasswordProps;
-  IResetPasswordProps: IResetPasswordProps;
-  IEcommerceOrderUpdateProps: IEcommerceOrderUpdateProps;
-  IEcommerceOrderCheckoutProps: IEcommerceOrderCheckoutProps;
-  IEcommerceOrderDeleteProps: IEcommerceOrderDeleteProps;
+  IAuthenticationLoginAndPasswordAuthenticationProps: IAuthenticationLoginAndPasswordAuthenticationProps;
+  IAuthenticationLoginAndPasswordRegistrationProps: IAuthenticationLoginAndPasswordRegistrationProps;
+  IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
+  IAuthenticationRefreshProps: IAuthenticationRefreshProps;
+  IAuthenticationLoginAndPasswordForgotPasswordProps: IAuthenticationLoginAndPasswordForgotPasswordProps;
+  IAuthenticationLogoutProps: IAuthenticationLogoutProps;
+  IAuthenticationLoginAndPasswordResetPasswordProps: IAuthenticationLoginAndPasswordResetPasswordProps;
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
   IIdentityCreateProps: IIdentityCreateProps;
-  IAuthenticationLoginAndPasswordAuthenticationProps: IAuthenticationLoginAndPasswordAuthenticationProps;
-  IAuthenticationLoginAndPasswordRegistrationProps: IAuthenticationLoginAndPasswordRegistrationProps;
+  IEcommerceProductCheckoutProps: IEcommerceProductCheckoutProps;
+  IEcommerceOrderCreateProps: IEcommerceOrderCreateProps;
+  IEcommerceOrderUpdateProps: IEcommerceOrderUpdateProps;
+  IEcommerceOrderCheckoutProps: IEcommerceOrderCheckoutProps;
+  IEcommerceOrderDeleteProps: IEcommerceOrderDeleteProps;
 };
 
 export type IResult = {
-  IInitResult: IInitResult;
-  IMeResult: IMeResult;
-  IRefreshResult: IRefreshResult;
-  ILogoutResult: ILogoutResult;
-  IIsAuthorizedResult: IIsAuthorizedResult;
+  IAuthenticationInitResult: IAuthenticationInitResult;
+  IAuthenticationMeResult: IAuthenticationMeResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
-  IEcommerceProductCheckoutResult: IEcommerceProductCheckoutResult;
-  IEcommerceOrderCreateResult: IEcommerceOrderCreateResult;
-  IForgotPasswordResult: IForgotPasswordResult;
-  IResetPasswordResult: IResetPasswordResult;
-  IEcommerceOrderUpdateResult: IEcommerceOrderUpdateResult;
-  IEcommerceOrderCheckoutResult: IEcommerceOrderCheckoutResult;
-  IEcommerceOrderDeleteResult: IEcommerceOrderDeleteResult;
+  IAuthenticationLoginAndPasswordAuthenticationResult: IAuthenticationLoginAndPasswordAuthenticationResult;
+  IAuthenticationLoginAndPasswordRegistrationResult: IAuthenticationLoginAndPasswordRegistrationResult;
+  IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
+  IAuthenticationRefreshResult: IAuthenticationRefreshResult;
+  IAuthenticationLoginAndPasswordForgotPasswordResult: IAuthenticationLoginAndPasswordForgotPasswordResult;
+  IAuthenticationLogoutResult: IAuthenticationLogoutResult;
+  IAuthenticationLoginAndPasswordResetPasswordResult: IAuthenticationLoginAndPasswordResetPasswordResult;
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
   IIdentityCreateResult: IIdentityCreateResult;
-  IAuthenticationLoginAndPasswordAuthenticationResult: IAuthenticationLoginAndPasswordAuthenticationResult;
-  IAuthenticationLoginAndPasswordRegistrationResult: IAuthenticationLoginAndPasswordRegistrationResult;
+  IEcommerceProductCheckoutResult: IEcommerceProductCheckoutResult;
+  IEcommerceOrderCreateResult: IEcommerceOrderCreateResult;
+  IEcommerceOrderUpdateResult: IEcommerceOrderUpdateResult;
+  IEcommerceOrderCheckoutResult: IEcommerceOrderCheckoutResult;
+  IEcommerceOrderDeleteResult: IEcommerceOrderDeleteResult;
 };
 
 export const api = {
@@ -150,22 +150,22 @@ export const api = {
     params: query,
     options,
   }),
-  init,
-  me,
-  refresh,
-  logout,
-  isAuthorized,
+  authenticationInit,
+  authenticationMe,
   authenticationEthereumVirtualMachine,
-  ecommerceProductCheckout,
-  ecommerceOrderCreate,
-  forgotPassword,
-  resetPassword,
-  ecommerceOrderUpdate,
-  ecommerceOrderCheckout,
-  ecommerceOrderDelete,
+  authenticationLoginAndPasswordAuthentication,
+  authenticationLoginAndPasswordRegistration,
+  authenticationIsAuthorized,
+  authenticationRefresh,
+  authenticationLoginAndPasswordForgotPassword,
+  authenticationLogout,
+  authenticationLoginAndPasswordResetPassword,
   identityUpdate,
   identityDelete,
   identityCreate,
-  authenticationLoginAndPasswordAuthentication,
-  authenticationLoginAndPasswordRegistration,
+  ecommerceProductCheckout,
+  ecommerceOrderCreate,
+  ecommerceOrderUpdate,
+  ecommerceOrderCheckout,
+  ecommerceOrderDelete,
 };

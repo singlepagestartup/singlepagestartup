@@ -11,10 +11,10 @@ import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
 import { useDebouncedCallback } from "use-debounce";
 
 export function Component(props: IComponentPropsExtended) {
-  const refresh = api.refresh({
+  const refresh = api.authenticationRefresh({
     mute: true,
   });
-  const init = api.init({
+  const init = api.authenticationInit({
     reactQueryOptions: {
       enabled: false,
     },

@@ -6,7 +6,6 @@ import { IComponentProps } from "./interface";
 import { Error } from "./Error";
 import { Component } from "./Component";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   return <Component {...props} />;
 }

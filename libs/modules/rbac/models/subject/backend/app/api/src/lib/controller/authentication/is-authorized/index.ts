@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getCookie } from "hono/cookie";
 import QueryString from "qs";
-import { Service } from "../service";
+import { Service } from "../../../service";
 
 export class Handler {
   service: Service;

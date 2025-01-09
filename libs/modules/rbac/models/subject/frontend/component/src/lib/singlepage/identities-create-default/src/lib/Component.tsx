@@ -13,7 +13,12 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="border rounded-lg py-5 px-10 flex items-center justify-center flex-col gap-4">
         <p>Create new identity</p>
-        <EthereumVirtualMachineCreate {...props} />
+        <EthereumVirtualMachineCreate
+          isServer={props.isServer}
+          hostUrl={props.hostUrl}
+          variant={props.variant}
+          data={props.data}
+        />
       </div>
     </div>
   );

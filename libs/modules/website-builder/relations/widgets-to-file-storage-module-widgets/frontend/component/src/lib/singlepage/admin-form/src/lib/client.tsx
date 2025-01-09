@@ -8,7 +8,6 @@ import { IComponentProps, variant, IModel } from "./interface";
 import { api } from "@sps/website-builder/relations/widgets-to-file-storage-module-widgets/sdk/client";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-form/client";
 
-// default is required for dynamic import
 export default function Client(props: IComponentProps) {
   return (
     <ParentComponent<IModel, typeof variant, any, IComponentProps>

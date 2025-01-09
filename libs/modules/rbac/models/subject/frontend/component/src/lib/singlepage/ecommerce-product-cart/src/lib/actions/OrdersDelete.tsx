@@ -18,10 +18,7 @@ export function Component(
     order: IOrder;
   },
 ) {
-  const deleteEntity = api.ecommerceOrdersDelete({
-    id: props.data.id,
-    orderId: props.order.id,
-  });
+  const deleteEntity = api.ecommerceOrderDelete({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,7 +26,10 @@ export function Component(
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    deleteEntity.mutate({});
+    deleteEntity.mutate({
+      id: props.data.id,
+      orderId: props.order.id,
+    });
   }
 
   useEffect(() => {

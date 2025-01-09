@@ -9,7 +9,7 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
 
-  const logout = api.logout({
+  const logout = api.authenticationLogout({
     reactQueryOptions: {
       enabled: false,
     },

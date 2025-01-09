@@ -7,7 +7,6 @@ import { Error } from "./Error";
 import { api } from "@sps/broadcast/models/channel/sdk/server";
 import { Component } from "./Component";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   try {
     if (!props.data.id) {

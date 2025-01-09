@@ -1,7 +1,7 @@
 "use client";
 
 import { STALE_TIME } from "@sps/shared-utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { route } from "@sps/rbac/models/subject/sdk/model";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
@@ -13,18 +13,18 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 
-export type IProps = IParentProps["IInitProps"] & {
-  reactQueryOptions?: Parameters<typeof useQuery>[1];
+export type IProps = IParentProps["IAuthenticationInitProps"] & {
+  reactQueryOptions?: Partial<UseQueryOptions<any>>;
 };
 
-export type IResult = IParentResult["IInitResult"];
+export type IResult = IParentResult["IAuthenticationInitResult"];
 
 export function action(props: IProps) {
   return useQuery<IResult>({
-    queryKey: [`${route}/init`],
+    queryKey: [`${route}/authentication/init`],
     queryFn: async () => {
       try {
-        const result = await api.init(props);
+        const result = await api.authenticationInit(props);
 
         if (!result) {
           throw new Error("No data");
@@ -43,7 +43,7 @@ export function action(props: IProps) {
     select(data) {
       globalActionsStore.getState().addAction({
         type: "query",
-        name: `${route}/init`,
+        name: `${route}/authentication/init`,
         props: this,
         result: data,
         timestamp: Date.now(),

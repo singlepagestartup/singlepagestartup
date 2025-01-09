@@ -51,7 +51,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new Refresh(this.repository).execute(props);
   }
 
-  async authenticationloginAndPassowrd(
+  async authenticationLoginAndPassowrd(
     props: IAuthenticationLoginAndPasswordExecuteProps,
   ) {
     return new AuthenticationLoginAndPassword(this.repository).execute(props);

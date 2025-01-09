@@ -7,7 +7,6 @@ import { Error } from "./Error";
 import { api } from "@sps/file-storage/models/file/sdk/server";
 import { Component } from "./Component";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   if (!props.data.id) {
     return <></>;

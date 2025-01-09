@@ -8,7 +8,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { setCookie } from "hono/cookie";
 
 export class Handler {

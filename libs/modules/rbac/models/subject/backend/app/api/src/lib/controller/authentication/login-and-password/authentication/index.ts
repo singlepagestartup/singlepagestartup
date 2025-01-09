@@ -5,7 +5,7 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
-import { Service } from "../../../service";
+import { Service } from "../../../../service";
 import { setCookie } from "hono/cookie";
 
 export class Handler {
@@ -38,7 +38,7 @@ export class Handler {
 
     const data = JSON.parse(body["data"]);
 
-    const entity = await this.service.authenticationloginAndPassowrd({
+    const entity = await this.service.authenticationLoginAndPassowrd({
       data,
       type: "authentication",
     });

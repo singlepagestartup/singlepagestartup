@@ -4,16 +4,16 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
-import { Handler as Me } from "./me";
-import { Handler as IsAuthorized } from "./is-authorized";
+import { Handler as AuthenticationMe } from "./authentication/me";
+import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
 import { Handler as IdentitiesList } from "./identity/find";
-import { Handler as Logout } from "./logout";
+import { Handler as AuthenticationLogout } from "./authentication/logout";
 import { Handler as AuthenticationLoginAndPasswordForgotPassword } from "./authentication/login-and-password/forgot-password";
 import { Handler as AuthenticationLoginAndPasswordResetPassword } from "./authentication/login-and-password/reset-password";
 import { Handler as AuthenticationLoginAndPasswordRegistraion } from "./authentication/login-and-password/registration";
-import { Handler as Init } from "./init";
+import { Handler as AuthenticationInit } from "./authentication/init";
 import { Handler as AuthenticationLoginAndPasswordAuthentication } from "./authentication/login-and-password/authentication";
-import { Handler as Refresh } from "./refresh";
+import { Handler as AuthenticationRefresh } from "./authentication/refresh";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
 import { Handler as IdentitiesUpdate } from "./identity/update";
@@ -46,23 +46,23 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/is-authorized",
-        handler: this.isAuthorized,
+        path: "/authentication/is-authorized",
+        handler: this.authenticationIsAuthorized,
       },
       {
         method: "GET",
-        path: "/me",
-        handler: this.me,
+        path: "/authentication/me",
+        handler: this.authenticationMe,
       },
       {
         method: "GET",
-        path: "/logout",
-        handler: this.logout,
+        path: "/authentication/logout",
+        handler: this.authenticationLogout,
       },
       {
         method: "GET",
-        path: "/init",
-        handler: this.init,
+        path: "/authentication/init",
+        handler: this.authenticationInit,
       },
       {
         method: "POST",
@@ -72,7 +72,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "POST",
         path: "/authentication/refresh",
-        handler: this.refresh,
+        handler: this.authenticationRefresh,
       },
       {
         method: "POST",
@@ -172,20 +172,20 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ]);
   }
 
-  async me(c: Context, next: any): Promise<Response> {
-    return new Me(this.service).execute(c, next);
+  async authenticationMe(c: Context, next: any): Promise<Response> {
+    return new AuthenticationMe(this.service).execute(c, next);
   }
 
-  async isAuthorized(c: Context, next: any): Promise<Response> {
-    return new IsAuthorized(this.service).execute(c, next);
+  async authenticationIsAuthorized(c: Context, next: any): Promise<Response> {
+    return new AuthenticationIsAuthorized(this.service).execute(c, next);
   }
 
   async identitiesList(c: Context, next: any): Promise<Response> {
     return new IdentitiesList(this.service).execute(c, next);
   }
 
-  async logout(c: Context, next: any): Promise<Response> {
-    return new Logout(this.service).execute(c, next);
+  async authenticationLogout(c: Context, next: any): Promise<Response> {
+    return new AuthenticationLogout(this.service).execute(c, next);
   }
 
   async authenticationLoginAndPasswordForgotPassword(
@@ -216,8 +216,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async init(c: Context, next: any): Promise<Response> {
-    return new Init(this.service).execute(c, next);
+  async authenticationInit(c: Context, next: any): Promise<Response> {
+    return new AuthenticationInit(this.service).execute(c, next);
   }
 
   async authenticationLoginAndPasswordAuthentication(
@@ -229,8 +229,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ).execute(c, next);
   }
 
-  async refresh(c: Context, next: any): Promise<Response> {
-    return new Refresh(this.service).execute(c, next);
+  async authenticationRefresh(c: Context, next: any): Promise<Response> {
+    return new AuthenticationRefresh(this.service).execute(c, next);
   }
 
   async notify(c: Context, next: any): Promise<Response> {

@@ -7,9 +7,8 @@ import { Component } from "./Component";
 import { Component as SelectMethod } from "../../../select-method";
 import { cn } from "@sps/shared-frontend-client-utils";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
-  const data = await api.isAuthorized(props.apiProps);
+  const data = await api.authenticationIsAuthorized(props.apiProps);
 
   if (!data) {
     return (

@@ -19,11 +19,12 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/rbac\/subjects\/(authentication|registration)\/(\w+)?/,
+    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],
   },
   {
-    regexPath: /\/api\/rbac\/subjects\/(is-authorized|me|init|logout)/,
+    regexPath:
+      /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|logout)/,
     methods: ["GET"],
   },
   {
@@ -74,17 +75,7 @@ export class Middleware {
        * Vercel doesn't to call equal endpoint, throws 508 Loop detected
        * But it't not a loop, because controller checks if secret key is present
        */
-      if (secretKey && secretKey === process.env["RBAC_SECRET_KEY"]) {
-        return next();
-      }
-
-      if (reqPath.includes("/api/rbac/sessions") && reqMethod === "POST") {
-        if (!secretKey || secretKey !== RBAC_SECRET_KEY) {
-          throw new HTTPException(401, {
-            message: "Unauthorized",
-          });
-        }
-
+      if (secretKey && secretKey === RBAC_SECRET_KEY) {
         return next();
       }
 
@@ -103,7 +94,7 @@ export class Middleware {
             ? { Authorization: authorization }
             : ({} as HeadersInit);
 
-        const isAuthorized = await subjectApi.isAuthorized({
+        const isAuthorized = await subjectApi.authenticationIsAuthorized({
           params: {
             action: {
               route: reqPath.toLowerCase(),

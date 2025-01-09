@@ -3,46 +3,53 @@
 import React, { useEffect } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Button } from "@sps/shared-ui-shadcn";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
-  login: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
   password: z.string().min(8),
+  passwordConfirmation: z.string().min(8),
+  code: z.string(),
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const router = useRouter();
-  const loginAndPassword = api.loginAndPassword({
-    type: props.type,
-  });
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+
+  const resetPassword = api.authenticationLoginAndPasswordResetPassword({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      login: "",
       password: "",
+      passwordConfirmation: "",
+      code: "",
     },
   });
 
+  useEffect(() => {
+    if (code) {
+      form.setValue("code", code);
+    }
+  }, [code, form]);
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    loginAndPassword.mutate({
+    resetPassword.mutate({
       data,
     });
-
-    // router.refresh();
   }
 
   useEffect(() => {
-    if (loginAndPassword.isSuccess) {
-      router.push("/");
+    if (resetPassword.isSuccess) {
+      toast.success("Password reset successfully");
     }
-  }, [loginAndPassword]);
+  }, [resetPassword]);
 
   return (
     <div
@@ -56,22 +63,22 @@ export function Component(props: IComponentPropsExtended) {
           <FormField
             ui="shadcn"
             type="text"
-            label="Email"
-            name="login"
-            form={form}
-            placeholder="Enter your email"
-          />
-          <FormField
-            ui="shadcn"
-            type="password"
             label="Password"
             name="password"
             form={form}
-            placeholder="Enter your password"
+            placeholder="Enter new password"
+          />
+          <FormField
+            ui="shadcn"
+            type="text"
+            label="Password Confirmation"
+            name="passwordConfirmation"
+            form={form}
+            placeholder="Re-enter new password"
           />
 
           <Button variant="primary" onClick={form.handleSubmit(onSubmit)}>
-            Login
+            Reset password
           </Button>
         </div>
       </Form>

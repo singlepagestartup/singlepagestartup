@@ -6,9 +6,10 @@ export function Component(props: IComponentPropsExtended) {
     <ClientComponent
       isServer={props.isServer}
       hostUrl={props.hostUrl}
-      variant="ecommerce-product-cart"
+      variant={props.variant}
       data={props.data}
       product={props.product}
+      className={props.className}
     />
   );
 }

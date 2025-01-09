@@ -7,15 +7,25 @@ import {
   options,
 } from "@sps/rbac/models/subject/sdk/model";
 import {
-  action as me,
-  type IProps as IMeProps,
-  type IResult as IMeResult,
-} from "./actions/me";
+  action as authenticationMe,
+  type IProps as IAuthenticationMeProps,
+  type IResult as IAuthenticationMeResult,
+} from "./actions/authentication/me";
 import {
-  action as isAuthorized,
-  type IProps as IIsAuthorizedProps,
-  type IResult as IIsAuthorizedResult,
-} from "./actions/is-authorized";
+  action as authenticationLogout,
+  type IProps as IAuthenticationLogoutProps,
+  type IResult as IAuthenticationLogoutResult,
+} from "./actions/authentication/logout";
+import {
+  action as authenticationRefresh,
+  type IProps as IAuthenticationRefreshProps,
+  type IResult as IAuthenticationRefreshResult,
+} from "./actions/authentication/refresh";
+import {
+  action as authenticationIsAuthorized,
+  type IProps as IAuthenticationIsAuthorizedProps,
+  type IResult as IAuthenticationIsAuthorizedResult,
+} from "./actions/authentication/is-authorized";
 import {
   action as identityFind,
   type IProps as IIdentityFindProps,
@@ -77,10 +87,10 @@ import {
   type IResult as INotifyResult,
 } from "./actions/notify";
 import {
-  action as init,
-  type IProps as IInitProps,
-  type IResult as IInitResult,
-} from "./actions/init";
+  action as authenticationInit,
+  type IProps as IAuthenticationInitProps,
+  type IResult as IAuthenticationInitResult,
+} from "./actions/authentication/init";
 import {
   action as authenticationEthereumVirtualMachine,
   type IProps as IAuthenticationEthereumVirtualMachineProps,
@@ -98,8 +108,7 @@ import {
 } from "./actions/authentication/login-and-password/registration";
 
 export type IProps = {
-  IMeProps: IMeProps;
-  IIsAuthorizedProps: IIsAuthorizedProps;
+  IAuthenticationMeProps: IAuthenticationMeProps;
   INotifyProps: INotifyProps;
   IIdentityFindProps: IIdentityFindProps;
   IEcommerceProductCheckoutProps: IEcommerceProductCheckoutProps;
@@ -110,17 +119,19 @@ export type IProps = {
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityCreateProps: IIdentityCreateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
-  IInitProps: IInitProps;
+  IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
   IAuthenticationLoginAndPasswordAuthenticationProps: IAuthenticationLoginAndPasswordAuthenticationProps;
   IAuthenticationLoginAndPasswordRegistrationProps: IAuthenticationLoginAndPasswordRegistrationProps;
   IAuthenticationLoginAndPasswordForgotPasswordProps: IAuthenticationLoginAndPasswordForgotPasswordProps;
   IAuthenticationLoginAndPasswordResetPasswordProps: IAuthenticationLoginAndPasswordResetPasswordProps;
+  IAuthenticationLogoutProps: IAuthenticationLogoutProps;
+  IAuthenticationRefreshProps: IAuthenticationRefreshProps;
+  IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
 };
 
 export type IResult = {
-  IMeResult: IMeResult;
-  IIsAuthorizedResult: IIsAuthorizedResult;
+  IAuthenticationMeResult: IAuthenticationMeResult;
   INotifyResult: INotifyResult;
   IIdentityFindResult: IIdentityFindResult;
   IEcommerceProductCheckoutResult: IEcommerceProductCheckoutResult;
@@ -131,12 +142,15 @@ export type IResult = {
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityCreateResult: IIdentityCreateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
-  IInitResult: IInitResult;
+  IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
   IAuthenticationLoginAndPasswordAuthenticationResult: IAuthenticationLoginAndPasswordAuthenticationResult;
   IAuthenticationLoginAndPasswordRegistrationResult: IAuthenticationLoginAndPasswordRegistrationResult;
   IAuthenticationLoginAndPasswordForgotPasswordResult: IAuthenticationLoginAndPasswordForgotPasswordResult;
   IAuthenticationLoginAndPasswordResetPasswordResult: IAuthenticationLoginAndPasswordResetPasswordResult;
+  IAuthenticationLogoutResult: IAuthenticationLogoutResult;
+  IAuthenticationRefreshResult: IAuthenticationRefreshResult;
+  IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
 };
 
 export const api = {
@@ -146,8 +160,7 @@ export const api = {
     options,
     params: query,
   }),
-  me,
-  isAuthorized,
+  authenticationMe,
   identityFind,
   ecommerceProductCheckout,
   ecommerceOrderCreate,
@@ -158,10 +171,13 @@ export const api = {
   identityCreate,
   identityDelete,
   notify,
-  init,
+  authenticationInit,
   authenticationEthereumVirtualMachine,
   authenticationLoginAndPasswordAuthentication,
   authenticationLoginAndPasswordRegistration,
   authenticationLoginAndPasswordForgotPassword,
   authenticationLoginAndPasswordResetPassword,
+  authenticationLogout,
+  authenticationRefresh,
+  authenticationIsAuthorized,
 };

@@ -1,24 +1,38 @@
 "use server";
 
-import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { host, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
+import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
   catchErrors?: boolean;
-  options?: NextRequestOptions;
+  tag?: string;
+  revalidate?: number;
+  params: {
+    action: {
+      route: string;
+      method: string;
+      type?: "HTTP";
+    };
+  };
+  options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = IModel | undefined;
+export type IResult = { ok: true } | undefined;
 
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { options } = props;
+  const { params, options } = props;
+
+  const stringifiedQuery = QueryString.stringify(params, {
+    encodeValuesOnly: true,
+  });
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
@@ -38,7 +52,10 @@ export async function action(props: IProps): Promise<IResult> {
     },
   };
 
-  const res = await fetch(`${host}${route}/me`, requestOptions);
+  const res = await fetch(
+    `${host}${route}/authentication/is-authorized?${stringifiedQuery}`,
+    requestOptions,
+  );
 
   const json = await responsePipe<{ data: IResult }>({
     res,

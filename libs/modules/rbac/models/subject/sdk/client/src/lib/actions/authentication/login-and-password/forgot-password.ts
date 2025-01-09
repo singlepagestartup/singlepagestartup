@@ -1,13 +1,11 @@
 "use client";
 
-import { route, host } from "@sps/rbac/models/subject/sdk/model";
+import { route } from "@sps/rbac/models/subject/sdk/model";
 import {
-  NextRequestOptions,
-  prepareFormDataToSend,
-  responsePipe,
-  transformResponseItem,
-} from "@sps/shared-utils";
-import { DefaultError, useMutation, useQuery } from "@tanstack/react-query";
+  DefaultError,
+  useMutation,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -16,31 +14,26 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
-import QueryString from "qs";
-import Cookies from "js-cookie";
 
 export type IProps = {
-  params?: {
-    [key: string]: any;
-  };
-  options?: NextRequestOptions;
-  reactQueryOptions?: Parameters<typeof useQuery>[1];
+  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
-export type IResult = { jwt: string; refresh: string };
+export type IResult =
+  IParentResult["IAuthenticationLoginAndPasswordForgotPasswordResult"];
 
 export function action(props: IProps) {
   return useMutation<
-    IParentResult["IResetPasswordResult"],
+    IResult,
     DefaultError,
-    IParentProps["IResetPasswordProps"]
+    IParentProps["IAuthenticationLoginAndPasswordForgotPasswordProps"]
   >({
-    mutationKey: [`${route}/reset-password`],
+    mutationKey: [`${route}/authentication/login-and-password/forgot-password`],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["IResetPasswordProps"],
+      mutationFunctionProps: IParentProps["IAuthenticationLoginAndPasswordForgotPasswordProps"],
     ) => {
       try {
-        const result = await api.resetPassword({
+        const result = await api.authenticationLoginAndPasswordForgotPassword({
           ...mutationFunctionProps,
         });
 
@@ -54,7 +47,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/reset-password`,
+        name: `${route}/authentication/login-and-password/forgot-password`,
         props: this,
         result: data,
         timestamp: Date.now(),

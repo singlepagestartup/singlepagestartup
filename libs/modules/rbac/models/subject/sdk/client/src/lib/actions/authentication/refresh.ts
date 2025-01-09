@@ -14,31 +14,38 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
+import Cookies from "js-cookie";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
+  mute?: boolean;
 };
 
-export type IResult = { jwt: string; refresh: string };
+export type IResult = IParentResult["IAuthenticationRefreshResult"];
 
 export function action(props: IProps) {
   return useMutation<
-    IParentResult["IIdentityDeleteResult"],
+    IResult,
     DefaultError,
-    IParentProps["IIdentityDeleteProps"]
+    IParentProps["IAuthenticationRefreshProps"]
   >({
-    mutationKey: [`${route}/:id/identities/:identityId`],
+    mutationKey: [`${route}/authentication/refresh`],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["IIdentityDeleteProps"],
+      mutationFunctionProps: IParentProps["IAuthenticationRefreshProps"],
     ) => {
       try {
-        const result = await api.identityDelete({
+        const result = await api.authenticationRefresh({
           ...mutationFunctionProps,
         });
 
+        localStorage.setItem("rbac.subject.refresh", result.refresh);
+        Cookies.set("rbac.subject.jwt", result.jwt);
+
         return result;
       } catch (error: any) {
-        toast.error(error.message);
+        if (!props?.mute) {
+          toast.error(error.message);
+        }
 
         throw error;
       }
@@ -46,7 +53,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/:id/identities/:identityId`,
+        name: `${route}/authentication/refresh`,
         props: this,
         result: data,
         timestamp: Date.now(),

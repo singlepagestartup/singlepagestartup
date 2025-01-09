@@ -15,9 +15,7 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const ecommerceProductsCart = api.ecommerceOrdersCreate({
-    id: props.data.id,
-  });
+  const ecommerceProductsCart = api.ecommerceOrderCreate({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,6 +27,7 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     ecommerceProductsCart.mutate({
+      id: props.data.id,
       data,
     });
   }

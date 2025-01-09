@@ -21,10 +21,7 @@ export function Component(
     identity: IIdentity;
   },
 ) {
-  const updateIdentity = api.identitiesUpdate({
-    id: props.data.id,
-    identityId: props.identity.id,
-  });
+  const updateIdentity = api.identityUpdate({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,7 +32,11 @@ export function Component(
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    updateIdentity.mutate({ data });
+    updateIdentity.mutate({
+      id: props.data.id,
+      identityId: props.identity.id,
+      data,
+    });
   }
 
   return (

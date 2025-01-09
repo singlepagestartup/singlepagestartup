@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
-  const logout = api.logout({
+  const logout = api.authenticationLogout({
     reactQueryOptions: {
       enabled: false,
     },

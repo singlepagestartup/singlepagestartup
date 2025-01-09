@@ -1,8 +1,11 @@
 "use client";
 
-import { route, IModel } from "@sps/rbac/models/subject/sdk/model";
-import { NextRequestOptions } from "@sps/shared-utils";
-import { DefaultError, useMutation, useQuery } from "@tanstack/react-query";
+import { route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  DefaultError,
+  useMutation,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -13,13 +16,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 
 export type IProps = {
-  id: IModel["id"];
-  orderId?: string;
-  params?: {
-    [key: string]: any;
-  };
-  options?: NextRequestOptions;
-  reactQueryOptions?: Parameters<typeof useQuery>[1];
+  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
 export type IResult = IParentResult["IEcommerceOrderCreateResult"];
@@ -30,9 +27,7 @@ export function action(props: IProps) {
     DefaultError,
     IParentProps["IEcommerceOrderCheckoutProps"]
   >({
-    mutationKey: [
-      `${route}/${props.id}/ecommerce/orders/${props.orderId}/checkout`,
-    ],
+    mutationKey: [`${route}/:id/ecommerce/orders/:orderId/checkout`],
     mutationFn: async (
       mutationFunctionProps: IParentProps["IEcommerceOrderCheckoutProps"],
     ) => {
@@ -51,7 +46,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/${props.id}/ecommerce/orders/${props.orderId}/checkout`,
+        name: `${route}/:id/ecommerce/orders/:orderId/checkout`,
         props: this,
         result: data,
         timestamp: Date.now(),

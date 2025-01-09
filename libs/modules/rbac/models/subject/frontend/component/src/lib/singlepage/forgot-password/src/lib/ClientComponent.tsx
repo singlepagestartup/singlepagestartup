@@ -10,46 +10,32 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
-  password: z.string().min(8),
-  passwordConfirmation: z.string().min(8),
-  code: z.string(),
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const searchParams = useSearchParams();
-  const code = searchParams.get("code");
-
-  const resetPassword = api.resetPassword({});
+  const forgotPassword = api.authenticationLoginAndPasswordForgotPassword({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      password: "",
-      passwordConfirmation: "",
-      code: "",
+      email: "",
     },
   });
 
-  useEffect(() => {
-    if (code) {
-      form.setValue("code", code);
-    }
-  }, [code, form]);
-
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    resetPassword.mutate({
+    forgotPassword.mutate({
       data,
     });
   }
 
   useEffect(() => {
-    if (resetPassword.isSuccess) {
-      toast.success("Password reset successfully");
+    if (forgotPassword.isSuccess) {
+      toast.success("Reset link sent");
     }
-  }, [resetPassword]);
+  }, [forgotPassword]);
 
   return (
     <div
@@ -63,22 +49,14 @@ export function Component(props: IComponentPropsExtended) {
           <FormField
             ui="shadcn"
             type="text"
-            label="Password"
-            name="password"
+            label="Email"
+            name="email"
             form={form}
-            placeholder="Enter new password"
-          />
-          <FormField
-            ui="shadcn"
-            type="text"
-            label="Password Confirmation"
-            name="passwordConfirmation"
-            form={form}
-            placeholder="Re-enter new password"
+            placeholder="Enter your email"
           />
 
           <Button variant="primary" onClick={form.handleSubmit(onSubmit)}>
-            Reset password
+            Send reset link
           </Button>
         </div>
       </Form>

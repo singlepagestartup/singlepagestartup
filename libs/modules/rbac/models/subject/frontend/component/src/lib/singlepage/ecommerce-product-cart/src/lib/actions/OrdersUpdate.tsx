@@ -20,10 +20,7 @@ export function Component(
     order: IOrder;
   },
 ) {
-  const updateEntity = api.ecommerceOrdersUpdate({
-    id: props.data.id,
-    orderId: props.order.id,
-  });
+  const updateEntity = api.ecommerceOrderUpdate({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,6 +31,8 @@ export function Component(
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     updateEntity.mutate({
+      id: props.data.id,
+      orderId: props.order.id,
       data,
     });
   }

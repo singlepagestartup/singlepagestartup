@@ -26,10 +26,11 @@ export function Component(props: IComponentPropsExtended) {
   const [jwt, setJwt] = useState<string | undefined>();
   const [cookies] = useCookies(["rbac.subject.jwt"]);
   const [isClient, setIsClient] = useState(false);
-  const { data: meData, refetch } = api.me();
+  const { data: meData, refetch } = api.authenticationMe({});
 
-  const authenticateEthereumVirtualMachine = api.ethereumVirtualMachine({});
-  const logout = api.logout({
+  const authenticateEthereumVirtualMachine =
+    api.authenticationEthereumVirtualMachine({});
+  const logout = api.authenticationLogout({
     reactQueryOptions: {
       enabled: false,
     },

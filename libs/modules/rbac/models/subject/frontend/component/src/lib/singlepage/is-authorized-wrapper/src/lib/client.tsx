@@ -7,7 +7,9 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 
 export default function Client(props: IComponentProps) {
-  const { data, isFetching, isLoading } = api.isAuthorized(props.apiProps);
+  const { data, isFetching, isLoading } = api.authenticationIsAuthorized(
+    props.apiProps,
+  );
 
   if (isFetching || isLoading) {
     return props.skeleton ?? <Skeleton />;

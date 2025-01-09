@@ -8,7 +8,6 @@ import { Component } from "./Component";
 import { Skeleton } from "./Skeleton";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-select-input/server";
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   return (
     <ParentComponent<IModel, typeof variant, any, IComponentProps>

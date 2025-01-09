@@ -16,10 +16,7 @@ export function Component(
     identity: IIdentity;
   },
 ) {
-  const deleteIdentity = api.identitiesDelete({
-    id: props.data.id,
-    identityId: props.identity.id,
-  });
+  const deleteIdentity = api.identityDelete({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -27,7 +24,10 @@ export function Component(
   });
 
   async function onSubmit() {
-    deleteIdentity.mutate({});
+    deleteIdentity.mutate({
+      id: props.data.id,
+      identityId: props.identity.id,
+    });
   }
 
   return (

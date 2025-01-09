@@ -12,7 +12,7 @@ async function me(props: IComponentProps) {
   const headers: HeadersInit = jwt ? { Authorization: `Bearer ${jwt}` } : {};
 
   const data = await api
-    .me({
+    .authenticationMe({
       ...props.apiProps,
       options: {
         ...props.apiProps?.options,
@@ -30,7 +30,6 @@ async function me(props: IComponentProps) {
   return data;
 }
 
-// default is required for dynamic import
 export default async function Server(props: IComponentProps) {
   const data = await me(props);
 

@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { deleteCookie } from "hono/cookie";
 
 export class Handler {
