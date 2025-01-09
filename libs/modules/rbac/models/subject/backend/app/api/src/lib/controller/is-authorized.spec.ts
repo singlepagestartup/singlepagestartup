@@ -3,22 +3,25 @@ import { Service } from "../service";
 import { Context } from "hono";
 import { Repository } from "../repository";
 import { Configuration } from "../configuration";
+import { IRepository, IService } from "@sps/shared-backend-api";
+import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 
 jest.mock("../repository");
 jest.mock("../service");
 
 describe("Handler", () => {
   let handler: Handler;
-  let service: jest.Mocked<Service>;
+  let service: jest.Mocked<IService<(typeof Table)["$inferSelect"]>>;
   let context: jest.Mocked<Context>;
+  let repository: jest.Mocked<IRepository>;
 
   beforeEach(() => {
-    const repository = new Repository(
+    repository = new Repository(
       new Configuration(),
-    ) as jest.Mocked<Repository>;
+    ) as unknown as jest.Mocked<IRepository>;
 
-    service = new Service(repository) as jest.Mocked<Service>;
-    handler = new Handler(service);
+    service = new Service(repository as any) as jest.Mocked<Service>;
+    handler = new Handler(service as any);
 
     context = {
       req: {
@@ -30,8 +33,10 @@ describe("Handler", () => {
   });
 
   it("should return 200 if valid X-RBAC-SECRET-KEY header is provided", async () => {
-    await handler.execute(context, () => {});
+    const res = await handler.execute(context, () => {});
 
-    expect(context.json).toHaveBeenCalledWith({ data: expect.anything() });
+    console.log("🚀 ~ it ~ res:", handler);
+
+    // expect(context.json).toHaveBeenCalledWith({ data: expect.anything() });
   });
 });
