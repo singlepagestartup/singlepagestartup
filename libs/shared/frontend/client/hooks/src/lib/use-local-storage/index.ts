@@ -47,5 +47,9 @@ export function useLocalStorage(key: string) {
     };
   }, [key]);
 
+  useEffect(() => {
+    handleStorageChange();
+  }, []);
+
   return storedValue;
 }

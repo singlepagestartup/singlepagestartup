@@ -19,13 +19,13 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
-    methods: ["POST"],
-  },
-  {
     regexPath:
       /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|logout)/,
     methods: ["GET"],
+  },
+  {
+    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
+    methods: ["POST"],
   },
   {
     regexPath: /\/api\/(host|website-builder|file-storage)\/.*/,
