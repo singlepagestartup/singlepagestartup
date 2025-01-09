@@ -6,7 +6,11 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <RbacSubject isServer={false} hostUrl={props.hostUrl} variant="me">
+    <RbacSubject
+      isServer={false}
+      hostUrl={props.hostUrl}
+      variant="authentication-me-default"
+    >
       {({ data: subject }) => {
         if (!subject) {
           return <></>;

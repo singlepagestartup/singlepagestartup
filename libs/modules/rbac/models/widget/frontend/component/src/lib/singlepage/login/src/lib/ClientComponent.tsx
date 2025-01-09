@@ -8,8 +8,9 @@ import { useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
   const [provider, setProvider] = useState<
-    "login-and-password" | "ethereum-virtual-machine"
-  >("login-and-password");
+    | "authentication-login-and-password-authentication-form-default"
+    | "authentication-ethereum-virtual-machine-default"
+  >("authentication-login-and-password-authentication-form-default");
 
   return (
     <div
@@ -32,17 +33,28 @@ export function Component(props: IComponentPropsExtended) {
           <div className="flex gap-3">
             <Button
               variant={
-                provider === "login-and-password" ? "primary" : "outline"
+                provider ===
+                "authentication-login-and-password-authentication-form-default"
+                  ? "primary"
+                  : "outline"
               }
-              onClick={() => setProvider("login-and-password")}
+              onClick={() =>
+                setProvider(
+                  "authentication-login-and-password-authentication-form-default",
+                )
+              }
             >
               Login and Password
             </Button>
             <Button
               variant={
-                provider === "ethereum-virtual-machine" ? "primary" : "outline"
+                provider === "authentication-ethereum-virtual-machine-default"
+                  ? "primary"
+                  : "outline"
               }
-              onClick={() => setProvider("ethereum-virtual-machine")}
+              onClick={() =>
+                setProvider("authentication-ethereum-virtual-machine-default")
+              }
             >
               Ethereum Virtual Machine
             </Button>
@@ -50,8 +62,7 @@ export function Component(props: IComponentPropsExtended) {
           <Subject
             isServer={false}
             hostUrl={props.hostUrl}
-            variant={provider as any}
-            type="authentication"
+            variant={provider}
           />
         </div>
       </div>

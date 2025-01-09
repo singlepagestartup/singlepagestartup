@@ -12,7 +12,11 @@ export function Component(
   },
 ) {
   return (
-    <RbacSubject isServer={false} hostUrl={props.hostUrl} variant="me">
+    <RbacSubject
+      isServer={false}
+      hostUrl={props.hostUrl}
+      variant="authentication-me-default"
+    >
       {({ data: subject }) => {
         if (!subject) {
           return <></>;

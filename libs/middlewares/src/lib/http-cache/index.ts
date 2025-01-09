@@ -31,9 +31,9 @@ export class Middleware {
       }
 
       if (
-        path.includes("rbac/subjects/me") ||
-        path.includes("rbac/subjects/init") ||
-        path.includes("rbac/subjects/is-authorized")
+        path.includes("rbac/subjects/authentication/me") ||
+        path.includes("rbac/subjects/authentication/init") ||
+        path.includes("rbac/subjects/authentication/is-authorized")
       ) {
         return await next();
       }

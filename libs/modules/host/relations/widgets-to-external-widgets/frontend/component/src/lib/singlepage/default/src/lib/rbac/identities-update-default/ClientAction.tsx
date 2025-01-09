@@ -5,7 +5,11 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <Subject isServer={false} hostUrl={props.hostUrl} variant="me">
+    <Subject
+      isServer={false}
+      hostUrl={props.hostUrl}
+      variant="authentication-me-default"
+    >
       {({ data }) => {
         if (!data) {
           return;

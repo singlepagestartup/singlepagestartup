@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
 
   return (
     <RbacSubject
-      variant="is-authorized-wrapper"
+      variant="authentication-is-authorized-wrapper-default"
       isServer={false}
       hostUrl={props.hostUrl}
       apiProps={{

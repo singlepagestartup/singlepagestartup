@@ -24,8 +24,7 @@ export function Component(props: IComponentPropsExtended) {
           <Subject
             isServer={props.isServer}
             hostUrl={props.hostUrl}
-            variant="select-method"
-            type="registration"
+            variant="authentication-login-and-password-authentication-form-default"
           />
         </div>
       </div>

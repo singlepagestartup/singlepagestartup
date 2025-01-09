@@ -14,7 +14,7 @@ export function Component(props: IComponentPropsExtended) {
       <Subject
         isServer={props.isServer}
         hostUrl={props.hostUrl}
-        variant="forgot-password"
+        variant="authentication-login-and-password-forgot-password-form-default"
       />
     </div>
   );

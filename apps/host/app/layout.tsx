@@ -31,7 +31,11 @@ export default async function RootLayout({
       >
         <Suspense fallback={<Loading />}>
           <SpsRbacProvider isServer={false} hostUrl="/">
-            <SpsRbacSubject isServer={false} hostUrl="/" variant="init" />
+            <SpsRbacSubject
+              isServer={false}
+              hostUrl="/"
+              variant="authentication-init-default"
+            />
             <SpsBroadcast hostUrl="/" isServer={true} />
             <Admin hostUrl="/" isServer={true} />
             <div className="relative">

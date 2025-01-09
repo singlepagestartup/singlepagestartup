@@ -15,7 +15,7 @@ export function Component(
     <RbacSubject
       isServer={false}
       hostUrl={props.hostUrl}
-      variant="is-authorized-wrapper"
+      variant="authentication-is-authorized-wrapper-default"
       apiProps={{
         params: {
           action: {

@@ -3,11 +3,14 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
-import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <Subject isServer={false} hostUrl={props.hostUrl} variant="me">
+    <Subject
+      isServer={false}
+      hostUrl={props.hostUrl}
+      variant="authentication-me-default"
+    >
       {({ data: subject }) => {
         if (!subject) {
           return;
@@ -37,8 +40,7 @@ export function Component(props: ISpsComponentBase) {
                 if (!data?.length) {
                   return (
                     <Subject
-                      type="authentication"
-                      variant="select-method"
+                      variant="authentication-select-method-default"
                       isServer={false}
                       hostUrl={props.hostUrl}
                     />
