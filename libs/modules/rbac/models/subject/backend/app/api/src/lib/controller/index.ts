@@ -6,25 +6,25 @@ import { Service } from "../service";
 import { Context } from "hono";
 import { Handler as Me } from "./me";
 import { Handler as IsAuthorized } from "./is-authorized";
-import { Handler as IdentitiesList } from "./identities-list";
+import { Handler as IdentitiesList } from "./identity/find";
 import { Handler as Logout } from "./logout";
-import { Handler as ForgotPassword } from "./forgot-password";
-import { Handler as ResetPassword } from "./reset-password";
-import { Handler as Registraion } from "./registration";
+import { Handler as AuthenticationLoginAndPasswordForgotPassword } from "./authentication/login-and-password/forgot-password";
+import { Handler as AuthenticationLoginAndPasswordResetPassword } from "./authentication/login-and-password/reset-password";
+import { Handler as AuthenticationLoginAndPasswordRegistraion } from "./authentication/login-and-password/registration";
 import { Handler as Init } from "./init";
-import { Handler as Authentication } from "./authentication";
+import { Handler as AuthenticationLoginAndPasswordAuthentication } from "./authentication/login-and-password/authentication";
 import { Handler as Refresh } from "./refresh";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
-import { Handler as IdentitiesUpdate } from "./identities-update";
-import { Handler as IdentitiesCreate } from "./identities-create";
-import { Handler as IdentitiesDelete } from "./identities-delete";
-import { Handler as EcommerceProductsEnforce } from "./ecommerce/products-enforce";
-import { Handler as EcommerceOrdersCreate } from "./ecommerce/orders-create";
-import { Handler as EcommerceOrdersUpdate } from "./ecommerce/orders-update";
-import { Handler as EcommerceOrdersDelete } from "./ecommerce/orders-delete";
-import { Handler as EcommerceOrdersCheckout } from "./ecommerce/orders-checkout";
-import { Handler as EcommerceProductsCheckout } from "./ecommerce/products-checkout";
+import { Handler as IdentitiesUpdate } from "./identity/update";
+import { Handler as IdentitiesCreate } from "./identity/create";
+import { Handler as IdentitiesDelete } from "./identity/delete";
+import { Handler as EcommerceProductsEnforce } from "./ecommerce/product/enforce";
+import { Handler as EcommerceOrdersCreate } from "./ecommerce/order/create";
+import { Handler as EcommerceOrdersUpdate } from "./ecommerce/order/update";
+import { Handler as EcommerceOrdersDelete } from "./ecommerce/order/delete";
+import { Handler as EcommerceOrdersCheckout } from "./ecommerce/order/checkout";
+import { Handler as EcommerceProductsCheckout } from "./ecommerce/product/checkout";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -66,8 +66,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/registration/:provider",
-        handler: this.registraion,
+        path: "/authentication/login-and-password/registration",
+        handler: this.authenticationLoginAndPasswordRegistraion,
       },
       {
         method: "POST",
@@ -76,8 +76,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/authentication/:provider",
-        handler: this.authentication,
+        path: "/authentication/login-and-password/authentication",
+        handler: this.authenticationLoginAndPasswordAuthentication,
       },
       {
         method: "GET",
@@ -96,13 +96,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/forgot-password",
-        handler: this.forgotPassword,
+        path: "/authentication/login-and-password/forgot-password",
+        handler: this.authenticationLoginAndPasswordForgotPassword,
       },
       {
         method: "POST",
-        path: "/reset-password",
-        handler: this.resetPassword,
+        path: "/authentication/login-and-password/reset-password",
+        handler: this.authenticationLoginAndPasswordResetPassword,
       },
       {
         method: "PATCH",
@@ -188,24 +188,45 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new Logout(this.service).execute(c, next);
   }
 
-  async forgotPassword(c: Context, next: any): Promise<Response> {
-    return new ForgotPassword(this.service).execute(c, next);
+  async authenticationLoginAndPasswordForgotPassword(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationLoginAndPasswordForgotPassword(
+      this.service,
+    ).execute(c, next);
   }
 
-  async resetPassword(c: Context, next: any): Promise<Response> {
-    return new ResetPassword(this.service).execute(c, next);
+  async authenticationLoginAndPasswordResetPassword(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationLoginAndPasswordResetPassword(
+      this.service,
+    ).execute(c, next);
   }
 
-  async registraion(c: Context, next: any): Promise<Response> {
-    return new Registraion(this.service).execute(c, next);
+  async authenticationLoginAndPasswordRegistraion(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationLoginAndPasswordRegistraion(this.service).execute(
+      c,
+      next,
+    );
   }
 
   async init(c: Context, next: any): Promise<Response> {
     return new Init(this.service).execute(c, next);
   }
 
-  async authentication(c: Context, next: any): Promise<Response> {
-    return new Authentication(this.service).execute(c, next);
+  async authenticationLoginAndPasswordAuthentication(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationLoginAndPasswordAuthentication(
+      this.service,
+    ).execute(c, next);
   }
 
   async refresh(c: Context, next: any): Promise<Response> {

@@ -4,8 +4,8 @@ module.exports = {
   ...nxPreset,
   testEnvironment: "node",
   transform: {
-    "^.+\\.[tj]s$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.json" }],
+    "^.+\\.[tj]sx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json" }],
   },
-  moduleFileExtensions: ["ts", "js", "html"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "html"],
   setupFiles: [`${__dirname}/jest.setup.ts`],
 };

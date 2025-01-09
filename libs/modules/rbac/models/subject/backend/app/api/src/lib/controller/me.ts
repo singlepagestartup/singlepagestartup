@@ -32,32 +32,26 @@ export class Handler {
       });
     }
 
-    try {
-      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
-      if (!decoded.subject?.["id"]) {
-        throw new HTTPException(401, {
-          message: "No subject provided in the token",
-        });
-      }
-
-      // const entity = await this.service.findById({
-      //   id: decoded.subject?.["id"],
-      // });
-
-      if (!decoded.subject) {
-        throw new HTTPException(401, {
-          message: "No subject provided in the token",
-        });
-      }
-
-      return c.json({
-        data: decoded.subject,
-      });
-    } catch (error) {
+    if (!decoded.subject?.["id"]) {
       throw new HTTPException(401, {
-        message: error?.["message"] || "Invalid authorization token provided",
+        message: "No subject provided in the token",
       });
     }
+
+    // const entity = await this.service.findById({
+    //   id: decoded.subject?.["id"],
+    // });
+
+    if (!decoded.subject) {
+      throw new HTTPException(401, {
+        message: "No subject provided in the token",
+      });
+    }
+
+    return c.json({
+      data: decoded.subject,
+    });
   }
 }

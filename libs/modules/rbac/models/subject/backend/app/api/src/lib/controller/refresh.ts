@@ -55,38 +55,32 @@ export class Handler {
       });
     }
 
-    try {
-      const entity = await this.service.refresh({
-        refresh: data["refresh"],
-      });
+    const entity = await this.service.refresh({
+      refresh: data["refresh"],
+    });
 
-      const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
+    const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
 
-      if (!decoded.exp) {
-        throw new HTTPException(400, {
-          message: "Invalid token issued",
-        });
-      }
-
-      setCookie(c, "rbac.subject.jwt", entity.jwt, {
-        path: "/",
-        secure: true,
-        httpOnly: false,
-        maxAge: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        expires: new Date(decoded.exp),
-        sameSite: "Strict",
-      });
-
-      return c.json(
-        {
-          data: entity,
-        },
-        201,
-      );
-    } catch (error: any) {
+    if (!decoded.exp) {
       throw new HTTPException(400, {
-        message: error.message,
+        message: "Invalid token issued",
       });
     }
+
+    setCookie(c, "rbac.subject.jwt", entity.jwt, {
+      path: "/",
+      secure: true,
+      httpOnly: false,
+      maxAge: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+      expires: new Date(decoded.exp),
+      sameSite: "Strict",
+    });
+
+    return c.json(
+      {
+        data: entity,
+      },
+      201,
+    );
   }
 }

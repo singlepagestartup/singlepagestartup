@@ -5,6 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
+    "jest:test": {},
     "eslint:lint": {},
     "tsc:build": {},
     "repository-migrate": {

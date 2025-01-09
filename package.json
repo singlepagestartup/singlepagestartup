@@ -8,6 +8,7 @@
     "host:production": "NODE_ENV=production npm run host:build && npm run host:start",
     "host:start": "nx run host:next:start",
     "lint": "nx run-many --target=eslint:lint --parallel=2 --all",
+    "test:file": "npx nx run --target=jest:test --testFile",
     "prepare": "husky"
   },
   "dependencies": {
@@ -191,7 +192,7 @@
     "swc-loader": "^0.2.6",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "typescript-transform-paths": "^3.5.3",
     "url": "^0.11.4",
     "verdaccio": "^6.0.5"

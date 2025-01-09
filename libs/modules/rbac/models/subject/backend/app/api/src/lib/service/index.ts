@@ -3,24 +3,23 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Repository } from "../repository";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
-import { HTTPException } from "hono/http-exception";
 import { Service as Logout } from "./logout";
 import {
   Service as Refresh,
   IExecuteProps as IRefreshExecuteProps,
 } from "./refresh";
 import {
-  Service as LoginAndPassword,
-  IExecuteProps as ILoginAndPasswordExecuteProps,
-} from "./login-and-password";
+  Service as AuthenticationLoginAndPassword,
+  IExecuteProps as IAuthenticationLoginAndPasswordExecuteProps,
+} from "./authentication/login-and-password";
 import {
   Service as IsAuthorized,
   IExecuteProps as IIsAuthorizedExecuteProps,
 } from "./is-authorized";
 import {
-  Service as EthereumVirtualMachine,
-  IExecuteProps as IEthereumVirtualMachineExecuteProps,
-} from "./ethereum-virtual-machine";
+  Service as AuthenticationEthereumVirtualMachine,
+  IExecuteProps as IAuthenticationEthereumVirtualMachineExecuteProps,
+} from "./authentication/ethereum-virtual-machine";
 import {
   Service as DeleteAnonymousSubjects,
   IExecuteProps as IDeleteAnonymousSubjectsExecuteProps,
@@ -48,35 +47,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new Logout(this.repository).execute();
   }
 
-  async providers(
-    props: { provider: string } & (
-      | ILoginAndPasswordExecuteProps
-      | IEthereumVirtualMachineExecuteProps
-    ),
-  ): Promise<{ jwt: string; refresh: string }> {
-    if (props.provider === "login_and_password") {
-      return this.loginAndPassowrd(props);
-    } else if (props.provider === "ethereum_virtual_machine") {
-      return this.ethereumVirtualMachineSignature(props);
-    }
-
-    throw new HTTPException(400, {
-      message: "Invalid provider",
-    });
-  }
-
   async refresh(props: IRefreshExecuteProps) {
     return new Refresh(this.repository).execute(props);
   }
 
-  async loginAndPassowrd(props: ILoginAndPasswordExecuteProps) {
-    return new LoginAndPassword(this.repository).execute(props);
+  async authenticationloginAndPassowrd(
+    props: IAuthenticationLoginAndPasswordExecuteProps,
+  ) {
+    return new AuthenticationLoginAndPassword(this.repository).execute(props);
   }
 
-  async ethereumVirtualMachineSignature(
-    props: IEthereumVirtualMachineExecuteProps,
+  async authenticationEthereumVirtualMachine(
+    props: IAuthenticationEthereumVirtualMachineExecuteProps,
   ) {
-    return new EthereumVirtualMachine(this.repository).execute(props);
+    return new AuthenticationEthereumVirtualMachine(this.repository).execute(
+      props,
+    );
   }
 
   async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {

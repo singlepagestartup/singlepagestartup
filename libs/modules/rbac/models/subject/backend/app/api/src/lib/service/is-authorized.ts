@@ -156,7 +156,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error(`isAuthorized ~ error:`, error);
+      console.error("isAuthorized ~ error:", error);
     }
 
     try {
@@ -244,7 +244,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error(`isAuthorized ~ error:`, error);
+      console.error("isAuthorized ~ error:", error);
     }
 
     if (!authorized) {
