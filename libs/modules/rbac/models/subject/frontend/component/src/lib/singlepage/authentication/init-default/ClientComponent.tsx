@@ -8,7 +8,6 @@ import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
-import { useDebouncedCallback } from "use-debounce";
 import { useRouter } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
@@ -41,7 +40,7 @@ export function Component(props: IComponentPropsExtended) {
     }
   }, [refreshToken]);
 
-  const handleStorageChange = useDebouncedCallback(() => {
+  const handleStorageChange = () => {
     if (tokenDecoded.isExpired) {
       /**
        * No Cookies['rbac.subject.jwt']
@@ -53,11 +52,9 @@ export function Component(props: IComponentPropsExtended) {
               refresh: refreshToken,
             },
           });
-
           return;
         } else {
           init.refetch();
-
           return;
         }
       } else {
@@ -76,16 +73,11 @@ export function Component(props: IComponentPropsExtended) {
         }
       }
     }
-  }, 100);
+  };
 
   useEffect(() => {
     handleStorageChange();
-  }, [
-    init.status,
-    tokenDecoded.decodedToken,
-    refreshToken,
-    refreshTokenDecoded.isExpired,
-  ]);
+  }, [tokenDecoded.decodedToken, refreshToken, refreshTokenDecoded.isExpired]);
 
   useEffect(() => {
     if (refresh.isError) {

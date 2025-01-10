@@ -1,8 +1,11 @@
 "use client";
 
 import { route } from "@sps/rbac/models/subject/sdk/model";
-import { STALE_TIME } from "@sps/shared-utils";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  DefaultError,
+  useMutation,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -13,21 +16,30 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import Cookies from "js-cookie";
 
-export type IProps = IParentProps["IAuthenticationLogoutProps"] & {
-  reactQueryOptions?: Partial<UseQueryOptions<any>>;
+export type IProps = {
+  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
 export type IResult = IParentResult["IAuthenticationLogoutResult"];
 
 export function action(props: IProps) {
-  return useQuery<IResult>({
-    queryKey: [`${route}/authentication/logout`],
-    queryFn: async () => {
+  return useMutation<
+    IResult,
+    DefaultError,
+    IParentProps["IAuthenticationLogoutProps"]
+  >({
+    mutationKey: [`${route}/authentication/logout`],
+    mutationFn: async (
+      mutationFunctionProps: IParentProps["IAuthenticationLogoutProps"],
+    ) => {
       try {
-        const result = await api.authenticationLogout(props);
+        const result = await api.authenticationLogout({
+          ...mutationFunctionProps,
+        });
 
         localStorage.removeItem("rbac.subject.refresh");
         Cookies.remove("rbac.subject.jwt");
+        window.location.replace(mutationFunctionProps.redirectTo);
 
         return result;
       } catch (error: any) {
@@ -36,7 +48,7 @@ export function action(props: IProps) {
         throw error;
       }
     },
-    select(data) {
+    onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
         name: `${route}/authentication/logout`,
@@ -48,7 +60,6 @@ export function action(props: IProps) {
 
       return data;
     },
-    staleTime: STALE_TIME,
     ...props?.reactQueryOptions,
   });
 }

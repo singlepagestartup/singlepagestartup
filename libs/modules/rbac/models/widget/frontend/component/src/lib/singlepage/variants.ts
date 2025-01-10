@@ -8,7 +8,7 @@ import { Component as IdentityUpdateDefault } from "./identity/update-default";
 import { Component as IdentityCreateDefault } from "./identity/create-default";
 import { Component as SubjectAuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./subject/authentication/email-and-password/forgot-password-form-default";
 import { Component as SubjectAuthenticationSelectMethodDefault } from "./subject/authentication/select-method-default";
-import { Component as SubjectAuthenticationLogout } from "./subject/authentication/logout-action-default";
+import { Component as SubjectAuthenticationLogoutActionDefault } from "./subject/authentication/logout-action-default";
 import { Component as SubjectAuthenticationEmailAndPasswordRegistrationFormDefault } from "./subject/authentication/email-and-password/registration-form-default";
 import { Component as SubjectAuthenticationEmailAndPasswordResetPasswordFormDefault } from "./subject/authentication/email-and-password/reset-password-form-default";
 import { Component as SubjectOverviewDefault } from "./subject/overview-default";
@@ -24,7 +24,8 @@ export const variants = {
     SubjectAuthenticationEmailAndPasswordForgotPasswordFormDefault,
   "subject-authentication-select-method-default":
     SubjectAuthenticationSelectMethodDefault,
-  logout: SubjectAuthenticationLogout,
+  "subject-authentication-logout-action-default":
+    SubjectAuthenticationLogoutActionDefault,
   "subject-authentication-email-and-password-registration-form-default":
     SubjectAuthenticationEmailAndPasswordRegistrationFormDefault,
   "subject-authentication-email-and-password-reset-password-form-default":

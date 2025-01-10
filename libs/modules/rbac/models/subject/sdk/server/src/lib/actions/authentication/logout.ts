@@ -7,6 +7,7 @@ import {
 import QueryString from "qs";
 
 export interface IProps {
+  redirectTo: string;
   catchErrors?: boolean;
   params?: {
     [key: string]: any;
@@ -28,7 +29,7 @@ export async function action(props: IProps): Promise<IResult> {
 
   const requestOptions: NextRequestOptions = {
     credentials: "include",
-    method: "GET",
+    method: "POST",
     ...options,
     next: {
       ...options?.next,

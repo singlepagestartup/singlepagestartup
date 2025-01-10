@@ -95,7 +95,10 @@ export function Component(props: IComponentPropsExtended) {
             </CardContent>
           </Card>
           {props.data.description ? (
-            <TipTap value={props.data.description} className="text-center" />
+            <TipTap
+              value={props.data.description}
+              className="text-center prose-sm"
+            />
           ) : null}
         </div>
       </div>

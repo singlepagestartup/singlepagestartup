@@ -17,6 +17,7 @@ export const variants = [
   "subject-list-default",
   "identity-update-default",
   "identitity-create-default",
+  "subject-authentication-logout-action-default",
 ];
 export const host = BACKEND_URL;
 export const query = {};

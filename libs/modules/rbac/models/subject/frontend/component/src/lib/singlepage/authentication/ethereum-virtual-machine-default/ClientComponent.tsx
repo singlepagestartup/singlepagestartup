@@ -14,6 +14,7 @@ import { ethereumVirtualMachine } from "@sps/shared-frontend-client-web3";
 import { useCookies } from "react-cookie";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { useJwt } from "react-jwt";
 
 const formSchema = z.object({
   message: z.string().min(8),
@@ -23,31 +24,18 @@ let signMessagePopupOpened = false;
 
 export function Component(props: IComponentPropsExtended) {
   const ConnectWallet = ethereumVirtualMachine.ConnectWalletButton;
-  const [jwt, setJwt] = useState<string | undefined>();
   const [cookies] = useCookies(["rbac.subject.jwt"]);
   const [isClient, setIsClient] = useState(false);
-  const { data: meData, refetch } = api.authenticationMe({});
+  const tokenDecoded = useJwt<{
+    exp: number;
+    iat: number;
+    subject: { id: string };
+  }>(cookies["rbac.subject.jwt"]);
 
   const authenticateEthereumVirtualMachine =
     api.authenticationEthereumVirtualMachine({});
-  const logout = api.authenticationLogout({
-    reactQueryOptions: {
-      enabled: false,
-    },
-  });
+  const logout = api.authenticationLogout({});
   const account = useAccount();
-
-  useEffect(() => {
-    if (cookies["rbac.subject.jwt"] !== jwt) {
-      setJwt(cookies["rbac.subject.jwt"]);
-    }
-  }, [cookies["rbac.subject.jwt"]]);
-
-  useEffect(() => {
-    if (jwt && !meData) {
-      refetch();
-    }
-  }, [jwt, meData]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,7 +86,7 @@ export function Component(props: IComponentPropsExtended) {
   }, []);
 
   useEffect(() => {
-    if (meData?.id) {
+    if (tokenDecoded.decodedToken?.subject?.id) {
       subjectsToIdentitiesApi
         .find({
           params: {
@@ -107,7 +95,7 @@ export function Component(props: IComponentPropsExtended) {
                 {
                   column: "subjectId",
                   method: "eq",
-                  value: meData?.id,
+                  value: tokenDecoded.decodedToken.subject.id,
                 },
               ],
             },
@@ -119,7 +107,7 @@ export function Component(props: IComponentPropsExtended) {
           }
         });
     }
-  }, [meData, account.isConnected]);
+  }, [tokenDecoded.decodedToken, account.isConnected]);
 
   useEffect(() => {
     if (authenticateEthereumVirtualMachine.isError) {
@@ -144,7 +132,9 @@ export function Component(props: IComponentPropsExtended) {
 
   function logoutAction() {
     disconnect(ethereumVirtualMachine.wagmiConfig.default);
-    logout.refetch();
+    logout.mutate({
+      redirectTo: "/",
+    });
   }
 
   if (!isClient) {

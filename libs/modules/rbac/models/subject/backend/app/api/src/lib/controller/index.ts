@@ -14,6 +14,7 @@ import { Handler as AuthenticationEmailAndPasswordRegistraion } from "./authenti
 import { Handler as AuthenticationInit } from "./authentication/init";
 import { Handler as AuthenticationEmailAndPasswordAuthentication } from "./authentication/email-and-password/authentication";
 import { Handler as AuthenticationRefresh } from "./authentication/refresh";
+import { Handler as AuthenticationEthereumVirtualMachine } from "./authentication/ethereum-virtual-machine";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
 import { Handler as IdentitiesUpdate } from "./identity/update";
@@ -55,7 +56,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.authenticationMe,
       },
       {
-        method: "GET",
+        method: "POST",
         path: "/authentication/logout",
         handler: this.authenticationLogout,
       },
@@ -68,6 +69,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/email-and-password/registration",
         handler: this.authenticationEmailAndPasswordRegistraion,
+      },
+      {
+        method: "POST",
+        path: "/authentication/ethereum-virtual-machine",
+        handler: this.authenticationEthereumVirtualMachine,
       },
       {
         method: "POST",
@@ -186,6 +192,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async authenticationLogout(c: Context, next: any): Promise<Response> {
     return new AuthenticationLogout(this.service).execute(c, next);
+  }
+
+  async authenticationEthereumVirtualMachine(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new AuthenticationEthereumVirtualMachine(this.service).execute(
+      c,
+      next,
+    );
   }
 
   async authenticationEmailAndPasswordForgotPassword(
