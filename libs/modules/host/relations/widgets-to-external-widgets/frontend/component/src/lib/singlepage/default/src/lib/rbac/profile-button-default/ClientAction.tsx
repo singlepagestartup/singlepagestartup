@@ -3,6 +3,8 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
+import { Button } from "@sps/shared-ui-shadcn";
+import Link from "next/link";
 
 export function Component(props: ISpsComponentBase) {
   return (
@@ -39,11 +41,11 @@ export function Component(props: ISpsComponentBase) {
               {({ data }) => {
                 if (!data?.length) {
                   return (
-                    <Subject
-                      variant="authentication-select-method-default"
-                      isServer={false}
-                      hostUrl={props.hostUrl}
-                    />
+                    <Button variant="outline" asChild={true}>
+                      <Link href="/rbac/subject/authentication/select-method">
+                        Login
+                      </Link>
+                    </Button>
                   );
                 }
 

@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex items-center">{props.logotype}</div>
         <div
           data-open={open}
-          className="w-full data-[open=false]:hidden data-[open=false]:lg:flex absolute data-[open=true]:w-screen data-[open=true]:h-screen inset-0 lg:relative data-[open=true]:flex items-center bg-background lg:bg-transparent"
+          className="w-full data-[open=true]:z-10 data-[open=true]:justify-center data-[open=true]:items-center data-[open=true]:flex-col data-[open=false]:hidden data-[open=false]:lg:flex absolute data-[open=true]:w-screen data-[open=true]:h-screen inset-0 lg:relative data-[open=true]:flex items-center bg-background lg:bg-transparent"
         >
           {props.content}
           {props.children}
