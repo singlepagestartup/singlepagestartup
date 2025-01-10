@@ -72,15 +72,15 @@ import {
   type IResult as IIdentityDeleteResult,
 } from "./actions/identity/delete";
 import {
-  action as authenticationLoginAndPasswordForgotPassword,
-  type IProps as IAuthenticationLoginAndPasswordForgotPasswordProps,
-  type IResult as IAuthenticationLoginAndPasswordForgotPasswordResult,
-} from "./actions/authentication/login-and-password/forgot-password";
+  action as authenticationEmailAndPasswordForgotPassword,
+  type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,
+  type IResult as IAuthenticationEmailAndPasswordForgotPasswordResult,
+} from "./actions/authentication/email-and-password/forgot-password";
 import {
-  action as authenticationLoginAndPasswordResetPassword,
-  type IProps as IAuthenticationLoginAndPasswordResetPasswordProps,
-  type IResult as IAuthenticationLoginAndPasswordResetPasswordResult,
-} from "./actions/authentication/login-and-password/reset-password";
+  action as authenticationEmailAndPasswordResetPassword,
+  type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
+  type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
+} from "./actions/authentication/email-and-password/reset-password";
 import {
   action as notify,
   type IProps as INotifyProps,
@@ -97,15 +97,15 @@ import {
   type IResult as IAuthenticationEthereumVirtualMachineResult,
 } from "./actions/authentication/ethereum-virtual-machine";
 import {
-  action as authenticationLoginAndPasswordAuthentication,
-  type IProps as IAuthenticationLoginAndPasswordAuthenticationProps,
-  type IResult as IAuthenticationLoginAndPasswordAuthenticationResult,
-} from "./actions/authentication/login-and-password/authentication";
+  action as authenticationEmailAndPasswordAuthentication,
+  type IProps as IAuthenticationEmailAndPasswordAuthenticationProps,
+  type IResult as IAuthenticationEmailAndPasswordAuthenticationResult,
+} from "./actions/authentication/email-and-password/authentication";
 import {
-  action as authenticationLoginAndPasswordRegistration,
-  type IProps as IAuthenticationLoginAndPasswordRegistrationProps,
-  type IResult as IAuthenticationLoginAndPasswordRegistrationResult,
-} from "./actions/authentication/login-and-password/registration";
+  action as authenticationEmailAndPasswordRegistration,
+  type IProps as IAuthenticationEmailAndPasswordRegistrationProps,
+  type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
+} from "./actions/authentication/email-and-password/registration";
 
 export type IProps = {
   IAuthenticationMeProps: IAuthenticationMeProps;
@@ -121,10 +121,10 @@ export type IProps = {
   IIdentityDeleteProps: IIdentityDeleteProps;
   IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
-  IAuthenticationLoginAndPasswordAuthenticationProps: IAuthenticationLoginAndPasswordAuthenticationProps;
-  IAuthenticationLoginAndPasswordRegistrationProps: IAuthenticationLoginAndPasswordRegistrationProps;
-  IAuthenticationLoginAndPasswordForgotPasswordProps: IAuthenticationLoginAndPasswordForgotPasswordProps;
-  IAuthenticationLoginAndPasswordResetPasswordProps: IAuthenticationLoginAndPasswordResetPasswordProps;
+  IAuthenticationEmailAndPasswordAuthenticationProps: IAuthenticationEmailAndPasswordAuthenticationProps;
+  IAuthenticationEmailAndPasswordRegistrationProps: IAuthenticationEmailAndPasswordRegistrationProps;
+  IAuthenticationEmailAndPasswordForgotPasswordProps: IAuthenticationEmailAndPasswordForgotPasswordProps;
+  IAuthenticationEmailAndPasswordResetPasswordProps: IAuthenticationEmailAndPasswordResetPasswordProps;
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
@@ -144,10 +144,10 @@ export type IResult = {
   IIdentityDeleteResult: IIdentityDeleteResult;
   IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
-  IAuthenticationLoginAndPasswordAuthenticationResult: IAuthenticationLoginAndPasswordAuthenticationResult;
-  IAuthenticationLoginAndPasswordRegistrationResult: IAuthenticationLoginAndPasswordRegistrationResult;
-  IAuthenticationLoginAndPasswordForgotPasswordResult: IAuthenticationLoginAndPasswordForgotPasswordResult;
-  IAuthenticationLoginAndPasswordResetPasswordResult: IAuthenticationLoginAndPasswordResetPasswordResult;
+  IAuthenticationEmailAndPasswordAuthenticationResult: IAuthenticationEmailAndPasswordAuthenticationResult;
+  IAuthenticationEmailAndPasswordRegistrationResult: IAuthenticationEmailAndPasswordRegistrationResult;
+  IAuthenticationEmailAndPasswordForgotPasswordResult: IAuthenticationEmailAndPasswordForgotPasswordResult;
+  IAuthenticationEmailAndPasswordResetPasswordResult: IAuthenticationEmailAndPasswordResetPasswordResult;
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
@@ -173,10 +173,10 @@ export const api = {
   notify,
   authenticationInit,
   authenticationEthereumVirtualMachine,
-  authenticationLoginAndPasswordAuthentication,
-  authenticationLoginAndPasswordRegistration,
-  authenticationLoginAndPasswordForgotPassword,
-  authenticationLoginAndPasswordResetPassword,
+  authenticationEmailAndPasswordAuthentication,
+  authenticationEmailAndPasswordRegistration,
+  authenticationEmailAndPasswordForgotPassword,
+  authenticationEmailAndPasswordResetPassword,
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,

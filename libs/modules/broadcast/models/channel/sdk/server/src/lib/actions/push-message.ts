@@ -1,5 +1,3 @@
-"use server";
-
 import { host, route, IModel } from "@sps/broadcast/models/channel/sdk/model";
 import {
   NextRequestOptions,

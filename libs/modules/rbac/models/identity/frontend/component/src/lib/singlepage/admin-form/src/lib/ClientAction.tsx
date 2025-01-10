@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       password: props.data?.password || "",
       account: props.data?.account || "",
       email: props.data?.email || "",
-      provider: props.data?.provider || "login_and_password",
+      provider: props.data?.provider || "email_and_password",
     },
   });
 

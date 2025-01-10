@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useState } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { useSearchParams } from "next/navigation";
@@ -21,7 +20,6 @@ import { AdminComponent as Startup } from "@sps/startup/frontend/component";
 export function Component(props: IComponentPropsExtended) {
   const params = useSearchParams();
   const adminQueryParams = params.get("admin");
-  const z = "";
 
   const [widget, setWidget] = useState<string>("host");
 

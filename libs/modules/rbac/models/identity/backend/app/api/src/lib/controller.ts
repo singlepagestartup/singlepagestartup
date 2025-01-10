@@ -51,8 +51,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/login-and-password",
-        handler: this.loginAndPassword,
+        path: "/email-and-password",
+        handler: this.emailAndPassword,
       },
       {
         method: "PATCH",
@@ -62,7 +62,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ]);
   }
 
-  async loginAndPassword(c: Context, next: any): Promise<Response> {
+  async emailAndPassword(c: Context, next: any): Promise<Response> {
     const body = await c.req.parseBody();
 
     if (typeof body["data"] !== "string") {
@@ -72,7 +72,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     const data = JSON.parse(body["data"]);
 
     try {
-      const entity = await this.service.loginAndPassowrd({
+      const entity = await this.service.emailAndPassowrd({
         data,
       });
 

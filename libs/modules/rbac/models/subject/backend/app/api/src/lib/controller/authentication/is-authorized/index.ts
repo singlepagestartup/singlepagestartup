@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { getCookie } from "hono/cookie";
 import QueryString from "qs";
 import { Service } from "../../../service";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export class Handler {
   service: Service;
@@ -16,13 +17,13 @@ export class Handler {
     const secretKeyCookie = getCookie(c, "rbac.secret-key");
     const secretKey = secretKeyHeader || secretKeyCookie;
 
-    if (secretKey && secretKey !== process.env["RBAC_SECRET_KEY"]) {
+    if (secretKey && secretKey !== RBAC_SECRET_KEY) {
       throw new HTTPException(401, {
         message: "Unauthorized",
       });
     }
 
-    if (secretKey && secretKey === process.env["RBAC_SECRET_KEY"]) {
+    if (secretKey && secretKey === RBAC_SECRET_KEY) {
       return c.json({
         data: {
           ok: true,

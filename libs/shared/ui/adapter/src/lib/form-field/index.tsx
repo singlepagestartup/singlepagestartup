@@ -18,7 +18,10 @@ export function Component(props: IComponentProps) {
         return (
           <FormItem className={props.className}>
             {props.label && props.type !== "checkbox" ? (
-              <FormLabel>{props.label}</FormLabel>
+              <div className="flex items-center">
+                <FormLabel>{props.label}</FormLabel>
+                {props.children}
+              </div>
             ) : null}
             <Input field={field} {...props} className={props.inputClassName} />
             {props.label && props.type === "checkbox" ? (

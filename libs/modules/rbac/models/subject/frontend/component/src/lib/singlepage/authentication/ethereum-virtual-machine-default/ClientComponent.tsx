@@ -160,7 +160,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Form {...form}>
         {!account.isConnected ? (
-          <ConnectWallet className="w-full lg:w-fit" variant="default" />
+          <ConnectWallet className="w-full" variant="default" />
         ) : (
           <Button variant="outline" onClick={logoutAction}>
             Logout

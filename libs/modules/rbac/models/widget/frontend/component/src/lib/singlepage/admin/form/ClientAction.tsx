@@ -18,6 +18,8 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
+      subtitle: props.data?.subtitle || "",
+      description: props.data?.description || "",
       slug: props.data?.slug || "",
     },
   });
@@ -51,6 +53,24 @@ export function Component(props: IComponentPropsExtended) {
           name="title"
           form={form}
           placeholder="Enter title"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Subtitle"
+          name="subtitle"
+          form={form}
+          placeholder="Enter subtitle"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="tiptap"
+          label="Description"
+          name="description"
+          form={form}
+          placeholder="Enter description"
         />
 
         <FormField

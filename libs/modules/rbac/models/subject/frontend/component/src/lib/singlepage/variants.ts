@@ -5,7 +5,8 @@ import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 import { Component as AuthenticationInitDefault } from "./authentication/init-default";
-import { Component as AuthenticationLoginAndPasswordAuthenticationFormDefault } from "./authentication/login-and-password/authentication-form-default";
+import { Component as AuthenticationEmailAndPasswordAuthenticationFormDefault } from "./authentication/email-and-password/authentication-form-default";
+import { Component as AuthenticationEmailAndPasswordRegistrationFormDefault } from "./authentication/email-and-password/registration-form-default";
 import { Component as AuthenticationLogoutActionDefault } from "./authentication/logout-action-default";
 import { Component as AuthenticationLogoutButtonDefault } from "./authentication/logout-button-default";
 import { Component as AuthenticationIsAllowedWrapperDefault } from "./authentication/is-authorized-wrapper-default";
@@ -19,8 +20,8 @@ import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentitiesUpdateDefault } from "./identities/update-default";
 import { Component as IdentitiesCreateDefault } from "./identities/create-default";
-import { Component as AuthenticationLoginAndPasswordForgotPasswordFormDefault } from "./authentication/login-and-password/forgot-password-form-default";
-import { Component as AuthenticationLoginAndPasswordResetPasswordFormDefault } from "./authentication/login-and-password/reset-password-form-default";
+import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
+import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
 
 export const variants = {
   find: Find,
@@ -30,8 +31,8 @@ export const variants = {
   "admin-form": AdminForm,
   default: Default,
   "authentication-init-default": AuthenticationInitDefault,
-  "authentication-login-and-password-authentication-form-default":
-    AuthenticationLoginAndPasswordAuthenticationFormDefault,
+  "authentication-email-and-password-authentication-form-default":
+    AuthenticationEmailAndPasswordAuthenticationFormDefault,
   "authentication-logout-action-default": AuthenticationLogoutActionDefault,
   "authentication-logout-button-default": AuthenticationLogoutButtonDefault,
   "authentication-is-authorized-wrapper-default":
@@ -40,10 +41,12 @@ export const variants = {
   "authentication-ethereum-virtual-machine-default":
     AuthenticationEthereumVirtualMachineDefault,
   "authentication-me-default": AuthenticationMeDefault,
-  "authentication-login-and-password-forgot-password-form-default":
-    AuthenticationLoginAndPasswordForgotPasswordFormDefault,
-  "authentication-login-and-password-reset-password-form-default":
-    AuthenticationLoginAndPasswordResetPasswordFormDefault,
+  "authentication-email-and-password-forgot-password-form-default":
+    AuthenticationEmailAndPasswordForgotPasswordFormDefault,
+  "authentication-email-and-password-reset-password-form-default":
+    AuthenticationEmailAndPasswordResetPasswordFormDefault,
+  "authentication-email-and-password-registration-form-default":
+    AuthenticationEmailAndPasswordRegistrationFormDefault,
   "identities-update-default": IdentitiesUpdateDefault,
   "identities-create-default": IdentitiesCreateDefault,
   "ecommerce-product-checkout": EcommerceProductCheckout,

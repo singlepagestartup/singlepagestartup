@@ -6,11 +6,11 @@ import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 import { Component as IdentityUpdateDefault } from "./identity/update-default";
 import { Component as IdentityCreateDefault } from "./identity/create-default";
-import { Component as SubjectAuthenticationLoginAndPasswordForgotPasswordFormDefault } from "./subject/authentication/login-and-password/forgot-password-form-default";
+import { Component as SubjectAuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./subject/authentication/email-and-password/forgot-password-form-default";
 import { Component as SubjectAuthenticationSelectMethodDefault } from "./subject/authentication/select-method-default";
 import { Component as SubjectAuthenticationLogout } from "./subject/authentication/logout-action-default";
-import { Component as SubjectAuthenticationLoginAndPasswordRegistrationFormDefault } from "./subject/authentication/login-and-password/registration-form-default";
-import { Component as SubjectAuthenticationLoginAndPasswordResetPasswordFormDefault } from "./subject/authentication/login-and-password/reset-password-form-default";
+import { Component as SubjectAuthenticationEmailAndPasswordRegistrationFormDefault } from "./subject/authentication/email-and-password/registration-form-default";
+import { Component as SubjectAuthenticationEmailAndPasswordResetPasswordFormDefault } from "./subject/authentication/email-and-password/reset-password-form-default";
 import { Component as SubjectOverviewDefault } from "./subject/overview-default";
 import { Component as SubjectListDefault } from "./subject/list-default";
 
@@ -20,15 +20,15 @@ export const variants = {
   "admin-table": AdminTable,
   "admin-select-input": AdminSelectInput,
   "admin-form": AdminForm,
-  "subject-authentication-login-and-password-forgot-password-form-default":
-    SubjectAuthenticationLoginAndPasswordForgotPasswordFormDefault,
+  "subject-authentication-email-and-password-forgot-password-form-default":
+    SubjectAuthenticationEmailAndPasswordForgotPasswordFormDefault,
   "subject-authentication-select-method-default":
     SubjectAuthenticationSelectMethodDefault,
   logout: SubjectAuthenticationLogout,
-  "subject-authentication-login-and-password-registration-form-default":
-    SubjectAuthenticationLoginAndPasswordRegistrationFormDefault,
-  "subject-authentication-login-and-password-reset-password-form-default":
-    SubjectAuthenticationLoginAndPasswordResetPasswordFormDefault,
+  "subject-authentication-email-and-password-registration-form-default":
+    SubjectAuthenticationEmailAndPasswordRegistrationFormDefault,
+  "subject-authentication-email-and-password-reset-password-form-default":
+    SubjectAuthenticationEmailAndPasswordResetPasswordFormDefault,
   default: Default,
   "subject-overview-default": SubjectOverviewDefault,
   "subject-list-default": SubjectListDefault,

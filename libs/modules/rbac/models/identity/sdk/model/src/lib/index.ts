@@ -8,7 +8,7 @@ import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export const route = "/api/rbac/identities";
 export const variants = ["default"];
-export const providers = ["login_and_password"];
+export const providers = ["email_and_password"];
 export const host = BACKEND_URL;
 export const query = {};
 export const options = {

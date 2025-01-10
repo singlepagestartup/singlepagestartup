@@ -1,5 +1,3 @@
-"use server";
-
 import { host, route, IModel } from "@sps/rbac/models/action/sdk/model";
 import {
   NextRequestOptions,

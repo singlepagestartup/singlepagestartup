@@ -8,11 +8,11 @@ import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
 import { Handler as IdentitiesList } from "./identity/find";
 import { Handler as AuthenticationLogout } from "./authentication/logout";
-import { Handler as AuthenticationLoginAndPasswordForgotPassword } from "./authentication/login-and-password/forgot-password";
-import { Handler as AuthenticationLoginAndPasswordResetPassword } from "./authentication/login-and-password/reset-password";
-import { Handler as AuthenticationLoginAndPasswordRegistraion } from "./authentication/login-and-password/registration";
+import { Handler as AuthenticationEmailAndPasswordForgotPassword } from "./authentication/email-and-password/forgot-password";
+import { Handler as AuthenticationEmailAndPasswordResetPassword } from "./authentication/email-and-password/reset-password";
+import { Handler as AuthenticationEmailAndPasswordRegistraion } from "./authentication/email-and-password/registration";
 import { Handler as AuthenticationInit } from "./authentication/init";
-import { Handler as AuthenticationLoginAndPasswordAuthentication } from "./authentication/login-and-password/authentication";
+import { Handler as AuthenticationEmailAndPasswordAuthentication } from "./authentication/email-and-password/authentication";
 import { Handler as AuthenticationRefresh } from "./authentication/refresh";
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
@@ -66,8 +66,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/authentication/login-and-password/registration",
-        handler: this.authenticationLoginAndPasswordRegistraion,
+        path: "/authentication/email-and-password/registration",
+        handler: this.authenticationEmailAndPasswordRegistraion,
       },
       {
         method: "POST",
@@ -76,8 +76,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/authentication/login-and-password/authentication",
-        handler: this.authenticationLoginAndPasswordAuthentication,
+        path: "/authentication/email-and-password/authentication",
+        handler: this.authenticationEmailAndPasswordAuthentication,
       },
       {
         method: "GET",
@@ -96,13 +96,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/authentication/login-and-password/forgot-password",
-        handler: this.authenticationLoginAndPasswordForgotPassword,
+        path: "/authentication/email-and-password/forgot-password",
+        handler: this.authenticationEmailAndPasswordForgotPassword,
       },
       {
         method: "POST",
-        path: "/authentication/login-and-password/reset-password",
-        handler: this.authenticationLoginAndPasswordResetPassword,
+        path: "/authentication/email-and-password/reset-password",
+        handler: this.authenticationEmailAndPasswordResetPassword,
       },
       {
         method: "PATCH",
@@ -188,29 +188,29 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new AuthenticationLogout(this.service).execute(c, next);
   }
 
-  async authenticationLoginAndPasswordForgotPassword(
+  async authenticationEmailAndPasswordForgotPassword(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new AuthenticationLoginAndPasswordForgotPassword(
+    return new AuthenticationEmailAndPasswordForgotPassword(
       this.service,
     ).execute(c, next);
   }
 
-  async authenticationLoginAndPasswordResetPassword(
+  async authenticationEmailAndPasswordResetPassword(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new AuthenticationLoginAndPasswordResetPassword(
+    return new AuthenticationEmailAndPasswordResetPassword(
       this.service,
     ).execute(c, next);
   }
 
-  async authenticationLoginAndPasswordRegistraion(
+  async authenticationEmailAndPasswordRegistraion(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new AuthenticationLoginAndPasswordRegistraion(this.service).execute(
+    return new AuthenticationEmailAndPasswordRegistraion(this.service).execute(
       c,
       next,
     );
@@ -220,11 +220,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new AuthenticationInit(this.service).execute(c, next);
   }
 
-  async authenticationLoginAndPasswordAuthentication(
+  async authenticationEmailAndPasswordAuthentication(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new AuthenticationLoginAndPasswordAuthentication(
+    return new AuthenticationEmailAndPasswordAuthentication(
       this.service,
     ).execute(c, next);
   }

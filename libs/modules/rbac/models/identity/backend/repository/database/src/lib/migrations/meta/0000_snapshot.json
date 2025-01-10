@@ -37,7 +37,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'login_and_password'"
+          "default": "'email_and_password'"
         },
         "id": {
           "name": "id",

@@ -9,9 +9,9 @@ import {
   IExecuteProps as IRefreshExecuteProps,
 } from "./refresh";
 import {
-  Service as AuthenticationLoginAndPassword,
-  IExecuteProps as IAuthenticationLoginAndPasswordExecuteProps,
-} from "./authentication/login-and-password";
+  Service as AuthenticationEmailAndPassword,
+  IExecuteProps as IAuthenticationEmailAndPasswordExecuteProps,
+} from "./authentication/email-and-password";
 import {
   Service as IsAuthorized,
   IExecuteProps as IIsAuthorizedExecuteProps,
@@ -52,9 +52,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async authenticationLoginAndPassowrd(
-    props: IAuthenticationLoginAndPasswordExecuteProps,
+    props: IAuthenticationEmailAndPasswordExecuteProps,
   ) {
-    return new AuthenticationLoginAndPassword(this.repository).execute(props);
+    return new AuthenticationEmailAndPassword(this.repository).execute(props);
   }
 
   async authenticationEthereumVirtualMachine(

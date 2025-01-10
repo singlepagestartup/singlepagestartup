@@ -1,5 +1,3 @@
-"use server";
-
 import { api } from "@sps/host/models/metadata/sdk/server";
 import {
   HOST_URL,
@@ -92,7 +90,7 @@ export async function action({ url, catchErrors = false }: Params) {
         primaryMetadata.keywords?.split(",") || metadata.keywords;
     }
   } catch (error) {
-    console.log(`metadata ~ generate ~ action ~ error:`, error);
+    console.log("metadata ~ generate ~ action ~ error:", error);
     if (!catchErrors) {
       throw error;
     }

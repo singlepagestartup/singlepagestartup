@@ -3,14 +3,24 @@
 import { IComponentPropsExtended } from "./interface";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Button } from "@sps/shared-ui-shadcn";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  TipTap,
+} from "@sps/shared-ui-shadcn";
+import { GalleryVerticalEnd } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
   const [provider, setProvider] = useState<
-    | "authentication-login-and-password-authentication-form-default"
+    | "authentication-email-and-password-authentication-form-default"
     | "authentication-ethereum-virtual-machine-default"
-  >("authentication-login-and-password-authentication-form-default");
+  >("authentication-email-and-password-authentication-form-default");
 
   return (
     <div
@@ -19,51 +29,74 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn(
-        "w-full flex flex-col",
-        props.data.className || "px-2 py-20 lg:py-32",
+        "flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10",
+        props.className,
       )}
     >
-      <div className="w-full mx-auto max-w-7xl flex flex-col gap-4 lg:gap-10">
-        {props.data?.title ? (
-          <h1 className="text-2xl font-bold lg:text-4xl w-full">
-            {props.data?.title}
-          </h1>
-        ) : null}
-        <div className="w-full lg:w-1/2">
-          <div className="flex gap-3">
-            <Button
-              variant={
-                provider ===
-                "authentication-login-and-password-authentication-form-default"
-                  ? "primary"
-                  : "outline"
-              }
-              onClick={() =>
-                setProvider(
-                  "authentication-login-and-password-authentication-form-default",
-                )
-              }
-            >
-              Login and Password
-            </Button>
-            <Button
-              variant={
-                provider === "authentication-ethereum-virtual-machine-default"
-                  ? "primary"
-                  : "outline"
-              }
-              onClick={() =>
-                setProvider("authentication-ethereum-virtual-machine-default")
-              }
-            >
-              Ethereum Virtual Machine
-            </Button>
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2 self-center font-medium"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <GalleryVerticalEnd className="size-4" />
           </div>
-          <Subject
-            isServer={false}
-            hostUrl={props.hostUrl}
-            variant={provider}
-          />
+          Acme Inc.
+        </Link>
+        <div className={cn("flex flex-col gap-6", props.className)}>
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">{props.data.title}</CardTitle>
+              {props.data.subtitle ? (
+                <CardDescription>{props.data.subtitle}</CardDescription>
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6">
+                <div className="flex flex-col gap-4">
+                  {provider !==
+                  "authentication-email-and-password-authentication-form-default" ? (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setProvider(
+                          "authentication-email-and-password-authentication-form-default",
+                        )
+                      }
+                    >
+                      Login and Password
+                    </Button>
+                  ) : null}
+                  {provider !==
+                  "authentication-ethereum-virtual-machine-default" ? (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setProvider(
+                          "authentication-ethereum-virtual-machine-default",
+                        )
+                      }
+                    >
+                      Ethereum Virtual Machine
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+                <Subject
+                  isServer={false}
+                  hostUrl={props.hostUrl}
+                  variant={provider}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          {props.data.description ? (
+            <TipTap value={props.data.description} className="text-center" />
+          ) : null}
         </div>
       </div>
     </div>

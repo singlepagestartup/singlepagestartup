@@ -20,25 +20,25 @@ import {
   type IResult as IAuthenticationMeResult,
 } from "./actions/authentication/me";
 import {
-  action as authenticationLoginAndPasswordAuthentication,
-  type IProps as IAuthenticationLoginAndPasswordAuthenticationProps,
-  type IResult as IAuthenticationLoginAndPasswordAuthenticationResult,
-} from "./actions/authentication/login-and-password/authentication";
+  action as authenticationEmailAndPasswordAuthentication,
+  type IProps as IAuthenticationEmailAndPasswordAuthenticationProps,
+  type IResult as IAuthenticationEmailAndPasswordAuthenticationResult,
+} from "./actions/authentication/email-and-password/authentication";
 import {
-  action as authenticationLoginAndPasswordRegistration,
-  type IProps as IAuthenticationLoginAndPasswordRegistrationProps,
-  type IResult as IAuthenticationLoginAndPasswordRegistrationResult,
-} from "./actions/authentication/login-and-password/registration";
+  action as authenticationEmailAndPasswordRegistration,
+  type IProps as IAuthenticationEmailAndPasswordRegistrationProps,
+  type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
+} from "./actions/authentication/email-and-password/registration";
 import {
   action as authenticationRefresh,
   type IProps as IAuthenticationRefreshProps,
   type IResult as IAuthenticationRefreshResult,
 } from "./actions/authentication/refresh";
 import {
-  action as authenticationLoginAndPasswordForgotPassword,
-  type IProps as IAuthenticationLoginAndPasswordForgotPasswordProps,
-  type IResult as IAuthenticationLoginAndPasswordForgotPasswordResult,
-} from "./actions/authentication/login-and-password/forgot-password";
+  action as authenticationEmailAndPasswordForgotPassword,
+  type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,
+  type IResult as IAuthenticationEmailAndPasswordForgotPasswordResult,
+} from "./actions/authentication/email-and-password/forgot-password";
 import {
   action as authenticationLogout,
   type IProps as IAuthenticationLogoutProps,
@@ -65,10 +65,10 @@ import {
   type IResult as IEcommerceOrderCreateResult,
 } from "./actions/ecommerce/order/create";
 import {
-  action as authenticationLoginAndPasswordResetPassword,
-  type IProps as IAuthenticationLoginAndPasswordResetPasswordProps,
-  type IResult as IAuthenticationLoginAndPasswordResetPasswordResult,
-} from "./actions/authentication/login-and-password/reset-password";
+  action as authenticationEmailAndPasswordResetPassword,
+  type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
+  type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
+} from "./actions/authentication/email-and-password/reset-password";
 import {
   action as ecommerceOrderUpdate,
   type IProps as IEcommerceOrderUpdateProps,
@@ -104,13 +104,13 @@ export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationMeProps: IAuthenticationMeProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
-  IAuthenticationLoginAndPasswordAuthenticationProps: IAuthenticationLoginAndPasswordAuthenticationProps;
-  IAuthenticationLoginAndPasswordRegistrationProps: IAuthenticationLoginAndPasswordRegistrationProps;
+  IAuthenticationEmailAndPasswordAuthenticationProps: IAuthenticationEmailAndPasswordAuthenticationProps;
+  IAuthenticationEmailAndPasswordRegistrationProps: IAuthenticationEmailAndPasswordRegistrationProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
-  IAuthenticationLoginAndPasswordForgotPasswordProps: IAuthenticationLoginAndPasswordForgotPasswordProps;
+  IAuthenticationEmailAndPasswordForgotPasswordProps: IAuthenticationEmailAndPasswordForgotPasswordProps;
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
-  IAuthenticationLoginAndPasswordResetPasswordProps: IAuthenticationLoginAndPasswordResetPasswordProps;
+  IAuthenticationEmailAndPasswordResetPasswordProps: IAuthenticationEmailAndPasswordResetPasswordProps;
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
   IIdentityCreateProps: IIdentityCreateProps;
@@ -125,13 +125,13 @@ export type IResult = {
   IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationMeResult: IAuthenticationMeResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
-  IAuthenticationLoginAndPasswordAuthenticationResult: IAuthenticationLoginAndPasswordAuthenticationResult;
-  IAuthenticationLoginAndPasswordRegistrationResult: IAuthenticationLoginAndPasswordRegistrationResult;
+  IAuthenticationEmailAndPasswordAuthenticationResult: IAuthenticationEmailAndPasswordAuthenticationResult;
+  IAuthenticationEmailAndPasswordRegistrationResult: IAuthenticationEmailAndPasswordRegistrationResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
-  IAuthenticationLoginAndPasswordForgotPasswordResult: IAuthenticationLoginAndPasswordForgotPasswordResult;
+  IAuthenticationEmailAndPasswordForgotPasswordResult: IAuthenticationEmailAndPasswordForgotPasswordResult;
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
-  IAuthenticationLoginAndPasswordResetPasswordResult: IAuthenticationLoginAndPasswordResetPasswordResult;
+  IAuthenticationEmailAndPasswordResetPasswordResult: IAuthenticationEmailAndPasswordResetPasswordResult;
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
   IIdentityCreateResult: IIdentityCreateResult;
@@ -153,13 +153,13 @@ export const api = {
   authenticationInit,
   authenticationMe,
   authenticationEthereumVirtualMachine,
-  authenticationLoginAndPasswordAuthentication,
-  authenticationLoginAndPasswordRegistration,
+  authenticationEmailAndPasswordAuthentication,
+  authenticationEmailAndPasswordRegistration,
   authenticationIsAuthorized,
   authenticationRefresh,
-  authenticationLoginAndPasswordForgotPassword,
+  authenticationEmailAndPasswordForgotPassword,
   authenticationLogout,
-  authenticationLoginAndPasswordResetPassword,
+  authenticationEmailAndPasswordResetPassword,
   identityUpdate,
   identityDelete,
   identityCreate,

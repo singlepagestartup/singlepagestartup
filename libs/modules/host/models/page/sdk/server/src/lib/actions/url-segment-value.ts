@@ -1,5 +1,3 @@
-"use server";
-
 import { route, host } from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,

@@ -66,7 +66,7 @@ export function Component(props: IComponentPropsExtended) {
                   >
                     {({ data }) => {
                       return data?.map((identity, index) => {
-                        if (identity.provider === "login_and_password") {
+                        if (identity.provider === "email_and_password") {
                           return (
                             <div className="flex flex-col gap-3">
                               <div className="flex gap-3">

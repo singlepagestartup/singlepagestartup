@@ -10,6 +10,7 @@ type TUniversalProps = {
   className?: string;
   inputClassName?: string;
   disabled?: boolean;
+  children?: React.ReactNode;
 };
 
 export type IComponentProps = TUniversalProps & TTypedProps;

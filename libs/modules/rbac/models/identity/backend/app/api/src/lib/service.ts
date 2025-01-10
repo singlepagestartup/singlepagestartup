@@ -7,7 +7,7 @@ import { api } from "@sps/rbac/models/identity/sdk/server";
 import bcrypt from "bcrypt";
 import { IModel } from "@sps/rbac/models/identity/sdk/model";
 
-export type ILoginAndPassword = {
+export type IEmailAndPassword = {
   data: {
     type: "login" | "registration";
     login: string;
@@ -24,7 +24,7 @@ export type IChangePassword = {
 };
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  async loginAndPassowrd(props: ILoginAndPassword): Promise<IModel> {
+  async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("RBAC_SECRET_KEY is not defined in the service");
     }
@@ -46,7 +46,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               {
                 column: "provider",
                 method: "eq",
-                value: "login_and_password",
+                value: "email_and_password",
               },
             ],
           },
@@ -73,7 +73,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         data: {
           email: props.data.login.toLowerCase(),
           password: saltedPassword,
-          provider: "login_and_password",
+          provider: "email_and_password",
           salt,
         },
         options: {
@@ -101,7 +101,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             {
               column: "provider",
               method: "eq",
-              value: "login_and_password",
+              value: "email_and_password",
             },
           ],
         },

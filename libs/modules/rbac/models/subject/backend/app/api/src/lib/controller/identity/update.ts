@@ -119,7 +119,7 @@ export class Handler {
         });
       }
 
-      if (identity.provider === "login_and_password") {
+      if (identity.provider === "email_and_password") {
         if (data.password && data.newPassword) {
           const updated = await identityApi.changePassword({
             id: identity.id,

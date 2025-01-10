@@ -15,14 +15,14 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.data.className || "")}
     >
-      {/* {props.data.externalModule === "rbac" ? (
+      {props.data.externalModule === "rbac" ? (
         <Rbac
           {...props}
           isServer={props.isServer}
           hostUrl={props.hostUrl}
           data={props.data}
         />
-      ) : null} */}
+      ) : null}
 
       {/* {props.data.externalModule === "startup" ? (
         <Startup

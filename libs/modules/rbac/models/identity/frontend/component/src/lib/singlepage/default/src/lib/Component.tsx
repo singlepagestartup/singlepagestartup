@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      {props.data.provider === "login_and_password" ? (
+      {props.data.provider === "email_and_password" ? (
         <p className="text-3xl font-bold">{props.data.email}</p>
       ) : null}
     </div>

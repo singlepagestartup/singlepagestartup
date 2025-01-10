@@ -6,7 +6,7 @@ import {
   query,
   options,
 } from "@sps/rbac/models/identity/sdk/model";
-import { action as loginAndPassword } from "./actions/login-and-password";
+import { action as emailAndPassword } from "./actions/email-and-password";
 import { action as changePassword } from "./actions/change-password";
 
 export const api = {
@@ -16,6 +16,6 @@ export const api = {
     options,
     params: query,
   }),
-  loginAndPassword,
+  emailAndPassword,
   changePassword,
 };
