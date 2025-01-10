@@ -5,8 +5,7 @@ import {
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 
-export const variant =
-  "authentication-login-and-password-registration-form-default" as const;
+export const variant = "subject-list-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {}

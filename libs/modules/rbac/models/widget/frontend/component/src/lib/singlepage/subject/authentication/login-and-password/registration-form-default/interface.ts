@@ -6,7 +6,7 @@ import {
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 
 export const variant =
-  "authentication-login-and-password-authentication-form-default" as const;
+  "subject-authentication-login-and-password-registration-form-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {}
