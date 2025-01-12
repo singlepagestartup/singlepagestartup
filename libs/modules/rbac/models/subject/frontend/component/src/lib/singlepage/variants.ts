@@ -13,13 +13,12 @@ import { Component as AuthenticationIsAllowedWrapperDefault } from "./authentica
 import { Component as AuthenticationSelectMethodDefault } from "./authentication/select-method-default";
 import { Component as AuthenticationEthereumVirtualMachineDefault } from "./authentication/ethereum-virtual-machine-default";
 import { Component as AuthenticationMeDefault } from "./authentication/me-default";
-import { Component as GetEmails } from "./identities/get-emails";
+import { Component as GetEmails } from "./identity/get-emails";
 import { Component as EcommerceProductCheckout } from "./ecommerce/product-checkout";
 import { Component as EcommerceProductCart } from "./ecommerce/product-cart";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
-import { Component as IdentitiesUpdateDefault } from "./identities/update-default";
-import { Component as IdentitiesCreateDefault } from "./identities/create-default";
+import { Component as IdentityUpdateDefault } from "./identity/settings-default";
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
 import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
 
@@ -47,8 +46,7 @@ export const variants = {
     AuthenticationEmailAndPasswordResetPasswordFormDefault,
   "authentication-email-and-password-registration-form-default":
     AuthenticationEmailAndPasswordRegistrationFormDefault,
-  "identities-update-default": IdentitiesUpdateDefault,
-  "identities-create-default": IdentitiesCreateDefault,
+  "identity-settings-default": IdentityUpdateDefault,
   "ecommerce-product-checkout": EcommerceProductCheckout,
   "ecommerce-product-cart": EcommerceProductCart,
   "get-emails": GetEmails,

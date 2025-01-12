@@ -11,6 +11,7 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 import { FormField } from "@sps/ui-adapter";
 import { cn } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
+import { userStories } from "@sps/sps-configuration";
 
 const formSchema = z.object({
   login: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
@@ -33,13 +34,11 @@ export function Component(props: IComponentPropsExtended) {
     emailAndPassword.mutate({
       data,
     });
-
-    // router.refresh();
   }
 
   useEffect(() => {
     if (emailAndPassword.isSuccess) {
-      router.push("/");
+      router.push(userStories.subjectAuthentication.redirect.success);
     }
   }, [emailAndPassword]);
 

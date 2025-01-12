@@ -34,7 +34,7 @@ export function action(props: IProps) {
       mutationFunctionProps: IParentProps["IAuthenticationEmailAndPasswordRegistrationProps"],
     ) => {
       try {
-        const result = await api.authenticationEmailAndPasswordAuthentication({
+        const result = await api.authenticationEmailAndPasswordRegistration({
           ...mutationFunctionProps,
         });
 

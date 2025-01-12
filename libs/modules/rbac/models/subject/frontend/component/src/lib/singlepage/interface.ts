@@ -15,13 +15,12 @@ import { IComponentProps as IAuthenticationEmailAndPasswordForgotPasswordCompone
 import { IComponentProps as IAuthenticationEmailAndPasswordResetPasswordComponentProps } from "./authentication/email-and-password/reset-password-form-default/interface";
 import { IComponentProps as IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps } from "./authentication/email-and-password/registration-form-default/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
-import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identities/get-emails/interface";
+import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identity/get-emails/interface";
 import { IComponentProps as IEcommerceProductCheckoutComponentProps } from "./ecommerce/product-checkout/interface";
 import { IComponentProps as IEcommerceProductCartComponentProps } from "./ecommerce/product-cart/interface";
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
-import { IComponentProps as IIdentityUpdateDefaultComponentProps } from "./identities/update-default/interface";
-import { IComponentProps as IIdentityCreateDefaultComponentProps } from "./identities/create-default/interface";
+import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -43,8 +42,7 @@ export type IComponentProps =
   | IAuthenticationEthereumVirtualMachineComponentProps
   | IAuthenticationMeComponentProps
   | IIdentityGetEmailsComponentProps
-  | IIdentityUpdateDefaultComponentProps
-  | IIdentityCreateDefaultComponentProps
+  | IIdentitySettingsDefaultComponentProps
   | IAuthenticationEmailAndPasswordForgotPasswordComponentProps
   | IAuthenticationEmailAndPasswordResetPasswordComponentProps
   | IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps

@@ -15,8 +15,7 @@ export const variants = [
   "subject-authentication-email-and-password-reset-password-form-default",
   "subject-overview-default",
   "subject-list-default",
-  "identity-update-default",
-  "identitity-create-default",
+  "subject-identity-settings-default",
   "subject-authentication-logout-action-default",
 ];
 export const host = BACKEND_URL;

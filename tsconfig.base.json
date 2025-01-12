@@ -36,7 +36,7 @@
       "@sps/shared-backend-database-config": [
         "libs/shared/backend/database/config/src/index.ts"
       ],
-      "@sps/sps-business-logic": ["libs/shared/business-logic/src/index.ts"],
+      "@sps/sps-configuration": ["libs/shared/configuration/src/index.ts"],
       "@sps/shared-frontend-api": ["libs/shared/frontend/api/src/index.ts"],
       "@sps/shared-frontend-client-api": [
         "libs/shared/frontend/client/api/src/index.ts"

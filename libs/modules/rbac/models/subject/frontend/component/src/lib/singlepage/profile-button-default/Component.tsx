@@ -119,7 +119,7 @@ export function Component(props: IComponentPropsExtended) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <Link href="/rbac/subject/settings">Settings</Link>
+            <Link href="/rbac/subjects/settings">Settings</Link>
           </DropdownMenuItem>
           <LogoutButton
             hostUrl={props.hostUrl}
