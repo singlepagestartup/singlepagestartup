@@ -1,15 +1,15 @@
 import { Component as Find } from "./find";
-import { Component as AdminTableRow } from "./admin-table-row";
-import { Component as AdminTable } from "./admin-table";
-import { Component as AdminSelectInput } from "./admin-select-input";
-import { Component as AdminForm } from "./admin-form";
+import { Component as AdminTableRow } from "./admin/table-row";
+import { Component as AdminTable } from "./admin/table";
+import { Component as AdminSelectInput } from "./admin/select-input";
+import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
-import { Component as OrdersListDefault } from "./orders-list-default";
-import { Component as ProductsListDefault } from "./products-list-default";
-import { Component as ProductOverviewDefault } from "./product-overview-default";
-import { Component as CategoriesListDefault } from "./categories-list-default";
-import { Component as StoresListDefault } from "./stores-list-default";
-import { Component as CategoryOverviewDefault } from "./category-overview-default";
+import { Component as OrderListDefault } from "./order/list-default";
+import { Component as ProductListDefault } from "./product/list-default";
+import { Component as ProductOverviewDefault } from "./product/overview-default";
+import { Component as CategoryListDefault } from "./category/list-default";
+import { Component as StoreListDefault } from "./store/list-default";
+import { Component as CategoryOverviewDefault } from "./category/overview-default";
 
 export const variants = {
   find: Find,
@@ -18,10 +18,10 @@ export const variants = {
   "admin-select-input": AdminSelectInput,
   "admin-form": AdminForm,
   default: Default,
-  "orders-list-default": OrdersListDefault,
-  "products-list-default": ProductsListDefault,
+  "order-list-default": OrderListDefault,
+  "product-list-default": ProductListDefault,
   "product-overview-default": ProductOverviewDefault,
-  "categories-list-default": CategoriesListDefault,
+  "category-list-default": CategoryListDefault,
   "category-overview-default": CategoryOverviewDefault,
-  "stores-list-default": StoresListDefault,
+  "store-list-default": StoreListDefault,
 };

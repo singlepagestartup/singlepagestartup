@@ -16,8 +16,8 @@ import { IComponentProps as IAuthenticationEmailAndPasswordResetPasswordComponen
 import { IComponentProps as IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps } from "./authentication/email-and-password/registration-form-default/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identity/get-emails/interface";
-import { IComponentProps as IEcommerceProductCheckoutComponentProps } from "./ecommerce/product-checkout/interface";
-import { IComponentProps as IEcommerceProductCartComponentProps } from "./ecommerce/product-cart/interface";
+import { IComponentProps as IEcommerceProductCheckoutComponentProps } from "./ecommerce/product/checkout/interface";
+import { IComponentProps as IEcommerceProductCartComponentProps } from "./ecommerce/product/cart/interface";
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";

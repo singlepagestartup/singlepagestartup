@@ -9,12 +9,12 @@ import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 export const route = "/api/ecommerce/widgets";
 export const variants = [
   "default",
-  "orders-list-default",
-  "products-list-default",
+  "store-list-default",
+  "order-list-default",
+  "product-list-default",
   "product-overview-default",
-  "categories-list-default",
+  "category-list-default",
   "category-overview-default",
-  "stores-list-default",
 ];
 export const host = BACKEND_URL;
 export const query = {};

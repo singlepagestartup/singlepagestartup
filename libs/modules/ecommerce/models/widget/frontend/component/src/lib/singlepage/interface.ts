@@ -1,15 +1,15 @@
-import { IComponentProps as IFindComponentProps } from "./find";
-import { IComponentProps as IAdminTableRowComponentProps } from "./admin-table-row";
-import { IComponentProps as IAdminTableComponentProps } from "./admin-table";
-import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-select-input";
-import { IComponentProps as IAdminFormComponentProps } from "./admin-form";
-import { IComponentProps as IDefaultComponentProps } from "./default";
-import { IComponentProps as IOrdersListDefaultComponentProps } from "./orders-list-default";
-import { IComponentProps as IProductsListDefaultComponentProps } from "./products-list-default";
-import { IComponentProps as IProductOverviewDefaultComponentProps } from "./product-overview-default";
-import { IComponentProps as ICategoriesListDefaultComponentProps } from "./categories-list-default";
-import { IComponentProps as IStoresListDefaultComponentProps } from "./stores-list-default";
-import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category-overview-default";
+import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
+import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
+import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
+import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IOrderListDefaultComponentProps } from "./order/list-default/interface";
+import { IComponentProps as IProductListDefaultComponentProps } from "./product/list-default/interface";
+import { IComponentProps as IProductOverviewDefaultComponentProps } from "./product/overview-default/interface";
+import { IComponentProps as ICategoryListDefaultComponentProps } from "./category/list-default/interface";
+import { IComponentProps as IStoreListDefaultComponentProps } from "./store/list-default/interface";
+import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview-default/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -18,10 +18,10 @@ export type IComponentProps =
   | IAdminSelectInputComponentProps
   | IAdminFormComponentProps
   | IDefaultComponentProps
-  | IOrdersListDefaultComponentProps
-  | IProductsListDefaultComponentProps
+  | IOrderListDefaultComponentProps
+  | IProductListDefaultComponentProps
   | IProductOverviewDefaultComponentProps
-  | ICategoriesListDefaultComponentProps
+  | ICategoryListDefaultComponentProps
   | ICategoryOverviewDefaultComponentProps
-  | IStoresListDefaultComponentProps
+  | IStoreListDefaultComponentProps
   | never;

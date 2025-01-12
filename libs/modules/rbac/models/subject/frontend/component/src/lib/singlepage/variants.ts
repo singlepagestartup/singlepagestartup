@@ -14,8 +14,8 @@ import { Component as AuthenticationSelectMethodDefault } from "./authentication
 import { Component as AuthenticationEthereumVirtualMachineDefault } from "./authentication/ethereum-virtual-machine-default";
 import { Component as AuthenticationMeDefault } from "./authentication/me-default";
 import { Component as GetEmails } from "./identity/get-emails";
-import { Component as EcommerceProductCheckout } from "./ecommerce/product-checkout";
-import { Component as EcommerceProductCart } from "./ecommerce/product-cart";
+import { Component as EcommerceProductCheckout } from "./ecommerce/product/checkout";
+import { Component as EcommerceProductCart } from "./ecommerce/product/cart";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
