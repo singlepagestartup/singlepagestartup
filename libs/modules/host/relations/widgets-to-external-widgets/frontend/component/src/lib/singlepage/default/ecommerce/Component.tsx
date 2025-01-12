@@ -1,10 +1,8 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
-import { Component as ProductsList } from "./products-list/Component";
-import { Component as StoresList } from "./stores-list/Component";
-import { Component as ProductOverview } from "./product-overview/Component";
-import { Component as CategoryOverview } from "./category-overview/Component";
-import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
+import { Component as Stores } from "./store/Component";
+import { Component as Category } from "./category/Component";
+import { Component as Product } from "./product/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -36,51 +34,27 @@ export function Component(props: IComponentPropsExtended) {
               variant={entity.variant as any}
               data={entity}
             >
-              {entity.variant.includes("products-list") ? (
-                <BillingCurrency
+              {entity.variant.startsWith("product") ? (
+                <Product
                   isServer={props.isServer}
                   hostUrl={props.hostUrl}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "isDefault",
-                            method: "eq",
-                            value: true,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                >
-                  {({ data }) => {
-                    return (
-                      <ProductsList
-                        isServer={props.isServer}
-                        hostUrl={props.hostUrl}
-                        billingModuleCurrencyId={data?.[0]?.id}
-                      />
-                    );
-                  }}
-                </BillingCurrency>
-              ) : null}
-              {/* {entity.variant.includes("stores-list") ? (
-                <StoresList isServer={props.isServer} hostUrl={props.hostUrl} />
-              ) : null}
-              {entity.variant.includes("product-overview") ? (
-                <ProductOverview
-                  isServer={props.isServer}
-                  hostUrl={props.hostUrl}
+                  data={entity}
                 />
               ) : null}
-              {entity.variant.includes("category-overview") ? (
-                <CategoryOverview
+              {entity.variant.startsWith("category") ? (
+                <Category
                   isServer={props.isServer}
                   hostUrl={props.hostUrl}
+                  data={entity}
                 />
-              ) : null} */}
+              ) : null}
+              {entity.variant.startsWith("store") ? (
+                <Stores
+                  isServer={props.isServer}
+                  hostUrl={props.hostUrl}
+                  data={entity}
+                />
+              ) : null}
             </EcommerceWidget>
           );
         });

@@ -4,8 +4,8 @@ import { Component as AdminTableRow } from "@sps/<%= module_name %>/relations/<%
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table2/Component";
 
 import { IComponentPropsExtended, IModel, variant } from "./interface";
-import { Component as AdminForm } from "../../../admin-form";
-import { Component as AdminTableRow } from "../../../admin-table-row";
+import { Component as AdminForm } from "../../../form";
+import { Component as AdminTableRow } from "../../../table-row";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table2/Component";
 
 export function Component(props: IComponentPropsExtended) {
