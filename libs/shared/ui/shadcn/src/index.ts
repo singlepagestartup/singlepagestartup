@@ -27,3 +27,4 @@ export * from "./lib/checkbox";
 export * from "./lib/tooltip";
 export * from "./lib/badge";
 export * from "./lib/dropdown-menu";
+export * from "./lib/command";

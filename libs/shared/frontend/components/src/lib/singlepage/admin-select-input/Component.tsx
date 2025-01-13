@@ -26,7 +26,7 @@ export function Component<M extends { id: string }, V>(
     >
       <FormField
         ui="shadcn"
-        type="select"
+        type="select-with-search"
         name={props.formFieldName}
         label={props.label}
         form={props.form}

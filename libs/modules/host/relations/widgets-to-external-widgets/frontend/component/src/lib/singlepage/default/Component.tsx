@@ -33,14 +33,14 @@ export function Component(props: IComponentPropsExtended) {
         />
       ) : null} */}
 
-      {/* {props.data.externalModule === "website-builder" ? (
+      {props.data.externalModule === "website-builder" ? (
         <WebsiteBuilder
           {...props}
           isServer={props.isServer}
           hostUrl={props.hostUrl}
           data={props.data}
         />
-      ) : null} */}
+      ) : null}
 
       {props.data.externalModule === "ecommerce" ? (
         <Ecommerce

@@ -20,6 +20,7 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { IComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as SelectWithSearch } from "./select-with-search/Component";
 
 const Placeholder = () => {
   return (
@@ -171,6 +172,10 @@ export const Component = (props: IComponentProps) => {
         </SelectContent>
       </Select>
     );
+  }
+
+  if (props.type === "select-with-search") {
+    return <SelectWithSearch {...props} />;
   }
 
   if (props.type === "radio") {

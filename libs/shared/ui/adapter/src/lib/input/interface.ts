@@ -55,6 +55,12 @@ export type TTypedProps =
       selectItemClassName?: string;
     }
   | {
+      type: "select-with-search";
+      options: [value: string, title: string | TRenderComponent][];
+      selectContentClassName?: string;
+      selectItemClassName?: string;
+    }
+  | {
       type: "radio";
       options: [value: string, title: string | TRenderComponent][];
       radioGroupItemClassName?: string;
