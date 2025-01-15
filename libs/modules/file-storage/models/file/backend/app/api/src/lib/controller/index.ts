@@ -4,7 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/file-storage/models/file/backend/repository/database";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
-import { Service } from "./service";
+import { Service } from "../service";
 import { Provider } from "@sps/providers-file-storage";
 import { FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 
