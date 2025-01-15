@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
-import { Service } from "./service";
+import { Service } from "../service";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
