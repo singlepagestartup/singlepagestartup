@@ -1,12 +1,12 @@
-import { IComponentProps as IFindComponentProps } from "./find";
-import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input";
-import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row";
-import { IComponentProps as IAdminFormComponentProps } from "./admin/form";
-import { IComponentProps as IAdminTableComponentProps } from "./admin/table";
-import { IComponentProps as IDefaultComponentProps } from "./default";
-import { IComponentProps as IContentDefaultComponentProps } from "./content-default";
-import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default";
-import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default";
+import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
+import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
+import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
+import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IContentDefaultComponentProps } from "./content-default/interface";
+import { IComponentProps as IFooterDefaultComponentProps } from "./footer-default/interface";
+import { IComponentProps as INavbarDefaultComponentProps } from "./navbar-default/interface";
 export type IComponentProps =
   | IFindComponentProps
   | IAdminSelectInputComponentProps

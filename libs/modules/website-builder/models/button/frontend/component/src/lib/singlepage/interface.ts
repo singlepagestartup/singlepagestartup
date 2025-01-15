@@ -1,15 +1,15 @@
-import { IComponentProps as IFindComponentProps } from "./find";
-import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row";
-import { IComponentProps as IAdminTableComponentProps } from "./admin/table";
-import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input";
-import { IComponentProps as IAdminFormComponentProps } from "./admin/form";
-import { IComponentProps as ILinkComponentProps } from "./link";
-import { IComponentProps as IGhostComponentProps } from "./ghost";
-import { IComponentProps as IOutlineComponentProps } from "./outline";
-import { IComponentProps as IDestructiveComponentProps } from "./destructive";
-import { IComponentProps as ISecondaryComponentProps } from "./secondary";
-import { IComponentProps as IPrimaryComponentProps } from "./primary";
-import { IComponentProps as IDefaultComponentProps } from "./default";
+import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
+import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
+import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
+import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
+import { IComponentProps as ILinkComponentProps } from "./link/interface";
+import { IComponentProps as IGhostComponentProps } from "./ghost/interface";
+import { IComponentProps as IOutlineComponentProps } from "./outline/interface";
+import { IComponentProps as IDestructiveComponentProps } from "./destructive/interface";
+import { IComponentProps as ISecondaryComponentProps } from "./secondary/interface";
+import { IComponentProps as IPrimaryComponentProps } from "./primary/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 
 export type IComponentProps =
   | IFindComponentProps
