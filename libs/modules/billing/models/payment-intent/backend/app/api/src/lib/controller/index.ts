@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
-import { Service } from "./service";
+import { Service } from "../service";
 import { Context } from "hono";
 import {
   HOST_URL,
@@ -99,8 +99,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    console.log(`🚀 ~ provider ~ provider:`, provider);
-    console.log(`🚀 ~ provider ~ data:`, data);
+    console.log("🚀 ~ provider ~ provider:", provider);
+    console.log("🚀 ~ provider ~ data:", data);
 
     if (!entity) {
       throw new HTTPException(400, {
@@ -131,7 +131,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    console.log(`🚀 ~ provider ~ currency:`, currency);
+    console.log("🚀 ~ provider ~ currency:", currency);
 
     try {
       let result: any;
@@ -267,8 +267,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     const headers = c.req.header();
     const rawBody = await c.req.text();
 
-    console.log(`🚀 ~ providerWebhook ~ headers:`, headers);
-    console.log(`🚀 ~ providerWebhook ~ c.req.text:`, await c.req.text());
+    console.log("🚀 ~ providerWebhook ~ headers:", headers);
+    console.log("🚀 ~ providerWebhook ~ c.req.text:", await c.req.text());
 
     let data;
     if (contentType?.includes("application/json")) {
