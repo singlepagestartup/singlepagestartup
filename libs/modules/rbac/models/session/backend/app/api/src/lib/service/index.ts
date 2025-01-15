@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/session/backend/repository/database";
-import { Repository } from "./repository";
+import { Repository } from "../repository";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {

@@ -2,8 +2,8 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { CRUDService, DI, FindServiceProps } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/action/backend/repository/database";
-import { FindAction } from "./actions";
-import { Repository } from "./repository";
+import { FindAction } from "../actions";
+import { Repository } from "../repository";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
