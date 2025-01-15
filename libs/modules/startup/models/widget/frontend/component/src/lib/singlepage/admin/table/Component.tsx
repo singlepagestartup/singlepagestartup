@@ -1,5 +1,5 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
-import { Component as AdminTableRow } from "../../../table-row";
+import { Component as AdminTableRow } from "../table-row";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table/Component";
 
 export function Component(props: IComponentPropsExtended) {
