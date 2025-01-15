@@ -134,51 +134,59 @@ export class Handler {
           continue;
         }
 
-        const agentExecutionResult = await fetch(
-          BACKEND_URL + "/api/agent/agents/" + agent.slug,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        ).then((res) => {
-          return res.json();
-        });
+        (async () => {
+          if (!RBAC_SECRET_KEY) {
+            throw new HTTPException(400, {
+              message: "RBAC_SECRET not set",
+            });
+          }
 
-        for (const currentAgentExecution of currentAgentExecutions) {
-          await broadcastChannelApi.messageDelete({
-            id: currentAgentExecution.id,
-            messageId: currentAgentExecution.id,
+          const agentExecutionResult = await fetch(
+            BACKEND_URL + "/api/agent/agents/" + agent.slug,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          ).then((res) => {
+            return res.json();
+          });
+
+          for (const currentAgentExecution of currentAgentExecutions) {
+            await broadcastChannelApi.messageDelete({
+              id: currentAgentExecution.id,
+              messageId: currentAgentExecution.id,
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
+
+          await broadcastChannelApi.pushMessage({
+            data: {
+              channelName: "cron",
+              payload: JSON.stringify({
+                datetime: new Date().toISOString(),
+                slug: agent.slug,
+                result: agentExecutionResult,
+              }),
+            },
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
             },
           });
-        }
-
-        await broadcastChannelApi.pushMessage({
-          data: {
-            channelName: "cron",
-            payload: JSON.stringify({
-              datetime: new Date().toISOString(),
-              slug: agent.slug,
-              result: agentExecutionResult,
-            }),
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+        })();
       }
     }
 
     return c.json({
-      data: { agents, executions },
+      data: { ok: true },
     });
   }
 }
