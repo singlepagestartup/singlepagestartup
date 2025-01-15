@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/telegram/relations/widgets-to-external-widgets/sdk/client";
-import { Component as AdminForm } from "../../../form";
+import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {

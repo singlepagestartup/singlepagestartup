@@ -1,6 +1,6 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
-import { Component as AdminForm } from "../../../form";
-import { Component as AdminTableRow } from "../../../table-row";
+import { Component as AdminForm } from "../form";
+import { Component as AdminTableRow } from "../table-row";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table/Component";
 
 export function Component(props: IComponentPropsExtended) {
@@ -8,7 +8,7 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="telegram"
-      name="pages-to-widgets"
+      name="widgets-to-external-widgets"
       type="relation"
       variant={props.variant}
       adminForm={
@@ -25,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
             <AdminTableRow
               key={index}
               module="telegram"
-              name="pages-to-widgets"
+              name="widgets-to-external-widgets"
               type="relation"
               isServer={props.isServer}
               hostUrl={props.hostUrl}
