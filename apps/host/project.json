@@ -45,6 +45,9 @@
             "command": "npx nx run @sps/host:repository-generate"
           },
           {
+            "command": "npx nx run @sps/agent:repository-generate"
+          },
+          {
             "command": "npx nx run @sps/telegram:repository-generate"
           }
         ]
@@ -88,6 +91,9 @@
           },
           {
             "command": "npx nx run @sps/host:repository-migrate"
+          },
+          {
+            "command": "npx nx run @sps/agent:repository-migrate"
           },
           {
             "command": "npx nx run @sps/telegram:repository-migrate"

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { type NextRequest } from "next/server";
 import { app as telegramApp } from "@sps/telegram/backend/app/api";
+import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
@@ -49,6 +50,7 @@ new RevalidationMiddleware().setRoutes(app);
 app.use(new ParseQueryMiddleware().init());
 
 app.mount("/telegram", telegramApp.hono.fetch);
+app.mount("/agent", agentApp.hono.fetch);
 app.mount("/host", hostApp.hono.fetch);
 app.mount("/rbac", rbacApp.hono.fetch);
 app.mount("/startup", startupApp.hono.fetch);

@@ -70,6 +70,7 @@
       "@sps/sps-backend-utils": ["libs/shared/backend/utils/src/index.ts"],
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],
+      "@sps/agent/*": ["libs/modules/agent/*"],
       "@sps/crm/*": ["libs/modules/crm/*"],
       "@sps/telegram/*": ["libs/modules/telegram/*"],
       "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],
