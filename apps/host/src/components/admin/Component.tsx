@@ -5,6 +5,7 @@ import { IComponentPropsExtended } from "./interface";
 import { useSearchParams } from "next/navigation";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import { AdminComponent as Telegram } from "@sps/telegram/frontend/component";
+import { AdminComponent as Agent } from "@sps/agent/frontend/component";
 import { AdminComponent as Host } from "@sps/host/frontend/component";
 import { AdminComponent as WebsiteBuilder } from "@sps/website-builder/frontend/component";
 import { AdminComponent as Billing } from "@sps/billing/frontend/component";
@@ -130,6 +131,13 @@ export function Component(props: IComponentPropsExtended) {
                 }}
                 active={widget === "telegram"}
               />
+              <Button
+                title="agent"
+                onClick={() => {
+                  setWidget("agent");
+                }}
+                active={widget === "agent"}
+              />
             </div>
             <div className="bg-white rounded-b-lg">
               {widget === "host" ? (
@@ -222,6 +230,14 @@ export function Component(props: IComponentPropsExtended) {
               ) : null}
               {widget === "telegram" ? (
                 <Telegram
+                  {...props}
+                  isServer={false}
+                  hostUrl={props.hostUrl}
+                  variant="default"
+                />
+              ) : null}
+              {widget === "agent" ? (
+                <Agent
                   {...props}
                   isServer={false}
                   hostUrl={props.hostUrl}

@@ -14,7 +14,7 @@ export interface IProps {
   params?: {
     [key: string]: any;
   };
-  options?: NextRequestOptions;
+  options?: Partial<NextRequestOptions>;
   data: any;
 }
 

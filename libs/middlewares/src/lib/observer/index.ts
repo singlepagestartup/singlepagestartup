@@ -70,6 +70,10 @@ export class Middleware {
           return;
         }
 
+        /**
+         * Without passing Cache-Control data are mismathed, because
+         * http-cache middleware use this models
+         */
         const channelsToMessages = await channelsToMessagesApi.find({
           params: {
             filters: {
@@ -83,8 +87,8 @@ export class Middleware {
             },
           },
           options: {
-            next: {
-              cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
             },
           },
         });

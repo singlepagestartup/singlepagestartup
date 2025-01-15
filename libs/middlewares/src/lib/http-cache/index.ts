@@ -79,11 +79,32 @@ export class Middleware {
             type: this.storeProvider,
             prefix: path,
           }).delByPrefix();
+
+          const pathWithoutId = path.replace(
+            /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}($|\?.*)/,
+            "",
+          );
+
+          await new StoreProvider({
+            type: this.storeProvider,
+            prefix: pathWithoutId,
+          }).delByPrefix();
         }
 
         if (["POST", "DELETE"].includes(method)) {
+          const pathWithIdBase = path.match(
+            /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/,
+          )?.[1];
+
+          if (pathWithIdBase) {
+            await new StoreProvider({
+              type: this.storeProvider,
+              prefix: `${pathWithIdBase}`,
+            }).delByPrefix();
+          }
+
           const pathWithoutId = path.replace(
-            /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
+            /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}($|\?.*)/,
             "",
           );
 

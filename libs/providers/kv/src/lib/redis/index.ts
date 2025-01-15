@@ -13,7 +13,7 @@ export class Provider implements IProvider {
   client: Redis;
 
   constructor(props?: { prefix?: string }) {
-    this.prefix = props?.prefix ? `${props?.prefix}:` : "";
+    this.prefix = props?.prefix ? `${props?.prefix}` : "";
 
     const connectionParams = {
       maxRetriesPerRequest: 10,
@@ -25,7 +25,6 @@ export class Provider implements IProvider {
       port: KV_PORT,
       username: KV_USERNAME,
       password: KV_PASSWORD,
-      keyPrefix: this.prefix,
       ...connectionParams,
     };
 
@@ -71,7 +70,7 @@ export class Provider implements IProvider {
 
     const hasedKey = await this.hashKey({ key: props.key });
 
-    const value = await this.client.get(hasedKey);
+    const value = await this.client.get(this.prefix + ":" + hasedKey);
 
     await this.disconnect();
 
@@ -88,7 +87,7 @@ export class Provider implements IProvider {
     const hasedKey = await this.hashKey({ key: props.key });
 
     const value = await this.client.set(
-      hasedKey,
+      this.prefix + ":" + hasedKey,
       props.value,
       "EX",
       props.options.ttl,
@@ -104,20 +103,14 @@ export class Provider implements IProvider {
     await this.connect();
 
     do {
-      const reply = await this.client.scan(cursor, "MATCH", `${this.prefix}*`);
+      const keys = await this.client.keys(`${this.prefix}*`);
 
-      cursor = reply[0];
-      const keys = reply[1];
-
-      for (const key of keys) {
-        const sanitizedKey = key.replace(this.prefix, "");
-
-        await this.client.del(sanitizedKey);
+      if (keys.length) {
+        await this.client.del(...keys);
       }
     } while (cursor !== "0");
 
     await this.disconnect();
-    return;
   }
 
   async del(props: { key: string }): Promise<void> {
