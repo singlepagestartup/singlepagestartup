@@ -2,6 +2,7 @@
 
 import { actions, IFindProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
+import { requestLimiter } from "../../../request-limmiter";
 
 export interface IQueryProps<T> {
   params?: IFindProps["params"];
@@ -16,20 +17,22 @@ export function query<T>(
 ): () => Promise<T[] | undefined> {
   return async () => {
     try {
-      const res = await actions.find<T>({
-        host: props.host,
-        route: props.route,
-        params: props.params,
-        options: {
-          ...props.options,
-        },
+      return await requestLimiter.run(async () => {
+        const res = await actions.find<T>({
+          host: props.host,
+          route: props.route,
+          params: props.params,
+          options: {
+            ...props.options,
+          },
+        });
+
+        if (props.cb) {
+          props.cb(res);
+        }
+
+        return res;
       });
-
-      if (props.cb) {
-        props.cb(res);
-      }
-
-      return res;
     } catch (error: any) {
       toast.error(error.message);
 
