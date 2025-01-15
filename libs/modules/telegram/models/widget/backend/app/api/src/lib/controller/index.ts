@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/telegram/models/widget/backend/repository/database";
 import { Context as GrammyContext, NextFunction } from "grammy";
-import { Service } from "./service";
+import { Service } from "../service";
 import {
   ConversationFlavor as GrammyConversationFlavor,
   Conversation as GrammyConversation,

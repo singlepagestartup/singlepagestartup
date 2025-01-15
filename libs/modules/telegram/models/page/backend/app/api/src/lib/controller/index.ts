@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/telegram/models/page/backend/repository/database";
 import { api } from "@sps/telegram/models/page/sdk/server";
-import { Service } from "./service";
+import { Service } from "../service";
 import { Context as GrammyContext, NextFunction } from "grammy";
 import {
   ConversationFlavor as GrammyConversationFlavor,
@@ -79,7 +79,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       },
     });
-    console.log(`🚀 ~ pages:`, pages);
+    console.log("🚀 ~ pages:", pages);
 
     if (!pages) {
       return;
@@ -116,7 +116,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
     });
     const { message } = await conversation.waitFor(":text");
-    console.log(`🚀 ~ message:`, message);
+    console.log("🚀 ~ message:", message);
     await ctx.reply(`Created page - ${message.text}!`);
   }
 }
