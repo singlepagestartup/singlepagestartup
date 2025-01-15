@@ -4,7 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/broadcast/models/channel/backend/repository/database";
 import { HTTPException } from "hono/http-exception";
 import { Context, Next } from "hono";
-import { Service } from "./service";
+import { Service } from "../service";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
