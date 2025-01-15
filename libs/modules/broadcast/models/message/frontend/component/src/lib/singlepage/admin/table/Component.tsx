@@ -1,5 +1,5 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
-import { Component as AdminTableRow } from "../../../table-row";
+import { Component as AdminTableRow } from "../table-row";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table/Component";
 
 export function Component(props: IComponentPropsExtended) {
@@ -7,7 +7,7 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="broadcast"
-      name="channel"
+      name="message"
       variant={props.variant}
       adminForm={
         props.adminForm
@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
             <AdminTableRow
               key={index}
               module="broadcast"
-              name="channel"
+              name="message"
               isServer={props.isServer}
               hostUrl={props.hostUrl}
               variant="admin-table-row"

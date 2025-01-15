@@ -1,6 +1,5 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
-import { Component as AdminForm } from "../../../form";
-import { Component as AdminTableRow } from "../../../table-row";
+import { Component as AdminTableRow } from "../table-row";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table/Component";
 
 export function Component(props: IComponentPropsExtended) {
@@ -8,15 +7,15 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="broadcast"
-      name="channels-to-messages"
-      type="relation"
+      name="channel"
       variant={props.variant}
       adminForm={
-        <AdminForm
-          isServer={props.isServer}
-          hostUrl={props.hostUrl}
-          variant="admin-form"
-        />
+        props.adminForm
+          ? props.adminForm({
+              hostUrl: props.hostUrl,
+              isServer: props.isServer,
+            })
+          : null
       }
     >
       <div className="flex flex-col gap-6 pt-8 p-4">
@@ -25,11 +24,11 @@ export function Component(props: IComponentPropsExtended) {
             <AdminTableRow
               key={index}
               module="broadcast"
-              name="channels-to-messages"
-              type="relation"
+              name="channel"
               isServer={props.isServer}
               hostUrl={props.hostUrl}
               variant="admin-table-row"
+              adminForm={props.adminForm}
               data={entity}
             />
           );

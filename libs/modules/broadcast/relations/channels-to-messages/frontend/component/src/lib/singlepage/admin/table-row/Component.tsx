@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/broadcast/relations/channels-to-messages/sdk/client";
-import { Component as AdminForm } from "../../../form";
+import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
