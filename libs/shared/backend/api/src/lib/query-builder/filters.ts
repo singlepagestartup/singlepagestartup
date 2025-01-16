@@ -77,13 +77,13 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
     }
 
     if (!tableColumn) {
-      throw new Error(`You are missing a column in the filter object`);
+      throw new Error("You are missing a column in the filter object");
     }
 
     const method: keyof QueryBuilderFilterMethods = filterMethod;
 
     if (!method) {
-      throw new Error(`You are missing a method in the filter object`);
+      throw new Error("You are missing a method in the filter object");
     }
 
     if (method === "notInArray" || method === "inArray") {
@@ -112,17 +112,27 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       method === "eq" ||
       method === "gt" ||
       method === "lt" ||
-      method === "ilike" ||
-      method === "like" ||
       method === "not" ||
       method === "lte" ||
       method === "gte" ||
-      method === "notIlike" ||
-      method === "notLike" ||
       method === "ne"
     ) {
       resultQueries.push(
         queryFunctions[method](tableColumn, filterValue) as SQL<any>,
+      );
+    }
+
+    if (
+      method === "notIlike" ||
+      method === "notLike" ||
+      method === "ilike" ||
+      method === "like"
+    ) {
+      resultQueries.push(
+        queryFunctions[method](
+          tableColumn,
+          "%" + filterValue + "%",
+        ) as SQL<any>,
       );
     }
 

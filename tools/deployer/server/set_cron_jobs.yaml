@@ -1,6 +1,9 @@
 - name: Set cron jobs
   hosts: all
   become: yes
+  vars:
+    - backend_url: "{{ BACKEND_URL }}"
+    - rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
   tasks:
     - name: docker image prune cron
       cron:
@@ -13,6 +16,14 @@
         name: "docker container prune"
         minute: "*/5"
         job: "yes | docker container prune  >> /home/code/docker_container_prune.log"
+
+    - name: host agent cron
+      cron:
+        name: "host agent cron"
+        minute: "*"
+        job: "curl -k -X POST https://{{ backend_url }}/api/agent/agents/cron \
+          -H 'X-RBAC-SECRET-KEY: {{ rbac_secret_key }}' \
+          -F 'data={}' >> /home/code/host_api_agent_agents_cron.log 2>&1"
 
     - name: Create postgres dump directory
       file:

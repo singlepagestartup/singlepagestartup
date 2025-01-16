@@ -1,4 +1,6 @@
 import { ISeedResult } from "@sps/shared-backend-api";
+import { app as telegramApp } from "@sps/telegram/backend/app/api";
+import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
@@ -15,6 +17,32 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
+  const telegramModelsSeeds = await telegramApp.seed({
+    type: "model",
+    seeds,
+  });
+
+  if (Array.isArray(telegramModelsSeeds)) {
+    telegramModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(telegramModelsSeeds);
+  }
+
+  const agentModelsSeeds = await agentApp.seed({
+    type: "model",
+    seeds,
+  });
+
+  if (Array.isArray(agentModelsSeeds)) {
+    agentModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(agentModelsSeeds);
+  }
+
   const hostModelsSeeds = await hostApp.seed({
     type: "model",
     seeds,
@@ -26,6 +54,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(hostModelsSeeds);
   }
+
   const websiteBuilderModelsSeeds = await websiteBuilderApp.seed({
     type: "model",
     seeds,
@@ -37,6 +66,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(websiteBuilderModelsSeeds);
   }
+
   const crmModelsSeeds = await crmApp.seed({
     type: "model",
     seeds,
@@ -48,6 +78,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(crmModelsSeeds);
   }
+
   const blogModelsSeeds = await blogApp.seed({
     type: "model",
     seeds,
@@ -59,6 +90,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(blogModelsSeeds);
   }
+
   const notificationModelsSeeds = await notificationApp.seed({
     type: "model",
     seeds,
@@ -70,6 +102,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(notificationModelsSeeds);
   }
+
   const billingModelsSeeds = await billingApp.seed({
     type: "model",
     seeds,
@@ -81,6 +114,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(billingModelsSeeds);
   }
+
   const ecommerceModelsSeeds = await ecommerceApp.seed({
     type: "model",
     seeds,
@@ -92,6 +126,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(ecommerceModelsSeeds);
   }
+
   const rbacModelsSeeds = await rbacApp.seed({
     type: "model",
     seeds,
@@ -103,6 +138,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(rbacModelsSeeds);
   }
+
   const fileStorageModelsSeeds = await fileStorageApp.seed({
     type: "model",
     seeds,
@@ -114,6 +150,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(fileStorageModelsSeeds);
   }
+
   const startupModelsSeeds = await startupApp.seed({
     type: "model",
     seeds,
@@ -125,6 +162,32 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(startupModelsSeeds);
   }
+
+  const telegramRelationsSeeds = await telegramApp.seed({
+    type: "relation",
+    seeds,
+  });
+  if (Array.isArray(telegramRelationsSeeds)) {
+    telegramRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(telegramRelationsSeeds);
+  }
+
+  const agentRelationsSeeds = await agentApp.seed({
+    type: "relation",
+    seeds,
+  });
+
+  if (Array.isArray(agentRelationsSeeds)) {
+    agentRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(agentRelationsSeeds);
+  }
+
   const hostRelationsSeeds = await hostApp.seed({
     type: "relation",
     seeds,
@@ -136,6 +199,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(hostRelationsSeeds);
   }
+
   const websiteBuilderRelationsSeeds = await websiteBuilderApp.seed({
     type: "relation",
     seeds,
@@ -147,6 +211,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(websiteBuilderRelationsSeeds);
   }
+
   const notificationRelationsSeeds = await notificationApp.seed({
     type: "relation",
     seeds,
@@ -158,6 +223,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(notificationRelationsSeeds);
   }
+
   const blogRelationsSeeds = await blogApp.seed({
     type: "relation",
     seeds,
@@ -169,6 +235,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(blogRelationsSeeds);
   }
+
   const crmRelationsSeeds = await crmApp.seed({
     type: "relation",
     seeds,
@@ -180,6 +247,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(crmRelationsSeeds);
   }
+
   const billingRelationsSeeds = await billingApp.seed({
     type: "relation",
     seeds,
@@ -191,6 +259,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(billingRelationsSeeds);
   }
+
   const ecommerceRelationsSeeds = await ecommerceApp.seed({
     type: "relation",
     seeds,
@@ -202,6 +271,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(ecommerceRelationsSeeds);
   }
+
   const rbacRelationsSeeds = await rbacApp.seed({
     type: "relation",
     seeds,
@@ -213,6 +283,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(rbacRelationsSeeds);
   }
+
   const fileStorageRelationsSeeds = await fileStorageApp.seed({
     type: "relation",
     seeds,
@@ -224,6 +295,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   } else {
     seeds.push(fileStorageRelationsSeeds);
   }
+
   const startupRelationsSeeds = await startupApp.seed({
     type: "relation",
     seeds,
@@ -245,7 +317,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
       return res.text();
     })
     .catch((error) => {
-      console.error(`🚀 ~ HOST_URL error:`, error);
+      console.error("🚀 ~ HOST_URL error:", error);
     });
 
   await fetch(BACKEND_URL + "/api/http-cache/clear", {
@@ -257,7 +329,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
       return res.json();
     })
     .catch((error) => {
-      console.error(`🚀 ~ /api/http-cache/clear error:`, error);
+      console.error("🚀 ~ /api/http-cache/clear error:", error);
     });
 
   await fetch(BACKEND_URL + "/api/revalidation/revalidate?path=/&type=layout", {
@@ -267,7 +339,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   })
     .then((res) => res.json())
     .catch((error) => {
-      console.error(`🚀 ~ /api/revalidation/revalidate error:`, error);
+      console.error("🚀 ~ /api/revalidation/revalidate error:", error);
     });
 
   setTimeout(async () => {
@@ -276,7 +348,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
         return res.text();
       })
       .catch((error) => {
-        console.error(`🚀 ~ HOST_URL error:`, error);
+        console.error("🚀 ~ HOST_URL error:", error);
       });
   }, 10000);
 })()
