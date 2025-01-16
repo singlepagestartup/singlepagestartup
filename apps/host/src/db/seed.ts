@@ -1,5 +1,4 @@
 import { ISeedResult } from "@sps/shared-backend-api";
-import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
@@ -17,19 +16,6 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
-  const telegramModelsSeeds = await telegramApp.seed({
-    type: "model",
-    seeds,
-  });
-
-  if (Array.isArray(telegramModelsSeeds)) {
-    telegramModelsSeeds.forEach((seed) => {
-      seeds.push(seed);
-    });
-  } else {
-    seeds.push(telegramModelsSeeds);
-  }
-
   const agentModelsSeeds = await agentApp.seed({
     type: "model",
     seeds,
@@ -161,18 +147,6 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     });
   } else {
     seeds.push(startupModelsSeeds);
-  }
-
-  const telegramRelationsSeeds = await telegramApp.seed({
-    type: "relation",
-    seeds,
-  });
-  if (Array.isArray(telegramRelationsSeeds)) {
-    telegramRelationsSeeds.forEach((seed) => {
-      seeds.push(seed);
-    });
-  } else {
-    seeds.push(telegramRelationsSeeds);
   }
 
   const agentRelationsSeeds = await agentApp.seed({

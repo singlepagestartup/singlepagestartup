@@ -23,7 +23,7 @@ export class Configuration extends ParentConfiguration {
         },
         seed: {
           active: true,
-          module: "crm",
+          module: "agent",
           name: "agent",
           type: "model",
           filters: [

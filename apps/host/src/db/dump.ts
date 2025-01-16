@@ -1,4 +1,3 @@
-import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
@@ -64,13 +63,8 @@ import { exit } from "process";
     dumps: [],
   });
 
-  await telegramApp.dump({
-    type: "relation",
-    dumps: [],
-  });
-
   await agentApp.dump({
-    type: "relation",
+    type: "model",
     dumps: [],
   });
 
@@ -124,13 +118,8 @@ import { exit } from "process";
     dumps: [],
   });
 
-  await telegramApp.dump({
-    type: "model",
-    dumps: [],
-  });
-
   await agentApp.dump({
-    type: "model",
+    type: "relation",
     dumps: [],
   });
 })()
