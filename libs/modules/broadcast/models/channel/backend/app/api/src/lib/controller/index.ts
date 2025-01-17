@@ -7,7 +7,6 @@ import { Context, Next } from "hono";
 import { Service } from "../service";
 import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
-import { IModel } from "@sps/broadcast/models/channel/sdk/model";
 import { api } from "@sps/broadcast/models/channel/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
@@ -93,9 +92,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     const data = JSON.parse(body["data"]);
 
     const message = await messageApi.create({
-      data: {
-        payload: data.payload,
-      },
+      data,
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -256,7 +253,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     const createdMessage = await api.messageCreate({
       id: channel.id,
-      data: { payload: data.payload },
+      data,
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
