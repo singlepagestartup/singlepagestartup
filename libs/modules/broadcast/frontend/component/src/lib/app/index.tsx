@@ -16,7 +16,7 @@ export function App(props: IComponentProps) {
             filters: {
               and: [
                 {
-                  column: "title",
+                  column: "slug",
                   method: "eq",
                   value: "revalidation",
                 },

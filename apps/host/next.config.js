@@ -63,30 +63,34 @@ function makeConfig() {
     trailingSlash: false,
     webpack(config) {
       config.module.rules.push({
-        test: /\.svg$/,
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
         use: [
           {
             loader: "@svgr/webpack",
             options: {
-              prettier: true,
               svgo: true,
               svgoConfig: {
-                plugins: [{ name: "removeViewBox", active: false }],
+                plugins: [
+                  {
+                    name: "preset-default",
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
               },
-              titleProp: true,
             },
           },
         ],
       });
 
-      config.module.rules.push({
-        test: /\.d\.ts$/,
-        use: "ignore-loader",
-      });
-      config.module.rules.push({
-        test: /\.map$/,
-        use: "ignore-loader",
-      });
+      config.module.rules.push(
+        { test: /\.d\.ts$/, use: "ignore-loader" },
+        { test: /\.map$/, use: "ignore-loader" },
+      );
 
       config.externals.push("pino-pretty", "lokijs", "encoding");
 

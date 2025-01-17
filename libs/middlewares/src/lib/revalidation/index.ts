@@ -32,7 +32,7 @@ export class Middleware {
           if (["POST", "PUT", "PATCH"].includes(method)) {
             await channelApi.pushMessage({
               data: {
-                channelName: "revalidation",
+                slug: "revalidation",
                 payload: path,
                 expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
               },
@@ -56,7 +56,7 @@ export class Middleware {
 
             await channelApi.pushMessage({
               data: {
-                channelName: "revalidation",
+                slug: "revalidation",
                 payload: pathWithoutId,
                 expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
               },

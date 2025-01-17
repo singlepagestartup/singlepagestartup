@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../service";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api } from "@sps/agent/models/agent/sdk/server";
+import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
 import cronParser from "cron-parser";
 
 export class Handler {
@@ -87,12 +88,14 @@ export class Handler {
       }
     }
 
+    const executingAgents: IAgentAgent[] = [];
+
     if (agents?.length) {
       for (const agent of agents) {
         const currentAgentExecutions = executions
           .filter((execution) => execution.slug === agent.slug)
           .sort((a, b) => {
-            return a.datetime.getTime() - b.datetime.getTime();
+            return b.datetime.getTime() - a.datetime.getTime();
           });
 
         let lastExecutionTime: Date | null = null;
@@ -134,12 +137,41 @@ export class Handler {
           continue;
         }
 
+        executingAgents.push(agent);
+
         (async () => {
           if (!RBAC_SECRET_KEY) {
             throw new HTTPException(400, {
               message: "RBAC_SECRET not set",
             });
           }
+
+          for (const currentAgentExecution of currentAgentExecutions) {
+            await broadcastChannelApi.messageDelete({
+              id: cronChannel.id,
+              messageId: currentAgentExecution.id,
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
+
+          await broadcastChannelApi.pushMessage({
+            data: {
+              slug: "cron",
+              payload: JSON.stringify({
+                datetime: new Date().toISOString(),
+                slug: agent.slug,
+              }),
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
 
           const agentExecutionResult = await fetch(
             BACKEND_URL + "/api/agent/agents/" + agent.slug,
@@ -154,21 +186,9 @@ export class Handler {
             return res.json();
           });
 
-          for (const currentAgentExecution of currentAgentExecutions) {
-            await broadcastChannelApi.messageDelete({
-              id: currentAgentExecution.id,
-              messageId: currentAgentExecution.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
-
           await broadcastChannelApi.pushMessage({
             data: {
-              channelName: "cron",
+              slug: "cron",
               payload: JSON.stringify({
                 datetime: new Date().toISOString(),
                 slug: agent.slug,
@@ -186,7 +206,7 @@ export class Handler {
     }
 
     return c.json({
-      data: { ok: true },
+      data: executingAgents,
     });
   }
 }

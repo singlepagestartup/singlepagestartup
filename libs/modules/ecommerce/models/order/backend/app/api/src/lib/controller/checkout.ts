@@ -268,7 +268,7 @@ export class Handler {
 
       await broadcastChannelApi.pushMessage({
         data: {
-          channelName: "observer",
+          slug: "observer",
           payload: JSON.stringify({
             trigger: {
               type: "request",

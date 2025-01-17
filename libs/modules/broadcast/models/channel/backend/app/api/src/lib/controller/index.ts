@@ -204,9 +204,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     const data = JSON.parse(body["data"]);
 
-    if (!data.channelName || !data.payload) {
+    if (!data.slug || !data.payload) {
       throw new HTTPException(400, {
-        message: "Invalid data, channelName and payload are required.",
+        message: "Invalid data, slug and payload are required.",
       });
     }
 
@@ -215,11 +215,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         filters: {
           and: [
             {
-              column: "title",
+              column: "slug",
               method: "eq",
-              value: data.channelName,
+              value: data.slug,
             },
           ],
+        },
+      },
+      options: {
+        headers: {
+          "Cache-Control": "no-cache",
         },
       },
     });
@@ -229,7 +234,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     if (!channels?.length) {
       channel = await api.create({
         data: {
-          title: data.channelName,
+          title: data.slug,
+          slug: data.slug,
         },
         options: {
           headers: {

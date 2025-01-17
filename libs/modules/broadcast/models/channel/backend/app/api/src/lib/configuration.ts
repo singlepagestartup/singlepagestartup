@@ -26,6 +26,15 @@ export class Configuration extends ParentConfiguration {
           module: "broadcast",
           name: "channel",
           type: "model",
+          filters: [
+            {
+              column: "slug",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.slug;
+              },
+            },
+          ],
         },
       },
     });

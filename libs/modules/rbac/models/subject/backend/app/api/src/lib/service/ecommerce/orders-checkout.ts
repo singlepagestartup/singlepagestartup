@@ -316,7 +316,7 @@ export class Service {
 
     await broadcastChannelApi.pushMessage({
       data: {
-        channelName: "observer",
+        slug: "observer",
         payload: JSON.stringify({
           trigger: {
             type: "request",
@@ -411,7 +411,7 @@ export class Service {
 
     await broadcastChannelApi.pushMessage({
       data: {
-        channelName: "observer",
+        slug: "observer",
         payload: JSON.stringify({
           trigger: {
             type: "request",
