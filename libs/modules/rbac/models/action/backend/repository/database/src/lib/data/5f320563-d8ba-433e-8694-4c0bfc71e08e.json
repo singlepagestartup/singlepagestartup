@@ -1,9 +1,0 @@
-{
-  "id": "5f320563-d8ba-433e-8694-4c0bfc71e08e",
-  "createdAt": "2024-08-16T20:30:24.248Z",
-  "updatedAt": "2024-08-16T20:30:24.248Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "*",
-  "path": "*"
-}

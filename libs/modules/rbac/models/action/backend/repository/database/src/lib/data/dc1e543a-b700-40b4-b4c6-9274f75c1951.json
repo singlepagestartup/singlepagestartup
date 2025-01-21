@@ -1,9 +1,0 @@
-{
-  "id": "dc1e543a-b700-40b4-b4c6-9274f75c1951",
-  "createdAt": "2024-12-12T17:54:28.443Z",
-  "updatedAt": "2024-12-12T17:54:28.443Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/roles/[rbac.roles.id]"
-}

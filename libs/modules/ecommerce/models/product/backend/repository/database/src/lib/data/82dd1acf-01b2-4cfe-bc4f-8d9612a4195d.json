@@ -1,0 +1,11 @@
+{
+  "id": "82dd1acf-01b2-4cfe-bc4f-8d9612a4195d",
+  "createdAt": "2024-12-28T10:13:47.926Z",
+  "updatedAt": "2024-12-28T10:18:53.707Z",
+  "variant": "default",
+  "type": "one_off",
+  "title": "Startup",
+  "description": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"We create startup for you\"}]}]}",
+  "shortDescription": "",
+  "sku": "startup"
+}

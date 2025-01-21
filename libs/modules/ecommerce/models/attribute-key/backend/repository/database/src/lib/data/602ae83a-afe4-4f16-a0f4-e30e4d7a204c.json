@@ -1,0 +1,12 @@
+{
+  "id": "602ae83a-afe4-4f16-a0f4-e30e4d7a204c",
+  "createdAt": "2024-12-28T10:18:53.709Z",
+  "updatedAt": "2024-12-28T10:18:53.709Z",
+  "variant": "default",
+  "type": "",
+  "field": "string",
+  "title": "Api Key",
+  "slug": "api-key",
+  "prefix": "",
+  "suffix": ""
+}

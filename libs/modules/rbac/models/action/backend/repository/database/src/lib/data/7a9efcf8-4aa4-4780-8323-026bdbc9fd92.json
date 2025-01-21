@@ -1,0 +1,9 @@
+{
+  "id": "7a9efcf8-4aa4-4780-8323-026bdbc9fd92",
+  "createdAt": "2024-12-28T10:18:53.836Z",
+  "updatedAt": "2024-12-28T10:18:53.836Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/attributes-to-billing-module-currencies/[ecommerce.attributes-to-billing-module-currencies.id]"
+}

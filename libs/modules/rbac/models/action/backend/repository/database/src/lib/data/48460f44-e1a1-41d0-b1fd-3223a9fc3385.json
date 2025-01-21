@@ -1,9 +1,0 @@
-{
-  "id": "48460f44-e1a1-41d0-b1fd-3223a9fc3385",
-  "createdAt": "2024-08-22T00:27:04.410Z",
-  "updatedAt": "2024-08-22T00:27:04.410Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "ed369de9-db54-4961-8b75-3a1956665f98",
-  "createdAt": "2024-09-07T20:18:06.969Z",
-  "updatedAt": "2024-09-07T20:18:06.969Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/blog/articles-to-file-storage-module-widgets/[blog.articles-to-file-storage-module-widgets.id]"
-}

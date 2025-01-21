@@ -1,0 +1,11 @@
+{
+  "id": "05eb0b95-1ab7-497b-ae30-3247f2a4412b",
+  "title": "RBAC | Subject | Forgot Password",
+  "url": "/rbac/subject/authentication/email-and-password/forgot-password",
+  "description": "Description",
+  "createdAt": "2024-12-28T10:13:47.867Z",
+  "updatedAt": "2025-01-12T11:59:33.162Z",
+  "variant": "default",
+  "orderIndex": null,
+  "className": null
+}

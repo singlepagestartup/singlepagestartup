@@ -1,9 +1,0 @@
-{
-  "id": "3fa03fab-a184-47fa-aab1-355d3a037bc0",
-  "createdAt": "2024-09-08T22:52:12.422Z",
-  "updatedAt": "2024-09-08T22:52:12.422Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/categories-to-file-storage-module-widgets"
-}

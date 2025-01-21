@@ -1,0 +1,11 @@
+{
+  "id": "5b0ccd95-ec2a-440e-88a6-0b0e0d91a0c6",
+  "title": "EC | Category | Overview",
+  "url": "/ecommerce/categories/[ecommerce.categories.id]",
+  "description": "Description",
+  "createdAt": "2024-12-28T10:13:47.875Z",
+  "updatedAt": "2025-01-12T20:07:42.618Z",
+  "variant": "default",
+  "orderIndex": null,
+  "className": null
+}

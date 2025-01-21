@@ -1,0 +1,11 @@
+{
+  "className": null,
+  "title": "Welcome back",
+  "subtitle": "Login with email and password or Web3",
+  "description": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"By clicking continue, you agree to our \"},{\"type\":\"text\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"/terms-of-service\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer nofollow\",\"class\":null}}],\"text\":\"Terms of Service\"},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"/privacy-policy\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer nofollow\",\"class\":null}}],\"text\":\"Privacy Policy.\"}]}]}",
+  "id": "ec1aaecd-f00d-4021-bc74-64588a5e2e1d",
+  "createdAt": "2024-12-28T10:13:47.951Z",
+  "updatedAt": "2025-01-10T14:14:27.328Z",
+  "variant": "subject-authentication-select-method-default",
+  "slug": "subject-authentication-select-method-default"
+}

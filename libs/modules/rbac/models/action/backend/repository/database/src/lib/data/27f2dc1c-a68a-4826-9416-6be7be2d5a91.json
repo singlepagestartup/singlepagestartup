@@ -1,9 +1,0 @@
-{
-  "id": "27f2dc1c-a68a-4826-9416-6be7be2d5a91",
-  "createdAt": "2024-08-19T01:37:31.659Z",
-  "updatedAt": "2024-08-19T01:37:31.659Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/billing/invoices/[billing.invoices.id]"
-}

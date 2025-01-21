@@ -1,0 +1,9 @@
+{
+  "id": "68e003a4-1703-4c54-836e-26cc41aae9cc",
+  "createdAt": "2024-12-28T10:18:53.809Z",
+  "updatedAt": "2024-12-28T10:18:53.809Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/billing/payment-intents/stripe/webhook"
+}

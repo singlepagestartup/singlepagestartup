@@ -1,9 +1,0 @@
-{
-  "id": "3666d912-c265-419b-a258-4a2e89fff2e9",
-  "createdAt": "2024-11-28T10:41:21.539Z",
-  "updatedAt": "2024-11-28T10:41:21.539Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "PATCH",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce/orders/[ecommerce.orders.id]"
-}

@@ -1,0 +1,12 @@
+{
+  "id": "84cbec3d-ef16-49ab-ab90-a680f3a9c27d",
+  "createdAt": "2024-12-28T10:18:53.710Z",
+  "updatedAt": "2024-12-28T10:18:53.710Z",
+  "variant": "default",
+  "type": "interval",
+  "field": "string",
+  "title": "Interval",
+  "slug": "interval",
+  "prefix": "",
+  "suffix": ""
+}

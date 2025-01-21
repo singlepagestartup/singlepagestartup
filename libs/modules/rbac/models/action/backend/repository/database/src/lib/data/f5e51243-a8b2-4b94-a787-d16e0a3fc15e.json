@@ -1,9 +1,0 @@
-{
-  "id": "f5e51243-a8b2-4b94-a787-d16e0a3fc15e",
-  "createdAt": "2024-08-19T01:35:41.487Z",
-  "updatedAt": "2024-08-19T01:35:41.487Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/orders-to-billing-module-payment-intents"
-}

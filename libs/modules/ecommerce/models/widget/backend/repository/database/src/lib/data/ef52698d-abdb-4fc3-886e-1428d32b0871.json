@@ -1,0 +1,12 @@
+{
+  "title": "Our Stores",
+  "id": "ef52698d-abdb-4fc3-886e-1428d32b0871",
+  "createdAt": "2024-12-28T10:18:53.707Z",
+  "updatedAt": "2025-01-12T19:46:43.357Z",
+  "variant": "store-list-default",
+  "className": "",
+  "subtitle": "",
+  "description": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Select store, that you mostly like\"}]}]}",
+  "anchor": "",
+  "slug": "our-stores"
+}

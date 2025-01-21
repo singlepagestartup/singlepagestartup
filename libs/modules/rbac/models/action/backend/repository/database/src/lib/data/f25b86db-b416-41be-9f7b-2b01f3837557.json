@@ -1,0 +1,9 @@
+{
+  "id": "f25b86db-b416-41be-9f7b-2b01f3837557",
+  "createdAt": "2024-12-28T10:18:53.823Z",
+  "updatedAt": "2024-12-28T10:18:53.823Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce/orders/[ecommerce.orders.id]"
+}
