@@ -5,16 +5,23 @@ export { type IFilter } from "./interface";
 import { IFilter } from "./interface";
 import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
+import { Sentry } from "@sps/shared-third-parties";
+import { SENTRY_DSN } from "@sps/shared-utils";
 
 @injectable()
 export class Filter implements IFilter {
   constructor() {}
 
-  catch(
+  async catch(
     error: Error | HTTPResponseError,
     c: Context<any>,
-  ): Response | Promise<Response> {
+  ): Promise<Response> {
     console.error("Exception Filter | ", c.req.path, error);
+
+    if (SENTRY_DSN) {
+      console.log("Sentry | Capturing exception");
+      Sentry.captureException(error);
+    }
 
     if (error instanceof HTTPException) {
       try {

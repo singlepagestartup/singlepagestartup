@@ -8,6 +8,13 @@
       "when": 1725745847457,
       "tag": "0000_yielding_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402533402,
+      "tag": "0001_orange_scrambler",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,2 @@
+ALTER TABLE "sps_w_b_fe_to_bs_as_mc2" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "sps_w_b_fe_to_bs_as_mc2" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

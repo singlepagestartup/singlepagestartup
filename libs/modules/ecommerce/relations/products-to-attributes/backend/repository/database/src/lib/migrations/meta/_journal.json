@@ -8,6 +8,13 @@
       "when": 1723399139634,
       "tag": "0000_lucky_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402541750,
+      "tag": "0001_glossy_black_cat",
+      "breakpoints": true
     }
   ]
 }

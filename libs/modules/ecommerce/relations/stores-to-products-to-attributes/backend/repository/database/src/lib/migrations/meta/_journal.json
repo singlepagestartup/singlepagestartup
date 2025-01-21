@@ -8,6 +8,13 @@
       "when": 1731190232949,
       "tag": "0000_overconfident_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402541734,
+      "tag": "0001_minor_centennial",
+      "breakpoints": true
     }
   ]
 }

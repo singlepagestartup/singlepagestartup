@@ -1,9 +1,10 @@
 import { RBAC_SECRET_KEY, STALE_TIME } from "@sps/shared-utils";
 import { Context, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
+import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
+import { api as broadcastMessageApi } from "@sps/broadcast/models/message/sdk/server";
+import { api as broadcastChannelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 
 export type IMiddlewareGeneric = unknown;
 
@@ -30,7 +31,7 @@ export class Middleware {
           }
 
           if (["POST", "PUT", "PATCH"].includes(method)) {
-            await channelApi.pushMessage({
+            await broadcastChannelApi.pushMessage({
               data: {
                 slug: "revalidation",
                 payload: path,
@@ -54,7 +55,7 @@ export class Middleware {
               "",
             );
 
-            await channelApi.pushMessage({
+            await broadcastChannelApi.pushMessage({
               data: {
                 slug: "revalidation",
                 payload: pathWithoutId,
@@ -72,7 +73,7 @@ export class Middleware {
             revalidateTag(pathWithoutId);
           }
 
-          const expiredMessages = await messageApi.find({
+          const expiredMessages = await broadcastMessageApi.find({
             params: {
               filters: {
                 and: [
@@ -93,16 +94,42 @@ export class Middleware {
               );
             }
 
-            await messageApi.delete({
-              id: message.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            const channelsToExpiredMessage =
+              await broadcastChannelsToMessagesApi.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "messageId",
+                        method: "eq",
+                        value: message.id,
+                      },
+                    ],
+                  },
                 },
-                next: {
-                  cache: "no-store",
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
                 },
-              },
+              });
+
+            channelsToExpiredMessage?.forEach(async (channelToMessage) => {
+              if (!RBAC_SECRET_KEY) {
+                throw Error(
+                  "RBAC_SECRET_KEY is not defined, broadcast middleware 'revalidation' can't request to service.",
+                );
+              }
+
+              await broadcastChannelApi.messageDelete({
+                id: channelToMessage.channelId,
+                messageId: message.id,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
             });
           });
         }

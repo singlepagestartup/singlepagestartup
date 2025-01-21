@@ -8,6 +8,13 @@
       "when": 1721867813830,
       "tag": "0000_typical_war_machine",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402520944,
+      "tag": "0001_nebulous_northstar",
+      "breakpoints": true
     }
   ]
 }

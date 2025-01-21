@@ -15,6 +15,13 @@
       "when": 1723393685344,
       "tag": "0001_lying_changeling",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737402536981,
+      "tag": "0002_hard_mathemanic",
+      "breakpoints": true
     }
   ]
 }

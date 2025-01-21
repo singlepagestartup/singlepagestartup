@@ -1,0 +1,104 @@
+{
+  "id": "7b78cacb-e645-48e8-8e12-9605e9f23bc3",
+  "prevId": "43303497-3210-4647-a7b3-516bfd188769",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_f_s_ws_to_fs_ocw": {
+      "name": "sps_f_s_ws_to_fs_ocw",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wt_id": {
+          "name": "wt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fe_id": {
+          "name": "fe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_f_s_ws_to_fs_ocw_wt_id_sps_f_s_widget_id_fk": {
+          "name": "sps_f_s_ws_to_fs_ocw_wt_id_sps_f_s_widget_id_fk",
+          "tableFrom": "sps_f_s_ws_to_fs_ocw",
+          "tableTo": "sps_f_s_widget",
+          "columnsFrom": ["wt_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_f_s_ws_to_fs_ocw_fe_id_sps_f_s_file_id_fk": {
+          "name": "sps_f_s_ws_to_fs_ocw_fe_id_sps_f_s_file_id_fk",
+          "tableFrom": "sps_f_s_ws_to_fs_ocw",
+          "tableTo": "sps_f_s_file",
+          "columnsFrom": ["fe_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

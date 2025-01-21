@@ -9,6 +9,8 @@ const pgTable = pgCore.pgTableCreator((name) => `${moduleName}_${name}`);
 
 export const Table = pgTable(table, {
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
+  createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
+  updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   orderIndex: pgCore.integer("order_index").notNull().default(0),
   className: pgCore.text("class_name"),
@@ -20,5 +22,4 @@ export const Table = pgTable(table, {
     .uuid("me_id")
     .notNull()
     .references(() => Message.id, { onDelete: "cascade" }),
-  createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
 });

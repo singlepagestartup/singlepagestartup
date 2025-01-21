@@ -8,6 +8,13 @@
       "when": 1721871605140,
       "tag": "0000_powerful_grim_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402551356,
+      "tag": "0001_numerous_vanisher",
+      "breakpoints": true
     }
   ]
 }

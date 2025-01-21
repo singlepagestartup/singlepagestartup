@@ -1,0 +1,104 @@
+{
+  "id": "284f285b-207d-4afa-99e6-847258f059f6",
+  "prevId": "a347064f-afcd-4e7a-9c10-179a13477868",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_h_ps_to_ls_gxd": {
+      "name": "sps_h_ps_to_ls_gxd",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pe_id": {
+          "name": "pe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lt_id": {
+          "name": "lt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_h_ps_to_ls_gxd_pe_id_sps_h_page_id_fk": {
+          "name": "sps_h_ps_to_ls_gxd_pe_id_sps_h_page_id_fk",
+          "tableFrom": "sps_h_ps_to_ls_gxd",
+          "tableTo": "sps_h_page",
+          "columnsFrom": ["pe_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_h_ps_to_ls_gxd_lt_id_sps_h_layout_id_fk": {
+          "name": "sps_h_ps_to_ls_gxd_lt_id_sps_h_layout_id_fk",
+          "tableFrom": "sps_h_ps_to_ls_gxd",
+          "tableTo": "sps_h_layout",
+          "columnsFrom": ["lt_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

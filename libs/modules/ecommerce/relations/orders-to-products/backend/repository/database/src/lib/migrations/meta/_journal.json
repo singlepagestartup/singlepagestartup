@@ -15,6 +15,13 @@
       "when": 1723647312446,
       "tag": "0001_adorable_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737402541744,
+      "tag": "0002_tan_cable",
+      "breakpoints": true
     }
   ]
 }

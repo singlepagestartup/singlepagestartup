@@ -1,0 +1,1 @@
+ALTER TABLE "sps_bt_cs_to_ms_34z" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

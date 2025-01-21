@@ -1,0 +1,104 @@
+{
+  "id": "1245e055-dc0b-4efa-9778-1a4db8998719",
+  "prevId": "3e9159ea-c02b-45ab-8998-9c7a5d767526",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_ee_cs_to_ps_d4v": {
+      "name": "sps_ee_cs_to_ps_d4v",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cy_id": {
+          "name": "cy_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pt_id": {
+          "name": "pt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_ee_cs_to_ps_d4v_cy_id_sps_ee_category_id_fk": {
+          "name": "sps_ee_cs_to_ps_d4v_cy_id_sps_ee_category_id_fk",
+          "tableFrom": "sps_ee_cs_to_ps_d4v",
+          "tableTo": "sps_ee_category",
+          "columnsFrom": ["cy_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_ee_cs_to_ps_d4v_pt_id_sps_ee_product_id_fk": {
+          "name": "sps_ee_cs_to_ps_d4v_pt_id_sps_ee_product_id_fk",
+          "tableFrom": "sps_ee_cs_to_ps_d4v",
+          "tableTo": "sps_ee_product",
+          "columnsFrom": ["pt_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

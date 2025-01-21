@@ -1,0 +1,1 @@
+ALTER TABLE "sps_ee_attribute" ALTER COLUMN "date" SET DATA TYPE timestamp;

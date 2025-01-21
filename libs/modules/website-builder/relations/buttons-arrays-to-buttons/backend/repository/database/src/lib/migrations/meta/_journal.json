@@ -8,6 +8,13 @@
       "when": 1721867154176,
       "tag": "0000_slimy_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402520817,
+      "tag": "0001_tan_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

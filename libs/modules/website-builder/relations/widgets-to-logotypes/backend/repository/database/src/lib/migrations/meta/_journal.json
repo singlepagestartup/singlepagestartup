@@ -8,6 +8,13 @@
       "when": 1723743635512,
       "tag": "0000_busy_colonel_america",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402520940,
+      "tag": "0001_lame_mantis",
+      "breakpoints": true
     }
   ]
 }

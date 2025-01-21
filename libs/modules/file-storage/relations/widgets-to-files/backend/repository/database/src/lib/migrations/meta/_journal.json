@@ -8,6 +8,13 @@
       "when": 1721923217276,
       "tag": "0000_sparkling_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402511517,
+      "tag": "0001_regular_jack_flag",
+      "breakpoints": true
     }
   ]
 }

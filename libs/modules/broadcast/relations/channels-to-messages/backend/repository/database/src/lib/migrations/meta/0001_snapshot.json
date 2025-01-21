@@ -1,0 +1,104 @@
+{
+  "id": "e3fd5036-739e-4436-a898-1868787e97c0",
+  "prevId": "c6ee393a-a3ea-4db4-b9f9-002f46720852",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_bt_cs_to_ms_34z": {
+      "name": "sps_bt_cs_to_ms_34z",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cl_id": {
+          "name": "cl_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "me_id": {
+          "name": "me_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_bt_cs_to_ms_34z_cl_id_sps_bt_channel_id_fk": {
+          "name": "sps_bt_cs_to_ms_34z_cl_id_sps_bt_channel_id_fk",
+          "tableFrom": "sps_bt_cs_to_ms_34z",
+          "tableTo": "sps_bt_channel",
+          "columnsFrom": ["cl_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_bt_cs_to_ms_34z_me_id_sps_bt_message_id_fk": {
+          "name": "sps_bt_cs_to_ms_34z_me_id_sps_bt_message_id_fk",
+          "tableFrom": "sps_bt_cs_to_ms_34z",
+          "tableTo": "sps_bt_message",
+          "columnsFrom": ["me_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

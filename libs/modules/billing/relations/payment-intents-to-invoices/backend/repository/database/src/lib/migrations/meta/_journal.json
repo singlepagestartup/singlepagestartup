@@ -8,6 +8,13 @@
       "when": 1723410214632,
       "tag": "0000_careful_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737402530077,
+      "tag": "0001_happy_captain_cross",
+      "breakpoints": true
     }
   ]
 }
