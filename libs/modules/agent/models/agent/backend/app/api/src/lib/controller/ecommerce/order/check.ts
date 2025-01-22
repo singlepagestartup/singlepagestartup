@@ -1,7 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../service";
+import { Service } from "../../../service";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
@@ -21,8 +21,6 @@ export class Handler {
         message: "RBAC_SECRET_KEY not set",
       });
     }
-
-    console.log("Dummy started");
 
     const topics = await notificationTopicApi.find({
       params: {
@@ -161,8 +159,6 @@ export class Handler {
         },
       });
     }
-
-    console.log("Dummy finished");
 
     return c.json({
       data: {

@@ -1,4 +1,8 @@
-import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  AGENT_MAX_DURATION_IN_SECONDS,
+  BACKEND_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../service";
@@ -59,6 +63,7 @@ export class Handler {
       id: string;
       datetime: Date;
       slug: string;
+      result?: any;
     }[] = [];
 
     const cronChannel = cronChannels?.[0];
@@ -81,6 +86,7 @@ export class Handler {
             id: message.id,
             datetime: new Date(messageData.datetime),
             slug: messageData.slug,
+            result: messageData.result,
           };
 
           executions.push(execution);
@@ -98,10 +104,20 @@ export class Handler {
             return b.datetime.getTime() - a.datetime.getTime();
           });
 
+        const lastExecution = currentAgentExecutions?.[0];
+
         let lastExecutionTime: Date | null = null;
 
-        if (currentAgentExecutions.length) {
-          lastExecutionTime = new Date(currentAgentExecutions[0].datetime);
+        if (lastExecution) {
+          lastExecutionTime = new Date(lastExecution.datetime);
+
+          const youngerThanMaxDurationTimestamp =
+            lastExecutionTime.getTime() >
+            new Date().getTime() - AGENT_MAX_DURATION_IN_SECONDS * 1000;
+
+          if (!lastExecution.result && youngerThanMaxDurationTimestamp) {
+            continue;
+          }
         }
 
         const intervalExpression = agent.interval;
@@ -182,9 +198,15 @@ export class Handler {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
             },
-          ).then((res) => {
-            return res.json();
-          });
+          )
+            .then((res) => {
+              return res.json();
+            })
+            .catch((error) => {
+              return {
+                error: error?.message || "Unknown error",
+              };
+            });
 
           await broadcastChannelApi.pushMessage({
             data: {

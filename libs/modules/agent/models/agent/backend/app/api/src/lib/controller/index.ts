@@ -6,6 +6,7 @@ import { Service } from "../service";
 import { Context } from "hono";
 import { Handler as Dummy } from "./dummy";
 import { Handler as Cron } from "./cron";
+import { Handler as EcommerceOrderCheck } from "./ecommerce/order/check";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -46,6 +47,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.dummy,
       },
       {
+        method: "POST",
+        path: "/ecommerce/order/check",
+        handler: this.dummy,
+      },
+      {
         method: "PATCH",
         path: "/:uuid",
         handler: this.update,
@@ -64,5 +70,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async cron(c: Context, next: any): Promise<Response> {
     return new Cron(this.service).execute(c, next);
+  }
+
+  async ecommerceOrderCheck(c: Context, next: any): Promise<Response> {
+    return new EcommerceOrderCheck(this.service).execute(c, next);
   }
 }
