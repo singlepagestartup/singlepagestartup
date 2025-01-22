@@ -25,21 +25,11 @@ export async function Component<
     });
 
     return (
-      <Child
-        variant={props.variant}
-        hostUrl={props.hostUrl}
-        isServer={props.isServer}
-        data={data}
-      />
+      <Child variant={props.variant} isServer={props.isServer} data={data} />
     );
   }
 
   return (
-    <Child
-      variant={props.variant}
-      hostUrl={props.hostUrl}
-      isServer={props.isServer}
-      data={undefined}
-    />
+    <Child variant={props.variant} isServer={props.isServer} data={undefined} />
   );
 }

@@ -39,5 +39,5 @@ export default async function Page(props: {
   const pageUrl = url?.join("/") || "/";
   const slashedUrl = pageUrl.startsWith("/") ? pageUrl : `/${pageUrl}`;
 
-  return <Host isServer={true} variant="default" hostUrl={slashedUrl} />;
+  return <Host isServer={true} variant="default" url={slashedUrl} />;
 }

@@ -12,7 +12,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <AuthenticationEmailAndPasswordAuthenticationFormDefault
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="authentication-email-and-password-authentication-form-default"
       />
     </div>

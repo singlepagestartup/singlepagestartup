@@ -108,7 +108,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.slidersToSlides
           ? props.slidersToSlides({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -116,7 +116,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.slidesToButtonsArrays
           ? props.slidesToButtonsArrays({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -124,7 +124,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.slidesToSpsFileStorageModuleWidgets
           ? props.slidesToSpsFileStorageModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

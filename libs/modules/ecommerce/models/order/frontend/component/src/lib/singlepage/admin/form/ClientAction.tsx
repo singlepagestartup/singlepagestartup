@@ -92,7 +92,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.ordersToProducts
           ? props.ordersToProducts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -100,7 +100,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.ordersToBillingModuleCurrencies
           ? props.ordersToBillingModuleCurrencies({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -108,7 +108,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.ordersToBillingModulePaymentIntents
           ? props.ordersToBillingModulePaymentIntents({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

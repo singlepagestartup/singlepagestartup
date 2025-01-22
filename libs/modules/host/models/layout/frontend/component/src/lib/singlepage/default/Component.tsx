@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <LayoutsToWidgets
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -40,7 +39,6 @@ export function Component(props: IComponentPropsExtended) {
               <LayoutsToWidgets
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />
@@ -51,7 +49,6 @@ export function Component(props: IComponentPropsExtended) {
       {props.children}
       <LayoutsToWidgets
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -78,7 +75,6 @@ export function Component(props: IComponentPropsExtended) {
               <LayoutsToWidgets
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="default"
                 data={entity}
               />

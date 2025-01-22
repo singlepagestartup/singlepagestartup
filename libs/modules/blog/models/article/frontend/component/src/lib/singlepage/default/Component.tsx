@@ -20,7 +20,7 @@ export function Component(props: IComponentPropsExtended) {
         {/* <div className="w-full">
           <ArticlesToFileStorageModuleWidgets
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
+            
             variant="find"
             apiProps={{
               params: {
@@ -42,7 +42,7 @@ export function Component(props: IComponentPropsExtended) {
                   <ArticlesToFileStorageModuleWidgets
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
+                    
                     variant={entity.variant as any}
                     data={entity}
                   />

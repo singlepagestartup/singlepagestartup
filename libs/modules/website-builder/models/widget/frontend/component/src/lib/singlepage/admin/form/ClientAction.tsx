@@ -127,7 +127,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToButtonsArrays
           ? props.widgetsToButtonsArrays({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -135,7 +135,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToFeatures
           ? props.widgetsToFeatures({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -143,7 +143,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToFileStorageModuleWidgets
           ? props.widgetsToFileStorageModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -151,7 +151,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToLogotypes
           ? props.widgetsToLogotypes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -159,7 +159,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToSliders
           ? props.widgetsToSliders({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

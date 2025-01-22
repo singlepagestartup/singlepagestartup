@@ -12,7 +12,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <WidgetsToFiles
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -34,7 +33,6 @@ export function Component(props: IComponentPropsExtended) {
               <WidgetsToFiles
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 data={entity}
                 variant={entity.variant as any}
               />

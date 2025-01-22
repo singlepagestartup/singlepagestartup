@@ -18,7 +18,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex items-center space-x-4">
           <SubjectsToIdentities
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -40,7 +39,6 @@ export function Component(props: IComponentPropsExtended) {
                   <Identity
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant="find"
                     apiProps={{
                       params: {

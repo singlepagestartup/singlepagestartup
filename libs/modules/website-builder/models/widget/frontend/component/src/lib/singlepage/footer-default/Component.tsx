@@ -20,7 +20,6 @@ export function Component(props: IComponentPropsExtended) {
           <div className="w-fit flex flex-col gap-2">
             <WidgetsToLogotypes
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -43,7 +42,6 @@ export function Component(props: IComponentPropsExtended) {
                       key={index}
                       variant={entity.variant as any}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       data={entity}
                     />
                   );
@@ -57,7 +55,6 @@ export function Component(props: IComponentPropsExtended) {
             ) : null}
             <WidgetsToButtonsArrays
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -84,7 +81,6 @@ export function Component(props: IComponentPropsExtended) {
                     <WidgetsToButtonsArrays
                       key={index}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       variant={entity.variant as any}
                       data={entity}
                     />
@@ -96,7 +92,6 @@ export function Component(props: IComponentPropsExtended) {
           <div className="flex flex-col col-span-2 col-start-3 lg:grid lg:grid-cols-3 gap-6">
             <WidgetsToButtonsArrays
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -123,7 +118,6 @@ export function Component(props: IComponentPropsExtended) {
                     <WidgetsToButtonsArrays
                       key={index}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       variant={entity.variant as any}
                       data={entity}
                     />
@@ -145,7 +139,6 @@ export function Component(props: IComponentPropsExtended) {
           <div className="flex items-center flex-wrap gap-4">
             <WidgetsToButtonsArrays
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -172,7 +165,6 @@ export function Component(props: IComponentPropsExtended) {
                     <WidgetsToButtonsArrays
                       key={index}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       variant={entity.variant as any}
                       data={entity}
                     />

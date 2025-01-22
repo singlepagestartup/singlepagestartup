@@ -8,17 +8,15 @@ import { Component as WidgetsToCategories } from "@sps/ecommerce/relations/widge
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            categoriesToProducts={({ data, hostUrl, isServer }) => {
+            categoriesToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <CategoriesToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,7 +41,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToCategories={({ data, hostUrl, isServer }) => {
+            widgetsToCategories={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -52,7 +49,6 @@ export function Component() {
               return (
                 <WidgetsToCategories
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -70,11 +66,7 @@ export function Component() {
                 />
               );
             }}
-            categoriesToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            categoriesToFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -82,7 +74,6 @@ export function Component() {
               return (
                 <CategoriesToFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

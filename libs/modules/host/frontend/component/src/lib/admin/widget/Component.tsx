@@ -8,17 +8,15 @@ import { Component as WidgetsToExternalWidgets } from "@sps/host/relations/widge
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            pagesToWidgets={({ data, hostUrl, isServer }) => {
+            pagesToWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <PagesToWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,7 +41,7 @@ export function Component() {
                 />
               );
             }}
-            layoutsToWidgets={({ data, hostUrl, isServer }) => {
+            layoutsToWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -52,7 +49,6 @@ export function Component() {
               return (
                 <LayoutsToWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -70,7 +66,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToExternalModules={({ data, hostUrl, isServer }) => {
+            widgetsToExternalModules={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -78,7 +74,6 @@ export function Component() {
               return (
                 <WidgetsToExternalWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

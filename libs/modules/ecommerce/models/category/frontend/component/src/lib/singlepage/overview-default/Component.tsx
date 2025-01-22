@@ -14,7 +14,6 @@ export function Component(props: IComponentPropsExtended) {
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 mb-8">
         <CategoriesToFileStorageModuleWidgets
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="find"
           apiProps={{
             params: {
@@ -36,7 +35,6 @@ export function Component(props: IComponentPropsExtended) {
                 <CategoriesToFileStorageModuleWidgets
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant={entity.variant as any}
                   data={entity}
                 />

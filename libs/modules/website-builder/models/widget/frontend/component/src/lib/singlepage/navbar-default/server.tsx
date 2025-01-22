@@ -22,26 +22,15 @@ export default async function Server(props: IComponentProps) {
   }
 
   const logotype = (
-    <Logotype
-      isServer={props.isServer}
-      hostUrl={props.hostUrl}
-      variant={props.variant}
-      data={data}
-    />
+    <Logotype isServer={props.isServer} variant={props.variant} data={data} />
   );
   const content = (
-    <Content
-      isServer={props.isServer}
-      hostUrl={props.hostUrl}
-      variant={props.variant}
-      data={data}
-    />
+    <Content isServer={props.isServer} variant={props.variant} data={data} />
   );
 
   return (
     <Component
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant={props.variant}
       data={data}
       content={content}

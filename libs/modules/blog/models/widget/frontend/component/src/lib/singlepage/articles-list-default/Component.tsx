@@ -12,18 +12,13 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex", props.data.className)}
     >
       <div className="w-full max-w-7xl grid grid-cols-2 gap-12 mx-auto">
-        <Article
-          isServer={props.isServer}
-          hostUrl={props.hostUrl}
-          variant="find"
-        >
+        <Article isServer={props.isServer} variant="find">
           {({ data }) => {
             return data?.map((article, index) => {
               return (
                 <Article
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant={article.variant as any}
                   data={article}
                 />

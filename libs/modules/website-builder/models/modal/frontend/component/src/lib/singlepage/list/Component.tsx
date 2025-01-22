@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
             closeModal();
           }}
           isServer={false}
-          hostUrl={props.hostUrl}
+          
           data={modal}
           variant="default"
         />

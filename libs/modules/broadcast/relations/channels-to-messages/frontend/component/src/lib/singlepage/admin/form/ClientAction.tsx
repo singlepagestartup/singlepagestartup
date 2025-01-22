@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <ChannelSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="channelId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <MessageSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="messageId"
           form={form}

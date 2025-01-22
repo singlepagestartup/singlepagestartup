@@ -8,7 +8,7 @@ export function Component(
   },
 ) {
   return (
-    <Product isServer={props.isServer} hostUrl={props.hostUrl} variant="find">
+    <Product isServer={props.isServer} variant="find">
       {({ data }) => {
         return (
           <div className="grid lg:grid-cols-2 gap-4">
@@ -17,13 +17,11 @@ export function Component(
                 <Product
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant="card-default"
                   data={entity}
                 >
                   <ProductAction
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     product={entity}
                     billingModuleCurrencyId={props.billingModuleCurrencyId}
                   />

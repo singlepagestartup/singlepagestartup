@@ -32,7 +32,6 @@ export function Component(props: IComponentPropsExtended) {
     <RbacSubject
       variant="authentication-is-authorized-wrapper-default"
       isServer={false}
-      hostUrl={props.hostUrl}
       apiProps={{
         params: {
           action: {
@@ -141,108 +140,43 @@ export function Component(props: IComponentPropsExtended) {
             </div>
             <div className="bg-white rounded-b-lg">
               {widget === "host" ? (
-                <Host
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Host {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "sps-broradcast" ? (
-                <Broadcast
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Broadcast {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "website-builder" ? (
-                <WebsiteBuilder
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <WebsiteBuilder {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "file-storage" ? (
-                <FileStorage
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <FileStorage {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "startup" ? (
-                <Startup
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Startup {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "blog" ? (
-                <Blog
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Blog {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "rbac" ? (
-                <Rbac
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Rbac {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "notification" ? (
-                <Notification
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Notification {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "billing" ? (
-                <Billing
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Billing {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "crm" ? (
-                <Crm
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Crm {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "ecommerce" ? (
-                <Ecommerce
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Ecommerce {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "telegram" ? (
-                <Telegram
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Telegram {...props} isServer={false} variant="default" />
               ) : null}
               {widget === "agent" ? (
-                <Agent
-                  {...props}
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant="default"
-                />
+                <Agent {...props} isServer={false} variant="default" />
               ) : null}
             </div>
           </div>

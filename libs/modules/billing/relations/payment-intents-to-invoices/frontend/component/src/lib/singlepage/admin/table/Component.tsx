@@ -10,13 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       module="billing"
       name="payment-intents-to-invoices"
       variant={props.variant}
-      adminForm={
-        <AdminForm
-          isServer={props.isServer}
-          hostUrl={props.hostUrl}
-          variant="admin-form"
-        />
-      }
+      adminForm={<AdminForm isServer={props.isServer} variant="admin-form" />}
     >
       <div className="flex flex-col gap-6 pt-8 p-4">
         {props.data.map((entity, index) => {
@@ -26,7 +20,6 @@ export function Component(props: IComponentPropsExtended) {
               module="billing"
               name="payment-intents-to-invoices"
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="admin-table-row"
               data={entity}
             />

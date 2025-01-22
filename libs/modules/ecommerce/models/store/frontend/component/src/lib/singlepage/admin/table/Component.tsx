@@ -12,7 +12,6 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={
         props.adminForm
           ? props.adminForm({
-              hostUrl: props.hostUrl,
               isServer: props.isServer,
             })
           : null
@@ -26,7 +25,6 @@ export function Component(props: IComponentPropsExtended) {
               module="ecommerce"
               name="store"
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="admin-table-row"
               adminForm={props.adminForm}
               data={entity}

@@ -72,7 +72,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.categoriesToArticles
           ? props.categoriesToArticles({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

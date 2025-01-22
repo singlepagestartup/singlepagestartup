@@ -16,12 +16,7 @@ export function Component(props: IComponentPropsExtended) {
       type="relation"
       adminForm={() => {
         return (
-          <AdminForm
-            isServer={false}
-            hostUrl={props.hostUrl}
-            variant="admin-form"
-            data={props.data}
-          />
+          <AdminForm isServer={false} variant="admin-form" data={props.data} />
         );
       }}
       onDelete={() => {

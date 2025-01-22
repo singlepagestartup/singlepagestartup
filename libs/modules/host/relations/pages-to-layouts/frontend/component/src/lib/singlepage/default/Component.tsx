@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Layout
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -35,7 +34,6 @@ export function Component(props: IComponentPropsExtended) {
               <Layout
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               >

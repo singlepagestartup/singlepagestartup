@@ -21,7 +21,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <SubjectsToEcommerceModuleOrders
         isServer={false}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -45,7 +44,6 @@ export function Component(props: IComponentPropsExtended) {
           return (
             <EcommerceOrder
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -76,7 +74,6 @@ export function Component(props: IComponentPropsExtended) {
                 return (
                   <EcommerceOrdersToProducts
                     isServer={false}
-                    hostUrl={props.hostUrl}
                     variant="find"
                     apiProps={{
                       params: {
@@ -120,7 +117,6 @@ export function Component(props: IComponentPropsExtended) {
                           <EcommerceOrdersToProducts
                             key={index}
                             isServer={false}
-                            hostUrl={props.hostUrl}
                             variant="find"
                             apiProps={{
                               params: {
@@ -179,7 +175,6 @@ export function Component(props: IComponentPropsExtended) {
                                     >
                                       <OrdersUpdate
                                         isServer={false}
-                                        hostUrl={props.hostUrl}
                                         variant={props.variant}
                                         product={props.product}
                                         order={order}
@@ -187,7 +182,6 @@ export function Component(props: IComponentPropsExtended) {
                                       />
                                       <OrdersDelete
                                         isServer={false}
-                                        hostUrl={props.hostUrl}
                                         variant={props.variant}
                                         product={props.product}
                                         order={order}
@@ -195,7 +189,6 @@ export function Component(props: IComponentPropsExtended) {
                                       />
                                       <OrdersCheckout
                                         isServer={false}
-                                        hostUrl={props.hostUrl}
                                         variant={props.variant}
                                         product={props.product}
                                         order={order}

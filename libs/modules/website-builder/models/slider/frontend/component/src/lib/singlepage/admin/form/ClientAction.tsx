@@ -88,7 +88,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToSliders
           ? props.widgetsToSliders({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -96,7 +96,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.slidersToSlides
           ? props.slidersToSlides({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

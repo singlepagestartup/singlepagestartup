@@ -6,17 +6,15 @@ import { Component as PagesToWidgets } from "@sps/telegram/relations/pages-to-wi
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            pagesToWidgets={({ data, hostUrl, isServer }) => {
+            pagesToWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -24,7 +22,6 @@ export function Component() {
               return (
                 <PagesToWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

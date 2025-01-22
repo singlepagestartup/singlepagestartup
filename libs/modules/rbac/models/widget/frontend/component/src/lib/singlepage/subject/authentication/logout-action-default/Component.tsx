@@ -45,7 +45,6 @@ export function Component(props: IComponentPropsExtended) {
             <CardContent className="hidden">
               <Subject
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="authentication-logout-action-default"
               />
             </CardContent>

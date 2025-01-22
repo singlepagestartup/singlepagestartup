@@ -8,13 +8,13 @@ export function Component(
   props: ISpsComponentBase & {
     data: IModel;
     variant: string;
+    url: string;
   },
 ) {
   if (props.variant.startsWith("subject-identity")) {
     return (
       <Identity
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant={props.variant as any}
         data={props.data}
       />
@@ -22,13 +22,11 @@ export function Component(
   }
 
   if (props.variant.startsWith("subject-list-default")) {
-    return <ListDefault isServer={props.isServer} hostUrl={props.hostUrl} />;
+    return <ListDefault isServer={props.isServer} />;
   }
 
   if (props.variant.startsWith("subject-overview-default")) {
-    return (
-      <OverviewDefault isServer={props.isServer} hostUrl={props.hostUrl} />
-    );
+    return <OverviewDefault url={props.url} isServer={props.isServer} />;
   }
 
   return <div className="p-5 bg-red-500"></div>;

@@ -74,7 +74,6 @@ export function Component(
       <div className="flex flex-col w-full gap-2">
         <BillingCurrency
           isServer={false}
-          hostUrl={props.hostUrl}
           variant="toggle-group-default"
           form={form}
           formFieldName="billingModuleCurrencyId"

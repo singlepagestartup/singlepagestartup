@@ -88,7 +88,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToLogotypes
           ? props.widgetsToLogotypes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -96,7 +96,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.logotypesToFileStorageModuleWidgets
           ? props.logotypesToFileStorageModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

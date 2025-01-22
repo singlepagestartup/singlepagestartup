@@ -8,7 +8,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <BlogWidget
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -30,27 +29,20 @@ export function Component(props: IComponentPropsExtended) {
             <BlogWidget
               key={index}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant={entity.variant as any}
               data={entity}
             >
               {entity.variant.includes("articles-list") ? (
-                <ArticlesList
-                  isServer={props.isServer}
-                  hostUrl={props.hostUrl}
-                />
+                <ArticlesList isServer={props.isServer} />
               ) : null}
               {entity.variant.includes("article-overview") ? (
                 entity.variant.includes("with-private-content") ? (
                   <ArticleOverviewWithPrivateContent
+                    url={props.url}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                   />
                 ) : (
-                  <ArticleOverview
-                    isServer={props.isServer}
-                    hostUrl={props.hostUrl}
-                  />
+                  <ArticleOverview url={props.url} isServer={props.isServer} />
                 )
               ) : null}
             </BlogWidget>

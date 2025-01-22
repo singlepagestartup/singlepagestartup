@@ -68,7 +68,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.channelsToMessages
           ? props.channelsToMessages({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

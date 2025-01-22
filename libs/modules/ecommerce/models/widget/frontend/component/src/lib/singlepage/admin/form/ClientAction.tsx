@@ -114,7 +114,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToCategories
           ? props.widgetsToCategories({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -122,7 +122,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToProducts
           ? props.widgetsToProducts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

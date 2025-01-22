@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToIdentities
           ? props.subjectsToIdentities({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -63,7 +63,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToRoles
           ? props.subjectsToRoles({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -71,7 +71,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToSessions
           ? props.subjectsToSessions({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -79,7 +79,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToEcommerceModuleOrders
           ? props.subjectsToEcommerceModuleOrders({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -87,7 +87,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToNotificationModuleTopics
           ? props.subjectsToNotificationModuleTopics({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -95,7 +95,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToBillingModulePaymentIntents
           ? props.subjectsToBillingModulePaymentIntents({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -7,7 +7,6 @@ export function App(props: IComponentProps) {
     <div data-module="startup" className={cn("w-full flex", props.className)}>
       <Widget
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="default"
         data={{
           id: props.widgetId,

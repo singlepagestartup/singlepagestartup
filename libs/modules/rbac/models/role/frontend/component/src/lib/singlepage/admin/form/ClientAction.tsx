@@ -85,7 +85,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.rolesToActions
           ? props.rolesToActions({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -93,7 +93,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToRoles
           ? props.subjectsToRoles({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -101,7 +101,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.rolesToEcommerceModuleProducts
           ? props.rolesToEcommerceModuleProducts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -8,7 +8,6 @@ export default function Client(props: IComponentProps) {
   return (
     <Component
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant={props.variant}
       className={props.className}
     />

@@ -14,7 +14,6 @@ export function Component(
   return (
     <RbacSubject
       isServer={false}
-      hostUrl={props.hostUrl}
       variant="authentication-is-authorized-wrapper-default"
       apiProps={{
         params: {
@@ -28,7 +27,6 @@ export function Component(
     >
       <ArticlesToWebsiteBuilderModuleWidgets
         isServer={false}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -50,7 +48,6 @@ export function Component(
               <ArticlesToWebsiteBuilderModuleWidgets
                 key={index}
                 isServer={false}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />

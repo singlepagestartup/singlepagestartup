@@ -30,7 +30,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="mx-auto my-5 max-w-md flex flex-col sm:flex-row justify-center md:mt-8 gap-4">
           <WidgetsToButtonsArrays
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -52,7 +51,6 @@ export function Component(props: IComponentPropsExtended) {
                   <WidgetsToButtonsArrays
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant={entity.variant as any}
                     data={entity}
                   />
@@ -65,7 +63,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="w-full">
           <WidgetsToFileStorageWidgets
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -87,7 +84,6 @@ export function Component(props: IComponentPropsExtended) {
                   <WidgetsToFileStorageWidgets
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant={entity.variant as any}
                     data={entity}
                   />

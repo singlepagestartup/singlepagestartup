@@ -103,7 +103,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.categoriesToArticles
           ? props.categoriesToArticles({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -111,7 +111,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.articlesToFileStorageModuleWidgets
           ? props.articlesToFileStorageModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -119,7 +119,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.articlesToWebsiteBuilderModuleWidgets
           ? props.articlesToWebsiteBuilderModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

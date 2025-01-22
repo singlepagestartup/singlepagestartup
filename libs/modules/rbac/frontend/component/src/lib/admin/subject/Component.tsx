@@ -10,17 +10,15 @@ import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/re
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            subjectsToIdentities={({ data, hostUrl, isServer }) => {
+            subjectsToIdentities={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -28,7 +26,6 @@ export function Component() {
               return (
                 <SubjectsToIdentities
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -46,7 +43,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToEcommerceModuleOrders={({ data, hostUrl, isServer }) => {
+            subjectsToEcommerceModuleOrders={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -54,7 +51,6 @@ export function Component() {
               return (
                 <SubjectsToEcommerceModuleOrders
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -72,11 +68,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToBillingModulePaymentIntents={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            subjectsToBillingModulePaymentIntents={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -84,7 +76,6 @@ export function Component() {
               return (
                 <SubjectsToBillingModulePaymentIntents
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -102,11 +93,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToNotificationModuleTopics={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            subjectsToNotificationModuleTopics={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -114,7 +101,6 @@ export function Component() {
               return (
                 <SubjectsToNotificationModuleTopics
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -132,7 +118,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToRoles={({ data, hostUrl, isServer }) => {
+            subjectsToRoles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -140,7 +126,6 @@ export function Component() {
               return (
                 <SubjectsToRoles
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

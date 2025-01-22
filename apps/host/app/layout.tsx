@@ -30,14 +30,13 @@ export default async function RootLayout({
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >
         <Suspense fallback={<Loading />}>
-          <SpsRbacProvider isServer={false} hostUrl="/">
+          <SpsRbacProvider isServer={false}>
             <SpsRbacSubject
               isServer={false}
-              hostUrl="/"
               variant="authentication-init-default"
             />
-            <SpsBroadcast hostUrl="/" isServer={true} />
-            <Admin hostUrl="/" isServer={true} />
+            <SpsBroadcast isServer={true} />
+            <Admin isServer={true} />
             <div className="relative">
               {children}
               <Toaster />

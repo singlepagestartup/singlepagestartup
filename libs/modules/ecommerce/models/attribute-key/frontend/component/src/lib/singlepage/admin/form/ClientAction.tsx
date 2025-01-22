@@ -122,7 +122,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.attributesToAttributeKeys
           ? props.attributesToAttributeKeys({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -86,11 +86,7 @@ export function Component(props: IComponentPropsExtended) {
                     Or continue with
                   </span>
                 </div>
-                <Subject
-                  isServer={false}
-                  hostUrl={props.hostUrl}
-                  variant={provider}
-                />
+                <Subject isServer={false} variant={provider} />
               </div>
             </CardContent>
           </Card>

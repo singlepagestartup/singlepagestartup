@@ -95,7 +95,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.storesToAttributes
           ? props.storesToAttributes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -103,7 +103,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.storesToProducts
           ? props.storesToProducts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

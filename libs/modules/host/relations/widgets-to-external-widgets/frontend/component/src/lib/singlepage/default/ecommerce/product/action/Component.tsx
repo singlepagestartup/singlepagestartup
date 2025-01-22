@@ -11,7 +11,6 @@ export function Component(
   return (
     <ClientComponent
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       product={props.product}
       className={props.className}
       skeleton={props.skeleton}

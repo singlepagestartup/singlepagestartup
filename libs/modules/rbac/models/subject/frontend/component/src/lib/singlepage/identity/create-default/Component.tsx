@@ -15,7 +15,6 @@ export function Component(props: IComponentPropsExtended) {
         <p>Create new identity</p>
         <EthereumVirtualMachineCreate
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant={props.variant}
           data={props.data}
         />

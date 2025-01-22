@@ -6,17 +6,15 @@ import { Component as AttributesToAttributeKeys } from "@sps/ecommerce/relations
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            attributesToAttributeKeys={({ data, hostUrl, isServer }) => {
+            attributesToAttributeKeys={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -24,7 +22,6 @@ export function Component() {
               return (
                 <AttributesToAttributeKeys
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

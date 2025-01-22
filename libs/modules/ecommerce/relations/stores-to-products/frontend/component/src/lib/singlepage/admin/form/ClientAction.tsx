@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Store
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="storeId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Product
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="productId"
           form={form}
@@ -99,7 +97,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.storesToProductsToAttributes
           ? props.storesToProductsToAttributes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

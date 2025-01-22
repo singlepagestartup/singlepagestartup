@@ -8,7 +8,7 @@ import { api } from "@sps/host/models/page/sdk/client";
 export default function Client(props: IComponentProps) {
   const { data, isFetching, isLoading } = api.urlSegmentValue({
     segment: props.segment,
-    url: props.hostUrl,
+    url: props.url,
   });
 
   if (isFetching || isLoading) {

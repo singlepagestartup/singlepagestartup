@@ -88,7 +88,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToFiles
           ? props.widgetsToFiles({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

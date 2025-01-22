@@ -97,7 +97,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.categoriesToProducts
           ? props.categoriesToProducts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -105,7 +105,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.categoriesToFileStorageModuleWidgets
           ? props.categoriesToFileStorageModuleWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -113,7 +113,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToCategories
           ? props.widgetsToCategories({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -46,7 +46,6 @@ export function Component(props: IComponentPropsExtended) {
               <div className="grid gap-6">
                 <Subject
                   isServer={false}
-                  hostUrl={props.hostUrl}
                   variant="authentication-email-and-password-registration-form-default"
                 />
               </div>

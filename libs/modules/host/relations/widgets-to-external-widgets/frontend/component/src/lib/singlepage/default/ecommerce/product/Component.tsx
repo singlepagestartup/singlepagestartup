@@ -7,12 +7,12 @@ import { Component as OverviewDefault } from "./overview-default/Component";
 export function Component(
   props: ISpsComponentBase & {
     data: IModel;
+    url: string;
   },
 ) {
   return (
     <BillingCurrency
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -33,19 +33,13 @@ export function Component(
           return (
             <ListDefault
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               billingModuleCurrencyId={data?.[0]?.id}
             />
           );
         }
 
         if (props.data.variant === "product-overview-default") {
-          return (
-            <OverviewDefault
-              isServer={props.isServer}
-              hostUrl={props.hostUrl}
-            />
-          );
+          return <OverviewDefault url={props.url} isServer={props.isServer} />;
         }
 
         return <></>;

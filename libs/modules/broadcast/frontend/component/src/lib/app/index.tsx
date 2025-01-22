@@ -9,7 +9,6 @@ export function App(props: IComponentProps) {
     <div data-module="broadcast" className={cn("w-full flex", props.className)}>
       <Channel
         isServer={false}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -31,7 +30,6 @@ export function App(props: IComponentProps) {
               <Channel
                 key={index}
                 isServer={false}
-                hostUrl={props.hostUrl}
                 variant="subscription"
                 data={entity}
               />

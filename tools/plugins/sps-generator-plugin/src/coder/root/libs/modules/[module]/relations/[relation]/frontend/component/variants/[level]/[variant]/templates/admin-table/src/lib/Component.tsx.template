@@ -19,7 +19,7 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={
         <AdminForm
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
+          
           variant="admin-form"
         />
       }
@@ -30,7 +30,7 @@ export function Component(props: IComponentPropsExtended) {
             <AdminTableRow
               key={index}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
+              
               variant="admin-table-row"
               data={entity}
             />

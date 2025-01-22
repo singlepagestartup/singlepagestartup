@@ -77,7 +77,6 @@ export function Component(
           <div className="w-full flex flex-col gap-3">
             <Identity
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="form-field-default"
               form={form}
               field="password"

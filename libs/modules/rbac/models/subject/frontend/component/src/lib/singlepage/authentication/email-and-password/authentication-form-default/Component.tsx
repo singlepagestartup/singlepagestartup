@@ -5,7 +5,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ClientAction
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant={props.variant}
       className={props.className}
     />

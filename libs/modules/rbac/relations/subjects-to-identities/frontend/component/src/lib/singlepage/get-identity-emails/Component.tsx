@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Identity
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {

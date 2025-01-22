@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <LayoutSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="layoutId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <WidgetSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="widgetId"
           form={form}

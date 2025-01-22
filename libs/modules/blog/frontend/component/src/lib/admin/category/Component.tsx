@@ -6,17 +6,15 @@ import { Component as CategoriesToArticles } from "@sps/blog/relations/categorie
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            categoriesToArticles={({ data, hostUrl, isServer }) => {
+            categoriesToArticles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -24,7 +22,6 @@ export function Component() {
               return (
                 <CategoriesToArticles
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

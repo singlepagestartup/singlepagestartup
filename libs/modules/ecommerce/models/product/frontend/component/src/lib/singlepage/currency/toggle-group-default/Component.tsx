@@ -22,7 +22,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <ProductsToAttributes
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -53,7 +52,6 @@ export function Component(props: IComponentPropsExtended) {
                     >
                       <Attribute
                         isServer={props.isServer}
-                        hostUrl={props.hostUrl}
                         variant="find"
                         apiProps={{
                           params: {
@@ -78,7 +76,6 @@ export function Component(props: IComponentPropsExtended) {
                               <AttributesToBillingModuleCurrencies
                                 key={index}
                                 isServer={props.isServer}
-                                hostUrl={props.hostUrl}
                                 variant="find"
                                 apiProps={{
                                   params: {
@@ -106,7 +103,6 @@ export function Component(props: IComponentPropsExtended) {
                                   return (
                                     <BillingCurrency
                                       isServer={props.isServer}
-                                      hostUrl={props.hostUrl}
                                       variant="find"
                                       apiProps={{
                                         params: {

@@ -9,17 +9,15 @@ import { Component as AttributesToBillingModuleCurrencies } from "@sps/ecommerce
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            attributesToAttributeKeys={({ data, hostUrl, isServer }) => {
+            attributesToAttributeKeys={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -27,7 +25,6 @@ export function Component() {
               return (
                 <AttributesToAttributeKeys
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -45,7 +42,7 @@ export function Component() {
                 />
               );
             }}
-            productsToAttributes={({ data, hostUrl, isServer }) => {
+            productsToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -53,7 +50,6 @@ export function Component() {
               return (
                 <ProductsToAttributes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -71,7 +67,7 @@ export function Component() {
                 />
               );
             }}
-            storesToAttributes={({ data, hostUrl, isServer }) => {
+            storesToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -79,7 +75,6 @@ export function Component() {
               return (
                 <StoresToAttributes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -97,11 +92,7 @@ export function Component() {
                 />
               );
             }}
-            attributesToBillingModuleCurrencies={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            attributesToBillingModuleCurrencies={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -109,7 +100,6 @@ export function Component() {
               return (
                 <AttributesToBillingModuleCurrencies
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

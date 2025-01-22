@@ -100,7 +100,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToIdentities
           ? props.subjectsToIdentities({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -108,7 +108,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.attributesToAttributeKeys
           ? props.attributesToAttributeKeys({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -116,7 +116,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.productsToAttributes
           ? props.productsToAttributes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -124,7 +124,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.storesToAttributes
           ? props.storesToAttributes({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -132,7 +132,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.attributesToBillingModuleCurrencies
           ? props.attributesToBillingModuleCurrencies({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

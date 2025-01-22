@@ -25,7 +25,6 @@ function MiniImage(props: { entity: IComponentPropsExtended["data"][0] }) {
   return (
     <div className="w-full flex items-center gap-3">
       <WidgetsToFiles
-        hostUrl="/"
         isServer={false}
         variant="find"
         apiProps={{
@@ -50,7 +49,6 @@ function MiniImage(props: { entity: IComponentPropsExtended["data"][0] }) {
                   <WidgetsToFiles
                     key={index}
                     isServer={false}
-                    hostUrl="/"
                     variant={entity.variant as any}
                     data={entity}
                   />

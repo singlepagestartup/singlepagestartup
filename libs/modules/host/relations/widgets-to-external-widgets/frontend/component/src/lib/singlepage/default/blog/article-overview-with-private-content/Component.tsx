@@ -3,13 +3,17 @@ import { Component as Page } from "@sps/host/models/page/frontend/component";
 import { Component as ClientComponent } from "./ClientComponent";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(
+  props: ISpsComponentBase & {
+    url: string;
+  },
+) {
   return (
     <Page
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="url-segment-value"
       segment="blog.articles.id"
+      url={props.url}
     >
       {({ data }) => {
         if (!data) {
@@ -19,7 +23,6 @@ export function Component(props: ISpsComponentBase) {
         return (
           <Article
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -41,21 +44,15 @@ export function Component(props: ISpsComponentBase) {
                   <Article
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant="overview-with-private-content-default"
                     data={entity}
                   >
                     <Article
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       data={entity}
                       variant="default"
                     />
-                    <ClientComponent
-                      isServer={props.isServer}
-                      hostUrl={props.hostUrl}
-                      data={entity}
-                    />
+                    <ClientComponent isServer={props.isServer} data={entity} />
                   </Article>
                 );
               });

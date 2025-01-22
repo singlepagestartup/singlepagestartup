@@ -6,11 +6,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <RbacSubject
-      isServer={false}
-      hostUrl={props.hostUrl}
-      variant="authentication-me-default"
-    >
+    <RbacSubject isServer={false} variant="authentication-me-default">
       {({ data: subject }) => {
         if (!subject) {
           return <></>;
@@ -19,7 +15,6 @@ export function Component(props: ISpsComponentBase) {
         return (
           <SubjectsToEcommerceModuleOrders
             isServer={false}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -41,7 +36,6 @@ export function Component(props: ISpsComponentBase) {
                   <SubjectsToEcommerceModuleOrders
                     key={index}
                     isServer={false}
-                    hostUrl={props.hostUrl}
                     variant="default"
                     data={entity}
                   />

@@ -10,7 +10,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <SubjectsToIdentities
       isServer={false}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -36,7 +35,6 @@ export function Component(props: IComponentPropsExtended) {
             <Identity
               key={index}
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -76,14 +74,12 @@ export function Component(props: IComponentPropsExtended) {
                           isServer={props.isServer}
                           data={props.data}
                           identity={identity}
-                          hostUrl={props.hostUrl}
                           variant={props.variant}
                         />
                         <ChangePasswordCompmponent
                           isServer={props.isServer}
                           data={props.data}
                           identity={identity}
-                          hostUrl={props.hostUrl}
                           variant={props.variant}
                         />
                         <Button variant="destructive" className="w-fit">

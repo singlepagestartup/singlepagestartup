@@ -23,7 +23,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="w-full lg:w-1/2">
           <Subject
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="authentication-email-and-password-authentication-form-default"
           />
         </div>

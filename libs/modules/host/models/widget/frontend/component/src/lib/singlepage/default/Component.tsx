@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as WidgetsToExternalModules } from "@sps/host/relations/widgets-to-external-widgets/frontend/component";
+import { Component as WidgetsToExternalWidgets } from "@sps/host/relations/widgets-to-external-widgets/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -11,9 +11,8 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.data.className || "")}
     >
-      <WidgetsToExternalModules
+      <WidgetsToExternalWidgets
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -32,17 +31,17 @@ export function Component(props: IComponentPropsExtended) {
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <WidgetsToExternalModules
+              <WidgetsToExternalWidgets
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
+                url={props.url}
               />
             );
           });
         }}
-      </WidgetsToExternalModules>
+      </WidgetsToExternalWidgets>
     </div>
   );
 }

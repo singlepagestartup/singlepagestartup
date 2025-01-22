@@ -7,6 +7,7 @@ export const variant = "url-segment-value" as const;
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
   segment: string;
+  url: string;
   children?: (props: { data: string | undefined }) => any;
 }
 

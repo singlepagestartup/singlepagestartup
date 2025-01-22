@@ -18,7 +18,6 @@ export function Component(props: IComponentPropsExtended) {
       <div className="flex flex-col gap-3">
         <ProductsToAttributes
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="find"
           apiProps={{
             params: {
@@ -42,7 +41,6 @@ export function Component(props: IComponentPropsExtended) {
             return (
               <Attribute
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="find"
                 apiProps={{
                   params: {
@@ -67,7 +65,6 @@ export function Component(props: IComponentPropsExtended) {
                       <AttributesToBillingModuleCurrencies
                         key={index}
                         isServer={props.isServer}
-                        hostUrl={props.hostUrl}
                         variant="find"
                         apiProps={{
                           params: {
@@ -95,7 +92,6 @@ export function Component(props: IComponentPropsExtended) {
                                 <AttributeKeysToAttributes
                                   key={index}
                                   isServer={props.isServer}
-                                  hostUrl={props.hostUrl}
                                   variant="find"
                                   apiProps={{
                                     params: {
@@ -118,7 +114,6 @@ export function Component(props: IComponentPropsExtended) {
                                           <AttributeKey
                                             key={index}
                                             isServer={props.isServer}
-                                            hostUrl={props.hostUrl}
                                             variant="find"
                                             apiProps={{
                                               params: {
@@ -146,7 +141,6 @@ export function Component(props: IComponentPropsExtended) {
                                                   return (
                                                     <Attribute
                                                       isServer={props.isServer}
-                                                      hostUrl={props.hostUrl}
                                                       variant="default"
                                                       data={attribute}
                                                       key={index}

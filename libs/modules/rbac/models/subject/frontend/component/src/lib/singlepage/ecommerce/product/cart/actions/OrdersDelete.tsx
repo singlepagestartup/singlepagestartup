@@ -41,7 +41,6 @@ export function Component(
   return (
     <EcommerceOrdersToProducts
       isServer={false}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {

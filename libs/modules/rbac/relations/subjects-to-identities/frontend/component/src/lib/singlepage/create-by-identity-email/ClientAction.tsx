@@ -17,7 +17,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Identity
         isServer={false}
-        hostUrl={props.hostUrl}
         variant="create-by-email"
         successCallback={(data) => {
           createEntity.mutate({

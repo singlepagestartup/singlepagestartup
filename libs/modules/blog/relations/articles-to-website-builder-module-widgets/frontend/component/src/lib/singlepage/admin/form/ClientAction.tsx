@@ -83,7 +83,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Article
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="articleId"
           form={form}
@@ -91,7 +90,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <WebsiteBuilderModuleWidget
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="websiteBuilderModuleWidgetId"
           form={form}

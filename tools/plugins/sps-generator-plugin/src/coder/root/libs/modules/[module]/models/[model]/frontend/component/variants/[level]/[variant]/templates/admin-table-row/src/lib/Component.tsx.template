@@ -17,7 +17,7 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={
         <AdminForm
           isServer={false}
-          hostUrl={props.hostUrl}
+          
           variant="admin-form"
           data={props.data}
         />

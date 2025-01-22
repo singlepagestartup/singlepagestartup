@@ -6,7 +6,6 @@ export function Component(props: IComponentPropsExtended) {
     <div className="flex flex-col lg:flex-row w-full px-2 lg:px-0 items-center justify-between gap-2">
       <WidgetsToButtonsArrays
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -28,7 +27,6 @@ export function Component(props: IComponentPropsExtended) {
               <WidgetsToButtonsArrays
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />
@@ -46,7 +44,7 @@ export function Component(props: IComponentPropsExtended) {
                 variant="default"
                 data={entity}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
+                
               />
             );
           })}
@@ -61,7 +59,7 @@ export function Component(props: IComponentPropsExtended) {
                 variant="default"
                 data={entity}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
+                
               />
             );
           })}

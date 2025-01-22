@@ -10,17 +10,15 @@ import { Component as WidgetsToSliders } from "@sps/website-builder/relations/wi
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            widgetsToButtonsArrays={({ data, hostUrl, isServer }) => {
+            widgetsToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -28,7 +26,6 @@ export function Component() {
               return (
                 <WidgetsToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -46,7 +43,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToFeatures={({ data, hostUrl, isServer }) => {
+            widgetsToFeatures={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -54,7 +51,6 @@ export function Component() {
               return (
                 <WidgetsToFeatures
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -72,11 +68,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            widgetsToFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -84,7 +76,6 @@ export function Component() {
               return (
                 <WidgetsToFileStorageWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -102,7 +93,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToLogotypes={({ data, hostUrl, isServer }) => {
+            widgetsToLogotypes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -110,7 +101,6 @@ export function Component() {
               return (
                 <WidgetsToLogotypes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -128,7 +118,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToSliders={({ data, hostUrl, isServer }) => {
+            widgetsToSliders={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -136,7 +126,6 @@ export function Component() {
               return (
                 <WidgetsToSliders
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

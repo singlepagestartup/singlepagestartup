@@ -29,7 +29,6 @@ export async function Component<
   return (
     <Child
       variant={props.variant}
-      hostUrl={props.hostUrl}
       isServer={props.isServer}
       formFieldName={props.formFieldName}
       renderField={props.renderField}

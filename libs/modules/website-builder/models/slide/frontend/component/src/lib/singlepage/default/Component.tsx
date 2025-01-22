@@ -15,7 +15,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="absolute inset-0 flex">
           <SlidesToSpsFileStorageWidgets
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -37,7 +36,6 @@ export function Component(props: IComponentPropsExtended) {
                   <SlidesToSpsFileStorageWidgets
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant={entity.variant as any}
                     data={entity}
                   />
@@ -55,7 +53,6 @@ export function Component(props: IComponentPropsExtended) {
 
           <SlidesToButtonsArrays
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -77,7 +74,6 @@ export function Component(props: IComponentPropsExtended) {
                   <SlidesToButtonsArrays
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant={entity.variant as any}
                     data={entity}
                   />

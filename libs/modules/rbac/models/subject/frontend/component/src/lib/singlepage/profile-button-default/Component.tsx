@@ -30,7 +30,6 @@ export function Component(props: IComponentPropsExtended) {
           <Button variant="outline">
             <SubjectsToIdentities
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -66,7 +65,6 @@ export function Component(props: IComponentPropsExtended) {
                         },
                       }}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                     >
                       {({ data }) => {
                         return data?.map((identity) => {
@@ -84,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
           <DropdownMenuLabel>
             <SubjectsToRoles
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -106,7 +103,6 @@ export function Component(props: IComponentPropsExtended) {
                     <Role
                       key={index}
                       isServer={props.isServer}
-                      hostUrl={props.hostUrl}
                       variant="default"
                       data={{
                         id: subjectToRole.roleId,
@@ -122,7 +118,6 @@ export function Component(props: IComponentPropsExtended) {
             <Link href="/rbac/subjects/settings">Settings</Link>
           </DropdownMenuItem>
           <LogoutButton
-            hostUrl={props.hostUrl}
             isServer={props.isServer}
             variant="authentication-logout-button-default"
           />

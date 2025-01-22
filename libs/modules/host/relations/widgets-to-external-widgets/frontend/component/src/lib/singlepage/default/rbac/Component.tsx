@@ -6,7 +6,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <RbacWidget
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -28,15 +27,14 @@ export function Component(props: IComponentPropsExtended) {
             <RbacWidget
               key={index}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant={entity.variant as any}
               data={entity}
             >
               {entity.variant.startsWith("subject") ? (
                 <SubjectWidget
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant={entity.variant as any}
+                  url={props.url}
                   data={entity}
                 />
               ) : null}

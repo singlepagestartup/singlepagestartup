@@ -8,17 +8,15 @@ import { Component as RolesToEcommerceModuleProducts } from "@sps/rbac/relations
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            rolesToActions={({ data, hostUrl, isServer }) => {
+            rolesToActions={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <RolesToActions
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,7 +41,7 @@ export function Component() {
                 />
               );
             }}
-            rolesToEcommerceModuleProducts={({ data, hostUrl, isServer }) => {
+            rolesToEcommerceModuleProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -52,7 +49,6 @@ export function Component() {
               return (
                 <RolesToEcommerceModuleProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -70,7 +66,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToRoles={({ data, hostUrl, isServer }) => {
+            subjectsToRoles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -78,7 +74,6 @@ export function Component() {
               return (
                 <SubjectsToRoles
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

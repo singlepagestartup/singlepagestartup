@@ -53,7 +53,6 @@ export function Component(props: IComponentPropsExtended) {
         <CarouselContent className="w-full flex">
           <SlidersToSlides
             isServer={false}
-            hostUrl={props.hostUrl}
             variant="find"
             apiProps={{
               params: {
@@ -75,7 +74,6 @@ export function Component(props: IComponentPropsExtended) {
                   <SlidersToSlides
                     key={index}
                     isServer={false}
-                    hostUrl={props.hostUrl}
                     variant={entity.variant as any}
                     data={entity}
                   />

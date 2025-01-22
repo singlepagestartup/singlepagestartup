@@ -8,7 +8,9 @@ import {
 export const variant = "default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  url: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

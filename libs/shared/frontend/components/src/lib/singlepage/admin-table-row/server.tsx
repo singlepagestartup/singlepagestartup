@@ -32,7 +32,6 @@ export async function Component<
       <Child
         module={props.module}
         variant={props.variant}
-        hostUrl={props.hostUrl}
         isServer={props.isServer}
         data={data}
         name={props.name}

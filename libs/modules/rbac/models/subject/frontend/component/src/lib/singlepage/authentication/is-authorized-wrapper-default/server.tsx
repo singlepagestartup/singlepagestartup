@@ -15,7 +15,6 @@ export default async function Server(props: IComponentProps) {
       <div className={cn("w-full flex flex-col", props.className)}>
         <SelectMethod
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="authentication-select-method-default"
         />
       </div>

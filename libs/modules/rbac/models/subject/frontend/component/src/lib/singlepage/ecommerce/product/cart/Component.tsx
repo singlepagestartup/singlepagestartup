@@ -5,7 +5,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant={props.variant}
       data={props.data}
       product={props.product}

@@ -83,14 +83,14 @@ export function Component({
           className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
         >
           <div className="relative">
-            <Page
+            {/* <Page
               isServer={false}
               variant="default"
               hostUrl={page.url}
               data={{
                 url: page.url,
               }}
-            />
+            /> */}
           </div>
         </body>
       </html>

@@ -16,7 +16,6 @@ export function Component(props: IComponentPropsExtended) {
       <h2 className="text-4xl font-bold">{props.data.title}</h2>
       <StoresToAttributes
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -38,7 +37,6 @@ export function Component(props: IComponentPropsExtended) {
               <AttributeKeysToAttributes
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="find"
                 apiProps={{
                   params: {
@@ -61,7 +59,6 @@ export function Component(props: IComponentPropsExtended) {
                         <AttributeKey
                           key={index}
                           isServer={props.isServer}
-                          hostUrl={props.hostUrl}
                           variant="find"
                           apiProps={{
                             params: {
@@ -84,13 +81,11 @@ export function Component(props: IComponentPropsExtended) {
                                 <div key={index} className="w-fit flex gap-2">
                                   <AttributeKey
                                     isServer={props.isServer}
-                                    hostUrl={props.hostUrl}
                                     variant="default"
                                     data={attributeKey}
                                   />
                                   <StoresToAttributes
                                     isServer={props.isServer}
-                                    hostUrl={props.hostUrl}
                                     variant="default"
                                     data={productToAttribute}
                                     attributeField={attributeKey.field}

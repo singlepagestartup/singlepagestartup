@@ -6,20 +6,18 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <Store isServer={props.isServer} hostUrl={props.hostUrl} variant="find">
+    <Store isServer={props.isServer} variant="find">
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
             <Store
               key={index}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant="default"
               data={entity}
             >
               <StoresToProducts
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="find"
                 apiProps={{
                   params: {
@@ -41,7 +39,6 @@ export function Component(props: ISpsComponentBase) {
                       <Product
                         key={index}
                         isServer={props.isServer}
-                        hostUrl={props.hostUrl}
                         variant="find"
                         apiProps={{
                           params: {
@@ -63,13 +60,11 @@ export function Component(props: ISpsComponentBase) {
                               <Product
                                 key={index}
                                 isServer={props.isServer}
-                                hostUrl={props.hostUrl}
                                 variant="default"
                                 data={product}
                               >
                                 <ProductAction
                                   isServer={props.isServer}
-                                  hostUrl={props.hostUrl}
                                   product={product}
                                 />
                               </Product>

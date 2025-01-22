@@ -70,7 +70,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.paymentIntentsToInvoices
           ? props.paymentIntentsToInvoices({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

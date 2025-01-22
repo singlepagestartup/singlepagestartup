@@ -86,7 +86,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex flex-col gap-2">
           <EcommerceProduct
             isServer={false}
-            hostUrl={props.hostUrl}
             variant="currency-toggle-group-default"
             form={form}
             formFieldName="billingModuleCurrencyId"
@@ -130,7 +129,6 @@ export function Component(props: IComponentPropsExtended) {
                   for
                   <EcommerceProduct
                     isServer={false}
-                    hostUrl={props.hostUrl}
                     variant="price-default"
                     data={props.product}
                     className="text-white"

@@ -7,17 +7,15 @@ import { Component as ButtonsToSpsFileStorageModuleWidgets } from "@sps/website-
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            buttonsArraysToButtons={({ data, hostUrl, isServer }) => {
+            buttonsArraysToButtons={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -25,7 +23,6 @@ export function Component() {
               return (
                 <ButtonsArraysToButtons
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -43,11 +40,7 @@ export function Component() {
                 />
               );
             }}
-            buttonsSpsFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            buttonsSpsFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -55,7 +48,6 @@ export function Component() {
               return (
                 <ButtonsToSpsFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

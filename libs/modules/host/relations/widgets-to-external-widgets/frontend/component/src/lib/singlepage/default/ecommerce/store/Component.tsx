@@ -8,7 +8,7 @@ export function Component(
   },
 ) {
   if (props.data.variant === "store-list-default") {
-    return <ListDefault isServer={props.isServer} hostUrl={props.hostUrl} />;
+    return <ListDefault isServer={props.isServer} />;
   }
 
   return <></>;

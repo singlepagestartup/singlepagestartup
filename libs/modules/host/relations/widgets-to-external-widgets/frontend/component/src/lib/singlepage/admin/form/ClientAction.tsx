@@ -91,7 +91,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <WidgetSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="widgetId"
           form={form}
@@ -110,7 +109,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "website-builder" ? (
           <WebsiteBuilderWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"
@@ -120,7 +118,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "startup" ? (
           <StartupWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"
@@ -130,7 +127,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "rbac" ? (
           <RbacWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"
@@ -140,7 +136,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "billing" ? (
           <BillingWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"
@@ -150,7 +145,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "ecommerce" ? (
           <EcommerceWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"
@@ -160,7 +154,6 @@ export function Component(props: IComponentPropsExtended) {
         {watchData.externalModule === "blog" ? (
           <BlogWidget
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="admin-select-input"
             form={form}
             formFieldName="externalWidgetId"

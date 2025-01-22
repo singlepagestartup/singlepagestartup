@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Subject
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="subjectId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <EcommerceModuleOrder
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="ecommerceModuleOrderId"
           form={form}

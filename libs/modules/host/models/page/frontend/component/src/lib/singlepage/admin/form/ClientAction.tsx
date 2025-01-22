@@ -75,7 +75,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.pagesToLayouts
           ? props.pagesToLayouts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -83,7 +83,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.pagesToMetadata
           ? props.pagesToMetadata({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -91,7 +91,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.pagesToWidgets
           ? props.pagesToWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

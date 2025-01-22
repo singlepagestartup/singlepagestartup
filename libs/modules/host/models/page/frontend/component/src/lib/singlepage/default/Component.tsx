@@ -14,7 +14,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <PagesToLayouts
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -41,13 +40,11 @@ export function Component(props: IComponentPropsExtended) {
               <PagesToLayouts
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               >
                 <PagesToWidgets
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant="find"
                   apiProps={{
                     params: {
@@ -69,9 +66,9 @@ export function Component(props: IComponentPropsExtended) {
                         <PagesToWidgets
                           key={index}
                           isServer={props.isServer}
-                          hostUrl={props.hostUrl}
                           variant={entity.variant as any}
                           data={entity}
+                          url={props.url}
                         />
                       );
                     });

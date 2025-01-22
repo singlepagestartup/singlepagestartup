@@ -6,7 +6,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <WebsiteBuilder
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -28,15 +27,11 @@ export function Component(props: IComponentPropsExtended) {
             <WebsiteBuilder
               key={widget.id}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               data={widget}
               variant={widget.variant as any}
             >
               {widget.variant.includes("navbar") ? (
-                <RbacProfileButtonDefault
-                  isServer={props.isServer}
-                  hostUrl={props.hostUrl}
-                />
+                <RbacProfileButtonDefault isServer={props.isServer} />
               ) : null}
             </WebsiteBuilder>
           );

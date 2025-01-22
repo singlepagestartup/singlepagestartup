@@ -17,7 +17,6 @@ export function Component(props: IComponentPropsExtended) {
       >
         <LogotypesToSpsFileStorageWidgets
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="find"
           apiProps={{
             params: {
@@ -39,7 +38,6 @@ export function Component(props: IComponentPropsExtended) {
                 <LogotypesToSpsFileStorageWidgets
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant={entity.variant as any}
                   data={entity}
                 />

@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <SubjectsToIdentities
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -43,7 +42,6 @@ export function Component(props: IComponentPropsExtended) {
               <SubjectsToIdentities
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="get-identity-emails"
                 data={entity}
               >

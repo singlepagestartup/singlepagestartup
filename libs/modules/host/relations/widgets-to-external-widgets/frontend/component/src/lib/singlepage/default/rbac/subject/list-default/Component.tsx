@@ -4,11 +4,7 @@ import { Component as RbacSubjectsToIdentities } from "@sps/rbac/relations/subje
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <RbacSubject
-      isServer={props.isServer}
-      hostUrl={props.hostUrl}
-      variant="find"
-    >
+    <RbacSubject isServer={props.isServer} variant="find">
       {({ data }) => {
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -20,7 +16,6 @@ export function Component(props: ISpsComponentBase) {
                 <RbacSubjectsToIdentities
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant="find"
                   apiProps={{
                     params: {
@@ -42,7 +37,6 @@ export function Component(props: ISpsComponentBase) {
                         <RbacSubject
                           key={index}
                           isServer={props.isServer}
-                          hostUrl={props.hostUrl}
                           variant="default"
                           data={subject}
                         />

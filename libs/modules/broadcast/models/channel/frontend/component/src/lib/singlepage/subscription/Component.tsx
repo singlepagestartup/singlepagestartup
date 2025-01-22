@@ -14,7 +14,6 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("flex-col gap-2 mx-auto w-full border hidden")}
     >
       <ChannelsToMessages
-        hostUrl={props.hostUrl}
         isServer={false}
         variant="subscription"
         apiProps={{
@@ -36,7 +35,6 @@ export function Component(props: IComponentPropsExtended) {
             return (
               <ChannelsToMessages
                 key={index}
-                hostUrl={props.hostUrl}
                 isServer={false}
                 data={entity}
                 variant={entity.variant as any}

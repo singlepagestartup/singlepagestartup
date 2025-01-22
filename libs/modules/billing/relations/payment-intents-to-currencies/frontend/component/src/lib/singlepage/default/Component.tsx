@@ -14,7 +14,6 @@ export function Component(props: IComponentPropsExtended) {
       <Currency
         variant="find"
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         apiProps={{
           params: {
             filters: {
@@ -35,7 +34,6 @@ export function Component(props: IComponentPropsExtended) {
               <Currency
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />

@@ -5,7 +5,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ClientComponent
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="identity-settings-default"
       data={props.data}
       className={props.className}

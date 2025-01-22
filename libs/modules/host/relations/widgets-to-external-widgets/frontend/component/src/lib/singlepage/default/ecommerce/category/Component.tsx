@@ -5,12 +5,11 @@ import { Component as OverviewDefault } from "./overview-default/Component";
 export function Component(
   props: ISpsComponentBase & {
     data: IModel;
+    url: string;
   },
 ) {
   if (props.data.variant === "category-overview-default") {
-    return (
-      <OverviewDefault isServer={props.isServer} hostUrl={props.hostUrl} />
-    );
+    return <OverviewDefault url={props.url} isServer={props.isServer} />;
   }
 
   return <></>;

@@ -5,13 +5,17 @@ import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/cate
 import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(
+  props: ISpsComponentBase & {
+    url: string;
+  },
+) {
   return (
     <Page
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="url-segment-value"
       segment="ecommerce.categories.id"
+      url={props.url}
     >
       {({ data }) => {
         if (!data) {
@@ -21,7 +25,6 @@ export function Component(props: ISpsComponentBase) {
         return (
           <Category
             isServer={props.isServer}
-            hostUrl={props.hostUrl}
             variant="overview-default"
             data={{
               id: data,
@@ -30,7 +33,6 @@ export function Component(props: ISpsComponentBase) {
             <div className="grid lg:grid-cols-2 gap-4">
               <CategoriesToProducts
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="find"
                 apiProps={{
                   params: {
@@ -52,7 +54,6 @@ export function Component(props: ISpsComponentBase) {
                       <Product
                         key={index}
                         isServer={props.isServer}
-                        hostUrl={props.hostUrl}
                         variant="find"
                         apiProps={{
                           params: {
@@ -78,13 +79,11 @@ export function Component(props: ISpsComponentBase) {
                               <Product
                                 key={index}
                                 isServer={props.isServer}
-                                hostUrl={props.hostUrl}
                                 variant="default"
                                 data={entity}
                               >
                                 <ProductAction
                                   isServer={props.isServer}
-                                  hostUrl={props.hostUrl}
                                   product={entity}
                                 />
                               </Product>

@@ -98,7 +98,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.buttonsArraysToButtons
           ? props.buttonsArraysToButtons({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -106,7 +106,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.widgetsToButtonsArrays
           ? props.widgetsToButtonsArrays({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -114,7 +114,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.slidesToButtonsArrays
           ? props.slidesToButtonsArrays({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -122,7 +122,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.featuresToButtonsArrays
           ? props.featuresToButtonsArrays({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

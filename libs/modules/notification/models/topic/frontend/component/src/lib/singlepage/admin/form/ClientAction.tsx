@@ -88,7 +88,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.topicsToNotifications
           ? props.topicsToNotifications({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -65,7 +65,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.layoutsToWidgets
           ? props.layoutsToWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}
@@ -73,7 +73,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.pagesToLayouts
           ? props.pagesToLayouts({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

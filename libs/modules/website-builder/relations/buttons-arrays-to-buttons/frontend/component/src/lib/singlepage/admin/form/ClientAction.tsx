@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <ButtonsArraySelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="buttonsArrayId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <ButtonSelectInput
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="buttonId"
           form={form}

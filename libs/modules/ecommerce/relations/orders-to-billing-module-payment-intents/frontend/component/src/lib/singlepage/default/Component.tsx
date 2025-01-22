@@ -14,7 +14,6 @@ export function Component(props: IComponentPropsExtended) {
       <PaymentIntent
         variant="find"
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         apiProps={{
           params: {
             filters: {
@@ -35,7 +34,6 @@ export function Component(props: IComponentPropsExtended) {
               <PaymentIntent
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />

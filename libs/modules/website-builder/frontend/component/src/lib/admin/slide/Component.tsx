@@ -8,17 +8,15 @@ import { Component as SlidesToSpsFileStorageModuleWidgets } from "@sps/website-b
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            slidersToSlides={({ data, hostUrl, isServer }) => {
+            slidersToSlides={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <SlidersToSlides
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,7 +41,7 @@ export function Component() {
                 />
               );
             }}
-            slidesToButtonsArrays={({ data, hostUrl, isServer }) => {
+            slidesToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -52,7 +49,6 @@ export function Component() {
               return (
                 <SlidesToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -70,11 +66,7 @@ export function Component() {
                 />
               );
             }}
-            slidesToSpsFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            slidesToSpsFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -82,7 +74,6 @@ export function Component() {
               return (
                 <SlidesToSpsFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

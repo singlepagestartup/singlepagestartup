@@ -6,7 +6,6 @@ export function Component(props: IComponentPropsExtended) {
     <div className="w-fit">
       <WidgetsToLogotypes
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -28,7 +27,6 @@ export function Component(props: IComponentPropsExtended) {
               <WidgetsToLogotypes
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant={entity.variant as any}
                 data={entity}
               />

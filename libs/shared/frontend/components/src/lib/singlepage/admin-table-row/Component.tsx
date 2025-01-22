@@ -64,7 +64,7 @@ export function Component<M extends { id: string }, V>(
                   {props.data
                     ? props.adminForm({
                         data: props.data,
-                        hostUrl: props.hostUrl,
+
                         isServer: props.isServer,
                       })
                     : null}

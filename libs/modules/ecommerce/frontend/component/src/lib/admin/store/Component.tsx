@@ -7,17 +7,15 @@ import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-t
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            storesToAttributes={({ data, hostUrl, isServer }) => {
+            storesToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -25,7 +23,6 @@ export function Component() {
               return (
                 <StoresToAttributes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -43,7 +40,7 @@ export function Component() {
                 />
               );
             }}
-            storesToProducts={({ data, hostUrl, isServer }) => {
+            storesToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -51,7 +48,6 @@ export function Component() {
               return (
                 <StoresToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

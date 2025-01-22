@@ -19,10 +19,9 @@ export function Component(props: IComponentPropsExtended) {
         return (
           <AdminForm
             isServer={false}
-            hostUrl={props.hostUrl}
             variant="admin-form"
             data={props.data}
-            storesToProductsToAttributes={({ data, hostUrl, isServer }) => {
+            storesToProductsToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -30,7 +29,6 @@ export function Component(props: IComponentPropsExtended) {
               return (
                 <StoresToProductsToAttributes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

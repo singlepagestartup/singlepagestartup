@@ -8,17 +8,15 @@ import { Component as OrdersToBillingModuleCurrencies } from "@sps/ecommerce/rel
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            ordersToProducts={({ data, hostUrl, isServer }) => {
+            ordersToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <OrdersToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,11 +41,7 @@ export function Component() {
                 />
               );
             }}
-            ordersToBillingModulePaymentIntents={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            ordersToBillingModulePaymentIntents={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -56,7 +49,6 @@ export function Component() {
               return (
                 <OrdersToBillingModulePaymentIntents
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -74,7 +66,7 @@ export function Component() {
                 />
               );
             }}
-            ordersToBillingModuleCurrencies={({ data, hostUrl, isServer }) => {
+            ordersToBillingModuleCurrencies={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -82,7 +74,6 @@ export function Component() {
               return (
                 <OrdersToBillingModuleCurrencies
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <SpsFileStorageWidget
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="default"
         data={{ id: props.data.fileStorageModuleWidgetId }}
       />

@@ -11,17 +11,15 @@ import { Component as WidgetsToProducts } from "@sps/ecommerce/relations/widgets
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            productsToAttributes={({ data, hostUrl, isServer }) => {
+            productsToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -29,7 +27,6 @@ export function Component() {
               return (
                 <ProductsToAttributes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -47,7 +44,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToProducts={({ data, hostUrl, isServer }) => {
+            widgetsToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -55,7 +52,6 @@ export function Component() {
               return (
                 <WidgetsToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -73,11 +69,7 @@ export function Component() {
                 />
               );
             }}
-            productsToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            productsToFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -85,7 +77,6 @@ export function Component() {
               return (
                 <ProductsToFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -103,7 +94,7 @@ export function Component() {
                 />
               );
             }}
-            categoriesToProducts={({ data, hostUrl, isServer }) => {
+            categoriesToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -111,7 +102,6 @@ export function Component() {
               return (
                 <CategoriesToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -129,7 +119,7 @@ export function Component() {
                 />
               );
             }}
-            storesToProducts={({ data, hostUrl, isServer }) => {
+            storesToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -137,7 +127,6 @@ export function Component() {
               return (
                 <StoresToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -155,7 +144,7 @@ export function Component() {
                 />
               );
             }}
-            ordersToProducts={({ data, hostUrl, isServer }) => {
+            ordersToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -163,7 +152,6 @@ export function Component() {
               return (
                 <OrdersToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

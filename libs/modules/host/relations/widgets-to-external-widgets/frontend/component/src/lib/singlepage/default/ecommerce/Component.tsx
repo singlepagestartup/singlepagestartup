@@ -8,7 +8,6 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <EcommerceWidget
       isServer={props.isServer}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -30,30 +29,25 @@ export function Component(props: IComponentPropsExtended) {
             <EcommerceWidget
               key={index}
               isServer={props.isServer}
-              hostUrl={props.hostUrl}
               variant={entity.variant as any}
               data={entity}
             >
               {entity.variant.startsWith("product") ? (
                 <Product
+                  url={props.url}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   data={entity}
                 />
               ) : null}
               {entity.variant.startsWith("category") ? (
                 <Category
+                  url={props.url}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   data={entity}
                 />
               ) : null}
               {entity.variant.startsWith("store") ? (
-                <Stores
-                  isServer={props.isServer}
-                  hostUrl={props.hostUrl}
-                  data={entity}
-                />
+                <Stores isServer={props.isServer} data={entity} />
               ) : null}
             </EcommerceWidget>
           );

@@ -15,7 +15,6 @@ export function Component(props: IComponentPropsExtended) {
       <p className="font-bold text-4xl">Id: {props.data.id}</p>
       <SubjectsToIdentities
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -43,7 +42,6 @@ export function Component(props: IComponentPropsExtended) {
                   <Identity
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant="default"
                     data={{
                       id: subjectToIdentity.identityId,

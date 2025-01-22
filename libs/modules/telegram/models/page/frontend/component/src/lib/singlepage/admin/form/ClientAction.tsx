@@ -75,7 +75,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.pagesToWidgets
           ? props.pagesToWidgets({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

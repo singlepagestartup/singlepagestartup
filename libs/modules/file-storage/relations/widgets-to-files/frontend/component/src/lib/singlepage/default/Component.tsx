@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <File
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -35,7 +34,6 @@ export function Component(props: IComponentPropsExtended) {
               <File
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 data={entity}
                 variant={entity.variant as any}
               />

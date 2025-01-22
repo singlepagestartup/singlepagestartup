@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.subjectsToSessions
           ? props.subjectsToSessions({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

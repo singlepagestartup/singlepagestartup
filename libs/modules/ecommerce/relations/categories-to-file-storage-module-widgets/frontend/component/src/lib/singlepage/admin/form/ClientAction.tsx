@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Category
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="categoryId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <FileStorageModuleWidget
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="fileStorageModuleWidgetId"
           form={form}

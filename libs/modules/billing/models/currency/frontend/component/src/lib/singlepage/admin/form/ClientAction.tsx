@@ -94,7 +94,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.paymentIntentsToCurrencies
           ? props.paymentIntentsToCurrencies({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

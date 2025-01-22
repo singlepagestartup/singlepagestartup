@@ -8,11 +8,7 @@ import Link from "next/link";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <Subject
-      isServer={false}
-      hostUrl={props.hostUrl}
-      variant="authentication-me-default"
-    >
+    <Subject isServer={false} variant="authentication-me-default">
       {({ data: subject }) => {
         if (!subject) {
           return;
@@ -22,7 +18,6 @@ export function Component(props: ISpsComponentBase) {
           <div className="ml-auto flex flex-col w-fit p-2">
             <SubjectsToIdentities
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="find"
               apiProps={{
                 params: {
@@ -54,7 +49,6 @@ export function Component(props: ISpsComponentBase) {
                     variant="profile-button-default"
                     data={subject}
                     isServer={false}
-                    hostUrl={props.hostUrl}
                   />
                 );
               }}

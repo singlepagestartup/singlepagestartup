@@ -6,17 +6,15 @@ import { Component as SubjectsToSessions } from "@sps/rbac/relations/subjects-to
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            subjectsToSessions={({ data, hostUrl, isServer }) => {
+            subjectsToSessions={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -24,7 +22,6 @@ export function Component() {
               return (
                 <SubjectsToSessions
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

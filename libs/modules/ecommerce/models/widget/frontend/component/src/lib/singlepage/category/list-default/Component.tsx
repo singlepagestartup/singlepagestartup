@@ -29,18 +29,13 @@ export function Component(props: IComponentPropsExtended) {
           ) : null}
         </CardHeader>
         <CardContent>
-          <Category
-            hostUrl={props.hostUrl}
-            isServer={props.isServer}
-            variant="find"
-          >
+          <Category isServer={props.isServer} variant="find">
             {({ data }) => {
               return data?.map((category, index) => {
                 return (
                   <Category
                     key={index}
                     isServer={props.isServer}
-                    hostUrl={props.hostUrl}
                     variant={category.variant as any}
                     data={category}
                   />

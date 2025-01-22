@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Slide
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="slideId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <ButtonsArray
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="buttonsArrayId"
           form={form}

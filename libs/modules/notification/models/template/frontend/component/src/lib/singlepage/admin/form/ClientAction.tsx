@@ -67,7 +67,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.notificationsToTemplates
           ? props.notificationsToTemplates({
               data: props.data,
-              hostUrl: props.hostUrl,
+
               isServer: props.isServer,
             })
           : null}

@@ -7,17 +7,15 @@ import { Component as WidgetsToProducts } from "@sps/ecommerce/relations/widgets
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            widgetsToCategories={({ data, hostUrl, isServer }) => {
+            widgetsToCategories={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -25,7 +23,6 @@ export function Component() {
               return (
                 <WidgetsToCategories
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -43,7 +40,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToProducts={({ data, hostUrl, isServer }) => {
+            widgetsToProducts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -51,7 +48,6 @@ export function Component() {
               return (
                 <WidgetsToProducts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

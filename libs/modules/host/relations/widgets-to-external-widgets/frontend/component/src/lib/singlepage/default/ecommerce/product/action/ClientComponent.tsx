@@ -12,11 +12,7 @@ export function Component(
   },
 ) {
   return (
-    <RbacSubject
-      isServer={false}
-      hostUrl={props.hostUrl}
-      variant="authentication-me-default"
-    >
+    <RbacSubject isServer={false} variant="authentication-me-default">
       {({ data: subject }) => {
         if (!subject) {
           return <></>;
@@ -26,7 +22,6 @@ export function Component(
           <div className="w-full flex flex-col gap-4">
             <RbacSubject
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="ecommerce-product-checkout"
               data={subject}
               product={props.product}
@@ -35,7 +30,6 @@ export function Component(
             <SelectSeparator className="my-2" />
             <RbacSubject
               isServer={false}
-              hostUrl={props.hostUrl}
               variant="ecommerce-product-cart"
               data={subject}
               product={props.product}

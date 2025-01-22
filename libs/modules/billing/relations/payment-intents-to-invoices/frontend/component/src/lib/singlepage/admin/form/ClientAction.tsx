@@ -82,7 +82,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <PaymentIntent
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="paymentIntentId"
           form={form}
@@ -90,7 +89,6 @@ export function Component(props: IComponentPropsExtended) {
 
         <Invoice
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="admin-select-input"
           formFieldName="invoiceId"
           form={form}

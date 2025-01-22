@@ -46,7 +46,6 @@ export function Component(
   return (
     <EcommerceOrdersToProducts
       isServer={false}
-      hostUrl={props.hostUrl}
       variant="find"
       apiProps={{
         params: {
@@ -74,7 +73,6 @@ export function Component(
               <div className="flex w-full gap-1">
                 <EcommerceOrdersToProducts
                   isServer={false}
-                  hostUrl={props.hostUrl}
                   variant="entity-field-default"
                   field="quantity"
                   data={entity}

@@ -16,19 +16,14 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.data.className || "")}
     >
       {props.data.externalModule === "rbac" ? (
-        <Rbac
-          {...props}
-          isServer={props.isServer}
-          hostUrl={props.hostUrl}
-          data={props.data}
-        />
+        <Rbac {...props} isServer={props.isServer} data={props.data} />
       ) : null}
 
       {/* {props.data.externalModule === "startup" ? (
         <Startup
           {...props}
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
+          
           data={props.data}
         />
       ) : null} */}
@@ -37,25 +32,19 @@ export function Component(props: IComponentPropsExtended) {
         <WebsiteBuilder
           {...props}
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           data={props.data}
         />
       ) : null}
 
       {props.data.externalModule === "ecommerce" ? (
-        <Ecommerce
-          {...props}
-          isServer={props.isServer}
-          data={props.data}
-          hostUrl={props.hostUrl}
-        />
+        <Ecommerce {...props} isServer={props.isServer} data={props.data} />
       ) : null}
 
       {/* {props.data.externalModule === "blog" ? (
         <Blog
           {...props}
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
+          
           data={props.data}
         />
       ) : null} */}

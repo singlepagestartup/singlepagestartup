@@ -18,7 +18,6 @@ export function Component(props: IComponentPropsExtended) {
       <div className="w-full">
         <ProductsToFileStorageModuleWidgets
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="find"
           apiProps={{
             params: {
@@ -40,7 +39,6 @@ export function Component(props: IComponentPropsExtended) {
                 <ProductsToFileStorageModuleWidgets
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant={entity.variant as any}
                   data={entity}
                 />
@@ -55,7 +53,6 @@ export function Component(props: IComponentPropsExtended) {
       <div className="flex flex-col gap-3">
         <ProductsToAttributes
           isServer={props.isServer}
-          hostUrl={props.hostUrl}
           variant="find"
           apiProps={{
             params: {
@@ -77,7 +74,6 @@ export function Component(props: IComponentPropsExtended) {
                 <AttributeKeysToAttributes
                   key={index}
                   isServer={props.isServer}
-                  hostUrl={props.hostUrl}
                   variant="find"
                   apiProps={{
                     params: {
@@ -100,7 +96,6 @@ export function Component(props: IComponentPropsExtended) {
                           <AttributeKey
                             key={index}
                             isServer={props.isServer}
-                            hostUrl={props.hostUrl}
                             variant="find"
                             apiProps={{
                               params: {
@@ -123,13 +118,11 @@ export function Component(props: IComponentPropsExtended) {
                                   <div key={index} className="w-fit flex gap-2">
                                     <AttributeKey
                                       isServer={props.isServer}
-                                      hostUrl={props.hostUrl}
                                       variant="default"
                                       data={attributeKey}
                                     />
                                     <ProductsToAttributes
                                       isServer={props.isServer}
-                                      hostUrl={props.hostUrl}
                                       variant="default"
                                       data={productToAttribute}
                                       attributeField={attributeKey.field}

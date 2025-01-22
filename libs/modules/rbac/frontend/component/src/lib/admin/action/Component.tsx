@@ -6,17 +6,15 @@ import { Component as RolesToActions } from "@sps/rbac/relations/roles-to-action
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            rolesToActions={({ data, hostUrl, isServer }) => {
+            rolesToActions={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -24,7 +22,6 @@ export function Component() {
               return (
                 <RolesToActions
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

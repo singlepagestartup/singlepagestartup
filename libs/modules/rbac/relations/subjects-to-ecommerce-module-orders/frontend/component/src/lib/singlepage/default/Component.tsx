@@ -13,7 +13,6 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Order
         isServer={props.isServer}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
@@ -40,7 +39,6 @@ export function Component(props: IComponentPropsExtended) {
               <Order
                 key={index}
                 isServer={props.isServer}
-                hostUrl={props.hostUrl}
                 variant="default"
                 data={entity}
               />
