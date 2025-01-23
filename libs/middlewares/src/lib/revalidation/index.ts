@@ -95,24 +95,31 @@ export class Middleware {
             }
 
             const channelsToExpiredMessage =
-              await broadcastChannelsToMessagesApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "messageId",
-                        method: "eq",
-                        value: message.id,
-                      },
-                    ],
+              await broadcastChannelsToMessagesApi
+                .find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "messageId",
+                          method: "eq",
+                          value: message.id,
+                        },
+                      ],
+                    },
                   },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
                   },
-                },
-              });
+                })
+                .catch((error) => {
+                  console.error(
+                    "~ broadcastChannelsToMessagesApi.find ~ error:",
+                    error,
+                  );
+                });
 
             channelsToExpiredMessage?.forEach(async (channelToMessage) => {
               if (!RBAC_SECRET_KEY) {
@@ -121,15 +128,22 @@ export class Middleware {
                 );
               }
 
-              await broadcastChannelApi.messageDelete({
-                id: channelToMessage.channelId,
-                messageId: message.id,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              await broadcastChannelApi
+                .messageDelete({
+                  id: channelToMessage.channelId,
+                  messageId: message.id,
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
                   },
-                },
-              });
+                })
+                .catch((error) => {
+                  console.error(
+                    "~ broadcastChannelApi.messageDelete ~ error:",
+                    error,
+                  );
+                });
             });
           });
         }
