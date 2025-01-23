@@ -115,10 +115,7 @@ export class Middleware {
                   },
                 })
                 .catch((error) => {
-                  console.error(
-                    "~ broadcastChannelsToMessagesApi.find ~ error:",
-                    error,
-                  );
+                  //
                 });
 
             channelsToExpiredMessage?.forEach(async (channelToMessage) => {
@@ -139,10 +136,7 @@ export class Middleware {
                   },
                 })
                 .catch((error) => {
-                  console.error(
-                    "~ broadcastChannelApi.messageDelete ~ error:",
-                    error,
-                  );
+                  //
                 });
             });
           });
