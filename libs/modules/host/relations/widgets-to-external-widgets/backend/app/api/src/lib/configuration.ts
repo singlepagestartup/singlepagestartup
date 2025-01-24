@@ -37,9 +37,9 @@ export class Configuration extends ParentConfiguration {
                       seed.type === "model" &&
                       seed.module === "host",
                   )
-                  ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.widgetId,
-                  );
+                  ?.seeds?.filter((seed) => {
+                    return seed.dump.id === data.entity.dump.widgetId;
+                  });
 
                 return relationEntites?.[0].new.id;
               },
@@ -54,10 +54,9 @@ export class Configuration extends ParentConfiguration {
                       seed.type === "model" &&
                       seed.module === data.entity.dump.externalModule,
                   )
-                  ?.seeds?.filter(
-                    (seed) =>
-                      seed.dump.id === data.entity.dump.externalWidgetId,
-                  );
+                  ?.seeds?.filter((seed) => {
+                    return seed.dump.id === data.entity.dump.externalWidgetId;
+                  });
 
                 return relationEntites?.[0].new.id;
               },
