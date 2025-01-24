@@ -23,6 +23,7 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -38,7 +39,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/blog:models:article:repository-generate"
@@ -55,7 +56,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/blog:relations:categories-to-articles:repository-generate"
@@ -71,8 +72,9 @@
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/blog:models:article:repository-migrate"
@@ -88,8 +90,9 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/blog:relations:categories-to-articles:repository-migrate"
@@ -120,6 +123,7 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -148,6 +152,7 @@
     },
     "models:article:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -176,6 +181,7 @@
     },
     "models:category:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -204,6 +210,7 @@
     },
     "relations:categories-to-articles:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -232,6 +239,7 @@
     },
     "relations:articles-to-file-storage-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -260,6 +268,7 @@
     },
     "relations:articles-to-website-builder-module-widgets:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",

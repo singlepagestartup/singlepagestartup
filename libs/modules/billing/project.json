@@ -23,6 +23,7 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -38,7 +39,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:models:currency:repository-generate"
@@ -58,7 +59,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-generate"
@@ -72,8 +73,9 @@
 
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:models:currency:repository-migrate"
@@ -92,8 +94,9 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-migrate"
@@ -121,6 +124,7 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -149,6 +153,7 @@
     },
     "models:currency:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -177,6 +182,7 @@
     },
     "relations:payment-intents-to-invoices:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -205,6 +211,7 @@
     },
     "relations:payment-intents-to-currencies:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -233,6 +240,7 @@
     },
     "models:payment-intent:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -261,6 +269,7 @@
     },
     "models:invoice:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",

@@ -23,6 +23,7 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -38,7 +39,7 @@
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/notification:models:template:repository-generate"
@@ -58,7 +59,7 @@
     "relations:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/notification:relations:notifications-to-templates:repository-generate"
@@ -71,8 +72,9 @@
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/notification:models:template:repository-migrate"
@@ -91,8 +93,9 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/notification:relations:notifications-to-templates:repository-migrate"
@@ -120,6 +123,7 @@
     },
     "models:template:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -148,6 +152,7 @@
     },
     "models:notification:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -176,6 +181,7 @@
     },
     "models:topic:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -204,6 +210,7 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -232,6 +239,7 @@
     },
     "relations:topics-to-notifications:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
@@ -260,6 +268,7 @@
     },
     "relations:notifications-to-templates:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
