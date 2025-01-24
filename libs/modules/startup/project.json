@@ -21,6 +21,20 @@
         ]
       }
     },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/startup:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/startup:relations:repository-migrate"
+          }
+        ]
+      }
+    },
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -39,27 +53,13 @@
         "commands": []
       }
     },
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/startup:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/startup:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/startup:models:widget:repository-migrate"
+            "command": "nx run @sps/startup:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }

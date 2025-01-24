@@ -7,20 +7,6 @@
   "targets": {
     "eslint:lint": {},
     "tsc:build": {},
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/file-storage:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/file-storage:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -31,6 +17,20 @@
           },
           {
             "command": "nx run @sps/file-storage:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/file-storage:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/file-storage:relations:repository-migrate"
           }
         ]
       }
@@ -66,10 +66,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/file-storage:models:file:repository-migrate"
+            "command": "nx run @sps/file-storage:models:file:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/file-storage:models:widget:repository-migrate"
+            "command": "nx run @sps/file-storage:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -80,7 +80,7 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/file-storage:relations:widgets-to-files:repository-migrate"
+            "command": "nx run @sps/file-storage:relations:widgets-to-files:repository-migrate --flakyCheck=false"
           }
         ]
       }

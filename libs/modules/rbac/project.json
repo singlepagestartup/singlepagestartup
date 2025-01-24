@@ -8,20 +8,6 @@
     "jest:test": {},
     "eslint:lint": {},
     "tsc:build": {},
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/rbac:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -32,6 +18,20 @@
           },
           {
             "command": "nx run @sps/rbac:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/rbac:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:repository-migrate"
           }
         ]
       }
@@ -101,22 +101,22 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/rbac:models:identity:repository-migrate"
+            "command": "nx run @sps/rbac:models:identity:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:models:action:repository-migrate"
+            "command": "nx run @sps/rbac:models:action:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:models:role:repository-migrate"
+            "command": "nx run @sps/rbac:models:role:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:models:session:repository-migrate"
+            "command": "nx run @sps/rbac:models:session:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:models:subject:repository-migrate"
+            "command": "nx run @sps/rbac:models:subject:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:models:widget:repository-migrate"
+            "command": "nx run @sps/rbac:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -127,28 +127,28 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/rbac:relations:roles-to-ecommerce-module-products:repository-migrate"
+            "command": "nx run @sps/rbac:relations:roles-to-ecommerce-module-products:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-notification-module-topics:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-notification-module-topics:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-orders:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-orders:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-payment-intents:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-billing-module-payment-intents:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:roles-to-actions:repository-migrate"
+            "command": "nx run @sps/rbac:relations:roles-to-actions:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-identities:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-identities:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-roles:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-roles:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/rbac:relations:subjects-to-sessions:repository-migrate"
+            "command": "nx run @sps/rbac:relations:subjects-to-sessions:repository-migrate --flakyCheck=false"
           }
         ]
       }

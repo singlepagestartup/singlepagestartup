@@ -7,20 +7,6 @@
   "targets": {
     "eslint:lint": {},
     "tsc:build": {},
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/website-builder:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/website-builder:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -31,6 +17,20 @@
           },
           {
             "command": "nx run @sps/website-builder:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/website-builder:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/website-builder:relations:repository-migrate"
           }
         ]
       }
@@ -120,28 +120,28 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/website-builder:models:button:repository-migrate"
+            "command": "nx run @sps/website-builder:models:button:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:buttons-array:repository-migrate"
+            "command": "nx run @sps/website-builder:models:buttons-array:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:feature:repository-migrate"
+            "command": "nx run @sps/website-builder:models:feature:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:widget:repository-migrate"
+            "command": "nx run @sps/website-builder:models:widget:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:logotype:repository-migrate"
+            "command": "nx run @sps/website-builder:models:logotype:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:modal:repository-migrate"
+            "command": "nx run @sps/website-builder:models:modal:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:slide:repository-migrate"
+            "command": "nx run @sps/website-builder:models:slide:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:models:slider:repository-migrate"
+            "command": "nx run @sps/website-builder:models:slider:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -152,43 +152,43 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/website-builder:relations:buttons-arrays-to-buttons:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:buttons-arrays-to-buttons:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-features:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-features:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:features-to-buttons-arrays:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:features-to-buttons-arrays:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-buttons-arrays:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-buttons-arrays:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-logotypes:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-logotypes:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-sliders:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-sliders:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:sliders-to-slides:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:sliders-to-slides:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:slides-to-buttons-arrays:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:slides-to-buttons-arrays:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
           }
         ]
       }

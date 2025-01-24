@@ -62,10 +62,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/crm:models:customer:repository-migrate"
+            "command": "nx run @sps/crm:models:customer:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/crm:models:widget:repository-migrate"
+            "command": "nx run @sps/crm:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }

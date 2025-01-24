@@ -7,20 +7,6 @@
   "targets": {
     "eslint:lint": {},
     "tsc:build": {},
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/billing:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/billing:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -31,6 +17,20 @@
           },
           {
             "command": "nx run @sps/billing:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/billing:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/billing:relations:repository-migrate"
           }
         ]
       }
@@ -76,16 +76,16 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/billing:models:currency:repository-migrate"
+            "command": "nx run @sps/billing:models:currency:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/billing:models:payment-intent:repository-migrate"
+            "command": "nx run @sps/billing:models:payment-intent:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/billing:models:invoice:repository-migrate"
+            "command": "nx run @sps/billing:models:invoice:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/billing:models:widget:repository-migrate"
+            "command": "nx run @sps/billing:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -96,10 +96,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-migrate"
+            "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/billing:relations:payment-intents-to-currencies:repository-migrate"
+            "command": "nx run @sps/billing:relations:payment-intents-to-currencies:repository-migrate --flakyCheck=false"
           }
         ]
       }

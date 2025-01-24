@@ -21,6 +21,20 @@
         ]
       }
     },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/broadcast:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/broadcast:relations:repository-migrate"
+          }
+        ]
+      }
+    },
     "models:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -46,30 +60,16 @@
         ]
       }
     },
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/broadcast:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/broadcast:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/broadcast:models:channel:repository-migrate"
+            "command": "nx run @sps/broadcast:models:channel:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/broadcast:models:message:repository-migrate"
+            "command": "nx run @sps/broadcast:models:message:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -80,7 +80,7 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-migrate"
+            "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-migrate --flakyCheck=false"
           }
         ]
       }

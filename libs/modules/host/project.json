@@ -85,16 +85,16 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/host:models:layout:repository-migrate"
+            "command": "nx run @sps/host:models:layout:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:models:metadata:repository-migrate"
+            "command": "nx run @sps/host:models:metadata:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:models:page:repository-migrate"
+            "command": "nx run @sps/host:models:page:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:models:widget:repository-migrate"
+            "command": "nx run @sps/host:models:widget:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -105,19 +105,19 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/host:relations:layouts-to-widgets:repository-migrate"
+            "command": "nx run @sps/host:relations:layouts-to-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:relations:pages-to-layouts:repository-migrate"
+            "command": "nx run @sps/host:relations:pages-to-layouts:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:relations:pages-to-metadata:repository-migrate"
+            "command": "nx run @sps/host:relations:pages-to-metadata:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:relations:pages-to-widgets:repository-migrate"
+            "command": "nx run @sps/host:relations:pages-to-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/host:relations:widgets-to-external-widgets:repository-migrate"
+            "command": "nx run @sps/host:relations:widgets-to-external-widgets:repository-migrate --flakyCheck=false"
           }
         ]
       }

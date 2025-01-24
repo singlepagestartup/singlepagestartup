@@ -69,10 +69,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/telegram:models:widget:repository-migrate"
+            "command": "nx run @sps/telegram:models:widget:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/telegram:models:page:repository-migrate"
+            "command": "nx run @sps/telegram:models:page:repository-migrate --flakyCheck=false"
           }
         ]
       }
@@ -83,10 +83,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/telegram:relations:pages-to-widgets:repository-migrate"
+            "command": "nx run @sps/telegram:relations:pages-to-widgets:repository-migrate --flakyCheck=false"
           },
           {
-            "command": "nx run @sps/telegram:relations:widgets-to-external-widgets:repository-migrate"
+            "command": "nx run @sps/telegram:relations:widgets-to-external-widgets:repository-migrate --flakyCheck=false"
           }
         ]
       }
