@@ -6,6 +6,7 @@
   "type": "price",
   "field": "number",
   "title": "Price",
+  "adminTitle": "JxwPesTGyP",
   "slug": "price",
   "prefix": "",
   "suffix": ""

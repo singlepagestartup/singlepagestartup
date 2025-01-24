@@ -78,7 +78,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error);
+      console.error(error, this.configuration);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -177,6 +177,8 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecord;
     } catch (error: any) {
+      console.log("🚀 ~ insert ~ data:", data);
+
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
       }

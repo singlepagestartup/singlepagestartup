@@ -6,6 +6,7 @@
   "type": "interval",
   "field": "string",
   "title": "Interval",
+  "adminTitle": "ICVZ0BFcqY",
   "slug": "interval",
   "prefix": "",
   "suffix": ""
