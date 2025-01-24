@@ -1,1 +1,0 @@
--- ALTER TABLE "sps_ee_ae_ky" ADD CONSTRAINT "sps_ee_ae_ky_slug_unique" UNIQUE("slug");

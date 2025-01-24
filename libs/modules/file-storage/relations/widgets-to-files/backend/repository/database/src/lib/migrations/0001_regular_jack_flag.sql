@@ -1,2 +1,0 @@
-ALTER TABLE "sps_f_s_ws_to_fs_ocw" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "sps_f_s_ws_to_fs_ocw" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

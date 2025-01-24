@@ -1,2 +1,0 @@
-ALTER TABLE "sps_blog_as_to_we_br_me_wt_v5b" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "sps_blog_as_to_we_br_me_wt_v5b" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

@@ -163,24 +163,34 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
     if (channelsToMessages?.length) {
       for (const channelToMessage of channelsToMessages) {
-        await channelsToMessagesApi.delete({
-          id: channelToMessage.id,
-          options: {
-            headers,
-          },
-        });
+        await channelsToMessagesApi
+          .delete({
+            id: channelToMessage.id,
+            options: {
+              headers,
+            },
+          })
+          .catch((error) => {
+            //
+          });
       }
     }
 
-    const message = await messageApi.delete({
-      id: messageId,
-      options: {
-        headers,
-      },
-    });
+    const message = await messageApi
+      .delete({
+        id: messageId,
+        options: {
+          headers,
+        },
+      })
+      .catch((error) => {
+        //
+      });
 
     return c.json({
-      data: message,
+      data: {
+        ok: true,
+      },
     });
   }
 

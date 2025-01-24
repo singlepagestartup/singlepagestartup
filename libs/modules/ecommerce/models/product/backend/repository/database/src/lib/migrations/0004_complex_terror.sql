@@ -1,1 +1,0 @@
-ALTER TABLE "sps_ee_product" ALTER COLUMN "description" DROP NOT NULL;

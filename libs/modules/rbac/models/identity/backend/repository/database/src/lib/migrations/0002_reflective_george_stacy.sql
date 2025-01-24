@@ -1,1 +1,0 @@
-ALTER TABLE "sps_rc_identity" ADD COLUMN "code" text;

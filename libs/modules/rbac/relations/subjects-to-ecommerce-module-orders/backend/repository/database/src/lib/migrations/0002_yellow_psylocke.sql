@@ -1,1 +1,0 @@
-ALTER TABLE "sps_rc_ss_to_ee_me_os_oq2" DROP CONSTRAINT "sps_rc_ss_to_ee_me_os_oq2_ee_me_or_id_sps_ee_order_id_fk";

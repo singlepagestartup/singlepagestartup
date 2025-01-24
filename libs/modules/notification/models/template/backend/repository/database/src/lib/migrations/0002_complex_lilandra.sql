@@ -1,2 +1,0 @@
--- ALTER TABLE "sps_nn_template" ADD COLUMN "slug" text NOT NULL;--> statement-breakpoint
--- ALTER TABLE "sps_nn_template" ADD CONSTRAINT "sps_nn_template_slug_unique" UNIQUE("slug");

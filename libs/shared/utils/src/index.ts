@@ -11,3 +11,4 @@ export type {
   NextRequestOptions,
 } from "./lib/types";
 export { util as responsePipe } from "./lib/response-pipe";
+export { util as randomWordsGenerator } from "./lib/random-words-generator";
