@@ -75,13 +75,13 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/blog:models:article:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:models:article:repository-migrate"
           },
           {
-            "command": "nx run @sps/blog:models:category:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:models:category:repository-migrate"
           },
           {
-            "command": "nx run @sps/blog:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:models:widget:repository-migrate"
           }
         ]
       }
@@ -92,13 +92,13 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/blog:relations:categories-to-articles:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:relations:categories-to-articles:repository-migrate"
           },
           {
-            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-widgets:repository-migrate"
           },
           {
-            "command": "nx run @sps/blog:relations:articles-to-website-builder-module-widgets:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/blog:relations:articles-to-website-builder-module-widgets:repository-migrate"
           }
         ]
       }

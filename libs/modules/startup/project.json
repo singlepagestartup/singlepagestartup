@@ -59,7 +59,7 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/startup:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/startup:models:widget:repository-migrate"
           }
         ]
       }

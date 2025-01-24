@@ -75,16 +75,16 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/notification:models:template:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:models:template:repository-migrate"
           },
           {
-            "command": "nx run @sps/notification:models:notification:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:models:notification:repository-migrate"
           },
           {
-            "command": "nx run @sps/notification:models:topic:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:models:topic:repository-migrate"
           },
           {
-            "command": "nx run @sps/notification:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:models:widget:repository-migrate"
           }
         ]
       }
@@ -95,10 +95,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/notification:relations:notifications-to-templates:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:relations:notifications-to-templates:repository-migrate"
           },
           {
-            "command": "nx run @sps/notification:relations:topics-to-notifications:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/notification:relations:topics-to-notifications:repository-migrate"
           }
         ]
       }

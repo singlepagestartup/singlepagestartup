@@ -66,10 +66,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/broadcast:models:channel:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/broadcast:models:channel:repository-migrate"
           },
           {
-            "command": "nx run @sps/broadcast:models:message:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/broadcast:models:message:repository-migrate"
           }
         ]
       }
@@ -80,7 +80,7 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-migrate"
           }
         ]
       }

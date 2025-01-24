@@ -62,10 +62,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/agent:models:agent:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/agent:models:agent:repository-migrate"
           },
           {
-            "command": "nx run @sps/agent:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/agent:models:widget:repository-migrate"
           }
         ]
       }

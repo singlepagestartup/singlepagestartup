@@ -66,10 +66,10 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/file-storage:models:file:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/file-storage:models:file:repository-migrate"
           },
           {
-            "command": "nx run @sps/file-storage:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/file-storage:models:widget:repository-migrate"
           }
         ]
       }
@@ -80,7 +80,7 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/file-storage:relations:widgets-to-files:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/file-storage:relations:widgets-to-files:repository-migrate"
           }
         ]
       }

@@ -41,25 +41,25 @@
         "parallel": true,
         "commands": [
           {
-            "command": "nx run @sps/ecommerce:models:attribute-key:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:attribute-key:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:attribute:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:attribute:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:store:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:store:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:product:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:product:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:category:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:category:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:order:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:order:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:widget:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:models:widget:repository-migrate"
           }
         ]
       }
@@ -70,46 +70,46 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:attributes-to-billing-module-currencies:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:attributes-to-billing-module-currencies:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:categories-to-file-storage-module-widgets:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:categories-to-file-storage-module-widgets:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:stores-to-products:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:stores-to-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:categories-to-products:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:categories-to-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:widgets-to-categories:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:widgets-to-categories:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:widgets-to-products:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:widgets-to-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:orders-to-products:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:orders-to-products:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate --flakyCheck=false"
+            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate"
           }
         ]
       }
