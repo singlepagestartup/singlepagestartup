@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_widget" ALTER COLUMN "slug" SET NOT NULL;

@@ -15,6 +15,13 @@
       "when": 1737721383509,
       "tag": "0001_oval_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737737342097,
+      "tag": "0002_lovely_switch",
+      "breakpoints": true
     }
   ]
 }

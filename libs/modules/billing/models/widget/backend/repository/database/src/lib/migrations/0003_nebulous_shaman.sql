@@ -1,0 +1,1 @@
+ALTER TABLE "sps_bg_widget" ALTER COLUMN "title" DROP NOT NULL;

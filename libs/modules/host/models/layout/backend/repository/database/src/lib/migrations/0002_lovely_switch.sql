@@ -1,0 +1,2 @@
+-- ALTER TABLE "sps_h_layout" ADD COLUMN "slug" text NOT NULL;--> statement-breakpoint
+-- ALTER TABLE "sps_h_layout" ADD CONSTRAINT "sps_h_layout_slug_unique" UNIQUE("slug");

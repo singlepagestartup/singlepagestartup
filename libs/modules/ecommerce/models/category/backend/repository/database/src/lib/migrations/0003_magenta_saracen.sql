@@ -7,4 +7,4 @@ ALTER TABLE "sps_ee_category" ADD COLUMN "admin_title" text DEFAULT 'Default Adm
 ALTER TABLE "sps_ee_category" ALTER COLUMN "slug" SET NOT NULL;
 ALTER TABLE "sps_ee_category" ALTER COLUMN "admin_title" SET NOT NULL;
 
-ALTER TABLE "sps_ee_category" ADD CONSTRAINT "sps_ee_category_slug_unique" UNIQUE ("slug");
+-- ALTER TABLE "sps_ee_category" ADD CONSTRAINT "sps_ee_category_slug_unique" UNIQUE ("slug");
