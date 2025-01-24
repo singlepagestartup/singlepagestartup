@@ -33,6 +33,7 @@ EXPOSE 3000
 
 # Running the app
 # RUN ["chmod", "-R", "777", "/usr/src/app"]
+RUN ["chmod", "+x", "/usr/src/app/migrate.sh"]
 RUN ["chmod", "+x", "/usr/src/app/start.sh"]
 RUN ["chmod", "-R", "777", "/usr/src/app/apps/host/public"]
 

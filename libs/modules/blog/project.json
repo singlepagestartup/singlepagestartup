@@ -31,6 +31,12 @@
             "command": "nx run @sps/blog:models:repository-migrate"
           },
           {
+            "command": "nx run @sps/blog:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/blog:relations:repository-migrate"
+          },
+          {
             "command": "nx run @sps/blog:relations:repository-migrate"
           }
         ]

@@ -123,9 +123,6 @@
         "cwd": "apps/host",
         "commands": [
           {
-            "command": "npx nx run host:db:migrate"
-          },
-          {
             "command": "bun run src/db/seed.ts"
           }
         ]

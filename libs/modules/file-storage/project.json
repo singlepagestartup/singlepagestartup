@@ -31,6 +31,12 @@
             "command": "nx run @sps/file-storage:models:repository-migrate"
           },
           {
+            "command": "nx run @sps/file-storage:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/file-storage:relations:repository-migrate"
+          },
+          {
             "command": "nx run @sps/file-storage:relations:repository-migrate"
           }
         ]
