@@ -22,6 +22,13 @@
       "when": 1733508589076,
       "tag": "0002_normal_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1737721364971,
+      "tag": "0003_tan_naoko",
+      "breakpoints": true
     }
   ]
 }

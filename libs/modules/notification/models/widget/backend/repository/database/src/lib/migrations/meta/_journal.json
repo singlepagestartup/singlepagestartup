@@ -15,6 +15,13 @@
       "when": 1733508586353,
       "tag": "0001_boring_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721362128,
+      "tag": "0002_handy_hulk",
+      "breakpoints": true
     }
   ]
 }

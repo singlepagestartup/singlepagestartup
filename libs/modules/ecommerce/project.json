@@ -7,20 +7,6 @@
   "targets": {
     "eslint:lint": {},
     "tsc:build": {},
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/ecommerce:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -35,81 +21,16 @@
         ]
       }
     },
-    "models:repository-generate": {
+    "repository-migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/ecommerce:models:attribute-key:repository-generate"
+            "command": "nx run @sps/ecommerce:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:attribute:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:models:category:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:models:store:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:models:product:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:models:order:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:models:widget:repository-generate"
-          }
-        ]
-      }
-    },
-    "relations:repository-generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": true,
-        "commands": [
-          {
-            "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:stores-to-products:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:categories-to-products:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:categories-to-file-storage-module-widgets:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:attributes-to-billing-module-currencies:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:widgets-to-categories:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:widgets-to-products:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:orders-to-products:repository-generate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-generate"
+            "command": "nx run @sps/ecommerce:relations:repository-migrate"
           }
         ]
       }
@@ -189,6 +110,85 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-migrate"
+          }
+        ]
+      }
+    },
+    "models:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": true,
+        "commands": [
+          {
+            "command": "nx run @sps/ecommerce:models:attribute-key:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:attribute:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:category:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:store:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:product:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:order:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:models:widget:repository-generate"
+          }
+        ]
+      }
+    },
+    "relations:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": true,
+        "commands": [
+          {
+            "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:stores-to-products:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:stores-to-products-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:stores-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:categories-to-products:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-payment-intents:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-billing-module-currencies:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:categories-to-file-storage-module-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:attributes-to-billing-module-currencies:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:widgets-to-categories:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:widgets-to-products:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-products:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:products-to-attributes:repository-generate"
           }
         ]
       }

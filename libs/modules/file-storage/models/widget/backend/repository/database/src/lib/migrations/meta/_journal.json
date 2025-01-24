@@ -15,6 +15,13 @@
       "when": 1733508575822,
       "tag": "0001_absurd_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721351449,
+      "tag": "0002_long_mole_man",
+      "breakpoints": true
     }
   ]
 }

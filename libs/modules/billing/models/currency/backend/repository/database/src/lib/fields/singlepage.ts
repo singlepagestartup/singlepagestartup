@@ -8,5 +8,16 @@ export const fields = {
   isDefault: pgCore.boolean("is_default").notNull().default(false),
   symbol: pgCore.text("symbol").notNull(),
   title: pgCore.text("title").notNull(),
-  slug: pgCore.text("slug").notNull(),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
+  slug: pgCore
+    .text("slug")
+    .notNull()
+    .unique()
+    .$defaultFn(
+      () =>
+        "lower(regexp_replace(trim(both ' ' from title),'[^a-zA-Z0-9]+','-','g'))",
+    ),
 };

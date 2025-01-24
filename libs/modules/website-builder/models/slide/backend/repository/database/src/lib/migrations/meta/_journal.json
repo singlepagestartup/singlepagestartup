@@ -15,6 +15,13 @@
       "when": 1733508581481,
       "tag": "0001_lazy_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721357641,
+      "tag": "0002_zippy_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

@@ -15,6 +15,13 @@
       "when": 1733508590996,
       "tag": "0001_milky_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721366950,
+      "tag": "0002_tidy_doctor_octopus",
+      "breakpoints": true
     }
   ]
 }

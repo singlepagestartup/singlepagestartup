@@ -15,6 +15,13 @@
       "when": 1733508581465,
       "tag": "0001_even_fenris",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721357664,
+      "tag": "0002_late_kylun",
+      "breakpoints": true
     }
   ]
 }

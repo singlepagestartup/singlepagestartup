@@ -22,6 +22,13 @@
       "when": 1725833242581,
       "tag": "0002_useful_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1737721372948,
+      "tag": "0003_magenta_saracen",
+      "breakpoints": true
     }
   ]
 }

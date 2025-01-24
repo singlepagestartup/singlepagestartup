@@ -5,9 +5,20 @@ export const fields = {
   description: pgCore.text("description"),
   subtitle: pgCore.text("subtitle"),
   title: pgCore.text("title"),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
-  slug: pgCore.text("slug").unique(),
+  slug: pgCore
+    .text("slug")
+    .notNull()
+    .unique()
+    .$defaultFn(
+      () =>
+        "lower(regexp_replace(trim(both ' ' from title),'[^a-zA-Z0-9]+','-','g'))",
+    ),
 };

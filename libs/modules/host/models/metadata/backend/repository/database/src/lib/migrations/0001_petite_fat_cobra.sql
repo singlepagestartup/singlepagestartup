@@ -1,0 +1,1 @@
+ALTER TABLE "sps_h_metadata" ALTER COLUMN "title" SET NOT NULL;

@@ -6,6 +6,10 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   title: pgCore.text("title"),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
   orderIndex: pgCore.integer("order_index"),
   className: pgCore.text("class_name"),
 };

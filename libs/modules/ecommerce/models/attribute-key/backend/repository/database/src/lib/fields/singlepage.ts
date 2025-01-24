@@ -8,6 +8,10 @@ export const fields = {
   type: pgCore.text("type").notNull().default("feature"),
   field: pgCore.text("field").notNull().default("string"),
   title: pgCore.text("title").notNull(),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
   slug: pgCore.text("slug").notNull(),
   prefix: pgCore.text("prefix"),
   suffix: pgCore.text("suffix"),

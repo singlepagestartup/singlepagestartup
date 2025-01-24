@@ -3,6 +3,10 @@ import * as pgCore from "drizzle-orm/pg-core";
 export const fields = {
   className: pgCore.text("class_name"),
   title: pgCore.text("title"),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
   subtitle: pgCore.text("subtitle"),
   description: pgCore.text("description"),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),

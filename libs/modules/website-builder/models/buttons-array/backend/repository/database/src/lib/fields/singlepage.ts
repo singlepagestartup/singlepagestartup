@@ -6,7 +6,18 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   title: pgCore.text("title"),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => "title"),
   className: pgCore.text("class_name"),
   description: pgCore.text("description"),
-  slug: pgCore.text("slug").unique(),
+  slug: pgCore
+    .text("slug")
+    .notNull()
+    .unique()
+    .$defaultFn(
+      () =>
+        "lower(regexp_replace(trim(both ' ' from title),'[^a-zA-Z0-9]+','-','g'))",
+    ),
 };

@@ -15,6 +15,13 @@
       "when": 1733508581471,
       "tag": "0001_numerous_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737721357684,
+      "tag": "0002_minor_grandmaster",
+      "breakpoints": true
     }
   ]
 }
