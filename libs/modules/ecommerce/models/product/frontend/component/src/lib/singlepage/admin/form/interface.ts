@@ -17,6 +17,9 @@ export interface IComponentProps
   productsToFileStorageModuleWidgets?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  productsToWebsiteBuilderModuleWidgets?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   ordersToProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

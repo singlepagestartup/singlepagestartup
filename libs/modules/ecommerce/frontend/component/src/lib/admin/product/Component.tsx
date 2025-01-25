@@ -6,6 +6,7 @@ import { Component as OrdersToProducts } from "@sps/ecommerce/relations/orders-t
 import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
 import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
 import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-widgets/frontend/component";
+import { Component as ProductsToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/frontend/component";
 import { Component as WidgetsToProducts } from "@sps/ecommerce/relations/widgets-to-products/frontend/component";
 
 export function Component() {
@@ -76,6 +77,31 @@ export function Component() {
 
               return (
                 <ProductsToFileStorageModuleWidgets
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "productId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            productsToWebsiteBuilderModuleWidgets={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ProductsToWebsiteBuilderModuleWidgets
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

@@ -91,6 +91,9 @@
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-migrate"
           },
           {
+            "command": "nx run @sps/ecommerce:relations:products-to-website-builder-module-widgets:repository-migrate"
+          },
+          {
             "command": "nx run @sps/ecommerce:relations:attributes-to-billing-module-currencies:repository-migrate"
           },
           {
@@ -180,6 +183,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-widgets:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:products-to-website-builder-module-widgets:repository-generate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:categories-to-file-storage-module-widgets:repository-generate"
@@ -688,6 +694,35 @@
         "parallel": false,
         "envFile": "apps/host/.env.local",
         "cwd": "libs/modules/ecommerce/relations/products-to-file-storage-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:products-to-website-builder-module-widgets:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:products-to-website-builder-module-widgets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/host/.env.local",
+        "cwd": "libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

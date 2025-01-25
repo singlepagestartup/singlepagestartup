@@ -16,6 +16,7 @@ import { app as storesToProductsToAttributesApp } from "@sps/ecommerce/relations
 import { app as storesToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
 import { app as categoriesToProductsApp } from "@sps/ecommerce/relations/categories-to-products/backend/app/api";
 import { app as productsToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-file-storage-module-widgets/backend/app/api";
+import { app as productsToWebsiteBuilderModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/backend/app/api";
 import { app as categoriesToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/categories-to-file-storage-module-widgets/backend/app/api";
 import { app as widgetsToCategoriesApp } from "@sps/ecommerce/relations/widgets-to-categories/backend/app/api";
 import { app as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api";
@@ -114,6 +115,11 @@ export class Apps {
       type: "relation",
       route: "/products-to-file-storage-module-widgets",
       app: productsToFileStorageModuleWidgetsApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/products-to-website-builder-module-widgets",
+      app: productsToWebsiteBuilderModuleWidgetsApp,
     });
     this.apps.push({
       type: "relation",
