@@ -7,6 +7,8 @@ import { Context } from "hono";
 import { Service } from "../service";
 import { Provider } from "@sps/providers-file-storage";
 import { FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
+import { imageSize } from "image-size";
+import { fileTypeFromBuffer } from "file-type";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -115,6 +117,26 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       }
 
       const data: any = parsedBody.data ?? {};
+
+      const fileBuffer = await file.arrayBuffer();
+      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      const fileSize = file.size;
+      data["size"] = fileSize;
+
+      data["extension"] = fileType?.ext ?? "";
+      data["mimeType"] = fileType?.mime ?? "";
+
+      try {
+        const dimensions = imageSize(Buffer.from(fileBuffer));
+        const { width, height } = dimensions;
+        data["width"] = width;
+        data["height"] = height;
+      } catch (error: any) {
+        data["width"] = 0;
+        data["height"] = 0;
+      }
+
       data[name] = "";
       const createdEntity = await this.service.create({ data });
 
@@ -196,6 +218,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       const uploadedFileUrl = await fileStorage.uploadFile({
         file: file,
       });
+
+      const fileBuffer = await file.arrayBuffer();
+      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      const fileSize = file.size;
+      data["size"] = fileSize;
+
+      data["extension"] = fileType?.ext ?? "";
+      data["mimeType"] = fileType?.mime ?? "";
+
+      try {
+        const dimensions = imageSize(Buffer.from(fileBuffer));
+        const { width, height } = dimensions;
+        data["width"] = width;
+        data["height"] = height;
+      } catch (error: any) {
+        data["width"] = 0;
+        data["height"] = 0;
+      }
 
       const entity = await this.service.create({
         data: {
@@ -305,6 +346,25 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
       const data: any = parsedBody.data ?? {};
       data[name] = uploadedFileUrl;
+
+      const fileBuffer = await file.arrayBuffer();
+      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      const fileSize = file.size;
+      data["size"] = fileSize;
+
+      data["extension"] = fileType?.ext ?? "";
+      data["mimeType"] = fileType?.mime ?? "";
+
+      try {
+        const dimensions = imageSize(Buffer.from(fileBuffer));
+        const { width, height } = dimensions;
+        data["width"] = width;
+        data["height"] = height;
+      } catch (error: any) {
+        data["width"] = 0;
+        data["height"] = 0;
+      }
 
       const previous = await this.service.findById({ id: uuid });
 

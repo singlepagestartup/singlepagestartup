@@ -13,4 +13,10 @@ export const fields = {
     .text("admin_title")
     .notNull()
     .$defaultFn(() => randomWordsGenerator({ type: "title" })),
+  width: pgCore.integer("width"),
+  height: pgCore.integer("height"),
+  alt: pgCore.text("alt"),
+  size: pgCore.integer("size"),
+  extension: pgCore.text("extension"),
+  mimeType: pgCore.text("mime_type"),
 };
