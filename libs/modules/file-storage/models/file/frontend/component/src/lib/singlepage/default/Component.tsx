@@ -15,8 +15,18 @@ export function Component(props: IComponentPropsExtended) {
         <Image
           src={props.data.file}
           alt=""
-          fill={true}
-          className={props.data.className || ""}
+          fill={props.data.containerClassName?.includes("aspect-")}
+          width={
+            !props.data.containerClassName?.includes("aspect-")
+              ? props.data.width || 0
+              : undefined
+          }
+          height={
+            !props.data.containerClassName?.includes("aspect-")
+              ? props.data.height || 0
+              : undefined
+          }
+          className={cn("flex w-full h-full", props.data.className)}
         />
       ) : null}
     </div>
