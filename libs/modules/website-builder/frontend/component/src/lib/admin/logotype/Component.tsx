@@ -1,7 +1,7 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/website-builder/models/logotype/frontend/component";
-import { Component as LogotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-widgets/frontend/component";
+import { Component as LogotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 
 export function Component() {

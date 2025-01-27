@@ -2,7 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/category/frontend/component";
 import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
-import { Component as CategoriesToFileStorageModuleWidgets } from "@sps/ecommerce/relations/categories-to-file-storage-module-widgets/frontend/component";
+import { Component as CategoriesToFileStorageModuleWidgets } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToCategories } from "@sps/ecommerce/relations/widgets-to-categories/frontend/component";
 
 export function Component() {

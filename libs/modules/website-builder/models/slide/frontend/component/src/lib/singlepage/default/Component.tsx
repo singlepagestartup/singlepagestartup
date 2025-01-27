@@ -1,6 +1,6 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
-import { Component as SlidesToSpsFileStorageWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-widgets/frontend/component";
+import { Component as SlidesToSpsFileStorageWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-files/frontend/component";
 import { Component as SlidesToButtonsArrays } from "@sps/website-builder/relations/slides-to-buttons-arrays/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {

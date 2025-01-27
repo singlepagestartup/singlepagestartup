@@ -68,7 +68,7 @@
             "command": "nx run @sps/blog:relations:categories-to-articles:repository-generate"
           },
           {
-            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/blog:relations:articles-to-website-builder-module-widgets:repository-generate"
@@ -104,7 +104,7 @@
             "command": "nx run @sps/blog:relations:categories-to-articles:repository-migrate"
           },
           {
-            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/blog:relations:articles-to-file-storage-module-files:repository-migrate"
           },
           {
             "command": "nx run @sps/blog:relations:articles-to-website-builder-module-widgets:repository-migrate"
@@ -228,11 +228,11 @@
         ]
       }
     },
-    "relations:articles-to-file-storage-module-widgets:repository-generate": {
+    "relations:articles-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/blog/relations/articles-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/blog/relations/articles-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -243,13 +243,13 @@
         ]
       }
     },
-    "relations:articles-to-file-storage-module-widgets:repository-migrate": {
+    "relations:articles-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/blog/relations/articles-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/blog/relations/articles-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

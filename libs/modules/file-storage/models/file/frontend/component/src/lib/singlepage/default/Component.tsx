@@ -11,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("relative w-full", props.data.containerClassName)}
     >
-      {props.data.file ? (
+      {props.data.file && props.data.mimeType?.includes("image") ? (
         <Image
           src={props.data.file}
           alt=""
@@ -28,6 +28,23 @@ export function Component(props: IComponentPropsExtended) {
           }
           className={cn("flex w-full h-full", props.data.className)}
         />
+      ) : null}
+      {props.data.file && props.data.mimeType?.includes("video") ? (
+        <video
+          width={
+            !props.data.containerClassName?.includes("aspect-")
+              ? props.data.width || 0
+              : undefined
+          }
+          height={
+            !props.data.containerClassName?.includes("aspect-")
+              ? props.data.height || 0
+              : undefined
+          }
+          className={cn("flex w-full h-full", props.data.className)}
+        >
+          <source src={props.data.file} type={props.data.mimeType} />
+        </video>
       ) : null}
     </div>
   );

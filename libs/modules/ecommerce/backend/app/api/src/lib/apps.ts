@@ -15,9 +15,9 @@ import { app as storesToProductsApp } from "@sps/ecommerce/relations/stores-to-p
 import { app as storesToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api";
 import { app as storesToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
 import { app as categoriesToProductsApp } from "@sps/ecommerce/relations/categories-to-products/backend/app/api";
-import { app as productsToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-file-storage-module-widgets/backend/app/api";
+import { app as productsToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api";
 import { app as productsToWebsiteBuilderModuleWidgetsApp } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/backend/app/api";
-import { app as categoriesToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/categories-to-file-storage-module-widgets/backend/app/api";
+import { app as categoriesToFileStorageModuleWidgetsApp } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/backend/app/api";
 import { app as widgetsToCategoriesApp } from "@sps/ecommerce/relations/widgets-to-categories/backend/app/api";
 import { app as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api";
 import { app as attributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api";

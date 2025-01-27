@@ -2,7 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/blog/models/article/frontend/component";
 import { Component as CategoriesToArticles } from "@sps/blog/relations/categories-to-articles/frontend/component";
-import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-widgets/frontend/component";
+import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
 
 export function Component() {

@@ -3,7 +3,7 @@
 import { Component as ParentComponent } from "@sps/website-builder/models/slide/frontend/component";
 import { Component as SlidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/frontend/component";
 import { Component as SlidesToButtonsArrays } from "@sps/website-builder/relations/slides-to-buttons-arrays/frontend/component";
-import { Component as SlidesToSpsFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-widgets/frontend/component";
+import { Component as SlidesToSpsFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-files/frontend/component";
 
 export function Component() {
   return (

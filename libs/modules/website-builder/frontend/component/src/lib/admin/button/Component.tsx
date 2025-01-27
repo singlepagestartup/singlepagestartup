@@ -2,7 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/website-builder/models/button/frontend/component";
 import { Component as ButtonsArraysToButtons } from "@sps/website-builder/relations/buttons-arrays-to-buttons/frontend/component";
-import { Component as ButtonsToSpsFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-widgets/frontend/component";
+import { Component as ButtonsToSpsFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-files/frontend/component";
 
 export function Component() {
   return (

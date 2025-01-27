@@ -86,13 +86,13 @@
             "command": "nx run @sps/website-builder:relations:widgets-to-features:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/website-builder:relations:features-to-buttons-arrays:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/website-builder:relations:widgets-to-buttons-arrays:repository-generate"
@@ -101,10 +101,10 @@
             "command": "nx run @sps/website-builder:relations:widgets-to-logotypes:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-files:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/website-builder:relations:widgets-to-sliders:repository-generate"
@@ -116,7 +116,7 @@
             "command": "nx run @sps/website-builder:relations:slides-to-buttons-arrays:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-widgets:repository-generate"
+            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-files:repository-generate"
           }
         ]
       }
@@ -167,13 +167,13 @@
             "command": "nx run @sps/website-builder:relations:widgets-to-features:repository-migrate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:features-to-file-storage-module-files:repository-migrate"
           },
           {
             "command": "nx run @sps/website-builder:relations:features-to-buttons-arrays:repository-migrate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:buttons-to-file-storage-module-files:repository-migrate"
           },
           {
             "command": "nx run @sps/website-builder:relations:widgets-to-buttons-arrays:repository-migrate"
@@ -182,10 +182,10 @@
             "command": "nx run @sps/website-builder:relations:widgets-to-logotypes:repository-migrate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:widgets-to-file-storage-module-files:repository-migrate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:logotypes-to-file-storage-module-files:repository-migrate"
           },
           {
             "command": "nx run @sps/website-builder:relations:widgets-to-sliders:repository-migrate"
@@ -197,7 +197,7 @@
             "command": "nx run @sps/website-builder:relations:slides-to-buttons-arrays:repository-migrate"
           },
           {
-            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-widgets:repository-migrate"
+            "command": "nx run @sps/website-builder:relations:slides-to-file-storage-module-files:repository-migrate"
           }
         ]
       }
@@ -492,11 +492,11 @@
         ]
       }
     },
-    "relations:features-to-file-storage-module-widgets:repository-generate": {
+    "relations:features-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/website-builder/relations/features-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/features-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -507,13 +507,13 @@
         ]
       }
     },
-    "relations:features-to-file-storage-module-widgets:repository-migrate": {
+    "relations:features-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/website-builder/relations/features-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/features-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -550,11 +550,11 @@
         ]
       }
     },
-    "relations:buttons-to-file-storage-module-widgets:repository-generate": {
+    "relations:buttons-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/website-builder/relations/buttons-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/buttons-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -565,13 +565,13 @@
         ]
       }
     },
-    "relations:buttons-to-file-storage-module-widgets:repository-migrate": {
+    "relations:buttons-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/website-builder/relations/buttons-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/buttons-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -637,11 +637,11 @@
         ]
       }
     },
-    "relations:widgets-to-file-storage-module-widgets:repository-generate": {
+    "relations:widgets-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/website-builder/relations/widgets-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/widgets-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -652,13 +652,13 @@
         ]
       }
     },
-    "relations:widgets-to-file-storage-module-widgets:repository-migrate": {
+    "relations:widgets-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/website-builder/relations/widgets-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/widgets-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -666,11 +666,11 @@
         ]
       }
     },
-    "relations:logotypes-to-file-storage-module-widgets:repository-generate": {
+    "relations:logotypes-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -681,13 +681,13 @@
         ]
       }
     },
-    "relations:logotypes-to-file-storage-module-widgets:repository-migrate": {
+    "relations:logotypes-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -782,11 +782,11 @@
         ]
       }
     },
-    "relations:slides-to-file-storage-module-widgets:repository-generate": {
+    "relations:slides-to-file-storage-module-files:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/website-builder/relations/slides-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/slides-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -797,13 +797,13 @@
         ]
       }
     },
-    "relations:slides-to-file-storage-module-widgets:repository-migrate": {
+    "relations:slides-to-file-storage-module-files:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/website-builder/relations/slides-to-file-storage-module-widgets/backend/repository/database",
+        "cwd": "libs/modules/website-builder/relations/slides-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

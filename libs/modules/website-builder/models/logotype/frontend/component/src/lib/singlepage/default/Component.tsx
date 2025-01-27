@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { IComponentPropsExtended } from "./interface";
-import { Component as LogotypesToSpsFileStorageWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-widgets/frontend/component";
+import { Component as LogotypesToSpsFileStorageWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (

@@ -5,7 +5,7 @@ import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/prod
 import { Component as OrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
 import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
 import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
-import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-widgets/frontend/component";
+import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import { Component as ProductsToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/frontend/component";
 import { Component as WidgetsToProducts } from "@sps/ecommerce/relations/widgets-to-products/frontend/component";
 
