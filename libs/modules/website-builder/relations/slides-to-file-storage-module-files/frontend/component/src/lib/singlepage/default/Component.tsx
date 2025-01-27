@@ -6,7 +6,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="website-builder"
-      data-relation="slides-to-file-storage-module-widgets"
+      data-relation="slides-to-file-storage-module-files"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn("w-full flex", props.data.className)}

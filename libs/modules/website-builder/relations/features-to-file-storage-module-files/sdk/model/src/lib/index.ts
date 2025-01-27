@@ -7,7 +7,7 @@ export {
 import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export const route =
-  "/api/website-builder/features-to-file-storage-module-widgets";
+  "/api/website-builder/features-to-file-storage-module-files";
 export const variants = ["default"] as const;
 export const host = BACKEND_URL;
 export const query = {};

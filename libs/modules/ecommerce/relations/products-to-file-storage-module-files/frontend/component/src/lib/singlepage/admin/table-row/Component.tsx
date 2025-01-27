@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent
       {...props}
       module="ecommerce"
-      name="products-to-file-storage-module-widgets"
+      name="products-to-file-storage-module-files"
       type="relation"
       adminForm={() => {
         return (

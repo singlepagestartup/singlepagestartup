@@ -5,5 +5,5 @@
   "variant": "default",
   "type": "HTTP",
   "method": "GET",
-  "path": "/api/ecommerce/categories-to-file-storage-module-widgets"
+  "path": "/api/ecommerce/categories-to-file-storage-module-files"
 }

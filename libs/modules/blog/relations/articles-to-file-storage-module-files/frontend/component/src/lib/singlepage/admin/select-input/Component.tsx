@@ -6,8 +6,8 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="blog"
-      name="articles-to-file-storage-module-widgets"
-      label="articles-to-file-storage-module-widgets"
+      name="articles-to-file-storage-module-files"
+      label="articles-to-file-storage-module-files"
       formFieldName={props.formFieldName}
       data={props.data}
       form={props.form}

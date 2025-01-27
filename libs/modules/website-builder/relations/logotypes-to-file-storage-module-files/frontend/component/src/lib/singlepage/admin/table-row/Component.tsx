@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent
       {...props}
       module="website-builder"
-      name="logotypes-to-file-storage-module-widgets"
+      name="logotypes-to-file-storage-module-files"
       type="relation"
       adminForm={() => {
         return (

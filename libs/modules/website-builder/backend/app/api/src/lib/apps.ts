@@ -81,7 +81,7 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/features-to-file-storage-module-widgets",
+      route: "/features-to-file-storage-module-files",
       app: featuresToFileStorageModuleFiles,
     });
     this.apps.push({
@@ -91,12 +91,12 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/widgets-to-file-storage-module-widgets",
+      route: "/widgets-to-file-storage-module-files",
       app: widgetsToFileStorageModuleWidgets,
     });
     this.apps.push({
       type: "relation",
-      route: "/logotypes-to-file-storage-module-widgets",
+      route: "/logotypes-to-file-storage-module-files",
       app: logotypesToFileStorageModuleWidgets,
     });
     this.apps.push({
@@ -116,12 +116,12 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/slides-to-file-storage-module-widgets",
+      route: "/slides-to-file-storage-module-files",
       app: slidesToFileStorageModuleWidgets,
     });
     this.apps.push({
       type: "relation",
-      route: "/buttons-to-file-storage-module-widgets",
+      route: "/buttons-to-file-storage-module-files",
       app: buttonsToFileStorageModuleWidgets,
     });
     this.apps.push({

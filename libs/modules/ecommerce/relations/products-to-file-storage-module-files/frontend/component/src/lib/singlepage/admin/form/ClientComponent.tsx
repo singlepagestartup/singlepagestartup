@@ -48,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
       id={props.data?.id}
       onSubmit={onSubmit}
       variant={props.variant}
-      name="products-to-file-storage-module-widgets"
+      name="products-to-file-storage-module-files"
       type="relation"
     >
       <div className="flex flex-col gap-6">

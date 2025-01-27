@@ -24,7 +24,7 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: true,
           module: "blog",
-          name: "articles-to-file-storage-module-widgets",
+          name: "articles-to-file-storage-module-files",
           type: "relation",
           transformers: [
             {

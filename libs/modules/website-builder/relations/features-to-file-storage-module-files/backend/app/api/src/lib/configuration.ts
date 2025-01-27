@@ -24,7 +24,7 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: true,
           module: "website-builder",
-          name: "features-to-file-storage-module-widgets",
+          name: "features-to-file-storage-module-files",
           type: "relation",
           transformers: [
             {

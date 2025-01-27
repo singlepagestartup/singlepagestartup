@@ -37,7 +37,7 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/articles-to-file-storage-module-widgets",
+      route: "/articles-to-file-storage-module-files",
       app: articlesToFileStorageModuleWidgetsApp,
     });
     this.apps.push({

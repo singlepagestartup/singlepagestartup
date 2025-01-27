@@ -113,7 +113,7 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/products-to-file-storage-module-widgets",
+      route: "/products-to-file-storage-module-files",
       app: productsToFileStorageModuleWidgetsApp,
     });
     this.apps.push({
@@ -123,7 +123,7 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/categories-to-file-storage-module-widgets",
+      route: "/categories-to-file-storage-module-files",
       app: categoriesToFileStorageModuleWidgetsApp,
     });
     this.apps.push({
