@@ -20,6 +20,8 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || "",
       slug: props.data?.slug || "",
       className: props.data?.className || "",
+      description: props.data?.description || "",
+      subtitle: props.data?.subtitle || "",
     },
   });
 

@@ -7,7 +7,15 @@ export {
 import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export const route = "/api/website-builder/buttons";
-export const variants = ["default"];
+export const variants = [
+  "default",
+  "destructive",
+  "primary",
+  "secondary",
+  "outline",
+  "link",
+  "ghost",
+];
 export const host = BACKEND_URL;
 export const query = {};
 export const options = {

@@ -119,7 +119,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       const data: any = parsedBody.data ?? {};
 
       const fileBuffer = await file.arrayBuffer();
-      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+      let fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      if (!fileType && file.name.toLowerCase().endsWith(".svg")) {
+        fileType = {
+          ext: "svg",
+          mime: "image/svg+xml",
+        };
+      }
 
       const fileSize = file.size;
       data["size"] = fileSize;
@@ -220,7 +227,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       });
 
       const fileBuffer = await file.arrayBuffer();
-      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+      let fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      if (!fileType && file.name.toLowerCase().endsWith(".svg")) {
+        fileType = {
+          ext: "svg",
+          mime: "image/svg+xml",
+        };
+      }
 
       const fileSize = file.size;
       data["size"] = fileSize;
@@ -348,7 +362,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       data[name] = uploadedFileUrl;
 
       const fileBuffer = await file.arrayBuffer();
-      const fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+      let fileType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+
+      if (!fileType && file.name.toLowerCase().endsWith(".svg")) {
+        fileType = {
+          ext: "svg",
+          mime: "image/svg+xml",
+        };
+      }
 
       const fileSize = file.size;
       data["size"] = fileSize;
