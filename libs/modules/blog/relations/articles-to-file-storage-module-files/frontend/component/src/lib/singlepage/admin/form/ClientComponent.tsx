@@ -12,7 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Component as Article } from "@sps/blog/models/article/frontend/component";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();

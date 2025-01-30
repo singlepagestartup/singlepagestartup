@@ -5,6 +5,7 @@ export interface IComponentProps extends ISpsComponentBase {
   variant: string;
   props?: string;
   url: string;
+  language: string;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

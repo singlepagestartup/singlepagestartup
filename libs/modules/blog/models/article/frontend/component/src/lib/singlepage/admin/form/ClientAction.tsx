@@ -7,7 +7,7 @@ import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/blog/models/article/sdk/model";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();

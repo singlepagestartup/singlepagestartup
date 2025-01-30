@@ -12,7 +12,7 @@ import {
   variants,
   insertSchema,
 } from "@sps/rbac/models/action/sdk/model";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();

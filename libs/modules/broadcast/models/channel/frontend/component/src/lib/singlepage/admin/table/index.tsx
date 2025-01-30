@@ -4,7 +4,7 @@ import {
 } from "@sps/broadcast/models/channel/sdk/client";
 import { api as serverApi } from "@sps/broadcast/models/channel/sdk/server";
 import { IComponentProps } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table";
 import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {

@@ -3,7 +3,7 @@ import { IModel } from "@sps/billing/models/currency/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-form/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/form/interface";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { ReactNode } from "react";
 

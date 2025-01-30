@@ -1,0 +1,2 @@
+-- ALTER TABLE "sps_w_b_widgets" DROP COLUMN "subtitle";--> statement-breakpoint
+-- ALTER TABLE "sps_w_b_widgets" DROP COLUMN "description";

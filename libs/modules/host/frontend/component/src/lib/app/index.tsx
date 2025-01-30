@@ -18,6 +18,7 @@ export function App(props: IComponentProps) {
               variant={data?.variant as any}
               data={data}
               url={props.url}
+              language={props.language}
             />
           );
         }}

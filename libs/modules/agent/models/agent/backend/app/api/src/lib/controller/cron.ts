@@ -74,6 +74,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-cache",
           },
         },
       });
@@ -163,15 +164,19 @@ export class Handler {
           }
 
           for (const currentAgentExecution of currentAgentExecutions) {
-            await broadcastChannelApi.messageDelete({
-              id: cronChannel.id,
-              messageId: currentAgentExecution.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            await broadcastChannelApi
+              .messageDelete({
+                id: cronChannel.id,
+                messageId: currentAgentExecution.id,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
                 },
-              },
-            });
+              })
+              .catch((error) => {
+                //
+              });
           }
 
           await broadcastChannelApi.pushMessage({

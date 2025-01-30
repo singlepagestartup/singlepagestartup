@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { Component as PageSelectInput } from "@sps/telegram/models/page/frontend/component";
 import { Component as WidgetSelectInput } from "@sps/telegram/models/widget/frontend/component";
 

@@ -10,7 +10,7 @@ import {
   insertSchema,
 } from "@sps/website-builder/models/button/sdk/model";
 import { FormField } from "@sps/ui-adapter";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();

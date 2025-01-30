@@ -1,5 +1,5 @@
 import { IComponentProps } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-panel/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
 import { Component as Widget } from "./widget/Component";
 import { Component as Notification } from "./notification/Component";
 import { Component as Topic } from "./topic/Component";

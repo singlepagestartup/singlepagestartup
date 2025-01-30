@@ -1,5 +1,5 @@
 /* eslint-disable */
 export default {
-  displayName: "@sps/sps-configuration",
+  displayName: "@sps/shared-configuration",
   preset: "../../../../jest.server-preset.js",
 };

@@ -3,7 +3,7 @@ import { IModel } from "@sps/agent/models/widget/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-form/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/form/interface";
 
 export const variant = "admin-form" as const;
 

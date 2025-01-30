@@ -3,7 +3,7 @@ import { IModel } from "@sps/ecommerce/relations/categories-to-file-storage-modu
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-table/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/table/interface";
 
 export const variant = "admin-table" as const;
 

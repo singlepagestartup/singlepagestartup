@@ -1,6 +1,7 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { FormField } from "@sps/ui-adapter";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
+import { getNestedValue } from "@sps/shared-utils";
 
 export function Component<M extends { id: string }, V>(
   props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
@@ -37,6 +38,14 @@ export function Component<M extends { id: string }, V>(
           }
           if (props.renderField && entity[props.renderField]) {
             const renderValue = entity[props.renderField];
+            if (typeof renderValue === "string") {
+              return [entity.id, renderValue];
+            }
+          }
+
+          if (typeof props.renderField === "string") {
+            const renderValue = getNestedValue(entity, props.renderField);
+
             if (typeof renderValue === "string") {
               return [entity.id, renderValue];
             }

@@ -4,7 +4,7 @@ import {
 } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/client";
 import { api as serverApi } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/server";
 import { IComponentProps } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row";
 import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {

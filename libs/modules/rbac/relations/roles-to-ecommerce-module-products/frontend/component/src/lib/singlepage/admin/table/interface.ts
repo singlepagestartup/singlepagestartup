@@ -3,7 +3,7 @@ import { IModel } from "@sps/rbac/relations/roles-to-ecommerce-module-products/s
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-table/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/table/interface";
 
 export const variant = "admin-table" as const;
 

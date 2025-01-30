@@ -4,7 +4,7 @@ import { ErrorBoundary } from "@sps/ui-adapter";
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/file-storage/models/file/sdk/client";
 import Image from "next/image";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();

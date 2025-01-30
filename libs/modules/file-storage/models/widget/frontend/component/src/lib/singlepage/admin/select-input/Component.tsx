@@ -1,5 +1,5 @@
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-select-input/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/select-input/Component";
 import { Component as WidgetsToFiles } from "@sps/file-storage/relations/widgets-to-files/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {

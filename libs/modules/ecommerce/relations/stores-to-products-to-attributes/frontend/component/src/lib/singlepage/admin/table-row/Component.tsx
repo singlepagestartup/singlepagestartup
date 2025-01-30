@@ -3,7 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/stores-to-products-to-attributes/sdk/client";
 import { Component as AdminForm } from "../form";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();

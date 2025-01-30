@@ -11,7 +11,7 @@ import {
   insertSchema,
   statuses,
 } from "@sps/billing/models/invoice/sdk/model";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();

@@ -7,7 +7,7 @@ import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/eco
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { userStories } from "@sps/sps-configuration";
+import { userStories } from "@sps/shared-configuration";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";

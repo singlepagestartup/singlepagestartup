@@ -11,6 +11,7 @@ type IUniversalProps = {
   form: UseFormReturn<any>;
   disabled?: boolean;
   className?: string;
+  name: string;
 };
 
 export type TTypedProps =

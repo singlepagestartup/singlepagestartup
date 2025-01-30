@@ -3,7 +3,7 @@ import { IModel } from "@sps/ecommerce/relations/products-to-website-builder-mod
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-select-input/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/select-input/interface";
 
 export const variant = "admin-select-input" as const;
 

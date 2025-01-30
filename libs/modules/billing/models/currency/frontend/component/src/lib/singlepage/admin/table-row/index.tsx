@@ -4,7 +4,7 @@ import {
 } from "@sps/billing/models/currency/sdk/client";
 import { api as serverApi } from "@sps/billing/models/currency/sdk/server";
 import { IComponentProps } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-table-row";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row";
 import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {

@@ -13,3 +13,4 @@ export type {
 export { util as responsePipe } from "./lib/response-pipe";
 export { util as randomWordsGenerator } from "./lib/random-words-generator";
 export { util as limitedParallelExecution } from "./lib/limited-parallel-execution";
+export { util as getNestedValue } from "./lib/get-nested-value";

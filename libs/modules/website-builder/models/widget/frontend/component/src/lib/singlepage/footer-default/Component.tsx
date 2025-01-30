@@ -48,11 +48,11 @@ export function Component(props: IComponentPropsExtended) {
                 });
               }}
             </WidgetsToLogotypes>
-            {props.data.subtitle ? (
+            {/* {props.data.subtitle ? (
               <p className="text-muted-foreground text-xs">
                 {props.data.subtitle}
               </p>
-            ) : null}
+            ) : null} */}
             <WidgetsToButtonsArrays
               isServer={props.isServer}
               variant="find"
@@ -129,13 +129,13 @@ export function Component(props: IComponentPropsExtended) {
         </div>
         <div className="w-full h-px bg-gray-400"></div>
         <div className="flex flex-col items-start lg:flex-row lg:items-center justify-between gap-4">
-          <div>
+          {/* <div>
             {props.data.description ? (
               <p className="text-muted-foreground text-xs">
                 {props.data.description}
               </p>
             ) : null}
-          </div>
+          </div> */}
           <div className="flex items-center flex-wrap gap-4">
             <WidgetsToButtonsArrays
               isServer={props.isServer}

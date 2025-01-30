@@ -11,7 +11,7 @@ import {
   variants,
   insertSchema,
 } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { Component as WidgetSelectInput } from "@sps/host/models/widget/frontend/component";
 import { Component as WebsiteBuilderWidget } from "@sps/website-builder/models/widget/frontend/component";
 import { Component as StartupWidget } from "@sps/startup/models/widget/frontend/component";

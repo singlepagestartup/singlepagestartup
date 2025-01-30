@@ -6,7 +6,7 @@ import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/ser
 import QueryString from "qs";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { userStories } from "@sps/sps-configuration";
+import { userStories } from "@sps/shared-configuration";
 import pako from "pako";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";

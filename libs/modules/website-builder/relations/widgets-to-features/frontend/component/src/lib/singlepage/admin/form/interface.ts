@@ -3,7 +3,7 @@ import { IModel } from "@sps/website-builder/relations/widgets-to-features/sdk/m
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-form/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/form/interface";
 import { ReactNode } from "react";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 

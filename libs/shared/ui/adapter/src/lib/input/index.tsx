@@ -37,6 +37,7 @@ export const Component = (props: IComponentProps) => {
         <Input
           placeholder={props.placeholder}
           {...props.field}
+          value={typeof props.field.value === "string" ? props.field.value : ""}
           type={props.type}
           className={props.className}
         />

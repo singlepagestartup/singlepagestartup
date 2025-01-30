@@ -10,7 +10,9 @@ import {
 } from "@sps/website-builder/models/widget/sdk/model";
 import { api } from "@sps/website-builder/models/widget/sdk/client";
 import { FormField } from "@sps/ui-adapter";
-import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-form/Component";
+import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -19,13 +21,16 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      title: props.data?.title || "",
+      title: {
+        [internationalization.defaultLanguage.code]: "",
+        ...(props.data?.title ?? {}),
+      },
+      subtitle: props.data?.subtitle ?? {},
+      description: props.data?.description ?? {},
+      slug: props.data?.slug || "",
+      anchor: props.data?.anchor || "",
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
-      anchor: props.data?.anchor || "",
-      description: props.data?.description || "",
-      subtitle: props.data?.subtitle || "",
-      slug: props.data?.slug || "",
     },
   });
 
@@ -51,14 +56,53 @@ export function Component(props: IComponentPropsExtended) {
       name="widget"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="title"
-          label="Title"
-          form={form}
-          placeholder="Type title"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -76,33 +120,6 @@ export function Component(props: IComponentPropsExtended) {
           label="Anchor"
           form={form}
           placeholder="Type anchor"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="subtitle"
-          label="Subitle"
-          form={form}
-          placeholder="Type subtitle"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="tiptap"
-          label="Description"
-          name="description"
-          form={form}
-          placeholder="Type description"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="className"
-          label="Class name"
-          form={form}
-          placeholder="Type class name"
         />
 
         <FormField

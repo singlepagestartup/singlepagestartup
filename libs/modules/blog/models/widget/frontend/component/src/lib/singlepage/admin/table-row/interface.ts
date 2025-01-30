@@ -3,7 +3,7 @@ import { IModel } from "@sps/blog/models/widget/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/admin-table-row/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/table-row/interface";
 
 export const variant = "admin-table-row" as const;
 
