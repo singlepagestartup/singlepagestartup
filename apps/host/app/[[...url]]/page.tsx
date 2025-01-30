@@ -2,7 +2,6 @@ import { api as spsHostPageApi } from "@sps/host/models/page/sdk/server";
 import { App as Host } from "@sps/host/frontend/component";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
-import { cookies } from "next/headers";
 import { internationalization } from "@sps/shared-configuration";
 
 export const revalidate = 86400;
@@ -36,24 +35,27 @@ export async function generateMetadata(props: any) {
 export default async function Page(props: {
   params: Promise<{ url?: string[] }>;
 }) {
-  const language =
-    (await cookies()).get("language")?.value ||
-    internationalization.defaultLanguage.code;
+  const params = await props.params;
+  const languages = internationalization.languages.map((lang) => lang.code);
+  const defaultLanguage = internationalization.defaultLanguage.code;
 
-  const { url } = await props.params;
+  let urlSegments = params.url || [];
+  let language = defaultLanguage;
 
-  const pageUrl = url?.join("/") || "/";
+  if (urlSegments.length > 0 && languages.includes(urlSegments[0])) {
+    language = urlSegments[0];
+    urlSegments = urlSegments.slice(1);
+  }
+
+  const pageUrl = urlSegments.join("/") || "/";
   const slashedUrl = pageUrl.startsWith("/") ? pageUrl : `/${pageUrl}`;
 
   return (
-    <div>
-      <p className="p-10 font-4xl">language: {language}</p>
-      <Host
-        isServer={true}
-        variant="default"
-        url={slashedUrl}
-        language={language}
-      />
-    </div>
+    <Host
+      isServer={true}
+      variant="default"
+      url={slashedUrl}
+      language={language}
+    />
   );
 }

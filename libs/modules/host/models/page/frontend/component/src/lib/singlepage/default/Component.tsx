@@ -42,6 +42,7 @@ export function Component(props: IComponentPropsExtended) {
                 isServer={props.isServer}
                 variant={entity.variant as any}
                 data={entity}
+                language={props.language}
               >
                 <PagesToWidgets
                   isServer={props.isServer}
@@ -72,6 +73,7 @@ export function Component(props: IComponentPropsExtended) {
                             variant={entity.variant as any}
                             data={entity}
                             url={props.url}
+                            language={props.language}
                           />
                         </>
                       );

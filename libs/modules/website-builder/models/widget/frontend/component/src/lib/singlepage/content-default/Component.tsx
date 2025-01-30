@@ -19,6 +19,9 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <div className="w-full flex items-start flex-col gap-5 mx-auto max-w-7xl">
+        <p className="text-3xl font-bold text-blue-600">
+          Language: {props.language}
+        </p>
         <ClientComponent />
         {props.data?.subtitle ? (
           <h3 className="text-base tracking-tight text-gray-600 sm:text-md md:text-xl max-w-xl">

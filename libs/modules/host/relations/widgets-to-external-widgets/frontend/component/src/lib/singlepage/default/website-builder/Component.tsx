@@ -29,6 +29,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer={props.isServer}
               data={widget}
               variant={widget.variant as any}
+              language={props.language}
             >
               {widget.variant.includes("navbar") ? (
                 <RbacProfileButtonDefault isServer={props.isServer} />

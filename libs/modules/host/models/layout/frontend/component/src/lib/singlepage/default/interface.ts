@@ -1,21 +1,20 @@
 export { type IModel } from "@sps/host/models/layout/sdk/model";
 import { IModel } from "@sps/host/models/layout/sdk/model";
-import { ISpsComponentBase } from "@sps/ui-adapter";
-import { ReactNode } from "react";
-import { IFindByIdProps } from "@sps/shared-frontend-api";
+import {
+  IComponentProps as IParentComponentProps,
+  IComponentPropsExtended as IParentComponentPropsExtended,
+} from "@sps/shared-frontend-components/singlepage/default/interface";
 
 export const variant = "default" as const;
 
-export interface IComponentProps extends ISpsComponentBase {
-  variant: typeof variant;
-  data: Partial<IModel>;
-  children?: ReactNode;
-  apiProps?: {
-    params?: IFindByIdProps["params"];
-    options?: IFindByIdProps["options"];
-  };
+export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {
+  language: string;
 }
 
-export interface IComponentPropsExtended extends IComponentProps {
-  data: IModel;
-}
+export interface IComponentPropsExtended
+  extends IParentComponentPropsExtended<
+    IModel,
+    typeof variant,
+    IComponentProps
+  > {}

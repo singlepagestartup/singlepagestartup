@@ -6,7 +6,7 @@ import "../styles/fonts.css";
 import "../styles/tailwind.scss";
 
 import { fonts } from "./fonts";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { Toaster } from "@sps/shared-ui-shadcn";
 import { Component as Admin } from "../src/components/admin";
 import { Component as SpsRbacSubject } from "@sps/rbac/models/subject/frontend/component";
