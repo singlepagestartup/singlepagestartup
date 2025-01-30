@@ -31,21 +31,25 @@ export class Middleware {
           }
 
           if (["POST", "PUT", "PATCH"].includes(method)) {
-            await broadcastChannelApi.pushMessage({
-              data: {
-                slug: "revalidation",
-                payload: path,
-                expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            await broadcastChannelApi
+              .pushMessage({
+                data: {
+                  slug: "revalidation",
+                  payload: path,
+                  expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
                 },
-                next: {
-                  cache: "no-store",
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                  next: {
+                    cache: "no-store",
+                  },
                 },
-              },
-            });
+              })
+              .catch((error) => {
+                //
+              });
             revalidateTag(path);
           }
 
@@ -55,37 +59,45 @@ export class Middleware {
               "",
             );
 
-            await broadcastChannelApi.pushMessage({
-              data: {
-                slug: "revalidation",
-                payload: pathWithoutId,
-                expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            await broadcastChannelApi
+              .pushMessage({
+                data: {
+                  slug: "revalidation",
+                  payload: pathWithoutId,
+                  expiresAt: new Date(new Date().getTime() + STALE_TIME * 5),
                 },
-                next: {
-                  cache: "no-store",
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                  next: {
+                    cache: "no-store",
+                  },
                 },
-              },
-            });
+              })
+              .catch((error) => {
+                //
+              });
             revalidateTag(pathWithoutId);
           }
 
-          const expiredMessages = await broadcastMessageApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "expiresAt",
-                    method: "lt",
-                    value: new Date(new Date().setSeconds(0, 0)),
-                  },
-                ],
+          const expiredMessages = await broadcastMessageApi
+            .find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "expiresAt",
+                      method: "lt",
+                      value: new Date(new Date().setSeconds(0, 0)),
+                    },
+                  ],
+                },
               },
-            },
-          });
+            })
+            .catch((error) => {
+              //
+            });
 
           expiredMessages?.forEach(async (message) => {
             if (!RBAC_SECRET_KEY) {

@@ -1,5 +1,6 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -45,8 +46,12 @@ export function Component(props: IComponentPropsExtended) {
                   fontSize: "1rem",
                 }}
               >
-                {orderToProduct.product.title} Quantity:{" "}
-                {orderToProduct.quantity}
+                {
+                  orderToProduct.product.title?.[
+                    internationalization.defaultLanguage.code
+                  ]
+                }{" "}
+                Quantity: {orderToProduct.quantity}
               </p>
             );
           },

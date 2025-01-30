@@ -1,6 +1,7 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
 import { Body, Container, Head, Preview, Text } from "@react-email/components";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -29,8 +30,12 @@ export function Component(props: IComponentPropsExtended) {
             (orderToProduct, index) => {
               return (
                 <Text key={index}>
-                  {orderToProduct.product.title} Quantity:{" "}
-                  {orderToProduct.quantity}
+                  {
+                    orderToProduct.product.title?.[
+                      internationalization.defaultLanguage.code
+                    ]
+                  }{" "}
+                  Quantity: {orderToProduct.quantity}
                 </Text>
               );
             },

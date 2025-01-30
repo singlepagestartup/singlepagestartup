@@ -13,6 +13,8 @@ import {
   fields,
 } from "@sps/ecommerce/models/attribute-key/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -22,11 +24,11 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      prefix: props.data?.prefix || "",
-      suffix: props.data?.suffix || "",
+      prefix: props.data?.prefix || {},
+      suffix: props.data?.suffix || {},
       slug: props.data?.slug || "",
       type: props.data?.type || "",
-      title: props.data?.title || "",
+      title: props.data?.title || {},
       field: props.data?.field || "string",
     },
   });
@@ -53,14 +55,21 @@ export function Component(props: IComponentPropsExtended) {
       name="attribute-key"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="title"
-          label="Title"
-          form={form}
-          placeholder="Type title"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -71,23 +80,37 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Type slug"
         />
 
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="prefix"
-          label="Prefix"
-          form={form}
-          placeholder="Type prefix"
-        />
+        <AgregatedInput title="Prefix">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`prefix.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type prefix"
+              />
+            );
+          })}
+        </AgregatedInput>
 
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="suffix"
-          label="Suffix"
-          form={form}
-          placeholder="Type suffix"
-        />
+        <AgregatedInput title="Suffiz">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`suffix.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type suffix"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"

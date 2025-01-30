@@ -417,7 +417,7 @@ export class Handler {
 
       let durationInMiliseconds = 31540000000;
 
-      switch (interval?.string) {
+      switch (interval?.string?.["en"]) {
         case "minute":
           durationInMiliseconds = 60000;
           break;

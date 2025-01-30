@@ -8,9 +8,6 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   type: pgCore.text("type").notNull().default("feature"),
   field: pgCore.text("field").notNull().default("string"),
-  title: pgCore.text("title").notNull(),
-  prefix: pgCore.text("prefix"),
-  suffix: pgCore.text("suffix"),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()
@@ -20,4 +17,16 @@ export const fields = {
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  prefix: pgCore
+    .jsonb("prefix")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  suffix: pgCore
+    .jsonb("suffix")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
 };

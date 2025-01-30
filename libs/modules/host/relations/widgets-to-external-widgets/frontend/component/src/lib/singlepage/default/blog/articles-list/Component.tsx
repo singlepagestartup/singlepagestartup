@@ -1,7 +1,11 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as Article } from "@sps/blog/models/article/frontend/component";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(
+  props: ISpsComponentBase & {
+    language: string;
+  },
+) {
   return (
     <Article isServer={props.isServer} variant="find">
       {({ data }) => {
@@ -12,6 +16,7 @@ export function Component(props: ISpsComponentBase) {
               isServer={props.isServer}
               variant={entity.variant as any}
               data={entity}
+              language={props.language}
             />
           );
         });

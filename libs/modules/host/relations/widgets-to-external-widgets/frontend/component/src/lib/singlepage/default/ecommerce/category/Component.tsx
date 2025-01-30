@@ -6,10 +6,17 @@ export function Component(
   props: ISpsComponentBase & {
     data: IModel;
     url: string;
+    language: string;
   },
 ) {
   if (props.data.variant === "category-overview-default") {
-    return <OverviewDefault url={props.url} isServer={props.isServer} />;
+    return (
+      <OverviewDefault
+        url={props.url}
+        isServer={props.isServer}
+        language={props.language}
+      />
+    );
   }
 
   return <></>;

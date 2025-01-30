@@ -8,6 +8,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/blog/models/widget/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -17,9 +19,11 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      title: props.data?.title || "",
       className: props.data?.className || "",
       slug: props.data?.slug || "",
+      title: props.data?.title ?? {},
+      subtitle: props.data?.subtitle ?? {},
+      description: props.data?.description ?? {},
     },
   });
 
@@ -45,14 +49,53 @@ export function Component(props: IComponentPropsExtended) {
       name="widget"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Title"
-          name="title"
-          form={form}
-          placeholder="Type title"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -78,7 +121,7 @@ export function Component(props: IComponentPropsExtended) {
           label="Variant"
           name="variant"
           form={form}
-          placeholder="Type title"
+          placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
       </div>

@@ -1,16 +1,18 @@
 "use client";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { api } from "@sps/website-builder/models/feature/sdk/client";
+import { api } from "@sps/website-builder/models/button/sdk/client";
 import { useForm } from "react-hook-form";
-import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   variants,
   insertSchema,
-} from "@sps/website-builder/models/feature/sdk/model";
+} from "@sps/website-builder/models/button/sdk/model";
+import { FormField } from "@sps/ui-adapter";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -20,9 +22,8 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      title: props.data?.title || "",
-      subtitle: props.data?.subtitle || "",
-      description: props.data?.description || "",
+      title: props.data?.title ?? {},
+      url: props.data?.url || "",
       className: props.data?.className || "",
       slug: props.data?.slug || "",
     },
@@ -46,18 +47,25 @@ export function Component(props: IComponentPropsExtended) {
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}
-      variant="admin-form"
-      name="feature"
+      variant={props.variant}
+      name="button"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Title"
-          name="title"
-          form={form}
-          placeholder="Enter title"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -71,28 +79,19 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
-          label="Subtitle"
-          name="subtitle"
+          name="url"
+          label="Url"
           form={form}
-          placeholder="Enter subtitle"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="tiptap"
-          label="Description"
-          name="description"
-          form={form}
-          placeholder="Type description"
+          placeholder="Type url"
         />
 
         <FormField
           ui="shadcn"
           type="text"
-          label="Class name"
           name="className"
+          label="Class Name"
           form={form}
-          placeholder="Enter class name"
+          placeholder="Type class name"
         />
 
         <FormField
@@ -101,28 +100,20 @@ export function Component(props: IComponentPropsExtended) {
           label="Variant"
           name="variant"
           form={form}
-          placeholder="Select variant"
+          placeholder="Type title"
           options={variants.map((variant) => [variant, variant])}
         />
 
-        {props.widgetsToFeatures
-          ? props.widgetsToFeatures({
+        {props.buttonsArraysToButtons
+          ? props.buttonsArraysToButtons({
               data: props.data,
 
               isServer: props.isServer,
             })
           : null}
 
-        {props.featuresToFileStorageModuleWidgets
-          ? props.featuresToFileStorageModuleWidgets({
-              data: props.data,
-
-              isServer: props.isServer,
-            })
-          : null}
-
-        {props.featuresToButtonsArrays
-          ? props.featuresToButtonsArrays({
+        {props.buttonsSpsFileStorageModuleWidgets
+          ? props.buttonsSpsFileStorageModuleWidgets({
               data: props.data,
 
               isServer: props.isServer,

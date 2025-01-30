@@ -22,9 +22,11 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Card className="w-full flex flex-col gap-3">
         <CardHeader>
-          {props.data.title ? <CardTitle>{props.data.title}</CardTitle> : null}
-          {props.data.description ? (
-            <TipTap value={props.data.description} />
+          {props.data.title ? (
+            <CardTitle>{props.data.title?.[props.language]}</CardTitle>
+          ) : null}
+          {props.data.description?.[props.language] ? (
+            <TipTap value={props.data.description[props.language] || ""} />
           ) : null}
         </CardHeader>
         <CardContent>{props.children}</CardContent>

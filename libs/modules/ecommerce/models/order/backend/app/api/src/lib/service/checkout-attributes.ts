@@ -8,6 +8,7 @@ import { api as productsToAttributesApi } from "@sps/ecommerce/relations/product
 import { api as attributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
 import { api as attributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
 import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { internationalization } from "@sps/shared-configuration";
 
 export type IExecuteProps = {
   id: string;
@@ -321,8 +322,12 @@ export class Service {
       }
 
       if (!interval && productIntervals[0].string) {
-        interval = productIntervals[0].string;
-      } else if (interval !== productIntervals[0].string) {
+        interval =
+          productIntervals[0].string[internationalization.defaultLanguage.code];
+      } else if (
+        interval !==
+        productIntervals[0].string?.[internationalization.defaultLanguage.code]
+      ) {
         throw new Error("Order has multiple intervals");
       }
     }

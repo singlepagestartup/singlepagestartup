@@ -8,6 +8,13 @@
       "when": 1737754240103,
       "tag": "0000_pink_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738269678150,
+      "tag": "0001_brave_puppet_master",
+      "breakpoints": true
     }
   ]
 }

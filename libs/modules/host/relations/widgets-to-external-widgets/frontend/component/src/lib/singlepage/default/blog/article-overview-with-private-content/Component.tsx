@@ -6,6 +6,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export function Component(
   props: ISpsComponentBase & {
     url: string;
+    language: string;
   },
 ) {
   return (
@@ -51,6 +52,7 @@ export function Component(
                       isServer={props.isServer}
                       data={entity}
                       variant="default"
+                      language={props.language}
                     />
                     <ClientComponent isServer={props.isServer} data={entity} />
                   </Article>

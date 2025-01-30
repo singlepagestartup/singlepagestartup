@@ -52,7 +52,9 @@ export function Component(props: IComponentPropsExtended) {
           </ArticlesToFileStorageModuleWidgets>
         </div> */}
 
-        <p className="font-bold text-4xl">{props.data.title}</p>
+        <p className="font-bold text-4xl">
+          {props.data.title?.[props.language]}
+        </p>
 
         {/* {props.data.description ? (
           <TipTap value={props.data.description} />

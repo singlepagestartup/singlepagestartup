@@ -4,7 +4,11 @@ import { Component as Product } from "@sps/ecommerce/models/product/frontend/com
 import { Component as ProductAction } from "../../product/action/Component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(
+  props: ISpsComponentBase & {
+    language: string;
+  },
+) {
   return (
     <Store isServer={props.isServer} variant="find">
       {({ data }) => {
@@ -15,6 +19,7 @@ export function Component(props: ISpsComponentBase) {
               isServer={props.isServer}
               variant="default"
               data={entity}
+              language={props.language}
             >
               <StoresToProducts
                 isServer={props.isServer}
@@ -62,6 +67,7 @@ export function Component(props: ISpsComponentBase) {
                                 isServer={props.isServer}
                                 variant="default"
                                 data={product}
+                                language={props.language}
                               >
                                 <ProductAction
                                   isServer={props.isServer}

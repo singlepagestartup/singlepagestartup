@@ -37,6 +37,7 @@ export function Component(props: IComponentPropsExtended) {
                   url={props.url}
                   isServer={props.isServer}
                   data={entity}
+                  language={props.language}
                 />
               ) : null}
               {entity.variant.startsWith("category") ? (
@@ -44,10 +45,15 @@ export function Component(props: IComponentPropsExtended) {
                   url={props.url}
                   isServer={props.isServer}
                   data={entity}
+                  language={props.language}
                 />
               ) : null}
               {entity.variant.startsWith("store") ? (
-                <Stores isServer={props.isServer} data={entity} />
+                <Stores
+                  isServer={props.isServer}
+                  data={entity}
+                  language={props.language}
+                />
               ) : null}
             </EcommerceWidget>
           );

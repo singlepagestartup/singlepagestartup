@@ -29,41 +29,12 @@ export function Component(props: IComponentPropsExtended) {
                 isServer={props.isServer}
                 variant={entity.variant as any}
                 data={entity}
+                language={props.language}
               />
             );
           });
         }}
       </WidgetsToButtonsArrays>
-      {/* <div className="flex w-full flex-col lg:flex-row items-center gap-2">
-        {props.data.WidgetsToButtonsArrays
-          .filter((entity) => entity.position === "default")
-          .map((entity, index) => {
-            return (
-              <NavbarsToButtonsArrays
-                key={index}
-                variant="default"
-                data={entity}
-                isServer={props.isServer}
-                
-              />
-            );
-          })}
-      </div>
-      <div className="flex flex-col lg:flex-row gap-2 items-center">
-        {props.data.WidgetsToButtonsArrays
-          .filter((entity) => entity.position === "additional")
-          .map((entity, index) => {
-            return (
-              <NavbarsToButtonsArrays
-                key={index}
-                variant="default"
-                data={entity}
-                isServer={props.isServer}
-                
-              />
-            );
-          })}
-      </div> */}
     </div>
   );
 }

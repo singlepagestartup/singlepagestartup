@@ -14,7 +14,9 @@ export function Component(props: IComponentPropsExtended) {
       variant="secondary"
       asChild={true}
     >
-      <Link href={props.data.url || "/"}>{props.data.title}</Link>
+      <Link href={props.data.url || "/"}>
+        {props.data.title?.[props.language]}
+      </Link>
     </Button>
   );
 }

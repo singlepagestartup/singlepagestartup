@@ -8,6 +8,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export function Component(
   props: ISpsComponentBase & {
     url: string;
+    language: string;
   },
 ) {
   return (
@@ -29,6 +30,7 @@ export function Component(
             data={{
               id: data,
             }}
+            language={props.language}
           >
             <div className="grid lg:grid-cols-2 gap-4">
               <CategoriesToProducts
@@ -81,6 +83,7 @@ export function Component(
                                 isServer={props.isServer}
                                 variant="default"
                                 data={entity}
+                                language={props.language}
                               >
                                 <ProductAction
                                   isServer={props.isServer}

@@ -46,7 +46,7 @@ export function Component(props: IComponentPropsExtended) {
           }}
         </ProductsToFileStorageModuleWidgets>
       </div>
-      <p className="font-bold">{props.data.title}</p>
+      <p className="font-bold">{props.data.title?.[props.language]}</p>
       <div className="flex flex-col gap-3">
         <ProductsToAttributes
           isServer={props.isServer}
@@ -117,6 +117,7 @@ export function Component(props: IComponentPropsExtended) {
                                       isServer={props.isServer}
                                       variant="default"
                                       data={attributeKey}
+                                      language={props.language}
                                     />
                                     <ProductsToAttributes
                                       isServer={props.isServer}

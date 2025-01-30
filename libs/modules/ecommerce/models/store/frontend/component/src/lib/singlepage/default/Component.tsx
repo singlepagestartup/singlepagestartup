@@ -13,7 +13,9 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className || "")}
     >
-      <h2 className="text-4xl font-bold">{props.data.title}</h2>
+      <h2 className="text-4xl font-bold">
+        {props.data.title?.[props.language]}
+      </h2>
       <StoresToAttributes
         isServer={props.isServer}
         variant="find"
@@ -83,6 +85,7 @@ export function Component(props: IComponentPropsExtended) {
                                     isServer={props.isServer}
                                     variant="default"
                                     data={attributeKey}
+                                    language={props.language}
                                   />
                                   <StoresToAttributes
                                     isServer={props.isServer}

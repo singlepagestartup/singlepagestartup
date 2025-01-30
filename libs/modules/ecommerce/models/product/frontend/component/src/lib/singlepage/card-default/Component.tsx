@@ -28,7 +28,7 @@ export function Component(props: IComponentPropsExtended) {
       <CardHeader>
         <CardTitle>
           <Link href={`/ecommerce/products/${props.data.id}`} className="w-fit">
-            {props.data.title}
+            {props.data.title?.[props.language]}
           </Link>
         </CardTitle>
       </CardHeader>
@@ -64,7 +64,7 @@ export function Component(props: IComponentPropsExtended) {
           }}
         </ProductsToFileStorageModuleWidgets>
         <p className="w-full text-sm text-gray-600 mt-auto">
-          {props.data.shortDescription}
+          {props.data.shortDescription?.[props.language]}
         </p>
         <ProductsToAttributes
           isServer={props.isServer}
@@ -135,6 +135,7 @@ export function Component(props: IComponentPropsExtended) {
                                       isServer={props.isServer}
                                       variant="default"
                                       data={attributeKey}
+                                      language={props.language}
                                     />
                                     <ProductsToAttributes
                                       isServer={props.isServer}

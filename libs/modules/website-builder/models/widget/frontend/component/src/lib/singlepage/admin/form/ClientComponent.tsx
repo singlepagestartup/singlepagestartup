@@ -21,10 +21,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      title: {
-        [internationalization.defaultLanguage.code]: "",
-        ...(props.data?.title ?? {}),
-      },
+      title: props.data?.title ?? {},
       subtitle: props.data?.subtitle ?? {},
       description: props.data?.description ?? {},
       slug: props.data?.slug || "",

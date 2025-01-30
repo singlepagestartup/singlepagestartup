@@ -8,6 +8,13 @@
       "when": 1737754240064,
       "tag": "0000_aromatic_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738269823531,
+      "tag": "0001_strange_silver_fox",
+      "breakpoints": true
     }
   ]
 }

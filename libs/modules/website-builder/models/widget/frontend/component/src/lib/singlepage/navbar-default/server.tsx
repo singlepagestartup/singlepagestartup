@@ -22,10 +22,20 @@ export default async function Server(props: IComponentProps) {
   }
 
   const logotype = (
-    <Logotype isServer={props.isServer} variant={props.variant} data={data} />
+    <Logotype
+      isServer={props.isServer}
+      variant={props.variant}
+      data={data}
+      language={props.language}
+    />
   );
   const content = (
-    <Content isServer={props.isServer} variant={props.variant} data={data} />
+    <Content
+      isServer={props.isServer}
+      variant={props.variant}
+      data={data}
+      language={props.language}
+    />
   );
 
   return (
@@ -36,6 +46,7 @@ export default async function Server(props: IComponentProps) {
       content={content}
       logotype={logotype}
       children={props.children}
+      language={props.language}
     />
   );
 }

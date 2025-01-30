@@ -4,7 +4,11 @@ import { Component as ArticlesList } from "./articles-list/Component";
 import { Component as ArticleOverviewWithPrivateContent } from "./article-overview-with-private-content/Component";
 import { Component as ArticleOverview } from "./article-overview/Component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(
+  props: IComponentPropsExtended & {
+    language: string;
+  },
+) {
   return (
     <BlogWidget
       isServer={props.isServer}
@@ -33,13 +37,17 @@ export function Component(props: IComponentPropsExtended) {
               data={entity}
             >
               {entity.variant.includes("articles-list") ? (
-                <ArticlesList isServer={props.isServer} />
+                <ArticlesList
+                  isServer={props.isServer}
+                  language={props.language}
+                />
               ) : null}
               {entity.variant.includes("article-overview") ? (
                 entity.variant.includes("with-private-content") ? (
                   <ArticleOverviewWithPrivateContent
                     url={props.url}
                     isServer={props.isServer}
+                    language={props.language}
                   />
                 ) : (
                   <ArticleOverview url={props.url} isServer={props.isServer} />

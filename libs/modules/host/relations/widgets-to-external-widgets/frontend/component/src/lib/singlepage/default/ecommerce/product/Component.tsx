@@ -8,6 +8,7 @@ export function Component(
   props: ISpsComponentBase & {
     data: IModel;
     url: string;
+    language: string;
   },
 ) {
   return (
@@ -34,12 +35,19 @@ export function Component(
             <ListDefault
               isServer={props.isServer}
               billingModuleCurrencyId={data?.[0]?.id}
+              language={props.language}
             />
           );
         }
 
         if (props.data.variant === "product-overview-default") {
-          return <OverviewDefault url={props.url} isServer={props.isServer} />;
+          return (
+            <OverviewDefault
+              url={props.url}
+              isServer={props.isServer}
+              language={props.language}
+            />
+          );
         }
 
         return <></>;

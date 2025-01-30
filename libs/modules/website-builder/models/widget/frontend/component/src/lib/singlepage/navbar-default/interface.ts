@@ -9,7 +9,9 @@ import { ReactNode } from "react";
 export const variant = "navbar-default" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  language: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

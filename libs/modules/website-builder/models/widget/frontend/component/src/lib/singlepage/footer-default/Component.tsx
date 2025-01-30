@@ -43,6 +43,7 @@ export function Component(props: IComponentPropsExtended) {
                       variant={entity.variant as any}
                       isServer={props.isServer}
                       data={entity}
+                      language={props.language}
                     />
                   );
                 });
@@ -83,6 +84,7 @@ export function Component(props: IComponentPropsExtended) {
                       isServer={props.isServer}
                       variant={entity.variant as any}
                       data={entity}
+                      language={props.language}
                     />
                   );
                 });
@@ -120,6 +122,7 @@ export function Component(props: IComponentPropsExtended) {
                       isServer={props.isServer}
                       variant={entity.variant as any}
                       data={entity}
+                      language={props.language}
                     />
                   );
                 });
@@ -167,6 +170,7 @@ export function Component(props: IComponentPropsExtended) {
                       isServer={props.isServer}
                       variant={entity.variant as any}
                       data={entity}
+                      language={props.language}
                     />
                   );
                 });

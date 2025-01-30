@@ -48,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
         </ProductsToFileStorageModuleWidgets>
       </div>
       <Link href={`/ecommerce/products/${props.data.id}`} className="w-fit">
-        <p className="font-bold w-fit">{props.data.title}</p>
+        <p className="font-bold w-fit">{props.data.title?.[props.language]}</p>
       </Link>
       <div className="flex flex-col gap-3">
         <ProductsToAttributes
@@ -120,6 +120,7 @@ export function Component(props: IComponentPropsExtended) {
                                       isServer={props.isServer}
                                       variant="default"
                                       data={attributeKey}
+                                      language={props.language}
                                     />
                                     <ProductsToAttributes
                                       isServer={props.isServer}

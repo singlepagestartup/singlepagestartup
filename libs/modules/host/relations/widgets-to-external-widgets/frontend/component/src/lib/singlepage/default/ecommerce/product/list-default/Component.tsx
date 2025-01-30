@@ -5,6 +5,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export function Component(
   props: ISpsComponentBase & {
     billingModuleCurrencyId?: string;
+    language: string;
   },
 ) {
   return (
@@ -19,6 +20,7 @@ export function Component(
                   isServer={props.isServer}
                   variant="card-default"
                   data={entity}
+                  language={props.language}
                 >
                   <ProductAction
                     isServer={props.isServer}

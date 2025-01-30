@@ -8,6 +8,13 @@
       "when": 1737754258729,
       "tag": "0000_mixed_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738271038559,
+      "tag": "0001_sweet_george_stacy",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,8 @@ import {
   insertSchema,
 } from "@sps/website-builder/models/logotype/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -23,6 +25,7 @@ export function Component(props: IComponentPropsExtended) {
       url: props.data?.url || "",
       className: props.data?.className || "",
       slug: props.data?.slug || "",
+      title: props.data?.title ?? {},
     },
   });
 
@@ -48,15 +51,21 @@ export function Component(props: IComponentPropsExtended) {
       name="logotype"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Variant"
-          name="variant"
-          form={form}
-          placeholder="Select variant"
-          options={variants.map((variant) => [variant, variant])}
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -74,6 +83,16 @@ export function Component(props: IComponentPropsExtended) {
           name="url"
           form={form}
           placeholder="Type url"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="select"
+          label="Variant"
+          name="variant"
+          form={form}
+          placeholder="Select variant"
+          options={variants.map((variant) => [variant, variant])}
         />
 
         <FormField

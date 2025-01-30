@@ -38,6 +38,7 @@ export function Component(props: IComponentPropsExtended) {
                     isServer={props.isServer}
                     variant={entity.variant as any}
                     data={entity}
+                    language={props.language}
                   />
                 );
               });
@@ -47,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex flex-col gap-12 items-center">
           <div className="relative p-10">
             <h3 className="font-bold text-xl lg:text-4xl relative">
-              {props.data.title}
+              {props.data.title?.[props.language]}
             </h3>
           </div>
 
@@ -76,6 +77,7 @@ export function Component(props: IComponentPropsExtended) {
                     isServer={props.isServer}
                     variant={entity.variant as any}
                     data={entity}
+                    language={props.language}
                   />
                 );
               });

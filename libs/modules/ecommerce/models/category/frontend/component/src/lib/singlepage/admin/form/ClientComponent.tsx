@@ -1,7 +1,7 @@
 "use client";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { api } from "@sps/website-builder/models/buttons-array/sdk/client";
+import { api } from "@sps/ecommerce/models/category/sdk/client";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
@@ -9,8 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   variants,
   insertSchema,
-} from "@sps/website-builder/models/buttons-array/sdk/model";
+} from "@sps/ecommerce/models/category/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -20,10 +22,10 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      title: props.data?.title || "",
+      title: props.data?.title || {},
       className: props.data?.className || "",
-      description: props.data?.description || "",
       slug: props.data?.slug || "",
+      description: props.data?.description ?? {},
     },
   });
 
@@ -45,18 +47,41 @@ export function Component(props: IComponentPropsExtended) {
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}
-      variant="admin-form"
-      name="buttons-array"
+      variant={props.variant}
+      name="category"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Title"
-          name="title"
-          form={form}
-          placeholder="Type title"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"
@@ -69,6 +94,15 @@ export function Component(props: IComponentPropsExtended) {
 
         <FormField
           ui="shadcn"
+          type="text"
+          label="Class Name"
+          name="className"
+          form={form}
+          placeholder="Type class name"
+        />
+
+        <FormField
+          ui="shadcn"
           type="select"
           label="Variant"
           name="variant"
@@ -77,50 +111,24 @@ export function Component(props: IComponentPropsExtended) {
           options={variants.map((variant) => [variant, variant])}
         />
 
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Class name"
-          name="className"
-          form={form}
-          placeholder="Type class name"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="tiptap"
-          label="Description"
-          name="description"
-          form={form}
-          placeholder="Type description"
-        />
-
-        {props.buttonsArraysToButtons
-          ? props.buttonsArraysToButtons({
+        {props.categoriesToProducts
+          ? props.categoriesToProducts({
               data: props.data,
 
               isServer: props.isServer,
             })
           : null}
 
-        {props.widgetsToButtonsArrays
-          ? props.widgetsToButtonsArrays({
+        {props.categoriesToFileStorageModuleWidgets
+          ? props.categoriesToFileStorageModuleWidgets({
               data: props.data,
 
               isServer: props.isServer,
             })
           : null}
 
-        {props.slidesToButtonsArrays
-          ? props.slidesToButtonsArrays({
-              data: props.data,
-
-              isServer: props.isServer,
-            })
-          : null}
-
-        {props.featuresToButtonsArrays
-          ? props.featuresToButtonsArrays({
+        {props.widgetsToCategories
+          ? props.widgetsToCategories({
               data: props.data,
 
               isServer: props.isServer,

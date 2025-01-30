@@ -5,10 +5,11 @@ import { Component as ListDefault } from "./list-default/Component";
 export function Component(
   props: ISpsComponentBase & {
     data: IModel;
+    language: string;
   },
 ) {
   if (props.data.variant === "store-list-default") {
-    return <ListDefault isServer={props.isServer} />;
+    return <ListDefault isServer={props.isServer} language={props.language} />;
   }
 
   return <></>;

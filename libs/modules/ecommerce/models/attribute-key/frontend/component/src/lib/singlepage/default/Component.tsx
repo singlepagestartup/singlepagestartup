@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className || "")}
     >
-      <p className="font-bold">{props.data.title}</p>
+      <p className="font-bold">{props.data.title?.[props.language]}</p>
     </div>
   );
 }

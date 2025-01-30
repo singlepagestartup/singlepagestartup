@@ -11,6 +11,8 @@ import {
   insertSchema,
 } from "@sps/ecommerce/models/attribute/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -24,7 +26,7 @@ export function Component(props: IComponentPropsExtended) {
       date: props.data?.date ? new Date(props.data.date) : null,
       datetime: props.data?.datetime ? new Date(props.data.datetime) : null,
       number: props.data?.number || null,
-      string: props.data?.string || "",
+      string: props.data?.string ?? {},
     },
   });
 
@@ -50,14 +52,21 @@ export function Component(props: IComponentPropsExtended) {
       name="attribute"
     >
       <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="string"
-          label="String"
-          form={form}
-          placeholder="Type string"
-        />
+        <AgregatedInput title="String">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`string.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type string value"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"

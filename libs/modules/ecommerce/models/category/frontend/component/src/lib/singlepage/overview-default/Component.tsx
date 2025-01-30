@@ -42,7 +42,9 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </CategoriesToFileStorageModuleWidgets>
-        <p className="font-bold text-center text-4xl">{props.data.title}</p>
+        <p className="font-bold text-center text-4xl">
+          {props.data.title?.[props.language]}
+        </p>
       </div>
       {props.children}
     </div>

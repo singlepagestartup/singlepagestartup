@@ -76,6 +76,7 @@ export function Component(props: IComponentPropsExtended) {
                     isServer={false}
                     variant={entity.variant as any}
                     data={entity}
+                    language={props.language}
                   />
                 );
               });
