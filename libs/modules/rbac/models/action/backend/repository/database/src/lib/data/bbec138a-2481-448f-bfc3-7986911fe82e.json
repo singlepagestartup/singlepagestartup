@@ -1,9 +1,0 @@
-{
-  "id": "bbec138a-2481-448f-bfc3-7986911fe82e",
-  "createdAt": "2024-12-28T10:18:53.825Z",
-  "updatedAt": "2024-12-28T10:18:53.825Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/blog/articles-to-website-builder-module-widgets"
-}

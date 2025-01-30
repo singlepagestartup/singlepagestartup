@@ -1,9 +1,0 @@
-{
-  "id": "400ea16d-f74e-44ad-aacd-942401df1ca2",
-  "createdAt": "2024-12-28T10:18:53.816Z",
-  "updatedAt": "2024-12-28T10:18:53.816Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/identities"
-}

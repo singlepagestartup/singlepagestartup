@@ -1,9 +1,0 @@
-{
-  "id": "16b31949-2608-4447-9133-e9834e386a81",
-  "createdAt": "2024-12-28T10:18:53.830Z",
-  "updatedAt": "2024-12-28T10:18:53.830Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "PATCH",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/identities/[rbac.identities.id]"
-}

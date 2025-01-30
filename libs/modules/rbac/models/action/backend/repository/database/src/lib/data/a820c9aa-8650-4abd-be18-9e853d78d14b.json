@@ -1,9 +1,0 @@
-{
-  "id": "a820c9aa-8650-4abd-be18-9e853d78d14b",
-  "createdAt": "2024-12-28T10:18:53.809Z",
-  "updatedAt": "2024-12-28T10:18:53.809Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/subjects-to-identities/[rbac.subjects-to-identities.id]"
-}

@@ -1,0 +1,13 @@
+{
+  "id": "5c9381ba-e7d0-485e-979b-93276bd7d680",
+  "createdAt": "2025-01-24T23:47:55.599Z",
+  "updatedAt": "2025-01-24T23:47:55.599Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"title\":\"Agent finished\"}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[]",
+  "sendAfter": "2025-01-22T22:52:38.988Z"
+}

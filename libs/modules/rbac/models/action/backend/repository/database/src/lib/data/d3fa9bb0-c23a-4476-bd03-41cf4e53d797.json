@@ -1,9 +1,0 @@
-{
-  "id": "d3fa9bb0-c23a-4476-bd03-41cf4e53d797",
-  "createdAt": "2024-12-28T10:18:53.831Z",
-  "updatedAt": "2024-12-28T10:18:53.831Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/billing/payment-intents-to-invoices/[billing.payment-intents-to-invoices.id]"
-}

@@ -1,0 +1,13 @@
+{
+  "id": "b10cf852-5864-4457-bc6e-e6c3f8b8c22b",
+  "createdAt": "2025-01-24T23:49:03.781Z",
+  "updatedAt": "2025-01-24T23:49:03.781Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"ecommerce\":{\"order\":{\"id\":\"05bacb13-a203-4683-bd0d-1042ab594db3\",\"createdAt\":\"2024-12-19T20:40:00.802Z\",\"updatedAt\":\"2024-12-19T20:40:01.887Z\",\"variant\":\"default\",\"status\":\"approving\",\"type\":\"cart\",\"receipt\":\"\",\"comment\":\"\",\"checkoutAttributes\":{\"amount\":590,\"type\":\"one_off\"},\"ordersToProducts\":[{\"id\":\"f10702be-e4e6-427c-9bf1-0fe550773c96\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"05bacb13-a203-4683-bd0d-1042ab594db3\",\"productId\":\"e71b52bb-d772-4252-8fbb-f7bf41570532\",\"product\":{\"id\":\"e71b52bb-d772-4252-8fbb-f7bf41570532\",\"createdAt\":\"2024-08-19T01:07:23.637Z\",\"updatedAt\":\"2024-08-19T01:07:23.637Z\",\"variant\":\"default\",\"type\":\"one_off\",\"title\":\"Website\",\"description\":\"\",\"shortDescription\":\"\",\"sku\":\"\"}}]}}}",
+  "reciever": "colororiginal66@gmail.com",
+  "attachments": "[{\"type\":\"image\",\"url\":\"/file-storage/c3045aa5.png\"}]",
+  "sendAfter": "2024-12-19T20:40:32.928Z"
+}

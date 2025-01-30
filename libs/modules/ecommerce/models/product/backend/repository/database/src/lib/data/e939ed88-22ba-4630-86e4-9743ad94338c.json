@@ -1,0 +1,11 @@
+{
+  "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
+  "createdAt": "2025-01-24T23:47:55.624Z",
+  "updatedAt": "2025-01-24T23:52:03.724Z",
+  "variant": "default",
+  "type": "subscription",
+  "title": "Pro",
+  "description": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription\"}]}]}",
+  "shortDescription": "",
+  "sku": "pro"
+}

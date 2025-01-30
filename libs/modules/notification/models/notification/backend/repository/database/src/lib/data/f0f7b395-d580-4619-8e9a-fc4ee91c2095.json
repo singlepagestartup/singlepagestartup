@@ -1,0 +1,13 @@
+{
+  "id": "f0f7b395-d580-4619-8e9a-fc4ee91c2095",
+  "createdAt": "2025-01-24T23:47:55.609Z",
+  "updatedAt": "2025-01-24T23:47:55.609Z",
+  "variant": "default",
+  "status": "new",
+  "method": "email",
+  "title": null,
+  "data": "{\"ecommerce\":{\"order\":{\"id\":\"f00c3f1f-6ed8-42fb-80e0-a5d0a7a0432c\",\"createdAt\":\"2024-12-23T12:12:17.980Z\",\"updatedAt\":\"2024-12-23T12:12:20.911Z\",\"variant\":\"default\",\"status\":\"approving\",\"type\":\"cart\",\"receipt\":\"\",\"comment\":\"\",\"checkoutAttributes\":{\"amount\":590,\"type\":\"one_off\"},\"ordersToBillingModuleCurrencies\":[{\"id\":\"65af0e6f-f1da-4539-b9c4-6ac10ff4918b\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"f00c3f1f-6ed8-42fb-80e0-a5d0a7a0432c\",\"billingModuleCurrencyId\":\"4ff9110f-522b-44d5-9154-d8086bfeafc7\",\"billingModuleCurrency\":{\"id\":\"4ff9110f-522b-44d5-9154-d8086bfeafc7\",\"createdAt\":\"2024-09-22T23:36:02.507Z\",\"updatedAt\":\"2024-09-22T23:36:02.507Z\",\"variant\":\"default\",\"isDefault\":false,\"symbol\":\"$\",\"title\":\"USD\",\"slug\":\"usd\"}}],\"ordersToProducts\":[{\"id\":\"563b2223-bddf-44f9-b21f-f08a36ee487f\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"f00c3f1f-6ed8-42fb-80e0-a5d0a7a0432c\",\"productId\":\"e71b52bb-d772-4252-8fbb-f7bf41570532\",\"product\":{\"id\":\"e71b52bb-d772-4252-8fbb-f7bf41570532\",\"createdAt\":\"2024-08-19T01:07:23.637Z\",\"updatedAt\":\"2024-08-19T01:07:23.637Z\",\"variant\":\"default\",\"type\":\"one_off\",\"title\":\"Website\",\"description\":\"\",\"shortDescription\":\"\",\"sku\":\"\"}}]}}}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[{\"type\":\"image\",\"url\":\"/file-storage/18286364.png\"}]",
+  "sendAfter": "2024-12-23T12:13:00.264Z"
+}

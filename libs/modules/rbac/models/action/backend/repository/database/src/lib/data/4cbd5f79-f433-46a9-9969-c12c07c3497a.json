@@ -1,9 +1,0 @@
-{
-  "id": "4cbd5f79-f433-46a9-9969-c12c07c3497a",
-  "createdAt": "2024-12-28T10:18:53.825Z",
-  "updatedAt": "2024-12-28T10:18:53.825Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/products-to-file-storage-module-files/[ecommerce.products-to-file-storage-module-files.id]"
-}

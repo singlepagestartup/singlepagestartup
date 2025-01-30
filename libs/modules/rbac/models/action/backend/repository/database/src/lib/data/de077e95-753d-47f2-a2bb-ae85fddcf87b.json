@@ -1,0 +1,9 @@
+{
+  "id": "de077e95-753d-47f2-a2bb-ae85fddcf87b",
+  "createdAt": "2025-01-24T23:47:55.708Z",
+  "updatedAt": "2025-01-24T23:52:03.793Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]"
+}

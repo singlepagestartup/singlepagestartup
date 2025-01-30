@@ -1,0 +1,9 @@
+{
+  "id": "36cef3d2-acf8-4c6f-9c16-45267fc3c4d0",
+  "createdAt": "2025-01-24T23:47:55.699Z",
+  "updatedAt": "2025-01-24T23:52:03.779Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/identities"
+}

@@ -1,9 +1,0 @@
-{
-  "id": "8df836ca-82ea-41a8-a6a0-e137c4542c7f",
-  "createdAt": "2024-12-28T10:18:53.833Z",
-  "updatedAt": "2024-12-28T10:18:53.833Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/orders/[ecommerce.orders.id]/receipt"
-}
