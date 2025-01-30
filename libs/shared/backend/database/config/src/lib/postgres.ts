@@ -3,6 +3,6 @@ import { DATABASE_OPTIONS } from "@sps/shared-utils";
 
 export const pg = postgres({
   ...DATABASE_OPTIONS,
-  idle_timeout: 10,
-  max_lifetime: 60,
+  // idle_timeout: 10,
+  // max_lifetime: 60,
 });

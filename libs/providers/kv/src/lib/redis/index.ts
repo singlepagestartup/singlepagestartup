@@ -17,7 +17,14 @@ export class Provider implements IProvider {
 
     const connectionParams = {
       maxRetriesPerRequest: 10,
-      commandTimeout: 5000,
+      retryStrategy(times) {
+        console.log(`Retrying connection: attempt ${times}`);
+        return Math.min(times * 50, 2000);
+      },
+      reconnectOnError(err) {
+        console.error("Redis error:", err);
+        return true;
+      },
     };
 
     const connectionCredentials: RedisOptions | undefined = {
