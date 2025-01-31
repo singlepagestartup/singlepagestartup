@@ -11,6 +11,7 @@ export const variant = "article-overview-with-private-content-default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   id: IArticle["id"];
+  language: string;
 }
 
 export interface IComponentPropsExtended

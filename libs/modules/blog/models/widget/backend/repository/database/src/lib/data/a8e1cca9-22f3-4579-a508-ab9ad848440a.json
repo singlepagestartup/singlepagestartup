@@ -1,10 +1,15 @@
 {
   "id": "a8e1cca9-22f3-4579-a508-ab9ad848440a",
   "className": "",
-  "title": "Articles",
   "createdAt": "2025-01-24T23:47:55.534Z",
-  "updatedAt": "2025-01-24T23:52:03.631Z",
-  "variant": "articles-list-default",
+  "updatedAt": "2025-01-31T08:03:07.604Z",
+  "variant": "article-list-default",
   "adminTitle": "WYG7cfQ1Tf",
-  "slug": "gbkmfgklb"
+  "slug": "gbkmfgklb",
+  "title": {
+    "en": "Articles",
+    "ru": "Статьи"
+  },
+  "subtitle": {},
+  "description": {}
 }

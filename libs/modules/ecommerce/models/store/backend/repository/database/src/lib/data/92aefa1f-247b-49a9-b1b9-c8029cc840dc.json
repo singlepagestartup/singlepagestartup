@@ -3,9 +3,15 @@
   "createdAt": "2025-01-24T23:47:55.624Z",
   "updatedAt": "2025-01-24T23:52:03.724Z",
   "variant": "default",
-  "title": "Single Page Shop",
-  "description": "",
-  "shortDescription": "",
   "adminTitle": "stormy fuchsia harrier",
-  "slug": "single-page-shop"
+  "slug": "single-page-shop",
+  "title": {
+    "en": "Single Page Shop"
+  },
+  "shortDescription": {
+    "en": ""
+  },
+  "description": {
+    "en": ""
+  }
 }

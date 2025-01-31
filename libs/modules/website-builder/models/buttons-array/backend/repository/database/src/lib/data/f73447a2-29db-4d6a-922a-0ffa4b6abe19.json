@@ -3,9 +3,13 @@
   "createdAt": "2025-01-30T16:53:49.359Z",
   "updatedAt": "2025-01-30T16:53:49.359Z",
   "variant": "default",
-  "title": "Language Switcher",
   "className": "",
-  "description": "",
+  "title": {
+    "en": "Language Switcher"
+  },
+  "description": {
+    "en": ""
+  },
   "adminTitle": "shared amaranth pigeon",
   "slug": "language-switcher"
 }

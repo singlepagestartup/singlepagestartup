@@ -1,8 +1,10 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { TipTap } from "@sps/shared-ui-shadcn";
 // import { TipTap } from "@sps/shared-ui-shadcn";
 // import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -14,7 +16,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex", props.data.className)}
     >
       <Link
-        href={`/blog/articles/${props.data.id}`}
+        href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/blog/articles/${props.data.id}`}
         className="flex flex-col w-full gap-3 cursor-pointer"
       >
         {/* <div className="w-full">
@@ -56,9 +58,9 @@ export function Component(props: IComponentPropsExtended) {
           {props.data.title?.[props.language]}
         </p>
 
-        {/* {props.data.description ? (
-          <TipTap value={props.data.description} />
-        ) : null} */}
+        {props.data.subtitle?.[props.language] ? (
+          <TipTap value={props.data.subtitle[props.language] || ""} />
+        ) : null}
       </Link>
     </div>
   );

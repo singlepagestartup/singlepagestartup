@@ -37,6 +37,7 @@ export function Component(props: IComponentPropsExtended) {
                 variant="default"
                 data={entity}
                 field={props.attributeField}
+                language={props.language}
               />
             );
           });

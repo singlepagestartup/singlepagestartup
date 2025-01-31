@@ -9,6 +9,7 @@ export function Component(
   props: ISpsComponentBase & {
     data: IModel;
     children?: React.ReactNode;
+    language: string;
   },
 ) {
   return (
@@ -50,6 +51,7 @@ export function Component(
                 isServer={false}
                 variant={entity.variant as any}
                 data={entity}
+                language={props.language}
               />
             );
           });

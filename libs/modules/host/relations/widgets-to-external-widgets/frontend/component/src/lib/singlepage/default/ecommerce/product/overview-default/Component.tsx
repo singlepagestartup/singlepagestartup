@@ -53,7 +53,11 @@ export function Component(
                     data={entity}
                     language={props.language}
                   >
-                    <ProductAction isServer={props.isServer} product={entity} />
+                    <ProductAction
+                      isServer={props.isServer}
+                      product={entity}
+                      language={props.language}
+                    />
                   </Product>
                 );
               });

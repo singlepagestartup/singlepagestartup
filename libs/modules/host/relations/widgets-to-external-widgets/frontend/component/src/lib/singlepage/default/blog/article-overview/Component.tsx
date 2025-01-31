@@ -5,6 +5,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export function Component(
   props: ISpsComponentBase & {
     url: string;
+    language: string;
   },
 ) {
   return (
@@ -45,6 +46,7 @@ export function Component(
                     isServer={props.isServer}
                     variant="overview-default"
                     data={entity}
+                    language={props.language}
                   />
                 );
               });

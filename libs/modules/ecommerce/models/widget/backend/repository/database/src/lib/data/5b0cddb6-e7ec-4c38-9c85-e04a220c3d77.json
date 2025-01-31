@@ -1,0 +1,16 @@
+{
+  "id": "5b0cddb6-e7ec-4c38-9c85-e04a220c3d77",
+  "createdAt": "2025-01-31T12:45:25.213Z",
+  "updatedAt": "2025-01-31T12:45:25.213Z",
+  "variant": "product-overview-default",
+  "className": "",
+  "anchor": "",
+  "adminTitle": "fuzzy jade basilisk",
+  "slug": "product-overview",
+  "title": {
+    "en": "Product overview",
+    "ru": "Страница товара"
+  },
+  "subtitle": {},
+  "description": {}
+}

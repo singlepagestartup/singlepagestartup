@@ -3,9 +3,12 @@
   "createdAt": "2025-01-24T23:52:03.740Z",
   "updatedAt": "2025-01-24T23:52:03.740Z",
   "variant": "default",
-  "string": "",
   "number": "590",
   "boolean": null,
   "date": null,
-  "datetime": null
+  "datetime": null,
+  "string": {
+    "en": ""
+  },
+  "title": {}
 }

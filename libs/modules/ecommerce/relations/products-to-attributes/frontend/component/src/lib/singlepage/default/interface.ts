@@ -10,6 +10,7 @@ export const variant = "default" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   attributeField: string;
+  language: string;
 }
 
 export interface IComponentPropsExtended

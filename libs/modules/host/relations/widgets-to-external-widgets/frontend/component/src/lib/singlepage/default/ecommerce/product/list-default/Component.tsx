@@ -26,6 +26,7 @@ export function Component(
                     isServer={props.isServer}
                     product={entity}
                     billingModuleCurrencyId={props.billingModuleCurrencyId}
+                    language={props.language}
                   />
                 </Product>
               );

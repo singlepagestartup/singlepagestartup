@@ -40,14 +40,9 @@ export function Component(props: IComponentPropsExtended) {
         <Ecommerce {...props} isServer={props.isServer} data={props.data} />
       ) : null}
 
-      {/* {props.data.externalModule === "blog" ? (
-        <Blog
-          {...props}
-          isServer={props.isServer}
-          
-          data={props.data}
-        />
-      ) : null} */}
+      {props.data.externalModule === "blog" ? (
+        <Blog {...props} isServer={props.isServer} data={props.data} />
+      ) : null}
     </div>
   );
 }

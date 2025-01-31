@@ -1,5 +1,6 @@
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/select-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -13,7 +14,10 @@ export function Component(props: IComponentPropsExtended) {
       variant={props.variant}
       formFieldName={props.formFieldName}
       renderFunction={(entity) => {
-        return `${entity.title} | ${entity.variant} | ${entity.url}`;
+        return `${
+          props.renderField ||
+          (`${entity.title?.[internationalization.defaultLanguage.code]}` as keyof IModel)
+        } | ${entity.variant} | ${entity.url}`;
       }}
     />
   );

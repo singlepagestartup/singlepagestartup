@@ -88,6 +88,7 @@ export function Component(
                                 <ProductAction
                                   isServer={props.isServer}
                                   product={entity}
+                                  language={props.language}
                                 />
                               </Product>
                             );

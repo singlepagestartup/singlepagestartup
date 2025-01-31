@@ -6,6 +6,7 @@ export function Component(
   props: ISpsComponentBase & {
     product: IProduct;
     billingModuleCurrencyId?: string;
+    language: string;
   },
 ) {
   return (
@@ -15,6 +16,7 @@ export function Component(
       className={props.className}
       skeleton={props.skeleton}
       billingModuleCurrencyId={props.billingModuleCurrencyId}
+      language={props.language}
     />
   );
 }

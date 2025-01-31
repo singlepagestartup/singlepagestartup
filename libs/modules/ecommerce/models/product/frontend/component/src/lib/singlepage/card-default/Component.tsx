@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@sps/shared-ui-shadcn";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -27,7 +28,10 @@ export function Component(props: IComponentPropsExtended) {
     >
       <CardHeader>
         <CardTitle>
-          <Link href={`/ecommerce/products/${props.data.id}`} className="w-fit">
+          <Link
+            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.id}`}
+            className="w-fit"
+          >
             {props.data.title?.[props.language]}
           </Link>
         </CardTitle>
@@ -142,6 +146,7 @@ export function Component(props: IComponentPropsExtended) {
                                       variant="default"
                                       data={productToAttribute}
                                       attributeField={attributeKey.field}
+                                      language={props.language}
                                     />
                                   </div>
                                 );

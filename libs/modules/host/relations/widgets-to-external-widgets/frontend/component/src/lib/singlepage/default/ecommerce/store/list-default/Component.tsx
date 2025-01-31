@@ -72,6 +72,7 @@ export function Component(
                                 <ProductAction
                                   isServer={props.isServer}
                                   product={product}
+                                  language={props.language}
                                 />
                               </Product>
                             );

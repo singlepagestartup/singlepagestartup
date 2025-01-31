@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { IComponentPropsExtended } from "./interface";
 import { Component as LogotypesToFileStorageWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
+  const httpLink = props.data.url?.startsWith("http");
+  const languageSwitcher = internationalization.languages.find((language) => {
+    return "/" + language.code === props.data.url;
+  });
+  const saveLanguageLink = languageSwitcher
+    ? props.data.url || "/"
+    : `/${props.language}${props.data.url}`;
+
   return (
     <div
       data-module="website-builder"
@@ -12,7 +21,7 @@ export function Component(props: IComponentPropsExtended) {
       className={`relative ${props.data.className || "w-full"}`}
     >
       <Link
-        href={props.data.url || "/"}
+        href={httpLink ? props.data.url || "" : saveLanguageLink}
         className="flex items-center justify-center"
       >
         <LogotypesToFileStorageWidgets

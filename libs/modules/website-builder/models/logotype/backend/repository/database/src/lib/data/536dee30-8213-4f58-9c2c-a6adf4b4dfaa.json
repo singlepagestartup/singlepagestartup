@@ -5,7 +5,9 @@
   "createdAt": "2025-01-24T23:47:55.501Z",
   "updatedAt": "2025-01-24T23:52:03.611Z",
   "variant": "default",
-  "title": null,
+  "title": {
+    "en": null
+  },
   "adminTitle": "pUtT4qnMZy",
   "slug": "sds"
 }

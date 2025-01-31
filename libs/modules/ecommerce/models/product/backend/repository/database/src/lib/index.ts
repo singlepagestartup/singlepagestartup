@@ -5,12 +5,12 @@ import { z } from "zod";
 
 export const insertSchema = createInsertSchema(Table).extend({
   title: z.record(z.any()).default({}),
-  shortTitle: z.record(z.any()).default({}),
+  shortDescription: z.record(z.any()).default({}),
   description: z.record(z.any()).default({}),
 });
 export const selectSchema = createSelectSchema(Table).extend({
   title: z.record(z.any()).default({}),
-  shortTitle: z.record(z.any()).default({}),
+  shortDescription: z.record(z.any()).default({}),
   description: z.record(z.any()).default({}),
 });
 export type ISelectSchema = typeof Table.$inferSelect;

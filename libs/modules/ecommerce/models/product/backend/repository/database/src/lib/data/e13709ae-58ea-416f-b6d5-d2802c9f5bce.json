@@ -1,11 +1,14 @@
 {
   "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce",
   "createdAt": "2025-01-24T23:47:55.629Z",
-  "updatedAt": "2025-01-24T23:52:03.731Z",
+  "updatedAt": "2025-01-31T08:17:07.779Z",
   "variant": "default",
   "type": "one_off",
-  "title": "Website",
-  "description": "",
-  "shortDescription": "",
-  "sku": "website"
+  "sku": "website",
+  "title": {
+    "en": "Website",
+    "ru": "Веб-сайт"
+  },
+  "shortDescription": {},
+  "description": {}
 }

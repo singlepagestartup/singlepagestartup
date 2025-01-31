@@ -1,11 +1,14 @@
 {
-  "title": "Contacts",
+  "title": {
+    "en": "Contacts",
+    "ru": "Контакты"
+  },
   "url": "/contacts",
   "className": "",
   "id": "5ca2b0cc-fbd6-4551-acd8-dbdb95c257eb",
   "createdAt": "2025-01-24T23:47:55.519Z",
-  "updatedAt": "2025-01-24T23:52:03.613Z",
+  "updatedAt": "2025-01-31T12:43:17.636Z",
   "variant": "default",
   "adminTitle": "AUlbNE484G",
-  "slug": "234"
+  "slug": "contacts"
 }

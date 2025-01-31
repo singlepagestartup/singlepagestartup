@@ -35,6 +35,7 @@ export function Component(
               isServer={props.isServer}
               variant={entity.variant as any}
               data={entity}
+              language={props.language}
             >
               {entity.variant.includes("articles-list") ? (
                 <ArticlesList
@@ -50,7 +51,11 @@ export function Component(
                     language={props.language}
                   />
                 ) : (
-                  <ArticleOverview url={props.url} isServer={props.isServer} />
+                  <ArticleOverview
+                    url={props.url}
+                    isServer={props.isServer}
+                    language={props.language}
+                  />
                 )
               ) : null}
             </BlogWidget>

@@ -3,9 +3,13 @@
   "createdAt": "2025-01-24T23:47:55.521Z",
   "updatedAt": "2025-01-24T23:52:03.613Z",
   "variant": "default",
-  "title": "Navbar Buttons",
   "className": "",
-  "description": "",
+  "title": {
+    "en": "Navbar Buttons"
+  },
+  "description": {
+    "en": ""
+  },
   "adminTitle": "YAmtj9ZxHP",
   "slug": "sdf"
 }

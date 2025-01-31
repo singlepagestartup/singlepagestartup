@@ -135,6 +135,7 @@ export function Component(props: IComponentPropsExtended) {
                     billingModuleCurrencyId={form.watch(
                       "billingModuleCurrencyId",
                     )}
+                    language={props.language}
                   />
                 </div>
               ) : null}

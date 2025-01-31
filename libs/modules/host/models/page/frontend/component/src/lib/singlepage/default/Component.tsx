@@ -64,18 +64,14 @@ export function Component(props: IComponentPropsExtended) {
                   {({ data }) => {
                     return data?.map((entity, index) => {
                       return (
-                        <>
-                          <p className="text-3xl font-bold">{props.language}</p>
-
-                          <PagesToWidgets
-                            key={index}
-                            isServer={props.isServer}
-                            variant={entity.variant as any}
-                            data={entity}
-                            url={props.url}
-                            language={props.language}
-                          />
-                        </>
+                        <PagesToWidgets
+                          key={index}
+                          isServer={props.isServer}
+                          variant={entity.variant as any}
+                          data={entity}
+                          url={props.url}
+                          language={props.language}
+                        />
                       );
                     });
                   }}

@@ -21,6 +21,7 @@ export function Component(props: IComponentPropsExtended) {
                   isServer={props.isServer}
                   variant={article.variant as any}
                   data={article}
+                  language={props.language}
                 />
               );
             });

@@ -11,7 +11,11 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-row gap-0.5", props.className || "")}
     >
-      <p>{props.data[props.field]}</p>
+      <p>
+        {props.field === "string"
+          ? props.data[props.field]?.[props.language]
+          : props.data[props.field]}
+      </p>
       <AttributesToBillingModuleCurrencies
         isServer={props.isServer}
         variant="find"
@@ -37,6 +41,7 @@ export function Component(props: IComponentPropsExtended) {
                 isServer={props.isServer}
                 variant="default"
                 data={entity}
+                language={props.language}
               />
             );
           });

@@ -9,6 +9,7 @@ export function Component(
   props: ISpsComponentBase & {
     product: IProduct;
     billingModuleCurrencyId?: string;
+    language: string;
   },
 ) {
   return (
@@ -26,6 +27,7 @@ export function Component(
               data={subject}
               product={props.product}
               billingModuleCurrencyId={props.billingModuleCurrencyId}
+              language={props.language}
             />
             <SelectSeparator className="my-2" />
             <RbacSubject

@@ -47,6 +47,7 @@ export function Component(
                     isServer={props.isServer}
                     variant="overview-with-private-content-default"
                     data={entity}
+                    language={props.language}
                   >
                     <Article
                       isServer={props.isServer}
@@ -54,7 +55,11 @@ export function Component(
                       variant="default"
                       language={props.language}
                     />
-                    <ClientComponent isServer={props.isServer} data={entity} />
+                    <ClientComponent
+                      isServer={props.isServer}
+                      data={entity}
+                      language={props.language}
+                    />
                   </Article>
                 );
               });

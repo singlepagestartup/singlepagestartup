@@ -146,6 +146,7 @@ export function Component(props: IComponentPropsExtended) {
                                                       key={index}
                                                       className="w-fit flex gap-2"
                                                       field={attributeKey.field}
+                                                      language={props.language}
                                                     />
                                                   );
                                                 },

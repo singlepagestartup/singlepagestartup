@@ -10,6 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       product={props.product}
       data={props.data}
       billingModuleCurrencyId={props.billingModuleCurrencyId}
+      language={props.language}
     />
   );
 }

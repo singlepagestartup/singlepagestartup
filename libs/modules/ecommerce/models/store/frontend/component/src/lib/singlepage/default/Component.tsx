@@ -92,6 +92,7 @@ export function Component(props: IComponentPropsExtended) {
                                     variant="default"
                                     data={productToAttribute}
                                     attributeField={attributeKey.field}
+                                    language={props.language}
                                   />
                                 </div>
                               );

@@ -12,6 +12,7 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   product: IProduct;
   billingModuleCurrencyId?: string;
+  language: string;
 }
 
 export interface IComponentPropsExtended
