@@ -1,6 +1,5 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -9,38 +8,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.data.className)}
+      className={cn("w-full py-10 text-center flex flex-col gap-1")}
     >
-      <WidgetsToForms
-        isServer={props.isServer}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "widgetId",
-                  method: "eq",
-                  value: props.data.id,
-                },
-              ],
-            },
-          },
-        }}
-      >
-        {({ data }) => {
-          return data?.map((entity, index) => {
-            return (
-              <WidgetsToForms
-                key={index}
-                isServer={props.isServer}
-                variant={entity.variant as any}
-                data={entity}
-              />
-            );
-          });
-        }}
-      </WidgetsToForms>
+      <p className="font-bold">Generated variant</p>
+      <p className="font-bold text-4xl">Model: widget</p>
+      <p className="font-bold text-4xl">Variant: default</p>
     </div>
   );
 }

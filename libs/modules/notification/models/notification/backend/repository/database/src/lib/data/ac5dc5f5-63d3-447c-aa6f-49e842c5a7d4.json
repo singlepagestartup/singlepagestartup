@@ -1,0 +1,13 @@
+{
+  "id": "ac5dc5f5-63d3-447c-aa6f-49e842c5a7d4",
+  "createdAt": "2025-02-01T17:47:38.120Z",
+  "updatedAt": "2025-02-01T17:48:38.234Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"data\":{\"name\":\"rogwild\"}}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[]",
+  "sendAfter": "2025-02-01T17:47:38.121Z"
+}

@@ -18,8 +18,10 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      variant: props.data?.variant || "default",
+      variant: props.data?.variant || "",
       title: props.data?.title || {},
+      subtitle: props.data?.subtitle || {},
+      description: props.data?.description || {},
       className: props.data?.className || "",
       slug: props.data?.slug || "",
     },
@@ -58,6 +60,38 @@ export function Component(props: IComponentPropsExtended) {
                 label={language.title}
                 form={form}
                 placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
               />
             );
           })}

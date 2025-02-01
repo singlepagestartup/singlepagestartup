@@ -3,6 +3,7 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 import { Component as Widget } from "./widget/Component";
 import { Component as Form } from "./form/Component";
 import { Component as Input } from "./input/Component";
+import { Component as Request } from "./request/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
@@ -17,6 +18,10 @@ export function Component(props: IComponentProps) {
     {
       name: "input",
       Comp: Input,
+    },
+    {
+      name: "request",
+      Comp: Request,
     },
   ];
 

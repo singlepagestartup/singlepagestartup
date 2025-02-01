@@ -7,7 +7,7 @@ export {
 import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export const route = "/api/crm/widgets";
-export const variants = ["default"];
+export const variants = ["default", "form-default"];
 export const host = BACKEND_URL;
 export const query = {};
 export const options = {

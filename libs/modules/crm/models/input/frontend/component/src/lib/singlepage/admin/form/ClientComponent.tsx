@@ -25,6 +25,8 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || {},
       subtitle: props.data?.subtitle || {},
       description: props.data?.description || {},
+      label: props.data?.label || {},
+      placeholder: props.data?.placeholder || {},
     },
   });
 
@@ -93,6 +95,38 @@ export function Component(props: IComponentPropsExtended) {
                 label={language.title}
                 form={form}
                 placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Label">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`label.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type label"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Placeholder">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`placeholder.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type placeholder"
               />
             );
           })}

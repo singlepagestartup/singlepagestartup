@@ -7,7 +7,12 @@ export {
 import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export const route = "/api/crm/inputs";
-export const variants = ["default"];
+export const variants = [
+  "default",
+  "text-default",
+  "textarea-default",
+  "number-default",
+];
 export const host = BACKEND_URL;
 export const query = {};
 export const options = {

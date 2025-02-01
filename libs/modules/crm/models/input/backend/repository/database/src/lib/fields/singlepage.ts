@@ -30,4 +30,12 @@ export const fields = {
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
+  placeholder: pgCore
+    .jsonb("placeholder")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  label: pgCore
+    .jsonb("label")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
 };

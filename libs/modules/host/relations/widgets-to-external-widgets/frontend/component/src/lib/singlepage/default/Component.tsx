@@ -20,14 +20,9 @@ export function Component(props: IComponentPropsExtended) {
         <Rbac {...props} isServer={props.isServer} data={props.data} />
       ) : null}
 
-      {/* {props.data.externalModule === "startup" ? (
-        <Startup
-          {...props}
-          isServer={props.isServer}
-          
-          data={props.data}
-        />
-      ) : null} */}
+      {props.data.externalModule === "startup" ? (
+        <Startup {...props} isServer={props.isServer} data={props.data} />
+      ) : null}
 
       {props.data.externalModule === "website-builder" ? (
         <WebsiteBuilder

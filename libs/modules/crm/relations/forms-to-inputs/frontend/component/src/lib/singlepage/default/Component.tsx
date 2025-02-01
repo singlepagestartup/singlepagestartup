@@ -37,6 +37,8 @@ export function Component(props: IComponentPropsExtended) {
                 variant={entity.variant as any}
                 data={entity}
                 language={props.language}
+                form={props.form}
+                disabled={props.disabled}
               />
             );
           });

@@ -2,8 +2,10 @@ import { DefaultApp } from "@sps/shared-backend-api";
 import { app as widgetApp } from "@sps/crm/models/widget/backend/app/api";
 import { app as formApp } from "@sps/crm/models/form/backend/app/api";
 import { app as inputApp } from "@sps/crm/models/input/backend/app/api";
+import { app as requestApp } from "@sps/crm/models/request/backend/app/api";
 import { app as widgetsToFormsApp } from "@sps/crm/relations/widgets-to-forms/backend/app/api";
 import { app as formsToInputsApp } from "@sps/crm/relations/forms-to-inputs/backend/app/api";
+import { app as formsToRequestsApp } from "@sps/crm/relations/forms-to-requests/backend/app/api";
 
 export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
@@ -30,6 +32,11 @@ export class Apps {
       app: inputApp,
     });
     this.apps.push({
+      type: "model",
+      route: "/requests",
+      app: requestApp,
+    });
+    this.apps.push({
       type: "relation",
       route: "/widgets-to-forms",
       app: widgetsToFormsApp,
@@ -38,6 +45,11 @@ export class Apps {
       type: "relation",
       route: "/forms-to-inputs",
       app: formsToInputsApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/forms-to-requests",
+      app: formsToRequestsApp,
     });
   }
 }

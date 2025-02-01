@@ -12,6 +12,7 @@ export const variants = [
   "order-status-changed",
   "reset-password",
   "agent-result",
+  "request-from-website",
 ];
 export const host = BACKEND_URL;
 export const query = {};
