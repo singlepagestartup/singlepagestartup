@@ -1,4 +1,4 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { MANAGER_EMAIL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { api } from "@sps/crm/models/form/sdk/server";
@@ -206,7 +206,7 @@ export class Handler {
           data,
         }),
         method: "email",
-        reciever: "rogwild.design@gmail.com",
+        reciever: MANAGER_EMAIL,
         attachments: "[]",
       },
     ];
