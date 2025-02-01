@@ -48,7 +48,7 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/crm:models:customer:repository-generate"
+            "command": "nx run @sps/crm:models:form:repository-generate"
           },
           {
             "command": "nx run @sps/crm:models:widget:repository-generate"
@@ -60,7 +60,11 @@
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "commands": []
+        "commands": [
+          {
+            "command": "nx run @sps/crm:relations:widgets-to-forms:repository-generate"
+          }
+        ]
       }
     },
     "models:repository-migrate": {
@@ -70,7 +74,7 @@
         "parallel": false,
         "commands": [
           {
-            "command": "nx run @sps/crm:models:customer:repository-migrate"
+            "command": "nx run @sps/crm:models:form:repository-migrate"
           },
           {
             "command": "nx run @sps/crm:models:widget:repository-migrate"
@@ -83,7 +87,11 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "commands": []
+        "commands": [
+          {
+            "command": "nx run @sps/crm:relations:widgets-to-forms:repository-migrate"
+          }
+        ]
       }
     },
     "models:widget:repository-generate": {
@@ -115,11 +123,11 @@
         ]
       }
     },
-    "models:customer:repository-generate": {
+    "models:form:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/crm/models/customer/backend/repository/database",
+        "cwd": "libs/modules/crm/models/form/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -130,13 +138,42 @@
         ]
       }
     },
-    "models:customer:repository-migrate": {
+    "models:form:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/host/.env.local",
-        "cwd": "libs/modules/crm/models/customer/backend/repository/database",
+        "cwd": "libs/modules/crm/models/form/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-forms:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/widgets-to-forms/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-forms:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/host/.env.local",
+        "cwd": "libs/modules/crm/relations/widgets-to-forms/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

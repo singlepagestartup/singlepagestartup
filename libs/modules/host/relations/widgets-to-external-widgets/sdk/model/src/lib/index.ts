@@ -9,12 +9,17 @@ import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 export const route = "/api/host/widgets-to-external-widgets";
 export const variants = ["default"];
 export const externalModules = [
+  "agent",
   "billing",
   "blog",
+  "broadcast",
+  "crm",
   "ecommerce",
-  "website-builder",
+  "file-storage",
+  "notification",
   "rbac",
   "startup",
+  "website-builder",
 ];
 export const host = BACKEND_URL;
 export const query = {};

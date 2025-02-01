@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent
       {...props}
-      module="website-builder"
+      module="crm"
       name="widget"
       onDelete={() => {
         if (props.data?.id) {

@@ -178,6 +178,10 @@ export const preset = {
       pattern: /font-(default|primary)/,
       variants: ["sm", "md", "lg", "xl", "2xl"],
     },
+    // Save object fit
+    {
+      pattern: /object-(cover|contain)/,
+    },
   ],
   plugins: [typographyPlugin, aspectRatioPlugin, animatePlugin, shadcnPlugin],
 } satisfies Config;

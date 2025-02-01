@@ -13,12 +13,13 @@ import {
 } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { Component as WidgetSelectInput } from "@sps/host/models/widget/frontend/component";
-import { Component as WebsiteBuilderWidget } from "@sps/website-builder/models/widget/frontend/component";
-import { Component as StartupWidget } from "@sps/startup/models/widget/frontend/component";
-import { Component as RbacWidget } from "@sps/rbac/models/widget/frontend/component";
-import { Component as BillingWidget } from "@sps/billing/models/widget/frontend/component";
-import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
-import { Component as BlogWidget } from "@sps/blog/models/widget/frontend/component";
+import { Component as WebsiteBuilder } from "@sps/website-builder/models/widget/frontend/component";
+import { Component as Startup } from "@sps/startup/models/widget/frontend/component";
+import { Component as Rbac } from "@sps/rbac/models/widget/frontend/component";
+import { Component as Billing } from "@sps/billing/models/widget/frontend/component";
+import { Component as Ecommerce } from "@sps/ecommerce/models/widget/frontend/component";
+import { Component as Blog } from "@sps/blog/models/widget/frontend/component";
+import { Component as Crm } from "@sps/crm/models/widget/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -107,7 +108,7 @@ export function Component(props: IComponentPropsExtended) {
         />
 
         {watchData.externalModule === "website-builder" ? (
-          <WebsiteBuilderWidget
+          <WebsiteBuilder
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
@@ -116,7 +117,7 @@ export function Component(props: IComponentPropsExtended) {
         ) : null}
 
         {watchData.externalModule === "startup" ? (
-          <StartupWidget
+          <Startup
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
@@ -125,7 +126,7 @@ export function Component(props: IComponentPropsExtended) {
         ) : null}
 
         {watchData.externalModule === "rbac" ? (
-          <RbacWidget
+          <Rbac
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
@@ -134,7 +135,7 @@ export function Component(props: IComponentPropsExtended) {
         ) : null}
 
         {watchData.externalModule === "billing" ? (
-          <BillingWidget
+          <Billing
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
@@ -143,7 +144,7 @@ export function Component(props: IComponentPropsExtended) {
         ) : null}
 
         {watchData.externalModule === "ecommerce" ? (
-          <EcommerceWidget
+          <Ecommerce
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
@@ -152,7 +153,16 @@ export function Component(props: IComponentPropsExtended) {
         ) : null}
 
         {watchData.externalModule === "blog" ? (
-          <BlogWidget
+          <Blog
+            isServer={props.isServer}
+            variant="admin-select-input"
+            form={form}
+            formFieldName="externalWidgetId"
+          />
+        ) : null}
+
+        {watchData.externalModule === "crm" ? (
+          <Crm
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
