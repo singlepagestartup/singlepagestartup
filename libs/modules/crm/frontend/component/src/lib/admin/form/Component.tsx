@@ -2,6 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/crm/models/form/frontend/component";
 import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
+import { Component as FormsToInputs } from "@sps/crm/relations/forms-to-inputs/frontend/component";
 
 export function Component() {
   return (
@@ -21,6 +22,31 @@ export function Component() {
 
               return (
                 <WidgetsToForms
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "formId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            formsToInputs={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <FormsToInputs
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

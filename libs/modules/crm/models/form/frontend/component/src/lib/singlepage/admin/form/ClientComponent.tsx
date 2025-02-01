@@ -133,6 +133,14 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.formsToInputs
+          ? props.formsToInputs({
+              data: props.data,
+
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );
