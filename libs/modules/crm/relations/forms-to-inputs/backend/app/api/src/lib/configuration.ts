@@ -28,23 +28,6 @@ export class Configuration extends ParentConfiguration {
           type: "relation",
           transformers: [
             {
-              field: "widgetId",
-              transform: (data) => {
-                const relationEntites = data.seeds
-                  .find(
-                    (seed) =>
-                      seed.name === "widget" &&
-                      seed.type === "model" &&
-                      seed.module === "crm",
-                  )
-                  ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.widgetId,
-                  );
-
-                return relationEntites?.[0].new.id;
-              },
-            },
-            {
               field: "formId",
               transform: (data) => {
                 const relationEntites = data.seeds
@@ -57,6 +40,23 @@ export class Configuration extends ParentConfiguration {
                   ?.seeds?.filter(
                     (seed) => seed.dump.id === data.entity.dump.formId,
                   );
+
+                return relationEntites?.[0].new.id;
+              },
+            },
+            {
+              field: "inputId",
+              transform: (data) => {
+                const relationEntites = data.seeds
+                  .find(
+                    (seed) =>
+                      seed.name === "input" &&
+                      seed.type === "model" &&
+                      seed.module === "crm",
+                  )
+                  ?.seeds?.filter((seed) => {
+                    return seed.dump.id === data.entity.dump.inputId;
+                  });
 
                 return relationEntites?.[0].new.id;
               },

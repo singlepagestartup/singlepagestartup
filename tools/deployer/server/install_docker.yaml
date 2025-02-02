@@ -70,6 +70,10 @@
         name: "{{ item }}"
         state: present
         update_cache: yes
+      register: result
+      until: result is not failed
+      retries: 5
+      delay: 5
       loop:
         - python3-venv
         - python3-pip
@@ -95,13 +99,8 @@
 
     - name: If not DigitalOcean
       block:
-        - name: Install Docker pip packages for ordinary server
-          pip:
-            name: "{{ item }}"
+        - name: Install Docker Compose
+          apt:
+            name: docker-compose-plugin
             state: present
-            virtualenv: /opt/venv
-          loop:
-            - virtualenv
-            - docker
-            - docker-compose
       when: ansible_system_vendor != "DigitalOcean"

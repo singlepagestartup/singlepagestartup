@@ -1,14 +1,15 @@
 import { app as agentApp } from "@sps/agent/backend/app/api";
-import { app as hostApp } from "@sps/host/backend/app/api";
-import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
-import { app as rbacApp } from "@sps/rbac/backend/app/api";
-import { app as crmApp } from "@sps/crm/backend/app/api";
 import { app as billingApp } from "@sps/billing/backend/app/api";
-import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
-import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
+import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
+import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { app as hostApp } from "@sps/host/backend/app/api";
+import { app as notificationApp } from "@sps/notification/backend/app/api";
+import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
+import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 
 import { exit } from "process";
 
@@ -19,6 +20,11 @@ import { exit } from "process";
   });
 
   await websiteBuilderApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await crmApp.dump({
     type: "model",
     dumps: [],
   });
@@ -69,6 +75,11 @@ import { exit } from "process";
   });
 
   await fileStorageApp.dump({
+    type: "relation",
+    dumps: [],
+  });
+
+  await broadcastApp.dump({
     type: "relation",
     dumps: [],
   });

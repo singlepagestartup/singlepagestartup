@@ -1,15 +1,16 @@
 import { ISeedResult } from "@sps/shared-backend-api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
-import { app as hostApp } from "@sps/host/backend/app/api";
-import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
-import { app as rbacApp } from "@sps/rbac/backend/app/api";
-import { app as crmApp } from "@sps/crm/backend/app/api";
 import { app as billingApp } from "@sps/billing/backend/app/api";
-import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
-import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as blogApp } from "@sps/blog/backend/app/api";
+import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
+import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { app as hostApp } from "@sps/host/backend/app/api";
+import { app as notificationApp } from "@sps/notification/backend/app/api";
+import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
+import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 
 import { exit } from "process";
 import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
@@ -27,6 +28,19 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     });
   } else {
     seeds.push(agentModelsSeeds);
+  }
+
+  const broadcastModelsSeeds = await broadcastApp.seed({
+    type: "model",
+    seeds,
+  });
+
+  if (Array.isArray(broadcastModelsSeeds)) {
+    broadcastModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(broadcastModelsSeeds);
   }
 
   const hostModelsSeeds = await hostApp.seed({
@@ -172,6 +186,19 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     });
   } else {
     seeds.push(hostRelationsSeeds);
+  }
+
+  const broadcastRelationsSeeds = await broadcastApp.seed({
+    type: "relation",
+    seeds,
+  });
+
+  if (Array.isArray(broadcastRelationsSeeds)) {
+    broadcastRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(broadcastRelationsSeeds);
   }
 
   const websiteBuilderRelationsSeeds = await websiteBuilderApp.seed({
