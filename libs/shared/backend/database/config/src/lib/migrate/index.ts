@@ -1,7 +1,6 @@
 import { DATABASE_OPTIONS } from "@sps/shared-utils";
 import { Config as DrizzleConfig, defineConfig } from "drizzle-kit";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { pg } from "../postgres";
+import { getDrizzle } from "../postgres";
 import { migrate as drizzleMigrator } from "drizzle-orm/postgres-js/migrator";
 import { sql } from "drizzle-orm";
 
@@ -51,7 +50,7 @@ export class Config {
 
       let beforeMigrations = [];
 
-      const db = drizzle(pg, { schema: this.schema });
+      const db = getDrizzle({ schema: this.schema });
 
       try {
         beforeMigrations = await db.execute(

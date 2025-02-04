@@ -8,10 +8,10 @@ export type IMiddlewareGeneric = {
 };
 
 export class Middleware {
-  storeProvider: typeof KV_PROVIDER;
+  storeProvider: StoreProvider;
 
   constructor() {
-    this.storeProvider = KV_PROVIDER;
+    this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
   }
 
   init(): MiddlewareHandler<any, any, {}> {
@@ -39,10 +39,8 @@ export class Middleware {
       }
 
       if (method === "GET" && cacheControl !== "no-cache") {
-        const cachedValue = await new StoreProvider({
-          type: this.storeProvider,
+        const cachedValue = await this.storeProvider.get({
           prefix: path,
-        }).get({
           key: params,
         });
 
@@ -64,10 +62,8 @@ export class Middleware {
         if (method === "GET" && cacheControl !== "no-cache") {
           const resJson = await c.res.clone().json();
 
-          await new StoreProvider({
-            type: this.storeProvider,
+          await this.storeProvider.set({
             prefix: path,
-          }).set({
             key: params,
             value: JSON.stringify(resJson),
             options: { ttl: KV_TTL },
@@ -75,20 +71,18 @@ export class Middleware {
         }
 
         if (["PUT", "PATCH"].includes(method)) {
-          await new StoreProvider({
-            type: this.storeProvider,
+          await this.storeProvider.delByPrefix({
             prefix: path,
-          }).delByPrefix();
+          });
 
           const pathWithoutId = path.replace(
             /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}($|\?.*)/,
             "",
           );
 
-          await new StoreProvider({
-            type: this.storeProvider,
+          await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
-          }).delByPrefix();
+          });
         }
 
         if (["POST", "DELETE"].includes(method)) {
@@ -97,10 +91,9 @@ export class Middleware {
           )?.[1];
 
           if (pathWithIdBase) {
-            await new StoreProvider({
-              type: this.storeProvider,
+            await this.storeProvider.delByPrefix({
               prefix: `${pathWithIdBase}`,
-            }).delByPrefix();
+            });
           }
 
           const pathWithoutId = path.replace(
@@ -108,26 +101,21 @@ export class Middleware {
             "",
           );
 
-          await new StoreProvider({
-            type: this.storeProvider,
+          await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
-          }).delByPrefix();
+          });
         }
       } else {
-        await new StoreProvider({
-          type: this.storeProvider,
+        await this.storeProvider.delByPrefix({
           prefix: path,
-        }).delByPrefix();
-
+        });
         const pathWithoutId = path.replace(
           /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
           "",
         );
-
-        await new StoreProvider({
-          type: this.storeProvider,
+        await this.storeProvider.delByPrefix({
           prefix: pathWithoutId,
-        }).delByPrefix();
+        });
       }
 
       return;

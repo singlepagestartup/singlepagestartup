@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import { PgTableWithColumns } from "drizzle-orm/pg-core";
-import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { inject, injectable } from "inversify";
-import { postgres } from "@sps/shared-backend-database-config";
+import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
 import { FindServiceProps } from "../../services/interfaces";
 import { queryBuilder } from "../../query-builder";
@@ -30,9 +30,8 @@ export class Database<T extends PgTableWithColumns<any>>
     const config = configuration.getConfiguration();
 
     this.Table = config.repository.Table;
-    this.db = drizzle(postgres, {
-      schema: config.repository.Table,
-    });
+
+    this.db = getDrizzle({ ...this.Table });
     this.insertSchema = config.repository.insertSchema;
     this.selectSchema = config.repository.selectSchema;
     this.configuration = config;
@@ -78,7 +77,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error, this.configuration);
+      console.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -158,7 +157,13 @@ export class Database<T extends PgTableWithColumns<any>>
         }
 
         if (
-          ["expiresAt", "date", "datetime", "sendAfter"].includes(key) &&
+          [
+            "expiresAt",
+            "date",
+            "datetime",
+            "sendAfter",
+            "ozonUpdatedAt",
+          ].includes(key) &&
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);
@@ -242,7 +247,13 @@ export class Database<T extends PgTableWithColumns<any>>
         }
 
         if (
-          ["expiresAt", "date", "datetime", "sendAfter"].includes(key) &&
+          [
+            "expiresAt",
+            "date",
+            "datetime",
+            "sendAfter",
+            "ozonUpdatedAt",
+          ].includes(key) &&
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);

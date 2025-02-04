@@ -9,136 +9,86 @@ import {
 } from "@sps/shared-utils";
 
 export class Provider implements IProvider {
-  prefix: string;
   client: Redis;
 
-  constructor(props?: { prefix?: string }) {
-    this.prefix = props?.prefix ? `${props?.prefix}` : "";
-
-    const connectionParams = {
+  constructor() {
+    const connectionCredentials: RedisOptions = {
+      host: KV_HOST,
+      port: KV_PORT,
+      username: KV_USERNAME,
+      password: KV_PASSWORD,
       maxRetriesPerRequest: 10,
-      retryStrategy(times) {
-        console.log(`Retrying connection: attempt ${times}`);
-        return Math.min(times * 50, 2000);
-      },
-      reconnectOnError(err) {
+      retryStrategy: (times) => Math.min(times * 50, 2000),
+      reconnectOnError: (err) => {
         console.error("Redis error:", err);
         return true;
       },
     };
 
-    const connectionCredentials: RedisOptions | undefined = {
-      host: KV_HOST,
-      port: KV_PORT,
-      username: KV_USERNAME,
-      password: KV_PASSWORD,
-      ...connectionParams,
-    };
-
-    if (!connectionCredentials) {
-      throw new Error("No connection credentials found");
-    }
-
     this.client = new Redis(connectionCredentials);
-  }
 
-  async disconnect(): Promise<void> {
-    if (["end", "close", "error"].includes(this.client.status)) {
-      return;
-    }
-
-    if (["connect", "ready"].includes(this.client.status)) {
+    process.once("SIGINT", async () => {
       await this.client.quit();
-    }
+      process.exit(0);
+    });
+
+    process.once("SIGTERM", async () => {
+      await this.client.quit();
+      process.exit(0);
+    });
   }
 
   async connect(): Promise<void> {
-    if (this.client.status === "connect" || this.client.status === "ready") {
-      return;
-    }
-
-    if (this.client.status === "connecting") {
-      await new Promise((resolve: any) => {
-        this.client.on("connect", () => {
-          resolve();
-        });
-      });
-
-      return;
-    }
+    //
   }
 
   async hashKey(props: { key: string }): Promise<string> {
     return hash.sha256(props.key);
   }
 
-  async get(props: { key: string }): Promise<string | null> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    const value = await this.client.get(this.prefix + ":" + hasedKey);
-
-    await this.disconnect();
-
-    return value;
+  async get(props: { prefix: string; key: string }): Promise<string | null> {
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.get(props.prefix + ":" + hashedKey);
   }
 
   async set(props: {
+    prefix: string;
     key: string;
     value: string;
     options: { ttl: number };
   }): Promise<string | undefined | null> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    const value = await this.client.set(
-      this.prefix + ":" + hasedKey,
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.set(
+      props.prefix + ":" + hashedKey,
       props.value,
       "EX",
       props.options.ttl,
     );
-
-    await this.disconnect();
-
-    return value;
   }
 
-  async delByPrefix(): Promise<void> {
+  async delByPrefix(props: { prefix: string }): Promise<void> {
     let cursor = "0";
-    await this.connect();
-
     do {
-      const keys = await this.client.keys(`${this.prefix}*`);
-
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        `${props.prefix}*`,
+        "COUNT",
+        100,
+      );
       if (keys.length) {
         await this.client.del(...keys);
       }
+      cursor = nextCursor;
     } while (cursor !== "0");
-
-    await this.disconnect();
   }
 
-  async del(props: { key: string }): Promise<void> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    await this.client.del(hasedKey);
-
-    await this.disconnect();
-
-    return;
+  async del(props: { prefix: string; key: string }): Promise<void> {
+    const hashedKey = await this.hashKey({ key: props.key });
+    await this.client.del(props.prefix + ":" + hashedKey);
   }
 
   async flushall(): Promise<void> {
-    await this.connect();
-
     await this.client.flushall();
-
-    await this.disconnect();
-
-    return;
   }
 }
