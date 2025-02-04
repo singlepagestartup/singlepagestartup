@@ -25,215 +25,158 @@ export class Handler {
       });
     }
 
-    const agents = await api.find({
+    const [agents, cronChannels] = await Promise.all([
+      api.find({
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+        },
+      }),
+      broadcastChannelApi.find({
+        params: {
+          filters: {
+            and: [{ column: "title", method: "eq", value: "cron" }],
+          },
+        },
+      }),
+    ]);
+
+    if (!cronChannels || cronChannels.length !== 1) {
+      throw new HTTPException(400, {
+        message: "Invalid cron channel configuration",
+      });
+    }
+
+    const cronChannel = cronChannels[0];
+
+    const messages = await broadcastChannelApi.messageFind({
+      id: cronChannel.id,
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-cache",
         },
       },
     });
 
-    const cronChannels = await broadcastChannelApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "title",
-              method: "eq",
-              value: "cron",
-            },
-          ],
-        },
-      },
-    });
-
-    if (!cronChannels) {
-      throw new HTTPException(400, {
-        message: "Cron channel not found",
-      });
-    }
-
-    if (cronChannels.length > 1) {
-      throw new HTTPException(400, {
-        message: "Multiple cron channels found",
-      });
-    }
-
-    const executions: {
-      id: string;
-      datetime: Date;
-      slug: string;
-      result?: any;
-    }[] = [];
-
-    const cronChannel = cronChannels?.[0];
-
-    if (cronChannel) {
-      const messages = await broadcastChannelApi.messageFind({
-        id: cronChannel.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-cache",
-          },
-        },
-      });
-
-      if (messages?.length) {
-        for (const message of messages) {
-          const messageData = JSON.parse(message.payload);
-
-          const execution = {
-            id: message.id,
-            datetime: new Date(messageData.datetime),
-            slug: messageData.slug,
-            result: messageData.result,
-          };
-
-          executions.push(execution);
-        }
-      }
-    }
+    const executions =
+      messages?.map((message) => ({
+        id: message.id,
+        datetime: new Date(JSON.parse(message.payload).datetime),
+        slug: JSON.parse(message.payload).slug,
+        result: JSON.parse(message.payload).result,
+      })) || [];
 
     const executingAgents: IAgentAgent[] = [];
 
-    if (agents?.length) {
-      for (const agent of agents) {
-        const currentAgentExecutions = executions
-          .filter((execution) => execution.slug === agent.slug)
-          .sort((a, b) => {
-            return b.datetime.getTime() - a.datetime.getTime();
-          });
+    const tasks = agents?.map(async (agent) => {
+      const currentExecutions = executions
+        .filter((execution) => execution.slug === agent.slug)
+        .sort((a, b) => b.datetime.getTime() - a.datetime.getTime());
 
-        const lastExecution = currentAgentExecutions?.[0];
+      const lastExecution = currentExecutions[0];
 
-        let lastExecutionTime: Date | null = null;
+      let lastExecutionTime: Date | null = lastExecution
+        ? new Date(lastExecution.datetime)
+        : null;
+      const youngerThanMaxDuration =
+        lastExecutionTime &&
+        lastExecutionTime.getTime() >
+          new Date().getTime() - AGENT_MAX_DURATION_IN_SECONDS * 1000;
 
-        if (lastExecution) {
-          lastExecutionTime = new Date(lastExecution.datetime);
+      if (lastExecution && !lastExecution.result && youngerThanMaxDuration) {
+        return;
+      }
 
-          const youngerThanMaxDurationTimestamp =
-            lastExecutionTime.getTime() >
-            new Date().getTime() - AGENT_MAX_DURATION_IN_SECONDS * 1000;
+      if (!agent.interval) {
+        return;
+      }
 
-          if (!lastExecution.result && youngerThanMaxDurationTimestamp) {
-            continue;
-          }
-        }
+      const now = new Date();
+      let needToExecute = false;
 
-        const intervalExpression = agent.interval;
-
-        if (!intervalExpression) {
-          continue;
-        }
-
-        const now = new Date();
-        let needToExecute = false;
-
-        if (!lastExecutionTime) {
+      try {
+        const interval = cronParser.parseExpression(agent.interval, {
+          currentDate: lastExecutionTime || now,
+        });
+        const nextExecutionTime = interval.next().toDate();
+        if (now >= nextExecutionTime) {
           needToExecute = true;
-        } else {
-          try {
-            const interval = cronParser.parseExpression(intervalExpression, {
-              currentDate: lastExecutionTime || now,
-            });
+        }
+      } catch (err) {
+        throw new HTTPException(400, { message: "Invalid cron expression" });
+      }
 
-            const nextExecutionTime = interval.next().toDate();
+      if (!needToExecute) return;
 
-            if (now >= nextExecutionTime) {
-              needToExecute = true;
+      executingAgents.push(agent);
+
+      (async () => {
+        if (!RBAC_SECRET_KEY) {
+          throw new HTTPException(400, {
+            message: "RBAC_SECRET_KEY not set",
+          });
+        }
+
+        await Promise.allSettled(
+          currentExecutions.map((execution) => {
+            if (!RBAC_SECRET_KEY) {
+              throw new HTTPException(400, {
+                message: "RBAC_SECRET_KEY not set",
+              });
             }
-          } catch (err) {
-            throw new HTTPException(400, {
-              message: "Invalid cron expression",
-            });
-          }
-        }
 
-        if (!needToExecute) {
-          continue;
-        }
-
-        executingAgents.push(agent);
-
-        (async () => {
-          if (!RBAC_SECRET_KEY) {
-            throw new HTTPException(400, {
-              message: "RBAC_SECRET not set",
-            });
-          }
-
-          for (const currentAgentExecution of currentAgentExecutions) {
-            await broadcastChannelApi
+            broadcastChannelApi
               .messageDelete({
                 id: cronChannel.id,
-                messageId: currentAgentExecution.id,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
+                messageId: execution.id,
+                options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
               })
-              .catch((error) => {
-                //
-              });
-          }
+              .catch(() => {});
+          }),
+        );
 
-          await broadcastChannelApi.pushMessage({
-            data: {
-              slug: "cron",
-              payload: JSON.stringify({
-                datetime: new Date().toISOString(),
-                slug: agent.slug,
-              }),
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+        await broadcastChannelApi.pushMessage({
+          data: {
+            slug: "cron",
+            payload: JSON.stringify({
+              datetime: new Date().toISOString(),
+              slug: agent.slug,
+            }),
+          },
+          options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+        });
 
-          const agentExecutionResult = await fetch(
-            BACKEND_URL + "/api/agent/agents/" + agent.slug,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+        const agentExecutionResult = await fetch(
+          BACKEND_URL + "/api/agent/agents/" + agent.slug,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-          )
-            .then((res) => {
-              return res.json();
-            })
-            .catch((error) => {
-              return {
-                error: error?.message || "Unknown error",
-              };
-            });
+          },
+        )
+          .then((res) => res.json())
+          .catch((error) => ({ error: error?.message || "Unknown error" }));
 
-          await broadcastChannelApi.pushMessage({
-            data: {
-              slug: "cron",
-              payload: JSON.stringify({
-                datetime: new Date().toISOString(),
-                slug: agent.slug,
-                result: agentExecutionResult,
-              }),
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
-        })();
-      }
+        await broadcastChannelApi.pushMessage({
+          data: {
+            slug: "cron",
+            payload: JSON.stringify({
+              datetime: new Date().toISOString(),
+              slug: agent.slug,
+              result: agentExecutionResult,
+            }),
+          },
+          options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
+        });
+      })();
+    });
+
+    if (tasks) {
+      await Promise.allSettled(tasks);
     }
 
-    return c.json({
-      data: executingAgents,
-    });
+    return c.json({ data: executingAgents });
   }
 }

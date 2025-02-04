@@ -30,6 +30,10 @@ export class Middleware {
         return await next();
       }
 
+      if (path.includes("broadcast")) {
+        return await next();
+      }
+
       if (
         path.includes("rbac/subjects/authentication/me") ||
         path.includes("rbac/subjects/authentication/init") ||
