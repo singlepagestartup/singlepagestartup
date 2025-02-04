@@ -20,7 +20,11 @@ export function getDrizzle(schema: any) {
   const schemaKey = schema?.title?.uniqueName || "default";
 
   if (schemaKey.includes("_title_unique")) {
-    return drizzleInstances.get("default")!;
+    const defaultConnection = drizzleInstances.get("default")!;
+
+    if (defaultConnection) {
+      return defaultConnection;
+    }
   }
 
   if (!drizzleInstances.has(schemaKey)) {
