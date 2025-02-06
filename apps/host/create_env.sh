@@ -54,24 +54,24 @@ fi
 DATABASE_HOST=localhost
 add_env "DATABASE_HOST" $DATABASE_HOST
 
-DATABASE_NAME=$(get_env POSTGRES_DB ../db/.env)
+DATABASE_NAME=$(get_env "$BASH_SOURCE" "POSTGRES_DB" "../db/.env")
 add_env "DATABASE_NAME" $DATABASE_NAME
 
-DATABASE_USERNAME=$(get_env POSTGRES_USER ../db/.env)
+DATABASE_USERNAME=$(get_env "$BASH_SOURCE" "POSTGRES_USER" ../db/.env)
 add_env "DATABASE_USERNAME" $DATABASE_USERNAME
 
-DATABASE_PASSWORD=$(get_env POSTGRES_PASSWORD ../db/.env)
+DATABASE_PASSWORD=$(get_env "$BASH_SOURCE" "POSTGRES_PASSWORD" ../db/.env)
 add_env "DATABASE_PASSWORD" $DATABASE_PASSWORD
 
-DATABASE_PORT=$(get_env POSTGRES_PORT ../db/.env)
+DATABASE_PORT=$(get_env "$BASH_SOURCE" "POSTGRES_PORT" ../db/.env)
 add_env "DATABASE_PORT" $DATABASE_PORT
 
 add_env "DATABASE_NO_SSL" true
 
-KV_PORT=$(get_env REDIS_PORT ../redis/.env)
+KV_PORT=$(get_env "$BASH_SOURCE" "REDIS_PORT" ../redis/.env)
 add_env "KV_PORT" $KV_PORT
 
-KV_PASSWORD=$(get_env REDIS_PASSWORD ../redis/.env)
+KV_PASSWORD=$(get_env "$BASH_SOURCE" "REDIS_PASSWORD" ../redis/.env)
 add_env "KV_PASSWORD" $KV_PASSWORD
 
 RBAC_COOKIE_SESSION_SECRET=$(generate_random_string)

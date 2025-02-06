@@ -1,9 +1,9 @@
 #!/bin/bash
 . ./get_env.sh
 
-POSTGRES_PASSWORD=$(get_env DATABASE_PASSWORD backend.env)
-POSTGRES_DB=$(get_env DATABASE_NAME backend.env)
-POSTGRES_USER=$(get_env DATABASE_USERNAME backend.env)
+POSTGRES_PASSWORD=$(get_env "$BASH_SOURCE" "DATABASE_PASSWORD" backend.env)
+POSTGRES_DB=$(get_env "$BASH_SOURCE" "DATABASE_NAME" backend.env)
+POSTGRES_USER=$(get_env "$BASH_SOURCE" "DATABASE_USERNAME" backend.env)
 HOST=$(hostname -I | awk '{print $1}')
 DUMP_NAME="$POSTGRES_DB"_"$($(command -v date) +%d-%m-%Y).dump"
 
