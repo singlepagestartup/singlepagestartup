@@ -83,9 +83,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -97,9 +95,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
+                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -108,17 +104,22 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
               continue;
             }
 
-            await notificationApi.send({
-              id: notification.id,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            await notificationApi
+              .send({
+                id: notification.id,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                  next: {
+                    cache: "no-store",
+                  },
                 },
-                next: {
-                  cache: "no-store",
-                },
-              },
-            });
+              })
+              .then(() => {})
+              .catch(() => {
+                //
+              });
           }
         }
       }

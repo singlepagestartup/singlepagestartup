@@ -15,3 +15,7 @@ export {
   Middleware as ObserverMiddleware,
   type IMiddlewareGeneric as IObserverMiddlewareGeneric,
 } from "./observer";
+export {
+  Middleware as RequestIdMiddleware,
+  type IMiddlewareGeneric as IRequestIdMiddlewareGeneric,
+} from "./request-id";

@@ -5,5 +5,5 @@ export interface IFilter {
   catch: (
     error: Error | HTTPResponseError,
     c: Context<any>,
-  ) => Response | Promise<Response>;
+  ) => Promise<Response>;
 }

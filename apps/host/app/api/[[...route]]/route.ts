@@ -15,12 +15,12 @@ import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
-import { ErrorHandler } from "hono/types";
 import {
   IsAuthorizedMiddleware,
   RevalidationMiddleware,
   HTTPCacheMiddleware,
   ObserverMiddleware,
+  RequestIdMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 
@@ -29,9 +29,14 @@ export const runtime = "nodejs";
 
 const app = new Hono<any, any, any>().basePath("/api");
 
-app.onError(new ExceptionFilter().catch as unknown as ErrorHandler<any>);
+const exceptionFilter = new ExceptionFilter();
+app.onError((err, c) => exceptionFilter.catch(err, c));
 
-app.use(new ObserverMiddleware().init());
+const requestIdMiddleware = new RequestIdMiddleware();
+app.use(requestIdMiddleware.init());
+
+const observerMiddleware = new ObserverMiddleware();
+app.use(observerMiddleware.init());
 
 /**
  * It's not secure, because authorized requests can be cached and served to unauthorized users.
@@ -39,15 +44,21 @@ app.use(new ObserverMiddleware().init());
  * Now added "Cache-Control": "no-cache" for preventing caching of authorized requests,
  * but it should be added to the request
  */
-new HTTPCacheMiddleware().setRoutes(app);
+const httpCacheMiddleware = new HTTPCacheMiddleware();
+httpCacheMiddleware.setRoutes(app);
 if (MIDDLEWARE_HTTP_CACHE === "true") {
-  app.use(new HTTPCacheMiddleware().init());
+  app.use(httpCacheMiddleware.init());
 }
 
-app.use(new IsAuthorizedMiddleware().init());
-app.use(new RevalidationMiddleware().init());
-new RevalidationMiddleware().setRoutes(app);
-app.use(new ParseQueryMiddleware().init());
+const isAuthorizedMiddleware = new IsAuthorizedMiddleware();
+app.use(isAuthorizedMiddleware.init());
+
+const revalidationMiddleware = new RevalidationMiddleware();
+app.use(revalidationMiddleware.init());
+revalidationMiddleware.setRoutes(app);
+
+const parseQueryMiddleware = new ParseQueryMiddleware();
+app.use(parseQueryMiddleware.init());
 
 app.mount("/telegram", telegramApp.hono.fetch);
 app.mount("/agent", agentApp.hono.fetch);

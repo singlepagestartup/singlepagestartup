@@ -1,62 +1,44 @@
 import "reflect-metadata";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-export { type IFilter } from "./interface";
-import { IFilter } from "./interface";
 import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
 import { Sentry } from "@sps/shared-third-parties";
 import { SENTRY_DSN } from "@sps/shared-utils";
+import { IFilter } from "./interface";
 
 @injectable()
 export class Filter implements IFilter {
-  constructor() {}
-
   async catch(
     error: Error | HTTPResponseError,
     c: Context<any>,
   ): Promise<Response> {
-    console.error("Exception Filter | ", c.req.path, error);
+    const requestId = c.req.header("x-request-id") || "unknown";
+
+    const stack =
+      error instanceof HTTPException && error.cause instanceof Error
+        ? error.cause.stack
+        : error.stack;
+
+    console.error(
+      `🚨 Exception [${requestId}] ${c.req.method} ${c.req.url}`,
+      error,
+      stack,
+    );
 
     if (SENTRY_DSN) {
-      console.log("Sentry | Capturing exception");
+      Sentry.setTag("request_id", requestId);
       Sentry.captureException(error);
     }
 
-    if (error instanceof HTTPException) {
-      try {
-        const parsedError = JSON.parse(error.message);
-        return c.json(
-          {
-            data: `${c.req.url} | ` + parsedError,
-          },
-          error.status,
-        );
-      } catch (e) {
-        return c.json(
-          {
-            data: `${c.req.url} | ` + error.message,
-          },
-          error.status,
-        );
-      }
-    } else {
-      try {
-        const parsedError = JSON.parse(error.message);
-        return c.json(
-          {
-            data: `${c.req.url} | ` + parsedError,
-          },
-          500,
-        );
-      } catch (e) {
-        return c.json(
-          {
-            data: `${c.req.url} | ` + error.message,
-          },
-          500,
-        );
-      }
-    }
+    return c.json(
+      {
+        requestId,
+        path: c.req.url,
+        error: error.message,
+        stack: process.env.NODE_ENV !== "production" ? stack : undefined,
+      },
+      error instanceof HTTPException ? error.status : 500,
+    );
   }
 }

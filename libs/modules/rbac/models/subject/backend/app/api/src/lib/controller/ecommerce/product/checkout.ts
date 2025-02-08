@@ -13,96 +13,76 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, { message: "RBAC_SECRET_KEY not set" });
+      }
 
-    const id = c.req.param("id");
+      const id = c.req.param("id");
+      if (!id) {
+        throw new HTTPException(400, { message: "No id provided" });
+      }
 
-    if (!id) {
-      throw new HTTPException(400, {
-        message: "No id provided",
-      });
-    }
+      const productId = c.req.param("productId");
+      if (!productId) {
+        throw new HTTPException(400, { message: "No productId provided" });
+      }
 
-    const productId = c.req.param("productId");
+      const body = await c.req.parseBody();
 
-    if (!productId) {
-      throw new HTTPException(400, {
-        message: "No productId provided",
-      });
-    }
+      if (typeof body["data"] !== "string") {
+        throw new Error(
+          "Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
+            typeof body["data"],
+        );
+      }
 
-    const body = await c.req.parseBody();
+      let data;
+      try {
+        data = JSON.parse(body["data"]);
+      } catch (error) {
+        throw new Error("Invalid JSON in body['data']. Got: " + body["data"]);
+      }
 
-    if (typeof body["data"] !== "string") {
-      return c.json(
-        {
-          message: "Invalid body",
+      const entity = await this.service.findById({ id });
+      if (!entity) {
+        throw new HTTPException(404, { message: "No entity found" });
+      }
+
+      await this.service.deanonymize({ id, email: data.email });
+
+      const order = await ecommerceOrderApi.create({
+        data: { comment: data.comment },
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+          next: { cache: "no-store" },
         },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const entity = await this.service.findById({
-      id,
-    });
-
-    if (!entity) {
-      throw new HTTPException(404, {
-        message: "No entity found",
       });
-    }
 
-    await this.service.deanonymize({
-      id,
-      email: data.email,
-    });
-
-    const order = await ecommerceOrderApi.create({
-      data: {
-        comment: data.comment,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      const orderToProduct = await ecommerceOrdersToProductsApi.create({
+        data: {
+          productId,
+          orderId: order.id,
+          quantity: data.quantity || 1,
         },
-        next: {
-          cache: "no-store",
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+          next: { cache: "no-store" },
         },
-      },
-    });
+      });
 
-    const orderToProduct = await ecommerceOrdersToProductsApi.create({
-      data: {
-        productId,
+      const result = await this.service.ecommerceOrdersCheckout({
+        id,
         orderId: order.id,
-        quantity: data.quantity || 1,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
+        data,
+      });
 
-    const result = await this.service.ecommerceOrdersCheckout({
-      id,
-      orderId: order.id,
-      data,
-    });
-
-    return c.json({
-      data: result,
-    });
+      return c.json({ data: result });
+    } catch (error: any) {
+      throw new HTTPException(error.status || 500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
+      });
+    }
   }
 }
