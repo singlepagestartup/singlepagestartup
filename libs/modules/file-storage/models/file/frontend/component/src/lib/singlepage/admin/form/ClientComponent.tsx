@@ -19,6 +19,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      adminTitle: props.data?.adminTitle || "",
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       containerClassName: props.data?.containerClassName || "",
@@ -48,6 +49,15 @@ export function Component(props: IComponentPropsExtended) {
       name="file"
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Admin title"
+          name="adminTitle"
+          form={form}
+          placeholder="Type admin title"
+        />
+
         <FormField
           ui="shadcn"
           type="select"

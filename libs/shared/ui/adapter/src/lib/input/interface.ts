@@ -14,6 +14,11 @@ type IUniversalProps = {
   name: string;
 };
 
+type Option =
+  | [value: string]
+  | [value: string, title: string]
+  | [value: string, title: string, renderFunction: TRenderComponent];
+
 export type TTypedProps =
   | {
       type: "text";
@@ -51,26 +56,26 @@ export type TTypedProps =
     }
   | {
       type: "select";
-      options: [value: string, title: string | TRenderComponent][];
+      options: Option[];
       selectContentClassName?: string;
       selectItemClassName?: string;
     }
   | {
       type: "select-with-search";
-      options: [value: string, title: string | TRenderComponent][];
+      options: Option[];
       selectContentClassName?: string;
       selectItemClassName?: string;
     }
   | {
       type: "radio";
-      options: [value: string, title: string | TRenderComponent][];
+      options: Option[];
       radioGroupItemClassName?: string;
       labelClassName?: string;
       itemClassName?: string;
     }
   | {
       type: "toggle-group";
-      options: [value: string, title: string | TRenderComponent][];
+      options: Option[];
       toggleGroupItemClassName?: string;
       labelClassName?: string;
       itemClassName?: string;

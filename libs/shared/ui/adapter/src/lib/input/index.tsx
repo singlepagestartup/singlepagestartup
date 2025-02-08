@@ -164,8 +164,10 @@ export const Component = (props: IComponentProps) => {
                 value={option[0]}
                 className={props.selectItemClassName}
               >
-                {typeof option[1] === "function"
-                  ? option[1](option)
+                {option[2]
+                  ? typeof option[2] === "function"
+                    ? option[2](option)
+                    : option[2]
                   : option[1]}
               </SelectItem>
             );
@@ -196,8 +198,10 @@ export const Component = (props: IComponentProps) => {
                 className={props.radioGroupItemClassName}
               />
               <Label htmlFor={option[0]} className={props.labelClassName}>
-                {typeof option[1] === "function"
-                  ? option[1](option)
+                {option[2]
+                  ? typeof option[2] === "function"
+                    ? option[2](option)
+                    : option[2]
                   : option[1]}
               </Label>
             </div>
@@ -223,7 +227,11 @@ export const Component = (props: IComponentProps) => {
               className={props.itemClassName}
               value={option[0]}
             >
-              {typeof option[1] === "function" ? option[1](option) : option[1]}
+              {option[2]
+                ? typeof option[2] === "function"
+                  ? option[2](option)
+                  : option[2]
+                : option[1]}
             </ToggleGroupItem>
           );
         })}

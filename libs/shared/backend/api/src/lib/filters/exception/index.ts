@@ -6,6 +6,7 @@ import { HTTPResponseError } from "hono/types";
 import { Sentry } from "@sps/shared-third-parties";
 import { SENTRY_DSN } from "@sps/shared-utils";
 import { IFilter } from "./interface";
+export { type IFilter } from "./interface";
 
 @injectable()
 export class Filter implements IFilter {

@@ -78,6 +78,7 @@
     "iron-webcrypto": "1.2.1",
     "js-cookie": "3.0.5",
     "lucide-react": "0.309.0",
+    "nanoid": "3.3.8",
     "next": "14.2.3",
     "next-themes": "0.3.0",
     "nodemailer": "6.9.14",

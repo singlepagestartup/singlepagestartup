@@ -12,9 +12,14 @@ type IUniversalProps = {
   className?: string;
 };
 
+type Option =
+  | [value: string]
+  | [value: string, title: string]
+  | [value: string, title: string, renderFunction: TRenderComponent];
+
 export type TTypedProps = {
   type: "select-with-search";
-  options: [value: string, title: string | TRenderComponent][];
+  options: Option[];
   selectContentClassName?: string;
   selectItemClassName?: string;
 };

@@ -33,8 +33,12 @@ export function Component<M extends { id: string }, V>(
         form={props.form}
         placeholder={`Select ${props.name}`}
         options={props.data.map((entity) => {
-          if (props.renderFunction) {
-            return [entity.id, props.renderFunction(entity)];
+          if (props.renderFunction && typeof props.renderField === "string") {
+            const renderValue = entity[props.renderField];
+
+            if (typeof renderValue === "string") {
+              return [entity.id, renderValue, props.renderFunction(entity)];
+            }
           }
           if (props.renderField && entity[props.renderField]) {
             const renderValue = entity[props.renderField];
