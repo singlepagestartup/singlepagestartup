@@ -15,17 +15,17 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, { message: "RBAC_SECRET_KEY not set" });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
       if (!id) {
-        throw new HTTPException(400, { message: "No id provided" });
+        throw new Error("No id provided");
       }
 
       const productId = c.req.param("productId");
       if (!productId) {
-        throw new HTTPException(400, { message: "No productId provided" });
+        throw new Error("No productId provided");
       }
 
       const body = await c.req.parseBody();
@@ -46,7 +46,7 @@ export class Handler {
 
       const entity = await this.service.findById({ id });
       if (!entity) {
-        throw new HTTPException(404, { message: "No entity found" });
+        throw new Error("No entity found with id:" + id);
       }
 
       await this.service.deanonymize({ id, email: data.email });
@@ -55,7 +55,6 @@ export class Handler {
         data: { comment: data.comment },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-          next: { cache: "no-store" },
         },
       });
 
@@ -67,7 +66,6 @@ export class Handler {
         },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-          next: { cache: "no-store" },
         },
       });
 
