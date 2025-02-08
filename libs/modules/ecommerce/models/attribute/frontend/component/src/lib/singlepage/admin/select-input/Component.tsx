@@ -13,7 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={props.renderField}
+      renderField={props.renderField || "string"}
       renderFunction={(entity) => {
         return `String: ${entity.string?.[internationalization.defaultLanguage.code]} | Number: ${entity.number} | Boolean: ${entity.boolean} | ${entity.datetime}`;
       }}

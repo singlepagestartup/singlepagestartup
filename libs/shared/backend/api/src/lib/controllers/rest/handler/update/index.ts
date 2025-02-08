@@ -19,25 +19,19 @@ export class Handler<
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new HTTPException(400, {
+          message: "Invalid id. Got: " + uuid,
+        });
       }
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new HTTPException(422, {
+          message:
+            "Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        });
       }
 
       const data = JSON.parse(body["data"]);
@@ -48,8 +42,9 @@ export class Handler<
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

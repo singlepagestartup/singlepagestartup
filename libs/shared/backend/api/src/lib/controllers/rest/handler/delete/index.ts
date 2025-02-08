@@ -19,7 +19,7 @@ export class Handler<
 
       if (!uuid) {
         throw new HTTPException(400, {
-          message: "Invalid id",
+          message: "Invalid id. Got: " + uuid,
         });
       }
 
@@ -29,8 +29,9 @@ export class Handler<
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

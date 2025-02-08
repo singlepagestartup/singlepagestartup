@@ -25,8 +25,9 @@ export class Handler<
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

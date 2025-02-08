@@ -8,6 +8,9 @@ import { SENTRY_DSN } from "@sps/shared-utils";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
 
+const isDebug =
+  process.env.NODE_ENV === "development" || process.env.DEBUG === "true";
+
 @injectable()
 export class Filter implements IFilter {
   async catch(
@@ -16,30 +19,70 @@ export class Filter implements IFilter {
   ): Promise<Response> {
     const requestId = c.req.header("x-request-id") || "unknown";
 
-    const stack =
-      error instanceof HTTPException && error.cause instanceof Error
-        ? error.cause.stack
-        : error.stack;
+    let errorMessages: string[] = [];
+    let stack = isDebug ? error.stack || "" : undefined;
+    let status = error instanceof HTTPException ? error.status : 500;
+    let path = c.req.url;
+    let method = c.req.method;
+    let causes: { message: string; stack?: string }[] = [];
+
+    try {
+      const parsedError = JSON.parse(error.message);
+      if (parsedError.message) errorMessages.push(parsedError.message);
+      if (parsedError.status) status = parsedError.status;
+      if (parsedError.cause) {
+        causes = Array.isArray(parsedError.cause)
+          ? parsedError.cause.map((e) => ({
+              message: e.message,
+              stack: isDebug ? e.stack.replace(/\\n/g, "\n") : undefined,
+            }))
+          : [{ message: parsedError.cause, stack }];
+        errorMessages.push(...causes.map((e) => e.message));
+      }
+    } catch {
+      // Not JSON
+      errorMessages.push(error.message);
+    }
+
+    causes.push({ message: errorMessages.join(" | "), stack });
 
     console.error(
-      `🚨 Exception [${requestId}] ${c.req.method} ${c.req.url}`,
-      error,
-      stack,
+      `🚨 Exception [${requestId}] ${method} ${path}`,
+      JSON.stringify(
+        { message: errorMessages.join(" | "), stack, status, causes },
+        null,
+        2,
+      ),
     );
 
     if (SENTRY_DSN) {
-      Sentry.setTag("request_id", requestId);
-      Sentry.captureException(error);
+      Sentry.withScope((scope) => {
+        scope.setTag("request_id", requestId);
+        scope.setContext("error", {
+          message: errorMessages.join(" | "),
+          status,
+          path,
+          method,
+          causes,
+        });
+        if (isDebug) {
+          scope.setContext("stack", { stack });
+        }
+        Sentry.captureException(error);
+      });
     }
 
     return c.json(
       {
         requestId,
-        path: c.req.url,
-        error: error.message,
-        stack: process.env.NODE_ENV !== "production" ? stack : undefined,
+        path,
+        method,
+        status,
+        error: errorMessages.join(" | "),
+        stack: isDebug ? stack : undefined,
+        cause: isDebug ? causes : undefined,
       },
-      error instanceof HTTPException ? error.status : 500,
+      status,
     );
   }
 }

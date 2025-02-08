@@ -128,8 +128,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         ok: true,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
+      throw new HTTPException(500, {
         message: error.message,
+        cause: error,
       });
     }
   }

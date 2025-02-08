@@ -17,8 +17,12 @@ export class Handler<
     const body = await c.req.parseBody();
 
     if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid data",
+      throw new HTTPException(422, {
+        message:
+          "Invalid body['data']: " +
+          body["data"] +
+          ". Expected string, got: " +
+          typeof body["data"],
       });
     }
 
@@ -34,8 +38,9 @@ export class Handler<
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

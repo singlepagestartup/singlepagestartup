@@ -19,27 +19,25 @@ export class Handler<
 
       if (!uuid) {
         throw new HTTPException(400, {
-          message: "Invalid id",
+          message: "Invalid id. Got: " + uuid,
         });
       }
 
       const data = await this.service.findById({ id: uuid });
 
       if (!data || !Object.keys(data).length) {
-        return c.json(
-          {
-            message: "Not found",
-          },
-          404,
-        );
+        throw new HTTPException(404, {
+          message: "Not Found entity with id: " + uuid,
+        });
       }
 
       return c.json({
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

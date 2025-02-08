@@ -14,23 +14,34 @@ export class Handler<
   constructor(@inject(DI.IService) private service: IService<SCHEMA>) {}
 
   async execute(c: C, next: Next) {
-    const body = await c.req.parseBody();
+    try {
+      const body = await c.req.parseBody();
 
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid data",
+      if (typeof body["data"] !== "string") {
+        throw new HTTPException(422, {
+          message:
+            "Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        });
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const { entity, statusCode } = await this.service.findOrCreate({ data });
+
+      return c.json(
+        {
+          data: entity,
+        },
+        statusCode,
+      );
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    const data = JSON.parse(body["data"]);
-
-    const { entity, statusCode } = await this.service.findOrCreate({ data });
-
-    return c.json(
-      {
-        data: entity,
-      },
-      statusCode,
-    );
   }
 }
