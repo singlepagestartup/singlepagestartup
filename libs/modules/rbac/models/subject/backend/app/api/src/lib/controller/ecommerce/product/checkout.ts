@@ -77,7 +77,7 @@ export class Handler {
 
       return c.json({ data: result });
     } catch (error: any) {
-      throw new HTTPException(error.status || 500, {
+      throw new HTTPException(500, {
         message: error.message || "Internal Server Error",
         cause: error,
       });

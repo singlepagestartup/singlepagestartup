@@ -15,92 +15,92 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_JWT_SECRET) {
-      throw new HTTPException(400, {
-        message: "RBAC_JWT_SECRET not set",
-      });
-    }
-
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
-
-    const token = authorization(c);
-
-    if (!token) {
-      return c.json(
-        {
-          data: null,
-        },
-        {
-          status: 401,
-        },
-      );
-    }
-
-    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
-
-    const uuid = c.req.param("uuid");
-    const identityUuid = c.req.param("identityUuid");
-
-    if (decoded?.["subject"]?.["id"] !== uuid) {
-      throw new HTTPException(403, {
-        message: "Only identity owner can update identity.",
-      });
-    }
-
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid body",
-      });
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: uuid,
-            },
-            {
-              column: "identityId",
-              method: "eq",
-              value: identityUuid,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!subjectsToIdentities?.length) {
-      throw new HTTPException(404, {
-        message: "No subjects to identities found",
-      });
-    }
-
-    if (subjectsToIdentities.length > 1) {
-      throw new HTTPException(400, {
-        message: "Multiple subjects to identities found",
-      });
-    }
-
     try {
+      if (!RBAC_JWT_SECRET) {
+        throw new HTTPException(400, {
+          message: "RBAC_JWT_SECRET not set",
+        });
+      }
+
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
+        });
+      }
+
+      const token = authorization(c);
+
+      if (!token) {
+        return c.json(
+          {
+            data: null,
+          },
+          {
+            status: 401,
+          },
+        );
+      }
+
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+      const uuid = c.req.param("uuid");
+      const identityUuid = c.req.param("identityUuid");
+
+      if (decoded?.["subject"]?.["id"] !== uuid) {
+        throw new HTTPException(403, {
+          message: "Only identity owner can update identity.",
+        });
+      }
+
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new HTTPException(400, {
+          message: "Invalid body",
+        });
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+              {
+                column: "identityId",
+                method: "eq",
+                value: identityUuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!subjectsToIdentities?.length) {
+        throw new HTTPException(404, {
+          message: "No subjects to identities found",
+        });
+      }
+
+      if (subjectsToIdentities.length > 1) {
+        throw new HTTPException(400, {
+          message: "Multiple subjects to identities found",
+        });
+      }
+
       const identity = await identityApi.findById({
         id: identityUuid,
         options: {
@@ -162,8 +162,9 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

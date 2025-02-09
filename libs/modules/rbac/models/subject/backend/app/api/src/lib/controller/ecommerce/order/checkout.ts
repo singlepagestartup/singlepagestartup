@@ -14,107 +14,114 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_JWT_SECRET) {
-      throw new HTTPException(400, {
-        message: "RBAC_JWT_SECRET not set",
-      });
-    }
+    try {
+      if (!RBAC_JWT_SECRET) {
+        throw new HTTPException(400, {
+          message: "RBAC_JWT_SECRET not set",
+        });
+      }
 
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
+        });
+      }
 
-    const id = c.req.param("id");
+      const id = c.req.param("id");
 
-    if (!id) {
-      throw new HTTPException(400, {
-        message: "No id provided",
-      });
-    }
+      if (!id) {
+        throw new HTTPException(400, {
+          message: "No id provided",
+        });
+      }
 
-    const orderId = c.req.param("orderId");
+      const orderId = c.req.param("orderId");
 
-    if (!orderId) {
-      throw new HTTPException(400, {
-        message: "No orderId provided",
-      });
-    }
+      if (!orderId) {
+        throw new HTTPException(400, {
+          message: "No orderId provided",
+        });
+      }
 
-    const body = await c.req.parseBody();
+      const body = await c.req.parseBody();
 
-    if (typeof body["data"] !== "string") {
-      return c.json(
-        {
-          message: "Invalid body",
+      if (typeof body["data"] !== "string") {
+        return c.json(
+          {
+            message: "Invalid body",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const token = authorization(c);
+
+      if (!token) {
+        return c.json(
+          {
+            data: null,
+          },
+          {
+            status: 401,
+          },
+        );
+      }
+
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+      if (decoded?.["subject"]?.["id"] !== id) {
+        throw new HTTPException(403, {
+          message: "Only order owner can update order",
+        });
+      }
+
+      const order = await ecommerceOrderApi.findById({
+        id: orderId,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
         },
-        {
-          status: 400,
-        },
-      );
-    }
+      });
 
-    const data = JSON.parse(body["data"]);
+      if (!order) {
+        throw new HTTPException(404, {
+          message: "No order found",
+        });
+      }
 
-    const token = authorization(c);
+      if (order.status !== "new") {
+        throw new HTTPException(400, {
+          message: "Order is not in 'new' status",
+        });
+      }
 
-    if (!token) {
-      return c.json(
-        {
-          data: null,
-        },
-        {
-          status: 401,
-        },
-      );
-    }
+      await this.service.deanonymize({
+        id,
+        email: data["email"],
+      });
 
-    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+      const result = await this.service.ecommerceOrdersCheckout({
+        id: id,
+        orderId: orderId,
+        data,
+      });
 
-    if (decoded?.["subject"]?.["id"] !== id) {
-      throw new HTTPException(403, {
-        message: "Only order owner can update order",
+      return c.json({
+        data: result,
+      });
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    const order = await ecommerceOrderApi.findById({
-      id: orderId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!order) {
-      throw new HTTPException(404, {
-        message: "No order found",
-      });
-    }
-
-    if (order.status !== "new") {
-      throw new HTTPException(400, {
-        message: "Order is not in 'new' status",
-      });
-    }
-
-    await this.service.deanonymize({
-      id,
-      email: data["email"],
-    });
-
-    const result = await this.service.ecommerceOrdersCheckout({
-      id: id,
-      orderId: orderId,
-      data,
-    });
-
-    return c.json({
-      data: result,
-    });
   }
 }

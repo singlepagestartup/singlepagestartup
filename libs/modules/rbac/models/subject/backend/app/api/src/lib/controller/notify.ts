@@ -19,301 +19,308 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
-
-    const uuid = c.req.param("uuid");
-
-    if (!uuid) {
-      throw new HTTPException(400, {
-        message: "No uuid provided",
-      });
-    }
-
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid body",
-      });
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: uuid,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!subjectsToIdentities?.length) {
-      throw new HTTPException(404, {
-        message: "No subjects to identities found",
-      });
-    }
-
-    const identities = await identityApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: subjectsToIdentities.map((item) => item.identityId),
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!identities?.length) {
-      throw new HTTPException(404, {
-        message: "No identities found",
-      });
-    }
-
-    if (!data.notification?.notification?.method) {
-      throw new HTTPException(400, {
-        message: "No notification.notification.method provided",
-      });
-    }
-
-    if (!data.notification?.topic?.slug) {
-      throw new HTTPException(400, {
-        message: "No notification.topic.slug provided",
-      });
-    }
-
-    const topics = await notificationTopicApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "slug",
-              method: "eq",
-              value: data.notification.topic.slug,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!topics?.length) {
-      throw new HTTPException(404, {
-        message: "No topic found",
-      });
-    }
-
-    const topic = topics[0];
-
-    if (!data.notification?.template?.variant) {
-      throw new HTTPException(400, {
-        message: "No template variant provided",
-      });
-    }
-
-    if (!["email"].includes(data.notification.notification.method)) {
-      throw new HTTPException(400, {
-        message: "Invalid notification method",
-      });
-    }
-
-    const templates = await notificationTemplateApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "variant",
-              method: "eq",
-              value: data.notification.template.variant,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!templates?.length) {
-      throw new HTTPException(404, {
-        message: "No template found",
-      });
-    }
-
-    const template = templates[0];
-
-    const notifications: {
-      data: string;
-      method: string;
-      reciever: string;
-      attachments: string;
-    }[] = [];
-
-    if (data.ecommerce?.order?.id) {
-      const order = await ecommerceOrderApi.findById({
-        id: data.ecommerce.order.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      if (!order) {
-        throw new HTTPException(404, {
-          message: "No order found",
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
         });
       }
 
-      for (const identity of identities) {
-        if (data.notification.notification.method === "email") {
-          if (!identity.email) {
-            continue;
-          }
+      const uuid = c.req.param("uuid");
 
-          notifications.push({
-            ...data.notification.notification,
-            reciever: identity.email,
-            attachments: order?.receipt
-              ? JSON.stringify([{ type: "image", url: order.receipt }])
-              : "[]",
+      if (!uuid) {
+        throw new HTTPException(400, {
+          message: "No uuid provided",
+        });
+      }
+
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new HTTPException(400, {
+          message: "Invalid body",
+        });
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!subjectsToIdentities?.length) {
+        throw new HTTPException(404, {
+          message: "No subjects to identities found",
+        });
+      }
+
+      const identities = await identityApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!identities?.length) {
+        throw new HTTPException(404, {
+          message: "No identities found",
+        });
+      }
+
+      if (!data.notification?.notification?.method) {
+        throw new HTTPException(400, {
+          message: "No notification.notification.method provided",
+        });
+      }
+
+      if (!data.notification?.topic?.slug) {
+        throw new HTTPException(400, {
+          message: "No notification.topic.slug provided",
+        });
+      }
+
+      const topics = await notificationTopicApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: data.notification.topic.slug,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!topics?.length) {
+        throw new HTTPException(404, {
+          message: "No topic found",
+        });
+      }
+
+      const topic = topics[0];
+
+      if (!data.notification?.template?.variant) {
+        throw new HTTPException(400, {
+          message: "No template variant provided",
+        });
+      }
+
+      if (!["email"].includes(data.notification.notification.method)) {
+        throw new HTTPException(400, {
+          message: "Invalid notification method",
+        });
+      }
+
+      const templates = await notificationTemplateApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "eq",
+                value: data.notification.template.variant,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!templates?.length) {
+        throw new HTTPException(404, {
+          message: "No template found",
+        });
+      }
+
+      const template = templates[0];
+
+      const notifications: {
+        data: string;
+        method: string;
+        reciever: string;
+        attachments: string;
+      }[] = [];
+
+      if (data.ecommerce?.order?.id) {
+        const order = await ecommerceOrderApi.findById({
+          id: data.ecommerce.order.id,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!order) {
+          throw new HTTPException(404, {
+            message: "No order found",
           });
         }
-      }
-    } else {
-      for (const identity of identities) {
-        if (data.notification.notification.method === "email") {
-          if (!identity.email) {
-            continue;
-          }
 
-          notifications.push({
-            ...data.notification.notification,
-            reciever: identity.email,
-            attachments: "[]",
-          });
+        for (const identity of identities) {
+          if (data.notification.notification.method === "email") {
+            if (!identity.email) {
+              continue;
+            }
+
+            notifications.push({
+              ...data.notification.notification,
+              reciever: identity.email,
+              attachments: order?.receipt
+                ? JSON.stringify([{ type: "image", url: order.receipt }])
+                : "[]",
+            });
+          }
+        }
+      } else {
+        for (const identity of identities) {
+          if (data.notification.notification.method === "email") {
+            if (!identity.email) {
+              continue;
+            }
+
+            notifications.push({
+              ...data.notification.notification,
+              reciever: identity.email,
+              attachments: "[]",
+            });
+          }
         }
       }
-    }
 
-    for (const notification of notifications) {
-      const createdNotification = await notificationNotificationApi.create({
-        data: {
-          ...notification,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      for (const notification of notifications) {
+        const createdNotification = await notificationNotificationApi.create({
+          data: {
+            ...notification,
           },
-          next: {
-            cache: "no-store",
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
           },
-        },
-      });
+        });
 
-      if (!createdNotification) {
-        continue;
+        if (!createdNotification) {
+          continue;
+        }
+
+        await notificationNotificationsToTemplatesApi.create({
+          data: {
+            notificationId: createdNotification.id,
+            templateId: template.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        await notificationTopicsToNotificationsApi.create({
+          data: {
+            topicId: topic.id,
+            notificationId: createdNotification.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        await notificationNotificationApi.send({
+          id: createdNotification.id,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
       }
 
-      await notificationNotificationsToTemplatesApi.create({
-        data: {
-          notificationId: createdNotification.id,
-          templateId: template.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
+      const entity = await this.service.findById({
+        id: uuid,
       });
 
-      await notificationTopicsToNotificationsApi.create({
-        data: {
-          topicId: topic.id,
-          notificationId: createdNotification.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
+      if (!entity) {
+        throw new HTTPException(404, {
+          message: "No entity found",
+        });
+      }
 
-      await notificationNotificationApi.send({
-        id: createdNotification.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
+      return c.json({
+        data: entity,
+      });
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    const entity = await this.service.findById({
-      id: uuid,
-    });
-
-    if (!entity) {
-      throw new HTTPException(404, {
-        message: "No entity found",
-      });
-    }
-
-    return c.json({
-      data: entity,
-    });
   }
 }

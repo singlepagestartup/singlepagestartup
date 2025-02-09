@@ -14,78 +14,85 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC secret key not found",
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC secret key not found",
+        });
+      }
+
+      const uuid = c.req.param("uuid");
+
+      if (!uuid) {
+        throw new HTTPException(400, {
+          message: "Invalid id",
+        });
+      }
+
+      const params = c.req.query();
+      const parsedQuery = QueryString.parse(params);
+
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: uuid,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!subjectsToIdentities) {
+        throw new HTTPException(404, {
+          message: "No subjects to identities found",
+        });
+      }
+
+      const queryFilters = parsedQuery.filters?.["and"] || [];
+
+      const identities = await identityApi.find({
+        params: {
+          filters: {
+            and: [
+              ...queryFilters,
+              {
+                column: "id",
+                method: "inArray",
+                value: subjectsToIdentities.map((item) => item.identityId),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      return c.json({
+        data: identities,
+      });
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    const uuid = c.req.param("uuid");
-
-    if (!uuid) {
-      throw new HTTPException(400, {
-        message: "Invalid id",
-      });
-    }
-
-    const params = c.req.query();
-    const parsedQuery = QueryString.parse(params);
-
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: uuid,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!subjectsToIdentities) {
-      throw new HTTPException(404, {
-        message: "No subjects to identities found",
-      });
-    }
-
-    const queryFilters = parsedQuery.filters?.["and"] || [];
-
-    const identities = await identityApi.find({
-      params: {
-        filters: {
-          and: [
-            ...queryFilters,
-            {
-              column: "id",
-              method: "inArray",
-              value: subjectsToIdentities.map((item) => item.identityId),
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    return c.json({
-      data: identities,
-    });
   }
 }

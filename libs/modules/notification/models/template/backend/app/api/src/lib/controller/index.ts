@@ -4,7 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/template/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
+import { Handler as Render } from "./render";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -55,51 +55,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   }
 
   async render(c: Context, next: any): Promise<Response> {
-    try {
-      const uuid = c.req.param("uuid");
-      const body = await c.req.parseBody();
-
-      if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id",
-        });
-      }
-
-      if (body["data"] && typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      const payloadData = JSON.parse(body["data"]);
-
-      const data = await this.service.render({
-        id: uuid,
-        type: "email",
-        payload: payloadData,
-      });
-
-      if (!data || !Object.keys(data).length) {
-        return c.json(
-          {
-            message: "Not found",
-          },
-          404,
-        );
-      }
-
-      return c.json({
-        data,
-      });
-    } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
-    }
+    return new Render(this.service).execute(c, next);
   }
 }

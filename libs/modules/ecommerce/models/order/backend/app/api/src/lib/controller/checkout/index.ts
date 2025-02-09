@@ -1,7 +1,7 @@
 import { HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as billingPaymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
@@ -20,39 +20,24 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        return c.json(
-          {
-            message: "RBAC secret key not found",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Invalid id");
       }
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new HTTPException(422, {
+          message:
+            "Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        });
       }
 
       api.clearOldOrders({
@@ -72,7 +57,7 @@ export class Handler {
 
       if (!data["email"]) {
         throw new HTTPException(400, {
-          message: "Email not provided",
+          message: "Email is not provided",
         });
       }
 
@@ -92,14 +77,9 @@ export class Handler {
       });
 
       if (!existing) {
-        return c.json(
-          {
-            message: "Order not found",
-          },
-          {
-            status: 404,
-          },
-        );
+        throw new HTTPException(404, {
+          message: "Not Found entity with id: " + uuid,
+        });
       }
 
       const orderToProducts = await ordersToProductsApi.find({
@@ -125,14 +105,9 @@ export class Handler {
       });
 
       if (!orderToProducts?.length) {
-        return c.json(
-          {
-            message: "Order does not have any products",
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new HTTPException(404, {
+          message: "No products found for order: " + uuid,
+        });
       }
 
       const { amount, type, interval } =
@@ -290,9 +265,6 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });

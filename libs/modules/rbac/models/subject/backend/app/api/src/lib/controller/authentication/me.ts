@@ -13,45 +13,52 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    const token = authorization(c);
+    try {
+      const token = authorization(c);
 
-    if (!token) {
-      return c.json(
-        {
-          data: null,
-        },
-        {
-          status: 200,
-        },
-      );
-    }
+      if (!token) {
+        return c.json(
+          {
+            data: null,
+          },
+          {
+            status: 200,
+          },
+        );
+      }
 
-    if (!RBAC_JWT_SECRET) {
+      if (!RBAC_JWT_SECRET) {
+        throw new HTTPException(500, {
+          message: "JWT secret not provided",
+        });
+      }
+
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+      if (!decoded.subject?.["id"]) {
+        throw new HTTPException(401, {
+          message: "No subject provided in the token",
+        });
+      }
+
+      // const entity = await this.service.findById({
+      //   id: decoded.subject?.["id"],
+      // });
+
+      if (!decoded.subject) {
+        throw new HTTPException(401, {
+          message: "No subject provided in the token",
+        });
+      }
+
+      return c.json({
+        data: decoded.subject,
+      });
+    } catch (error: any) {
       throw new HTTPException(500, {
-        message: "JWT secret not provided",
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
-
-    if (!decoded.subject?.["id"]) {
-      throw new HTTPException(401, {
-        message: "No subject provided in the token",
-      });
-    }
-
-    // const entity = await this.service.findById({
-    //   id: decoded.subject?.["id"],
-    // });
-
-    if (!decoded.subject) {
-      throw new HTTPException(401, {
-        message: "No subject provided in the token",
-      });
-    }
-
-    return c.json({
-      data: decoded.subject,
-    });
   }
 }

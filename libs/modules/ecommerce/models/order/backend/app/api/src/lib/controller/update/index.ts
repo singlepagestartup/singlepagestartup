@@ -1,7 +1,7 @@
 import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import QueryString from "qs";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
@@ -20,36 +20,30 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC secret key not found",
-      });
-    }
-
     try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC secret key not found",
+        });
+      }
+
       const uuid = c.req.param("uuid");
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new HTTPException(400, {
+          message: "Invalid id. Got: " + uuid,
+        });
       }
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new HTTPException(422, {
+          message:
+            "Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        });
       }
 
       const data = JSON.parse(body["data"]);
@@ -104,9 +98,6 @@ export class Handler {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -146,9 +137,6 @@ export class Handler {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -175,9 +163,6 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -261,8 +246,9 @@ export class Handler {
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal server error",
+        cause: error,
       });
     }
   }

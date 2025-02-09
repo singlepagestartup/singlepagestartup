@@ -25,201 +25,62 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
-
-    const uuid = c.req.param("uuid");
-
-    if (!uuid) {
-      throw new HTTPException(400, {
-        message: "No uuid provided",
-      });
-    }
-
-    const productId = c.req.param("productId");
-
-    if (!productId) {
-      throw new HTTPException(400, {
-        message: "No productId provided",
-      });
-    }
-
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      return c.json(
-        {
-          message: "Invalid body",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const entity = await this.service.findById({
-      id: uuid,
-    });
-
-    if (!entity) {
-      throw new HTTPException(404, {
-        message: "No entity found",
-      });
-    }
-
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "subjectId",
-              method: "eq",
-              value: uuid,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!subjectsToIdentities?.length) {
-      throw new HTTPException(404, {
-        message: "No subjects to identities found",
-      });
-    }
-
-    const identities = await identityApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: subjectsToIdentities.map((item) => item.identityId),
-            },
-            {
-              column: "email",
-              method: "isNotNull",
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!identities?.length) {
-      throw new HTTPException(404, {
-        message: "No identities found",
-      });
-    }
-
-    let price: IEcommerceAttribute | undefined;
-    let interval: IEcommerceAttribute | undefined;
-
-    const productsToAttributes = await ecommerceProductsToAttributesApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "productId",
-              method: "eq",
-              value: productId,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!productsToAttributes?.length) {
-      throw new HTTPException(404, {
-        message: "No products to attributes found",
-      });
-    }
-
-    const attributes = await ecommerceAttributeApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: productsToAttributes.map((pta) => pta.attributeId),
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!attributes?.length) {
-      throw new HTTPException(404, {
-        message: "No attributes found",
-      });
-    }
-
-    for (const attribute of attributes) {
-      const attributeKeysToAttributes =
-        await ecommerceAttributeKeysToAttributesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "eq",
-                  value: attribute.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-      if (!attributeKeysToAttributes?.length) {
-        throw new HTTPException(404, {
-          message: "No attribute keys to attributes found",
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
         });
       }
 
-      const attributeKey = await ecommerceAttributeKeyApi.find({
+      const uuid = c.req.param("uuid");
+
+      if (!uuid) {
+        throw new HTTPException(400, {
+          message: "No uuid provided",
+        });
+      }
+
+      const productId = c.req.param("productId");
+
+      if (!productId) {
+        throw new HTTPException(400, {
+          message: "No productId provided",
+        });
+      }
+
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        return c.json(
+          {
+            message: "Invalid body",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const entity = await this.service.findById({
+        id: uuid,
+      });
+
+      if (!entity) {
+        throw new HTTPException(404, {
+          message: "No entity found",
+        });
+      }
+
+      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
         params: {
           filters: {
             and: [
               {
-                column: "id",
+                column: "subjectId",
                 method: "eq",
-                value: attributeKeysToAttributes[0].attributeKeyId,
+                value: uuid,
               },
             ],
           },
@@ -228,174 +89,61 @@ export class Handler {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-        },
-      });
-
-      if (!attributeKey?.length) {
-        continue;
-      }
-
-      if (attributeKey[0].type === "price") {
-        price = attribute;
-      }
-
-      if (attributeKey[0].type === "interval") {
-        interval = attribute;
-      }
-    }
-
-    console.log("🚀 ~ prolongate ~ price:", price);
-    console.log("🚀 ~ prolongate ~ interval:", interval);
-
-    const ordersToProducts = await ecommerceOrdersToProductsApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "productId",
-              method: "eq",
-              value: productId,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!ordersToProducts?.length) {
-      throw new HTTPException(404, {
-        message: "No orders to products found",
-      });
-    }
-
-    const orders = await ecommerceOrderApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ordersToProducts.map((otp) => otp.orderId),
-            },
-            {
-              column: "status",
-              method: "inArray",
-              value: ["approving", "packaging", "delivering", "canceled"],
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!orders?.length) {
-      throw new HTTPException(404, {
-        message: "No orders found",
-      });
-    }
-
-    for (const order of orders) {
-      const ordersToBillingModulePaymentIntents =
-        await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: order.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-      if (!ordersToBillingModulePaymentIntents?.length) {
-        continue;
-      }
-
-      if (ordersToBillingModulePaymentIntents.length > 1) {
-        throw new HTTPException(400, {
-          message: "Multiple billing module payment intents found",
-        });
-      }
-
-      const paymentIntentId =
-        ordersToBillingModulePaymentIntents[0].billingModulePaymentIntentId;
-
-      const paymentIntent = await billingPaymentIntentApi.findById({
-        id: paymentIntentId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          next: {
+            cache: "no-store",
           },
         },
       });
 
-      if (!paymentIntent) {
-        throw new HTTPException(400, {
-          message: "Payment intent not found",
+      if (!subjectsToIdentities?.length) {
+        throw new HTTPException(404, {
+          message: "No subjects to identities found",
         });
       }
 
-      const paymentIntentsToInvoices =
-        await billingPaymentIntentsToInvoicesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "paymentIntentId",
-                  method: "eq",
-                  value: paymentIntent.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-      if (!paymentIntentsToInvoices?.length) {
-        continue;
-      }
-
-      const invoices = await billingInvoiceApi.find({
+      const identities = await identityApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "id",
                 method: "inArray",
-                value: paymentIntentsToInvoices?.map((pti) => pti.invoiceId),
+                value: subjectsToIdentities.map((item) => item.identityId),
               },
-              // {
-              //   column: "status",
-              //   method: "eq",
-              //   value: "paid",
-              // },
+              {
+                column: "email",
+                method: "isNotNull",
+              },
             ],
           },
-          orderBy: {
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!identities?.length) {
+        throw new HTTPException(404, {
+          message: "No identities found",
+        });
+      }
+
+      let price: IEcommerceAttribute | undefined;
+      let interval: IEcommerceAttribute | undefined;
+
+      const productsToAttributes = await ecommerceProductsToAttributesApi.find({
+        params: {
+          filters: {
             and: [
               {
-                column: "updatedAt",
-                method: "desc",
+                column: "productId",
+                method: "eq",
+                value: productId,
               },
             ],
           },
@@ -407,49 +155,50 @@ export class Handler {
         },
       });
 
-      if (!invoices?.length) {
-        continue;
+      if (!productsToAttributes?.length) {
+        throw new HTTPException(404, {
+          message: "No products to attributes found",
+        });
       }
 
-      const latestInvoice = invoices[0];
+      const attributes = await ecommerceAttributeApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: productsToAttributes.map((pta) => pta.attributeId),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
-      console.log("🚀 ~ enforce ~ latestInvoice:", latestInvoice);
-
-      let durationInMiliseconds = 31540000000;
-
-      switch (interval?.string?.["en"]) {
-        case "minute":
-          durationInMiliseconds = 60000;
-          break;
-        case "hour":
-          durationInMiliseconds = 3600000;
-          break;
-        case "day":
-          durationInMiliseconds = 60000;
-          // durationInMiliseconds = 86400000;
-          break;
-        case "week":
-          durationInMiliseconds = 604800000;
-          break;
-        case "month":
-          durationInMiliseconds = 2628000000;
-          break;
-        case "year":
-          durationInMiliseconds = 31540000000;
-          break;
+      if (!attributes?.length) {
+        throw new HTTPException(404, {
+          message: "No attributes found",
+        });
       }
 
-      const finishAt =
-        new Date(latestInvoice.updatedAt).getTime() + durationInMiliseconds;
-
-      console.log("🚀 ~ enforce ~ finishAt:", new Date(finishAt));
-
-      if (finishAt < new Date().getTime()) {
-        if (order.status === "canceled") {
-          await ecommerceOrderApi.update({
-            id: order.id,
-            data: {
-              status: "delivered",
+      for (const attribute of attributes) {
+        const attributeKeysToAttributes =
+          await ecommerceAttributeKeysToAttributesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "attributeId",
+                    method: "eq",
+                    value: attribute.id,
+                  },
+                ],
+              },
             },
             options: {
               headers: {
@@ -457,16 +206,24 @@ export class Handler {
               },
             },
           });
-          continue;
+
+        if (!attributeKeysToAttributes?.length) {
+          throw new HTTPException(404, {
+            message: "No attribute keys to attributes found",
+          });
         }
 
-        const providesWithSubscriptions = ["stripe", "payselection"];
-
-        await billingPaymentIntentApi.update({
-          id: paymentIntentId,
-          data: {
-            ...paymentIntent,
-            status: "requires_confirmation",
+        const attributeKey = await ecommerceAttributeKeyApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: attributeKeysToAttributes[0].attributeKeyId,
+                },
+              ],
+            },
           },
           options: {
             headers: {
@@ -475,20 +232,80 @@ export class Handler {
           },
         });
 
-        // await orderApi.update({
-        //   id: order.id,
-        //   data: {
-        //     status: "paying",
-        //   },
-        //   options: {
-        //     headers: {
-        //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        //     },
-        //   },
-        // });
+        if (!attributeKey?.length) {
+          continue;
+        }
 
-        const ecommerceOrdersToBillingModuleCurrencies =
-          await ecommerceOrdersToBillingModuleCurrenciesApi.find({
+        if (attributeKey[0].type === "price") {
+          price = attribute;
+        }
+
+        if (attributeKey[0].type === "interval") {
+          interval = attribute;
+        }
+      }
+
+      console.log("🚀 ~ prolongate ~ price:", price);
+      console.log("🚀 ~ prolongate ~ interval:", interval);
+
+      const ordersToProducts = await ecommerceOrdersToProductsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "productId",
+                method: "eq",
+                value: productId,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!ordersToProducts?.length) {
+        throw new HTTPException(404, {
+          message: "No orders to products found",
+        });
+      }
+
+      const orders = await ecommerceOrderApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ordersToProducts.map((otp) => otp.orderId),
+              },
+              {
+                column: "status",
+                method: "inArray",
+                value: ["approving", "packaging", "delivering", "canceled"],
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!orders?.length) {
+        throw new HTTPException(404, {
+          message: "No orders found",
+        });
+      }
+
+      for (const order of orders) {
+        const ordersToBillingModulePaymentIntents =
+          await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
             params: {
               filters: {
                 and: [
@@ -507,48 +324,238 @@ export class Handler {
             },
           });
 
-        if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
-          throw new HTTPException(404, {
-            message: "No ecommerce orders to billing module currencies found",
+        if (!ordersToBillingModulePaymentIntents?.length) {
+          continue;
+        }
+
+        if (ordersToBillingModulePaymentIntents.length > 1) {
+          throw new HTTPException(400, {
+            message: "Multiple billing module payment intents found",
           });
         }
 
-        if (
-          latestInvoice.provider &&
-          providesWithSubscriptions.includes(latestInvoice.provider)
-        ) {
-          continue;
-        }
+        const paymentIntentId =
+          ordersToBillingModulePaymentIntents[0].billingModulePaymentIntentId;
 
-        if (!latestInvoice.provider) {
-          continue;
-        }
-
-        await billingPaymentIntentApi.provider({
+        const paymentIntent = await billingPaymentIntentApi.findById({
           id: paymentIntentId,
-          data: {
-            provider: latestInvoice.provider,
-            currencyId:
-              ecommerceOrdersToBillingModuleCurrencies[0]
-                .billingModuleCurrencyId,
-            metadata: {
-              email: identities[0].email,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (!paymentIntent) {
+          throw new HTTPException(400, {
+            message: "Payment intent not found",
+          });
+        }
+
+        const paymentIntentsToInvoices =
+          await billingPaymentIntentsToInvoicesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "paymentIntentId",
+                    method: "eq",
+                    value: paymentIntent.id,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        if (!paymentIntentsToInvoices?.length) {
+          continue;
+        }
+
+        const invoices = await billingInvoiceApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: paymentIntentsToInvoices?.map((pti) => pti.invoiceId),
+                },
+                // {
+                //   column: "status",
+                //   method: "eq",
+                //   value: "paid",
+                // },
+              ],
+            },
+            orderBy: {
+              and: [
+                {
+                  column: "updatedAt",
+                  method: "desc",
+                },
+              ],
             },
           },
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
-      }
-    }
 
-    return c.json({
-      data: {},
-    });
+        if (!invoices?.length) {
+          continue;
+        }
+
+        const latestInvoice = invoices[0];
+
+        console.log("🚀 ~ enforce ~ latestInvoice:", latestInvoice);
+
+        let durationInMiliseconds = 31540000000;
+
+        switch (interval?.string?.["en"]) {
+          case "minute":
+            durationInMiliseconds = 60000;
+            break;
+          case "hour":
+            durationInMiliseconds = 3600000;
+            break;
+          case "day":
+            durationInMiliseconds = 60000;
+            // durationInMiliseconds = 86400000;
+            break;
+          case "week":
+            durationInMiliseconds = 604800000;
+            break;
+          case "month":
+            durationInMiliseconds = 2628000000;
+            break;
+          case "year":
+            durationInMiliseconds = 31540000000;
+            break;
+        }
+
+        const finishAt =
+          new Date(latestInvoice.updatedAt).getTime() + durationInMiliseconds;
+
+        console.log("🚀 ~ enforce ~ finishAt:", new Date(finishAt));
+
+        if (finishAt < new Date().getTime()) {
+          if (order.status === "canceled") {
+            await ecommerceOrderApi.update({
+              id: order.id,
+              data: {
+                status: "delivered",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+            continue;
+          }
+
+          const providesWithSubscriptions = ["stripe", "payselection"];
+
+          await billingPaymentIntentApi.update({
+            id: paymentIntentId,
+            data: {
+              ...paymentIntent,
+              status: "requires_confirmation",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+          // await orderApi.update({
+          //   id: order.id,
+          //   data: {
+          //     status: "paying",
+          //   },
+          //   options: {
+          //     headers: {
+          //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //     },
+          //   },
+          // });
+
+          const ecommerceOrdersToBillingModuleCurrencies =
+            await ecommerceOrdersToBillingModuleCurrenciesApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "orderId",
+                      method: "eq",
+                      value: order.id,
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+          if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
+            throw new HTTPException(404, {
+              message: "No ecommerce orders to billing module currencies found",
+            });
+          }
+
+          if (
+            latestInvoice.provider &&
+            providesWithSubscriptions.includes(latestInvoice.provider)
+          ) {
+            continue;
+          }
+
+          if (!latestInvoice.provider) {
+            continue;
+          }
+
+          await billingPaymentIntentApi.provider({
+            id: paymentIntentId,
+            data: {
+              provider: latestInvoice.provider,
+              currencyId:
+                ecommerceOrdersToBillingModuleCurrencies[0]
+                  .billingModuleCurrencyId,
+              metadata: {
+                email: identities[0].email,
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+        }
+      }
+
+      return c.json({
+        data: {},
+      });
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
+      });
+    }
   }
 }

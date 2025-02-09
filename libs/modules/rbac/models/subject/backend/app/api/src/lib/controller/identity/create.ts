@@ -18,60 +18,60 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_JWT_SECRET) {
-      throw new HTTPException(400, {
-        message: "RBAC_JWT_SECRET not set",
-      });
-    }
-
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
-
-    const token = authorization(c);
-
-    if (!token) {
-      return c.json(
-        {
-          data: null,
-        },
-        {
-          status: 401,
-        },
-      );
-    }
-
-    const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
-
-    const uuid = c.req.param("uuid");
-
-    if (decoded?.["subject"]?.["id"] !== uuid) {
-      throw new HTTPException(403, {
-        message: "Only identity owner can create identity.",
-      });
-    }
-
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid body",
-      });
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const provider = data.provider.replaceAll("-", "_");
-
-    if (!provider) {
-      throw new HTTPException(400, {
-        message: "No provider provided",
-      });
-    }
-
     try {
+      if (!RBAC_JWT_SECRET) {
+        throw new HTTPException(400, {
+          message: "RBAC_JWT_SECRET not set",
+        });
+      }
+
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
+        });
+      }
+
+      const token = authorization(c);
+
+      if (!token) {
+        return c.json(
+          {
+            data: null,
+          },
+          {
+            status: 401,
+          },
+        );
+      }
+
+      const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+      const uuid = c.req.param("uuid");
+
+      if (decoded?.["subject"]?.["id"] !== uuid) {
+        throw new HTTPException(403, {
+          message: "Only identity owner can create identity.",
+        });
+      }
+
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new HTTPException(400, {
+          message: "Invalid body",
+        });
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const provider = data.provider.replaceAll("-", "_");
+
+      if (!provider) {
+        throw new HTTPException(400, {
+          message: "No provider provided",
+        });
+      }
+
       if (provider === "ethereum_virtual_machine") {
         const { message, signature, address } = data;
 
@@ -179,8 +179,9 @@ export class Handler {
 
       throw new Error("Invalid provider");
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
   }

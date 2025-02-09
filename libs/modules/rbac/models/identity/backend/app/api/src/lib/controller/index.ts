@@ -4,7 +4,8 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/identity/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
+import { Handler as ChangePassword } from "./change-password";
+import { Handler as EmailAndPassword } from "./email-and-password";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -63,59 +64,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   }
 
   async emailAndPassword(c: Context, next: any): Promise<Response> {
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      return next();
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    try {
-      const entity = await this.service.emailAndPassowrd({
-        data,
-      });
-
-      return c.json(
-        {
-          data: entity,
-        },
-        201,
-      );
-    } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
-    }
+    return new EmailAndPassword(this.service).execute(c, next);
   }
 
   async changePassword(c: Context, next: any): Promise<Response> {
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      return next();
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    try {
-      const uuid = c.req.param("uuid");
-
-      const entity = await this.service.changePassword({
-        id: uuid,
-        data,
-      });
-
-      return c.json(
-        {
-          data: entity,
-        },
-        201,
-      );
-    } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
-    }
+    return new ChangePassword(this.service).execute(c, next);
   }
 }

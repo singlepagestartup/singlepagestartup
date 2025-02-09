@@ -31,7 +31,6 @@ export class Handler {
         },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-          next: { cache: "no-store" },
         },
       });
 
@@ -49,7 +48,6 @@ export class Handler {
         },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-          next: { cache: "no-store" },
         },
       });
 
@@ -72,7 +70,6 @@ export class Handler {
           data: { ...notification },
           options: {
             headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-            next: { cache: "no-store" },
           },
         });
 
@@ -87,7 +84,6 @@ export class Handler {
           },
           options: {
             headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-            next: { cache: "no-store" },
           },
         });
 
@@ -98,7 +94,6 @@ export class Handler {
           },
           options: {
             headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-            next: { cache: "no-store" },
           },
         });
 
@@ -106,7 +101,6 @@ export class Handler {
           id: createdNotification.id,
           options: {
             headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-            next: { cache: "no-store" },
           },
         });
       }

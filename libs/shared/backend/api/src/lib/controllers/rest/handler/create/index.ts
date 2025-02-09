@@ -26,9 +26,9 @@ export class Handler<
       });
     }
 
-    const data = JSON.parse(body["data"]);
-
     try {
+      const data = JSON.parse(body["data"]);
+
       const entity = await this.service.create({ data });
 
       return c.json(

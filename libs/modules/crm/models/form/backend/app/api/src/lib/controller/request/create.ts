@@ -21,216 +21,53 @@ export class Handler {
   }
 
   async execute(c: Context, next: any): Promise<Response> {
-    if (!RBAC_SECRET_KEY) {
-      throw new HTTPException(400, {
-        message: "RBAC_SECRET_KEY not set",
-      });
-    }
-
-    const id = c.req.param("id");
-
-    if (!id) {
-      throw new HTTPException(400, {
-        message: "No id provided",
-      });
-    }
-
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid data",
-      });
-    }
-
-    const data = JSON.parse(body["data"]);
-
-    const entity = await api.findById({
-      id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!entity) {
-      throw new HTTPException(400, {
-        message: "No form found",
-      });
-    }
-
-    const formsToInputs = await formsToInputsApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "formId",
-              method: "eq",
-              value: id,
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!formsToInputs) {
-      throw new HTTPException(400, {
-        message: "No forms-to-inputs found",
-      });
-    }
-
-    const inputs = await inputApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: formsToInputs?.map((formToInput) => {
-                return formToInput.inputId;
-              }),
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    const request = await requestApi.create({
-      data: {
-        payload: data,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!request) {
-      throw new HTTPException(400, {
-        message: "No request created",
-      });
-    }
-
-    const formsToRequests = await formsToRequestsApi.create({
-      data: {
-        formId: id,
-        requestId: request.id,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    const topics = await notificationTopicApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "slug",
-              method: "eq",
-              value: "information",
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!topics?.length) {
-      throw new HTTPException(404, {
-        message: "No topic found",
-      });
-    }
-
-    const topic = topics[0];
-
-    const templates = await notificationTemplateApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "variant",
-              method: "eq",
-              value: "request-from-website",
-            },
-          ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
-
-    if (!templates?.length) {
-      throw new HTTPException(404, {
-        message: "No template found",
-      });
-    }
-
-    const template = templates[0];
-
-    const notifications: {
-      data: string;
-      method: string;
-      reciever: string;
-      attachments: string;
-    }[] = [
-      {
-        data: JSON.stringify({
-          data,
-        }),
-        method: "email",
-        reciever: MANAGER_EMAIL,
-        attachments: "[]",
-      },
-    ];
-
-    for (const notification of notifications) {
-      const createdNotification = await notificationNotificationApi.create({
-        data: {
-          ...notification,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!createdNotification) {
-        continue;
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new HTTPException(400, {
+          message: "RBAC_SECRET_KEY not set",
+        });
       }
 
-      await notificationNotificationsToTemplatesApi.create({
-        data: {
-          notificationId: createdNotification.id,
-          templateId: template.id,
+      const id = c.req.param("id");
+
+      if (!id) {
+        throw new Error("Invalid id");
+      }
+
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new HTTPException(400, {
+          message: "Invalid data",
+        });
+      }
+
+      const data = JSON.parse(body["data"]);
+
+      const entity = await api.findById({
+        id,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!entity) {
+        throw new Error("Form not found");
+      }
+
+      const formsToInputs = await formsToInputsApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "formId",
+                method: "eq",
+                value: id,
+              },
+            ],
+          },
         },
         options: {
           headers: {
@@ -239,10 +76,23 @@ export class Handler {
         },
       });
 
-      await notificationTopicsToNotificationsApi.create({
-        data: {
-          topicId: topic.id,
-          notificationId: createdNotification.id,
+      if (!formsToInputs) {
+        throw new Error("No inputs found for form with id " + id);
+      }
+
+      const inputs = await inputApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: formsToInputs?.map((formToInput) => {
+                  return formToInput.inputId;
+                }),
+              },
+            ],
+          },
         },
         options: {
           headers: {
@@ -251,31 +101,176 @@ export class Handler {
         },
       });
 
-      await notificationNotificationApi.send({
-        id: createdNotification.id,
+      const request = await requestApi.create({
+        data: {
+          payload: data,
+        },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
+      });
+
+      if (!request) {
+        throw new Error("Request not created");
+      }
+
+      const formsToRequests = await formsToRequestsApi.create({
+        data: {
+          formId: id,
+          requestId: request.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      const topics = await notificationTopicApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "information",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!topics?.length) {
+        throw new Error("No topic found");
+      }
+
+      const topic = topics[0];
+
+      const templates = await notificationTemplateApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "eq",
+                value: "request-from-website",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+          next: {
+            cache: "no-store",
+          },
+        },
+      });
+
+      if (!templates?.length) {
+        throw new Error("No template found");
+      }
+
+      const template = templates[0];
+
+      const notifications: {
+        data: string;
+        method: string;
+        reciever: string;
+        attachments: string;
+      }[] = [
+        {
+          data: JSON.stringify({
+            data,
+          }),
+          method: "email",
+          reciever: MANAGER_EMAIL,
+          attachments: "[]",
+        },
+      ];
+
+      for (const notification of notifications) {
+        const createdNotification = await notificationNotificationApi.create({
+          data: {
+            ...notification,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (!createdNotification) {
+          continue;
+        }
+
+        await notificationNotificationsToTemplatesApi.create({
+          data: {
+            notificationId: createdNotification.id,
+            templateId: template.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        await notificationTopicsToNotificationsApi.create({
+          data: {
+            topicId: topic.id,
+            notificationId: createdNotification.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        await notificationNotificationApi.send({
+          id: createdNotification.id,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
+
+      return c.json(
+        {
+          data: {
+            ...entity,
+            formsToRequests: [
+              {
+                ...formsToRequests,
+                request: {
+                  ...request,
+                },
+              },
+            ],
+          },
+        },
+        201,
+      );
+    } catch (error: any) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+        cause: error,
       });
     }
-
-    return c.json(
-      {
-        data: {
-          ...entity,
-          formsToRequests: [
-            {
-              ...formsToRequests,
-              request: {
-                ...request,
-              },
-            },
-          ],
-        },
-      },
-      201,
-    );
   }
 }
