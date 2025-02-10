@@ -19,7 +19,7 @@ export async function action(props: Params) {
   const noCache = productionBuild;
 
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
-    ? { "Cache-Control": "no-cache" }
+    ? { "Cache-Control": "no-store" }
     : {};
 
   const options: NextRequestOptions = {

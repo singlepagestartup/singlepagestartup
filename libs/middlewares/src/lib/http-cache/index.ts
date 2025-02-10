@@ -42,7 +42,7 @@ export class Middleware {
         return await next();
       }
 
-      if (method === "GET" && cacheControl !== "no-cache") {
+      if (method === "GET" && cacheControl !== "no-store") {
         const cachedValue = await this.storeProvider.get({
           prefix: path,
           key: params,
@@ -63,7 +63,7 @@ export class Middleware {
       await next();
 
       if (c.res.status >= 200 && c.res.status < 300) {
-        if (method === "GET" && cacheControl !== "no-cache") {
+        if (method === "GET" && cacheControl !== "no-store") {
           const resJson = await c.res.clone().json();
 
           await this.storeProvider.set({

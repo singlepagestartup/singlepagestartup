@@ -30,7 +30,7 @@ export async function action(props: IProps): Promise<IResult> {
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
-    ? { "Cache-Control": "no-cache" }
+    ? { "Cache-Control": "no-store" }
     : {};
 
   const requestOptions: NextRequestOptions = {

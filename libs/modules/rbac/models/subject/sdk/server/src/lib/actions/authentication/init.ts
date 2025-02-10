@@ -34,7 +34,7 @@ export async function action(props: IProps): Promise<IResult> {
       ...options?.next,
     },
     headers: {
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-store",
     },
   };
 

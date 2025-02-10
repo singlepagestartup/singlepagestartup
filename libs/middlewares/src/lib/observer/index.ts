@@ -89,7 +89,7 @@ export class Middleware {
           },
           options: {
             headers: {
-              "Cache-Control": "no-cache",
+              "Cache-Control": "no-store",
             },
           },
         });

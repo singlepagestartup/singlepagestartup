@@ -22,7 +22,7 @@ export const api = {
   init: async () => {
     const options: NextRequestOptions = {
       headers: {
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store",
       },
       next: {
         cache: "no-store",

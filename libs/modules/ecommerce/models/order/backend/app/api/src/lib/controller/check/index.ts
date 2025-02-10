@@ -140,7 +140,7 @@ export class Handler {
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-store",
               },
               next: {
                 cache: "no-store",
@@ -291,7 +291,7 @@ export class Handler {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-cache",
+                  "Cache-Control": "no-store",
                 },
                 next: {
                   cache: "no-store",

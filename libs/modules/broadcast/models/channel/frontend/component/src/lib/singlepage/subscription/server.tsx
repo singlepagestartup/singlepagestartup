@@ -28,10 +28,6 @@ export default async function Server(props: IComponentProps) {
       </ErrorBoundary>
     );
   } catch (error) {
-    console.log(
-      `sps-boradcast ~ channel ~ subscription ~ Server ~ error:`,
-      error,
-    );
     return <></>;
   }
 }

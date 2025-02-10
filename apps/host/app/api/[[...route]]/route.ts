@@ -41,7 +41,7 @@ app.use(observerMiddleware.init());
 /**
  * It's not secure, because authorized requests can be cached and served to unauthorized users.
  * But perfomance of the application will rediqulesly increase.
- * Now added "Cache-Control": "no-cache" for preventing caching of authorized requests,
+ * Now added "Cache-Control": "no-store" for preventing caching of authorized requests,
  * but it should be added to the request
  */
 const httpCacheMiddleware = new HTTPCacheMiddleware();
