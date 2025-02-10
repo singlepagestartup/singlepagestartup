@@ -67,7 +67,7 @@
       "@sps/shared-ui-aceternity": ["libs/shared/ui/aceternity/src/index.ts"],
       "@sps/shared-third-parties": ["libs/shared/third-parties/src/index.ts"],
       "@sps/shared-utils": ["libs/shared/utils/src/index.ts"],
-      "@sps/sps-backend-utils": ["libs/shared/backend/utils/src/index.ts"],
+      "@sps/backend-utils": ["libs/shared/backend/utils/src/index.ts"],
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],
       "@sps/agent/*": ["libs/modules/agent/*"],

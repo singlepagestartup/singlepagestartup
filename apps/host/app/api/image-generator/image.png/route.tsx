@@ -5,6 +5,7 @@ import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ChildComponent } from "./component";
 import pako from "pako";
+import { logger } from "@sps/backend-utils";
 
 const fontsURLs: {
   [key in "Default" | "Primary"]: {
@@ -18,7 +19,7 @@ const fontsURLs: {
       weight: 100,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Thin.ttf`,
+        "../../../../styles/fonts/Default/Thin.ttf",
         import.meta.url,
       ),
     },
@@ -26,7 +27,7 @@ const fontsURLs: {
       weight: 100,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/ThinItalic.ttf`,
+        "../../../../styles/fonts/Default/ThinItalic.ttf",
         import.meta.url,
       ),
     },
@@ -34,7 +35,7 @@ const fontsURLs: {
       weight: 200,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/ExtraLight.ttf`,
+        "../../../../styles/fonts/Default/ExtraLight.ttf",
         import.meta.url,
       ),
     },
@@ -42,7 +43,7 @@ const fontsURLs: {
       weight: 200,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/ExtraLightItalic.ttf`,
+        "../../../../styles/fonts/Default/ExtraLightItalic.ttf",
         import.meta.url,
       ),
     },
@@ -50,7 +51,7 @@ const fontsURLs: {
       weight: 300,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Light.ttf`,
+        "../../../../styles/fonts/Default/Light.ttf",
         import.meta.url,
       ),
     },
@@ -58,7 +59,7 @@ const fontsURLs: {
       weight: 300,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/LightItalic.ttf`,
+        "../../../../styles/fonts/Default/LightItalic.ttf",
         import.meta.url,
       ),
     },
@@ -66,7 +67,7 @@ const fontsURLs: {
       weight: 400,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Regular.ttf`,
+        "../../../../styles/fonts/Default/Regular.ttf",
         import.meta.url,
       ),
     },
@@ -74,7 +75,7 @@ const fontsURLs: {
       weight: 400,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/RegularItalic.ttf`,
+        "../../../../styles/fonts/Default/RegularItalic.ttf",
         import.meta.url,
       ),
     },
@@ -82,7 +83,7 @@ const fontsURLs: {
       weight: 500,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Medium.ttf`,
+        "../../../../styles/fonts/Default/Medium.ttf",
         import.meta.url,
       ),
     },
@@ -90,7 +91,7 @@ const fontsURLs: {
       weight: 500,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/MediumItalic.ttf`,
+        "../../../../styles/fonts/Default/MediumItalic.ttf",
         import.meta.url,
       ),
     },
@@ -98,7 +99,7 @@ const fontsURLs: {
       weight: 600,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/SemiBold.ttf`,
+        "../../../../styles/fonts/Default/SemiBold.ttf",
         import.meta.url,
       ),
     },
@@ -106,7 +107,7 @@ const fontsURLs: {
       weight: 600,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/SemiBoldItalic.ttf`,
+        "../../../../styles/fonts/Default/SemiBoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -114,7 +115,7 @@ const fontsURLs: {
       weight: 700,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Bold.ttf`,
+        "../../../../styles/fonts/Default/Bold.ttf",
         import.meta.url,
       ),
     },
@@ -122,7 +123,7 @@ const fontsURLs: {
       weight: 700,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/BoldItalic.ttf`,
+        "../../../../styles/fonts/Default/BoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -130,7 +131,7 @@ const fontsURLs: {
       weight: 800,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/ExtraBold.ttf`,
+        "../../../../styles/fonts/Default/ExtraBold.ttf",
         import.meta.url,
       ),
     },
@@ -138,7 +139,7 @@ const fontsURLs: {
       weight: 800,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/ExtraBoldItalic.ttf`,
+        "../../../../styles/fonts/Default/ExtraBoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -146,7 +147,7 @@ const fontsURLs: {
       weight: 900,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Default/Black.ttf`,
+        "../../../../styles/fonts/Default/Black.ttf",
         import.meta.url,
       ),
     },
@@ -154,7 +155,7 @@ const fontsURLs: {
       weight: 900,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Default/BlackItalic.ttf`,
+        "../../../../styles/fonts/Default/BlackItalic.ttf",
         import.meta.url,
       ),
     },
@@ -164,7 +165,7 @@ const fontsURLs: {
       weight: 100,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Thin.ttf`,
+        "../../../../styles/fonts/Primary/Thin.ttf",
         import.meta.url,
       ),
     },
@@ -172,7 +173,7 @@ const fontsURLs: {
       weight: 100,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/ThinItalic.ttf`,
+        "../../../../styles/fonts/Primary/ThinItalic.ttf",
         import.meta.url,
       ),
     },
@@ -180,7 +181,7 @@ const fontsURLs: {
       weight: 200,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/ExtraLight.ttf`,
+        "../../../../styles/fonts/Primary/ExtraLight.ttf",
         import.meta.url,
       ),
     },
@@ -188,7 +189,7 @@ const fontsURLs: {
       weight: 200,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/ExtraLightItalic.ttf`,
+        "../../../../styles/fonts/Primary/ExtraLightItalic.ttf",
         import.meta.url,
       ),
     },
@@ -196,7 +197,7 @@ const fontsURLs: {
       weight: 300,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Light.ttf`,
+        "../../../../styles/fonts/Primary/Light.ttf",
         import.meta.url,
       ),
     },
@@ -204,7 +205,7 @@ const fontsURLs: {
       weight: 300,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/LightItalic.ttf`,
+        "../../../../styles/fonts/Primary/LightItalic.ttf",
         import.meta.url,
       ),
     },
@@ -212,7 +213,7 @@ const fontsURLs: {
       weight: 400,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Regular.ttf`,
+        "../../../../styles/fonts/Primary/Regular.ttf",
         import.meta.url,
       ),
     },
@@ -220,7 +221,7 @@ const fontsURLs: {
       weight: 400,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/RegularItalic.ttf`,
+        "../../../../styles/fonts/Primary/RegularItalic.ttf",
         import.meta.url,
       ),
     },
@@ -228,7 +229,7 @@ const fontsURLs: {
       weight: 500,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Medium.ttf`,
+        "../../../../styles/fonts/Primary/Medium.ttf",
         import.meta.url,
       ),
     },
@@ -236,7 +237,7 @@ const fontsURLs: {
       weight: 500,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/MediumItalic.ttf`,
+        "../../../../styles/fonts/Primary/MediumItalic.ttf",
         import.meta.url,
       ),
     },
@@ -244,7 +245,7 @@ const fontsURLs: {
       weight: 600,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/SemiBold.ttf`,
+        "../../../../styles/fonts/Primary/SemiBold.ttf",
         import.meta.url,
       ),
     },
@@ -252,7 +253,7 @@ const fontsURLs: {
       weight: 600,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/SemiBoldItalic.ttf`,
+        "../../../../styles/fonts/Primary/SemiBoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -260,7 +261,7 @@ const fontsURLs: {
       weight: 700,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Bold.ttf`,
+        "../../../../styles/fonts/Primary/Bold.ttf",
         import.meta.url,
       ),
     },
@@ -268,7 +269,7 @@ const fontsURLs: {
       weight: 700,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/BoldItalic.ttf`,
+        "../../../../styles/fonts/Primary/BoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -276,7 +277,7 @@ const fontsURLs: {
       weight: 800,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/ExtraBold.ttf`,
+        "../../../../styles/fonts/Primary/ExtraBold.ttf",
         import.meta.url,
       ),
     },
@@ -284,7 +285,7 @@ const fontsURLs: {
       weight: 800,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/ExtraBoldItalic.ttf`,
+        "../../../../styles/fonts/Primary/ExtraBoldItalic.ttf",
         import.meta.url,
       ),
     },
@@ -292,7 +293,7 @@ const fontsURLs: {
       weight: 900,
       style: "normal",
       url: new URL(
-        `../../../../styles/fonts/Primary/Black.ttf`,
+        "../../../../styles/fonts/Primary/Black.ttf",
         import.meta.url,
       ),
     },
@@ -300,7 +301,7 @@ const fontsURLs: {
       weight: 900,
       style: "italic",
       url: new URL(
-        `../../../../styles/fonts/Primary/BlackItalic.ttf`,
+        "../../../../styles/fonts/Primary/BlackItalic.ttf",
         import.meta.url,
       ),
     },
@@ -365,7 +366,7 @@ export const GET = async (request: NextRequest) => {
             return res.arrayBuffer();
           })
           .catch((error) => {
-            console.error(`fetch font ~ error:`, error);
+            logger.error("fetch font ~ error:", error);
           });
 
         if (!fontData) {

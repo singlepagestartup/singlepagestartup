@@ -17,6 +17,7 @@ import {
   ConversationFlavor as GrammyConversationFlavor,
 } from "@grammyjs/conversations";
 import { app as pageApp } from "@sps/telegram/models/page/backend/app/api";
+import { logger } from "@sps/backend-utils";
 
 @injectable()
 export class App {
@@ -114,7 +115,7 @@ export class App {
     });
 
     const commands = await pageApp.controller.telegramCommands();
-    console.log(`🚀 ~ useTelegamRoutes ~ commands:`, commands);
+    logger.debug("🚀 ~ useTelegamRoutes ~ commands:", commands);
 
     this.telegramBot.addRoutes(telegramRoutes);
     this.telegramBot.addConversations(telegramConversations);

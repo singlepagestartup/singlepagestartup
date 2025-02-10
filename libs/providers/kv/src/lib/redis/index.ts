@@ -7,35 +7,52 @@ import {
   KV_HOST,
   hash,
 } from "@sps/shared-utils";
+import { logger } from "@sps/backend-utils";
 
 export class Provider implements IProvider {
+  private static instance: Redis;
+  private static isShutdownHookSet = false;
+
   client: Redis;
 
   constructor() {
-    const connectionCredentials: RedisOptions = {
-      host: KV_HOST,
-      port: KV_PORT,
-      username: KV_USERNAME,
-      password: KV_PASSWORD,
-      maxRetriesPerRequest: 10,
-      retryStrategy: (times) => Math.min(times * 50, 2000),
-      reconnectOnError: (err) => {
-        console.error("Redis error:", err);
-        return true;
-      },
-    };
+    if (!Provider.instance) {
+      const connectionCredentials: RedisOptions = {
+        host: KV_HOST,
+        port: KV_PORT,
+        username: KV_USERNAME,
+        password: KV_PASSWORD,
+        maxRetriesPerRequest: 10,
+        retryStrategy: (times) => Math.min(times * 50, 2000),
+        reconnectOnError: (err) => {
+          logger.error("Redis error:", err);
+          return true;
+        },
+      };
 
-    this.client = new Redis(connectionCredentials);
+      Provider.instance = new Redis(connectionCredentials);
+      this.client = Provider.instance;
 
-    process.once("SIGINT", async () => {
-      await this.client.quit();
-      process.exit(0);
-    });
+      if (!Provider.isShutdownHookSet) {
+        Provider.isShutdownHookSet = true;
 
-    process.once("SIGTERM", async () => {
-      await this.client.quit();
-      process.exit(0);
-    });
+        const shutdown = async () => {
+          if (Provider.instance) {
+            await Provider.instance.quit();
+            logger.debug("Redis connection closed.");
+          }
+          process.exit(0);
+        };
+
+        process.removeAllListeners("SIGINT");
+        process.removeAllListeners("SIGTERM");
+
+        process.once("SIGINT", shutdown);
+        process.once("SIGTERM", shutdown);
+      }
+    } else {
+      this.client = Provider.instance;
+    }
   }
 
   async connect(): Promise<void> {
@@ -48,7 +65,7 @@ export class Provider implements IProvider {
 
   async get(props: { prefix: string; key: string }): Promise<string | null> {
     const hashedKey = await this.hashKey({ key: props.key });
-    return this.client.get(props.prefix + ":" + hashedKey);
+    return this.client.get(`${props.prefix}:${hashedKey}`);
   }
 
   async set(props: {
@@ -59,7 +76,7 @@ export class Provider implements IProvider {
   }): Promise<string | undefined | null> {
     const hashedKey = await this.hashKey({ key: props.key });
     return this.client.set(
-      props.prefix + ":" + hashedKey,
+      `${props.prefix}:${hashedKey}`,
       props.value,
       "EX",
       props.options.ttl,
@@ -85,7 +102,7 @@ export class Provider implements IProvider {
 
   async del(props: { prefix: string; key: string }): Promise<void> {
     const hashedKey = await this.hashKey({ key: props.key });
-    await this.client.del(props.prefix + ":" + hashedKey);
+    await this.client.del(`${props.prefix}:${hashedKey}`);
   }
 
   async flushall(): Promise<void> {

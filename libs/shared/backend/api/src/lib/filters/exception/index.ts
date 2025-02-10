@@ -7,6 +7,7 @@ import { Sentry } from "@sps/shared-third-parties";
 import { SENTRY_DSN } from "@sps/shared-utils";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
+import { logger } from "@sps/backend-utils";
 
 const isDebug =
   process.env.NODE_ENV === "development" || process.env.DEBUG === "true";
@@ -46,7 +47,7 @@ export class Filter implements IFilter {
 
     causes.push({ message: errorMessages.join(" | "), stack });
 
-    console.error(
+    logger.error(
       `🚨 Exception [${requestId}] ${method} ${path}`,
       JSON.stringify(
         { message: errorMessages.join(" | "), stack, status, causes },

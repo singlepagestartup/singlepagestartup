@@ -15,6 +15,7 @@ import {
 } from "../../configuration";
 import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
 import fs from "fs/promises";
+import { logger } from "@sps/backend-utils";
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -77,7 +78,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -106,7 +107,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -124,7 +125,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return record;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -212,7 +213,7 @@ export class Database<T extends PgTableWithColumns<any>>
         }
       }
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -276,7 +277,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecord;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));

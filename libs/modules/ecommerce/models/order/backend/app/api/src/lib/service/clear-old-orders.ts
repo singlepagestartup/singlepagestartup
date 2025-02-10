@@ -1,8 +1,8 @@
 import { IRepository } from "@sps/shared-backend-api";
-import { IModel } from "@sps/ecommerce/models/order/sdk/model";
 import { api as orderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {};
 
@@ -75,7 +75,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error("clearOldOrders", error);
+      logger.error("clearOldOrders", error);
     }
   }
 }

@@ -10,6 +10,8 @@ import {
   Conversation as GrammyConversation,
 } from "@grammyjs/conversations";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { logger } from "@sps/backend-utils";
+
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -79,7 +81,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         },
       },
     });
-    console.log("🚀 ~ pages:", pages);
+
+    logger.debug("🚀 ~ pages:", pages);
 
     if (!pages) {
       return;
@@ -116,7 +119,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
     });
     const { message } = await conversation.waitFor(":text");
-    console.log("🚀 ~ message:", message);
+
+    logger.debug("🚀 ~ message:", message);
+
     await ctx.reply(`Created page - ${message.text}!`);
   }
 }

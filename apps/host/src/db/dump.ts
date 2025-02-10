@@ -10,6 +10,7 @@ import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
 
@@ -138,6 +139,6 @@ import { exit } from "process";
     exit(0);
   })
   .catch((error) => {
-    console.error(error);
+    logger.error("Error dumping database: ", error);
     exit(1);
   });

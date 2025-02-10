@@ -3,6 +3,7 @@ import { Config as DrizzleConfig, defineConfig } from "drizzle-kit";
 import { getDrizzle } from "../postgres";
 import { migrate as drizzleMigrator } from "drizzle-orm/postgres-js/migrator";
 import { sql } from "drizzle-orm";
+import { logger } from "@sps/backend-utils";
 
 export class Config {
   out: string;
@@ -72,12 +73,12 @@ export class Config {
       );
 
       if (beforeMigrations.length !== afterMigrations.length) {
-        console.log("NEW_MIGRATIONS=true");
+        logger.info("NEW_MIGRATIONS=true");
       }
 
       process.exit(0);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       process.exit(1);
     }
   }

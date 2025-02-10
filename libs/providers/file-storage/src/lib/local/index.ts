@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import type { IProvider } from "../interface";
+import { logger } from "@sps/backend-utils";
 
 export class Provider implements IProvider {
   folder: string;
@@ -9,7 +10,7 @@ export class Provider implements IProvider {
 
   constructor(props: { folder: string }) {
     const root = process.cwd();
-    const storagePath = `public`;
+    const storagePath = "public";
 
     this.folder = props.folder;
     const filesPath = path.join(root, storagePath, this.folder);
@@ -74,7 +75,8 @@ export class Provider implements IProvider {
         await fs.promises.unlink(filePath);
       })
       .catch((error) => {
-        console.log(`providers ~ file-storage ~ deleteFile ~ error:`, error);
+        logger.error("providers ~ file-storage ~ deleteFile ~ error:", error);
+
         return false;
       });
   }

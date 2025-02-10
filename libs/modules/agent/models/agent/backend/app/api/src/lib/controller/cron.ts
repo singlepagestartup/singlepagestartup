@@ -10,6 +10,7 @@ import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/se
 import { api } from "@sps/agent/models/agent/sdk/server";
 import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
 import cronParser from "cron-parser";
+import { logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -105,7 +106,7 @@ export class Handler {
               needToExecute = true;
             }
           } catch (err) {
-            console.error(
+            logger.error(
               `❌ Invalid cron expression for agent ${agent.slug}:`,
               err,
             );
@@ -118,7 +119,7 @@ export class Handler {
 
           await this.executeCronTask(agent, cronChannel, currentExecutions);
         } catch (err) {
-          console.error(`❌ An error during agent '${agent.slug}':`, err);
+          logger.error(`❌ An error during agent '${agent.slug}':`, err);
         }
       });
 
@@ -158,7 +159,7 @@ export class Handler {
               options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
             });
           } catch (error) {
-            console.error(
+            logger.error(
               `❌ Error during deleting message ${execution.id}:`,
               error,
             );
@@ -195,7 +196,7 @@ export class Handler {
           return res.json();
         })
         .catch((error) => {
-          console.error(`❌ Error during agent '${agent.slug}':`, error);
+          logger.error(`❌ Error during agent '${agent.slug}':`, error);
           return { error: error?.message || "Unknown error" };
         });
 
@@ -211,7 +212,7 @@ export class Handler {
         options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
       });
     } catch (error) {
-      console.error(
+      logger.error(
         `❌ Error durng executeCronTask for agent '${agent.slug}':`,
         error,
       );

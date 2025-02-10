@@ -40,6 +40,7 @@ import {
   Service as Tiptoppay,
   IServiceProceedProps as ITiptippayProceedProps,
 } from "./tiptoppay";
+import { logger } from "@sps/backend-utils";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -426,7 +427,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             data.subscription,
           );
 
-          console.log(`🚀 ~ subscription:`, subscription);
+          logger.debug("🚀 ~ subscription:", subscription);
 
           const invoices = await invoiceApi.find({
             params: {
@@ -450,7 +451,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           });
 
-          console.log(`🚀 ~ invoices:`, invoices);
+          logger.debug("🚀 ~ invoices:", invoices);
 
           let invoice: IInvoice | undefined | null;
 
@@ -491,7 +492,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             }
           }
 
-          console.log(`🚀 ~ invoice:`, invoice);
+          logger.debug("🚀 ~ invoice:", invoice);
 
           if (!invoice) {
             throw new Error("Invoice not found");
@@ -607,7 +608,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         body: formData,
       }).then((res) => res.json());
 
-      console.log(`🚀 ~ checkout:`, checkout);
+      logger.debug("🚀 ~ checkout:", checkout);
 
       const invoice = await invoiceApi.create({
         data: {
@@ -1196,7 +1197,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!invoice) {
-          console.error(
+          logger.error(
             "Payselection Webhook - Invoice not found: " + props.rawBody,
           );
 

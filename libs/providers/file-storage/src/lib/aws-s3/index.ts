@@ -7,6 +7,7 @@ import {
 import { IProvider } from "../interface";
 import * as stream from "stream";
 import { promisify } from "util";
+import { logger } from "@sps/backend-utils";
 
 const pipeline = promisify(stream.pipeline);
 
@@ -69,7 +70,7 @@ export class Provider implements IProvider {
       await this.s3Client.send(command);
       return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
     } catch (error) {
-      console.error("Error uploading to S3:", error);
+      logger.error("Error uploading to S3:", error);
       throw new Error("Failed to upload file to S3");
     }
   }
@@ -95,10 +96,12 @@ export class Provider implements IProvider {
       return Buffer.concat(chunks);
     } catch (error: any) {
       if (error.$metadata?.httpStatusCode === 404) {
-        console.log("File not found in S3:", name);
+        logger.error("File not found in S3:", name);
+
         return null;
       }
-      console.error("Error getting file from S3:", error);
+
+      logger.error("Error getting file from S3:", error);
       throw new Error(error.message, error?.["stack"]);
     }
   }
@@ -116,7 +119,7 @@ export class Provider implements IProvider {
     try {
       await this.s3Client.send(command);
     } catch (error: any) {
-      console.error("Error deleting file from S3:", error);
+      logger.error("Error deleting file from S3:", error);
       throw new Error(error.message, error?.["stack"]);
     }
   }

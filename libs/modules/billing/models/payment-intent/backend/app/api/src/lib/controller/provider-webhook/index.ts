@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { STRIPE_SECRET_KEY } from "@sps/shared-utils";
 import Stripe from "stripe";
+import { logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -18,8 +19,8 @@ export class Handler {
       const headers = c.req.header();
       const rawBody = await c.req.text();
 
-      console.log("🚀 ~ providerWebhook ~ headers:", headers);
-      console.log("🚀 ~ providerWebhook ~ c.req.text:", await c.req.text());
+      logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
+      logger.debug("🚀 ~ providerWebhook ~ c.req.text:", await c.req.text());
 
       let data;
       if (contentType?.includes("application/json")) {

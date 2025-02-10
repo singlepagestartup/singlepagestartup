@@ -7,7 +7,7 @@ import { api as notificationTemplateApi } from "@sps/notification/models/templat
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
-
+import { logger } from "@sps/backend-utils";
 export class Handler {
   service: Service;
 
@@ -21,7 +21,7 @@ export class Handler {
         throw new Error("RBAC_SECRET_KEY not set");
       }
 
-      console.log("Dummy started");
+      logger.info("Dummy started");
 
       const topics = await notificationTopicApi.find({
         params: {
@@ -105,7 +105,7 @@ export class Handler {
         });
       }
 
-      console.log("Dummy finished");
+      logger.info("Dummy finished");
 
       return c.json({ data: { ok: true } });
     } catch (error: any) {

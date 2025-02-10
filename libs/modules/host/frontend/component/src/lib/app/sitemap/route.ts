@@ -26,7 +26,7 @@ async function generateSiteMap() {
      </urlset>
    `;
   } catch (error) {
-    console.log(`generateSiteMap ~ error:`, error);
+    console.log("generateSiteMap ~ error:", error);
 
     return `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">

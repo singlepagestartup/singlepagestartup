@@ -9,6 +9,7 @@ import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { api as messagesApi } from "@sps/broadcast/models/message/sdk/server";
 import { IModel as IBroadcastMessage } from "@sps/broadcast/models/message/sdk/model";
+import { logger } from "@sps/backend-utils";
 
 export type IMiddlewareGeneric = unknown;
 
@@ -148,7 +149,7 @@ export class Middleware {
                 });
               }
             } catch (error) {
-              console.error(error);
+              logger.error(error);
             }
           }
         }

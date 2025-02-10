@@ -7,6 +7,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -50,8 +51,8 @@ export class Handler {
         });
       }
 
-      console.log("🚀 ~ provider ~ provider:", provider);
-      console.log("🚀 ~ provider ~ data:", data);
+      logger.debug("provider", provider);
+      logger.debug("data", data);
 
       if (!entity) {
         throw new HTTPException(400, {
@@ -82,7 +83,7 @@ export class Handler {
         });
       }
 
-      console.log("🚀 ~ provider ~ currency:", currency);
+      logger.debug("currency", currency);
 
       let result: any;
 
@@ -193,7 +194,7 @@ export class Handler {
               return res.json();
             })
             .catch((error) => {
-              console.error("Error:", error);
+              logger.error("Error:", error);
             });
         }, 10000);
       }

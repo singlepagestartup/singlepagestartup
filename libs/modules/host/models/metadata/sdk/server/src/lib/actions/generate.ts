@@ -90,7 +90,6 @@ export async function action({ url, catchErrors = false }: Params) {
         primaryMetadata.keywords?.split(",") || metadata.keywords;
     }
   } catch (error) {
-    console.log("metadata ~ generate ~ action ~ error:", error);
     if (!catchErrors) {
       throw error;
     }

@@ -16,6 +16,7 @@ import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-inte
 import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -245,8 +246,8 @@ export class Handler {
         }
       }
 
-      console.log("🚀 ~ prolongate ~ price:", price);
-      console.log("🚀 ~ prolongate ~ interval:", interval);
+      logger.debug("🚀 ~ prolongate ~ price:", price);
+      logger.debug("🚀 ~ prolongate ~ interval:", interval);
 
       const ordersToProducts = await ecommerceOrdersToProductsApi.find({
         params: {
@@ -414,7 +415,7 @@ export class Handler {
 
         const latestInvoice = invoices[0];
 
-        console.log("🚀 ~ enforce ~ latestInvoice:", latestInvoice);
+        logger.debug("🚀 ~ enforce ~ latestInvoice:", latestInvoice);
 
         let durationInMiliseconds = 31540000000;
 
@@ -443,7 +444,7 @@ export class Handler {
         const finishAt =
           new Date(latestInvoice.updatedAt).getTime() + durationInMiliseconds;
 
-        console.log("🚀 ~ enforce ~ finishAt:", new Date(finishAt));
+        logger.debug("🚀 ~ enforce ~ finishAt:", new Date(finishAt));
 
         if (finishAt < new Date().getTime()) {
           if (order.status === "canceled") {

@@ -11,6 +11,7 @@ import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payme
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
+import { logger } from "@sps/backend-utils";
 
 export type IServiceProceedProps =
   | {
@@ -152,7 +153,7 @@ export class Service {
         },
       }).then((res) => res.json());
 
-      console.log(`🚀 ~ checkout:`, checkout);
+      logger.debug("🚀 ~ checkout:", checkout);
 
       invoice = await invoiceApi.update({
         id: invoice.id,

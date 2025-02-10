@@ -4,6 +4,7 @@ import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {
   id: IModel["id"];
@@ -72,7 +73,7 @@ export class Service {
         },
       });
 
-      console.log(`🚀 ~ identity:`, identity);
+      logger.debug("🚀 ~ identity:", identity);
 
       await subjectsToIdentitiesApi.create({
         data: {

@@ -129,7 +129,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             }
           })
           .catch((error) => {
-            console.log(`shadcn file input ~ useEffect ~ error:`, error);
+            console.log("shadcn file input ~ useEffect ~ error:", error);
           });
       }
     }, [props.value]);

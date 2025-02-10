@@ -2,6 +2,7 @@ import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {};
 
@@ -80,7 +81,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error(`🚀 ~ clearAnonymusSessions ~ error:`, error);
+      logger.error("🚀 ~ clearAnonymusSessions ~ error:", error);
     }
   }
 }

@@ -25,11 +25,6 @@ export class App implements IDefaultApp<Env> {
     const apps = new Apps();
     this.apps = apps;
 
-    // this.hono.use(async (c: Context, next: Next) => {
-    //   const path = c.req.path;
-    //   console.log("RBAC Middleware", path);
-    //   await next();
-    // });
     this.useRoutes();
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
   }

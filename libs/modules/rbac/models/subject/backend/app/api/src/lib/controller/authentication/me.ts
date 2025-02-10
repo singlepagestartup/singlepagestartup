@@ -2,7 +2,7 @@ import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
-import { authorization } from "@sps/sps-backend-utils";
+import { authorization } from "@sps/backend-utils";
 import { Service } from "../../service";
 
 export class Handler {

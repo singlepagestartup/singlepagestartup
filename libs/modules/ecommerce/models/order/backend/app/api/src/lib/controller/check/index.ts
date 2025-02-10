@@ -8,6 +8,7 @@ import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -239,11 +240,9 @@ export class Handler {
 
           const isExpired = new Date() > intervalDeadline;
 
-          console.log("🚀 ~ check ~ new Date():", new Date());
-
-          console.log("🚀 ~ check ~ intervalDeadline:", intervalDeadline);
-
-          console.log("🚀 ~ check ~ isExpired:", isExpired);
+          logger.debug("🚀 ~ check ~ new Date():", new Date());
+          logger.debug("🚀 ~ check ~ intervalDeadline:", intervalDeadline);
+          logger.debug("🚀 ~ check ~ isExpired:", isExpired);
 
           if (isExpired) {
             const ordersToBillingModulePaymentIntents =
@@ -363,7 +362,7 @@ export class Handler {
               },
             });
 
-            console.log("🚀 ~ check ~ invoices:", invoices);
+            logger.debug("🚀 ~ check ~ invoices:", invoices);
 
             if (!invoices?.length) {
               await api.update({

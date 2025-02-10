@@ -11,6 +11,7 @@ import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
 import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
@@ -318,7 +319,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
       return res.text();
     })
     .catch((error) => {
-      console.error("🚀 ~ HOST_URL error:", error);
+      logger.error("🚀 ~ HOST_URL error:", error);
     });
 
   await fetch(BACKEND_URL + "/api/http-cache/clear", {
@@ -330,7 +331,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
       return res.json();
     })
     .catch((error) => {
-      console.error("🚀 ~ /api/http-cache/clear error:", error);
+      logger.error("🚀 ~ /api/http-cache/clear error:", error);
     });
 
   await fetch(BACKEND_URL + "/api/revalidation/revalidate?path=/&type=layout", {
@@ -340,7 +341,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
   })
     .then((res) => res.json())
     .catch((error) => {
-      console.error("🚀 ~ /api/revalidation/revalidate error:", error);
+      logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
     });
 
   setTimeout(async () => {
@@ -349,7 +350,7 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
         return res.text();
       })
       .catch((error) => {
-        console.error("🚀 ~ HOST_URL error:", error);
+        logger.error("🚀 ~ HOST_URL error:", error);
       });
   }, 10000);
 })()
@@ -357,6 +358,6 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     exit(0);
   })
   .catch((error) => {
-    console.error(error);
+    logger.error(error);
     exit(1);
   });

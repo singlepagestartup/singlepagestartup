@@ -418,7 +418,7 @@ export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
           : props.value;
       } catch (error) {
         console.log(
-          `TipTap editor was replaced by text input, because of error:`,
+          "TipTap editor was replaced by text input, because of error:",
           error,
         );
         return (
@@ -449,7 +449,7 @@ export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
         : props.value;
     } catch (error) {
       console.log(
-        `TipTap editor was replaced by text input, because of error:`,
+        "TipTap editor was replaced by text input, because of error:",
         error,
       );
       if (typeof props.value === "string") {

@@ -6,6 +6,7 @@ import { api as rolesToActionsApi } from "@sps/rbac/relations/roles-to-actions/s
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import * as jwt from "hono/jwt";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {
   action: {
@@ -156,7 +157,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error("isAuthorized ~ error:", error);
+      logger.error("isAuthorized ~ error:", error);
     }
 
     try {
@@ -244,7 +245,7 @@ export class Service {
         }
       }
     } catch (error) {
-      console.error("isAuthorized ~ error:", error);
+      logger.error("isAuthorized ~ error:", error);
     }
 
     if (!authorized) {
