@@ -48,69 +48,72 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
   },
 ];
 
+function withTimeout<T>(promise: Promise<T>, ms = 5000): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error("Request timeout")), ms);
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timeout));
+  });
+}
+
 export class Middleware {
-  constructor() {}
+  private allowedRoutes: Map<string, Set<string>>;
+
+  constructor() {
+    this.allowedRoutes = new Map();
+
+    allowedRoutes.forEach(({ regexPath, methods }) => {
+      this.allowedRoutes.set(regexPath.source, new Set(methods));
+    });
+  }
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
-      const reqMethod = c.req.method;
-      const reqPath = c.req.path;
-      const secretKeyHeaders = c.req.header("X-RBAC-SECRET-KEY");
-      const secretKeyCookie = getCookie(c, "rbac.secret-key");
-      const secretKey = secretKeyHeaders || secretKeyCookie;
-      const authorizationCookie = getCookie(c, "rbac.subject.jwt");
-      const authorizationHeader = c.req.header("Authorization");
+      const reqMethod = c.req.method.toUpperCase();
+      const reqPath = c.req.path.toLowerCase();
+      const secretKey =
+        c.req.header("X-RBAC-SECRET-KEY") || getCookie(c, "rbac.secret-key");
       const authorization =
-        authorizationCookie || authorizationHeader?.replace("Bearer ", "");
+        c.req.header("Authorization")?.replace("Bearer ", "") ||
+        getCookie(c, "rbac.subject.jwt");
 
       const origin = c.req.header("Host");
-      const allowedOrigins = ["http://localhost:3000", HOST_URL];
+      const allowedOrigins = new Set(["http://localhost:3000", HOST_URL]);
 
-      if (origin && allowedOrigins.includes(origin)) {
+      if (origin && allowedOrigins.has(origin)) {
         c.res.headers["Access-Control-Allow-Origin"] = origin;
       }
 
-      /**
-       * Vercel doesn't to call equal endpoint, throws 508 Loop detected
-       * But it't not a loop, because controller checks if secret key is present
-       */
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
         return next();
       }
 
-      const matchedRoute = allowedRoutes.find((route) => {
-        return route.regexPath.test(reqPath);
-      });
-
-      if (matchedRoute && matchedRoute.methods.includes(reqMethod)) {
-        return next();
+      for (const [pattern, methods] of this.allowedRoutes.entries()) {
+        if (new RegExp(pattern).test(reqPath) && methods.has(reqMethod)) {
+          return next();
+        }
       }
 
       try {
-        const headers = secretKey
-          ? { "X-RBAC-SECRET-KEY": secretKey }
-          : authorization
-            ? { Authorization: authorization }
-            : ({} as HeadersInit);
+        const headers: HeadersInit = {
+          ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
+          ...(authorization ? { Authorization: authorization } : {}),
+        };
 
-        const isAuthorized = await subjectApi.authenticationIsAuthorized({
-          params: {
-            action: {
-              route: reqPath.toLowerCase(),
-              method: reqMethod.toUpperCase(),
-              type: "HTTP",
+        const isAuthorized = await withTimeout(
+          subjectApi.authenticationIsAuthorized({
+            params: {
+              action: { route: reqPath, method: reqMethod, type: "HTTP" },
             },
-          },
-          options: {
-            headers,
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
+            options: { headers, next: { cache: "no-store" } },
+          }),
+          5000,
+        );
       } catch (error: any) {
         throw new HTTPException(401, {
-          message: error["message"],
+          message: error.message,
         });
       }
 
