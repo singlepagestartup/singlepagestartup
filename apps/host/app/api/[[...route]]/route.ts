@@ -26,6 +26,8 @@ import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 let appInstance: Hono | null = null;
 let appHandler: any = null;
