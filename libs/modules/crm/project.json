@@ -31,12 +31,6 @@
             "command": "nx run @sps/crm:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/crm:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/crm:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/crm:relations:repository-migrate"
           }
         ]

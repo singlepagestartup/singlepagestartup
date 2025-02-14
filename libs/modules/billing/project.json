@@ -31,12 +31,6 @@
             "command": "nx run @sps/billing:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/billing:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/billing:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/billing:relations:repository-migrate"
           }
         ]

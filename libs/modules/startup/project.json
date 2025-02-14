@@ -31,12 +31,6 @@
             "command": "nx run @sps/startup:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/startup:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/startup:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/startup:relations:repository-migrate"
           }
         ]

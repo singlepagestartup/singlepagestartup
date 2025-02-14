@@ -31,12 +31,6 @@
             "command": "nx run @sps/agent:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/agent:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/agent:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/agent:relations:repository-migrate"
           }
         ]

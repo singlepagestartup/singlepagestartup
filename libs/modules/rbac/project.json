@@ -32,12 +32,6 @@
             "command": "nx run @sps/rbac:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/rbac:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/rbac:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/rbac:relations:repository-migrate"
           }
         ]

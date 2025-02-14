@@ -31,12 +31,6 @@
             "command": "nx run @sps/ecommerce:models:repository-migrate"
           },
           {
-            "command": "nx run @sps/ecommerce:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/ecommerce:relations:repository-migrate"
-          },
-          {
             "command": "nx run @sps/ecommerce:relations:repository-migrate"
           }
         ]
