@@ -318,14 +318,6 @@ import {
     return;
   }
 
-  await fetch(HOST_SERVICE_URL)
-    .then((res) => {
-      return res.text();
-    })
-    .catch((error) => {
-      logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
-    });
-
   await fetch(API_SERVICE_URL + "/api/http-cache/clear", {
     headers: {
       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -338,14 +330,11 @@ import {
       logger.error("🚀 ~ /api/http-cache/clear error:", error);
     });
 
-  await fetch(
-    API_SERVICE_URL + "/api/revalidation/revalidate?path=/&type=layout",
-    {
-      headers: {
-        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      },
+  await fetch(HOST_SERVICE_URL + "/api/revalidate?path=/&type=layout", {
+    headers: {
+      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
     },
-  )
+  })
     .then((res) => res.json())
     .catch((error) => {
       logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
