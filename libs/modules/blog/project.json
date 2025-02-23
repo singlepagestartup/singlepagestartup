@@ -126,7 +126,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/models/widget/backend/repository/database",
         "commands": [
           {
@@ -155,7 +155,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/models/article/backend/repository/database",
         "commands": [
           {
@@ -184,7 +184,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/models/category/backend/repository/database",
         "commands": [
           {
@@ -213,7 +213,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/relations/categories-to-articles/backend/repository/database",
         "commands": [
           {
@@ -242,7 +242,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/relations/articles-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -271,7 +271,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/relations/articles-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {

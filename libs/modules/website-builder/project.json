@@ -216,7 +216,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/button/backend/repository/database",
         "commands": [
           {
@@ -245,7 +245,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/buttons-array/backend/repository/database",
         "commands": [
           {
@@ -274,7 +274,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/feature/backend/repository/database",
         "commands": [
           {
@@ -303,7 +303,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/logotype/backend/repository/database",
         "commands": [
           {
@@ -332,7 +332,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/modal/backend/repository/database",
         "commands": [
           {
@@ -361,7 +361,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/slide/backend/repository/database",
         "commands": [
           {
@@ -390,7 +390,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/slider/backend/repository/database",
         "commands": [
           {
@@ -419,7 +419,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/widget/backend/repository/database",
         "commands": [
           {
@@ -448,7 +448,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/buttons-arrays-to-buttons/backend/repository/database",
         "commands": [
           {
@@ -477,7 +477,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/widgets-to-features/backend/repository/database",
         "commands": [
           {
@@ -506,7 +506,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/features-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -535,7 +535,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/features-to-buttons-arrays/backend/repository/database",
         "commands": [
           {
@@ -564,7 +564,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/buttons-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -593,7 +593,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/widgets-to-logotypes/backend/repository/database",
         "commands": [
           {
@@ -622,7 +622,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/widgets-to-buttons-arrays/backend/repository/database",
         "commands": [
           {
@@ -651,7 +651,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/widgets-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -680,7 +680,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -709,7 +709,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/widgets-to-sliders/backend/repository/database",
         "commands": [
           {
@@ -738,7 +738,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/sliders-to-slides/backend/repository/database",
         "commands": [
           {
@@ -767,7 +767,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/slides-to-buttons-arrays/backend/repository/database",
         "commands": [
           {
@@ -796,7 +796,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/relations/slides-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {

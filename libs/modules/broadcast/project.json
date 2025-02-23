@@ -108,7 +108,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/models/channel/backend/repository/database",
         "commands": [
           {
@@ -137,7 +137,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/models/message/backend/repository/database",
         "commands": [
           {
@@ -166,7 +166,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/relations/channels-to-messages/backend/repository/database",
         "commands": [
           {

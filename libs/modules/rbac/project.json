@@ -251,7 +251,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/identity/backend/repository/database",
         "commands": [
           {
@@ -265,7 +265,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/action/backend/repository/database",
         "commands": [
           {
@@ -279,7 +279,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/role/backend/repository/database",
         "commands": [
           {
@@ -293,7 +293,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/session/backend/repository/database",
         "commands": [
           {
@@ -307,7 +307,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/subject/backend/repository/database",
         "commands": [
           {
@@ -321,7 +321,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/widget/backend/repository/database",
         "commands": [
           {
@@ -455,7 +455,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/roles-to-ecommerce-module-products/backend/repository/database",
         "commands": [
           {
@@ -469,7 +469,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/roles-to-actions/backend/repository/database",
         "commands": [
           {
@@ -483,7 +483,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/backend/repository/database",
         "commands": [
           {
@@ -497,7 +497,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/backend/repository/database",
         "commands": [
           {
@@ -511,7 +511,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-notification-module-topics/backend/repository/database",
         "commands": [
           {
@@ -525,7 +525,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-identities/backend/repository/database",
         "commands": [
           {
@@ -539,7 +539,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-roles/backend/repository/database",
         "commands": [
           {
@@ -553,7 +553,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-sessions/backend/repository/database",
         "commands": [
           {

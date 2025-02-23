@@ -132,7 +132,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/models/widget/backend/repository/database",
         "commands": [
           {
@@ -161,7 +161,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/models/form/backend/repository/database",
         "commands": [
           {
@@ -190,7 +190,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/models/input/backend/repository/database",
         "commands": [
           {
@@ -219,7 +219,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/models/request/backend/repository/database",
         "commands": [
           {
@@ -248,7 +248,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/relations/widgets-to-forms/backend/repository/database",
         "commands": [
           {
@@ -277,7 +277,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/relations/forms-to-inputs/backend/repository/database",
         "commands": [
           {
@@ -306,7 +306,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/relations/forms-to-requests/backend/repository/database",
         "commands": [
           {

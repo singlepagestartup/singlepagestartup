@@ -108,7 +108,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/file-storage/models/file/backend/repository/database",
         "commands": [
           {
@@ -137,7 +137,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/file-storage/models/widget/backend/repository/database",
         "commands": [
           {
@@ -166,7 +166,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/file-storage/relations/widgets-to-files/backend/repository/database",
         "commands": [
           {

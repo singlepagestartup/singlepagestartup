@@ -114,7 +114,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/models/widget/backend/repository/database",
         "commands": [
           {
@@ -128,7 +128,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/models/page/backend/repository/database",
         "commands": [
           {
@@ -145,7 +145,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/models/page/backend/repository/database",
         "commands": [
           {
@@ -159,7 +159,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/relations/pages-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -176,7 +176,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/relations/pages-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -190,7 +190,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/relations/widgets-to-external-widgets/backend/repository/database",
         "commands": [
           {
@@ -207,7 +207,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/telegram/relations/widgets-to-external-widgets/backend/repository/database",
         "commands": [
           {

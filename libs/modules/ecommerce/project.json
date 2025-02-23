@@ -222,7 +222,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/widget/backend/repository/database",
         "commands": [
           {
@@ -251,7 +251,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/order/backend/repository/database",
         "commands": [
           {
@@ -280,7 +280,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/product/backend/repository/database",
         "commands": [
           {
@@ -309,7 +309,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/store/backend/repository/database",
         "commands": [
           {
@@ -338,7 +338,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/category/backend/repository/database",
         "commands": [
           {
@@ -367,7 +367,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/attribute/backend/repository/database",
         "commands": [
           {
@@ -396,7 +396,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/models/attribute-key/backend/repository/database",
         "commands": [
           {
@@ -425,7 +425,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/attribute-keys-to-attributes/backend/repository/database",
         "commands": [
           {
@@ -454,7 +454,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/products-to-attributes/backend/repository/database",
         "commands": [
           {
@@ -483,7 +483,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/orders-to-products/backend/repository/database",
         "commands": [
           {
@@ -512,7 +512,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/backend/repository/database",
         "commands": [
           {
@@ -541,7 +541,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/orders-to-billing-module-currencies/backend/repository/database",
         "commands": [
           {
@@ -570,7 +570,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/categories-to-products/backend/repository/database",
         "commands": [
           {
@@ -599,7 +599,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/stores-to-products/backend/repository/database",
         "commands": [
           {
@@ -628,7 +628,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/stores-to-products-to-attributes/backend/repository/database",
         "commands": [
           {
@@ -657,7 +657,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/stores-to-attributes/backend/repository/database",
         "commands": [
           {
@@ -686,7 +686,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/products-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -715,7 +715,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
@@ -744,7 +744,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/categories-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
@@ -773,7 +773,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/backend/repository/database",
         "commands": [
           {
@@ -802,7 +802,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/widgets-to-categories/backend/repository/database",
         "commands": [
           {
@@ -831,7 +831,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/widgets-to-products/backend/repository/database",
         "commands": [
           {

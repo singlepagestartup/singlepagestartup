@@ -127,7 +127,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/widget/backend/repository/database",
         "commands": [
           {
@@ -156,7 +156,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/currency/backend/repository/database",
         "commands": [
           {
@@ -185,7 +185,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/relations/payment-intents-to-invoices/backend/repository/database",
         "commands": [
           {
@@ -214,7 +214,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/relations/payment-intents-to-currencies/backend/repository/database",
         "commands": [
           {
@@ -243,7 +243,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/payment-intent/backend/repository/database",
         "commands": [
           {
@@ -272,7 +272,7 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/invoice/backend/repository/database",
         "commands": [
           {
