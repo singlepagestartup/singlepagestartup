@@ -23,6 +23,7 @@ import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const app = new Hono().basePath("/api");
 
@@ -56,6 +57,10 @@ app.onError((err, c) => exceptionFilter.catch(err, c));
 
 const requestIdMiddleware = new RequestIdMiddleware();
 app.use(requestIdMiddleware.init());
+
+app.options("*", (c) => {
+  return c.text("OK", 204 as ContentfulStatusCode);
+});
 
 const observerMiddleware = new ObserverMiddleware();
 app.use(observerMiddleware.init());
