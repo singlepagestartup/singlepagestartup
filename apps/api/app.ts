@@ -44,6 +44,7 @@ app.use(
       "Accept",
       "X-Set-Cookie",
       "Cache-Control",
+      "X-RBAC-SECRET-KEY",
     ],
     credentials: true,
     maxAge: 86400,
