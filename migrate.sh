@@ -16,5 +16,5 @@ npx nx run @sps/agent:repository-migrate
 npx nx run @sps/telegram:repository-migrate
 
 if [ "$1" = "seed" ]; then
-  npx nx run host:db:seed
+  npx nx run api:db:seed
 fi

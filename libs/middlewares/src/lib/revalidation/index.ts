@@ -1,8 +1,7 @@
-import { RBAC_SECRET_KEY, STALE_TIME } from "@sps/shared-utils";
-import { Context, MiddlewareHandler } from "hono";
+import { HOST_URL, RBAC_SECRET_KEY, STALE_TIME } from "@sps/shared-utils";
+import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { api as broadcastMessageApi } from "@sps/broadcast/models/message/sdk/server";
 import { api as broadcastChannelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 
@@ -50,7 +49,7 @@ export class Middleware {
               .catch((error) => {
                 //
               });
-            revalidateTag(path);
+            await this.revalidateTag(path);
           }
 
           if (["POST", "DELETE"].includes(method)) {
@@ -78,7 +77,7 @@ export class Middleware {
               .catch((error) => {
                 //
               });
-            revalidateTag(pathWithoutId);
+            await this.revalidateTag(pathWithoutId);
           }
 
           const expiredMessages = await broadcastMessageApi
@@ -157,31 +156,11 @@ export class Middleware {
     });
   }
 
-  setRoutes(app: any) {
-    app.get("/revalidation/revalidate", async (c: Context<any, any, {}>) => {
-      const tag = c.req.query("tag");
-      const path = c.req.query("path");
-      const type = c.req.query("type");
-
-      if (tag) {
-        revalidateTag(tag);
-      }
-
-      if (path) {
-        if (type && (type === "page" || type === "layout")) {
-          revalidatePath(path, type);
-        } else {
-          revalidatePath(path);
-        }
-      }
-
-      return c.json({
-        revalidated: {
-          tag,
-          path,
-        },
-        now: Date.now(),
-      });
-    });
+  async revalidateTag(tag: string) {
+    try {
+      await fetch(HOST_URL + "/api/revalidate?tag=" + tag);
+    } catch (error) {
+      console.log("🚀 ~ revalidateTag ~ error:", error);
+    }
   }
 }

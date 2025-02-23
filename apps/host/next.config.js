@@ -1,9 +1,9 @@
 const { withNx } = require("@nx/next/plugins/with-nx");
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 const HOST_URL = process.env.HOST_URL || "http://localhost:3000";
 const NEXT_PUBLIC_BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 const NEXT_PUBLIC_HOST_URL =
   process.env.NEXT_PUBLIC_HOST_URL || "http://localhost:3000";
 
@@ -46,7 +46,10 @@ function makeConfig() {
           source: "/api/:path*",
           headers: [
             { key: "Access-Control-Allow-Credentials", value: "true" },
-            { key: "Access-Control-Allow-Origin", value: NEXT_PUBLIC_HOST_URL },
+            {
+              key: "Access-Control-Allow-Origin",
+              value: NEXT_PUBLIC_BACKEND_URL,
+            },
             {
               key: "Access-Control-Allow-Methods",
               value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",

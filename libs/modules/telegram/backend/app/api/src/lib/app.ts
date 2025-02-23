@@ -81,7 +81,7 @@ export class App {
       this.hono.on(route.method, route.path, route.handler);
     });
     this.apps.apps.forEach((app) => {
-      this.hono.mount(app.route, app.app.hono.fetch);
+      this.hono.route(app.route, app.app.hono);
     });
   }
 

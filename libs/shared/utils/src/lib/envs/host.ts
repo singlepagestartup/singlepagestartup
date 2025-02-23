@@ -6,6 +6,7 @@ export const HOST_URL =
   process.env["HOST_URL"] ||
   process.env["NEXT_PUBLIC_HOST_URL"] ||
   "http://localhost:3000";
+export const API_PORT = Number(process.env["API_PORT"]) || 4000;
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =

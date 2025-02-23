@@ -1,0 +1,133 @@
+---
+- name: Create api
+  hosts: all
+  become: yes
+  vars:
+    - service_name: "{{ SERVICE_NAME }}"
+    - portainer_username: "{{ PORTAINER_USERNAME }}"
+    - portainer_password: "{{ PORTAINER_PASSWORD }}"
+    - portainer_url: "{{ PORTAINER_URL }}"
+  tasks:
+    - name: Read iam.env and set AWS_ACCESS_KEY_ID
+      shell: grep "^AWS_ACCESS_KEY_ID=" /home/code/iam.env | cut -d '=' -f2
+      register: aws_access_key_id
+
+    - name: Read iam.env and set AWS_SECRET_ACCESS_KEY
+      shell: grep "^AWS_SECRET_ACCESS_KEY=" /home/code/iam.env | cut -d '=' -f2
+      register: aws_secret_access_key
+
+    - name: Read sentry_dsn.env and set SENTRY_DSN
+      shell: "cat /home/code/{{ SERVICE_NAME }}_sentry_dsn.env"
+      register: sentry_dsn
+      ignore_errors: yes
+
+    - name: Copy set-portainer-webhook.js
+      copy:
+        src: ../portainer/set-portainer-webhook.js
+        dest: /home/code/set-portainer-webhook.js
+
+    - name: Get registry_id from file
+      shell: cat /home/code/docker_hub_registry_id
+      register: cmd_docker_hub_registry_id
+
+    - name: Create X-Registry-Auth
+      ansible.builtin.shell:
+        cmd: echo '{"registryId":{{ cmd_docker_hub_registry_id.stdout }}}' | base64
+      register: x_rgistry_auth
+
+    - name: Login to Portainer
+      uri:
+        url: "https://{{ portainer_url }}/api/auth"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ portainer_username }}"
+          password: "{{ portainer_password }}"
+      register: portainer_login
+
+    - name: Create api.env file
+      ansible.builtin.template:
+        src: api.env.j2
+        dest: /home/code/api.env
+      vars:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id.stdout }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key.stdout }}"
+        SENTRY_DSN: "{{ sentry_dsn.stdout }}"
+
+    - name: Copy docker-compose file
+      ansible.builtin.template:
+        src: docker-compose.api.yaml.j2
+        dest: /home/code/docker-compose.api.yaml
+
+    - name: Run host service
+      shell: docker stack deploy --compose-file=/home/code/docker-compose.api.yaml api
+
+    - name: Get host service id
+      shell:
+        cmd: "docker service ls -f name=host_host -q"
+      register: cmd_api_service_id
+
+    - name: Set api_service_id
+      set_fact:
+        api_service_id: "{{ cmd_api_service_id.stdout_lines[0] }}"
+
+    - name: Get service version
+      shell:
+        cmd: "docker service inspect {{ api_service_id }} {%raw%}--format='{{.Version}}'{%endraw%}"
+      register: cmd_service_version
+
+    - name: Set service_version
+      set_fact:
+        service_version: "{{ cmd_service_version.stdout_lines[0] }}"
+
+    - name: Get service ID
+      shell:
+        cmd: "docker service inspect {{ api_service_id }} {%raw%}--format='{{.ID}}'{%endraw%}"
+      register: cmd_service_id
+
+    - name: Set service_id
+      set_fact:
+        service_id: "{{ cmd_service_id.stdout_lines[0] }}"
+
+    - name: Get service data
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ service_id }}"
+        method: GET
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+      register: service_data
+
+    - name: Run set-portainer-webhook.js
+      shell:
+        cmd: node /home/code/set-portainer-webhook.js "{{ api_service_id }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "api_webhook"
+      register: cmd_set_api_webhook
+
+    # - debug:
+    #     msg: "{{ cmd_set_api_webhook }}"
+
+    # Passing X-Registry-Auth here helps Portainer to get private repo
+    # without that all webhooks will be failed
+    - name: Set image
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ api_service_id }}/update?version={{ service_version }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+          X-Registry-Auth: "{{ x_rgistry_auth.stdout }}"
+        body: "{{ service_data.json.Spec }}"
+      register: service_update
+
+    - name: Copy webhook info file
+      fetch:
+        src: /home/code/api_webhook.json
+        dest: "./"
+        flat: yes
+
+    - name: Delete artifacts
+      file:
+        path: "/home/code/{{ item }}"
+        state: absent
+      loop:
+        - "set-portainer-webhook.js"
