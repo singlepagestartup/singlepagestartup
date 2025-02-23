@@ -4,11 +4,15 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/host/models/page/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/host/pages";
 export const variants = ["default"];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

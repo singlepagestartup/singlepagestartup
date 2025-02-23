@@ -4,7 +4,11 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/notification/models/template/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/notification/templates";
 export const variants = [
@@ -14,7 +18,7 @@ export const variants = [
   "agent-result",
   "request-from-website",
 ];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

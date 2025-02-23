@@ -25,33 +25,33 @@ add_env "FILE_STORAGE_SEED" true
 add_env "STARTUP_SEED" true
 
 if [ ! -z $CODESPACE_NAME ]; then
-    NEXT_PUBLIC_BACKEND_URL=https://$CODESPACE_NAME-3000.app.github.dev
-    # add_env "NEXT_PUBLIC_BACKEND_URL" $NEXT_PUBLIC_BACKEND_URL
-    echo "NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL" >> .env.development.local
+    NEXT_PUBLIC_API_SERVICE_URL=https://$CODESPACE_NAME-4000.app.github.dev
+    # add_env "NEXT_PUBLIC_API_SERVICE_URL" $NEXT_PUBLIC_API_SERVICE_URL
+    echo "NEXT_PUBLIC_API_SERVICE_URL=$NEXT_PUBLIC_API_SERVICE_URL" >> .env.development.local
 
-    NEXT_PUBLIC_HOST_URL=https://$CODESPACE_NAME-3000.app.github.dev
-    # add_env "NEXT_PUBLIC_HOST_URL" $NEXT_PUBLIC_HOST_URL
-    echo "NEXT_PUBLIC_HOST_URL=$NEXT_PUBLIC_HOST_URL" >> .env.development.local
-    echo "BACKEND_URL=http://localhost:3000" >> .env.development.local
+    NEXT_PUBLIC_HOST_SERVICE_URL=https://$CODESPACE_NAME-3000.app.github.dev
+    # add_env "NEXT_PUBLIC_HOST_SERVICE_URL" $NEXT_PUBLIC_HOST_SERVICE_URL
+    echo "NEXT_PUBLIC_HOST_SERVICE_URL=$NEXT_PUBLIC_HOST_SERVICE_URL" >> .env.development.local
+    echo "API_SERVICE_URL=http://localhost:4000" >> .env.development.local
 elif [ ! -z $GITPOD_WORKSPACE_URL ]; then
     # replace https:// with https://3000-
     REPLACED_WITH_PORT_URL=$(echo $GITPOD_WORKSPACE_URL | sed 's/https:\/\//https:\/\/3000-/g')
 
-    NEXT_PUBLIC_BACKEND_URL=$REPLACED_WITH_PORT_URL
-    # add_env "NEXT_PUBLIC_BACKEND_URL" $NEXT_PUBLIC_BACKEND_URL
-    echo "NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL" >> .env.development.local
+    NEXT_PUBLIC_API_SERVICE_URL=$REPLACED_WITH_PORT_URL
+    # add_env "NEXT_PUBLIC_API_SERVICE_URL" $NEXT_PUBLIC_API_SERVICE_URL
+    echo "NEXT_PUBLIC_API_SERVICE_URL=$NEXT_PUBLIC_API_SERVICE_URL" >> .env.development.local
 
-    NEXT_PUBLIC_HOST_URL=$REPLACED_WITH_PORT_URL
-    # add_env "NEXT_PUBLIC_HOST_URL" $NEXT_PUBLIC_HOST_URL
-    echo "NEXT_PUBLIC_HOST_URL=$NEXT_PUBLIC_HOST_URL" >> .env.development.local
+    NEXT_PUBLIC_HOST_SERVICE_URL=$REPLACED_WITH_PORT_URL
+    # add_env "NEXT_PUBLIC_HOST_SERVICE_URL" $NEXT_PUBLIC_HOST_SERVICE_URL
+    echo "NEXT_PUBLIC_HOST_SERVICE_URL=$NEXT_PUBLIC_HOST_SERVICE_URL" >> .env.development.local
 
-    echo "BACKEND_URL=http://localhost:3000" >> .env.development.local
+    echo "API_SERVICE_URL=http://localhost:4000" >> .env.development.local
 # else
-    # NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
-    # add_env "NEXT_PUBLIC_BACKEND_URL" $NEXT_PUBLIC_BACKEND_URL
+    # NEXT_PUBLIC_API_SERVICE_URL=http://localhost:4000
+    # add_env "NEXT_PUBLIC_API_SERVICE_URL" $NEXT_PUBLIC_API_SERVICE_URL
 
-    # NEXT_PUBLIC_HOST_URL=http://localhost:3000
-    # add_env "NEXT_PUBLIC_HOST_URL" $NEXT_PUBLIC_HOST_URL
+    # NEXT_PUBLIC_HOST_SERVICE_URL=http://localhost:3000
+    # add_env "NEXT_PUBLIC_HOST_SERVICE_URL" $NEXT_PUBLIC_HOST_SERVICE_URL
 fi
 
 DATABASE_HOST=localhost

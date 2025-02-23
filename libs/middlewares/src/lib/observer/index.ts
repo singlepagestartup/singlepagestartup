@@ -1,5 +1,5 @@
 import {
-  HOST_URL,
+  HOST_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -136,7 +136,7 @@ export class Middleware {
 
               if (
                 payload.trigger.method === method &&
-                payload.trigger.url === `${HOST_URL}${path}`
+                payload.trigger.url === `${HOST_SERVICE_URL}${path}`
               ) {
                 const responseClone = c.res.clone();
                 const triggerResult = await responseClone.json();

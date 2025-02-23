@@ -4,12 +4,16 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route =
   "/api/ecommerce/products-to-website-builder-module-widgets";
 export const variants = ["default"] as const;
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

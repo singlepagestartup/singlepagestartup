@@ -29,15 +29,15 @@ jobs:
             echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.PREVIEW_DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_BACKEND_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_BACKEND_URL }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_HOST_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_HOST_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
           else
             echo "IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.HOST_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_HOST_URL=${{ secrets.NEXT_PUBLIC_HOST_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
           fi
       - name: Login to registry
         uses: docker/login-action@v3
@@ -57,8 +57,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
           build-args: |
-            NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL }}
-            NEXT_PUBLIC_HOST_URL=${{ env.NEXT_PUBLIC_HOST_URL }}
+            NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
+            NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
 
       - if: ${{ inputs.PRERELEASE == false }}
         name: Build image for release
@@ -71,8 +71,8 @@ jobs:
             ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
             ${{ env.IMAGE_URL }}:latest
           build-args: |
-            NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL }}
-            NEXT_PUBLIC_HOST_URL=${{ env.NEXT_PUBLIC_HOST_URL }}
+            NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
+            NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
 
       - name: Inspect release tag image
         run: docker image inspect ${{ env.IMAGE_URL }}:${{ inputs.TAG }}

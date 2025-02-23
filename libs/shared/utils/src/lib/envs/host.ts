@@ -1,12 +1,12 @@
-export const BACKEND_URL =
-  process.env["BACKEND_URL"] ||
-  process.env["NEXT_PUBLIC_BACKEND_URL"] ||
+export const API_SERVICE_URL =
+  process.env["API_SERVICE_URL"] ||
+  process.env["NEXT_PUBLIC_API_SERVICE_URL"] ||
+  "http://localhost:4000";
+export const API_SERVICE_PORT = Number(process.env["API_SERVICE_PORT"]) || 4000;
+export const HOST_SERVICE_URL =
+  process.env["HOST_SERVICE_URL"] ||
+  process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] ||
   "http://localhost:3000";
-export const HOST_URL =
-  process.env["HOST_URL"] ||
-  process.env["NEXT_PUBLIC_HOST_URL"] ||
-  "http://localhost:3000";
-export const API_PORT = Number(process.env["API_PORT"]) || 4000;
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =

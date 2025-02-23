@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { CRUDService, FindByIdServiceProps } from "@sps/shared-backend-api";
 import { Table } from "@sps/host/models/page/backend/repository/database";
 import {
-  BACKEND_URL,
+  API_SERVICE_URL,
   buildTreePaths,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -105,7 +105,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           const moduleSegmentPaths: string[] = [];
 
           const moduleData = await fetch(
-            `${BACKEND_URL}/api/${moduleName}/${modelName}`,
+            `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
             {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

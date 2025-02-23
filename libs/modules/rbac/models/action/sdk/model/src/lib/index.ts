@@ -4,13 +4,17 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/rbac/models/action/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/rbac/actions";
 export const variants = ["default"];
 export const types = ["HTTP"];
 export const methods = ["*", "GET", "POST", "PATCH", "DELETE"];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

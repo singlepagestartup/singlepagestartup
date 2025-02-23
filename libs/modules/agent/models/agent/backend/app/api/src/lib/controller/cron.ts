@@ -1,6 +1,6 @@
 import {
   AGENT_MAX_DURATION_IN_SECONDS,
-  BACKEND_URL,
+  API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
@@ -179,7 +179,7 @@ export class Handler {
       });
 
       const agentExecutionResult = await fetch(
-        BACKEND_URL + "/api/agent/agents/" + agent.slug,
+        API_SERVICE_URL + "/api/agent/agents/" + agent.slug,
         {
           method: "POST",
           headers: {

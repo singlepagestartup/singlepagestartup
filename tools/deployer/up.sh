@@ -11,4 +11,5 @@ get_environment_type $1
     ./portainer.sh up $ENVIRONMENT_TYPE && \
     ./redis.sh up $ENVIRONMENT_TYPE && \
     ./postgres.sh up $ENVIRONMENT_TYPE && \
+    ./api.sh up $ENVIRONMENT_TYPE && \
     ./host.sh up $ENVIRONMENT_TYPE

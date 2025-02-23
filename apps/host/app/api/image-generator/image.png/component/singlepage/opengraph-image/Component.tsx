@@ -1,6 +1,6 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
-import { HOST_URL } from "@sps/shared-utils";
+import { HOST_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -11,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       <img
-        src={new URL("/images/favicon.svg", HOST_URL).href}
+        src={new URL("/images/favicon.svg", HOST_SERVICE_URL).href}
         style={{
           position: "absolute",
           objectFit: "contain",

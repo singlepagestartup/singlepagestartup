@@ -1,11 +1,12 @@
 const { withNx } = require("@nx/next/plugins/with-nx");
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
-const HOST_URL = process.env.HOST_URL || "http://localhost:3000";
-const NEXT_PUBLIC_BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-const NEXT_PUBLIC_HOST_URL =
-  process.env.NEXT_PUBLIC_HOST_URL || "http://localhost:3000";
+const API_SERVICE_URL = process.env.API_SERVICE_URL || "http://localhost:4000";
+const HOST_SERVICE_URL =
+  process.env.HOST_SERVICE_URL || "http://localhost:3000";
+const NEXT_PUBLIC_API_SERVICE_URL =
+  process.env.NEXT_PUBLIC_API_SERVICE_URL || "http://localhost:4000";
+const NEXT_PUBLIC_HOST_SERVICE_URL =
+  process.env.NEXT_PUBLIC_HOST_SERVICE_URL || "http://localhost:3000";
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.BUNDLE_ANALYZER === "true",
@@ -15,10 +16,10 @@ function makeConfig() {
   const stripProtocol = (url) =>
     url.replace("https://", "").replace("http://", "");
 
-  const backendHost = stripProtocol(BACKEND_URL);
-  const frontendHost = stripProtocol(HOST_URL);
-  const nextPublicBackendHost = stripProtocol(NEXT_PUBLIC_BACKEND_URL);
-  const nextPublicFrontendHost = stripProtocol(NEXT_PUBLIC_HOST_URL);
+  const apiServiceHost = stripProtocol(API_SERVICE_URL);
+  const hostServiceHost = stripProtocol(HOST_SERVICE_URL);
+  const nextPublicApiServiceHost = stripProtocol(NEXT_PUBLIC_API_SERVICE_URL);
+  const nextPublicHostServiceHost = stripProtocol(NEXT_PUBLIC_HOST_SERVICE_URL);
 
   return withBundleAnalyzer({
     reactStrictMode: true,
@@ -27,10 +28,10 @@ function makeConfig() {
       domains: [
         "localhost",
         "127.0.0.1",
-        backendHost,
-        frontendHost,
-        nextPublicBackendHost,
-        nextPublicFrontendHost,
+        apiServiceHost,
+        hostServiceHost,
+        nextPublicApiServiceHost,
+        nextPublicHostServiceHost,
       ],
       remotePatterns: [
         { protocol: "https", hostname: "**.singlepagestartup.com" },
@@ -48,7 +49,7 @@ function makeConfig() {
             { key: "Access-Control-Allow-Credentials", value: "true" },
             {
               key: "Access-Control-Allow-Origin",
-              value: NEXT_PUBLIC_BACKEND_URL,
+              value: NEXT_PUBLIC_API_SERVICE_URL,
             },
             {
               key: "Access-Control-Allow-Methods",

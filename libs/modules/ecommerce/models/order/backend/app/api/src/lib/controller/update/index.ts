@@ -1,4 +1,4 @@
-import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
@@ -221,7 +221,7 @@ export class Handler {
 
         const receiptFile = await fileStorageFileApi.createFromUrl({
           data: {
-            url: `${BACKEND_URL}/api/image-generator/image.png?${query}`,
+            url: `${HOST_SERVICE_URL}/api/image-generator/image.png?${query}`,
           },
           options: {
             headers: {

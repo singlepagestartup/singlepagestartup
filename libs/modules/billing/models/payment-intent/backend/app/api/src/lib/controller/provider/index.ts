@@ -1,5 +1,5 @@
 import {
-  HOST_URL,
+  HOST_SERVICE_URL,
   NextRequestOptions,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -174,22 +174,25 @@ export class Handler {
             return;
           }
 
-          fetch(HOST_URL + "/api/billing/payment-intents/dummy/webhook", {
-            credentials: "include",
-            method: "POST",
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              data: {
-                id: result.id,
+          fetch(
+            HOST_SERVICE_URL + "/api/billing/payment-intents/dummy/webhook",
+            {
+              credentials: "include",
+              method: "POST",
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Content-Type": "application/json",
               },
-            }),
-            next: {
-              cache: "no-store",
-            },
-          } as NextRequestOptions)
+              body: JSON.stringify({
+                data: {
+                  id: result.id,
+                },
+              }),
+              next: {
+                cache: "no-store",
+              },
+            } as NextRequestOptions,
+          )
             .then(async (res) => {
               return res.json();
             })

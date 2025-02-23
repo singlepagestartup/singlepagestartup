@@ -3,7 +3,7 @@ import {
   IModel as IParentModelExtended,
   populate as modelPopulate,
 } from "<%= extended_contracts_import_path %>";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import { API_SERVICE_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
 
 export interface IModel extends IParentModel {}
 export interface IModelExtended extends IParentModelExtended {}
@@ -11,7 +11,7 @@ export interface IModelExtended extends IParentModelExtended {}
 export const tag = "<%= model_name %>";
 export const route = "/api/<%= module_name %>/<%= model_name_pluralized %>";
 export const populate = modelPopulate;
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {
   populate,
 };

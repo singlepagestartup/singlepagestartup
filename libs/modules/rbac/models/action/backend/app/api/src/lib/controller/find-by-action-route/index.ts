@@ -4,7 +4,7 @@ import { Service } from "../../service";
 import QueryString from "qs";
 import { Table } from "@sps/rbac/models/action/backend/repository/database";
 import {
-  BACKEND_URL,
+  API_SERVICE_URL,
   buildTreePaths,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -187,7 +187,7 @@ export class Handler {
           const moduleSegmentPaths: string[] = [];
 
           const moduleData = await fetch(
-            `${BACKEND_URL}/api/${moduleName}/${modelName}`,
+            `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
             {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

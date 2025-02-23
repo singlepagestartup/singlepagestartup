@@ -1,6 +1,6 @@
 import { api } from "@sps/host/models/metadata/sdk/server";
 import {
-  HOST_URL,
+  HOST_SERVICE_URL,
   NEXT_PUBLIC_HOST_METADATA_TITLE,
   NEXT_PUBLIC_HOST_METADATA_DESCRIPTION,
   NEXT_PUBLIC_HOST_METADATA_ICON,
@@ -21,7 +21,7 @@ export async function action({ url, catchErrors = false }: Params) {
       title: NEXT_PUBLIC_HOST_METADATA_TITLE || "",
       description: NEXT_PUBLIC_HOST_METADATA_DESCRIPTION || "",
       type: "website",
-      url: HOST_URL || "",
+      url: HOST_SERVICE_URL || "",
       image: NEXT_PUBLIC_HOST_METADATA_ICON || "",
     },
     twitter: {
@@ -30,7 +30,7 @@ export async function action({ url, catchErrors = false }: Params) {
       image: NEXT_PUBLIC_HOST_METADATA_ICON || "",
     },
     keywords: NEXT_PUBLIC_HOST_METADATA_KEYWORDS.split(",") || [],
-    url: HOST_URL || "",
+    url: HOST_SERVICE_URL || "",
     image: NEXT_PUBLIC_HOST_METADATA_ICON || "",
     icons: NEXT_PUBLIC_HOST_METADATA_ICON
       ? [{ url: NEXT_PUBLIC_HOST_METADATA_ICON }]
@@ -52,7 +52,7 @@ export async function action({ url, catchErrors = false }: Params) {
     //       id: metadataToSpsFileStorageModuleFile.fileStorageModuleFileId,
     //     });
 
-    //     const fileUrl = `${BACKEND_URL}${file.file}`;
+    //     const fileUrl = `${API_SERVICE_URL}${file.file}`;
 
     //     if (metadataToSpsFileStorageModuleFile.type === "icon") {
     //       icons.push({

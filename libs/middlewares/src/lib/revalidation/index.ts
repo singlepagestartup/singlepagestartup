@@ -1,4 +1,8 @@
-import { HOST_URL, RBAC_SECRET_KEY, STALE_TIME } from "@sps/shared-utils";
+import {
+  HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+  STALE_TIME,
+} from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
@@ -158,7 +162,7 @@ export class Middleware {
 
   async revalidateTag(tag: string) {
     try {
-      await fetch(HOST_URL + "/api/revalidate?tag=" + tag);
+      await fetch(HOST_SERVICE_URL + "/api/revalidate?tag=" + tag);
     } catch (error) {
       console.log("🚀 ~ revalidateTag ~ error:", error);
     }

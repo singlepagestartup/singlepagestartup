@@ -14,11 +14,21 @@ jobs:
       TAG: ${{ github.event.release.tag_name }}
       PRERELEASE: ${{ github.event.release.prerelease }}
 
+  update-api:
+    uses: ./.github/workflows/api.yml
+    secrets: inherit
+    needs:
+      - docker-image
+    with:
+      TAG: ${{ github.event.release.tag_name }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+
   update-host:
     uses: ./.github/workflows/host.yml
     secrets: inherit
     needs:
       - docker-image
+      - update-api
     with:
       TAG: ${{ github.event.release.tag_name }}
       PRERELEASE: ${{ github.event.release.prerelease }}

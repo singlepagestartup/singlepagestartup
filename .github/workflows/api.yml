@@ -1,4 +1,4 @@
-name: Update host
+name: Update api
 
 on:
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
         if: ${{ inputs.PRERELEASE == true }}
         uses: fjogeleit/http-request-action@master
         with:
-          url: ${{ secrets.PREVIEW_PORTAINER_HOST_UPDATE_URL }}?tag=${{ inputs.TAG }}
+          url: ${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}?tag=${{ inputs.TAG }}
           method: "POST"
           timeout: 40000
 
@@ -28,6 +28,6 @@ jobs:
         if: ${{ inputs.PRERELEASE == false }}
         uses: fjogeleit/http-request-action@master
         with:
-          url: ${{ secrets.PORTAINER_HOST_UPDATE_URL }}?tag=${{ inputs.TAG }}
+          url: ${{ secrets.PORTAINER_API_UPDATE_URL }}?tag=${{ inputs.TAG }}
           method: "POST"
           timeout: 40000

@@ -1,5 +1,5 @@
 import {
-  HOST_URL,
+  HOST_SERVICE_URL,
   NEXT_PUBLIC_HOST_METADATA_DESCRIPTION,
   NEXT_PUBLIC_HOST_METADATA_ICON,
   NEXT_PUBLIC_HOST_METADATA_TITLE,
@@ -12,8 +12,8 @@ import { injected, walletConnect, safe } from "wagmi/connectors";
 
 const metadata = {
   name: NEXT_PUBLIC_HOST_METADATA_TITLE,
-  url: HOST_URL,
-  icons: [`${HOST_URL}${NEXT_PUBLIC_HOST_METADATA_ICON}`],
+  url: HOST_SERVICE_URL,
+  icons: [`${HOST_SERVICE_URL}${NEXT_PUBLIC_HOST_METADATA_ICON}`],
   description: NEXT_PUBLIC_HOST_METADATA_DESCRIPTION,
 };
 

@@ -9,13 +9,13 @@ get_environment_type $2
 
 RBAC_SECRET_KEY=$(get_env "$BASH_SOURCE" "RBAC_SECRET_KEY")
 
-BACKEND_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "BACKEND_SERVICE_SUBDOMAIN")
+API_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
 
 if [ -z "$BACKEND_SERVICE_SUBDOMAIN" ]
 then
-    BACKEND_URL=$DOMAIN
+    API_SERVICE_URL=$DOMAIN
 else
-    BACKEND_URL=$BACKEND_SERVICE_SUBDOMAIN.$DOMAIN
+    API_SERVICE_URL=$BACKEND_SERVICE_SUBDOMAIN.$DOMAIN
 fi
 
 ansible-playbook \
@@ -27,5 +27,5 @@ ansible-playbook \
     ./server/init_docker_swarm.yaml &&
 ansible-playbook \
     ./server/set_cron_jobs.yaml \
-    -e "BACKEND_URL=$BACKEND_URL \
+    -e "API_SERVICE_URL=$API_SERVICE_URL \
         RBAC_SECRET_KEY=$RBAC_SECRET_KEY" \

@@ -1,4 +1,4 @@
-import { HOST_URL } from "@sps/shared-utils";
+import { HOST_SERVICE_URL } from "@sps/shared-utils";
 import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
@@ -331,7 +331,7 @@ export const GET = async (request: NextRequest) => {
     const params = searchParams.toString();
     const parsedParams = QueryString.parse(params);
 
-    if (!HOST_URL) {
+    if (!HOST_SERVICE_URL) {
       throw new Error("Host URL not found");
     }
 
@@ -361,7 +361,7 @@ export const GET = async (request: NextRequest) => {
 
     for (const fontType of Object.keys(fontsURLs)) {
       for (const fontStyle of fontsURLs[fontType as keyof typeof fontsURLs]) {
-        const fontData = await fetch(new URL(fontStyle.url, HOST_URL))
+        const fontData = await fetch(new URL(fontStyle.url, HOST_SERVICE_URL))
           .then((res) => {
             return res.arrayBuffer();
           })

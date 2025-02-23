@@ -4,7 +4,11 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/billing/models/payment-intent/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/billing/payment-intents";
 export const variants = ["default"];
@@ -19,7 +23,7 @@ export const statuses = [
   "succeeded",
   "canceled",
 ];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

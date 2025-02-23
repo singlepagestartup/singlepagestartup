@@ -4,7 +4,11 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/ecommerce/models/widget/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/ecommerce/widgets";
 export const variants = [
@@ -16,7 +20,7 @@ export const variants = [
   "category-list-default",
   "category-overview-default",
 ];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

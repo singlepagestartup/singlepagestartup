@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/template/backend/repository/database";
-import { BACKEND_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import QueryString from "qs";
 import pako from "pako";
 
@@ -13,8 +13,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Secret key not found");
     }
 
-    if (!BACKEND_URL) {
-      throw new Error("Backend URL not found");
+    if (!HOST_SERVICE_URL) {
+      throw new Error("Host Service Url not found");
     }
 
     const template = await this.findById({
@@ -47,7 +47,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
 
       const data = await fetch(
-        BACKEND_URL + "/api/email-generator/index.html?" + query,
+        HOST_SERVICE_URL + "/api/email-generator/index.html?" + query,
         {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

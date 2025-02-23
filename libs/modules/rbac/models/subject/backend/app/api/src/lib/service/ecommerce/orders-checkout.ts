@@ -1,5 +1,5 @@
 import { IRepository } from "@sps/shared-backend-api";
-import { HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { HTTPException } from "hono/http-exception";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
@@ -321,13 +321,13 @@ export class Service {
           trigger: {
             type: "request",
             method: "PATCH",
-            url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+            url: `${HOST_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
           },
           pipe: [
             {
               type: "request",
               method: "GET",
-              url: `${HOST_URL}/api/rbac/orders/${updatedOrder.id}`,
+              url: `${HOST_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
@@ -335,7 +335,7 @@ export class Service {
             {
               type: "request",
               method: "POST",
-              url: `${HOST_URL}/api/rbac/subjects/${props.id}/notify`,
+              url: `${HOST_SERVICE_URL}/api/rbac/subjects/${props.id}/notify`,
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
@@ -416,13 +416,13 @@ export class Service {
           trigger: {
             type: "request",
             method: "PATCH",
-            url: `${HOST_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+            url: `${HOST_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
           },
           pipe: [
             {
               type: "request",
               method: "POST",
-              url: `${HOST_URL}/api/rbac/subjects/${props.id}/check`,
+              url: `${HOST_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },

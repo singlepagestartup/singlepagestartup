@@ -59,12 +59,12 @@
         src: docker-compose.api.yaml.j2
         dest: /home/code/docker-compose.api.yaml
 
-    - name: Run host service
+    - name: Run api service
       shell: docker stack deploy --compose-file=/home/code/docker-compose.api.yaml api
 
-    - name: Get host service id
+    - name: Get api service id
       shell:
-        cmd: "docker service ls -f name=host_host -q"
+        cmd: "docker service ls -f name=api_api -q"
       register: cmd_api_service_id
 
     - name: Set api_service_id

@@ -1,4 +1,4 @@
-import { HOST_URL } from "@sps/shared-utils";
+import { HOST_SERVICE_URL } from "@sps/shared-utils";
 import { NextRequest, NextResponse } from "next/server";
 import QueryString from "qs";
 import { Component } from "./component";
@@ -11,7 +11,7 @@ export const GET = async (request: NextRequest) => {
     const params = searchParams.toString();
     const parsedParams = QueryString.parse(params);
 
-    if (!HOST_URL) {
+    if (!HOST_SERVICE_URL) {
       throw new Error("Host URL not found");
     }
 

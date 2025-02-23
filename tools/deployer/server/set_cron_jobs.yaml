@@ -2,7 +2,7 @@
   hosts: all
   become: yes
   vars:
-    - backend_url: "{{ BACKEND_URL }}"
+    - api_service_url: "{{ API_SERVICE_URL }}"
     - rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
   tasks:
     - name: docker image prune cron
@@ -21,7 +21,8 @@
       cron:
         name: "host agent cron"
         minute: "*"
-        job: "curl -k -X POST https://{{ backend_url }}/api/agent/agents/cron \
+        job:
+          "curl -k -X POST https://{{ api_service_url }}/api/agent/agents/cron \
           -H 'X-RBAC-SECRET-KEY: {{ rbac_secret_key }}' \
           -F 'data={}' >> /home/code/host_api_agent_agents_cron.log 2>&1"
 

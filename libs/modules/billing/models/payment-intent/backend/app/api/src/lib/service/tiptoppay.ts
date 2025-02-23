@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   RBAC_SECRET_KEY,
-  HOST_URL,
+  HOST_SERVICE_URL,
   TIPTOPPAY_PUBLIC_ID,
   TIPTOPPAY_API_SECRET,
 } from "@sps/shared-utils";
@@ -81,8 +81,8 @@ export class Service {
         data: {
           amount: props.entity.amount,
           status: "open",
-          successUrl: HOST_URL,
-          cancelUrl: HOST_URL,
+          successUrl: HOST_SERVICE_URL,
+          cancelUrl: HOST_SERVICE_URL,
           provider: "tiptoppay",
         },
         options: {

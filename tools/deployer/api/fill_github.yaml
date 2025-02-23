@@ -1,5 +1,5 @@
 ---
-- name: Fill host secrets in GitHub
+- name: Fill api secrets in GitHub
   hosts: all
   become: yes
   vars:
@@ -36,24 +36,23 @@
         cmd: "npm install"
         chdir: "/home/code/github-node-api"
 
-    - name: Get Portainer host webhook token
+    - name: Get Portainer api webhook token
       shell:
-        cmd: "cat /home/code/host_webhook_token"
-      register: host_webhook_token
+        cmd: "cat /home/code/api_webhook_token"
+      register: api_webhook_token
 
     - name: Set secrets to GitHub
-      no_log: true
       shell:
         cmd: "node ./create_secret.js {{ github_token }} {{ github_repository }} {{ item.secret_name }} {{ item.secret_content }} {{ item.secret_scope }}"
         chdir: "/home/code/github-node-api"
       loop:
         - {
             secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'PORTAINER_API_UPDATE_URL' }}",
-            secret_content: "https://{{ portainer_url }}/api/webhooks/{{ host_webhook_token.stdout }}",
+            secret_content: "https://{{ portainer_url }}/api/webhooks/{{ api_webhook_token.stdout }}",
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_BACKEND_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'API_URL' }}",
             secret_content: "https://{{ service_url }}",
             secret_scope: actions,
           }

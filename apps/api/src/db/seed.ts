@@ -14,7 +14,11 @@ import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
-import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
@@ -314,15 +318,15 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
     return;
   }
 
-  await fetch(HOST_URL)
+  await fetch(HOST_SERVICE_URL)
     .then((res) => {
       return res.text();
     })
     .catch((error) => {
-      logger.error("🚀 ~ HOST_URL error:", error);
+      logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
     });
 
-  await fetch(BACKEND_URL + "/api/http-cache/clear", {
+  await fetch(API_SERVICE_URL + "/api/http-cache/clear", {
     headers: {
       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
     },
@@ -334,23 +338,26 @@ import { BACKEND_URL, HOST_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
       logger.error("🚀 ~ /api/http-cache/clear error:", error);
     });
 
-  await fetch(BACKEND_URL + "/api/revalidation/revalidate?path=/&type=layout", {
-    headers: {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+  await fetch(
+    API_SERVICE_URL + "/api/revalidation/revalidate?path=/&type=layout",
+    {
+      headers: {
+        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      },
     },
-  })
+  )
     .then((res) => res.json())
     .catch((error) => {
       logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
     });
 
   setTimeout(async () => {
-    await fetch(HOST_URL)
+    await fetch(HOST_SERVICE_URL)
       .then((res) => {
         return res.text();
       })
       .catch((error) => {
-        logger.error("🚀 ~ HOST_URL error:", error);
+        logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
       });
   }, 10000);
 })()

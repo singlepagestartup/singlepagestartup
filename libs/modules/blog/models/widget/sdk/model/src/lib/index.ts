@@ -4,7 +4,11 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/blog/models/widget/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/blog/widgets";
 export const variants = [
@@ -13,7 +17,7 @@ export const variants = [
   "article-overview-default",
   "article-overview-with-private-content-default",
 ] as const;
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

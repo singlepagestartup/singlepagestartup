@@ -13,23 +13,24 @@ ENV NODE_OPTIONS=--max-old-space-size=16384
 
 WORKDIR /usr/src/app/
 
-ARG NEXT_PUBLIC_BACKEND_URL
-ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+# ARG NEXT_PUBLIC_API_SERVICE_URL
+# ENV NEXT_PUBLIC_API_SERVICE_URL=$NEXT_PUBLIC_API_SERVICE_URL
 
-ARG NEXT_PUBLIC_HOST_URL
-ENV NEXT_PUBLIC_HOST_URL=$NEXT_PUBLIC_HOST_URL
+# ARG NEXT_PUBLIC_HOST_SERVICE_URL
+# ENV NEXT_PUBLIC_HOST_SERVICE_URL=$NEXT_PUBLIC_HOST_SERVICE_URL
 
 # Copying source files
 COPY . .
 
-# write the env variables to a file
-RUN if [ -n "$NEXT_PUBLIC_BACKEND_URL" ]; then echo "NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL" >> /usr/src/app/apps/host/.env.local; fi
-RUN if [ -n "$NEXT_PUBLIC_HOST_URL" ]; then echo "NEXT_PUBLIC_HOST_URL=$NEXT_PUBLIC_HOST_URL" >> /usr/src/app/apps/host/.env.local; fi
+# # write the env variables to a file
+# RUN if [ -n "$NEXT_PUBLIC_API_SERVICE_URL" ]; then echo "NEXT_PUBLIC_API_SERVICE_URL=$NEXT_PUBLIC_API_SERVICE_URL" >> /usr/src/app/apps/host/.env.local; fi
+# RUN if [ -n "$NEXT_PUBLIC_HOST_SERVICE_URL" ]; then echo "NEXT_PUBLIC_HOST_SERVICE_URL=$NEXT_PUBLIC_HOST_SERVICE_URL" >> /usr/src/app/apps/host/.env.local; fi
 
 RUN npm ci
 RUN npm run host:build
 
 EXPOSE 3000
+EXPOSE 4000
 
 # Running the app
 # RUN ["chmod", "-R", "777", "/usr/src/app"]

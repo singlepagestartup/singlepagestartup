@@ -5,7 +5,7 @@
 # Now you can deploy your canisters to Internet Computer network
 # You need to prepare your repo for deploying
 # Fill well-known/ic-domains with data
-FULL_DOMAIN=$(cat .env.icp | grep "NEXT_PUBLIC_HOST_URL" | cut -d '=' -f2 | sed 's/https:\/\///g')
+FULL_DOMAIN=$(cat .env.icp | grep "NEXT_PUBLIC_HOST_SERVICE_URL" | cut -d '=' -f2 | sed 's/https:\/\///g')
 echo $FULL_DOMAIN > .well-known/ic-domains
 
 # Delete canister_ids.json that you get from sps-lite repository

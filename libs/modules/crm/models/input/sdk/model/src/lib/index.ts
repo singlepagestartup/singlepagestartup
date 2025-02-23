@@ -4,7 +4,11 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/crm/models/input/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/crm/inputs";
 export const variants = [
@@ -13,7 +17,7 @@ export const variants = [
   "textarea-default",
   "number-default",
 ];
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

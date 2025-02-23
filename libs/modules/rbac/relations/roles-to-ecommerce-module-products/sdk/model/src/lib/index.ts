@@ -4,11 +4,15 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/repository/database";
-import { BACKEND_URL, NextRequestOptions, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
 export const route = "/api/rbac/roles-to-ecommerce-module-products";
 export const variants = ["default"] as const;
-export const host = BACKEND_URL;
+export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

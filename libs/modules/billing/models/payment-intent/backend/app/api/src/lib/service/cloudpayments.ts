@@ -5,7 +5,7 @@ import {
   RBAC_SECRET_KEY,
   CLOUDPAYMENTS_API_SECRET,
   CLOUDPAYMENTS_PUBLIC_ID,
-  HOST_URL,
+  HOST_SERVICE_URL,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
@@ -81,8 +81,8 @@ export class Service {
         data: {
           amount: props.entity.amount,
           status: "open",
-          successUrl: HOST_URL,
-          cancelUrl: HOST_URL,
+          successUrl: HOST_SERVICE_URL,
+          cancelUrl: HOST_SERVICE_URL,
           provider: "cloudpayments",
         },
         options: {
