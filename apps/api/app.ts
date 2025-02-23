@@ -30,14 +30,10 @@ app.use(
   cors({
     origin: (origin) => {
       if (!origin) {
-        return "*";
+        return null;
       }
 
-      if (origin === "http://localhost:3000") {
-        return origin;
-      }
-
-      return null;
+      return origin;
     },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: [
@@ -50,6 +46,7 @@ app.use(
       "Cache-Control",
     ],
     credentials: true,
+    maxAge: 86400,
   }),
 );
 
