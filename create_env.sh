@@ -11,7 +11,7 @@ else if [ "$1" = "api" ]; then
   if [ "$2" = "deployment" ]; then
     production_env=$(cat apps/api/.env.production)
     echo $production_env > apps/api/.env
-    echo $(printenv) > apps/host/.env
+    echo $(printenv) > apps/api/.env
     exit 0
   fi
 fi
