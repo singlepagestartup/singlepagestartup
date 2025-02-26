@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { serveStatic } from "hono/bun";
 import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
@@ -25,7 +26,7 @@ import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
-export const app = new Hono().basePath("/api");
+export const app = new Hono().basePath("/");
 
 app.use(
   cors({
@@ -65,6 +66,8 @@ app.options("*", (c) => {
 const observerMiddleware = new ObserverMiddleware();
 app.use(observerMiddleware.init());
 
+app.use("/public/*", serveStatic({ root: "./" }));
+
 /**
  * It's not secure, because authorized requests can be cached and served to unauthorized users.
  * But perfomance of the application will rediqulesly increase.
@@ -87,16 +90,16 @@ app.use(revalidationMiddleware.init());
 const parseQueryMiddleware = new ParseQueryMiddleware();
 app.use(parseQueryMiddleware.init());
 
-app.route("/telegram", telegramApp.hono);
-app.route("/agent", agentApp.hono);
-app.route("/host", hostApp.hono);
-app.route("/rbac", rbacApp.hono);
-app.route("/startup", startupApp.hono);
-app.route("/crm", crmApp.hono);
-app.route("/ecommerce", ecommerceApp.hono);
-app.route("/notification", notificationApp.hono);
-app.route("/blog", blogApp.hono);
-app.route("/billing", billingApp.hono);
-app.route("/website-builder", websiteBuilderApp.hono);
-app.route("/broadcast", broadcastApp.hono);
-app.route("/file-storage", fileStorageApp.hono);
+app.route("/api/telegram", telegramApp.hono);
+app.route("/api/agent", agentApp.hono);
+app.route("/api/host", hostApp.hono);
+app.route("/api/rbac", rbacApp.hono);
+app.route("/api/startup", startupApp.hono);
+app.route("/api/crm", crmApp.hono);
+app.route("/api/ecommerce", ecommerceApp.hono);
+app.route("/api/notification", notificationApp.hono);
+app.route("/api/blog", blogApp.hono);
+app.route("/api/billing", billingApp.hono);
+app.route("/api/website-builder", websiteBuilderApp.hono);
+app.route("/api/broadcast", broadcastApp.hono);
+app.route("/api/file-storage", fileStorageApp.hono);

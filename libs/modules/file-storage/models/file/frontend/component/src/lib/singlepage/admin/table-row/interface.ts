@@ -8,7 +8,9 @@ import {
 export const variant = "admin-table-row" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  language: string;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

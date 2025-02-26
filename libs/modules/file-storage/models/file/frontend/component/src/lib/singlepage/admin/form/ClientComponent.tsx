@@ -11,10 +11,17 @@ import {
   insertSchema,
 } from "@sps/file-storage/models/file/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const file = props.data?.file
+    ? props.data?.file.includes("https")
+      ? props.data.file
+      : `${API_SERVICE_URL}/public/${props.data?.file}`
+    : undefined;
 
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
@@ -23,7 +30,7 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       containerClassName: props.data?.containerClassName || "",
-      file: props.data?.file || "",
+      file: file || "",
     },
   });
 

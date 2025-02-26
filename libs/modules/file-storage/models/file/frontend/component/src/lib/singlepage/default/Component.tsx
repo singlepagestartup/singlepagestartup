@@ -1,8 +1,13 @@
 import Image from "next/image";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const src = props.data.file.includes("https")
+    ? props.data.file
+    : `${API_SERVICE_URL}/public/${props.data.file}`;
+
   return (
     <div
       data-module="file-storage"
@@ -13,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       {props.data.file && props.data.mimeType?.includes("image") ? (
         <Image
-          src={props.data.file}
+          src={src}
           alt=""
           fill={props.data.containerClassName?.includes("aspect-")}
           width={
@@ -43,7 +48,7 @@ export function Component(props: IComponentPropsExtended) {
           }
           className={cn("flex w-full h-full", props.data.className)}
         >
-          <source src={props.data.file} type={props.data.mimeType} />
+          <source src={src} type={props.data.mimeType} />
         </video>
       ) : null}
     </div>

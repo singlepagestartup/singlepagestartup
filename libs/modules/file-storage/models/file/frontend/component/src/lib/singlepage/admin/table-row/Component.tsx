@@ -5,6 +5,7 @@ import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/file-storage/models/file/sdk/client";
 import Image from "next/image";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
+import { Component as Default } from "../../default";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -29,16 +30,12 @@ export function Component(props: IComponentPropsExtended) {
           <p className="text-xs text-muted-foreground">File</p>
           <p className="truncate">{props.data.file}</p>
           {props.data.file ? (
-            <ErrorBoundary>
-              <div className="w-full relative aspect-w-1 aspect-h-1">
-                <Image
-                  src={props.data.file}
-                  alt=""
-                  className="object-contain"
-                  fill={true}
-                />
-              </div>
-            </ErrorBoundary>
+            <Default
+              isServer={false}
+              data={props.data}
+              variant="default"
+              language={props.language}
+            />
           ) : null}
         </div>
       </div>
