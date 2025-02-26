@@ -6,7 +6,7 @@ import { API_SERVICE_URL } from "@sps/shared-utils";
 export function Component(props: IComponentPropsExtended) {
   const src = props.data.file.includes("https")
     ? props.data.file
-    : `${API_SERVICE_URL}/public/${props.data.file}`;
+    : `${API_SERVICE_URL}/public${props.data.file}`;
 
   return (
     <div

@@ -20,7 +20,7 @@ export function Component(props: IComponentPropsExtended) {
   const file = props.data?.file
     ? props.data?.file.includes("https")
       ? props.data.file
-      : `${API_SERVICE_URL}/public/${props.data?.file}`
+      : `${API_SERVICE_URL}/public${props.data?.file}`
     : undefined;
 
   const form = useForm<z.infer<typeof insertSchema>>({
