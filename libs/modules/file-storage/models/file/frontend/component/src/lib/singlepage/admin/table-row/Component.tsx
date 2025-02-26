@@ -6,6 +6,7 @@ import { api } from "@sps/file-storage/models/file/sdk/client";
 import Image from "next/image";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 import { Component as Default } from "../../default";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -34,7 +35,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer={false}
               data={props.data}
               variant="default"
-              language={props.language}
+              language={internationalization.defaultLanguage.code}
             />
           ) : null}
         </div>
