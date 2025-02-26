@@ -11,7 +11,7 @@ import {
   insertSchema,
 } from "@sps/file-storage/models/file/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -20,7 +20,7 @@ export function Component(props: IComponentPropsExtended) {
   const file = props.data?.file
     ? props.data?.file.includes("https")
       ? props.data.file
-      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${props.data?.file}`
+      : `${API_SERVICE_URL}/public${props.data?.file}`
     : undefined;
 
   const form = useForm<z.infer<typeof insertSchema>>({

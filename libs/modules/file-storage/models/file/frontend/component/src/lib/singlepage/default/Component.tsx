@@ -1,12 +1,12 @@
 import Image from "next/image";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { API_SERVICE_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const src = props.data.file.includes("https")
     ? props.data.file
-    : `${NEXT_PUBLIC_API_SERVICE_URL}/public${props.data.file}`;
+    : `${API_SERVICE_URL}/public${props.data.file}`;
 
   return (
     <div
