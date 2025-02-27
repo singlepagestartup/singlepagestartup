@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serveStatic } from "hono/bun";
+import { serveStatic, createBunWebSocket } from "hono/bun";
+import { type ServerWebSocket } from "bun";
 import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
 import {
   IsAuthorizedMiddleware,
@@ -10,6 +11,7 @@ import {
   RequestIdMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
+import { v4 as uuidv4 } from "uuid";
 
 import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
@@ -25,8 +27,10 @@ import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { websocketManager } from "@sps/backend-utils";
 
 export const app = new Hono().basePath("/");
+const { upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
 
 app.use(
   cors({
@@ -67,6 +71,26 @@ const observerMiddleware = new ObserverMiddleware();
 app.use(observerMiddleware.init());
 
 app.use("/public/*", serveStatic({ root: "./" }));
+
+app.get(
+  "/ws/revalidation",
+  upgradeWebSocket((c) => {
+    const clientId = c.req.header("X-Client-ID") || uuidv4();
+
+    return {
+      onOpen(event, ws) {
+        websocketManager.addClient(clientId, ws);
+      },
+      onMessage(event, ws) {
+        console.log(`Message from client: ${event.data}`);
+        ws.send("Hello from server!");
+      },
+      onClose: () => {
+        websocketManager.removeClient(clientId);
+      },
+    };
+  }),
+);
 
 /**
  * It's not secure, because authorized requests can be cached and served to unauthorized users.

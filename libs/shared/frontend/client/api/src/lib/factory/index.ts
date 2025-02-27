@@ -65,34 +65,15 @@ function subscription(route: string, queryClient: QueryClient) {
   activeSubscriptions.add(route);
 
   const triggeredActions: IAction[] = [];
-  let revalidationChannel: IAction | null = null;
   const mountTime = Date.now();
 
   globalActionsStore.subscribe((state) => {
-    const broadcastChannels = state.getActionsFromStoreByName(
-      "/api/broadcast/channels",
-    );
+    const revalidationMessages =
+      state.getActionsFromStoreByName("revalidation");
 
-    const channels = broadcastChannels || [];
-    for (const channel of channels) {
-      if (
-        !revalidationChannel &&
-        channel.result?.["title"] === "revalidation"
-      ) {
-        revalidationChannel = channel.result;
-      }
-    }
-
-    const broadcastMessages = state.getActionsFromStoreByName(
-      "/api/broadcast/messages",
-    );
-
-    const messages = broadcastMessages || [];
+    const messages = revalidationMessages || [];
     for (const message of messages) {
-      if (
-        new Date(message.result["createdAt"]).getTime() > mountTime &&
-        revalidationChannel
-      ) {
+      if (new Date(message.result["createdAt"]).getTime() > mountTime) {
         const isTriggered = triggeredActions.some(
           (triggeredAction) =>
             JSON.stringify(triggeredAction) === JSON.stringify(message),
@@ -106,9 +87,11 @@ function subscription(route: string, queryClient: QueryClient) {
             typeof message.result?.["payload"] === "string" &&
             message.result["payload"].includes(route)
           ) {
-            queryClient.invalidateQueries({
-              queryKey: [message.result["payload"]],
-            });
+            setTimeout(() => {
+              queryClient.invalidateQueries({
+                queryKey: [message.result["payload"]],
+              });
+            }, 1000);
           }
         }
       }

@@ -9,12 +9,12 @@ import { fonts } from "./fonts";
 import React, { Suspense } from "react";
 import { Toaster } from "@sps/shared-ui-shadcn";
 import { Component as Admin } from "../src/components/admin";
-import { Component as SpsRbacSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Provider as SpsRbacProvider } from "@sps/rbac/frontend/component";
-import { App as SpsBroadcast } from "@sps/broadcast/frontend/component";
+import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
+import { Provider as RbacProvider } from "@sps/rbac/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID } from "@sps/shared-utils";
+import { Component as Revalidation } from "../src/components/revalidation";
 
 export default async function RootLayout({
   children,
@@ -30,18 +30,18 @@ export default async function RootLayout({
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >
         <Suspense fallback={<Loading />}>
-          <SpsRbacProvider isServer={false}>
-            <SpsRbacSubject
+          <RbacProvider isServer={false}>
+            <RbacSubject
               isServer={false}
               variant="authentication-init-default"
             />
-            <SpsBroadcast isServer={true} />
+            <Revalidation isServer={true} />
             <Admin isServer={true} />
             <div className="relative">
               {children}
               <Toaster />
             </div>
-          </SpsRbacProvider>
+          </RbacProvider>
         </Suspense>
       </body>
       {GOOGLE_ANALYTICS_ID ? (

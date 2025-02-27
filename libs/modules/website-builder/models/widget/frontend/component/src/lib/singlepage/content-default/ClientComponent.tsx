@@ -1,6 +1,5 @@
 "use client";
 
-import { IComponentPropsExtended } from "./interface";
 import { useState } from "react";
 
 export function Component() {
