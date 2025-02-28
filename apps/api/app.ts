@@ -98,10 +98,10 @@ app.get(
  * Now added "Cache-Control": "no-store" for preventing caching of authorized requests,
  * but it should be added to the request
  */
-const httpCacheMiddleware = new HTTPCacheMiddleware();
-httpCacheMiddleware.setRoutes(app);
 if (MIDDLEWARE_HTTP_CACHE === "true") {
+  const httpCacheMiddleware = new HTTPCacheMiddleware();
   app.use(httpCacheMiddleware.init());
+  httpCacheMiddleware.setRoutes(app);
 }
 
 const isAuthorizedMiddleware = new IsAuthorizedMiddleware();

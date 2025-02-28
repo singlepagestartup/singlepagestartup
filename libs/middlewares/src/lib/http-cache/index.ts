@@ -127,7 +127,7 @@ export class Middleware {
   }
 
   setRoutes(app: any) {
-    app.get("/http-cache/clear", async (c) => {
+    app.get("/api/http-cache/clear", async (c) => {
       await new StoreProvider({
         type: KV_PROVIDER,
       }).flushall();
