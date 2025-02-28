@@ -4,13 +4,13 @@ import { IComponentPropsExtended } from "./interface";
 import { useEffect } from "react";
 import useWebSocket from "react-use-websocket";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
-import { API_SERVICE_WS_URL } from "@sps/shared-utils";
+import { NEXT_PUBLIC_API_SERVICE_WS_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const processedActions = new Set<string>();
 
   const { lastMessage } = useWebSocket(
-    `${API_SERVICE_WS_URL}/ws/revalidation`,
+    `${NEXT_PUBLIC_API_SERVICE_WS_URL}/ws/revalidation`,
     {
       shouldReconnect: () => true,
       reconnectAttempts: 10,

@@ -63,6 +63,16 @@
             secret_content: "https://{{ api_service_url }}",
             secret_scope: actions,
           }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'API_SERVICE_URL' }}",
+            secret_content: "http://api:4000",
+            secret_scope: actions,
+          }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_WS_URL' }}",
+            secret_content: "wss://{{ api_service_url }}",
+            secret_scope: actions,
+          }
 
     - name: Delete artifacts
       file:

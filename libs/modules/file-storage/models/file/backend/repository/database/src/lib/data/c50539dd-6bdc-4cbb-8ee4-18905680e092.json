@@ -1,16 +1,16 @@
 {
   "id": "c50539dd-6bdc-4cbb-8ee4-18905680e092",
-  "file": "/file-storage/8193cea7.jpg",
-  "containerClassName": "",
-  "className": "",
+  "file": "/file-storage/1a51bd76.jpg",
+  "containerClassName": "aspect-w-2 aspect-h-2 overflow-hidden",
+  "className": "object-cover",
   "createdAt": "2025-01-27T18:15:25.987Z",
-  "updatedAt": "2025-01-27T18:15:26.021Z",
+  "updatedAt": "2025-02-26T08:17:15.423Z",
   "variant": "default",
   "adminTitle": "meaningful blush scorpion",
-  "width": 800,
-  "height": 1427,
+  "width": 1600,
+  "height": 2854,
   "alt": null,
-  "size": 287928,
+  "size": 1426337,
   "extension": "jpg",
   "mimeType": "image/jpeg"
 }

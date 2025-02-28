@@ -1,7 +1,7 @@
 {
   "title": {
-    "en": "Single Page Startup – The Ultimate Framework for Next.js & Hono",
-    "ru": "Single Page Startup – Идеальный фреймворк для Next.js и Hono"
+    "en": "Single Page Startup – The Ultimate Framework for Next.js & Hono!",
+    "ru": "Single Page Startup – Идеальный фреймворк для Next.js и Hono!"
   },
   "subtitle": {
     "en": "Effortless project creation with Next.js and Hono, optimized for performance and scalability.",
@@ -15,7 +15,7 @@
   "className": "",
   "id": "4e55875f-1298-4544-a61d-19af05367bef",
   "createdAt": "2025-01-30T13:15:03.021Z",
-  "updatedAt": "2025-01-30T15:29:57.811Z",
+  "updatedAt": "2025-02-27T21:04:24.785Z",
   "variant": "content-default",
   "adminTitle": "fundamental aqua finch",
   "slug": "welcome-to-single-page-startup"

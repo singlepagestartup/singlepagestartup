@@ -109,7 +109,6 @@ app.use(isAuthorizedMiddleware.init());
 
 const revalidationMiddleware = new RevalidationMiddleware();
 app.use(revalidationMiddleware.init());
-// revalidationMiddleware.setRoutes(app);
 
 const parseQueryMiddleware = new ParseQueryMiddleware();
 app.use(parseQueryMiddleware.init());
