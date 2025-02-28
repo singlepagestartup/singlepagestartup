@@ -4,15 +4,19 @@ import { IComponentPropsExtended } from "./interface";
 import { useEffect } from "react";
 import useWebSocket from "react-use-websocket";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
+import { API_SERVICE_WS_URL } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const processedActions = new Set<string>();
 
-  const { lastMessage } = useWebSocket("ws://localhost:4000/ws/revalidation", {
-    shouldReconnect: () => true,
-    reconnectAttempts: 10,
-    reconnectInterval: 5000,
-  });
+  const { lastMessage } = useWebSocket(
+    `${API_SERVICE_WS_URL}/ws/revalidation`,
+    {
+      shouldReconnect: () => true,
+      reconnectAttempts: 10,
+      reconnectInterval: 5000,
+    },
+  );
 
   useEffect(() => {
     if (lastMessage !== null) {

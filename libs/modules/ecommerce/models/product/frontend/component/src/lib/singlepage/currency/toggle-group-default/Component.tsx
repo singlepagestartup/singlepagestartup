@@ -139,7 +139,11 @@ export function Component(props: IComponentPropsExtended) {
                                               key={index}
                                               value={entity.id}
                                             >
-                                              {entity.symbol}
+                                              <BillingCurrency
+                                                isServer={props.isServer}
+                                                variant="symbol"
+                                                data={entity}
+                                              />
                                             </ToggleGroupItem>
                                           );
                                         });

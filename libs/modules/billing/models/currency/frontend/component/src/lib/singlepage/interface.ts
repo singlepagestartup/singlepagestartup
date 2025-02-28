@@ -5,6 +5,7 @@ import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/sele
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IToggleGroupDefaultComponentProps } from "./toggle-group-default/interface";
+import { IComponentProps as ISymbolComponentProps } from "./symbol/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -14,4 +15,5 @@ export type IComponentProps =
   | IAdminFormComponentProps
   | IDefaultComponentProps
   | IToggleGroupDefaultComponentProps
+  | ISymbolComponentProps
   | never;
