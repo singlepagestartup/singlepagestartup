@@ -4,7 +4,7 @@ import { createId } from "@paralleldrive/cuid2";
 import {
   IModel,
   route,
-  host,
+  clientHost,
   query,
   options,
 } from "@sps/rbac/models/identity/sdk/model";
@@ -37,7 +37,7 @@ export const api = {
   ...factory<IModel>({
     queryClient,
     route,
-    host,
+    host: clientHost,
     params: query,
     options,
   }),
@@ -80,7 +80,7 @@ export const api = {
             },
           };
           const res = await fetch(
-            `${host}${route}/${props.id}/change-password?${stringifiedQuery}`,
+            `${clientHost}${route}/${props.id}/change-password?${stringifiedQuery}`,
             requestOptions,
           );
 

@@ -1,6 +1,6 @@
 import { factory } from "@sps/shared-frontend-server-api";
 import {
-  host,
+  serverHost,
   route,
   IModel,
   query,
@@ -11,7 +11,7 @@ import { action as generate } from "./actions/generate";
 export const api = {
   ...factory<IModel>({
     route,
-    host,
+    host: serverHost,
     params: query,
     options,
   }),

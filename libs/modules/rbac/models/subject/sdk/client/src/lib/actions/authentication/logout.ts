@@ -1,6 +1,6 @@
 "use client";
 
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
   DefaultError,
   useMutation,
@@ -35,6 +35,7 @@ export function action(props: IProps) {
       try {
         const result = await api.authenticationLogout({
           ...mutationFunctionProps,
+          host: clientHost,
         });
 
         localStorage.removeItem("rbac.subject.refresh");

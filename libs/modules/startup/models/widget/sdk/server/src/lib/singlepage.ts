@@ -1,7 +1,7 @@
 import { factory } from "@sps/shared-frontend-server-api";
 import {
-  host,
   route,
+  serverHost,
   IModel,
   query,
   options,
@@ -9,7 +9,7 @@ import {
 
 export const api = factory<IModel>({
   route,
-  host,
+  host: serverHost,
   options,
   params: query,
 });

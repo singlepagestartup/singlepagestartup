@@ -1,8 +1,4 @@
-import {
-  host,
-  route,
-  IModel,
-} from "@sps/notification/models/template/sdk/model";
+import { serverHost, route } from "@sps/notification/models/template/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -13,6 +9,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  host?: string;
   tag?: string;
   revalidate?: number;
   params?: {
@@ -25,7 +22,7 @@ export interface IProps {
 export type IResult = string;
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options } = props;
+  const { id, params, data, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 

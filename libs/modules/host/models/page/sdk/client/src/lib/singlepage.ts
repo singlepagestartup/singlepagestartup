@@ -3,7 +3,7 @@
 import {
   IModel,
   route,
-  host,
+  clientHost,
   query,
   options,
 } from "@sps/host/models/page/sdk/model";
@@ -43,7 +43,7 @@ export const api = {
   ...factory<IModel>({
     queryClient,
     route,
-    host,
+    host: clientHost,
     params: query,
     options,
   }),
@@ -79,7 +79,7 @@ export const api = {
           };
 
           const res = await fetch(
-            `${host}${route}/find-by-url?${stringifiedQuery}`,
+            `${clientHost}${route}/find-by-url?${stringifiedQuery}`,
             requestOptions,
           );
 
@@ -142,7 +142,7 @@ export const api = {
           };
 
           const res = await fetch(
-            `${host}${route}/url-segment-value?${stringifiedQuery}`,
+            `${clientHost}${route}/url-segment-value?${stringifiedQuery}`,
             requestOptions,
           );
 

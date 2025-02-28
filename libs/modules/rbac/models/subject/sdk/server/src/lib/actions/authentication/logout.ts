@@ -1,4 +1,4 @@
-import { host, route } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -7,6 +7,7 @@ import {
 import QueryString from "qs";
 
 export interface IProps {
+  host?: string;
   redirectTo: string;
   catchErrors?: boolean;
   params?: {
@@ -21,7 +22,7 @@ export type IResult = {
 };
 
 export async function action(props: IProps): Promise<IResult> {
-  const { params, options } = props;
+  const { params, options, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

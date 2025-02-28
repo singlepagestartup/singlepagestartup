@@ -1,4 +1,4 @@
-import { host, route } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -9,6 +9,7 @@ import QueryString from "qs";
 import { Address, Hex } from "viem";
 
 export interface IProps {
+  host?: string;
   params?: {
     [key: string]: any;
   };
@@ -26,7 +27,7 @@ export type IResult = {
 };
 
 export async function action(props: IProps): Promise<IResult> {
-  const { params, data, options } = props;
+  const { params, data, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 

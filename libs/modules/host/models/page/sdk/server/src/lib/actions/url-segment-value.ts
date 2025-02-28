@@ -1,4 +1,4 @@
-import { route, host } from "@sps/host/models/page/sdk/model";
+import { route, serverHost } from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -11,10 +11,13 @@ interface Params {
   url: string;
   segment: string;
   catchErrors?: boolean;
+  host?: string;
 }
 
 export async function action(props: Params) {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
+
+  const { host = serverHost } = props;
 
   const noCache = productionBuild;
 

@@ -1,6 +1,6 @@
 import { factory } from "@sps/shared-frontend-server-api";
 import {
-  host,
+  serverHost,
   route,
   IModel,
   query,
@@ -11,7 +11,7 @@ import { action as sendAll } from "./actions/send-all";
 export const api = {
   ...factory<IModel>({
     route,
-    host,
+    host: serverHost,
     options,
     params: query,
   }),

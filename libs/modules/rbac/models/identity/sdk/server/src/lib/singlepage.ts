@@ -1,6 +1,6 @@
 import { factory } from "@sps/shared-frontend-server-api";
 import {
-  host,
+  serverHost,
   route,
   IModel,
   query,
@@ -12,7 +12,7 @@ import { action as changePassword } from "./actions/change-password";
 export const api = {
   ...factory<IModel>({
     route,
-    host,
+    host: serverHost,
     options,
     params: query,
   }),

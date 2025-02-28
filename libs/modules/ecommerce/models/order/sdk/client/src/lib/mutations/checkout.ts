@@ -1,53 +1,65 @@
 "use client";
 
-import { IModel } from "@sps/ecommerce/models/order/sdk/model";
+import { route } from "@sps/ecommerce/models/order/sdk/model";
 import { toast } from "sonner";
-import { action, IProps } from "../../../../server/src/lib/actions/checkout";
+import {
+  api,
+  type IProps as IParentProps,
+  type IResult as IParentResult,
+} from "@sps/ecommerce/models/order/sdk/server";
+import {
+  DefaultError,
+  useMutation,
+  UseMutationOptions,
+} from "@tanstack/react-query";
+import { globalActionsStore } from "@sps/shared-frontend-client-store";
+import { createId } from "@paralleldrive/cuid2";
 
-export interface IMutationProps {
-  id: IProps["id"];
-  options?: IProps["options"];
-  params?: IProps["params"];
-  cb?: (data: IModel) => void;
-}
+export type IProps = {
+  reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
+};
 
-export interface IMutationFunctionProps {
-  id?: IProps["id"];
-  data: IProps["data"];
-  options?: IProps["options"];
-  params?: IProps["params"];
-}
+export type IResult = IParentResult["ICheckoutResult"];
 
-export function mutation(
-  props: IMutationProps,
-): (mutationFunctionProps: IMutationFunctionProps) => Promise<IModel> {
-  return async (mutationFunctionProps: IMutationFunctionProps) => {
-    try {
-      const id = mutationFunctionProps.id || props.id;
+export function action(props: IProps) {
+  return useMutation<
+    IParentResult["ICheckoutResult"],
+    DefaultError,
+    IParentProps["ICheckoutProps"]
+  >({
+    mutationKey: [`${route}/:id/checkout`],
+    mutationFn: async (
+      mutationFunctionProps: IParentProps["ICheckoutProps"],
+    ) => {
+      try {
+        const result = await api.checkout({
+          id: mutationFunctionProps.id,
+          params: mutationFunctionProps.params,
+          options: {
+            ...mutationFunctionProps.options,
+          },
+          data: mutationFunctionProps.data,
+        });
 
-      if (!id) {
-        throw new Error("id is required");
+        return result;
+      } catch (error: any) {
+        toast.error(error.message);
+
+        throw error;
       }
-
-      const res = await action({
-        id,
-        params: mutationFunctionProps.params || props.params,
-        options: {
-          ...mutationFunctionProps.options,
-          ...props.options,
-        },
-        data: mutationFunctionProps.data,
+    },
+    onSuccess(data) {
+      globalActionsStore.getState().addAction({
+        type: "mutation",
+        name: `${route}/:id/ecommerce/orders/:orderId`,
+        props: this,
+        result: data,
+        timestamp: Date.now(),
+        requestId: createId(),
       });
 
-      if (props.cb) {
-        props.cb(res);
-      }
-
-      return res;
-    } catch (error: any) {
-      toast.error(error.message);
-
-      throw error;
-    }
-  };
+      return data;
+    },
+    ...props?.reactQueryOptions,
+  });
 }

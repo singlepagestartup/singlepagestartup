@@ -5,7 +5,7 @@ import {
   transformResponseItem,
 } from "@sps/shared-utils";
 import {
-  host,
+  serverHost,
   route,
   IModel,
   query,
@@ -15,7 +15,7 @@ import {
 export const api = {
   ...factory<IModel>({
     route,
-    host,
+    host: serverHost,
     params: query,
     options,
   }),
@@ -30,7 +30,7 @@ export const api = {
       },
     };
 
-    const res = await fetch(`${host}${route}/init`, options);
+    const res = await fetch(`${serverHost}${route}/init`, options);
 
     if (!res.ok) {
       const error = new Error(res.statusText);

@@ -2,7 +2,7 @@
 
 import { STALE_TIME } from "@sps/shared-utils";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
@@ -24,7 +24,10 @@ export function action(props: IProps) {
     queryKey: [`${route}/authentication/init`],
     queryFn: async () => {
       try {
-        const result = await api.authenticationInit(props);
+        const result = await api.authenticationInit({
+          ...props,
+          host: clientHost,
+        });
 
         if (!result) {
           throw new Error("No data");

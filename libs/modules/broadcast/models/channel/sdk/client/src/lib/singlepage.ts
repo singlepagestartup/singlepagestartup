@@ -3,7 +3,7 @@
 import {
   IModel,
   route,
-  host,
+  clientHost,
   query,
   options,
 } from "@sps/broadcast/models/channel/sdk/model";
@@ -14,7 +14,7 @@ export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 export const api = factory<IModel>({
   queryClient,
   route,
-  host,
+  host: clientHost,
   params: query,
   options,
 });

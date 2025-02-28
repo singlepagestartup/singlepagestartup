@@ -1,4 +1,4 @@
-import { host, route } from "@sps/broadcast/models/channel/sdk/model";
+import { serverHost, route } from "@sps/broadcast/models/channel/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -10,6 +10,7 @@ import { IModel as IMessge } from "@sps/broadcast/models/message/sdk/model";
 
 export interface IProps {
   id: string;
+  host?: string;
   tag?: string;
   revalidate?: number;
   params?: {
@@ -22,7 +23,7 @@ export interface IProps {
 export type IResult = IMessge[];
 
 export async function action(props: IProps): Promise<IResult | undefined> {
-  const { id, params, options, data } = props;
+  const { id, params, options, data, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

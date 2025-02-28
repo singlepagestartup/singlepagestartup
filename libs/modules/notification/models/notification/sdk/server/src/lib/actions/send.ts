@@ -1,5 +1,5 @@
 import {
-  host,
+  serverHost,
   route,
   IModel,
 } from "@sps/notification/models/notification/sdk/model";
@@ -13,6 +13,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  host?: string;
   tag?: string;
   revalidate?: number;
   params?: {
@@ -25,7 +26,7 @@ export interface IProps {
 export type IResult = IModel;
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options } = props;
+  const { id, params, data, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 

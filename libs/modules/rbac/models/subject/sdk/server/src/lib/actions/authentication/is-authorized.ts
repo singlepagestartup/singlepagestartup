@@ -1,4 +1,4 @@
-import { host, route } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -8,6 +8,7 @@ import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
+  host?: string;
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
@@ -26,7 +27,7 @@ export type IResult = { ok: true } | undefined;
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { params, options } = props;
+  const { params, options, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

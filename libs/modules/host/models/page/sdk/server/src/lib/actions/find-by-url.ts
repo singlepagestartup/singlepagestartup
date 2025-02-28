@@ -1,4 +1,4 @@
-import { route, IModel, host } from "@sps/host/models/page/sdk/model";
+import { route, IModel, serverHost } from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -8,11 +8,16 @@ import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 interface Params {
+  host?: string;
   url: string;
   catchErrors?: boolean;
 }
 
-export async function action({ url, catchErrors = false }: Params) {
+export async function action({
+  host = serverHost,
+  url,
+  catchErrors = false,
+}: Params) {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const noCache = productionBuild;

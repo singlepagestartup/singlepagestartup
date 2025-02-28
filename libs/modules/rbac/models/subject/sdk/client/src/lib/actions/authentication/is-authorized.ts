@@ -1,6 +1,6 @@
 "use client";
 
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import { STALE_TIME } from "@sps/shared-utils";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
@@ -22,7 +22,10 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: [`${route}/authentication/is-authorized`],
     queryFn: async () => {
-      const result = await api.authenticationIsAuthorized(props);
+      const result = await api.authenticationIsAuthorized({
+        ...props,
+        host: clientHost,
+      });
 
       return result;
     },

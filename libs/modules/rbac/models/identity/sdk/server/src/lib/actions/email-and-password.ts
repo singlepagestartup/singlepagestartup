@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/rbac/models/identity/sdk/model";
+import { serverHost, route, IModel } from "@sps/rbac/models/identity/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -9,6 +9,7 @@ import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
+  host?: string;
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
@@ -24,7 +25,7 @@ export type IResult = IModel | undefined;
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { params, options, data } = props;
+  const { params, options, data, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 

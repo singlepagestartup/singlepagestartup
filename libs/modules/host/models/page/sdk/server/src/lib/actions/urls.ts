@@ -1,4 +1,4 @@
-import { route, IModel, host } from "@sps/host/models/page/sdk/model";
+import { route, IModel, serverHost } from "@sps/host/models/page/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -7,9 +7,10 @@ import {
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { logger } from "@sps/backend-utils";
 
-export async function action(props: { catchErrors?: boolean }) {
+export async function action(props: { catchErrors?: boolean; host?: string }) {
   try {
     const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
+    const { host = serverHost } = props;
 
     const noCache = productionBuild;
 

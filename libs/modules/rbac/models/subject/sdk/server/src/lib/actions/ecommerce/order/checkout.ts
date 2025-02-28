@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
@@ -11,6 +11,7 @@ import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 export interface IProps {
   id: string;
   orderId: string;
+  host?: string;
   tag?: string;
   revalidate?: number;
   params?: {
@@ -33,7 +34,7 @@ export type IResult = IModel & {
 };
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options } = props;
+  const { id, params, data, options, host = serverHost } = props;
   const orderId = props.orderId;
 
   if (!orderId) {

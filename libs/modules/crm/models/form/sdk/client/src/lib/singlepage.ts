@@ -3,7 +3,7 @@
 import {
   IModel,
   route,
-  host,
+  clientHost,
   query,
   options,
 } from "@sps/crm/models/form/sdk/model";
@@ -27,7 +27,7 @@ export const api = {
   ...factory<IModel>({
     queryClient,
     route,
-    host,
+    host: clientHost,
     params: query,
     options,
   }),

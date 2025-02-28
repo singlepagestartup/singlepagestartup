@@ -2,7 +2,7 @@
 
 import { STALE_TIME } from "@sps/shared-utils";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -23,7 +23,10 @@ export function action(props: IProps) {
     queryKey: [`${route}/authentication/me`],
     queryFn: async () => {
       try {
-        const result = await api.authenticationMe(props);
+        const result = await api.authenticationMe({
+          ...props,
+          host: clientHost,
+        });
 
         return result;
       } catch (error: any) {

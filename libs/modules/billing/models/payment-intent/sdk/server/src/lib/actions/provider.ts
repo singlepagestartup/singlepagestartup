@@ -1,5 +1,5 @@
 import {
-  host,
+  serverHost,
   route,
   IModel,
 } from "@sps/billing/models/payment-intent/sdk/model";
@@ -13,6 +13,7 @@ import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
+  host?: string;
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
@@ -31,7 +32,7 @@ export interface IResult extends IModel {}
 export async function action(props: IProps): Promise<IResult | undefined> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { data, params, options, id } = props;
+  const { data, params, options, id, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

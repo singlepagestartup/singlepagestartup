@@ -6,10 +6,13 @@ export {
 } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
   NextRequestOptions,
   REVALIDATE,
 } from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/billing/payment-intents";
 export const variants = ["default"];
 export const types = ["one_off", "subscription"];
@@ -23,7 +26,6 @@ export const statuses = [
   "succeeded",
   "canceled",
 ];
-export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

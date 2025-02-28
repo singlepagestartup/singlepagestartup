@@ -1,4 +1,4 @@
-import { host, route } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -10,6 +10,7 @@ import { IModel as IIdentity } from "@sps/rbac/models/identity/sdk/model";
 
 export interface IProps {
   id: string;
+  host?: string;
   catchErrors?: boolean;
   params?: {
     [key: string]: any;
@@ -22,7 +23,7 @@ export type IResult = IIdentity[] | undefined;
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { params, options, id } = props;
+  const { params, options, id, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

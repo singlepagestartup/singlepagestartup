@@ -1,4 +1,4 @@
-import { host, route } from "@sps/ecommerce/models/order/sdk/model";
+import { serverHost, route } from "@sps/ecommerce/models/order/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -7,6 +7,7 @@ import {
 import QueryString from "qs";
 
 export interface IProps {
+  host?: string;
   tag?: string;
   revalidate?: number;
   params?: {
@@ -20,7 +21,7 @@ export interface IResult {
 }
 
 export async function action(props: IProps): Promise<IResult> {
-  const { params, options } = props;
+  const { params, options, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,

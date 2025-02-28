@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -7,6 +7,7 @@ import {
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
+  host?: string;
   catchErrors?: boolean;
   options?: NextRequestOptions;
 }
@@ -16,7 +17,7 @@ export type IResult = IModel | undefined;
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { options } = props;
+  const { options, host = serverHost } = props;
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache

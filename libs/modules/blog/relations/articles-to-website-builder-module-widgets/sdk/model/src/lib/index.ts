@@ -6,13 +6,15 @@ export {
 } from "@sps/blog/relations/articles-to-website-builder-module-widgets/backend/repository/database";
 import {
   API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
   NextRequestOptions,
   REVALIDATE,
 } from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/blog/articles-to-website-builder-module-widgets";
 export const variants = ["default"] as const;
-export const host = API_SERVICE_URL;
 export const query = {};
 export const options = {
   next: {

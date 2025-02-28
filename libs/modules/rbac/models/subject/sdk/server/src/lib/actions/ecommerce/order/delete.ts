@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
@@ -8,6 +8,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  host?: string;
   orderId: string;
   tag?: string;
   revalidate?: number;
@@ -20,8 +21,7 @@ export interface IProps {
 export type IResult = IModel;
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, options } = props;
-  const orderId = props.orderId;
+  const { id, params, options, host = serverHost, orderId } = props;
 
   if (!orderId) {
     throw new Error("orderId is required");

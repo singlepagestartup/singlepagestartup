@@ -1,4 +1,4 @@
-import { host, route, IModel } from "@sps/crm/models/form/sdk/model";
+import { serverHost, route, IModel } from "@sps/crm/models/form/sdk/model";
 import { IModel as IRequest } from "@sps/crm/models/request/sdk/model";
 import { IModel as IFormToRequest } from "@sps/crm/relations/forms-to-requests/sdk/model";
 import {
@@ -11,6 +11,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  host?: string;
   catchErrors?: boolean;
   params?: {
     [key: string]: any;
@@ -28,7 +29,7 @@ export type IResult = IModel & {
 };
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options } = props;
+  const { id, params, data, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
 

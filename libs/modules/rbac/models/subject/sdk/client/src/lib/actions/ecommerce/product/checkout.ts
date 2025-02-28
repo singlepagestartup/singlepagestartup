@@ -1,6 +1,6 @@
 "use client";
 
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
 import {
   DefaultError,
   useMutation,
@@ -34,6 +34,7 @@ export function action(props: IProps) {
       try {
         const result = await api.ecommerceProductCheckout({
           ...mutationFunctionProps,
+          host: clientHost,
         });
 
         return result;
