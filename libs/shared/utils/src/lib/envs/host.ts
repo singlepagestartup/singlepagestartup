@@ -2,10 +2,12 @@ export const API_SERVICE_WS_URL =
   process.env["NEXT_PUBLIC_API_SERVICE_WS_URL"] ||
   process.env["API_SERVICE_WS_URL"] ||
   "ws://localhost:4000";
-export const API_SERVICE_URL =
+export const NEXT_PUBLIC_API_SERVICE_URL =
   process.env["NEXT_PUBLIC_API_SERVICE_URL"] ||
   process.env["API_SERVICE_URL"] ||
   "http://localhost:4000";
+export const API_SERVICE_URL =
+  process.env["API_SERVICE_URL"] || "http://localhost:4000";
 export const API_SERVICE_PORT = Number(process.env["API_SERVICE_PORT"]) || 4000;
 export const HOST_SERVICE_URL =
   process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] ||
