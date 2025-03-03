@@ -13,11 +13,17 @@ export function Component(props: IComponentPropsExtended) {
       form={props.form}
       variant={props.variant}
       formFieldName={props.formFieldName}
+      renderField={
+        `title.[${internationalization.defaultLanguage.code}]` as keyof IModel
+      }
       renderFunction={(entity) => {
-        return `${
-          props.renderField ||
-          (`${entity.title?.[internationalization.defaultLanguage.code]}` as keyof IModel)
-        } | ${entity.variant} | ${entity.url}`;
+        const title =
+          entity.title?.[internationalization.defaultLanguage.code] ??
+          "Untitled";
+        const variant = entity.variant ?? "Unknown Variant";
+        const url = entity.url ?? "No URL";
+
+        return `${title} | ${variant} | ${url}`;
       }}
     />
   );

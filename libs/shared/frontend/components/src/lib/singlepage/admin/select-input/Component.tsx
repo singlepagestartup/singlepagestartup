@@ -34,7 +34,7 @@ export function Component<M extends { id: string }, V>(
         placeholder={`Select ${props.name}`}
         options={props.data.map((entity) => {
           if (props.renderFunction && typeof props.renderField === "string") {
-            const renderValue = entity[props.renderField];
+            const renderValue = getNestedValue(entity, props.renderField);
 
             if (typeof renderValue === "string") {
               return [entity.id, renderValue, props.renderFunction(entity)];
