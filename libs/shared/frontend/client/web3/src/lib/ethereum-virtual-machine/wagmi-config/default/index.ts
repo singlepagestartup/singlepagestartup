@@ -17,20 +17,22 @@ const metadata = {
   description: NEXT_PUBLIC_HOST_METADATA_DESCRIPTION,
 };
 
-export const config = createConfig({
-  chains: [mainnet],
-  connectors: [
-    injected(),
-    safe(),
-    walletConnect({
-      projectId: WALLET_CONNECT_PROJECT_ID,
-      showQrModal: false,
-      metadata,
-    }),
-  ],
-  ssr: true,
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-  },
-});
+export const config = WALLET_CONNECT_PROJECT_ID
+  ? createConfig({
+      chains: [mainnet],
+      connectors: [
+        injected(),
+        safe(),
+        walletConnect({
+          projectId: WALLET_CONNECT_PROJECT_ID,
+          showQrModal: false,
+          metadata,
+        }),
+      ],
+      ssr: true,
+      transports: {
+        [mainnet.id]: http(),
+        [sepolia.id]: http(),
+      },
+    })
+  : null;

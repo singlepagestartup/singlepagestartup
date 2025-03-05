@@ -8,12 +8,16 @@ export function Provider(props: IComponentProps) {
 
   return (
     <div data-module="rbac" data-variant="provider">
-      <EthereumVirtualMachineProvider
-        variant="default"
-        config={ethereumVirtualMachine.wagmiConfig.default}
-      >
-        {props.children}
-      </EthereumVirtualMachineProvider>
+      {ethereumVirtualMachine.wagmiConfig.default ? (
+        <EthereumVirtualMachineProvider
+          variant="default"
+          config={ethereumVirtualMachine.wagmiConfig.default}
+        >
+          {props.children}
+        </EthereumVirtualMachineProvider>
+      ) : (
+        props.children
+      )}
     </div>
   );
 }
