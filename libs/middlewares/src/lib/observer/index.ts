@@ -134,12 +134,6 @@ export class Middleware {
             try {
               const payload: IPayload = JSON.parse(message.payload);
 
-              console.log(
-                "🚀 ~ returncreateMiddleware ~ payload:",
-                payload.trigger,
-                `${NEXT_PUBLIC_API_SERVICE_URL}${path}`,
-              );
-
               if (
                 payload.trigger.method === method &&
                 payload.trigger.url === `${NEXT_PUBLIC_API_SERVICE_URL}${path}`
