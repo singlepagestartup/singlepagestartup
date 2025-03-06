@@ -1,0 +1,1 @@
+ALTER TABLE "sps_rc_ss_to_ee_me_os_oq2" ADD CONSTRAINT "sps_rc_ss_to_ee_me_os_oq2_ee_me_or_id_sps_ee_order_id_fk" FOREIGN KEY ("ee_me_or_id") REFERENCES "public"."sps_ee_order"("id") ON DELETE cascade ON UPDATE no action;

@@ -1,5 +1,6 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Subject } from "@sps/rbac/models/subject/backend/repository/database";
+import { Table as EcommerceOrder } from "@sps/ecommerce/models/order/backend/repository/database";
 
 export const moduleName = "sps_rc";
 export const table = "ss_to_ee_me_os_oq2";
@@ -17,5 +18,8 @@ export const Table = pgTable(table, {
     .uuid("st_id")
     .notNull()
     .references(() => Subject.id, { onDelete: "cascade" }),
-  ecommerceModuleOrderId: pgCore.uuid("ee_me_or_id").notNull(),
+  ecommerceModuleOrderId: pgCore
+    .uuid("ee_me_or_id")
+    .notNull()
+    .references(() => EcommerceOrder.id, { onDelete: "cascade" }),
 });
