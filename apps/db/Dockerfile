@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:17
 
 # Moving dashboard-backend database
 # COPY ./sps.sql /docker-entrypoint-initdb.d/sps.sql
