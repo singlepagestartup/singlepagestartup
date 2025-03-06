@@ -1,4 +1,7 @@
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
@@ -248,13 +251,13 @@ export class Handler {
             trigger: {
               type: "request",
               method: "POST",
-              url: `${HOST_SERVICE_URL}/api/billing/payment-intents/${provider}/webhook`,
+              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/billing/payment-intents/${provider}/webhook`,
             },
             pipe: [
               {
                 type: "request",
                 method: "POST",
-                url: `${HOST_SERVICE_URL}/api/ecommerce/orders/${uuid}/check`,
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${uuid}/check`,
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 },

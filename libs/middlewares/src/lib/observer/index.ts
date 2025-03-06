@@ -1,5 +1,5 @@
 import {
-  HOST_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
   prepareFormDataToSend,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -134,9 +134,15 @@ export class Middleware {
             try {
               const payload: IPayload = JSON.parse(message.payload);
 
+              console.log(
+                "🚀 ~ returncreateMiddleware ~ payload:",
+                payload.trigger,
+                `${NEXT_PUBLIC_API_SERVICE_URL}${path}`,
+              );
+
               if (
                 payload.trigger.method === method &&
-                payload.trigger.url === `${HOST_SERVICE_URL}${path}`
+                payload.trigger.url === `${NEXT_PUBLIC_API_SERVICE_URL}${path}`
               ) {
                 const responseClone = c.res.clone();
                 const triggerResult = await responseClone.json();

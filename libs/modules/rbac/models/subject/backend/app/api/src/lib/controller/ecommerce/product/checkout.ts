@@ -19,6 +19,7 @@ export class Handler {
       }
 
       const id = c.req.param("id");
+
       if (!id) {
         throw new Error("No id provided");
       }
