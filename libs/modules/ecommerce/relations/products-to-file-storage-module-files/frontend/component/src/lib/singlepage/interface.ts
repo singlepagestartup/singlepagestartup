@@ -4,6 +4,7 @@ import { IComponentProps as IAdminTableComponentProps } from "./admin/table/inte
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IAttachmentDefaultComponentProps } from "./attachment-default/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -12,4 +13,5 @@ export type IComponentProps =
   | IAdminSelectInputComponentProps
   | IAdminFormComponentProps
   | IDefaultComponentProps
+  | IAttachmentDefaultComponentProps
   | never;

@@ -84,8 +84,6 @@ export class Handler {
         },
       });
 
-      console.log("🚀 ~ execute ~ orders:", orders);
-
       if (!orders?.length) {
         throw new HTTPException(404, {
           message: "No orders found",

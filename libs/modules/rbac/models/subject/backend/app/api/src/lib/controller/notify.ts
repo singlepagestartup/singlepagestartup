@@ -1,4 +1,7 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../service";
@@ -10,6 +13,10 @@ import { api as notificationTopicsToNotificationsApi } from "@sps/notification/r
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
+import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as ecommerceProductsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
+import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 
 export class Handler {
   service: Service;
@@ -216,12 +223,117 @@ export class Handler {
               continue;
             }
 
+            const ecommerceOrdersToProducts =
+              await ecommerceOrdersToProductsApi.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "orderId",
+                        method: "eq",
+                        value: order.id,
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+
+            if (!ecommerceOrdersToProducts?.length) {
+              continue;
+            }
+
+            const ecommerceOrderToProduct = ecommerceOrdersToProducts[0];
+
+            const product = await ecommerceProductApi.findById({
+              id: ecommerceOrderToProduct.productId,
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+            if (!product) {
+              continue;
+            }
+
+            const ecommerceProductsToFileStorageModuleFiles =
+              await ecommerceProductsToFileStorageModuleFilesApi.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "productId",
+                        method: "eq",
+                        value: product.id,
+                      },
+                      {
+                        column: "variant",
+                        method: "eq",
+                        value: "attachment-default",
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+
+            const attachments: {
+              type: string;
+              url: string;
+            }[] = [];
+
+            if (order?.receipt) {
+              attachments.push({ type: "image", url: order.receipt });
+            }
+
+            if (ecommerceProductsToFileStorageModuleFiles?.length) {
+              const ecommerceModuleFiles = await fileStorageFileApi.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "id",
+                        method: "inArray",
+                        value: ecommerceProductsToFileStorageModuleFiles.map(
+                          (ecommerceProductToFileStorageModuleFile) => {
+                            return ecommerceProductToFileStorageModuleFile.fileStorageModuleFileId;
+                          },
+                        ),
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+
+              if (ecommerceModuleFiles?.length) {
+                for (const ecommerceModuleFile of ecommerceModuleFiles) {
+                  attachments.push({
+                    type: "image",
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${ecommerceModuleFile.file}`,
+                  });
+                }
+              }
+            }
+
             notifications.push({
               ...data.notification.notification,
               reciever: identity.email,
-              attachments: order?.receipt
-                ? JSON.stringify([{ type: "image", url: order.receipt }])
-                : "[]",
+              attachments: attachments ? JSON.stringify(attachments) : "[]",
             });
           }
         }

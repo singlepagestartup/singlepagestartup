@@ -56,6 +56,11 @@
             secret_content: "https://{{ service_url }}",
             secret_scope: actions,
           }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_URL' }}",
+            secret_content: "https://{{ service_url }}",
+            secret_scope: actions,
+          }
 
     - name: Delete artifacts
       file:

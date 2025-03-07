@@ -1,4 +1,8 @@
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  HOST_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
@@ -237,7 +241,7 @@ export class Handler {
           id: uuid,
           data: {
             ...entity,
-            receipt: receiptFile.file,
+            receipt: NEXT_PUBLIC_API_SERVICE_URL + "/public" + receiptFile.file,
           },
         });
       }
