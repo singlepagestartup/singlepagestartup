@@ -7,6 +7,7 @@ import {
   options,
 } from "@sps/file-storage/models/file/sdk/model";
 import { action as createFromUrl } from "./actions/create-from-url";
+import { action as generate } from "./actions/generate";
 
 export const api = {
   ...factory<IModel>({
@@ -16,4 +17,5 @@ export const api = {
     params: query,
   }),
   createFromUrl,
+  generate,
 };

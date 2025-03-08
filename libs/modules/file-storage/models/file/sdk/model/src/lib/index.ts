@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/file-storage/files";
-export const variants = ["default"];
+export const variants = ["default", "generate-template-default"];
 export const query = {};
 export const options = {
   next: {

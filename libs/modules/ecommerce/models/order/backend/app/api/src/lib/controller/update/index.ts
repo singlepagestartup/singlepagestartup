@@ -1,5 +1,4 @@
 import {
-  HOST_SERVICE_URL,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -7,11 +6,9 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
-import QueryString from "qs";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { userStories } from "@sps/shared-configuration";
-import pako from "pako";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
@@ -177,8 +174,17 @@ export class Handler {
           });
         }
 
-        const deflatedData = pako.deflate(
-          JSON.stringify({
+        const receiptFile = await fileStorageFileApi.generate({
+          data: {
+            variant:
+              userStories.subjectCreateOrder.order.update.approving.receipt
+                .variant,
+            width:
+              userStories.subjectCreateOrder.order.update.approving.receipt
+                .width,
+            height:
+              userStories.subjectCreateOrder.order.update.approving.receipt
+                .height,
             ecommerce: {
               order: {
                 ...entity,
@@ -206,33 +212,10 @@ export class Handler {
                   ),
               },
             },
-          }),
-        );
-
-        const queryData = Buffer.from(deflatedData).toString("base64");
-
-        const query = QueryString.stringify({
-          variant:
-            userStories.subjectCreateOrder.order.update.approving.receipt
-              .variant,
-          width:
-            userStories.subjectCreateOrder.order.update.approving.receipt.width,
-          height:
-            userStories.subjectCreateOrder.order.update.approving.receipt
-              .height,
-          data: queryData,
-        });
-
-        const receiptFile = await fileStorageFileApi.createFromUrl({
-          data: {
-            url: `${HOST_SERVICE_URL}/api/image-generator/image.png?${query}`,
           },
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });

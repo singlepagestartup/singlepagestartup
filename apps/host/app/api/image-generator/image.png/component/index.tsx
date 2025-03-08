@@ -1,6 +1,5 @@
 import React from "react";
 import { IComponentProps } from "./interface";
-import { variants } from "./variants";
 import { Component as OpengraphImage } from "./singlepage/opengraph-image/Component";
 import { Component as OrderReceipt } from "./singlepage/order-receipt/Component";
 

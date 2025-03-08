@@ -340,7 +340,7 @@ export const GET = async (request: NextRequest) => {
       ? Number(parsedParams["height"])
       : 512;
 
-    let data;
+    let data = {};
 
     if (typeof parsedParams.data === "string") {
       const decodedBuffer = Buffer.from(parsedParams.data, "base64");

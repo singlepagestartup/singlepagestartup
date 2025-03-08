@@ -8,6 +8,7 @@ import { Handler as Create } from "./create";
 import { Handler as CreateFromUrl } from "./create-from-url";
 import { Handler as Delete } from "./delete";
 import { Handler as Update } from "./update";
+import { Handler as Generate } from "./generate";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -31,6 +32,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/",
         handler: this.create,
+      },
+      {
+        method: "POST",
+        path: "/generate",
+        handler: this.generate,
       },
       {
         method: "POST",
@@ -64,5 +70,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async delete(c: Context, next: any): Promise<Response> {
     return new Delete(this.service).execute(c, next);
+  }
+
+  async generate(c: Context, next: any): Promise<Response> {
+    return new Generate(this.service).execute(c, next);
   }
 }
