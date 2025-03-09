@@ -38,7 +38,7 @@ export class Handler {
       const query = QueryString.stringify({
         variant: data.variant,
         width: data.width ?? 500,
-        height: data.width ?? 500,
+        height: data.height ?? 500,
         data: queryData,
       });
 

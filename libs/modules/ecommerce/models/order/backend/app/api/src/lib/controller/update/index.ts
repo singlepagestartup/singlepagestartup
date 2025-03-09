@@ -274,6 +274,11 @@ export class Handler {
                 ],
               },
             },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
           });
 
           if (fileStorageModuleFiles?.length) {

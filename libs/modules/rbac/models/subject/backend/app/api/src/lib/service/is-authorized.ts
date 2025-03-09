@@ -99,28 +99,6 @@ export class Service {
       });
 
       if (rootAction) {
-        const actionsToRoles = await rolesToActionsApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "actionId",
-                  method: "eq",
-                  value: rootAction.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
-            },
-          },
-        });
-
         if (subjectsToRoles?.length) {
           for (const subjectToRole of subjectsToRoles) {
             const rolesToActions = await rolesToActionsApi.find({
@@ -143,9 +121,7 @@ export class Service {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
+                  "Cache-Control": "no-store",
                 },
               },
             });
