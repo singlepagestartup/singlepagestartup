@@ -46,6 +46,10 @@ export function Component(props: IComponentPropsExtended) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
+      if (!ethereumVirtualMachine.wagmiConfig?.default) {
+        return;
+      }
+
       if (!account?.address) {
         toast.error("No account found");
         return;
@@ -111,6 +115,10 @@ export function Component(props: IComponentPropsExtended) {
 
   useEffect(() => {
     if (authenticateEthereumVirtualMachine.isError) {
+      if (!ethereumVirtualMachine.wagmiConfig?.default) {
+        return;
+      }
+
       disconnect(ethereumVirtualMachine.wagmiConfig.default);
       return;
     }
@@ -131,6 +139,10 @@ export function Component(props: IComponentPropsExtended) {
   }, [authenticateEthereumVirtualMachine.status]);
 
   function logoutAction() {
+    if (!ethereumVirtualMachine.wagmiConfig?.default) {
+      return;
+    }
+
     disconnect(ethereumVirtualMachine.wagmiConfig.default);
     logout.mutate({
       redirectTo: "/",

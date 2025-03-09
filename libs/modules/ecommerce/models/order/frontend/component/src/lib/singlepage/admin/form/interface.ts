@@ -20,6 +20,9 @@ export interface IComponentProps
   ordersToBillingModuleCurrencies?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  ordersToFileStorageModuleFiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

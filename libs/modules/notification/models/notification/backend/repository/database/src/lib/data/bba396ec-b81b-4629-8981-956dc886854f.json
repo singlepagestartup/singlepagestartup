@@ -1,0 +1,13 @@
+{
+  "id": "bba396ec-b81b-4629-8981-956dc886854f",
+  "createdAt": "2025-03-06T13:11:17.736Z",
+  "updatedAt": "2025-03-06T13:11:25.595Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"ecommerce\":{\"order\":{\"id\":\"c64a3ed3-4db7-4a24-8d90-ac121f2c6853\",\"createdAt\":\"2025-03-06T12:33:42.137Z\",\"updatedAt\":\"2025-03-06T12:33:45.132Z\",\"variant\":\"default\",\"status\":\"canceled\",\"type\":\"cart\",\"receipt\":\"\",\"comment\":\"\",\"checkoutAttributes\":{\"amount\":990,\"type\":\"one_off\"},\"ordersToBillingModuleCurrencies\":[{\"id\":\"6e21d4f3-4266-46d6-aa80-1f4b42e1b295\",\"createdAt\":\"2025-03-06T12:33:42.494Z\",\"updatedAt\":\"2025-03-06T12:33:42.494Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"c64a3ed3-4db7-4a24-8d90-ac121f2c6853\",\"billingModuleCurrencyId\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"billingModuleCurrency\":{\"id\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"createdAt\":\"2025-01-24T23:52:03.718Z\",\"updatedAt\":\"2025-02-28T06:15:26.383Z\",\"variant\":\"default\",\"isDefault\":false,\"symbol\":\"$\",\"title\":\"USD\",\"adminTitle\":\"p7zmKIQXub\",\"slug\":\"usd\"}}],\"ordersToProducts\":[{\"id\":\"eb1c6bb6-886b-4a3c-aa75-3639c27a694e\",\"createdAt\":\"2025-03-06T12:33:42.265Z\",\"updatedAt\":\"2025-03-06T12:33:42.265Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"c64a3ed3-4db7-4a24-8d90-ac121f2c6853\",\"productId\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"product\":{\"id\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"createdAt\":\"2025-01-24T23:47:55.627Z\",\"updatedAt\":\"2025-01-31T08:16:50.463Z\",\"variant\":\"default\",\"type\":\"one_off\",\"sku\":\"startup\",\"title\":{\"en\":\"Startup\",\"ru\":\"Стартап\"},\"shortDescription\":{},\"description\":{}}}]}}}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[]",
+  "sendAfter": "2025-03-06T13:11:17.735Z"
+}

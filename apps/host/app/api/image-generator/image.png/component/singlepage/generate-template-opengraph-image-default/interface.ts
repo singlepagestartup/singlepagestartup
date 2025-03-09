@@ -1,4 +1,4 @@
-export const variant = "opengraph-image" as const;
+export const variant = "generate-template-opengraph-image-default" as const;
 
 export interface IComponentProps {
   variant: typeof variant;

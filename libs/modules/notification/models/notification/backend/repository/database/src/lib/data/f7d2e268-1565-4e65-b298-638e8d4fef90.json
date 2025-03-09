@@ -1,0 +1,13 @@
+{
+  "id": "f7d2e268-1565-4e65-b298-638e8d4fef90",
+  "createdAt": "2025-03-09T13:00:45.190Z",
+  "updatedAt": "2025-03-09T13:00:50.613Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"ecommerce\":{\"order\":{\"id\":\"b38ab97d-aede-4a64-a928-d2d487563a4b\",\"createdAt\":\"2025-03-09T13:00:14.300Z\",\"updatedAt\":\"2025-03-09T13:00:15.624Z\",\"variant\":\"default\",\"status\":\"approving\",\"type\":\"cart\",\"receipt\":\"\",\"comment\":\"\",\"checkoutAttributes\":{\"amount\":990,\"type\":\"one_off\"},\"ordersToBillingModuleCurrencies\":[{\"id\":\"dc1b3a0d-c5d2-4451-a66e-91fcb6377e8e\",\"createdAt\":\"2025-03-09T13:00:14.513Z\",\"updatedAt\":\"2025-03-09T13:00:14.513Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"b38ab97d-aede-4a64-a928-d2d487563a4b\",\"billingModuleCurrencyId\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"billingModuleCurrency\":{\"id\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"createdAt\":\"2025-01-24T23:52:03.718Z\",\"updatedAt\":\"2025-02-28T06:15:26.383Z\",\"variant\":\"default\",\"isDefault\":false,\"symbol\":\"$\",\"title\":\"USD\",\"adminTitle\":\"p7zmKIQXub\",\"slug\":\"usd\"}}],\"ordersToProducts\":[{\"id\":\"cc8a3f64-9307-4a50-9ca7-b3c1fce1c77b\",\"createdAt\":\"2025-03-09T13:00:14.335Z\",\"updatedAt\":\"2025-03-09T13:00:14.335Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"b38ab97d-aede-4a64-a928-d2d487563a4b\",\"productId\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"product\":{\"id\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"createdAt\":\"2025-01-24T23:47:55.627Z\",\"updatedAt\":\"2025-01-31T08:16:50.463Z\",\"variant\":\"default\",\"type\":\"one_off\",\"sku\":\"startup\",\"title\":{\"en\":\"Startup\",\"ru\":\"Стартап\"},\"shortDescription\":{},\"description\":{}}}]}}}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[{\"type\":\"image\",\"url\":\"http://localhost:4000/public//file-storage/9406b833.png\"}]",
+  "sendAfter": "2025-03-09T13:00:45.189Z"
+}

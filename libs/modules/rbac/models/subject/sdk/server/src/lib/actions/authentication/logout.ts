@@ -8,7 +8,7 @@ import QueryString from "qs";
 
 export interface IProps {
   host?: string;
-  redirectTo: string;
+  redirectTo?: string;
   catchErrors?: boolean;
   params?: {
     [key: string]: any;

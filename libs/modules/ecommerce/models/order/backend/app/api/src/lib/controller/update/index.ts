@@ -1,7 +1,4 @@
-import {
-  NEXT_PUBLIC_API_SERVICE_URL,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
@@ -10,6 +7,8 @@ import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { userStories } from "@sps/shared-configuration";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as ordersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
+import { api as productsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 
@@ -220,13 +219,143 @@ export class Handler {
           },
         });
 
-        entity = await this.service.update({
-          id: uuid,
+        await ordersToFileStorageModuleFilesApi.create({
           data: {
-            ...entity,
-            receipt: NEXT_PUBLIC_API_SERVICE_URL + "/public" + receiptFile.file,
+            orderId: uuid,
+            fileStorageModuleFileId: receiptFile.id,
+            variant: "receipt-default",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
           },
         });
+
+        const productsToFileStorageModuleFiles =
+          await productsToFileStorageModuleFilesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "productId",
+                    method: "inArray",
+                    value: products.map((products) => products.id),
+                  },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "attachment-default",
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        if (productsToFileStorageModuleFiles?.length) {
+          const fileStorageModuleFiles = await fileStorageFileApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: productsToFileStorageModuleFiles.map(
+                      (productToFileStorageModuleFile) => {
+                        return productToFileStorageModuleFile.fileStorageModuleFileId;
+                      },
+                    ),
+                  },
+                ],
+              },
+            },
+          });
+
+          if (fileStorageModuleFiles?.length) {
+            for (const fileStorageModuleFile of fileStorageModuleFiles) {
+              if (fileStorageModuleFile.variant === "default") {
+                await ordersToFileStorageModuleFilesApi.create({
+                  data: {
+                    orderId: uuid,
+                    fileStorageModuleFileId: fileStorageModuleFile.id,
+                    variant: "attachment-default",
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+              } else if (
+                fileStorageModuleFile.variant.includes("generate-template-")
+              ) {
+                const generatedFile = await fileStorageFileApi.generate({
+                  data: {
+                    variant: fileStorageModuleFile.variant,
+                    width: fileStorageModuleFile.width,
+                    height: fileStorageModuleFile.height,
+                    ecommerce: {
+                      order: {
+                        ...entity,
+                        checkoutAttributes,
+                        ordersToProducts: ordersToProducts.map(
+                          (orderToProduct) => {
+                            return {
+                              ...orderToProduct,
+                              product: products.find(
+                                (product) =>
+                                  product.id === orderToProduct.productId,
+                              ),
+                            };
+                          },
+                        ),
+                        ordersToBillingModuleCurrencies:
+                          ordersToBillingModuleCurrencies.map(
+                            (orderToBillingModuleCurrency) => {
+                              return {
+                                ...orderToBillingModuleCurrency,
+                                billingModuleCurrency: billingCurrencies.find(
+                                  (billingCurrency) =>
+                                    billingCurrency.id ===
+                                    orderToBillingModuleCurrency.billingModuleCurrencyId,
+                                ),
+                              };
+                            },
+                          ),
+                      },
+                    },
+                    fileStorage: {
+                      file: fileStorageModuleFile,
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+
+                await ordersToFileStorageModuleFilesApi.create({
+                  data: {
+                    orderId: uuid,
+                    fileStorageModuleFileId: generatedFile.id,
+                    variant: "attachment-default",
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+              }
+            }
+          }
+        }
       }
 
       return c.json({

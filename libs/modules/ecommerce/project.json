@@ -85,6 +85,9 @@
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-files:repository-migrate"
           },
           {
+            "command": "nx run @sps/ecommerce:relations:orders-to-file-storage-module-files:repository-migrate"
+          },
+          {
             "command": "nx run @sps/ecommerce:relations:products-to-website-builder-module-widgets:repository-migrate"
           },
           {
@@ -177,6 +180,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:products-to-file-storage-module-files:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:orders-to-file-storage-module-files:repository-generate"
           },
           {
             "command": "nx run @sps/ecommerce:relations:products-to-website-builder-module-widgets:repository-generate"
@@ -688,6 +694,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/products-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-file-storage-module-files:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/orders-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:orders-to-file-storage-module-files:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/ecommerce/relations/orders-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

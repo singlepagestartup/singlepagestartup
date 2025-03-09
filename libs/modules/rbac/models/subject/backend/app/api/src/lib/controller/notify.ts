@@ -15,8 +15,8 @@ import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceProductsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
+import { api as ecommerceOrdersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
 
 export class Handler {
   service: Service;
@@ -217,6 +217,26 @@ export class Handler {
           });
         }
 
+        const ecommerceOrdersToFileStorageModuleFiles =
+          await ecommerceOrdersToFileStorageModuleFilesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: order.id,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
         for (const identity of identities) {
           if (data.notification.notification.method === "email") {
             if (!identity.email) {
@@ -262,49 +282,20 @@ export class Handler {
               continue;
             }
 
-            const ecommerceProductsToFileStorageModuleFiles =
-              await ecommerceProductsToFileStorageModuleFilesApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "productId",
-                        method: "eq",
-                        value: product.id,
-                      },
-                      {
-                        column: "variant",
-                        method: "eq",
-                        value: "attachment-default",
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-
             const attachments: {
               type: string;
               url: string;
             }[] = [];
 
-            if (order?.receipt) {
-              attachments.push({ type: "image", url: order.receipt });
-            }
-
-            if (ecommerceProductsToFileStorageModuleFiles?.length) {
-              const ecommerceModuleFiles = await fileStorageFileApi.find({
+            if (ecommerceOrdersToFileStorageModuleFiles?.length) {
+              const attachmentFiles = await fileStorageFileApi.find({
                 params: {
                   filters: {
                     and: [
                       {
                         column: "id",
                         method: "inArray",
-                        value: ecommerceProductsToFileStorageModuleFiles.map(
+                        value: ecommerceOrdersToFileStorageModuleFiles.map(
                           (ecommerceProductToFileStorageModuleFile) => {
                             return ecommerceProductToFileStorageModuleFile.fileStorageModuleFileId;
                           },
@@ -320,11 +311,11 @@ export class Handler {
                 },
               });
 
-              if (ecommerceModuleFiles?.length) {
-                for (const ecommerceModuleFile of ecommerceModuleFiles) {
+              if (attachmentFiles?.length) {
+                for (const attachmentFile of attachmentFiles) {
                   attachments.push({
                     type: "image",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${ecommerceModuleFile.file}`,
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${attachmentFile.file}`,
                   });
                 }
               }

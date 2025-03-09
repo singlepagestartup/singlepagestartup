@@ -11,6 +11,7 @@ import { app as productsToAttributesApp } from "@sps/ecommerce/relations/product
 import { app as ordersToProductsApp } from "@sps/ecommerce/relations/orders-to-products/backend/app/api";
 import { app as ordersToBillingPaymentIntentsApp } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api";
 import { app as ordersToBillingCurrenciesApp } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api";
+import { app as ordersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api";
 import { app as storesToProductsApp } from "@sps/ecommerce/relations/stores-to-products/backend/app/api";
 import { app as storesToProductsToAttributesApp } from "@sps/ecommerce/relations/stores-to-products-to-attributes/backend/app/api";
 import { app as storesToAttributesApp } from "@sps/ecommerce/relations/stores-to-attributes/backend/app/api";
@@ -90,6 +91,11 @@ export class Apps {
       type: "relation",
       route: "/orders-to-billing-module-currencies",
       app: ordersToBillingCurrenciesApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/orders-to-file-storage-module-files",
+      app: ordersToFileStorageModuleFiles,
     });
     this.apps.push({
       type: "relation",

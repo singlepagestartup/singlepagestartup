@@ -24,9 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="subject"
       data-variant={props.variant}
       onClick={() => {
-        logout.mutate({
-          redirectTo: "/",
-        });
+        logout.mutate({});
       }}
       className={cn("w-full flex flex-col", props.className)}
     >

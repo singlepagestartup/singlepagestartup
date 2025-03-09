@@ -1,0 +1,13 @@
+{
+  "id": "30955976-f2b6-4a4a-a9a9-9844ce1ea4ee",
+  "createdAt": "2025-03-08T00:30:12.278Z",
+  "updatedAt": "2025-03-08T00:30:13.283Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": null,
+  "data": "{\"ecommerce\":{\"order\":{\"id\":\"351c52bd-17c3-4db9-b119-ebd40bb8da57\",\"createdAt\":\"2025-03-08T00:29:59.290Z\",\"updatedAt\":\"2025-03-08T00:30:00.751Z\",\"variant\":\"default\",\"status\":\"approving\",\"type\":\"cart\",\"receipt\":\"\",\"comment\":\"\",\"checkoutAttributes\":{\"amount\":990,\"type\":\"one_off\"},\"ordersToBillingModuleCurrencies\":[{\"id\":\"25b711b3-da89-4b7f-bb37-83f706942ba0\",\"createdAt\":\"2025-03-08T00:29:59.550Z\",\"updatedAt\":\"2025-03-08T00:29:59.550Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"351c52bd-17c3-4db9-b119-ebd40bb8da57\",\"billingModuleCurrencyId\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"billingModuleCurrency\":{\"id\":\"98ff8e2f-6373-464e-a574-a399696be485\",\"createdAt\":\"2025-01-24T23:52:03.718Z\",\"updatedAt\":\"2025-02-28T06:15:26.383Z\",\"variant\":\"default\",\"isDefault\":false,\"symbol\":\"$\",\"title\":\"USD\",\"adminTitle\":\"p7zmKIQXub\",\"slug\":\"usd\"}}],\"ordersToProducts\":[{\"id\":\"c2eae6b0-4856-4244-a7b4-b22ac44bfe3a\",\"createdAt\":\"2025-03-08T00:29:59.344Z\",\"updatedAt\":\"2025-03-08T00:29:59.344Z\",\"variant\":\"default\",\"orderIndex\":0,\"quantity\":1,\"className\":null,\"orderId\":\"351c52bd-17c3-4db9-b119-ebd40bb8da57\",\"productId\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"product\":{\"id\":\"bb2473b0-9b2e-4dd2-9e38-46806bfde826\",\"createdAt\":\"2025-01-24T23:47:55.627Z\",\"updatedAt\":\"2025-01-31T08:16:50.463Z\",\"variant\":\"default\",\"type\":\"one_off\",\"sku\":\"startup\",\"title\":{\"en\":\"Startup\",\"ru\":\"Стартап\"},\"shortDescription\":{},\"description\":{}}}]}}}",
+  "reciever": "rogwild.design@gmail.com",
+  "attachments": "[{\"type\":\"image\",\"url\":\"http://localhost:4000/public/file-storage/3299bff.png\"},{\"type\":\"image\",\"url\":\"http://localhost:4000/public//file-storage/21f7576f.jpg\"},{\"type\":\"image\",\"url\":\"http://localhost:4000/public//file-storage/c79efe86.webp\"}]",
+  "sendAfter": "2025-03-08T00:30:12.277Z"
+}

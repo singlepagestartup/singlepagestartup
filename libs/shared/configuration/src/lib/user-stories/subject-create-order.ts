@@ -3,7 +3,7 @@ export const userStory = {
     update: {
       approving: {
         receipt: {
-          variant: "order-receipt",
+          variant: "generate-template-ecommerce-order-receipt-default",
           width: 1500,
           height: 1500,
         },

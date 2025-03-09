@@ -40,7 +40,10 @@ export function action(props: IProps) {
 
         localStorage.removeItem("rbac.subject.refresh");
         Cookies.remove("rbac.subject.jwt");
-        window.location.replace(mutationFunctionProps.redirectTo);
+
+        if (mutationFunctionProps.redirectTo) {
+          window.location.replace(mutationFunctionProps.redirectTo);
+        }
 
         return result;
       } catch (error: any) {
