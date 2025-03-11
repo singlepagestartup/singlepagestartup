@@ -40,6 +40,7 @@ export function Component(props: IComponentPropsExtended) {
                     isServer={props.isServer}
                     variant={category.variant as any}
                     data={category}
+                    language={props.language}
                   />
                 );
               });
