@@ -25,14 +25,14 @@ jobs:
       - name: Set environment variables based on PRERELEASE
         run: |
           if [ "${{ inputs.PRERELEASE }}" = "true" ]; then
-            echo "IMAGE_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}/${{ secrets.PREVIEW_HOST_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "IMAGE_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}/${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.PREVIEW_DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
           else
-            echo "IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.HOST_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
