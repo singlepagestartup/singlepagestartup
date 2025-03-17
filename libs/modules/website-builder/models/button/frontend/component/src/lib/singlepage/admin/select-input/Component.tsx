@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
         const variant = entity.variant ?? "Unknown Variant";
         const url = entity.url ?? "No URL";
 
-        return `${title} | ${variant} | ${url}`;
+        return `${title} | ${variant} | ${url} | ${entity.slug}`;
       }}
     />
   );

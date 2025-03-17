@@ -14,7 +14,10 @@ export function Component(props: IComponentPropsExtended) {
       data-model="file"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("relative w-full", props.data.containerClassName)}
+      className={cn(
+        "relative flex items-center justify-center w-full",
+        props.data.containerClassName,
+      )}
     >
       {props.data.file && props.data.mimeType?.includes("image") ? (
         <Image
@@ -31,9 +34,14 @@ export function Component(props: IComponentPropsExtended) {
               ? props.data.height || 0
               : undefined
           }
-          className={cn("flex w-full h-full", props.data.className)}
+          className={cn(
+            "flex w-full h-full max-w-full max-h-full object-contain",
+            props.data.className,
+          )}
+          sizes="100vw"
         />
       ) : null}
+
       {props.data.file && props.data.mimeType?.includes("video") ? (
         <video
           width={
@@ -46,7 +54,11 @@ export function Component(props: IComponentPropsExtended) {
               ? props.data.height || 0
               : undefined
           }
-          className={cn("flex w-full h-full", props.data.className)}
+          className={cn(
+            "max-w-full max-h-full object-contain",
+            props.data.className,
+          )}
+          controls
         >
           <source src={src} type={props.data.mimeType} />
         </video>

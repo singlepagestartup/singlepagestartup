@@ -27,6 +27,14 @@ export function Component(props: IComponentPropsExtended) {
           </p>
         </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
+          <p className="text-xs text-muted-foreground">Slug</p>
+          <p className="truncate">{props.data.slug}</p>
+        </div>
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <p className="text-xs text-muted-foreground">Admin Title</p>
+          <p className="truncate">{props.data.adminTitle}</p>
+        </div>
+        <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Variant</p>
           <p className="truncate">{props.data.variant}</p>
         </div>

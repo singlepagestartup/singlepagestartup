@@ -19,7 +19,7 @@ const metadata = {
 
 export const config = WALLET_CONNECT_PROJECT_ID
   ? createConfig({
-      chains: [mainnet],
+      chains: [mainnet, sepolia],
       connectors: [
         injected(),
         safe(),

@@ -4,7 +4,11 @@ import { Component as Stores } from "./store/Component";
 import { Component as Category } from "./category/Component";
 import { Component as Product } from "./product/Component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(
+  props: IComponentPropsExtended & {
+    language: string;
+  },
+) {
   return (
     <EcommerceWidget
       isServer={props.isServer}
@@ -31,6 +35,7 @@ export function Component(props: IComponentPropsExtended) {
               isServer={props.isServer}
               variant={entity.variant as any}
               data={entity}
+              language={props.language}
             >
               {entity.variant.startsWith("product") ? (
                 <Product
