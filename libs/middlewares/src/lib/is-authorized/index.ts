@@ -15,6 +15,10 @@ import { getCookie } from "hono/cookie";
  */
 const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
+    regexPath: /\/favicon.ico/,
+    methods: ["GET"],
+  },
+  {
     regexPath: /\/api\/broadcast\/(channels|messages)/,
     methods: ["GET"],
   },
@@ -47,16 +51,6 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["POST"],
   },
 ];
-
-function withTimeout<T>(promise: Promise<T>, ms = 5000): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error("Request timeout")), ms);
-    promise
-      .then(resolve)
-      .catch(reject)
-      .finally(() => clearTimeout(timeout));
-  });
-}
 
 export class Middleware {
   private allowedRoutes: Map<string, Set<string>>;
@@ -105,15 +99,12 @@ export class Middleware {
           ...(authorization ? { Authorization: authorization } : {}),
         };
 
-        const isAuthorized = await withTimeout(
-          subjectApi.authenticationIsAuthorized({
-            params: {
-              action: { route: reqPath, method: reqMethod, type: "HTTP" },
-            },
-            options: { headers, next: { cache: "no-store" } },
-          }),
-          5000,
-        );
+        const isAuthorized = await subjectApi.authenticationIsAuthorized({
+          params: {
+            action: { route: reqPath, method: reqMethod, type: "HTTP" },
+          },
+          options: { headers, next: { cache: "no-store" } },
+        });
       } catch (error: any) {
         throw new HTTPException(401, {
           message: error.message,

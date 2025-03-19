@@ -17,7 +17,10 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       placeholder={props.data.placeholder?.[props.language] ?? ""}
-      className={cn("flex w-full", props.data.className || props.className)}
+      className={cn(
+        "flex w-full flex-col",
+        props.data.className || props.className,
+      )}
     />
   );
 }

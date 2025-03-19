@@ -5,6 +5,8 @@ services:
     image: {{ DOCKER_HUB_URL }}/{{ DOCKER_HUB_SERVICE_REPOSITORY }}
     networks:
       - traefik_overlay
+    volumes:
+      - ./api_data:/usr/src/app/apps/api/public
     env_file:
       - ./{{ SERVICE_NAME }}.env
     command: "sh -c './start.sh api'"

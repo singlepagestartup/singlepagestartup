@@ -15,6 +15,11 @@ import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID } from "@sps/shared-utils";
 import { Component as Revalidation } from "../src/components/revalidation";
+import http from "http";
+import https from "https";
+
+http.globalAgent.maxSockets = 1000;
+https.globalAgent.maxSockets = 1000;
 
 export default async function RootLayout({
   children,

@@ -8,6 +8,11 @@
     - portainer_password: "{{ PORTAINER_PASSWORD }}"
     - portainer_url: "{{ PORTAINER_URL }}"
   tasks:
+    - name: Create api_data directory
+      file:
+        path: /home/code/api_data
+        state: directory
+
     - name: Read iam.env and set AWS_ACCESS_KEY_ID
       shell: grep "^AWS_ACCESS_KEY_ID=" /home/code/iam.env | cut -d '=' -f2
       register: aws_access_key_id

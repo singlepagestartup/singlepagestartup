@@ -34,6 +34,10 @@ export class Middleware {
         return await next();
       }
 
+      if (path.includes("favicon.ico")) {
+        return await next();
+      }
+
       if (
         path.includes("rbac/subjects/authentication/me") ||
         path.includes("rbac/subjects/authentication/init") ||

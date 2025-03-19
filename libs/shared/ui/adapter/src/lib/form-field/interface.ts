@@ -9,6 +9,8 @@ type TUniversalProps = {
   form: UseFormReturn<any>;
   className?: string;
   inputClassName?: string;
+  labelClassName?: string;
+  labelContainerClassName?: string;
   disabled?: boolean;
   children?: React.ReactNode;
 };
