@@ -11,6 +11,8 @@ export const HOST_SERVICE_URL =
   process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] ||
   process.env["HOST_SERVICE_URL"] ||
   "http://localhost:3000";
+export const NEXT_PUBLIC_HOST_SERVICE_URL =
+  process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] || "http://localhost:3000";
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =
