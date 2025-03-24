@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
-import { FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
+import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
@@ -57,7 +57,7 @@ export class Handler {
 
       const fileStorage = new Provider({
         type: FILE_STORAGE_PROVIDER,
-        folder: "file-storage",
+        folder: FILE_STORAGE_FOLDER,
       });
 
       const uploadedFileUrl = await fileStorage.uploadFile({
