@@ -46,11 +46,16 @@ export class Handler {
         });
       }
 
+      const previousEntity = await this.service.findById({ id: uuid });
+
       const data = JSON.parse(body["data"]);
 
       let entity = await this.service.update({ id: uuid, data });
 
-      if (entity?.status === "approving") {
+      if (
+        entity?.status === "approving" &&
+        previousEntity?.status === "paying"
+      ) {
         const ordersToBillingModuleCurrencies =
           await ordersToBillingModuleCurrenciesApi.find({
             params: {

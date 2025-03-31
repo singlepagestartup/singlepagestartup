@@ -217,60 +217,31 @@ export class Handler {
           });
         }
 
-        const ecommerceOrdersToFileStorageModuleFiles =
-          await ecommerceOrdersToFileStorageModuleFilesApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "orderId",
-                    method: "eq",
-                    value: order.id,
-                  },
-                ],
-              },
+        if (order.status === "approving") {
+          let notificationData = JSON.parse(
+            data.notification.notification.data,
+          );
+
+          notificationData.ecommerce = {
+            ...notificationData.ecommerce,
+            order: {
+              ...notificationData.ecommerce.order,
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          };
+
+          const ecommerceOrdersToFileStorageModuleFiles =
+            await ecommerceOrdersToFileStorageModuleFilesApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "orderId",
+                      method: "eq",
+                      value: order.id,
+                    },
+                  ],
+                },
               },
-            },
-          });
-
-        for (const identity of identities) {
-          if (data.notification.notification.method === "email") {
-            if (!identity.email) {
-              continue;
-            }
-
-            const ecommerceOrdersToProducts =
-              await ecommerceOrdersToProductsApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "orderId",
-                        method: "eq",
-                        value: order.id,
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-
-            if (!ecommerceOrdersToProducts?.length) {
-              continue;
-            }
-
-            const ecommerceOrderToProduct = ecommerceOrdersToProducts[0];
-
-            const product = await ecommerceProductApi.findById({
-              id: ecommerceOrderToProduct.productId,
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -278,32 +249,40 @@ export class Handler {
               },
             });
 
-            if (!product) {
-              continue;
-            }
+          for (const identity of identities) {
+            if (data.notification.notification.method === "email") {
+              if (!identity.email) {
+                continue;
+              }
 
-            const attachments: {
-              type: string;
-              url: string;
-            }[] = [];
-
-            if (ecommerceOrdersToFileStorageModuleFiles?.length) {
-              const attachmentFiles = await fileStorageFileApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "id",
-                        method: "inArray",
-                        value: ecommerceOrdersToFileStorageModuleFiles.map(
-                          (ecommerceProductToFileStorageModuleFile) => {
-                            return ecommerceProductToFileStorageModuleFile.fileStorageModuleFileId;
-                          },
-                        ),
-                      },
-                    ],
+              const ecommerceOrdersToProducts =
+                await ecommerceOrdersToProductsApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "orderId",
+                          method: "eq",
+                          value: order.id,
+                        },
+                      ],
+                    },
                   },
-                },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+
+              if (!ecommerceOrdersToProducts?.length) {
+                continue;
+              }
+
+              const ecommerceOrderToProduct = ecommerceOrdersToProducts[0];
+
+              const product = await ecommerceProductApi.findById({
+                id: ecommerceOrderToProduct.productId,
                 options: {
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -311,21 +290,74 @@ export class Handler {
                 },
               });
 
-              if (attachmentFiles?.length) {
-                for (const attachmentFile of attachmentFiles) {
-                  attachments.push({
-                    type: "image",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${attachmentFile.file}`,
+              if (!product) {
+                continue;
+              }
+
+              const attachments: {
+                type: string;
+                url: string;
+              }[] = [];
+
+              if (ecommerceOrdersToFileStorageModuleFiles?.length) {
+                for (const ecommerceOrderToFileStorageModuleFile of ecommerceOrdersToFileStorageModuleFiles) {
+                  const attachmentFiles = await fileStorageFileApi.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "id",
+                            method: "eq",
+                            value:
+                              ecommerceOrderToFileStorageModuleFile.fileStorageModuleFileId,
+                          },
+                        ],
+                      },
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      },
+                    },
                   });
+
+                  if (attachmentFiles?.length) {
+                    for (const attachmentFile of attachmentFiles) {
+                      attachments.push({
+                        type: "image",
+                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${attachmentFile.file}`,
+                      });
+
+                      const ecommerceOrderToFileStorageModuleFileAdded =
+                        notificationData.ecommerce.order.ordersToFileStorageModuleFiles.find(
+                          (orderToFileStorageFile) => {
+                            return (
+                              orderToFileStorageFile.id ===
+                              ecommerceOrderToFileStorageModuleFile.id
+                            );
+                          },
+                        );
+
+                      if (!ecommerceOrderToFileStorageModuleFileAdded) {
+                        notificationData.ecommerce.order.ordersToFileStorageModuleFiles.push(
+                          {
+                            ...ecommerceOrderToFileStorageModuleFile,
+                            fileStorageModuleFile: attachmentFile,
+                          },
+                        );
+                      }
+                    }
+                  }
                 }
               }
-            }
 
-            notifications.push({
-              ...data.notification.notification,
-              reciever: identity.email,
-              attachments: attachments ? JSON.stringify(attachments) : "[]",
-            });
+              notifications.push({
+                ...data.notification.notification,
+                data: JSON.stringify({ ...notificationData }),
+                reciever: identity.email,
+                attachments: attachments ? JSON.stringify(attachments) : "[]",
+              });
+            }
           }
         }
       } else {

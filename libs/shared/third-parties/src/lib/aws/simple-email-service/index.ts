@@ -9,6 +9,7 @@ import {
 
 export class Service {
   client: SESClient;
+  blockedAttachmentsRecievers = ["@mail.ru", "@inbox.ru", "@vk.com"];
 
   constructor() {
     if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
@@ -39,7 +40,12 @@ export class Service {
 
     const attachments: string[] = [];
 
-    if (props.filePaths?.length) {
+    if (
+      props.filePaths?.length &&
+      !this.blockedAttachmentsRecievers.some((domain) =>
+        props.to.endsWith(domain),
+      )
+    ) {
       for (const filePath of props.filePaths) {
         const fileContent = filePath.startsWith("http")
           ? await fetch(filePath)
