@@ -10,6 +10,7 @@ import { Component as Destructive } from "./destructive";
 import { Component as Secondary } from "./secondary";
 import { Component as Primary } from "./primary";
 import { Component as Default } from "./default";
+import { Component as Children } from "./children";
 
 export const variants = {
   find: Find,
@@ -24,4 +25,5 @@ export const variants = {
   secondary: Secondary,
   primary: Primary,
   default: Default,
+  children: Children,
 };

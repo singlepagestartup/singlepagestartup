@@ -1,4 +1,4 @@
-import { MANAGER_EMAIL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { ADMIN_EMAILS, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { api } from "@sps/crm/models/form/sdk/server";
@@ -189,16 +189,18 @@ export class Handler {
         method: string;
         reciever: string;
         attachments: string;
-      }[] = [
-        {
-          data: JSON.stringify({
-            data,
-          }),
-          method: "email",
-          reciever: MANAGER_EMAIL,
-          attachments: "[]",
-        },
-      ];
+      }[] = ADMIN_EMAILS.split(",").length
+        ? ADMIN_EMAILS.split(",").map((email) => {
+            return {
+              data: JSON.stringify({
+                data,
+              }),
+              method: "email",
+              reciever: email,
+              attachments: "[]",
+            };
+          })
+        : [];
 
       for (const notification of notifications) {
         const createdNotification = await notificationNotificationApi.create({

@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="input"
       type="textarea"
       label={props.data.label?.[props.language] ?? ""}
-      name={props.data.slug?.[props.language] ?? ""}
+      name={props.data.slug ?? ""}
       form={props.form}
       data-id={props.data?.id || ""}
       data-variant={props.variant}

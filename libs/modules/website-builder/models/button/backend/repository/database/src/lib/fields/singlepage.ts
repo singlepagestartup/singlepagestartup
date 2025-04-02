@@ -6,6 +6,10 @@ export const fields = {
     .jsonb("title")
     .$type<{ [key: string]: string | undefined }>()
     .default({}),
+  subtitle: pgCore
+    .jsonb("subtitle")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   url: pgCore.text("url"),
   className: pgCore.text("class_name"),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),

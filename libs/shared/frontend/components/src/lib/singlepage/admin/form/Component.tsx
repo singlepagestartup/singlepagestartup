@@ -1,14 +1,7 @@
-import {
-  Form,
-  Card,
-  CardContent,
-  Button,
-  CardFooter,
-  CardHeader,
-} from "@sps/shared-ui-shadcn";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
 import { UseFormReturn } from "react-hook-form";
 import { ReactNode } from "react";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component<M extends { id: string }, V>(
   props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
@@ -19,40 +12,8 @@ export function Component<M extends { id: string }, V>(
     children: ReactNode;
     onSubmit: (data: any) => void;
     type?: "model" | "relation";
+    status?: "idle" | "pending" | "success" | "error";
   },
 ) {
-  return (
-    <div
-      data-module={props.module}
-      data-id={props.id || ""}
-      data-variant={props.variant}
-      className={props.className || ""}
-      {...(props.type === "relation"
-        ? {
-            "data-relation": props.name,
-          }
-        : {
-            "data-model": props.name,
-          })}
-    >
-      <Form {...props.form}>
-        <Card>
-          <CardHeader className="text-lg font-semibold">
-            {props?.id ? "Update" : "Create"} {props.name}
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6 pb-10">
-            {props.children}
-          </CardContent>
-          <CardFooter>
-            <Button
-              variant="primary"
-              onClick={props.form.handleSubmit(props.onSubmit)}
-            >
-              {props?.id ? "Update" : "Create"}
-            </Button>
-          </CardFooter>
-        </Card>
-      </Form>
-    </div>
-  );
+  return <ClientComponent {...props} />;
 }

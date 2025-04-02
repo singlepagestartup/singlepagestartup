@@ -1,2 +1,1 @@
-export const MANAGER_EMAIL =
-  process.env.MANAGER_EMAIL || "rogwild.design@gmail.com";
+export const ADMIN_EMAILS = process.env.ADMIN_EMAILS || "";

@@ -1,7 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import Link from "next/link";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Button } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
@@ -14,21 +13,16 @@ export function Component(props: IComponentPropsExtended) {
     : `/${props.language}${props.data.url}`;
 
   return (
-    <Button
+    <Link
       data-module="website-builder"
       data-model="button"
       data-id={props.data?.id || ""}
       data-variant={props.data.variant}
-      className={cn("w-full", props.data.className)}
-      variant="ghost"
-      asChild={true}
+      className={cn("w-full flex", props.data.className)}
+      href={withProtocol ? props.data.url || "" : saveLanguageLink}
+      target={withProtocol ? "_blank" : undefined}
     >
-      <Link
-        href={withProtocol ? props.data.url || "" : saveLanguageLink}
-        target={withProtocol ? "_blank" : undefined}
-      >
-        {props.data.title?.[props.language]}
-      </Link>
-    </Button>
+      {props.children}
+    </Link>
   );
 }

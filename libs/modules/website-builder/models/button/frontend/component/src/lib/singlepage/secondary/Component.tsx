@@ -5,7 +5,7 @@ import { Button } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
-  const httpLink = props.data.url?.startsWith("http");
+  const withProtocol = props.data.url?.includes(":");
   const languageSwitcher = internationalization.languages.find((language) => {
     return "/" + language.code === props.data.url;
   });
@@ -23,7 +23,10 @@ export function Component(props: IComponentPropsExtended) {
       variant="secondary"
       asChild={true}
     >
-      <Link href={httpLink ? props.data.url || "" : saveLanguageLink}>
+      <Link
+        href={withProtocol ? props.data.url || "" : saveLanguageLink}
+        target={withProtocol ? "_blank" : undefined}
+      >
         {props.data.title?.[props.language]}
       </Link>
     </Button>

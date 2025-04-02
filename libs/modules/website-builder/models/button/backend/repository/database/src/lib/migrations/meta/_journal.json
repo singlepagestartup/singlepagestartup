@@ -15,6 +15,13 @@
       "when": 1738269678150,
       "tag": "0001_brave_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743599575717,
+      "tag": "0002_absent_enchantress",
+      "breakpoints": true
     }
   ]
 }

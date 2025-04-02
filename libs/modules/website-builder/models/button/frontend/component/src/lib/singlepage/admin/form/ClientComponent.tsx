@@ -23,6 +23,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title ?? {},
+      subtitle: props.data?.subtitle ?? {},
       url: props.data?.url || "",
       className: props.data?.className || "",
       slug: props.data?.slug || "",
@@ -62,6 +63,22 @@ export function Component(props: IComponentPropsExtended) {
                 label={language.title}
                 form={form}
                 placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
               />
             );
           })}

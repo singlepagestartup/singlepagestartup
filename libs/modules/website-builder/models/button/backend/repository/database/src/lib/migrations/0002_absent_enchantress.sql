@@ -1,0 +1,1 @@
+ALTER TABLE "sps_w_b_button" ADD COLUMN "subtitle" jsonb DEFAULT '{}'::jsonb;

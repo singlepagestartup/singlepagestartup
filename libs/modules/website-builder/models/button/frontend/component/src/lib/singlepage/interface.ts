@@ -10,6 +10,7 @@ import { IComponentProps as IDestructiveComponentProps } from "./destructive/int
 import { IComponentProps as ISecondaryComponentProps } from "./secondary/interface";
 import { IComponentProps as IPrimaryComponentProps } from "./primary/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IChildrenComponentProps } from "./children/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -23,4 +24,5 @@ export type IComponentProps =
   | IDestructiveComponentProps
   | ISecondaryComponentProps
   | IPrimaryComponentProps
-  | IDefaultComponentProps;
+  | IDefaultComponentProps
+  | IChildrenComponentProps;
