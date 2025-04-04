@@ -1,5 +1,6 @@
 import {
-  HOST_SERVICE_URL,
+  ALLOWED_BILLING_SERVICE_PROVIDERS,
+  API_SERVICE_URL,
   NextRequestOptions,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
@@ -86,6 +87,14 @@ export class Handler {
       logger.debug("currency", currency);
 
       let result: any;
+
+      const allowedProviders = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
+
+      if (!allowedProviders.includes(provider)) {
+        throw new HTTPException(400, {
+          message: `Provider ${provider} is not allowed`,
+        });
+      }
 
       if (provider === "stripe") {
         if (!data.metadata?.email) {
@@ -175,7 +184,7 @@ export class Handler {
           }
 
           fetch(
-            HOST_SERVICE_URL + "/api/billing/payment-intents/dummy/webhook",
+            API_SERVICE_URL + "/api/billing/payment-intents/dummy/webhook",
             {
               credentials: "include",
               method: "POST",
