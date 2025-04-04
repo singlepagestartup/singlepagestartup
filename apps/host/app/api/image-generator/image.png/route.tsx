@@ -361,13 +361,11 @@ export const GET = async (request: NextRequest) => {
 
     for (const fontType of Object.keys(fontsURLs)) {
       for (const fontStyle of fontsURLs[fontType as keyof typeof fontsURLs]) {
-        const fontData = await fetch(new URL(fontStyle.url, HOST_SERVICE_URL))
-          .then((res) => {
-            return res.arrayBuffer();
-          })
-          .catch((error) => {
-            logger.error("fetch font ~ error:", error);
-          });
+        const fontData = await fetch(`${HOST_SERVICE_URL}${fontStyle.url}`, {
+          cache: "no-store",
+        }).then((res) => {
+          return res.arrayBuffer();
+        });
 
         if (!fontData) {
           continue;

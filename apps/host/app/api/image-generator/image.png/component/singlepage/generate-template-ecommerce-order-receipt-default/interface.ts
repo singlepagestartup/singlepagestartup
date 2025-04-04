@@ -3,6 +3,7 @@ import { IModel as IEcommerceOrder } from "@sps/ecommerce/models/order/sdk/model
 import { IModel as IEcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { IModel as IEcommerceOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 import { IModel as IBillingCurrency } from "@sps/billing/models/currency/sdk/model";
+import { IModel as IFileStorageFile } from "@sps/file-storage/models/file/sdk/model";
 
 export const variant =
   "generate-template-ecommerce-order-receipt-default" as const;
@@ -25,6 +26,9 @@ export interface IComponentProps {
             billingModuleCurrency: IBillingCurrency;
           }[];
       };
+    };
+    fileStorage: {
+      file: IFileStorageFile;
     };
   };
 }

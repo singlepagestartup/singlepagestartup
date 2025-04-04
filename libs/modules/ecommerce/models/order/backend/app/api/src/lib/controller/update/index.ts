@@ -178,43 +178,16 @@ export class Handler {
           });
         }
 
-        const receiptFile = await fileStorageFileApi.generate({
-          data: {
-            variant:
-              userStories.subjectCreateOrder.order.update.approving.receipt
-                .variant,
-            width:
-              userStories.subjectCreateOrder.order.update.approving.receipt
-                .width,
-            height:
-              userStories.subjectCreateOrder.order.update.approving.receipt
-                .height,
-            ecommerce: {
-              order: {
-                ...entity,
-                checkoutAttributes,
-                ordersToProducts: ordersToProducts.map((orderToProduct) => {
-                  return {
-                    ...orderToProduct,
-                    product: products.find(
-                      (product) => product.id === orderToProduct.productId,
-                    ),
-                  };
-                }),
-                ordersToBillingModuleCurrencies:
-                  ordersToBillingModuleCurrencies.map(
-                    (orderToBillingModuleCurrency) => {
-                      return {
-                        ...orderToBillingModuleCurrency,
-                        billingModuleCurrency: billingCurrencies.find(
-                          (billingCurrency) =>
-                            billingCurrency.id ===
-                            orderToBillingModuleCurrency.billingModuleCurrencyId,
-                        ),
-                      };
-                    },
-                  ),
-              },
+        const fileStorageReceiptTemplateFile = await fileStorageFileApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "variant",
+                  method: "ilike",
+                  value: "generate-template-ecommerce-order-receipt-",
+                },
+              ],
             },
           },
           options: {
@@ -224,18 +197,63 @@ export class Handler {
           },
         });
 
-        await ordersToFileStorageModuleFilesApi.create({
-          data: {
-            orderId: uuid,
-            fileStorageModuleFileId: receiptFile.id,
-            variant: "receipt-default",
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        if (fileStorageReceiptTemplateFile?.length) {
+          const receiptFile = await fileStorageFileApi.generate({
+            data: {
+              variant: fileStorageReceiptTemplateFile[0].variant,
+              width: fileStorageReceiptTemplateFile[0].width,
+              height: fileStorageReceiptTemplateFile[0].height,
+              ecommerce: {
+                order: {
+                  ...entity,
+                  checkoutAttributes,
+                  ordersToProducts: ordersToProducts.map((orderToProduct) => {
+                    return {
+                      ...orderToProduct,
+                      product: products.find(
+                        (product) => product.id === orderToProduct.productId,
+                      ),
+                    };
+                  }),
+                  ordersToBillingModuleCurrencies:
+                    ordersToBillingModuleCurrencies.map(
+                      (orderToBillingModuleCurrency) => {
+                        return {
+                          ...orderToBillingModuleCurrency,
+                          billingModuleCurrency: billingCurrencies.find(
+                            (billingCurrency) =>
+                              billingCurrency.id ===
+                              orderToBillingModuleCurrency.billingModuleCurrencyId,
+                          ),
+                        };
+                      },
+                    ),
+                },
+              },
+              fileStorage: {
+                file: fileStorageReceiptTemplateFile[0],
+              },
             },
-          },
-        });
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+          await ordersToFileStorageModuleFilesApi.create({
+            data: {
+              orderId: uuid,
+              fileStorageModuleFileId: receiptFile.id,
+              variant: "receipt-default",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
 
         const productsToFileStorageModuleFiles =
           await productsToFileStorageModuleFilesApi.find({
