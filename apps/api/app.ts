@@ -13,7 +13,7 @@ import {
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { v4 as uuidv4 } from "uuid";
 
-import { app as telegramApp } from "@sps/telegram/backend/app/api";
+// import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
@@ -113,7 +113,7 @@ app.use(revalidationMiddleware.init());
 const parseQueryMiddleware = new ParseQueryMiddleware();
 app.use(parseQueryMiddleware.init());
 
-app.route("/api/telegram", telegramApp.hono);
+// app.route("/api/telegram", telegramApp.hono);
 app.route("/api/agent", agentApp.hono);
 app.route("/api/host", hostApp.hono);
 app.route("/api/rbac", rbacApp.hono);

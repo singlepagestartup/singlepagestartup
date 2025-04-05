@@ -5,7 +5,6 @@ import { Service } from "../../service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { userStories } from "@sps/shared-configuration";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ordersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
 import { api as productsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";

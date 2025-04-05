@@ -16,7 +16,9 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/notification/templates";
 export const variants = [
   "default",
-  "order-status-changed",
+  "generate-email-ecommerce-order-status-changed-default",
+  "generate-telegram-ecommerce-order-status-changed-default",
+  "generate-telegram-ecommerce-order-status-changed-admin",
   "reset-password",
   "agent-result",
   "request-from-website",

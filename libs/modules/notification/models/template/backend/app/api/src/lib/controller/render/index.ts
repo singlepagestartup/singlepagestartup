@@ -14,6 +14,16 @@ export class Handler {
       const uuid = c.req.param("uuid");
       const body = await c.req.parseBody();
 
+      const entity = await this.service.findById({
+        id: uuid,
+      });
+
+      if (!entity) {
+        throw new HTTPException(404, {
+          message: "Not found",
+        });
+      }
+
       if (!uuid) {
         throw new HTTPException(400, {
           message: "Invalid id. Got: " + uuid,
@@ -32,9 +42,21 @@ export class Handler {
 
       const payloadData = JSON.parse(body["data"]);
 
+      const type = entity.variant.includes("email")
+        ? "email"
+        : entity.variant.includes("telegram")
+          ? "telegram"
+          : null;
+
+      if (!type) {
+        throw new HTTPException(422, {
+          message: "Invalid type. Expected email, got: " + type,
+        });
+      }
+
       const data = await this.service.render({
         id: uuid,
-        type: "email",
+        type,
         payload: payloadData,
       });
 

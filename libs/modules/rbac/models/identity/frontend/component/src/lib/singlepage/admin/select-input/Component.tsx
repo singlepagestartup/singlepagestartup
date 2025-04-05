@@ -12,7 +12,10 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={props.renderField}
+      renderField={props.renderField || "provider"}
+      renderFunction={(entity) => {
+        return `Provider: ${entity.provider} | Account: ${entity.account} | Email: ${entity.email}`;
+      }}
     />
   );
 }

@@ -205,9 +205,6 @@ export class Handler {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -229,6 +226,11 @@ export class Handler {
             },
           };
 
+          const attachments: {
+            type: string;
+            url: string;
+          }[] = [];
+
           const ecommerceOrdersToFileStorageModuleFiles =
             await ecommerceOrdersToFileStorageModuleFilesApi.find({
               params: {
@@ -249,56 +251,39 @@ export class Handler {
               },
             });
 
-          for (const identity of identities) {
-            if (data.notification.notification.method === "email") {
-              if (!identity.email) {
-                continue;
-              }
-
-              const ecommerceOrdersToProducts =
-                await ecommerceOrdersToProductsApi.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "orderId",
-                          method: "eq",
-                          value: order.id,
-                        },
-                      ],
+          const ecommerceOrdersToProducts =
+            await ecommerceOrdersToProductsApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "orderId",
+                      method: "eq",
+                      value: order.id,
                     },
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                });
-
-              if (!ecommerceOrdersToProducts?.length) {
-                continue;
-              }
-
-              const ecommerceOrderToProduct = ecommerceOrdersToProducts[0];
-
-              const product = await ecommerceProductApi.findById({
-                id: ecommerceOrderToProduct.productId,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
+                  ],
                 },
-              });
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
 
-              if (!product) {
-                continue;
-              }
+          if (ecommerceOrdersToProducts?.length) {
+            const ecommerceOrderToProduct = ecommerceOrdersToProducts[0];
 
-              const attachments: {
-                type: string;
-                url: string;
-              }[] = [];
+            const product = await ecommerceProductApi.findById({
+              id: ecommerceOrderToProduct.productId,
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
 
+            if (product) {
               if (ecommerceOrdersToFileStorageModuleFiles?.length) {
                 for (const ecommerceOrderToFileStorageModuleFile of ecommerceOrdersToFileStorageModuleFiles) {
                   const attachmentFiles = await fileStorageFileApi.find({
@@ -325,7 +310,7 @@ export class Handler {
                     for (const attachmentFile of attachmentFiles) {
                       attachments.push({
                         type: "image",
-                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public/${attachmentFile.file}`,
+                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${attachmentFile.file}`,
                       });
 
                       const ecommerceOrderToFileStorageModuleFileAdded =
@@ -350,11 +335,36 @@ export class Handler {
                   }
                 }
               }
+            }
+          }
+
+          const type = template.variant.includes("email")
+            ? "email"
+            : template.variant.includes("telegram")
+              ? "telegram"
+              : undefined;
+
+          for (const identity of identities) {
+            if (type === "email") {
+              if (!identity.email) {
+                continue;
+              }
 
               notifications.push({
                 ...data.notification.notification,
                 data: JSON.stringify({ ...notificationData }),
                 reciever: identity.email,
+                attachments: attachments ? JSON.stringify(attachments) : "[]",
+              });
+            } else if (type === "telegram") {
+              if (identity.provider !== "telegram") {
+                continue;
+              }
+
+              notifications.push({
+                ...data.notification.notification,
+                data: JSON.stringify({ ...notificationData }),
+                reciever: identity.account,
                 attachments: attachments ? JSON.stringify(attachments) : "[]",
               });
             }

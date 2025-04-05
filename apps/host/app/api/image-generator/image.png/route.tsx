@@ -5,7 +5,6 @@ import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ChildComponent } from "./component";
 import pako from "pako";
-import { logger } from "@sps/backend-utils";
 
 const fontsURLs: {
   [key in "Default" | "Primary"]: {

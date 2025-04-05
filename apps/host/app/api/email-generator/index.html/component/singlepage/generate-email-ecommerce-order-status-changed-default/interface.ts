@@ -6,7 +6,8 @@ import { IModel as IBillingCurrency } from "@sps/billing/models/currency/sdk/mod
 import { IModel as IEcommerceOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IFileStorageFile } from "@sps/file-storage/models/file/sdk/model";
 
-export const variant = "for-planet-order-receipt" as const;
+export const variant =
+  "generate-email-ecommerce-order-status-changed-default" as const;
 
 export interface IComponentProps {
   variant: typeof variant;

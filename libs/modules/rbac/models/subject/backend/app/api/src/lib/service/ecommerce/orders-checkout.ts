@@ -10,12 +10,14 @@ import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/eco
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { userStories } from "@sps/shared-configuration";
 import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
+import { api as subjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 
 export type IExecuteProps = {
   orderId: string;
@@ -317,101 +319,280 @@ export class Service {
       },
     });
 
-    await broadcastChannelApi.pushMessage({
-      data: {
-        slug: "observer",
-        payload: JSON.stringify({
-          trigger: {
-            type: "request",
-            method: "PATCH",
-            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+    const notificationEcommerceNotificationTemplates =
+      await notificationTemplateApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "ilike",
+                value: "-ecommerce-order-status-changed-",
+              },
+            ],
           },
-          pipe: [
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+    const adminRoles = await roleApi.find({
+      params: {
+        filters: {
+          and: [
             {
-              type: "request",
-              method: "GET",
-              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-            {
-              type: "request",
-              method: "POST",
-              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/notify`,
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              body: {
-                data: {
-                  ecommerce: {
-                    order: {
-                      id: updatedOrder.id,
-                    },
-                  },
-                  notification: {
-                    topic: {
-                      slug: "information",
-                    },
-                    template: {
-                      variant:
-                        userStories.subjectCreateOrder.afterInvoiceCreated
-                          .notification.template.variant,
-                    },
-                    notification: {
-                      method: "email",
-                      data: JSON.stringify({
-                        ecommerce: {
-                          order: {
-                            ...updatedOrder,
-                            status: "[triggerResult.data.status]",
-                            checkoutAttributes,
-                            ordersToBillingModuleCurrencies:
-                              ecommerceOrdersToBillingModuleCurrencies.map(
-                                (ecommerceOrderToBillingModuleCurrency) => {
-                                  return {
-                                    ...ecommerceOrderToBillingModuleCurrency,
-                                    billingModuleCurrency:
-                                      billingModuleCurrencies.find(
-                                        (billingModuleCurrency) =>
-                                          billingModuleCurrency.id ===
-                                          ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
-                                      ),
-                                  };
-                                },
-                              ),
-                            ordersToProducts: ordersToProducts.map(
-                              (orderToProduct) => {
-                                return {
-                                  ...orderToProduct,
-                                  product: products.find(
-                                    (product) =>
-                                      product.id === orderToProduct.productId,
-                                  ),
-                                };
-                              },
-                            ),
-                            ordersToFileStorageModuleFiles: [],
-                          },
-                        },
-                      }),
-                    },
-                  },
-                },
-              },
+              column: "uid",
+              method: "ilike",
+              value: "admin",
             },
           ],
-        }),
+        },
       },
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-        next: {
-          cache: "no-store",
-        },
       },
     });
+
+    if (notificationEcommerceNotificationTemplates?.length) {
+      for (const notificationEcommerceNotificationTemplate of notificationEcommerceNotificationTemplates) {
+        if (
+          notificationEcommerceNotificationTemplate.variant.includes("default")
+        ) {
+          await broadcastChannelApi.pushMessage({
+            data: {
+              slug: "observer",
+              payload: JSON.stringify({
+                trigger: {
+                  type: "request",
+                  method: "PATCH",
+                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+                },
+                pipe: [
+                  {
+                    type: "request",
+                    method: "GET",
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                  {
+                    type: "request",
+                    method: "POST",
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/notify`,
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                    body: {
+                      data: {
+                        ecommerce: {
+                          order: {
+                            id: updatedOrder.id,
+                          },
+                        },
+                        notification: {
+                          topic: {
+                            slug: "information",
+                          },
+                          template: {
+                            variant:
+                              notificationEcommerceNotificationTemplate.variant,
+                          },
+                          notification: {
+                            method: "email",
+                            data: JSON.stringify({
+                              ecommerce: {
+                                order: {
+                                  ...updatedOrder,
+                                  status: "[triggerResult.data.status]",
+                                  checkoutAttributes,
+                                  ordersToBillingModuleCurrencies:
+                                    ecommerceOrdersToBillingModuleCurrencies.map(
+                                      (
+                                        ecommerceOrderToBillingModuleCurrency,
+                                      ) => {
+                                        return {
+                                          ...ecommerceOrderToBillingModuleCurrency,
+                                          billingModuleCurrency:
+                                            billingModuleCurrencies.find(
+                                              (billingModuleCurrency) =>
+                                                billingModuleCurrency.id ===
+                                                ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
+                                            ),
+                                        };
+                                      },
+                                    ),
+                                  ordersToProducts: ordersToProducts.map(
+                                    (orderToProduct) => {
+                                      return {
+                                        ...orderToProduct,
+                                        product: products.find(
+                                          (product) =>
+                                            product.id ===
+                                            orderToProduct.productId,
+                                        ),
+                                      };
+                                    },
+                                  ),
+                                  ordersToFileStorageModuleFiles: [],
+                                },
+                              },
+                            }),
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              }),
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+              next: {
+                cache: "no-store",
+              },
+            },
+          });
+        }
+
+        if (
+          notificationEcommerceNotificationTemplate.variant.includes("admin")
+        ) {
+          if (adminRoles?.length) {
+            for (const adminRole of adminRoles) {
+              const subjectsToAdminRoles = await subjectsToRoles.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "roleId",
+                        method: "eq",
+                        value: adminRole.id,
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+
+              if (subjectsToAdminRoles?.length) {
+                for (const subjectToAdminRole of subjectsToAdminRoles) {
+                  await broadcastChannelApi.pushMessage({
+                    data: {
+                      slug: "observer",
+                      payload: JSON.stringify({
+                        trigger: {
+                          type: "request",
+                          method: "PATCH",
+                          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+                        },
+                        pipe: [
+                          {
+                            type: "request",
+                            method: "GET",
+                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
+                            headers: {
+                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                            },
+                          },
+                          {
+                            type: "request",
+                            method: "POST",
+                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${subjectToAdminRole.subjectId}/notify`,
+                            headers: {
+                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                            },
+                            body: {
+                              data: {
+                                ecommerce: {
+                                  order: {
+                                    id: updatedOrder.id,
+                                  },
+                                },
+                                notification: {
+                                  topic: {
+                                    slug: "information",
+                                  },
+                                  template: {
+                                    variant:
+                                      notificationEcommerceNotificationTemplate.variant,
+                                  },
+                                  notification: {
+                                    method: "email",
+                                    data: JSON.stringify({
+                                      ecommerce: {
+                                        order: {
+                                          ...updatedOrder,
+                                          status: "[triggerResult.data.status]",
+                                          checkoutAttributes,
+                                          ordersToBillingModuleCurrencies:
+                                            ecommerceOrdersToBillingModuleCurrencies.map(
+                                              (
+                                                ecommerceOrderToBillingModuleCurrency,
+                                              ) => {
+                                                return {
+                                                  ...ecommerceOrderToBillingModuleCurrency,
+                                                  billingModuleCurrency:
+                                                    billingModuleCurrencies.find(
+                                                      (billingModuleCurrency) =>
+                                                        billingModuleCurrency.id ===
+                                                        ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
+                                                    ),
+                                                };
+                                              },
+                                            ),
+                                          ordersToProducts:
+                                            ordersToProducts.map(
+                                              (orderToProduct) => {
+                                                return {
+                                                  ...orderToProduct,
+                                                  product: products.find(
+                                                    (product) =>
+                                                      product.id ===
+                                                      orderToProduct.productId,
+                                                  ),
+                                                };
+                                              },
+                                            ),
+                                          ordersToFileStorageModuleFiles: [],
+                                        },
+                                      },
+                                    }),
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        ],
+                      }),
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      },
+                      next: {
+                        cache: "no-store",
+                      },
+                    },
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     await broadcastChannelApi.pushMessage({
       data: {

@@ -1,10 +1,10 @@
-import { IComponentProps as IOrderStatusChangedComponentProps } from "./order-status-changed";
+import { IComponentProps as IGenerateEmailEcommerceOrderStatusChangedDefaultComponentProps } from "./generate-email-ecommerce-order-status-changed-default";
 import { IComponentProps as IResetPasswordComponentProps } from "./reset-password";
 import { IComponentProps as IAgentResultComponentProps } from "./agent-result";
 import { IComponentProps as IRequestFromWebsiteComponentProps } from "./request-from-website";
 
 export type IComponentProps =
-  | IOrderStatusChangedComponentProps
+  | IGenerateEmailEcommerceOrderStatusChangedDefaultComponentProps
   | IResetPasswordComponentProps
   | IAgentResultComponentProps
   | IRequestFromWebsiteComponentProps;
