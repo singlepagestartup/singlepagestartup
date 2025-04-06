@@ -21,6 +21,7 @@ import { IComponentProps as IEcommerceProductCartComponentProps } from "./ecomme
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
+import { IComponentProps as ICrmFormComponentProps } from "./crm/form/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -46,4 +47,5 @@ export type IComponentProps =
   | IAuthenticationEmailAndPasswordForgotPasswordComponentProps
   | IAuthenticationEmailAndPasswordResetPasswordComponentProps
   | IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps
+  | ICrmFormComponentProps
   | never;

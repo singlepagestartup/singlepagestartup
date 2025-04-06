@@ -371,15 +371,33 @@ export class Handler {
           }
         }
       } else {
+        const type = template.variant.includes("email")
+          ? "email"
+          : template.variant.includes("telegram")
+            ? "telegram"
+            : undefined;
+
         for (const identity of identities) {
-          if (data.notification.notification.method === "email") {
+          if (type === "email") {
             if (!identity.email) {
               continue;
             }
 
             notifications.push({
               ...data.notification.notification,
+              data: data.notification.notification.data,
               reciever: identity.email,
+              attachments: "[]",
+            });
+          } else if (type === "telegram") {
+            if (identity.provider !== "telegram") {
+              continue;
+            }
+
+            notifications.push({
+              ...data.notification.notification,
+              data: data.notification.notification.data,
+              reciever: identity.account,
               attachments: "[]",
             });
           }

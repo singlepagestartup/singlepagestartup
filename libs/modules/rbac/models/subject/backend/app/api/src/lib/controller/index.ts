@@ -26,6 +26,7 @@ import { Handler as EcommerceOrdersUpdate } from "./ecommerce/order/update";
 import { Handler as EcommerceOrdersDelete } from "./ecommerce/order/delete";
 import { Handler as EcommerceOrdersCheckout } from "./ecommerce/order/checkout";
 import { Handler as EcommerceProductsCheckout } from "./ecommerce/product/checkout";
+import { Handler as CrmFromRequest } from "./crm/from/request";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -171,6 +172,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.identitiesCreate,
       },
       {
+        method: "POST",
+        path: "/:id/crm/form/request",
+        handler: this.crmFormRequest,
+      },
+      {
         method: "DELETE",
         path: "/:uuid/identities/:identityUuid",
         handler: this.identitiesDelete,
@@ -180,6 +186,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async authenticationMe(c: Context, next: any): Promise<Response> {
     return new AuthenticationMe(this.service).execute(c, next);
+  }
+
+  async crmFormRequest(c: Context, next: any): Promise<Response> {
+    return new CrmFromRequest(this.service).execute(c, next);
   }
 
   async authenticationIsAuthorized(c: Context, next: any): Promise<Response> {

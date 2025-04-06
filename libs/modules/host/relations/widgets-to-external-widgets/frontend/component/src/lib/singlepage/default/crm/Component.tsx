@@ -1,9 +1,10 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as Crm } from "@sps/crm/models/widget/frontend/component";
+import { Component as CrmWidget } from "@sps/crm/models/widget/frontend/component";
+import { Component as Form } from "./form/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <Crm
+    <CrmWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -21,18 +22,27 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       {({ data }) => {
-        return data?.map((widget) => {
+        return data?.map((entity) => {
           return (
-            <Crm
-              key={widget.id}
+            <CrmWidget
+              key={entity.id}
               isServer={props.isServer}
-              data={widget}
-              variant={widget.variant as any}
+              data={entity}
+              variant={entity.variant as any}
               language={props.language}
-            />
+            >
+              {entity.variant.startsWith("form") ? (
+                <Form
+                  url={props.url}
+                  isServer={props.isServer}
+                  data={entity}
+                  language={props.language}
+                />
+              ) : null}
+            </CrmWidget>
           );
         });
       }}
-    </Crm>
+    </CrmWidget>
   );
 }

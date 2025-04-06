@@ -71,8 +71,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         } else {
           console.log(`Skipping invalid attachment: ${attachment.url}`);
         }
-      } catch (e) {
-        console.log(`Error checking ${attachment.url}:`, e);
+      } catch (error) {
+        console.log(`Error checking ${attachment.url}:`, error);
       }
     }
 
@@ -130,8 +130,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
 
         const parsedRenderResult = JSON.parse(renderResult);
-
-        console.log("🚀 ~ renderResult:", renderResult, attachments);
 
         const bot = new Bot(TELEGRAM_BOT_TOKEN);
 

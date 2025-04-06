@@ -16,7 +16,7 @@ import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relati
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
-import { api as subjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 
 export type IExecuteProps = {
@@ -467,7 +467,7 @@ export class Service {
         ) {
           if (adminRoles?.length) {
             for (const adminRole of adminRoles) {
-              const subjectsToAdminRoles = await subjectsToRoles.find({
+              const subjectsToAdminRoles = await subjectsToRolesApi.find({
                 params: {
                   filters: {
                     and: [

@@ -1,0 +1,13 @@
+{
+  "id": "36d5cfce-d231-4f09-86ea-744acfe53539",
+  "createdAt": "2025-04-06T19:14:31.008Z",
+  "updatedAt": "2025-04-06T19:14:31.271Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": "New request from website",
+  "data": "{\"crm\":{\"form\":{\"name\":\"Rogwild\",\"email\":\"rogwild.design@gmail.com\",\"formId\":\"744eb654-aac3-4aac-af93-f9fb5e290b23\"}}}",
+  "reciever": "-1002623813020",
+  "attachments": "[]",
+  "sendAfter": "2025-04-06T19:14:31.006Z"
+}

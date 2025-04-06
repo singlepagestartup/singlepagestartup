@@ -1,0 +1,22 @@
+{
+  "id": "c5fed425-5893-46c1-a7b7-38c33ef632ac",
+  "createdAt": "2025-04-06T19:12:34.000Z",
+  "updatedAt": "2025-04-06T19:12:34.000Z",
+  "variant": "text-default",
+  "type": "default",
+  "isRequired": false,
+  "title": {
+    "en": "Email",
+    "ru": "Email"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "email",
+  "placeholder": {},
+  "label": {
+    "en": "Email",
+    "ru": "Email"
+  }
+}

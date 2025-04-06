@@ -1,0 +1,13 @@
+{
+  "id": "806f3eb8-e409-4a62-af80-8f5b964daf2f",
+  "createdAt": "2025-04-06T19:12:57.568Z",
+  "updatedAt": "2025-04-06T19:13:02.551Z",
+  "variant": "default",
+  "status": "sent",
+  "method": "email",
+  "title": "New request from website",
+  "data": "{\"crm\":{\"form\":{\"name\":\"Name\",\"email\":\"email\",\"formId\":\"744eb654-aac3-4aac-af93-f9fb5e290b23\"}}}",
+  "reciever": "-1002623813020",
+  "attachments": "[]",
+  "sendAfter": "2025-04-06T19:12:57.568Z"
+}

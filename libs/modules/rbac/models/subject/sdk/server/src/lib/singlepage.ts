@@ -106,6 +106,11 @@ import {
   type IProps as IAuthenticationEmailAndPasswordRegistrationProps,
   type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
 } from "./actions/authentication/email-and-password/registration";
+import {
+  action as crmFromRequest,
+  type IProps as ICrmFromRequestProps,
+  type IResult as ICrmFromRequestResult,
+} from "./actions/crm/form/request";
 
 export type IProps = {
   IAuthenticationMeProps: IAuthenticationMeProps;
@@ -128,6 +133,7 @@ export type IProps = {
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
+  ICrmFromRequestProps: ICrmFromRequestProps;
 };
 
 export type IResult = {
@@ -151,6 +157,7 @@ export type IResult = {
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
+  ICrmFromRequestResult: ICrmFromRequestResult;
 };
 
 export const api = {
@@ -180,4 +187,5 @@ export const api = {
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,
+  crmFromRequest,
 };

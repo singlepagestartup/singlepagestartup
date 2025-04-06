@@ -21,6 +21,7 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
 import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
+import { Component as CrmForm } from "./crm/form";
 
 export const variants = {
   find: Find,
@@ -52,4 +53,5 @@ export const variants = {
   "get-emails": GetEmails,
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
+  "crm-form": CrmForm,
 };
