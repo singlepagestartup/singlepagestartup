@@ -8,8 +8,6 @@ export const GET = async (request: NextRequest) => {
   try {
     const { searchParams } = request.nextUrl;
     const params = searchParams.toString();
-    console.log("🚀 ~ GET ~ params:", params);
-
     const parsedParams = QueryString.parse(params);
 
     if (!HOST_SERVICE_URL) {

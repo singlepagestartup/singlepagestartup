@@ -1,6 +1,13 @@
 import React from "react";
 import { IComponentPropsExtended } from "./interface";
-import { Body, Container, Head, Preview, Text } from "@react-email/components";
+import {
+  Body,
+  CodeBlock,
+  Container,
+  Head,
+  Preview,
+  Text,
+} from "@react-email/components";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
@@ -25,7 +32,6 @@ export function Component(props: IComponentPropsExtended) {
                 .billingModuleCurrency.symbol
             }
           </Text>
-          <Text>Component payload: {JSON.stringify(props)}</Text>
           {props.data.ecommerce.order.ordersToProducts.map(
             (orderToProduct, index) => {
               return (
@@ -40,6 +46,12 @@ export function Component(props: IComponentPropsExtended) {
               );
             },
           )}
+          <CodeBlock
+            fontFamily="'CommitMono', monospace"
+            language="json"
+            theme={{}}
+            code={JSON.stringify(props.data, null, 2)}
+          />
         </Container>
       </Body>
     </>

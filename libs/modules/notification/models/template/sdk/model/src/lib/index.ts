@@ -21,6 +21,7 @@ export const variants = [
   "generate-telegram-ecommerce-order-status-changed-admin",
   "reset-password",
   "agent-result",
+  "generate-email-crm-form-request-created-admin",
   "generate-telegram-crm-form-request-created-admin",
 ];
 export const query = {};

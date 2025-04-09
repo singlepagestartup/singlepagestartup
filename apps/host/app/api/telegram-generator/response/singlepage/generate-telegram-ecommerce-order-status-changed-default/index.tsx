@@ -3,8 +3,6 @@ import { IResponseProps } from "./interface";
 export { type IResponseProps } from "./interface";
 
 export function response(props: IResponseProps) {
-  console.log("🚀 ~ response ~ props:", props);
-
   return {
     method: "sendMessage",
     props: [

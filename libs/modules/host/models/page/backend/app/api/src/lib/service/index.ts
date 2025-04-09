@@ -181,14 +181,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (segmentIndex === -1) {
-      throw new Error("Segment Index not found in entity url");
+      return undefined;
     }
 
     const urlParts = props.url.split("/").filter((part) => part !== "");
     const segmentValue = urlParts[segmentIndex];
 
     if (!segmentValue) {
-      throw new Error("Segment value not found in passed url");
+      return undefined;
     }
 
     return segmentValue;
