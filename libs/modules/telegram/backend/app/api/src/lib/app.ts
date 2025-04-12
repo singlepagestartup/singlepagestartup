@@ -41,7 +41,6 @@ export class App {
     this.apps = apps;
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
     this.useHttpRoutes();
-    await this.useTelegamRoutes();
   }
 
   async dump(props?: { type?: "model" | "relation"; dumps: IDumpResult[] }) {
@@ -77,7 +76,7 @@ export class App {
   }
 
   useHttpRoutes() {
-    this.controller.httpRroutes.map((route) => {
+    this.controller.httpRoutes.forEach((route) => {
       this.hono.on(route.method, route.path, route.handler);
     });
     this.apps.apps.forEach((app) => {
@@ -85,19 +84,12 @@ export class App {
     });
   }
 
-  async useTelegamRoutes() {
+  useTelegamRoutes() {
     if (!this.telegramBot.instance) {
       return;
     }
 
     const telegramRoutes: { path: string; handler: Middleware }[] = [];
-    const telegramConversations: {
-      path: string;
-      handler: (
-        conversation: Conversation<any>,
-        ctx: GrammyContext & GrammyConversationFlavor,
-      ) => void;
-    }[] = [];
 
     this.apps.apps.forEach((app) => {
       app.app.controller.telegramRoutes?.map((route) => {
@@ -106,19 +98,10 @@ export class App {
           handler: route.handler,
         });
       });
-      app.app.controller.telegramConversations?.map((conversation) => {
-        telegramConversations.push({
-          path: conversation.path,
-          handler: conversation.handler,
-        });
-      });
     });
 
-    const commands = await pageApp.controller.telegramCommands();
-    logger.debug("🚀 ~ useTelegamRoutes ~ commands:", commands);
-
     this.telegramBot.addRoutes(telegramRoutes);
-    this.telegramBot.addConversations(telegramConversations);
+
     this.telegramBot.init();
   }
 }

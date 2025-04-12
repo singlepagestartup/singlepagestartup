@@ -16,6 +16,7 @@ import {
   conversations,
   createConversation,
 } from "@grammyjs/conversations";
+import { Apps } from "./apps";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
 
@@ -99,6 +100,7 @@ export class TelegarmBot {
       const conversation = this.conversations?.find((conversation) => {
         return conversation.path === data;
       });
+
       if (conversation) {
         await ctx.conversation.enter(conversation.path);
         await ctx.answerCallbackQuery();
