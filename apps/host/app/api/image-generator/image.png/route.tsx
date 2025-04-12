@@ -328,6 +328,7 @@ export const GET = async (request: NextRequest) => {
   try {
     const { searchParams } = request.nextUrl;
     const params = searchParams.toString();
+    console.log("🚀 ~ GET ~ params:", params);
     const parsedParams = QueryString.parse(params);
 
     if (!HOST_SERVICE_URL) {
@@ -360,22 +361,56 @@ export const GET = async (request: NextRequest) => {
 
     for (const fontType of Object.keys(fontsURLs)) {
       for (const fontStyle of fontsURLs[fontType as keyof typeof fontsURLs]) {
-        const fontData = await fetch(`${HOST_SERVICE_URL}${fontStyle.url}`, {
-          cache: "no-store",
-        }).then((res) => {
-          return res.arrayBuffer();
-        });
+        let repeats = 0;
+        let isSuccess = false;
+        const maxRetries = 3;
 
-        if (!fontData) {
-          continue;
+        while (!isSuccess && repeats < maxRetries) {
+          try {
+            const fontData = await fetch(
+              `${HOST_SERVICE_URL}${fontStyle.url}`,
+              {
+                cache: "no-store",
+                headers: {
+                  "Cache-Control": "no-store",
+                },
+              },
+            ).then(async (res) => {
+              if (!res.ok) {
+                throw new Error(
+                  `Failed to fetch ${fontStyle.url}: ${res.status}`,
+                );
+              }
+              return res.arrayBuffer();
+            });
+
+            if (!fontData) {
+              throw new Error("No font data received");
+            }
+
+            fonts.push({
+              name: fontType,
+              data: fontData,
+              style: fontStyle.style,
+              weight: fontStyle.weight,
+            });
+
+            isSuccess = true;
+          } catch (error) {
+            repeats++;
+            console.error(
+              `Attempt ${repeats} failed for ${fontStyle.url}:`,
+              error,
+            );
+            if (repeats >= maxRetries) {
+              console.error(
+                `Max retries reached for ${fontStyle.url}. Skipping...`,
+              );
+              break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
         }
-
-        fonts.push({
-          name: fontType,
-          data: fontData,
-          style: fontStyle.style,
-          weight: fontStyle.weight,
-        });
       }
     }
 

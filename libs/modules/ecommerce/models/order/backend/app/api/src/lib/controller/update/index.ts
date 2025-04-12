@@ -231,7 +231,7 @@ export class Handler {
                   },
                 },
                 fileStorage: {
-                  file: fileStorageReceiptTemplateFile[0],
+                  file: fileStorageReceiptTemplateFile,
                 },
               },
               options: {
