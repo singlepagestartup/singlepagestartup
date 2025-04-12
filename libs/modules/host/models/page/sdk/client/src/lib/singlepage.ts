@@ -39,6 +39,16 @@ export interface IUrlSegmentValueProps {
   options?: NextRequestOptions;
 }
 
+export type IProps = {
+  IUrlSegmentValueProps: IUrlSegmentValueProps;
+  IFindByUrlProps: IFindByUrlProps;
+};
+
+export type IResult = {
+  IUrlSegmentValueProps: string;
+  IFindByUrlProps: IModel;
+};
+
 export const api = {
   ...factory<IModel>({
     queryClient,

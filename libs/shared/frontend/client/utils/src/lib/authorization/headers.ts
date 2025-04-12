@@ -1,11 +1,19 @@
 export function util() {
-  const authorization = localStorage.getItem("rbac.subject.jwt");
-  const secretKey = localStorage.getItem("rbac.secret-key");
+  const cookies = document.cookie;
+
+  const jwt = cookies
+    .split("; ")
+    .find((cookie) => cookie.startsWith("rbac.subject.jwt="))
+    ?.split("=")[1];
+  const secretKey = cookies
+    .split("; ")
+    .find((cookie) => cookie.startsWith("rbac.secret-key="))
+    ?.split("=")[1];
 
   const headers: HeadersInit = {};
 
-  if (authorization) {
-    headers.Authorization = "Bearer " + authorization;
+  if (jwt) {
+    headers.Authorization = "Bearer " + jwt;
   }
 
   if (secretKey) {

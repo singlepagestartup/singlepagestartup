@@ -7,9 +7,12 @@ import {
   query,
   options,
 } from "@sps/broadcast/models/channel/sdk/model";
-
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
+
+export type IProps = {};
+
+export type IResult = {};
 
 export const api = factory<IModel>({
   queryClient,

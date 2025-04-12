@@ -33,6 +33,23 @@ export interface IChangePasswordMutationFunctionProps {
   options?: NextRequestOptions;
 }
 
+export type IProps = {
+  IChangePasswordProps: {
+    id: string;
+    params?: {
+      [key: string]: any;
+    };
+    options?: NextRequestOptions;
+    reactQueryOptions?: any;
+  };
+};
+
+export type IResult = {
+  IChangePasswordResult: {
+    data: IModel;
+  };
+};
+
 export const api = {
   ...factory<IModel>({
     queryClient,

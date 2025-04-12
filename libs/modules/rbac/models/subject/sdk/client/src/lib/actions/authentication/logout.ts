@@ -15,6 +15,7 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import Cookies from "js-cookie";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -35,6 +36,10 @@ export function action(props: IProps) {
       try {
         const result = await api.authenticationLogout({
           ...mutationFunctionProps,
+          options: {
+            ...mutationFunctionProps.options,
+            headers: saturateHeaders(mutationFunctionProps.options?.headers),
+          },
           host: clientHost,
         });
 

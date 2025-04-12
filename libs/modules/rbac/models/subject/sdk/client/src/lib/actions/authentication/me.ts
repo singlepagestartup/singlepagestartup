@@ -11,6 +11,7 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 export type IProps = IParentProps["IAuthenticationMeProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -25,6 +26,10 @@ export function action(props: IProps) {
       try {
         const result = await api.authenticationMe({
           ...props,
+          options: {
+            ...props.options,
+            headers: saturateHeaders(props.options?.headers),
+          },
           host: clientHost,
         });
 

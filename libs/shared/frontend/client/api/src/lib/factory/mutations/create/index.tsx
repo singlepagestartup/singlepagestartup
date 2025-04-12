@@ -1,6 +1,7 @@
 "use client";
 
 import { actions, ICreateProps } from "@sps/shared-frontend-api";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
@@ -29,6 +30,7 @@ export function mutation<T>(
         options: {
           ...mutationFunctionProps.options,
           ...props.options,
+          headers: saturateHeaders(mutationFunctionProps.options?.headers),
         },
         data: mutationFunctionProps.data,
       });

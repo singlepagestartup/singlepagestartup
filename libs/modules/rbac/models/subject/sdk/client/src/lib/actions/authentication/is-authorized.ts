@@ -10,6 +10,7 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 
 export type IProps = IParentProps["IAuthenticationIsAuthorizedProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -24,6 +25,10 @@ export function action(props: IProps) {
     queryFn: async () => {
       const result = await api.authenticationIsAuthorized({
         ...props,
+        options: {
+          ...props.options,
+          headers: saturateHeaders(props.options?.headers),
+        },
         host: clientHost,
       });
 

@@ -9,7 +9,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 export interface IProps {
   host?: string;
   catchErrors?: boolean;
-  options?: NextRequestOptions;
+  options?: Partial<NextRequestOptions>;
 }
 
 export type IResult = IModel | undefined;
