@@ -149,6 +149,14 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.widgetsToStores
+          ? props.widgetsToStores({
+              data: props.data,
+
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

@@ -17,6 +17,7 @@ export interface IComponentProps
   storesToProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  storesToOrders?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 }
 
 export interface IComponentPropsExtended

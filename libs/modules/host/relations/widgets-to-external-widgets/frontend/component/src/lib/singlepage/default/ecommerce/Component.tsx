@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
-import { Component as Stores } from "./store/Component";
+import { Component as Store } from "./store/Component";
 import { Component as Category } from "./category/Component";
 import { Component as Product } from "./product/Component";
 
@@ -54,7 +54,7 @@ export function Component(
                 />
               ) : null}
               {entity.variant.startsWith("store") ? (
-                <Stores
+                <Store
                   isServer={props.isServer}
                   data={entity}
                   language={props.language}

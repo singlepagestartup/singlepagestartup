@@ -22,6 +22,7 @@ export const variants = [
   "product-overview-default",
   "category-list-default",
   "category-overview-default",
+  "store-product-list-default",
 ];
 export const query = {};
 export const options = {

@@ -17,6 +17,7 @@ export interface IComponentProps
   widgetsToProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  widgetsToStores?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 }
 
 export interface IComponentPropsExtended
