@@ -91,6 +91,14 @@ export class Middleware {
           await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
           });
+
+          if (pathWithoutId.includes("bulk")) {
+            const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
+
+            await this.storeProvider.delByPrefix({
+              prefix: pathWithoutBluk,
+            });
+          }
         }
 
         if (["POST", "DELETE"].includes(method)) {
@@ -112,6 +120,14 @@ export class Middleware {
           await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
           });
+
+          if (pathWithoutId.includes("bulk")) {
+            const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
+
+            await this.storeProvider.delByPrefix({
+              prefix: pathWithoutBluk,
+            });
+          }
         }
       } else {
         await this.storeProvider.delByPrefix({

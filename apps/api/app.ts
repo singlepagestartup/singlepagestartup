@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 
 // import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { app as agentApp } from "@sps/agent/backend/app/api";
+import { app as analyticApp } from "@sps/analytic/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
@@ -126,3 +127,4 @@ app.route("/api/billing", billingApp.hono);
 app.route("/api/website-builder", websiteBuilderApp.hono);
 app.route("/api/broadcast", broadcastApp.hono);
 app.route("/api/file-storage", fileStorageApp.hono);
+app.route("/api/analytic", analyticApp.hono);

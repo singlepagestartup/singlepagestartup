@@ -14,6 +14,7 @@ import { AdminComponent as Blog } from "@sps/blog/frontend/component";
 import { AdminComponent as FileStorage } from "@sps/file-storage/frontend/component";
 import { AdminComponent as Notification } from "@sps/notification/frontend/component";
 import { AdminComponent as Rbac } from "@sps/rbac/frontend/component";
+import { AdminComponent as Analytic } from "@sps/analytic/frontend/component";
 import { AdminComponent as Startup } from "@sps/startup/frontend/component";
 import { Button as ShadcnButton } from "@sps/shared-ui-shadcn";
 
@@ -128,6 +129,13 @@ export function Component(props: IComponentPropsExtended) {
                   }}
                   active={widget === "agent"}
                 />
+                <Button
+                  title="analytic"
+                  onClick={() => {
+                    setWidget("analytic");
+                  }}
+                  active={widget === "analytic"}
+                />
               </div>
               <div className="bg-white rounded-b-lg">
                 {widget === "host" ? (
@@ -172,6 +180,9 @@ export function Component(props: IComponentPropsExtended) {
                 ) : null}
                 {widget === "agent" ? (
                   <Agent {...props} isServer={false} variant="default" />
+                ) : null}
+                {widget === "analytic" ? (
+                  <Analytic {...props} isServer={false} variant="default" />
                 ) : null}
               </div>
             </div>

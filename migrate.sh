@@ -14,6 +14,7 @@ npx nx run @sps/rbac:repository-migrate
 npx nx run @sps/host:repository-migrate
 npx nx run @sps/agent:repository-migrate
 npx nx run @sps/telegram:repository-migrate
+npx nx run @sps/analytic:repository-migrate
 
 if [ "$1" = "seed" ]; then
   npx nx run api:db:seed

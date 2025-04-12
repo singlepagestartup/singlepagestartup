@@ -71,6 +71,7 @@
       "@sps/billing/*": ["libs/modules/billing/*"],
       "@sps/broadcast/*": ["libs/modules/broadcast/*"],
       "@sps/agent/*": ["libs/modules/agent/*"],
+      "@sps/analytic/*": ["libs/modules/analytic/*"],
       "@sps/crm/*": ["libs/modules/crm/*"],
       "@sps/telegram/*": ["libs/modules/telegram/*"],
       "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],

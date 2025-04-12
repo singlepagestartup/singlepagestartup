@@ -10,6 +10,8 @@ import {
   DumpHandler,
   SeedHandler,
   FindOrCreateHandler,
+  BulkCreateHandler,
+  BulkUpdateHandler,
 } from "./handler";
 import { type IService } from "../../service";
 import { DI } from "../../di/constants";
@@ -49,6 +51,16 @@ export class Controller<DTO extends Record<string, unknown>>
       },
       {
         method: "POST",
+        path: "/bulk",
+        handler: this.bulkCreate,
+      },
+      {
+        method: "PATCH",
+        path: "/bulk",
+        handler: this.bulkUpdate,
+      },
+      {
+        method: "POST",
         path: "/find-or-create",
         handler: this.findOrCreate,
       },
@@ -83,6 +95,14 @@ export class Controller<DTO extends Record<string, unknown>>
   public async findOrCreate(c: Context, next: any): Promise<Response> {
     const handler = new FindOrCreateHandler<Context, DTO>(this.service);
     return handler.execute(c, next);
+  }
+
+  async bulkCreate(c: Context, next: any): Promise<Response> {
+    return new BulkCreateHandler(this.service).execute(c, next);
+  }
+
+  async bulkUpdate(c: Context, next: any): Promise<Response> {
+    return new BulkUpdateHandler(this.service).execute(c, next);
   }
 
   public async update(c: Context, next: any): Promise<Response> {
