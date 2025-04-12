@@ -6,6 +6,8 @@ import {
   ICreateProps,
   IDeleteProps,
   IFindOrCreateProps,
+  IBulkCreateProps,
+  IBulkUpdateProps,
 } from "@sps/shared-frontend-api";
 
 export interface IFactoryProps {
@@ -16,13 +18,17 @@ export interface IFactoryProps {
     | IFindProps["params"]
     | IUpdateProps["params"]
     | ICreateProps["params"]
-    | IDeleteProps["params"];
+    | IDeleteProps["params"]
+    | IBulkCreateProps["params"]
+    | IBulkUpdateProps["params"];
   options?:
     | IFindByIdProps["options"]
     | IFindProps["options"]
     | IUpdateProps["options"]
     | ICreateProps["options"]
-    | IDeleteProps["options"];
+    | IDeleteProps["options"]
+    | IBulkCreateProps["options"]
+    | IBulkUpdateProps["options"];
 }
 
 export function factory<T>(params: IFactoryProps) {
@@ -78,6 +84,28 @@ export function factory<T>(params: IFactoryProps) {
     },
     delete: async (props: Omit<IDeleteProps, "model" | "route" | "host">) => {
       return await actions.delete<T>({
+        params: params.params,
+        options: params.options,
+        route: params.route,
+        host: params.host,
+        ...props,
+      });
+    },
+    bulkCreate: async (
+      props: Omit<IBulkCreateProps, "model" | "route" | "host">,
+    ) => {
+      return await actions.bulkCreate<T>({
+        params: params.params,
+        options: params.options,
+        route: params.route,
+        host: params.host,
+        ...props,
+      });
+    },
+    bulkUpdate: async (
+      props: Omit<IBulkUpdateProps, "model" | "route" | "host">,
+    ) => {
+      return await actions.bulkUpdate<T>({
         params: params.params,
         options: params.options,
         route: params.route,

@@ -6,4 +6,6 @@ export type {
   IFindByIdProps,
   IUpdateProps,
   IFindOrCreateProps,
+  IBulkCreateProps,
+  IBulkUpdateProps,
 } from "./lib/actions";

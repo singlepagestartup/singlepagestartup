@@ -10,6 +10,10 @@ import { action as update } from "./update";
 export type { IProps as IUpdateProps } from "./update";
 import { action as findOrCreate } from "./find-or-create";
 export type { IProps as IFindOrCreateProps } from "./find-or-create";
+import { action as bulkCreate } from "./bulk-create";
+export type { IProps as IBulkCreateProps } from "./bulk-create";
+import { action as bulkUpdate } from "./bulk-update";
+export type { IProps as IBulkUpdateProps } from "./bulk-update";
 
 export const actions = {
   findById,
@@ -18,4 +22,6 @@ export const actions = {
   find,
   update,
   findOrCreate,
+  bulkCreate,
+  bulkUpdate,
 };
