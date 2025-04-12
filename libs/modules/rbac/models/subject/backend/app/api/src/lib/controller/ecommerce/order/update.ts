@@ -96,9 +96,6 @@ export class Handler {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 

@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 
 export class Handler {
   service: Service;
@@ -25,6 +26,7 @@ export class Handler {
       }
 
       const productId = c.req.param("productId");
+
       if (!productId) {
         throw new Error("No productId provided");
       }
@@ -45,7 +47,14 @@ export class Handler {
         throw new Error("Invalid JSON in body['data']. Got: " + body["data"]);
       }
 
+      const storeId = data.storeId;
+
+      if (!storeId) {
+        throw new Error("No data.storeId provided");
+      }
+
       const entity = await this.service.findById({ id });
+
       if (!entity) {
         throw new Error("No entity found with id:" + id);
       }
@@ -59,11 +68,21 @@ export class Handler {
         },
       });
 
-      const orderToProduct = await ecommerceOrdersToProductsApi.create({
+      await ecommerceOrdersToProductsApi.create({
         data: {
           productId,
           orderId: order.id,
           quantity: data.quantity || 1,
+        },
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+        },
+      });
+
+      await ecommerceStoresToOrdersToApi.create({
+        data: {
+          storeId,
+          orderId: order.id,
         },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },

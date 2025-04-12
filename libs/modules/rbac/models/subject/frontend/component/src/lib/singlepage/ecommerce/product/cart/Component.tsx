@@ -9,6 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       product={props.product}
       className={props.className}
+      store={props.store}
     />
   );
 }

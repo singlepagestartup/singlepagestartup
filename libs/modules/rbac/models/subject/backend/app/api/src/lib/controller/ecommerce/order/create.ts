@@ -6,6 +6,7 @@ import { authorization } from "@sps/backend-utils";
 import { Service } from "../../../service";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as ecommerceStoresToOrdersApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
 export class Handler {
@@ -80,6 +81,14 @@ export class Handler {
       }
 
       const productId = data["productId"];
+
+      if (!data["storeId"]) {
+        throw new HTTPException(400, {
+          message: "No data.storeId provided",
+        });
+      }
+
+      const storeId = data["storeId"];
 
       const entity = await this.service.findById({
         id,
@@ -171,9 +180,38 @@ export class Handler {
             });
 
             if (ordersWithSubjectAndProduct?.length) {
-              throw new HTTPException(400, {
-                message: "Order already exists",
-              });
+              const existingStoresToOrders =
+                await ecommerceStoresToOrdersApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "storeId",
+                          method: "eq",
+                          value: id,
+                        },
+                        {
+                          column: "orderId",
+                          method: "inArray",
+                          value: ordersWithSubjectAndProduct?.map((order) => {
+                            return order.id;
+                          }),
+                        },
+                      ],
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+
+              if (existingStoresToOrders?.length) {
+                throw new HTTPException(400, {
+                  message: "Order already exists",
+                });
+              }
             }
           }
         }
@@ -225,6 +263,24 @@ export class Handler {
       if (!ordersToProducts) {
         throw new HTTPException(404, {
           message: "No orders to products found",
+        });
+      }
+
+      const storesToOrders = await ecommerceStoresToOrdersApi.create({
+        data: {
+          storeId: storeId,
+          orderId: order.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!storesToOrders) {
+        throw new HTTPException(404, {
+          message: "No stores to orders found",
         });
       }
 

@@ -5,6 +5,7 @@ import {
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/subject-default/interface";
 import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
+import { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 
 export const variant = "ecommerce-product-checkout" as const;
 
@@ -13,6 +14,7 @@ export interface IComponentProps
   product: IProduct;
   billingModuleCurrencyId?: string;
   language: string;
+  store: IStore;
 }
 
 export interface IComponentPropsExtended
@@ -20,6 +22,4 @@ export interface IComponentPropsExtended
     IModel,
     typeof variant,
     IComponentProps
-  > {
-  product: IProduct;
-}
+  > {}

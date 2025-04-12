@@ -52,8 +52,8 @@ export function Component(
                 },
               }}
             >
-              {({ data }) => {
-                return data?.map((entity, index) => {
+              {({ data: stores }) => {
+                return stores?.map((store, index) => {
                   return (
                     <StoresToProducts
                       key={index}
@@ -66,7 +66,7 @@ export function Component(
                               {
                                 column: "storeId",
                                 method: "eq",
-                                value: entity.id,
+                                value: store.id,
                               },
                             ],
                           },
@@ -105,6 +105,7 @@ export function Component(
                                             props.billingModuleCurrencyId
                                           }
                                           language={props.language}
+                                          store={store}
                                         />
                                       </Product>
                                     );

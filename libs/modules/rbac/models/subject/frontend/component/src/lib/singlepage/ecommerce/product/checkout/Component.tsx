@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       billingModuleCurrencyId={props.billingModuleCurrencyId}
       language={props.language}
+      store={props.store}
     />
   );
 }

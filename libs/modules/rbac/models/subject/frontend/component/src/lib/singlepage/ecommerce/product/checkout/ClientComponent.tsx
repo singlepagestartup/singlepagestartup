@@ -39,6 +39,7 @@ const formSchema = z.object({
   email: z.string().email(),
   quantity: z.number().int().positive(),
   comment: z.string().optional(),
+  storeId: z.string(),
   billingModuleCurrencyId: z.string(),
 });
 
@@ -52,6 +53,7 @@ export function Component(props: IComponentPropsExtended) {
       email: "",
       quantity: 1,
       comment: "",
+      storeId: props.store.id,
       billingModuleCurrencyId: props.billingModuleCurrencyId || "",
     },
   });
