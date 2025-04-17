@@ -3,6 +3,7 @@ import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToFileStorageWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
+import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
 import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
@@ -98,6 +99,39 @@ export function Component(props: IComponentPropsExtended) {
               });
             }}
           </WidgetsToFileStorageWidgets>
+        </div>
+        <div className="w-full flex">
+          <WidgetsToSliders
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "widgetId",
+                      method: "eq",
+                      value: props.data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data }) => {
+              return data?.map((entity, index) => {
+                return (
+                  <WidgetsToSliders
+                    key={index}
+                    isServer={props.isServer}
+                    variant={entity.variant as any}
+                    data={entity}
+                    language={props.language}
+                  />
+                );
+              });
+            }}
+          </WidgetsToSliders>
         </div>
       </div>
     </div>

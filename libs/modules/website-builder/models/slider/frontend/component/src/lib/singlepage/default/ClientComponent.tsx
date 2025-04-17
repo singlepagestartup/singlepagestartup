@@ -8,7 +8,6 @@ import {
   CarouselApi,
 } from "@sps/shared-ui-shadcn";
 import { IComponentPropsExtended } from "./interface";
-import { Component as SlidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/frontend/component";
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@sps/shared-frontend-client-utils";
 
@@ -51,37 +50,13 @@ export function Component(props: IComponentPropsExtended) {
         className="relative w-full flex"
       >
         <CarouselContent className="w-full flex">
-          <SlidersToSlides
-            isServer={false}
-            variant="find"
-            apiProps={{
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "sliderId",
-                      method: "eq",
-                      value: props.data.id,
-                    },
-                  ],
-                },
-              },
-            }}
-          >
-            {({ data }) => {
-              return data?.map((entity, index) => {
-                return (
-                  <SlidersToSlides
-                    key={index}
-                    isServer={false}
-                    variant={entity.variant as any}
-                    data={entity}
-                    language={props.language}
-                  />
-                );
-              });
-            }}
-          </SlidersToSlides>
+          {props.sliderToSlides?.map((entity, index) => {
+            return (
+              <CarouselItem key={index} className="w-full flex">
+                {entity}
+              </CarouselItem>
+            );
+          })}
         </CarouselContent>
         <div
           className="w-2/12 inset-y-0 absolute cursor-pointer"

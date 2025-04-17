@@ -8,6 +8,13 @@
       "when": 1737754262499,
       "tag": "0000_past_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1744566350871,
+      "tag": "0001_mighty_stick",
+      "breakpoints": true
     }
   ]
 }

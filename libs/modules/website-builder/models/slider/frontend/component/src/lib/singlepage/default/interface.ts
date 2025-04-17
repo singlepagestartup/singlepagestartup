@@ -4,6 +4,7 @@ import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
+import { ReactNode } from "react";
 
 export const variant = "default" as const;
 
@@ -17,4 +18,6 @@ export interface IComponentPropsExtended
     IModel,
     typeof variant,
     IComponentProps
-  > {}
+  > {
+  sliderToSlides?: ReactNode[];
+}

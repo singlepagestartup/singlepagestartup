@@ -14,6 +14,7 @@ export const Table = pgTable(table, {
   variant: pgCore.text("variant").notNull().default("default"),
   orderIndex: pgCore.integer("order_index").notNull().default(0),
   className: pgCore.text("class_name"),
+  sku: pgCore.text("sku").notNull().unique(),
   storeId: pgCore
     .uuid("se_id")
     .notNull()

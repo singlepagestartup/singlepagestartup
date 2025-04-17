@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
 import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { createId } from "@paralleldrive/cuid2";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -24,6 +25,7 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       storeId: props.data?.storeId || "",
       orderIndex: props.data?.orderIndex || 0,
+      sku: props.data?.sku || createId(),
       productId: props.data?.productId || "",
       className: props.data?.className || "",
     },
@@ -52,6 +54,15 @@ export function Component(props: IComponentPropsExtended) {
       type="relation"
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="SKU"
+          name="sku"
+          form={form}
+          placeholder="Type SKU"
+        />
+
         <FormField
           ui="shadcn"
           type="number"
