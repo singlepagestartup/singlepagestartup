@@ -20,10 +20,16 @@ import { Component as Billing } from "@sps/billing/models/widget/frontend/compon
 import { Component as Ecommerce } from "@sps/ecommerce/models/widget/frontend/component";
 import { Component as Blog } from "@sps/blog/models/widget/frontend/component";
 import { Component as Crm } from "@sps/crm/models/widget/frontend/component";
+import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const { status } = useGetAdminFormState({
+    updateEntity,
+    createEntity,
+  });
 
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
@@ -60,6 +66,7 @@ export function Component(props: IComponentPropsExtended) {
       variant={props.variant}
       name="widgets-to-external-widgets"
       type="relation"
+      status={status}
     >
       <div className="flex flex-col gap-6">
         <FormField

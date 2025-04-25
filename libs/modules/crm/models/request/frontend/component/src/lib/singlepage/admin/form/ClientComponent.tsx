@@ -8,10 +8,16 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/crm/models/request/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const { status } = useGetAdminFormState({
+    updateEntity,
+    createEntity,
+  });
 
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
@@ -41,6 +47,7 @@ export function Component(props: IComponentPropsExtended) {
       onSubmit={onSubmit}
       variant={props.variant}
       name="request"
+      status={status}
     >
       <div className="flex flex-col gap-6">
         <FormField

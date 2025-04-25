@@ -13,10 +13,16 @@ import {
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
 import { internationalization } from "@sps/shared-configuration";
+import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const { status } = useGetAdminFormState({
+    updateEntity,
+    createEntity,
+  });
 
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
@@ -50,6 +56,7 @@ export function Component(props: IComponentPropsExtended) {
       onSubmit={onSubmit}
       variant={props.variant}
       name="slide"
+      status={status}
     >
       <div className="flex flex-col gap-6">
         <AgregatedInput title="Title">

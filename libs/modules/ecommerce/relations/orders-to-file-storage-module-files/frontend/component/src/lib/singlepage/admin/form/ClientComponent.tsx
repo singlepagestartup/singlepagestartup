@@ -13,10 +13,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Component as Order } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const { status } = useGetAdminFormState({
+    updateEntity,
+    createEntity,
+  });
 
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
@@ -50,6 +56,7 @@ export function Component(props: IComponentPropsExtended) {
       variant={props.variant}
       name="orders-to-file-storage-module-files"
       type="relation"
+      status={status}
     >
       <div className="flex flex-col gap-6">
         <FormField

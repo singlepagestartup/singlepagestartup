@@ -12,10 +12,16 @@ import {
 } from "@sps/file-storage/models/file/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
   const createEntity = api.create();
+
+  const { status } = useGetAdminFormState({
+    updateEntity,
+    createEntity,
+  });
 
   const file = props.data?.file
     ? props.data?.file.includes("https")
@@ -54,6 +60,7 @@ export function Component(props: IComponentPropsExtended) {
       onSubmit={onSubmit}
       variant={props.variant}
       name="file"
+      status={status}
     >
       <div className="flex flex-col gap-6">
         <FormField

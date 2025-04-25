@@ -103,13 +103,6 @@ export class Middleware {
             filters: {
               and: [
                 {
-                  column: "id",
-                  method: "inArray",
-                  value: channelsToMessages?.map(
-                    (channelToMessage) => channelToMessage.messageId,
-                  ),
-                },
-                {
                   column: "payload",
                   method: "ilike",
                   value: `%${path}%`,
