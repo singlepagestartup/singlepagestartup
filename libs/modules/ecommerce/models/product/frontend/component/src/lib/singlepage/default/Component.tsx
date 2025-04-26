@@ -2,7 +2,7 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
-import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
+import { Component as ProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
 
@@ -16,7 +16,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className || "")}
     >
       <div className="w-full">
-        <ProductsToFileStorageModuleWidgets
+        <ProductsToFileStorageModuleFiles
           isServer={props.isServer}
           variant="find"
           apiProps={{
@@ -36,7 +36,7 @@ export function Component(props: IComponentPropsExtended) {
           {({ data }) => {
             return data?.map((entity, index) => {
               return (
-                <ProductsToFileStorageModuleWidgets
+                <ProductsToFileStorageModuleFiles
                   key={index}
                   isServer={props.isServer}
                   variant={entity.variant as any}
@@ -45,7 +45,7 @@ export function Component(props: IComponentPropsExtended) {
               );
             });
           }}
-        </ProductsToFileStorageModuleWidgets>
+        </ProductsToFileStorageModuleFiles>
       </div>
       <Link href={`/ecommerce/products/${props.data.id}`} className="w-fit">
         <p className="font-bold w-fit">{props.data.title?.[props.language]}</p>

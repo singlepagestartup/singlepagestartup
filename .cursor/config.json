@@ -1,0 +1,26 @@
+{
+  "projectName": "SinglePageStartup",
+  "rules": {
+    "userRulesPath": ".cursor/rules/user-rules.yaml",
+    "projectRulesPath": ".cursor/rules/project-rules.yaml",
+    "expertProfilePath": ".cursor/rules/expert.mcp"
+  },
+  "templates": {
+    "basePath": ".cursor/templates/"
+  },
+  "linting": {
+    "enablePrettier": true,
+    "enableESLint": true
+  },
+  "workflows": {
+    "autoApplyRules": true,
+    "autoApplyExpertProfile": true,
+    "defaultLanguage": "typescript",
+    "defaultFramework": "nextjs"
+  },
+  "defaults": {
+    "fileNamingConvention": "kebab-case",
+    "componentNamingConvention": "PascalCase",
+    "typescriptStrictMode": true
+  }
+}

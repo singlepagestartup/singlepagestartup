@@ -1,8 +1,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { TipTap } from "@sps/shared-ui-shadcn";
-// import { TipTap } from "@sps/shared-ui-shadcn";
-// import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
+import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
 
@@ -19,10 +18,9 @@ export function Component(props: IComponentPropsExtended) {
         href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/blog/articles/${props.data.id}`}
         className="flex flex-col w-full gap-3 cursor-pointer"
       >
-        {/* <div className="w-full">
-          <ArticlesToFileStorageModuleWidgets
+        <div className="w-full">
+          <ArticlesToFileStorageModuleFiles
             isServer={props.isServer}
-            
             variant="find"
             apiProps={{
               params: {
@@ -41,18 +39,17 @@ export function Component(props: IComponentPropsExtended) {
             {({ data }) => {
               return data?.map((entity, index) => {
                 return (
-                  <ArticlesToFileStorageModuleWidgets
+                  <ArticlesToFileStorageModuleFiles
                     key={index}
                     isServer={props.isServer}
-                    
                     variant={entity.variant as any}
                     data={entity}
                   />
                 );
               });
             }}
-          </ArticlesToFileStorageModuleWidgets>
-        </div> */}
+          </ArticlesToFileStorageModuleFiles>
+        </div>
 
         <p className="font-bold text-4xl">
           {props.data.title?.[props.language]}
