@@ -2,27 +2,27 @@
 # Starting dfx at the background
 dfx start --background
 
-# Creating new identity with name "sps-lite-deployer"
+# Creating new identity with name "singlepagestartup-deployer"
 # you will get your seed phrase, please save it
-dfx identity new sps-lite-deployer
+dfx identity new singlepagestartup-deployer
 
 # You can list all your identites by running command
 dfx identity list
 
-# For selecting created identity "sps-lite-deployer" run command
-dfx identity use sps-lite-deployer
+# For selecting created identity "singlepagestartup-deployer" run command
+dfx identity use singlepagestartup-deployer
 
 # Export your identity by running command
 # And store exported key at the file
 # You can use that file on another machine for deploying canisters
 # !!! DO NOT COMMIT IT TO GIT !!!
-dfx identity export sps-lite-deployer > sps-lite-deployer.pem
+dfx identity export singlepagestartup-deployer > singlepagestartup-deployer.pem
 
 # Transform to base64 for github actions
-openssl base64 -in sps-lite-deployer.pem -out sps-lite-deployer.pem.base64
+openssl base64 -in singlepagestartup-deployer.pem -out singlepagestartup-deployer.pem.base64
 
 # Check that you selected correct identity by running command
-# Should return "sps-lite-deployer"
+# Should return "singlepagestartup-deployer"
 dfx identity whoami
 
 # Check your ledger wallet balance now
@@ -41,14 +41,14 @@ chmod +x ./icp-save-wallet-address.sh
 dfx ledger --network ic create-canister $(dfx identity get-principal) --amount 1 | ./icp-save-wallet-address.sh
 
 # Set canister id to variable
-wallet_canister_id=$(cat sps-lite-deployer-wallet.txt)
+wallet_canister_id=$(cat singlepagestartup-deployer-wallet.txt)
 
 # Copy id of created canister and deploy wallet to it, !!! CHANGE ID OF CANISTER !!!
 # dfx identity --network=ic deploy-wallet <paste_your_wallet_canister_id_here>
 # 
 # You will get something like that
 # Creating a wallet canister on the ic network./
-# The wallet canister on the "ic" network for user "sps-lite-deployer" is "cfhaf-gaaaa-aaaal-qccpq-cai"
+# The wallet canister on the "ic" network for user "singlepagestartup-deployer" is "cfhaf-gaaaa-aaaal-qccpq-cai"
 dfx identity --network=ic deploy-wallet $wallet_canister_id
 
 # Now you can check your wallet cycles balance

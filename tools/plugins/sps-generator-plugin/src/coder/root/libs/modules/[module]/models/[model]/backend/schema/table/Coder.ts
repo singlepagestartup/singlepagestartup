@@ -27,7 +27,7 @@ export interface IEditFieldProps {
     | "date"
     | "time"
     | "number";
-  level: "sps-lite" | "startup";
+  level: "singlepage" | "startup";
   isRequired: boolean;
 }
 
@@ -93,7 +93,7 @@ export class Coder {
       tree: this.tree,
       root: this.baseDirectory,
       name: this.baseName,
-      generateFilesPath: path.join(__dirname, `files`),
+      generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
         table_name: this.tableName,
@@ -157,7 +157,7 @@ export class Coder {
         content: fieldToAdd.onRemove.content,
       });
     } catch (error: any) {
-      if (!error.message.includes(`No expected value`)) {
+      if (!error.message.includes("No expected value")) {
         throw error;
       }
     }
@@ -184,8 +184,8 @@ export class Field extends RegexCreator {
     pgCoreType: string;
     isRequired: boolean;
   }) {
-    const place = `export const fields = {`;
-    const placeRegex = new RegExp(`export const fields = {`);
+    const place = "export const fields = {";
+    const placeRegex = new RegExp("export const fields = {");
 
     const fieldNameCamelCase = names(props.name).propertyName;
     const content = `${fieldNameCamelCase}: pgCore.${props.pgCoreType}("${props.name}")${props.isRequired ? ".notNull()" : ""},`;

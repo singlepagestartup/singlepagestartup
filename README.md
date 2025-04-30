@@ -1,97 +1,269 @@
-# Boilerplate for Lean Startup Developers
+# SinglePageStartup (SPS)
 
-Spend less time on setup and more time building your innovative product with our ready-to-use, feature-packed boilerplate designed for lean startup developers.
+## Project Description
 
-### [Documentation](https://sps-lite-documentation.singlepagestartup.com/)
+SinglePageStartup (SPS) is a modular framework for rapid development of projects ranging from MVPs to full-scale business platforms.
 
-![preview](./apps/documentation/docs/introduction/img/preview.jpg)
+### Key Principles:
 
-# Minimum Viable Product is Ready
+- Everything is based on Models, each having:
+  - Its own REST API (via Hono + Bun backend)
+  - Its own Frontend Display Variants (via React components)
+- Models are linked through explicit Relation Models
+- Frontend rendering is managed through specialized Variant Components
+- Backend is powered by Bun + Hono
+- Frontend is built with Next.js App Router
 
-Reduce the time and effort required to build and launch an initial product, helping you validate your ideas and gather customer feedback more quickly. This will allow you to iterate and improve upon your product, increasing your chances of success in the competitive startup landscape.
+## Project Structure
 
-# Don't repeat yourself
+```
+apps/
+├── api/    # Backend application (Hono + Bun API)
+├── host/   # Frontend application (Next.js App Router)
+├── db/     # Docker service for Postgres
+└── redis/  # Docker service for Redis
 
-SignlePageStartup is designed to help you efficiently create a MVP that you can launch quickly to gather customer feedback and validate your ideas. Here's what you can expect from the MVP-ready feature.
+libs/
+├── modules/  # Business modules
+│   ├── agent/        # AI Agent integration
+│   ├── analytic/     # Analytics and reporting
+│   ├── billing/      # Billing and payments
+│   ├── blog/         # Blog functionality
+│   ├── broadcast/    # Broadcasting and messaging
+│   ├── crm/          # Customer Relationship Management
+│   ├── ecommerce/    # E-commerce functionality
+│   ├── file-storage/ # File storage and management
+│   ├── host/         # Hosting and deployment
+│   ├── notification/ # Notification system
+│   ├── rbac/         # Role-Based Access Control
+│   ├── startup/      # Startup-specific features
+│   ├── telegram/     # Telegram integration
+│   └── website-builder/ # Website building tools
+├── shared/      # Shared utilities, base types, configuration
+├── providers/   # Service providers and dependency injection
+└── middlewares/ # Global middleware components
 
-## Ready-to-Use UI Components
+tools/
+├── deployer/  # Ansible scripts for deployment
+└── plugins/   # Legacy generators for NX
 
-Leverage our pre-built navigation elements, forms, photo galleries, text blocks, CTA elements, and more to create a visually appealing and engaging user experience with minimal effort.
+.cursor/
+├── rules/     # Cursor automation rules
+└── knowledge/ # Project knowledge base
+```
 
-## Global-Ready
+## Core Architecture
 
-Your startup's international expansion is a breeze with our boilerplate's built-in multilingual support. Just select the languages you want to support, and you're good to go.
+### Backend Architecture
 
-## Streamlined Authentication & Authorization
+Strict layered architecture: Repository → Service → Controller → App.
 
-Save 20 to 100 hours of development time with our ready-to-use, best-practice authentication and authorization system. Focus on your core features and let us handle the rest.
+#### Repository Layer
 
-## Easy Avatar Integration
+- Direct database interaction using model Table descriptions
+- Fields defined in `fields/`, table schema in `schema.ts`
+- Database structure changes managed via SQL migrations
 
-Enhance user profiles with our pre-built avatar functionality. Simply add the PageBlock to the profile page and let your users personalize their accounts with custom avatars.
+#### Service Layer
 
-## Seamless Third-Party Service Integration
+- Business logic: data preparation, validation, processing
+- Can extend or utilize shared service logic
+- Located under `backend/app/api/src/lib/service/`
 
-Quickly add essential features to your MVP with built-in support for popular services such as authentication, payment gateways, and analytics tools. Less hassle, more productivity.
+#### Controller Layer
 
-## Effortless Document Generation
+- Publishes public API endpoints
+- Integrates middlewares per route
+- Implements `IController` from `@sps/shared-backend-api`
+- Located under `backend/app/api/src/lib/controller/`
 
-Generate documents based on user data or completed forms with ease using our built-in document generation functionality. Just incorporate it into your business logic and you're set.
+#### App Layer
 
-## Comprehensive E-Commerce Features
+- Extends `DefaultApp` from `@sps/shared-backend-api`
+- Configures middlewares, error handling, and routing
+- Example:
 
-Utilize our ready-to-use product catalog, product pages, shopping cart, delivery options, and order history to jumpstart your e-commerce project.
+  ```typescript
+  import { injectable } from "inversify";
+  import { DefaultApp } from "@sps/shared-backend-api";
+  import { Table } from "@sps/blog/models/article/backend/repository/database";
 
-## Built-In Blogging Capabilities
+  @injectable()
+  export class App extends DefaultApp<(typeof Table)["$inferSelect"]> {}
+  ```
 
-Establish your personal brand by enabling our integrated blogging functionality, perfect for sharing news and insights with your audience.
+### Frontend Architecture
 
-## Flexible Customization and Extensibility
+#### Component Structure
 
-Tailor your project to your needs using the Strapi admin panel, extend its capabilities with plugins, or create your own custom features.
+- Each variant consists of:
+  - `interface.ts` — props description (`IComponentProps`, `IComponentPropsExtended`)
+  - `index.tsx` — wrapper with `ParentComponent`
+  - `Component.tsx` — UI implementation
+  - Optional `ClientComponent.tsx` for client-side logic
 
-## Hassle-Free Data Migration and Seeding
+#### Data Handling
 
-Easily migrate or seed data by completing your project locally, running a data dump, and migrating it to your server, or by describing your data as JSON and adding it to the data seeding process.
+- All data through SDK Providers:
+  - `clientApi`
+  - `serverApi`
+  - `Provider`
+- Related entities via Relation components
+- Example:
+  ```tsx
+  <RelationComponent
+    isServer={props.isServer}
+    variant="find"
+    apiProps={{
+      params: {
+        filters: {
+          and: [
+            {
+              column: "parentId",
+              method: "eq",
+              value: props.data.id,
+            },
+          ],
+        },
+      },
+    }}
+  >
+    {({ data }) => <ChildComponent data={data} />}
+  </RelationComponent>
+  ```
 
-## Rapid Deployment (CI/CD)
+## Development Standards
 
-With pre-configured deployment tools and processes, our boilerplate enables you to quickly deploy your MVP to your preferred hosting platform. This helps you reduce the time-to-market and start gathering valuable customer feedback sooner.
+### General Principles
 
-## Modular and Scalable
+- Always use TypeScript with strict typing
+- Follow functional and declarative programming patterns
+- Maintain modular architecture
+- Minimize client-only components
+- Maximize the use of Server Components
 
-Our boilerplate is designed to be easily customizable, allowing you to add, modify, or remove features as needed. This flexibility ensures that you can tailor your MVP to meet the specific requirements of your target customers and adapt it as you learn from their feedback.
+### File and Folder Structure
 
-# Generators
+- Use kebab-case for folder and file names
+- Use PascalCase for components and interfaces
+- Standard component structure:
+  - `interface.ts`
+  - `index.tsx`
+  - `Component.tsx`
+  - Optional `ClientComponent.tsx`
 
-Create new generator
+### TypeScript Standards
+
+- Use `interface` over `type` for object descriptions
+- Avoid enums; prefer union types or object maps
+- Place interfaces close to components
+- Explicitly type all props
+
+### Code Style
+
+- Use `function` keyword for components
+- Clean, declarative JSX
+- Follow ESLint and Prettier configurations
+
+### Performance
+
+- Minimize `use client`, `useEffect`, `useState`
+- Prefer Server Components
+- Monitor Web Vitals:
+  - LCP (Largest Contentful Paint)
+  - CLS (Cumulative Layout Shift)
+  - FID (First Input Delay)
+
+## API Standards
+
+### Standard Operations
+
+| Operation                  | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| GET /model                 | Fetch a list of entities (FindHandler)         |
+| GET /model/:id             | Fetch an entity by ID (FindByIdHandler)        |
+| POST /model                | Create a new entity (CreateHandler)            |
+| PATCH /model/:id           | Update an entity by ID (UpdateHandler)         |
+| DELETE /model/:id          | Delete an entity by ID (DeleteHandler)         |
+| POST /model/dump           | Dump data of the model (DumpHandler)           |
+| POST /model/seed           | Seed data into the model (SeedHandler)         |
+| POST /model/find-or-create | Find or create an entity (FindOrCreateHandler) |
+| POST /model/bulk-create    | Bulk create entities (BulkCreateHandler)       |
+| PATCH /model/bulk-update   | Bulk update entities (BulkUpdateHandler)       |
+
+### Middlewares
+
+| Middleware             | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| RequestIdMiddleware    | Generates unique ID for each request    |
+| ObserverMiddleware     | Logs requests and collects metrics      |
+| ParseQueryMiddleware   | Parses complex query parameters         |
+| LoggerMiddleware       | Logs all incoming requests              |
+| RevalidationMiddleware | Manages content revalidation strategies |
+| HTTPCacheMiddleware    | Caches responses conditionally          |
+| ExceptionFilter        | Centralized error catching              |
+
+### Error Handling
+
+- All errors intercepted through `ExceptionFilter`
+- Standardized error responses:
+  - `statusCode` — error code
+  - `message` — error description
+  - `requestId` — unique ID for request traceability
+
+## Installation and Setup
+
+### Prerequisites
+
+- Node.js ^20.x
+- Bun ^1.2.3
+- Docker and Docker Compose
+
+### Installing Dependencies
 
 ```bash
-nx generate @nx/plugin:generator sps-create-ts-library --project=@sps/sps-generator-plugin --directory=tools/plugins/sps-generator-plugin/src/generators/sps-create-ts-library --dry-run
-```
-
-# Run
-
-## Install dependencies
-
-```
 bun install
 ```
 
-## Run Postgres service
+### Starting Services
 
-```
-cd apps/db && chmod +x ./up.sh && ./up.sh && cd ../../
-```
+```bash
+# Start Postgres and Redis
+docker-compose up -d
 
-## Create Frontend envs
-
-```
-cd apps/frontend && chmod +x ./create_env.sh && ./create_env.sh && cd ../../
+# Create env files
+./create_env.sh
 ```
 
-## Run Project
+### Running the Project
 
+```bash
+# Development
+bun run host:dev
+
+# Production
+bun run host:production
 ```
-bun run frontend:dev
-```
+
+## Documentation
+
+Detailed documentation for each module can be found in their respective directories:
+
+- [Blog Module](./libs/modules/blog/README.md)
+- [Ecommerce Module](./libs/modules/ecommerce/README.md)
+- [CRM Module](./libs/modules/crm/README.md)
+- [RBAC Module](./libs/modules/rbac/README.md)
+- [Notification Module](./libs/modules/notification/README.md)
+- [File Storage Module](./libs/modules/file-storage/README.md)
+- [Billing Module](./libs/modules/billing/README.md)
+- [Website Builder Module](./libs/modules/website-builder/README.md)
+- [Startup Module](./libs/modules/startup/README.md)
+- [Broadcast Module](./libs/modules/broadcast/README.md)
+- [Telegram Module](./libs/modules/telegram/README.md)
+- [Analytic Module](./libs/modules/analytic/README.md)
+- [Agent Module](./libs/modules/agent/README.md)
+- [Host Module](./libs/modules/host/README.md)
+
+## License
+
+MIT

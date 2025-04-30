@@ -1,12 +1,8 @@
 {
   "projectName": "SinglePageStartup",
   "rules": {
-    "userRulesPath": ".cursor/rules/user-rules.yaml",
-    "projectRulesPath": ".cursor/rules/project-rules.yaml",
-    "expertProfilePath": ".cursor/rules/expert.mcp"
-  },
-  "templates": {
-    "basePath": ".cursor/templates/"
+    "environmentRulesPath": ".cursor/rules/environment.mdc",
+    "expertRulesPath": ".cursor/rules/expert.mdc"
   },
   "linting": {
     "enablePrettier": true,

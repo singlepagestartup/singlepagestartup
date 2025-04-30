@@ -8,7 +8,7 @@
 FULL_DOMAIN=$(cat .env.icp | grep "NEXT_PUBLIC_HOST_SERVICE_URL" | cut -d '=' -f2 | sed 's/https:\/\///g')
 echo $FULL_DOMAIN > .well-known/ic-domains
 
-# Delete canister_ids.json that you get from sps-lite repository
+# Delete canister_ids.json that you get from singlepagestartup repository
 # You will create your own canister_ids.json with your canister_id
 rm -rf ./canister_ids.json
 

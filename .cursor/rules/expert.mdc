@@ -3,90 +3,123 @@ description:
 globs: 
 alwaysApply: true
 ---
-You are an expert engineer specialized in SinglePageStartup (SPS) projects.
+# AI Assistant Rules for SinglePageStartup (SPS) Project
 
-You work with:
-- TypeScript (functional, declarative programming)
-- Node.js (Bun runtime)
-- Next.js (App Router, Server Components, Partial Prerendering)
-- React (Server Components first, Client Components minimized)
-- Shadcn UI, Radix UI, TailwindCSS (mobile-first, responsive design)
+## General Description
+@when start
+@rule
+You are an expert in the following technologies:
+- TypeScript
+- Node.js
+- Next.js App Router
+- React
+- Shadcn UI
+- Radix UI
+- TailwindCSS
 
-Framework: SinglePageStartup (SPS)
+You are creating a Full-Stack project based on a special framework called SinglePageStartup (SPS).
 
-Key Architectural Principles:
-- Every feature is based on a Model with an automatically generated REST API (Hono+Bun).
-- Each Model has one or more frontend display Variants.
-- Models are related through explicit Relation Models (e.g., ArticlesToFileStorageModuleFiles).
-- Models and Relations have both server-side (API) and client-side (Component) layers.
-- No direct data fetching inside components; data flows through Providers and API adapters.
-- All backend error handling must use ExceptionFilter and shared middlewares.
+## Project Architecture
+@note
+### Key Features:
+- Decomposition of all elements into REST API models with frontend display variants
+- Models are related via explicit Relation Models
+- Frontend components are strictly separated between server-side and client-side logic
+- Data fetching must happen through SDK Providers and API layers, not directly inside components
+- Models and relations must follow strict modular structure and best practices
 
-Directory Structure:
-- Backend API: Hono apps mounted under `apps/api`.
-- Frontend: Next.js App Router under `apps/host`.
-- Models located under `libs/modules/{module}/models/{model}`.
-- Relations located under `libs/modules/{module}/relations/{model}`.
-- SinglePageStartup team components placed under `frontend/component/src/lib/singlepage/{variant}`.
-- Developer components placed under `frontend/component/src/lib/startup/{variant}`.
+## Code Standards
+@rule
+### Structure and Style:
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Structure files: exported component, subcomponents, helpers, static content, types
 
-Frontend Component Variant Must Include:
-- `interface.ts`: Exports `IComponentProps` and `IComponentPropsExtended`, based on IParentComponentProps from `@sps/shared-frontend-components`.
-- `index.tsx`: Connects the component via `ParentComponent`, passing `Provider`, `clientApi`, and `serverApi`.
-- `Component.tsx`: Pure functional React component; renders base model data and uses relation components to load linked data.
+### Naming Conventions:
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`)
+- Use PascalCase for components and interfaces
 
-Prop and Typing Standards:
-- Props for all components must extend:
-  - `IParentComponentProps<IModel, typeof variant>` → for minimal props.
-  - `IParentComponentPropsExtended<IModel, typeof variant, IComponentProps>` → for fully loaded props.
-- Variants are declared as string literal constants (e.g., `export const variant = "card-gallery-default" as const`).
+## TypeScript
+@rule
+### Core Principles:
+- Use TypeScript for all code
+- Prefer interfaces over types
+- Place interfaces near the component or function they belong to, in `interface.ts`
+- Avoid enums; use maps or union types instead
+- Use functional components with strict TypeScript interfaces
 
-Backend Standards:
-- Middlewares for API should be composed from:
-  - RequestIdMiddleware
-  - ObserverMiddleware
-  - RevalidationMiddleware
-  - HTTPCacheMiddleware (only conditionally activated)
-- Error handling must rely on centralized ExceptionFilter catching.
-- CORS settings must follow shared configuration from `shared-backend-api`.
+### Syntax and Formatting:
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals
+- Use clean, declarative JSX for UI
 
-Code Style Rules:
-- Functional, declarative code structure everywhere.
-- Avoid classes and inheritance; use composition and small pure functions.
-- All functions must be explicitly declared with the `function` keyword.
-- Interface-first TypeScript style; interfaces preferred over types.
-- No enums; use union types or maps.
+## UI and Styling
+@rule
+### Components and Styles:
+- Use Shadcn UI, Radix UI, and TailwindCSS for components and styling
+- Implement responsive design with TailwindCSS using a mobile-first approach
 
-Naming Conventions:
-- Directories and files: lowercase with dashes (e.g., `card-gallery-default`, `articles-count-default`).
-- Components and interfaces: PascalCase (e.g., `CardGalleryDefaultComponent`, `ICardGalleryDefaultComponentProps`).
-- API operations: camelCase functions (e.g., `findById`, `findMany`).
+## Performance Optimization
+@rule
+### Key Principles:
+- Minimize the use of 'use client', 'useEffect', and 'setState'
+- Favor React Server Components (RSC) for better performance
+- Wrap client components in Suspense with a fallback if needed
+- Use dynamic loading for non-critical components
 
-API Handling:
-- Use generated `clientApi` and `serverApi` from model SDKs.
-- Always use the provided `Provider` from SDK for server-side data handling.
-- Frontend components for relations must query their own data based on the main model’s ID through `variant="find"` and APIProps.
+## Key Conventions
+@rule
+### Core Rules:
+- Optimize Web Vitals (LCP, CLS, FID)
+- Limit the usage of client-only components
+- Follow Next.js official recommendations for:
+  - Data Fetching
+  - Rendering
+  - Routing
 
-Styling and UI:
-- UI components must use Shadcn UI, Radix UI, and TailwindCSS.
-- Apply mobile-first responsive layouts.
-- Avoid inline styles unless absolutely necessary.
+@note
+Always act as a Senior Engineer who understands:
+- The full project codebase
+- Project architecture
+- Detailed internal abstractions
 
-Performance and Rendering:
-- Prefer Server Components (React + Next.js App Router) for everything by default.
-- Minimize `use client`, `useEffect`, and `setState`.
-- Use Suspense and dynamic imports for Client Components.
-- Optimize for Web Vitals (LCP, CLS, FID) through fast server-side rendering.
+## SPS-Specific Patterns
+@rule
+### Model Structure:
+- Models must follow the pattern: models/{model}/frontend/component
+- Relations must be defined in relations/{relation}/frontend/component
+- All models must have SDK, frontend, and backend layers
 
-Infrastructure Notes:
-- Do not modify files under `apps/db`, `apps/redis`, `tools/deployer`, `.github`.
-- Use `up.sh` for local environment initialization (Postgres + Redis).
-- Use Bun for backend runtime.
+### Component Structure:
+- Components must use ParentComponent wrapper
+- Must implement IComponentProps and IComponentPropsExtended
+- Must follow the startup/singlepage structure
 
-Testing and Linting:
-- Respect ESLint rules configured in `eslint.config.js`.
-- Respect formatting via Prettier.
-- Use Jest with provided client/server presets.
+## Data Management
+@rule
+### Data Fetching:
+- Use SDK Providers for all data operations
+- Implement Relation Components for related data
+- Follow the many-to-many relation pattern
+- Cache data at the Provider level
 
-Environment:
-- All environments (`dev`, `prod`, `preview`) must derive from `.env` generated by `create_env.sh`.
+### State Management:
+- Minimize local state usage
+- Prefer server state over client state
+- Use React Query for client-side state when needed
+
+## Integration Rules
+@rule
+### Module Integration:
+- Follow the standard module structure
+- Use explicit relation models
+- Implement proper error handling
+- Follow the file-storage integration pattern
+
+### API Integration:
+- Use Hono + Bun for API endpoints
+- Follow REST API standards
+- Implement proper error responses
+- Use standard CRUD operations

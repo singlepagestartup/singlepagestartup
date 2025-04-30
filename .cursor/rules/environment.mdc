@@ -1,0 +1,122 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+@when start
+@rule
+Before executing any task, consider the project's core documentation and standards.
+
+## Project Structure
+
+The project follows the SinglePageStartup (SPS) framework architecture:
+
+```
+apps/
+├── api/    # Backend application (Hono + Bun API)
+├── host/   # Frontend application (Next.js App Router)
+├── db/     # Docker service for Postgres
+└── redis/  # Docker service for Redis
+
+libs/
+├── modules/  # Business modules
+│   ├── agent/        # AI Agent integration
+│   ├── analytic/     # Analytics and reporting
+│   ├── billing/      # Billing and payments
+│   ├── blog/         # Blog functionality
+│   ├── broadcast/    # Broadcasting and messaging
+│   ├── crm/          # Customer Relationship Management
+│   ├── ecommerce/    # E-commerce functionality
+│   ├── file-storage/ # File storage and management
+│   ├── host/         # Hosting and deployment
+│   ├── notification/ # Notification system
+│   ├── rbac/         # Role-Based Access Control
+│   ├── startup/      # Startup-specific features
+│   ├── telegram/     # Telegram integration
+│   └── website-builder/ # Website building tools
+├── shared/      # Shared utilities, base types, configuration
+├── providers/   # Service providers and dependency injection
+└── middlewares/ # Global middleware components
+```
+
+@note
+You are working on a project built on the SinglePageStartup (SPS) framework.
+Always respect:
+- Modular structure: models, relations, services, controllers
+- Standard API structure via Hono + Bun
+- Strict component creation standards on the frontend (interface.ts, index.tsx, Component.tsx)
+- Data fetching exclusively through SDK Providers and Relation components
+- Server Components usage as default; minimize client-only React components
+
+## Architectural Requirements
+
+### Component Structure
+- Mandatory file structure:
+  - `interface.ts` - types and interfaces
+  - `index.tsx` - component export
+  - `Component.tsx` - component implementation
+- Use of IComponentProps and IComponentPropsExtended
+- Wrapping through ParentComponent with Provider integration
+
+### Data Management
+- Strict use of SDK Providers for data fetching:
+  - `clientApi`
+  - `serverApi`
+  - `Provider`
+- Use of Relation Components for related data
+- Minimization of client-only code
+- Priority of Server Components
+
+### Backend Structure
+- Use of Hono + Bun for API
+- Standard CRUD operations:
+  - GET /model - Fetch list
+  - GET /model/:id - Fetch by ID
+  - POST /model - Create
+  - PATCH /model/:id - Update
+  - DELETE /model/:id - Delete
+- Extended operations:
+  - POST /model/dump - Dump data
+  - POST /model/seed - Seed data
+  - POST /model/find-or-create - Find or create
+  - POST /model/bulk-create - Bulk create
+  - PATCH /model/bulk-update - Bulk update
+
+## Component Development Standards
+
+### Development Standards
+- Use of TypeScript with strict typing
+- Explicit typing of all props
+- Use `interface` over `type` for object descriptions
+- Avoid enums; prefer union types or object maps
+- Use `function` keyword for components
+- Clean, declarative JSX
+- Follow ESLint and Prettier configurations
+
+### Performance Optimization
+- Minimize `use client`, `useEffect`, `useState`
+- Strictly adhere to Server Component standards
+- Monitor Web Vitals:
+  - LCP (Largest Contentful Paint)
+  - CLS (Cumulative Layout Shift)
+  - FID (First Input Delay)
+- Minimization of re-renders
+- Data loading optimization
+- Request caching
+- Lazy loading of components
+
+## Integration
+
+### With Other Modules
+- Integration standards with file-storage
+- Media content handling rules
+- Dependency management
+
+### With External Services
+- API interaction rules
+- Error handling through ExceptionFilter
+- Standardized error responses:
+  - `statusCode` - error code
+  - `message` - error description
+  - `requestId` - unique ID for request traceability
+- Data caching through HTTPCacheMiddleware
