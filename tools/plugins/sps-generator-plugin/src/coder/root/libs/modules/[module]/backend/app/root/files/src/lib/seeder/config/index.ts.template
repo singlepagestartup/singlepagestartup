@@ -1,8 +1,0 @@
-import { IModuleSeedConfig } from "@sps/shared-backend-api";
-import { models } from "@sps/<%= module_name_kebab_case %>/backend/models/root";
-import { configModels as parentConfigModels } from "./startup";
-
-export const config: IModuleSeedConfig<typeof models> = {
-  seed: process.env["<%= module_name_snake_cased_uppercase %>_SEED"] === "true",
-  models: parentConfigModels,
-};

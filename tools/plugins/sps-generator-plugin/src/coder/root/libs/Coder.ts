@@ -34,7 +34,7 @@ export class Coder {
       parent: RootCoder;
     } & IGeneratorProps,
   ) {
-    this.baseDirectory = `libs`;
+    this.baseDirectory = "libs";
     this.name = "libs";
     this.baseName = `${props.parent.baseName}`;
     this.absoluteName = `${props.parent.baseName}/${this.name}`;
