@@ -5,7 +5,6 @@ import {
   replaceInFile,
 } from "../../../../../../../../../../utils/file-utils";
 import * as path from "path";
-import * as nxWorkspace from "@nx/workspace";
 import { util as createSpsTSLibrary } from "../../../../../../../../../../utils/create-sps-ts-library";
 import { RegexCreator } from "../../../../../../../../../../utils/regex-utils/RegexCreator";
 import { Coder as BackendCoder } from "../Coder";
@@ -22,28 +21,32 @@ export class Coder {
   absoluteName: string;
   project?: ProjectConfiguration;
   importApp: ImportApp;
-  exportRoute: ExportRoute;
+  bindApp: BindApp;
   importPath: string;
 
   constructor(props: { parent: BackendCoder; tree: Tree } & IGeneratorProps) {
     this.parent = props.parent;
-    this.baseName = `${this.parent.baseName}-app`;
-    this.baseDirectory = `${this.parent.baseDirectory}/app/api`;
-    this.absoluteName = `${this.parent.absoluteName}/app/api`;
+    this.baseName = `${this.parent.baseName}-api`;
+    this.baseDirectory = `${this.parent.baseDirectory}/api`;
+    this.absoluteName = `${this.parent.absoluteName}/api`;
     this.tree = props.tree;
     this.name = "api";
 
     this.importPath = this.absoluteName;
 
     const pluralNameModelName = pluralize(
-      names(this.parent.parent.name).fileName,
+      names(this.parent.parent.parent.name).fileName,
     );
-    const asPropertyModelName = names(this.parent.parent.name).propertyName;
+
+    const asPropertyModelName = names(
+      this.parent.parent.parent.name,
+    ).propertyName;
+
     this.importApp = new ImportApp({
       importPath: this.importPath,
       asPropertyModelName,
     });
-    this.exportRoute = new ExportRoute({
+    this.bindApp = new BindApp({
       route: `/${pluralNameModelName}`,
       asPropertyModelName,
     });
@@ -65,14 +68,8 @@ export class Coder {
       return;
     }
 
-    const moduleAppPath =
-      this.parent.parent.parent.parent.parent.project.backend.project.app
-        .project.api.baseDirectory;
-
     const moduleName = this.parent.parent.parent.parent.parent.name;
     const modelName = this.parent.parent.parent.name;
-
-    console.log("🚀 ~ create ~ modelName:", modelName);
 
     const modelRepositoryDatabaseImportPath =
       this.parent.parent.project.repository.project.database.importPath;
@@ -91,49 +88,49 @@ export class Coder {
       },
     });
 
-    // await this.attach({
-    //   routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
-    // });
-
     this.project = getProjects(this.tree).get(this.baseName);
+
+    await this.attach();
   }
 
   async remove() {
-    const moduleAppPath =
-      this.parent.parent.parent.parent.parent.project.backend.project.app
-        .project.api.baseDirectory;
-
-    // await this.detach({
-    //   routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
-    // });
+    await this.detach();
 
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
     }
   }
 
-  async attach({ routesPath }: { routesPath: string }) {
+  async attach() {
+    const moduleAppPath =
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory + "/src/lib/apps.ts";
+
     await addToFile({
       toTop: true,
-      pathToFile: routesPath,
+      pathToFile: moduleAppPath,
       content: this.importApp.onCreate.content,
       tree: this.tree,
     });
 
     await replaceInFile({
       tree: this.tree,
-      pathToFile: routesPath,
-      regex: this.exportRoute.onCreate.regex,
-      content: this.exportRoute.onCreate.content,
+      pathToFile: moduleAppPath,
+      regex: this.bindApp.onCreate.regex,
+      content: this.bindApp.onCreate.content,
     });
   }
 
-  async detach({ routesPath }: { routesPath: string }) {
+  async detach() {
+    const moduleAppPath =
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory + "/src/lib/apps.ts";
+
     try {
-      const replaceExportRoutes = await replaceInFile({
+      await replaceInFile({
         tree: this.tree,
-        pathToFile: routesPath,
-        regex: this.exportRoute.onRemove.regex,
+        pathToFile: moduleAppPath,
+        regex: this.bindApp.onRemove.regex,
         content: "",
       });
     } catch (error: any) {
@@ -143,9 +140,9 @@ export class Coder {
     }
 
     try {
-      const replaceImportRoutes = await replaceInFile({
+      await replaceInFile({
         tree: this.tree,
-        pathToFile: routesPath,
+        pathToFile: moduleAppPath,
         regex: this.importApp.onRemove.regex,
         content: "",
       });
@@ -183,7 +180,7 @@ export class ImportApp extends RegexCreator {
   }
 }
 
-export class ExportRoute extends RegexCreator {
+export class BindApp extends RegexCreator {
   constructor({
     route,
     asPropertyModelName,
@@ -191,12 +188,19 @@ export class ExportRoute extends RegexCreator {
     route: string;
     asPropertyModelName: string;
   }) {
-    const place = "export const routes = {";
-    const placeRegex = new RegExp("export const routes = {");
+    const place = "bindApps() {";
+    const placeRegex = new RegExp("bindApps\\(\\) {");
 
-    const content = `"${route}": ${asPropertyModelName},`;
+    const content = `
+    this.apps.push({
+      type: "model",
+      route: "${route}",
+      app: ${asPropertyModelName},
+    });`;
+
     const contentRegex = new RegExp(
-      `"${route}":([\\s]+?)${asPropertyModelName},`,
+      `[\\s\\n]*this\\.apps\\.push\\([\\s\\n]*{[\\s\\n]*type:[\\s]*"model",[\\s\\n]*route:[\\s]*"${route}",[\\s\\n]*app:[\\s]*${asPropertyModelName},[\\s\\n]*}\\);[\\s\\n]*`,
+      "gm",
     );
 
     super({
