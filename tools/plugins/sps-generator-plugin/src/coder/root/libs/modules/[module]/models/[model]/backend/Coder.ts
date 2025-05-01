@@ -5,10 +5,6 @@ import {
 import { Tree } from "@nx/devkit";
 import { Coder as ModelCoder } from "../Coder";
 import {
-  Coder as ModelRootCoder,
-  IGeneratorProps as IModelRootCoderGeneratorProps,
-} from "./model/root/Coder";
-import {
   Coder as AppCoder,
   IGeneratorProps as IAppCoderGeneratorProps,
 } from "./app/Coder";
@@ -16,7 +12,6 @@ import { IEditFieldProps } from "./repository/database/Coder";
 
 export type IGeneratorProps = {
   app?: IAppCoderGeneratorProps;
-  model?: IModelRootCoderGeneratorProps;
   repository?: IRepositoryCoderGeneratorProps;
 };
 
@@ -30,11 +25,9 @@ export class Coder {
   project: {
     app: AppCoder;
     repository: RepositoryCoder;
-    model: ModelRootCoder;
   } = {} as {
     app: AppCoder;
     repository: RepositoryCoder;
-    model: ModelRootCoder;
   };
 
   constructor(props: { parent: ModelCoder; tree: Tree } & IGeneratorProps) {

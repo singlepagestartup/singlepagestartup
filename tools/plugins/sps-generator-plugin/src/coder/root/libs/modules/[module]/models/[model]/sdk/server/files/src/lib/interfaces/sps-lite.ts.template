@@ -1,0 +1,4 @@
+import type { IModel as IParentModel } from "<%= root_contracts_import_path %>";
+
+export interface IModel extends IParentModel {
+}

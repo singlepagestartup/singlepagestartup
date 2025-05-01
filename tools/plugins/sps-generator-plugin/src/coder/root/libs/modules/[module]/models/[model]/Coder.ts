@@ -10,9 +10,9 @@ import {
   IGeneratorProps as IFrontendCoderGeneratorProps,
 } from "./frontend/Coder";
 import {
-  Coder as ContractsCoder,
-  IGeneratorProps as IContractsCoderGeneratorProps,
-} from "./contracts/Coder";
+  Coder as SdkCoder,
+  IGeneratorProps as ISdkCoderGeneratorProps,
+} from "./sdk/Coder";
 import { util as getNameStyles } from "../../../../../../utils/get-name-styles";
 
 export type IGeneratorProps = {
@@ -20,7 +20,7 @@ export type IGeneratorProps = {
   isExternal?: boolean;
   frontend?: IFrontendCoderGeneratorProps;
   backend?: IBackendCoderGeneratorProps;
-  contracts?: IContractsCoderGeneratorProps;
+  sdk?: ISdkCoderGeneratorProps;
 };
 
 /**
@@ -37,11 +37,11 @@ export class Coder {
   nameStyles: ReturnType<typeof getNameStyles>;
   project: {
     backend: BackendCoder;
-    contracts: ContractsCoder;
+    sdk: SdkCoder;
     frontend: FrontendCoder;
   } = {} as {
     backend: BackendCoder;
-    contracts: ContractsCoder;
+    sdk: SdkCoder;
     frontend: FrontendCoder;
   };
 
@@ -66,11 +66,11 @@ export class Coder {
       parent: this,
     });
 
-    // this.project.contracts = new ContractsCoder({
-    //   ...props.contracts,
-    //   tree: this.tree,
-    //   parent: this,
-    // });
+    this.project.sdk = new SdkCoder({
+      ...props.sdk,
+      tree: this.tree,
+      parent: this,
+    });
 
     // this.project.frontend = new FrontendCoder({
     //   ...props.frontend,
@@ -96,8 +96,8 @@ export class Coder {
       return;
     }
 
-    // await this.project.contracts.create();
     await this.project.backend.create();
+    await this.project.sdk.create();
     // await this.project.frontend.create();
   }
 
@@ -108,8 +108,8 @@ export class Coder {
     }
 
     // await this.project.frontend.remove();
+    await this.project.sdk.remove();
     await this.project.backend.remove();
-    // await this.project.contracts.remove();
   }
 
   async addField(props: IEditFieldProps) {
