@@ -5,6 +5,11 @@ import { util as getNameStyles } from "../../../../../../../utils/get-name-style
 import * as nxWorkspace from "@nx/workspace";
 import path from "path";
 import { Migrator } from "./migrator/Migrator";
+import { RegexCreator } from "../../../../../../../../utils/regex-utils/RegexCreator";
+import {
+  addToFile,
+  replaceInFile,
+} from "../../../../../../../../utils/file-utils";
 
 export class Coder {
   name: string;
@@ -15,18 +20,29 @@ export class Coder {
   project?: ProjectConfiguration;
   absoluteName: string;
   moduleNameStyles: ReturnType<typeof getNameStyles>;
+  importBackendAppApiAsPropertyCasedAppName: ImportBackendAppApiAsPropertyCasedAppName;
+  importPath: string;
 
   constructor({ tree, parent }: { tree: Tree; parent: AppCoder }) {
-    this.name = "root";
+    this.name = "api";
     this.baseName = `${parent.baseName}`;
-    this.baseDirectory = `${parent.baseDirectory}/root`;
-    this.absoluteName = `${parent.absoluteName}/root`;
+    this.baseDirectory = `${parent.baseDirectory}/api`;
+    this.absoluteName = `${parent.absoluteName}/api`;
+    this.importPath = this.absoluteName;
     this.tree = tree;
     this.parent = parent;
 
     const moduleName = this.parent.parent.parent.name;
     const moduleNameStyles = getNameStyles({ name: moduleName });
     this.moduleNameStyles = moduleNameStyles;
+
+    const importBackendAppApiAsPropertyCasedAppName =
+      new ImportBackendAppApiAsPropertyCasedAppName({
+        asPropertyCasedAppName: this.moduleNameStyles.propertyCased.base,
+        importPath: this.importPath,
+      });
+    this.importBackendAppApiAsPropertyCasedAppName =
+      importBackendAppApiAsPropertyCasedAppName;
 
     this.project = getProjects(this.tree).get(this.baseName);
   }
@@ -59,6 +75,21 @@ export class Coder {
     this.project = getProjects(this.tree).get(this.baseName);
   }
 
+  async attach() {
+    await addToFile({
+      toTop: true,
+      pathToFile: "/apps/api/app.ts",
+      content: this.importBackendAppApiAsPropertyCasedAppName.onCreate.content,
+      tree: this.tree,
+    });
+    // await replaceInFile({
+    //   tree: this.tree,
+    //   pathToFile: moduleAppRoutesPath,
+    //   regex: this.exportRoute.onCreate.regex,
+    //   content: this.exportRoute.onCreate.content,
+    // });
+  }
+
   async remove() {
     const project = getProjects(this.tree).get(this.baseName);
 
@@ -70,6 +101,26 @@ export class Coder {
       projectName: this.baseName,
       skipFormat: true,
       forceRemove: true,
+    });
+  }
+}
+
+export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
+  constructor(props: { asPropertyCasedAppName: string; importPath: string }) {
+    const place = "";
+    const placeRegex = new RegExp("");
+
+    const content = `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";`;
+
+    const contentRegex = new RegExp(
+      `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      contentRegex,
+      content,
     });
   }
 }

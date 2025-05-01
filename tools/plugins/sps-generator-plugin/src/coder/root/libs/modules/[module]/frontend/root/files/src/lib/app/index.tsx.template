@@ -1,14 +1,13 @@
 
 import { IComponentProps } from "./interface";
-import { Component as Widget } from "<%= module_name %>/models/widget/frontend/component/root";
+import { Component as Widget } from "<%= module_name %>/models/widget/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 
 export function App(props: IComponentProps) {
   return (
-    <div data-module="startup" className={cn("w-full flex", props.className)}>
+    <div data-module="<%= module_name %>" className={cn("w-full flex", props.className)}>
       <Widget
         isServer={props.isServer}
-                
         variant="default"
         data={{
           id: props.widgetId,

@@ -53,6 +53,10 @@ export class Coder {
 
   async create() {
     await this.project.module.create();
+    console.log(
+      "🚀 ~ create ~ this.project.module:",
+      this.project.module.project.backend.project.app.project.api.absoluteName,
+    );
   }
 
   async migrate(props: { version: string }) {

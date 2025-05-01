@@ -71,7 +71,7 @@ export class Coder {
       tree: this.tree,
       root: this.baseDirectory,
       name: this.baseName,
-      generateFilesPath: path.join(__dirname, `files`),
+      generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
         model_import_path: modelImportPath,
@@ -101,7 +101,7 @@ export class Coder {
 
   async attach() {
     const moduleAppRoutesPath = path.join(
-      this.parent.parent.parent.parent.project.backend.project.app.project.root
+      this.parent.parent.parent.parent.project.backend.project.app.project.api
         .baseDirectory,
       "/src/lib/routes.ts",
     );
@@ -123,7 +123,7 @@ export class Coder {
 
   async detach() {
     const moduleAppRoutesPath = path.join(
-      this.parent.parent.parent.parent.project.backend.project.app.project.root
+      this.parent.parent.parent.parent.project.backend.project.app.project.api
         .baseDirectory,
       "/src/lib/routes.ts",
     );
@@ -136,7 +136,7 @@ export class Coder {
         content: "",
       });
     } catch (error: any) {
-      if (!error.message.includes(`No expected value`)) {
+      if (!error.message.includes("No expected value")) {
         throw error;
       }
     }
@@ -149,7 +149,7 @@ export class Coder {
         content: "",
       });
     } catch (error: any) {
-      if (!error.message.includes(`No expected value`)) {
+      if (!error.message.includes("No expected value")) {
         throw error;
       }
     }
@@ -178,8 +178,8 @@ export class ImportAppAsAsPropertyModelName extends RegexCreator {
 
 export class ExportRoute extends RegexCreator {
   constructor(props: { route: string; asPropertyModelName: string }) {
-    const place = `export const routes = {`;
-    const placeRegex = new RegExp(`export const routes = {`);
+    const place = "export const routes = {";
+    const placeRegex = new RegExp("export const routes = {");
 
     const content = `"${props.route}": ${props.asPropertyModelName},`;
     const contentRegex = new RegExp(

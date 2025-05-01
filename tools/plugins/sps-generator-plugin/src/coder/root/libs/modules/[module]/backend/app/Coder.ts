@@ -37,6 +37,10 @@ export class Coder {
     await this.project.api.create();
   }
 
+  async attach() {
+    await this.project.api.attach();
+  }
+
   async migrate(props: { version: string }) {
     await this.project.api.migrate(props);
   }

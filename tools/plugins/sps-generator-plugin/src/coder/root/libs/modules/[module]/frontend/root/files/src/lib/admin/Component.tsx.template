@@ -1,11 +1,6 @@
-import dynamic from "next/dynamic";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
-const Widget = dynamic(() =>
-  import("<%= module_name %>/models/widget/frontend/component/root").then(
-    (mod) => mod.Component,
-  ),
-);
+import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
