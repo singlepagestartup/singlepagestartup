@@ -65,12 +65,20 @@ export class Coder {
       return;
     }
 
-    const modelImportPath = this.parent.parent.project.model.absoluteName;
     const moduleAppPath =
       this.parent.parent.parent.parent.parent.project.backend.project.app
         .project.api.baseDirectory;
 
-    console.log("🚀 ~ create ~ moduleAppPath:", moduleAppPath);
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    const modelName = this.parent.parent.name;
+
+    const modelRepositoryDatabaseImportPath =
+      this.parent.parent.project.repository.project.database.importPath;
+
+    console.log(
+      "🚀 ~ create ~ modelRepositoryDatabaseImportPath:",
+      modelRepositoryDatabaseImportPath,
+    );
 
     await createSpsTSLibrary({
       tree: this.tree,
@@ -79,13 +87,16 @@ export class Coder {
       generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
-        model_import_path: modelImportPath,
+        model_repository_database_import_path:
+          modelRepositoryDatabaseImportPath,
+        module_name: moduleName,
+        model_name: modelName,
       },
     });
 
-    await this.attach({
-      routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
-    });
+    // await this.attach({
+    //   routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
+    // });
 
     this.project = getProjects(this.tree).get(this.baseName);
   }

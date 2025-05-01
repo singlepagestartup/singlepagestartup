@@ -66,17 +66,17 @@ export class Coder {
       parent: this,
     });
 
-    this.project.contracts = new ContractsCoder({
-      ...props.contracts,
-      tree: this.tree,
-      parent: this,
-    });
+    // this.project.contracts = new ContractsCoder({
+    //   ...props.contracts,
+    //   tree: this.tree,
+    //   parent: this,
+    // });
 
-    this.project.frontend = new FrontendCoder({
-      ...props.frontend,
-      tree: this.tree,
-      parent: this,
-    });
+    // this.project.frontend = new FrontendCoder({
+    //   ...props.frontend,
+    //   tree: this.tree,
+    //   parent: this,
+    // });
   }
 
   async migrate(props: { version: string }) {
@@ -85,9 +85,9 @@ export class Coder {
       return;
     }
 
-    await this.project.contracts.migrate(props);
+    // await this.project.contracts.migrate(props);
     await this.project.backend.migrate(props);
-    await this.project.frontend.migrate(props);
+    // await this.project.frontend.migrate(props);
   }
 
   async create() {
@@ -96,9 +96,9 @@ export class Coder {
       return;
     }
 
-    await this.project.contracts.create();
+    // await this.project.contracts.create();
     await this.project.backend.create();
-    await this.project.frontend.create();
+    // await this.project.frontend.create();
   }
 
   async remove() {
@@ -107,9 +107,9 @@ export class Coder {
       return;
     }
 
-    await this.project.frontend.remove();
+    // await this.project.frontend.remove();
     await this.project.backend.remove();
-    await this.project.contracts.remove();
+    // await this.project.contracts.remove();
   }
 
   async addField(props: IEditFieldProps) {

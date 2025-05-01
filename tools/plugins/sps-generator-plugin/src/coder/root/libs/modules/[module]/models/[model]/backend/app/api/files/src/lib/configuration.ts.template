@@ -4,7 +4,7 @@ import {
   insertSchema,
   selectSchema,
   dataDirectory,
-} from "@sps/website-builder/models/button/backend/repository/database";
+} from "<%= model_repository_database_import_path %>";
 import { injectable } from "inversify";
 
 @injectable()
@@ -23,8 +23,8 @@ export class Configuration extends ParentConfiguration {
         },
         seed: {
           active: true,
-          module: "website-builder",
-          name: "button",
+          module: "<%= module_name %>",
+          name: "<%= model_name %>",
           type: "model",
           filters: [
             {
