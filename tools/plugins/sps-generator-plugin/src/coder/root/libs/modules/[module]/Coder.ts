@@ -1,4 +1,4 @@
-import { generateFiles, offsetFromRoot, Tree } from "@nx/devkit";
+import { generateFiles, offsetFromRoot, Tree, updateJson } from "@nx/devkit";
 import {
   Coder as ModelsCoder,
   IGeneratorProps as IModelsCoderGeneratorProps,
@@ -122,6 +122,25 @@ export class Coder {
     //   offset_from_root: offsetFromRootProject,
     //   directory: this.baseDirectory,
     // });
+
+    await this.attach();
+  }
+
+  async attach() {
+    updateJson(this.tree, "tsconfig.base.json", (json) => {
+      const updatedJson = {
+        ...json,
+        compilerOptions: {
+          ...json.compilerOptions,
+          paths: {
+            ...json.compilerOptions.paths,
+            [this.baseName + "/*"]: ["libs/modules/" + this.name + "/*"],
+          },
+        },
+      };
+
+      return updatedJson;
+    });
   }
 
   async migrate(props: { version: string }) {

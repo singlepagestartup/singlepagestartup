@@ -1,6 +1,7 @@
 import {
   generateFiles,
   offsetFromRoot,
+  ProjectConfiguration,
   updateProjectConfiguration,
 } from "@nx/devkit";
 import { Migrator as ParentMigrator } from "../Migrator";
@@ -26,7 +27,7 @@ export class Migrator {
 
     generateFiles(
       this.parent.coder.tree,
-      path.join(__dirname, `files`),
+      path.join(__dirname, "files"),
       baseDirectory,
       {
         template: "",

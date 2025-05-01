@@ -57,7 +57,7 @@ export class Migrator {
 
     generateFiles(
       this.parent.coder.tree,
-      path.join(__dirname, `files`),
+      path.join(__dirname, "files"),
       baseDirectory,
       {
         template: "",
@@ -66,7 +66,7 @@ export class Migrator {
       },
     );
 
-    updateJson(this.parent.coder.tree, `tsconfig.base.json`, (json) => {
+    updateJson(this.parent.coder.tree, "tsconfig.base.json", (json) => {
       const updatedJson = { ...json };
       const project = updatedJson.compilerOptions.paths[`${baseName}`];
 

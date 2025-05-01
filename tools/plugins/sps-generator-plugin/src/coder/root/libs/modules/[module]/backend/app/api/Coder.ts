@@ -1,4 +1,9 @@
-import { ProjectConfiguration, Tree, getProjects } from "@nx/devkit";
+import {
+  ProjectConfiguration,
+  Tree,
+  getProjects,
+  updateJson,
+} from "@nx/devkit";
 import { Coder as AppCoder } from "../Coder";
 import { util as createSpsTSLibrary } from "../../../../../../../../utils/create-sps-ts-library";
 import { util as getNameStyles } from "../../../../../../../utils/get-name-styles";
@@ -82,6 +87,9 @@ export class Coder {
       content: this.importBackendAppApiAsPropertyCasedAppName.onCreate.content,
       tree: this.tree,
     });
+
+    //   return updatedJson;
+    // });
     // await replaceInFile({
     //   tree: this.tree,
     //   pathToFile: moduleAppRoutesPath,
