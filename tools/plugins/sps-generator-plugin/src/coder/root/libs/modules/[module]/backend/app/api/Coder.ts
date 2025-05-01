@@ -88,8 +88,6 @@ export class Coder {
       tree: this.tree,
     });
 
-    //   return updatedJson;
-    // });
     // await replaceInFile({
     //   tree: this.tree,
     //   pathToFile: moduleAppRoutesPath,
@@ -98,18 +96,21 @@ export class Coder {
     // });
   }
 
-  async remove() {
-    const project = getProjects(this.tree).get(this.baseName);
-
-    if (!project) {
-      return;
-    }
-
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
+  async detach() {
+    await replaceInFile({
+      pathToFile: "/apps/api/app.ts",
+      content: this.importBackendAppApiAsPropertyCasedAppName.onRemove.content,
+      regex: this.importBackendAppApiAsPropertyCasedAppName.onRemove.regex,
+      tree: this.tree,
     });
+  }
+
+  async remove() {
+    await this.detach();
+
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
+    }
   }
 }
 

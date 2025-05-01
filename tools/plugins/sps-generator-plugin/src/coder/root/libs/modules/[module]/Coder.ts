@@ -1,4 +1,11 @@
-import { generateFiles, offsetFromRoot, Tree, updateJson } from "@nx/devkit";
+import {
+  generateFiles,
+  getProjects,
+  offsetFromRoot,
+  Tree,
+  updateJson,
+} from "@nx/devkit";
+import * as nxWorkspace from "@nx/workspace";
 import {
   Coder as ModelsCoder,
   IGeneratorProps as IModelsCoderGeneratorProps,
@@ -156,17 +163,36 @@ export class Coder {
     await this.project.frontend.migrate(props);
   }
 
+  async detach() {
+    updateJson(this.tree, "tsconfig.base.json", (json) => {
+      const updatedJson = {
+        ...json,
+      };
+
+      delete updatedJson.compilerOptions.paths[this.baseName + "/*"];
+
+      return updatedJson;
+    });
+  }
+
   async remove() {
-    for (const relation of this.project.relations) {
-      await relation.remove();
-    }
+    await this.detach();
 
-    for (const model of this.project.models) {
-      await model.remove();
-    }
+    // for (const relation of this.project.relations) {
+    //   await relation.remove();
+    // }
 
-    await this.project.frontend.remove();
+    // for (const model of this.project.models) {
+    //   await model.remove();
+    // }
+
+    // await this.project.frontend.remove();
+
     await this.project.backend.remove();
+
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
+    }
   }
 
   async addField(props: IEditFieldProps) {

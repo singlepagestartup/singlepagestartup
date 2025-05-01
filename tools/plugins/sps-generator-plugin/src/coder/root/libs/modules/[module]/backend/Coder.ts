@@ -50,6 +50,10 @@ export class Coder {
     await this.project.app.attach();
   }
 
+  async detach() {
+    await this.project.app.detach();
+  }
+
   async remove() {
     await this.project.app.remove();
   }
