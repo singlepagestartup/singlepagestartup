@@ -12,6 +12,7 @@ export async function frontendComponentVariantGenerator(
   const level = options.level;
   const entityName = options.entity_name;
   const moduleName = options.module_name;
+  const path = options.path;
   const template = options.template || "default";
 
   if (options.type === "model") {
@@ -34,6 +35,7 @@ export async function frontendComponentVariantGenerator(
                               name,
                               level,
                               template,
+                              path,
                             },
                           ],
                         },
@@ -54,6 +56,7 @@ export async function frontendComponentVariantGenerator(
           name,
           level,
           template: template || "default",
+          path,
         },
       );
     } else {
@@ -62,6 +65,7 @@ export async function frontendComponentVariantGenerator(
           name,
           level,
           template: template || "default",
+          path,
         },
       );
     }

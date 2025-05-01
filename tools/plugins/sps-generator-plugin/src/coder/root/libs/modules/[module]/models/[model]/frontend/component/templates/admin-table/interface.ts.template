@@ -3,7 +3,7 @@ import { IModel } from "<%= sdk_model_import_path %>";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/find/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/table/interface";
 
 export const variant = "<%= variant %>" as const;
 

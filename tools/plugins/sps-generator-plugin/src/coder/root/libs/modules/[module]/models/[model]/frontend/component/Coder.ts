@@ -23,6 +23,7 @@ interface IVariantProps {
   name: string;
   level: string;
   template: string;
+  path: string;
 }
 
 export type IGeneratorProps = {
@@ -78,7 +79,7 @@ export class Coder {
 
   async createVariant(props: IVariantProps) {
     const moduleName = this.parent.parent.parent.parent.name;
-    const modelName = this.parent.parent.parent.name;
+    const modelName = this.parent.parent.name;
 
     const sdkClientImportPath =
       this.parent.parent.project.sdk.project.client.importPath;
@@ -102,18 +103,18 @@ export class Coder {
       name: props.name,
     });
 
-    const variantComponentImportPath = `./${props.name}`;
-    const variantInterfaceImportPath = `./${props.name}/interface`;
+    const variantComponentImportPath = `./${props.path}`;
+    const variantInterfaceImportPath = `./${props.path}/interface`;
 
     await createSpsReactLibrary({
-      root: this.baseDirectory + `/src/lib/${props.level}/${props.name}`,
+      root: this.baseDirectory + `/src/lib/${props.level}/${props.path}`,
       name: this.baseName,
       tree: this.tree,
       generateFilesPath: templateDirectory,
       templateParams: {
         template: "",
         template_name: props.template,
-        variant: this.name,
+        variant: props.name,
         module_name: moduleName,
         model_name: modelName,
         level: props.level,
@@ -128,7 +129,7 @@ export class Coder {
     });
 
     this.tree.delete(
-      this.baseDirectory + `/src/lib/${props.level}/${props.name}/index.ts`,
+      this.baseDirectory + `/src/lib/${props.level}/${props.path}/index.ts`,
     );
 
     const variantsPath =
@@ -207,8 +208,8 @@ export class Coder {
       name: props.name,
     });
 
-    const variantComponentImportPath = `./${props.name}`;
-    const variantInterfaceImportPath = `./${props.name}/interface`;
+    const variantComponentImportPath = `./${props.path}`;
+    const variantInterfaceImportPath = `./${props.path}/interface`;
 
     const importVariant = new ImportVariant({
       pascalCasedVariant: variantNameStyled.pascalCased.base,
@@ -282,7 +283,7 @@ export class Coder {
     }
 
     this.tree.delete(
-      this.baseDirectory + `/src/lib/${props.level}/${props.name}`,
+      this.baseDirectory + `/src/lib/${props.level}/${props.path}`,
     );
   }
 

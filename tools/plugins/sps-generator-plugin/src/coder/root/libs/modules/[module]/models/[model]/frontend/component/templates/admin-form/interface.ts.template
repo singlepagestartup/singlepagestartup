@@ -3,12 +3,13 @@ import { IModel } from "<%= sdk_model_import_path %>";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
-} from "@sps/shared-frontend-components/singlepage/find/interface";
+} from "@sps/shared-frontend-components/singlepage/admin/form/interface";
 
 export const variant = "<%= variant %>" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<
