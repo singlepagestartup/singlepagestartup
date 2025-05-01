@@ -107,7 +107,7 @@ export class Coder {
   }
 
   async create() {
-    // await this.project.backend.create();
+    await this.project.backend.create();
     await this.project.frontend.create();
 
     // for (const model of this.project.models) {
@@ -180,13 +180,12 @@ export class Coder {
     //   await relation.remove();
     // }
 
-    // for (const model of this.project.models) {
-    //   await model.remove();
-    // }
+    for (const model of this.project.models) {
+      await model.remove();
+    }
 
     await this.project.frontend.remove();
-
-    // await this.project.backend.remove();
+    await this.project.backend.remove();
 
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
