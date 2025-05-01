@@ -6,9 +6,9 @@ import {
 } from "@sps/shared-backend-api";
 import { Configuration } from "./configuration";
 import { Repository } from "./repository";
-import { Controller } from "./controller/index.ts.template";
+import { Controller } from "./controller";
 import { Service } from "./service";
-import { App } from "./app.ts.template";
+import { App } from "./app";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);

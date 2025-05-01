@@ -1,3 +1,4 @@
+import { randomWordsGenerator } from "@sps/shared-utils";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export const fields = {

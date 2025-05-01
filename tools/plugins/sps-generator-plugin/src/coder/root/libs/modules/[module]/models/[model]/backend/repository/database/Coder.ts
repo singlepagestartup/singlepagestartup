@@ -164,17 +164,9 @@ export class Coder {
   }
 
   async remove() {
-    const project = getProjects(this.tree).get(this.baseName);
-
-    if (!project) {
-      return;
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
     }
-
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
-    });
   }
 }
 

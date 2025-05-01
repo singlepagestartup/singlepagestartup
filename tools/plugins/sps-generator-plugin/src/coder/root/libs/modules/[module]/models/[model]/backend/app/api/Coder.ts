@@ -70,15 +70,12 @@ export class Coder {
         .project.api.baseDirectory;
 
     const moduleName = this.parent.parent.parent.parent.parent.name;
-    const modelName = this.parent.parent.name;
+    const modelName = this.parent.parent.parent.name;
+
+    console.log("🚀 ~ create ~ modelName:", modelName);
 
     const modelRepositoryDatabaseImportPath =
       this.parent.parent.project.repository.project.database.importPath;
-
-    console.log(
-      "🚀 ~ create ~ modelRepositoryDatabaseImportPath:",
-      modelRepositoryDatabaseImportPath,
-    );
 
     await createSpsTSLibrary({
       tree: this.tree,
@@ -102,24 +99,17 @@ export class Coder {
   }
 
   async remove() {
-    const project = getProjects(this.tree).get(this.baseName);
     const moduleAppPath =
       this.parent.parent.parent.parent.parent.project.backend.project.app
         .project.api.baseDirectory;
 
-    await this.detach({
-      routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
-    });
+    // await this.detach({
+    //   routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
+    // });
 
-    if (!project) {
-      return;
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
     }
-
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
-    });
   }
 
   async attach({ routesPath }: { routesPath: string }) {

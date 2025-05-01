@@ -4,12 +4,12 @@ export function util({ name }: { name: string }) {
   const baseName = name
     .split("-")
     .map((word) => {
-      // take only first letter
+      // take only first and last letter
       if (word === "sps") {
         return "s p s";
       }
 
-      return word[0];
+      return word[0] + word[word.length - 1];
     })
     .join(" ");
 
