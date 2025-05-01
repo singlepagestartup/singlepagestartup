@@ -116,10 +116,12 @@ export class Coder {
 
 export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
   constructor(props: { asPropertyCasedAppName: string; importPath: string }) {
-    const place = "";
-    const placeRegex = new RegExp("");
+    const place = 'export const app = new Hono().basePath("/");';
+    const placeRegex = new RegExp(
+      'export const app = new Hono\\(\\)\\.basePath\\("/"\\);',
+    );
 
-    const content = `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";`;
+    const content = `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";\n\n`;
 
     const contentRegex = new RegExp(
       `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";`,
@@ -130,6 +132,7 @@ export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
       placeRegex,
       contentRegex,
       content,
+      type: "prepend",
     });
   }
 }
