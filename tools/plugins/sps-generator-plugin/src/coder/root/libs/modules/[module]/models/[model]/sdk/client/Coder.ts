@@ -1,12 +1,6 @@
-import {
-  ProjectConfiguration,
-  Tree,
-  getProjects,
-  offsetFromRoot,
-} from "@nx/devkit";
+import { ProjectConfiguration, Tree, getProjects } from "@nx/devkit";
 import { Coder as ContractsCoder } from "../Coder";
 import { util as createSpsTSLibrary } from "../../../../../../../../../utils/create-sps-ts-library";
-import * as nxWorkspace from "@nx/workspace";
 import * as path from "path";
 import { Migrator } from "./migrator/Migrator";
 
@@ -23,12 +17,12 @@ export class Coder {
   importPath: string;
 
   constructor(props: { parent: ContractsCoder; tree: Tree } & IGeneratorProps) {
-    this.name = "extended";
+    this.name = "client";
     this.parent = props.parent;
     this.tree = props.tree;
-    this.baseName = `${props.parent.baseName}-extended`;
-    this.baseDirectory = `${props.parent.baseDirectory}/extended`;
-    this.absoluteName = `${props.parent.absoluteName}/extended`;
+    this.baseName = `${props.parent.baseName}-client`;
+    this.baseDirectory = `${props.parent.baseDirectory}/client`;
+    this.absoluteName = `${props.parent.absoluteName}/client`;
 
     this.importPath = this.absoluteName;
 
@@ -49,16 +43,16 @@ export class Coder {
       return;
     }
 
-    const rootContractsImportPath = this.parent.project.root.absoluteName;
+    const modelSdkModelImportPath = this.parent.project.model.importPath;
 
     await createSpsTSLibrary({
       tree: this.tree,
       root: this.baseDirectory,
       name: this.baseName,
-      generateFilesPath: path.join(__dirname, `files`),
+      generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
-        root_contracts_import_path: rootContractsImportPath,
+        model_sdk_model_import_path: modelSdkModelImportPath,
       },
     });
 
@@ -66,16 +60,8 @@ export class Coder {
   }
 
   async remove() {
-    const project = getProjects(this.tree).get(this.baseName);
-
-    if (!project) {
-      return;
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
     }
-
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
-    });
   }
 }

@@ -8,10 +8,15 @@ import {
   Coder as ClientCoder,
   IGeneratorProps as IClientCoderGeneratorProps,
 } from "./client/Coder";
+import {
+  Coder as ServerCoder,
+  IGeneratorProps as IServerCoderGeneratorProps,
+} from "./server/Coder";
 
 export type IGeneratorProps = {
   model?: IModelCoderGeneratorProps;
   client?: IClientCoderGeneratorProps;
+  server?: IServerCoderGeneratorProps;
 };
 
 export class Coder {
@@ -24,6 +29,7 @@ export class Coder {
   project: {
     client: ClientCoder;
     model: ModelCoder;
+    server: ServerCoder;
   };
 
   constructor(props: { parent: SdkCoder; tree: Tree } & IGeneratorProps) {
@@ -44,24 +50,33 @@ export class Coder {
       parent: this,
     });
 
+    const server = new ServerCoder({
+      tree: this.tree,
+      parent: this,
+    });
+
     this.project = {
       model,
       client,
+      server,
     };
   }
 
   async migrate(props: { version: string }) {
     await this.project.model.migrate(props);
+    await this.project.server.migrate(props);
     await this.project.client.migrate(props);
   }
 
   async create() {
     await this.project.model.create();
-    // await this.project.client.create();
+    await this.project.server.create();
+    await this.project.client.create();
   }
 
   async remove() {
-    // await this.project.client.remove();
+    await this.project.client.remove();
+    await this.project.server.remove();
     await this.project.model.remove();
   }
 }
