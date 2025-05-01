@@ -1,9 +1,12 @@
-import { ImportBackendAppApiAsPropertyCasedAppName } from "./Coder";
+import {
+  ImportBackendAppApiAsPropertyCasedAppName,
+  ExtendAppRouteWithAppHono,
+} from "./Coder";
 
 describe("Coder", () => {
   describe("ImportBackendAppApiAsPropertyCasedAppName", () => {
     const importPath = "@sps/website-builder/backend/app/api";
-    const asPropertyCasedAppName = "websiteBuilderApp";
+    const asPropertyCasedAppName = "websiteBuilder";
     const importPathApp = new ImportBackendAppApiAsPropertyCasedAppName({
       importPath,
       asPropertyCasedAppName,
@@ -32,6 +35,31 @@ describe("Coder", () => {
       expect(content).toBe(
         'import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";\n\nexport const app = new Hono().basePath("/");',
       );
+    });
+  });
+
+  describe("ExtendAppRouteWithAppHono", () => {
+    const asPropertyCasedAppName = "websiteBuilder";
+    const kebabCasedAppName = "website-builder";
+    const extendAppRoute = new ExtendAppRouteWithAppHono({
+      asPropertyCasedAppName,
+      kebabCasedAppName,
+    });
+
+    it("should correctly create route content", () => {
+      const content = extendAppRoute.onCreate.content;
+
+      expect(content).toBe(
+        `app.route("/api/${kebabCasedAppName}", ${asPropertyCasedAppName}App.hono);\n`,
+      );
+    });
+
+    it("should match the regex for route removal", () => {
+      const regex = extendAppRoute.onRemove.regex;
+
+      const string = `app.route("/api/${kebabCasedAppName}", ${asPropertyCasedAppName}App.hono);`;
+
+      expect(string).toMatch(regex);
     });
   });
 });

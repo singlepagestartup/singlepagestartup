@@ -1,13 +1,7 @@
-import {
-  ProjectConfiguration,
-  Tree,
-  getProjects,
-  updateJson,
-} from "@nx/devkit";
+import { ProjectConfiguration, Tree, getProjects } from "@nx/devkit";
 import { Coder as AppCoder } from "../Coder";
 import { util as createSpsTSLibrary } from "../../../../../../../../utils/create-sps-ts-library";
 import { util as getNameStyles } from "../../../../../../../utils/get-name-styles";
-import * as nxWorkspace from "@nx/workspace";
 import path from "path";
 import { Migrator } from "./migrator/Migrator";
 import { RegexCreator } from "../../../../../../../../utils/regex-utils/RegexCreator";
@@ -27,6 +21,7 @@ export class Coder {
   moduleNameStyles: ReturnType<typeof getNameStyles>;
   importBackendAppApiAsPropertyCasedAppName: ImportBackendAppApiAsPropertyCasedAppName;
   importPath: string;
+  extendAppRouteWithAppHono: ExtendAppRouteWithAppHono;
 
   constructor({ tree, parent }: { tree: Tree; parent: AppCoder }) {
     this.name = "api";
@@ -48,6 +43,12 @@ export class Coder {
       });
     this.importBackendAppApiAsPropertyCasedAppName =
       importBackendAppApiAsPropertyCasedAppName;
+
+    const extendAppRouteWithAppHono = new ExtendAppRouteWithAppHono({
+      asPropertyCasedAppName: this.moduleNameStyles.propertyCased.base,
+      kebabCasedAppName: this.moduleNameStyles.kebabCased.base,
+    });
+    this.extendAppRouteWithAppHono = extendAppRouteWithAppHono;
 
     this.project = getProjects(this.tree).get(this.baseName);
   }
@@ -81,19 +82,19 @@ export class Coder {
   }
 
   async attach() {
-    await addToFile({
-      toTop: true,
+    await replaceInFile({
       pathToFile: "/apps/api/app.ts",
       content: this.importBackendAppApiAsPropertyCasedAppName.onCreate.content,
+      regex: this.importBackendAppApiAsPropertyCasedAppName.onCreate.regex,
       tree: this.tree,
     });
 
-    // await replaceInFile({
-    //   tree: this.tree,
-    //   pathToFile: moduleAppRoutesPath,
-    //   regex: this.exportRoute.onCreate.regex,
-    //   content: this.exportRoute.onCreate.content,
-    // });
+    await addToFile({
+      toTop: false,
+      content: this.extendAppRouteWithAppHono.onCreate.content,
+      pathToFile: "/apps/api/app.ts",
+      tree: this.tree,
+    });
   }
 
   async detach() {
@@ -101,6 +102,13 @@ export class Coder {
       pathToFile: "/apps/api/app.ts",
       content: this.importBackendAppApiAsPropertyCasedAppName.onRemove.content,
       regex: this.importBackendAppApiAsPropertyCasedAppName.onRemove.regex,
+      tree: this.tree,
+    });
+
+    await replaceInFile({
+      pathToFile: "/apps/api/app.ts",
+      content: this.extendAppRouteWithAppHono.onRemove.content,
+      regex: this.extendAppRouteWithAppHono.onRemove.regex,
       tree: this.tree,
     });
   }
@@ -121,10 +129,10 @@ export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
       'export const app = new Hono\\(\\)\\.basePath\\("/"\\);',
     );
 
-    const content = `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";\n\n`;
+    const content = `import { app as ${props.asPropertyCasedAppName}App } from "${props.importPath}";\n\n`;
 
     const contentRegex = new RegExp(
-      `import { app as ${props.asPropertyCasedAppName} } from "${props.importPath}";`,
+      `import { app as ${props.asPropertyCasedAppName}App } from "${props.importPath}";`,
     );
 
     super({
@@ -133,6 +141,27 @@ export class ImportBackendAppApiAsPropertyCasedAppName extends RegexCreator {
       contentRegex,
       content,
       type: "prepend",
+    });
+  }
+}
+
+export class ExtendAppRouteWithAppHono extends RegexCreator {
+  constructor(props: {
+    asPropertyCasedAppName: string;
+    kebabCasedAppName: string;
+  }) {
+    const content = `app.route("/api/${props.kebabCasedAppName}", ${props.asPropertyCasedAppName}App.hono);\n`;
+
+    const contentRegex = new RegExp(
+      `app\\.route\\("/api/${props.kebabCasedAppName}", ${props.asPropertyCasedAppName}App\\.hono\\);(\n)?`,
+    );
+
+    super({
+      place: "",
+      placeRegex: new RegExp(""),
+      contentRegex,
+      content,
+      type: "append",
     });
   }
 }
