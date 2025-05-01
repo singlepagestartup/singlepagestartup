@@ -1,4 +1,3 @@
-import { app as widget } from "@sps/<%= module_name_kebab_case %>/models/widget/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -9,11 +8,5 @@ export class Apps {
     this.bindApps();
   }
 
-  bindApps() {
-    this.apps.push({
-      type: "model",
-      route: "/widgets",
-      app: widget,
-    });
-  }
+  bindApps() {}
 }

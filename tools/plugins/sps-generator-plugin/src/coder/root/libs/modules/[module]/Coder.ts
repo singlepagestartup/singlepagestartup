@@ -107,10 +107,8 @@ export class Coder {
   }
 
   async create() {
-    await this.project.backend.create();
-    await this.project.backend.attach();
-
-    // await this.project.frontend.create();
+    // await this.project.backend.create();
+    await this.project.frontend.create();
 
     // for (const model of this.project.models) {
     //   await model.create();
@@ -120,15 +118,15 @@ export class Coder {
     //   await relation.create();
     // }
 
-    // const offsetFromRootProject = offsetFromRoot(this.baseDirectory);
+    const offsetFromRootProject = offsetFromRoot(this.baseDirectory);
 
-    // generateFiles(this.tree, `${__dirname}/files`, this.baseDirectory, {
-    //   template: "",
-    //   lib_name: this.baseName,
-    //   name_pascal_cased: this.nameStyles.pascalCased.base,
-    //   offset_from_root: offsetFromRootProject,
-    //   directory: this.baseDirectory,
-    // });
+    generateFiles(this.tree, `${__dirname}/files`, this.baseDirectory, {
+      template: "",
+      lib_name: this.baseName,
+      name_pascal_cased: this.nameStyles.pascalCased.base,
+      offset_from_root: offsetFromRootProject,
+      directory: this.baseDirectory,
+    });
 
     await this.attach();
   }
@@ -186,9 +184,9 @@ export class Coder {
     //   await model.remove();
     // }
 
-    // await this.project.frontend.remove();
+    await this.project.frontend.remove();
 
-    await this.project.backend.remove();
+    // await this.project.backend.remove();
 
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);

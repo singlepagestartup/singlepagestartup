@@ -18,11 +18,11 @@ export class Coder {
   importPath: string;
 
   constructor(props: { parent: ComponentCoder; tree: Tree } & IGeneratorProps) {
-    this.name = "root";
+    this.name = "component";
     this.parent = props.parent;
     this.baseName = `${this.parent.baseName}`;
-    this.baseDirectory = `${this.parent.baseDirectory}/root`;
-    this.absoluteName = `${this.parent.absoluteName}/root`;
+    this.baseDirectory = `${this.parent.baseDirectory}/component`;
+    this.absoluteName = `${this.parent.absoluteName}/component`;
     this.tree = props.tree;
 
     this.importPath = this.absoluteName;

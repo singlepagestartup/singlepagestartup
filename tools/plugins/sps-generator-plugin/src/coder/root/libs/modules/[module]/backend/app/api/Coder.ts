@@ -79,6 +79,8 @@ export class Coder {
     });
 
     this.project = getProjects(this.tree).get(this.baseName);
+
+    await this.attach();
   }
 
   async attach() {
