@@ -18,7 +18,24 @@ export async function modelGenerator(
           {
             module: {
               name: moduleName,
-              models: [{ model: { name: modelName } }],
+              models: [
+                {
+                  model: {
+                    name: modelName,
+                    frontend: {
+                      component: {
+                        variants: [
+                          {
+                            name: "find",
+                            level: "singlepage",
+                            template: "find",
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
             },
           },
         ],
