@@ -3,7 +3,7 @@ import {
   Coder as LibsCoder,
   IGeneratorProps as ILibsCoderGeneratorProps,
 } from "./libs/Coder";
-import { IEditFieldProps } from "./libs/modules/[module]/models/[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./libs/modules/[module]/models/[model]/backend/repository/database/Coder";
 
 export type IGeneratorProps = {
   libs: ILibsCoderGeneratorProps;

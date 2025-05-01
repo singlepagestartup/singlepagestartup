@@ -11,7 +11,7 @@ import {
   IGeneratorProps as IModelsCoderGeneratorProps,
 } from "./models/Coder";
 import { Coder as ModuleCoder } from "../Coder";
-import { IEditFieldProps } from "./models/[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./models/[model]/backend/repository/database/Coder";
 import {
   Coder as RelationsCoder,
   IGeneratorProps as IRelationsCoderGeneratorProps,

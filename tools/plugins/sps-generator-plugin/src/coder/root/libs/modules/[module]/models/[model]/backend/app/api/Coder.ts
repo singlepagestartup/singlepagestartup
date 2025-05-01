@@ -8,7 +8,7 @@ import * as path from "path";
 import * as nxWorkspace from "@nx/workspace";
 import { util as createSpsTSLibrary } from "../../../../../../../../../../utils/create-sps-ts-library";
 import { RegexCreator } from "../../../../../../../../../../utils/regex-utils/RegexCreator";
-import { Coder as BackendCoder } from "../../Coder";
+import { Coder as BackendCoder } from "../Coder";
 import { Migrator } from "./migrator/Migrator";
 
 export type IGeneratorProps = unknown;
@@ -28,10 +28,10 @@ export class Coder {
   constructor(props: { parent: BackendCoder; tree: Tree } & IGeneratorProps) {
     this.parent = props.parent;
     this.baseName = `${this.parent.baseName}-app`;
-    this.baseDirectory = `${this.parent.baseDirectory}/app/root`;
-    this.absoluteName = `${this.parent.absoluteName}/app/root`;
+    this.baseDirectory = `${this.parent.baseDirectory}/app/api`;
+    this.absoluteName = `${this.parent.absoluteName}/app/api`;
     this.tree = props.tree;
-    this.name = "app";
+    this.name = "api";
 
     this.importPath = this.absoluteName;
 
@@ -65,21 +65,21 @@ export class Coder {
       return;
     }
 
-    const modelImportPath = this.parent.project.model.absoluteName;
-    const modelSchemaLibName = this.parent.project.schema.baseName;
+    const modelImportPath = this.parent.parent.project.model.absoluteName;
     const moduleAppPath =
-      this.parent.parent.parent.parent.project.backend.project.app.project.root
-        .baseDirectory;
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory;
+
+    console.log("🚀 ~ create ~ moduleAppPath:", moduleAppPath);
 
     await createSpsTSLibrary({
       tree: this.tree,
       root: this.baseDirectory,
       name: this.baseName,
-      generateFilesPath: path.join(__dirname, `files`),
+      generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
         model_import_path: modelImportPath,
-        model_schema_lib_name: modelSchemaLibName,
       },
     });
 
@@ -93,8 +93,8 @@ export class Coder {
   async remove() {
     const project = getProjects(this.tree).get(this.baseName);
     const moduleAppPath =
-      this.parent.parent.parent.parent.project.backend.project.app.project.root
-        .baseDirectory;
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory;
 
     await this.detach({
       routesPath: path.join(moduleAppPath, "/src/lib/routes.ts"),
@@ -136,7 +136,7 @@ export class Coder {
         content: "",
       });
     } catch (error: any) {
-      if (!error.message.includes(`No expected value`)) {
+      if (!error.message.includes("No expected value")) {
         throw error;
       }
     }
@@ -149,7 +149,7 @@ export class Coder {
         content: "",
       });
     } catch (error: any) {
-      if (!error.message.includes(`No expected value`)) {
+      if (!error.message.includes("No expected value")) {
         throw error;
       }
     }
@@ -190,8 +190,8 @@ export class ExportRoute extends RegexCreator {
     route: string;
     asPropertyModelName: string;
   }) {
-    const place = `export const routes = {`;
-    const placeRegex = new RegExp(`export const routes = {`);
+    const place = "export const routes = {";
+    const placeRegex = new RegExp("export const routes = {");
 
     const content = `"${route}": ${asPropertyModelName},`;
     const contentRegex = new RegExp(

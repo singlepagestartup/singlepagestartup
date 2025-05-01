@@ -4,7 +4,7 @@ import {
   Coder as BackendCoder,
   IGeneratorProps as IBackendCoderGeneratorProps,
 } from "./backend/Coder";
-import { IEditFieldProps } from "./backend/schema/table/Coder";
+import { IEditFieldProps } from "./backend/repository/database/Coder";
 import {
   Coder as FrontendCoder,
   IGeneratorProps as IFrontendCoderGeneratorProps,

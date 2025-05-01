@@ -4,7 +4,7 @@ import {
   Coder as ModelCoder,
   IGeneratorProps as IModelCoderGeneratorProps,
 } from "./[model]/Coder";
-import { IEditFieldProps } from "./[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./[model]/backend/repository/database/Coder";
 
 export type IGeneratorProps = {
   model: IModelCoderGeneratorProps;

@@ -4,7 +4,7 @@ import {
   IGeneratorProps as IModulesCoderGeneratorProps,
 } from "./modules/Coder";
 import { Coder as RootCoder } from "../Coder";
-import { IEditFieldProps } from "./modules/[module]/models/[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./modules/[module]/models/[model]/backend/repository/database/Coder";
 
 export type IGeneratorProps = {
   modules: IModulesCoderGeneratorProps[];

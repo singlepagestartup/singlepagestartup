@@ -1,0 +1,3 @@
+import { migrate } from "./config.ts";
+
+migrate.migrate();

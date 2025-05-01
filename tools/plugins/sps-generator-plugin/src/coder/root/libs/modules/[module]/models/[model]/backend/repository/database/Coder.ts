@@ -45,10 +45,10 @@ export class Coder {
 
   constructor(props: { parent: SchemaCoder; tree: Tree } & IGeneratorProps) {
     this.parent = props.parent;
-    this.baseName = `${props.parent.baseName}-table`;
-    this.baseDirectory = `${props.parent.baseDirectory}/table`;
+    this.baseName = `${props.parent.baseName}-database`;
+    this.baseDirectory = `${props.parent.baseDirectory}/database`;
     this.tree = props.tree;
-    this.absoluteName = `${props.parent.absoluteName}/table`;
+    this.absoluteName = `${props.parent.absoluteName}/database`;
 
     this.importPath = this.absoluteName;
 
