@@ -1,6 +1,11 @@
-import { ProjectConfiguration, Tree, getProjects, names } from "@nx/devkit";
+import {
+  ProjectConfiguration,
+  Tree,
+  getProjects,
+  names,
+  updateJson,
+} from "@nx/devkit";
 import * as path from "path";
-import * as nxWorkspace from "@nx/workspace";
 import { util as createSpsTSLibrary } from "../../../../../../../../../../utils/create-sps-ts-library";
 import { util as getNameStyles } from "../../../../../../../../../utils/get-name-styles";
 import { replaceInFile } from "../../../../../../../../../../utils/file-utils";
@@ -36,7 +41,7 @@ export class Coder {
   baseName: string;
   baseDirectory: string;
   tree: Tree;
-  moduleNameStyles: ReturnType<typeof getModuleCuttedStyles>;
+  moduleNameCutted: ReturnType<typeof getModuleCuttedStyles>;
   project?: ProjectConfiguration;
   tableName: string;
   absoluteName: string;
@@ -60,7 +65,7 @@ export class Coder {
     this.modelNameStyles = modelNameStyles;
 
     const moduleName = this.parent.parent.parent.parent.parent.name;
-    this.moduleNameStyles = getModuleCuttedStyles({ name: moduleName });
+    this.moduleNameCutted = getModuleCuttedStyles({ name: moduleName });
 
     if (modelNameStyles.snakeCased.base.length > 10) {
       const randomThreeLetters = Math.random().toString(36).substring(2, 5);
@@ -97,14 +102,109 @@ export class Coder {
       templateParams: {
         template: "",
         table_name: this.tableName,
-        module_name_cutted_snake_cased: this.moduleNameStyles.snakeCased,
-        module_name_cutted_pascal_cased: this.moduleNameStyles.pascalCased,
+        module_name_cutted_snake_cased: this.moduleNameCutted.snakeCased,
+        module_name_cutted_pascal_cased: this.moduleNameCutted.pascalCased,
         model_name_pascal_cased: this.modelNameStyles.pascalCased.base,
         model_name_property_cased: this.modelNameStyles.propertyCased.base,
       },
     });
 
     this.project = getProjects(this.tree).get(this.baseName);
+
+    await this.attach();
+  }
+
+  async attach() {
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    const modelName = this.modelNameStyles.snakeCased.base;
+    const projectJsonPath = `libs/modules/${moduleName}/project.json`;
+
+    // Add model specific targets and root commands
+    for (const type of ["generate", "migrate"] as const) {
+      // Add model specific targets
+      await updateJson(this.tree, projectJsonPath, (json) => {
+        const targetName = `models:${modelName}:repository-${type}`;
+        const target =
+          type === "generate"
+            ? {
+                executor: "nx:run-commands",
+                options: {
+                  parallel: false,
+                  cwd: `libs/modules/${moduleName}/models/${modelName}/backend/repository/database`,
+                  commands: [
+                    {
+                      command: "drizzle-kit up --config=./src/lib/config.ts",
+                    },
+                    {
+                      command:
+                        "drizzle-kit generate --config=./src/lib/config.ts",
+                    },
+                  ],
+                },
+              }
+            : {
+                executor: "nx:run-commands",
+                cache: false,
+                options: {
+                  parallel: false,
+                  envFile: "apps/api/.env",
+                  cwd: `libs/modules/${moduleName}/models/${modelName}/backend/repository/database`,
+                  commands: [
+                    {
+                      command: "bun run ./src/lib/migrate.ts",
+                    },
+                  ],
+                },
+              };
+
+        // Add model specific target
+        json.targets[targetName] = target;
+
+        // Add command to root target
+        const rootTargetName = `models:repository-${type}`;
+        const rootTarget = json.targets[rootTargetName];
+
+        if (rootTarget) {
+          const command = `nx run @sps/${moduleName}:models:${modelName}:repository-${type}`;
+          const commands = rootTarget.options.commands || [];
+
+          if (!commands.some((cmd) => cmd.command === command)) {
+            commands.push({ command });
+            rootTarget.options.commands = commands;
+          }
+        }
+
+        return json;
+      });
+    }
+  }
+
+  async detach() {
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    const modelName = this.modelNameStyles.snakeCased.base;
+    const projectJsonPath = `libs/modules/${moduleName}/project.json`;
+
+    // Remove model specific targets and root commands
+    for (const type of ["generate", "migrate"] as const) {
+      await updateJson(this.tree, projectJsonPath, (json) => {
+        // Remove model specific target
+        const targetName = `models:${modelName}:repository-${type}`;
+        delete json.targets[targetName];
+
+        // Remove command from root target
+        const rootTargetName = `models:repository-${type}`;
+        const rootTarget = json.targets[rootTargetName];
+
+        if (rootTarget?.options?.commands) {
+          const command = `nx run @sps/${moduleName}:models:${modelName}:repository-${type}`;
+          rootTarget.options.commands = rootTarget.options.commands.filter(
+            (cmd) => cmd.command !== command,
+          );
+        }
+
+        return json;
+      });
+    }
   }
 
   async addField(props: IEditFieldProps) {
@@ -164,6 +264,8 @@ export class Coder {
   }
 
   async remove() {
+    await this.detach();
+
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
     }

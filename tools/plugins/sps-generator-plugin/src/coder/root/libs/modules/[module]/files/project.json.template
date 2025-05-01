@@ -6,6 +6,65 @@
   "tags": [],
   "targets": {
     "eslint:lint": {},
-    "tsc:build": {}
+    "tsc:build": {},
+    "repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/<%= module_name_kebab_cased %>:models:repository-generate"
+          },
+          {
+            "command": "nx run @sps/<%= module_name_kebab_cased %>:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/<%= module_name_kebab_cased %>:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/<%= module_name_kebab_cased %>:relations:repository-migrate"
+          }
+        ]
+      }
+    },
+    "models:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": []
+      }
+    },
+    "relations:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": []
+      }
+    },
+    "models:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": []
+      }
+    },
+    "relations:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": []
+      }
+    },
   }
 }
