@@ -44,7 +44,7 @@ export class Coder {
       return;
     }
 
-    const moduleName = this.parent.parent.baseName;
+    const moduleName = this.parent.parent.name;
 
     await createSpsReactLibrary({
       generateFilesPath: path.join(__dirname, "files"),

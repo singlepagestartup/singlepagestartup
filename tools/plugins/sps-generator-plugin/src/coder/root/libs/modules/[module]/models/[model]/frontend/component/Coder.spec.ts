@@ -3,9 +3,10 @@ import {
   ExportVariant,
   ImportInterface,
   ExportInterface,
+  AdminPanelComponent,
 } from "./Coder";
 
-describe("Coder", () => {
+describe("Component RegexCreator", () => {
   describe("ImportVariant", () => {
     const importPath =
       "@sps/website-builder-models-page-frontend-component-variants-sps-lite-admin-table";
@@ -33,13 +34,13 @@ describe("Coder", () => {
   describe("ExportVariant", () => {
     const kebabCasedVariant = "admin-table";
     const pascalCasedVariant = "AdminTable";
-    const importPath = new ExportVariant({
+    const exportVariant = new ExportVariant({
       pascalCasedVariant,
       kebabCasedVariant,
     });
 
     it("should match the regex 1", () => {
-      const regex = importPath.onRemove.regex;
+      const regex = exportVariant.onRemove.regex;
 
       const string = `import { Component as Simple } from "@sps/website-builder-models-page-frontend-component-variants-sps-lite-default";
       import { Component as AdminTable } from "@sps/website-builder-models-page-frontend-component-variants-sps-lite-admin-table";
@@ -55,12 +56,12 @@ describe("Coder", () => {
     it("should match the regex 2", () => {
       const kebabCasedVariant = "admin";
       const pascalCasedVariant = "Admin";
-      const importPath = new ExportVariant({
+      const exportVariant = new ExportVariant({
         pascalCasedVariant,
         kebabCasedVariant,
       });
 
-      const regex = importPath.onRemove.regex;
+      const regex = exportVariant.onRemove.regex;
 
       const string = `import { Component as Simple } from "@sps/website-builder-models-page-frontend-component-variants-sps-lite-default";
       import { Component as Admin } from "@sps/website-builder-models-page-frontend-component-variants-sps-lite-admin";
@@ -134,6 +135,66 @@ describe("Coder", () => {
       export type IComponentProps = IAdminTableComponentProps | IAdminSelectInputComponentProps | IAdminFormComponentProps;`;
 
       expect(string).toMatch(regex);
+    });
+  });
+
+  describe("AdminPanelComponent", () => {
+    const adminPanelComponent = new AdminPanelComponent({
+      modelName: "test-model",
+      moduleName: "test-module",
+    });
+
+    it("should match onCreate regex pattern", () => {
+      const testString = `const models = [
+        {
+          name: "test-model",
+          Comp: TestModel,
+        },
+        {
+          name: "other-model",
+          Comp: OtherModel,
+        }
+      ];`;
+
+      expect(testString).toMatch(adminPanelComponent.onCreate.regex);
+    });
+
+    it("should match onRemove regex pattern", () => {
+      const testString = `const models = [
+        {
+          name: "test-model",
+          Comp: TestModel,
+        },
+        {
+          name: "other-model",
+          Comp: OtherModel,
+        }
+      ];`;
+
+      expect(testString).toMatch(adminPanelComponent.onRemove.regex);
+    });
+
+    it("should generate correct content", () => {
+      expect(adminPanelComponent.onCreate.content).toContain('"test-model"');
+      expect(adminPanelComponent.onCreate.content).toContain("TestModel");
+    });
+
+    it("should handle different model names", () => {
+      const customComponent = new AdminPanelComponent({
+        modelName: "custom-widget",
+        moduleName: "website-builder",
+      });
+
+      const testString = `const models = [
+        {
+          name: "custom-widget",
+          Comp: CustomWidget,
+        }
+      ];`;
+
+      expect(testString).toMatch(customComponent.onCreate.regex);
+      expect(customComponent.onCreate.content).toContain('"custom-widget"');
+      expect(customComponent.onCreate.content).toContain("CustomWidget");
     });
   });
 });

@@ -39,7 +39,7 @@ export class Coder {
   name: string;
   project?: ProjectConfiguration;
   variants: IVariantProps[];
-
+  importPath: string;
   constructor(props: { parent: FrontendCoder; tree: Tree } & IGeneratorProps) {
     this.name = "component";
     this.baseName = `${props.parent.baseName}-component`;
@@ -48,6 +48,7 @@ export class Coder {
     this.tree = props.tree;
     this.parent = props.parent;
     this.variants = props.variants ?? [];
+    this.importPath = this.absoluteName;
   }
 
   async migrate(props: { version: string }) {
@@ -75,6 +76,8 @@ export class Coder {
     for (const variant of this.variants) {
       await this.createVariant(variant);
     }
+
+    await this.attach();
   }
 
   async createVariant(props: IVariantProps) {
@@ -198,6 +201,53 @@ export class Coder {
     }
   }
 
+  async attach() {
+    const moduleName = this.parent.parent.parent.parent.name;
+    const modelName = this.parent.parent.name;
+    const modelNameStyles = getNameStyles({ name: modelName });
+
+    const moduleFrontendAdminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+
+    await createSpsReactLibrary({
+      root: moduleFrontendAdminComponentPath.replace(
+        "Component.tsx",
+        modelName,
+      ),
+      name: this.baseName,
+      tree: this.tree,
+      generateFilesPath: path.join(__dirname, "templates/parent-admin-table"),
+      templateParams: {
+        template: "",
+        model_frontend_component_import_path: this.importPath,
+      },
+    });
+
+    // Add component to admin panel
+    const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+
+    if (this.tree.exists(adminPanelPath)) {
+      const adminPanelComponent = new AdminPanelComponent({
+        modelName,
+        moduleName,
+      });
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: adminPanelPath,
+        regex: adminPanelComponent.onCreate.regex,
+        content: adminPanelComponent.onCreate.content,
+      });
+
+      // Add import
+      await addToFile({
+        tree: this.tree,
+        pathToFile: adminPanelPath,
+        content: `import { Component as ${modelNameStyles.pascalCased.base} } from "./${modelName}/Component";\n`,
+        toTop: true,
+      });
+    }
+  }
+
   async removeVariant(props: IVariantProps) {
     const variantsPath =
       this.baseDirectory + `/src/lib/${props.level}/variants.ts`;
@@ -288,8 +338,53 @@ export class Coder {
   }
 
   async remove() {
+    await this.detach();
+
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
+    }
+  }
+
+  async detach() {
+    const moduleName = this.parent.parent.parent.parent.name;
+    const modelName = this.parent.parent.name;
+    const modelNameStyles = getNameStyles({ name: modelName });
+
+    // Remove component file
+    const adminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/${modelName}`;
+
+    if (this.tree.exists(adminComponentPath)) {
+      this.tree.delete(adminComponentPath);
+    }
+
+    // Remove from admin panel
+    const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+
+    if (this.tree.exists(adminPanelPath)) {
+      const adminPanelComponent = new AdminPanelComponent({
+        modelName,
+        moduleName,
+      });
+
+      // Remove component import
+      const importRegex = new RegExp(
+        `import\\s*{\\s*Component\\s+as\\s+${modelNameStyles.pascalCased.base}\\s*}\\s*from\\s*"./${modelName}/Component";?\\n?`,
+      );
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: adminPanelPath,
+        regex: importRegex,
+        content: "",
+      });
+
+      // Remove component from models array
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: adminPanelPath,
+        regex: adminPanelComponent.onRemove.regex,
+        content: "",
+      });
     }
   }
 }
@@ -367,6 +462,32 @@ export class ExportInterface extends RegexCreator {
     const content = `I${props.pascalCasedVariant}ComponentProps |`;
     const contentRegex = new RegExp(
       `I${props.pascalCasedVariant}ComponentProps${space}[|]`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      content,
+      contentRegex,
+    });
+  }
+}
+
+export class AdminPanelComponent extends RegexCreator {
+  constructor(props: { modelName: string; moduleName: string }) {
+    const place = "const models = [";
+    const placeRegex = new RegExp("const models = \\[");
+
+    const content = `{
+      name: "${props.modelName}",
+      Comp: ${getNameStyles({ name: props.modelName }).pascalCased.base},
+    },`;
+
+    const contentRegex = new RegExp(
+      `{[\\s\\n]*name:[\\s]*"${props.modelName}",[\\s\\n]*Comp:[\\s]*${
+        getNameStyles({ name: props.modelName }).pascalCased.base
+      },[\\s\\n]*},`,
+      "gm",
     );
 
     super({

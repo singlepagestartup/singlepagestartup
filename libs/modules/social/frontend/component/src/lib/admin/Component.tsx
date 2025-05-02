@@ -9,7 +9,7 @@ export function Component(props: IComponentProps) {
       isServer={props.isServer}
       models={models}
       name="admin-panel"
-      module="@sps/social"
+      module="social"
     />
   );
 }
