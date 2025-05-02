@@ -61,7 +61,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -70,7 +69,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"

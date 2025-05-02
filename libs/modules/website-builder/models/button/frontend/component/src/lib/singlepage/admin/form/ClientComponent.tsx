@@ -131,7 +131,6 @@ export function Component(props: IComponentPropsExtended) {
         {props.buttonsArraysToButtons
           ? props.buttonsArraysToButtons({
               data: props.data,
-
               isServer: props.isServer,
             })
           : null}
@@ -139,7 +138,6 @@ export function Component(props: IComponentPropsExtended) {
         {props.buttonsSpsFileStorageModuleWidgets
           ? props.buttonsSpsFileStorageModuleWidgets({
               data: props.data,
-
               isServer: props.isServer,
             })
           : null}

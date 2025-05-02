@@ -4,6 +4,9 @@ import {
   ImportInterface,
   ExportInterface,
   AdminPanelComponent,
+  ImportRelationForm,
+  ExtendInterface,
+  AddRelationComponent,
 } from "./Coder";
 
 describe("Component RegexCreator", () => {
@@ -195,6 +198,123 @@ describe("Component RegexCreator", () => {
       expect(testString).toMatch(customComponent.onCreate.regex);
       expect(customComponent.onCreate.content).toContain('"custom-widget"');
       expect(customComponent.onCreate.content).toContain("CustomWidget");
+    });
+  });
+
+  describe("ImportRelationForm", () => {
+    const importRelationForm = new ImportRelationForm();
+
+    it("should match the regex for imports", () => {
+      const regex = importRelationForm.onRemove.regex;
+
+      const string = `import { ReactNode } from "react";
+import { ISpsComponentBase } from "@sps/ui-adapter";
+import { IComponentPropsExtended, variant, IModel } from "./interface";`;
+
+      expect(string).toMatch(regex);
+    });
+
+    it("should generate correct import content", () => {
+      expect(importRelationForm.onCreate.content).toBe(
+        'import { ReactNode } from "react";\nimport { ISpsComponentBase } from "@sps/ui-adapter";',
+      );
+    });
+  });
+
+  describe("ExtendInterface", () => {
+    const relationNamePascalCased = "buttonsArraysToButtons";
+    const extendInterface = new ExtendInterface({
+      relationNamePascalCased,
+    });
+
+    it("should match the regex for interface extension", () => {
+      const regex = extendInterface.onCreate.regex;
+
+      const string = `export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {
+  buttonsArraysToButtons?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+}`;
+
+      expect(string).toMatch(regex);
+    });
+
+    it("should generate correct interface content", () => {
+      const content = extendInterface.onCreate.content;
+      expect(content).toMatch(/buttonsArraysToButtons\?:/);
+      expect(content).toMatch(/props: ISpsComponentBase & { data\?: IModel }/);
+      expect(content).toMatch(/=> ReactNode;/);
+      expect(content.trim().startsWith("  buttonsArraysToButtons"));
+    });
+
+    it("should match different relation names", () => {
+      const customInterface = new ExtendInterface({
+        relationNamePascalCased: "customRelation",
+      });
+
+      const string = `export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {
+  customRelation?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+}`;
+
+      expect(string).toMatch(customInterface.onCreate.regex);
+    });
+  });
+
+  describe("AddRelationComponent", () => {
+    const relationNamePascalCased = "buttonsArraysToButtons";
+    const addRelationComponent = new AddRelationComponent({
+      relationNamePascalCased,
+    });
+
+    it("should match the regex for component JSX", () => {
+      const regex = addRelationComponent.onCreate.regex;
+
+      const string = `<div className="flex flex-col gap-6">
+        {props.buttonsArraysToButtons
+          ? props.buttonsArraysToButtons({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}`;
+
+      expect(string).toMatch(regex);
+    });
+
+    it("should generate correct component content", () => {
+      const content = addRelationComponent.onCreate.content;
+      expect(content).toMatch(/props\.buttonsArraysToButtons/);
+      expect(content).toMatch(/data: props\.data/);
+      expect(content).toMatch(/isServer: props\.isServer/);
+      expect(content.startsWith("        {props"));
+    });
+
+    it("should match different relation names", () => {
+      const customComponent = new AddRelationComponent({
+        relationNamePascalCased: "customRelation",
+      });
+
+      const string = `<div className="flex flex-col gap-6">
+        {props.customRelation
+          ? props.customRelation({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}`;
+
+      expect(string).toMatch(customComponent.onCreate.regex);
+    });
+
+    it("should match with different formatting", () => {
+      const regex = addRelationComponent.onCreate.regex;
+
+      const string = `<div className="flex flex-col gap-6">
+        {props.buttonsArraysToButtons ? props.buttonsArraysToButtons({ data: props.data, isServer: props.isServer }) : null}`;
+
+      expect(string).toMatch(regex);
     });
   });
 });
