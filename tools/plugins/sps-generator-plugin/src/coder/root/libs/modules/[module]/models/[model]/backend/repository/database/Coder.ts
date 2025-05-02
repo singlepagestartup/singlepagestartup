@@ -208,59 +208,51 @@ export class Coder {
   }
 
   async addField(props: IEditFieldProps) {
-    const { level, name, pgCoreType, isRequired } = props;
-
-    const schemaFilePath = `${this.baseDirectory}/src/lib/fields/${level}.ts`;
-
-    const fieldToAdd = new Field({
-      name,
-      pgCoreType,
-      isRequired,
-    });
-
-    await replaceInFile({
-      tree: this.tree,
-      pathToFile: schemaFilePath,
-      regex: fieldToAdd.onCreate.regex,
-      content: fieldToAdd.onCreate.content,
-    });
-
-    await this.parent.parent.parent.project.contracts.project.root.addField({
-      name,
-      level,
-      isRequired,
-    });
+    // const { level, name, pgCoreType, isRequired } = props;
+    // const schemaFilePath = `${this.baseDirectory}/src/lib/fields/${level}.ts`;
+    // const fieldToAdd = new Field({
+    //   name,
+    //   pgCoreType,
+    //   isRequired,
+    // });
+    // await replaceInFile({
+    //   tree: this.tree,
+    //   pathToFile: schemaFilePath,
+    //   regex: fieldToAdd.onCreate.regex,
+    //   content: fieldToAdd.onCreate.content,
+    // });
+    // await this.parent.parent.parent.project.contracts.project.root.addField({
+    //   name,
+    //   level,
+    //   isRequired,
+    // });
   }
 
   async removeField(props: IEditFieldProps) {
-    const { level, name, pgCoreType, isRequired } = props;
-
-    const schemaFilePath = `${this.baseDirectory}/src/lib/fields/${level}.ts`;
-
-    await this.parent.parent.parent.project.contracts.project.root.removeField({
-      name,
-      level,
-      isRequired,
-    });
-
-    const fieldToAdd = new Field({
-      name,
-      pgCoreType,
-      isRequired,
-    });
-
-    try {
-      await replaceInFile({
-        tree: this.tree,
-        pathToFile: schemaFilePath,
-        regex: fieldToAdd.onRemove.regex,
-        content: fieldToAdd.onRemove.content,
-      });
-    } catch (error: any) {
-      if (!error.message.includes("No expected value")) {
-        throw error;
-      }
-    }
+    // const { level, name, pgCoreType, isRequired } = props;
+    // const schemaFilePath = `${this.baseDirectory}/src/lib/fields/${level}.ts`;
+    // await this.parent.parent.parent.project.project.root.removeField({
+    //   name,
+    //   level,
+    //   isRequired,
+    // });
+    // const fieldToAdd = new Field({
+    //   name,
+    //   pgCoreType,
+    //   isRequired,
+    // });
+    // try {
+    //   await replaceInFile({
+    //     tree: this.tree,
+    //     pathToFile: schemaFilePath,
+    //     regex: fieldToAdd.onRemove.regex,
+    //     content: fieldToAdd.onRemove.content,
+    //   });
+    // } catch (error: any) {
+    //   if (!error.message.includes("No expected value")) {
+    //     throw error;
+    //   }
+    // }
   }
 
   async remove() {

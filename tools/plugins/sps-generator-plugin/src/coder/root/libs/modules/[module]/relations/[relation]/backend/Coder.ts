@@ -1,21 +1,16 @@
 import { Tree } from "@nx/devkit";
 import { Coder as RelationCoder } from "../Coder";
 import {
-  Coder as SchemaCoder,
-  IGeneratorProps as ISchemaCoderGeneratorProps,
-} from "./schema/Coder";
-import {
-  Coder as ModelCoder,
-  IGeneratorProps as IModelCoderGeneratorProps,
-} from "./model/root/Coder";
+  Coder as RepositoryCoder,
+  IGeneratorProps as IRepositoryCoderGeneratorProps,
+} from "./repository/Coder";
 import {
   Coder as AppCoder,
   IGeneratorProps as IAppCoderGeneratorProps,
-} from "./app/root/Coder";
+} from "./app/Coder";
 
 export type IGeneratorProps = {
-  schema?: ISchemaCoderGeneratorProps;
-  model?: IModelCoderGeneratorProps;
+  repository?: IRepositoryCoderGeneratorProps;
   app?: IAppCoderGeneratorProps;
 };
 
@@ -30,12 +25,10 @@ export class Coder {
   absoluteName: string;
   name: string;
   project: {
-    schema: SchemaCoder;
-    model: ModelCoder;
+    repository: RepositoryCoder;
     app: AppCoder;
   } = {} as {
-    schema: SchemaCoder;
-    model: ModelCoder;
+    repository: RepositoryCoder;
     app: AppCoder;
   };
 
@@ -47,13 +40,8 @@ export class Coder {
     this.baseDirectory = `${this.parent.baseDirectory}/backend`;
     this.absoluteName = `${this.parent.absoluteName}/backend`;
 
-    this.project.schema = new SchemaCoder({
-      ...props.schema,
-      tree: this.tree,
-      parent: this,
-    });
-
-    this.project.model = new ModelCoder({
+    this.project.repository = new RepositoryCoder({
+      ...props.repository,
       tree: this.tree,
       parent: this,
     });
@@ -65,20 +53,17 @@ export class Coder {
   }
 
   async create() {
-    await this.project.schema.create();
-    await this.project.model.create();
-    await this.project.app.create();
+    await this.project.repository.create();
+    // await this.project.app.create();
   }
 
   async migrate(props: { version: string }) {
-    await this.project.schema.migrate(props);
-    await this.project.model.migrate(props);
+    await this.project.repository.migrate(props);
     await this.project.app.migrate(props);
   }
 
   async remove() {
-    await this.project.app.remove();
-    await this.project.model.remove();
-    await this.project.schema.remove();
+    // await this.project.app.remove();
+    await this.project.repository.remove();
   }
 }

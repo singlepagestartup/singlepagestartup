@@ -5,9 +5,9 @@ import {
   IGeneratorProps as IBackendCoderGeneratorProps,
 } from "./backend/Coder";
 import {
-  Coder as ContractsCoder,
-  IGeneratorProps as IContractsCoderGeneratorProps,
-} from "./contracts/Coder";
+  Coder as SdkCoder,
+  IGeneratorProps as ISdkCoderGeneratorProps,
+} from "./sdk/Coder";
 import {
   Coder as FrontendCoder,
   IGeneratorProps as IFrontendCoderGeneratorProps,
@@ -20,7 +20,7 @@ export type IGeneratorProps = {
   rightModelIsExternal?: boolean;
   frontend?: IFrontendCoderGeneratorProps;
   backend?: IBackendCoderGeneratorProps;
-  contracts?: IContractsCoderGeneratorProps;
+  sdk?: ISdkCoderGeneratorProps;
 };
 
 /**
@@ -36,11 +36,11 @@ export class Coder {
   nameStyles: ReturnType<typeof getNameStyles>;
   project: {
     backend: BackendCoder;
-    contracts: ContractsCoder;
+    sdk: SdkCoder;
     frontend: FrontendCoder;
   } = {} as {
     backend: BackendCoder;
-    contracts: ContractsCoder;
+    sdk: SdkCoder;
     frontend: FrontendCoder;
   };
 
@@ -61,8 +61,8 @@ export class Coder {
       parent: this,
     });
 
-    this.project.contracts = new ContractsCoder({
-      ...props.contracts,
+    this.project.sdk = new SdkCoder({
+      ...props.sdk,
       tree: this.tree,
       parent: this,
     });
@@ -75,20 +75,20 @@ export class Coder {
   }
 
   async create() {
-    await this.project.contracts.create();
     await this.project.backend.create();
-    await this.project.frontend.create();
+    // await this.project.sdk.create();
+    // await this.project.frontend.create();
   }
 
   async migrate(props: { version: string }) {
-    await this.project.contracts.migrate(props);
     await this.project.backend.migrate(props);
+    await this.project.sdk.migrate(props);
     await this.project.frontend.migrate(props);
   }
 
   async remove() {
-    await this.project.frontend.remove();
+    // await this.project.frontend.remove();
+    // await this.project.sdk.remove();
     await this.project.backend.remove();
-    await this.project.contracts.remove();
   }
 }
