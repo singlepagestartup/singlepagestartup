@@ -1,3 +1,5 @@
+import { app as subjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/backend/app/api";
+import { app as subjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api";
 import { app as widget } from "@sps/rbac/models/widget/backend/app/api";
 import { app as role } from "@sps/rbac/models/role/backend/app/api";
 import { app as subject } from "@sps/rbac/models/subject/backend/app/api";
@@ -23,6 +25,16 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-ecommerce-module-products",
+      app: subjectsToEcommerceModuleProducts,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-social-module-profiles",
+      app: subjectsToSocialModuleProfiles,
+    });
     this.apps.push({
       type: "model",
       route: "/widgets",

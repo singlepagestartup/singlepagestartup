@@ -5,7 +5,6 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "./singlepage";
-export { Provider, queryClient } from "./singlepage";
 
 export type IProps = IParentProps & {};
 

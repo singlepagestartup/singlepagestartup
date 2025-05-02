@@ -6,6 +6,9 @@ import { Component as SubjectsToRoles } from "@sps/rbac/relations/subjects-to-ro
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as SubjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/frontend/component";
 import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/frontend/component";
+import { Component as SubjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/frontend/component";
+
+import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
 
 export function Component() {
   return (
@@ -18,6 +21,56 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            subjectsToEcommerceModuleProducts={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToEcommerceModuleProducts
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToSocialModuleProfiles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToSocialModuleProfiles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             subjectsToIdentities={({ data, isServer }) => {
               if (!data) {
                 return;

@@ -50,19 +50,19 @@ export async function relationGenerator(
         modules: [
           {
             module: {
-              name: "social",
+              name: "rbac",
               relations: [
                 {
                   relation: {
-                    name: "widgets-to-banners",
+                    name: "subjects-to-ecommerce-module-products",
                     models: [
                       {
-                        name: "widget",
-                        module: "social",
+                        name: "subject",
+                        module: "rbac",
                       },
                       {
-                        name: "banner",
-                        module: "social",
+                        name: "product",
+                        module: "ecommerce",
                       },
                     ],
                     frontend: {
@@ -73,6 +73,12 @@ export async function relationGenerator(
                             level: "singlepage",
                             template: "default",
                             path: "default",
+                          },
+                          {
+                            name: "find",
+                            level: "singlepage",
+                            template: "find",
+                            path: "find",
                           },
                           {
                             name: "admin-form",

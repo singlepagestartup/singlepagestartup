@@ -1,0 +1,104 @@
+{
+  "id": "00291ee2-8986-44aa-8280-733a79147715",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.rc_ss_to_sl_me_ps_ges": {
+      "name": "rc_ss_to_sl_me_ps_ges",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "st_id": {
+          "name": "st_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sl_me_pe_id": {
+          "name": "sl_me_pe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rc_ss_to_sl_me_ps_ges_st_id_sps_rc_subject_id_fk": {
+          "name": "rc_ss_to_sl_me_ps_ges_st_id_sps_rc_subject_id_fk",
+          "tableFrom": "rc_ss_to_sl_me_ps_ges",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": ["st_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "rc_ss_to_sl_me_ps_ges_sl_me_pe_id_sl_profile_id_fk": {
+          "name": "rc_ss_to_sl_me_ps_ges_sl_me_pe_id_sl_profile_id_fk",
+          "tableFrom": "rc_ss_to_sl_me_ps_ges",
+          "tableTo": "sl_profile",
+          "columnsFrom": ["sl_me_pe_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

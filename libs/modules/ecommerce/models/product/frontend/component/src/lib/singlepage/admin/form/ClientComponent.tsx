@@ -75,7 +75,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Short Description">
           {internationalization.languages.map((language) => {
             return (
@@ -91,7 +90,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -107,7 +105,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -116,7 +113,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type sku"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -126,7 +122,6 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select type"
           options={types.map((type) => [type, type])}
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -136,7 +131,6 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         {props.productsToAttributes
           ? props.productsToAttributes({
               data: props.data,
@@ -144,7 +138,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.ordersToProducts
           ? props.ordersToProducts({
               data: props.data,
@@ -152,7 +145,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.categoriesToProducts
           ? props.categoriesToProducts({
               data: props.data,
@@ -160,7 +152,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.storesToProducts
           ? props.storesToProducts({
               data: props.data,
@@ -168,7 +159,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.productsToFileStorageModuleWidgets
           ? props.productsToFileStorageModuleWidgets({
               data: props.data,
@@ -176,7 +166,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToProducts
           ? props.widgetsToProducts({
               data: props.data,
@@ -184,7 +173,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.productsToWebsiteBuilderModuleWidgets
           ? props.productsToWebsiteBuilderModuleWidgets({
               data: props.data,

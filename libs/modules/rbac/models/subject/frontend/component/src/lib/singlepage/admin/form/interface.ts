@@ -11,6 +11,12 @@ export const variant = "admin-form" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
+  subjectsToEcommerceModuleProducts?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+  subjectsToSocialModuleProfiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   subjectsToIdentities?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
