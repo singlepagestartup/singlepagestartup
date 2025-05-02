@@ -32,6 +32,12 @@ export async function modelGenerator(
                             path: "find",
                           },
                           {
+                            name: "default",
+                            level: "singlepage",
+                            template: "default",
+                            path: "default",
+                          },
+                          {
                             name: "admin-table-row",
                             level: "singlepage",
                             template: "admin-table-row",

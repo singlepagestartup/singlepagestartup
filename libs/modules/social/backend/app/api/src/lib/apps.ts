@@ -1,4 +1,4 @@
-import { app as banner } from "@sps/social/models/banner/backend/app/api";
+import { app as profile } from "@sps/social/models/profile/backend/app/api";
 import { app as widget } from "@sps/social/models/widget/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
@@ -13,8 +13,8 @@ export class Apps {
   bindApps() {
     this.apps.push({
       type: "model",
-      route: "/banners",
-      app: banner,
+      route: "/profiles",
+      app: profile,
     });
     this.apps.push({
       type: "model",

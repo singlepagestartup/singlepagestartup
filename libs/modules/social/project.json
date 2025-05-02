@@ -45,7 +45,7 @@
             "command": "nx run @sps/social:models:widget:repository-generate"
           },
           {
-            "command": "nx run @sps/social:models:banner:repository-generate"
+            "command": "nx run @sps/social:models:profile:repository-generate"
           }
         ]
       }
@@ -67,7 +67,7 @@
             "command": "nx run @sps/social:models:widget:repository-migrate"
           },
           {
-            "command": "nx run @sps/social:models:banner:repository-migrate"
+            "command": "nx run @sps/social:models:profile:repository-migrate"
           }
         ]
       }
@@ -109,11 +109,11 @@
         ]
       }
     },
-    "models:banner:repository-generate": {
+    "models:profile:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/social/models/banner/backend/repository/database",
+        "cwd": "libs/modules/social/models/profile/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -124,13 +124,13 @@
         ]
       }
     },
-    "models:banner:repository-migrate": {
+    "models:profile:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/social/models/banner/backend/repository/database",
+        "cwd": "libs/modules/social/models/profile/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
