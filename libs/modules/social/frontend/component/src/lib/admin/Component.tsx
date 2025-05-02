@@ -1,8 +1,21 @@
+import { Component as Banner } from "./banner/Component";
+
+import { Component as Widget } from "./widget/Component";
+
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
 
 export function Component(props: IComponentProps) {
-  const models = [];
+  const models = [
+    {
+      name: "banner",
+      Comp: Banner,
+    },
+    {
+      name: "widget",
+      Comp: Widget,
+    },
+  ];
 
   return (
     <ParentComponent
