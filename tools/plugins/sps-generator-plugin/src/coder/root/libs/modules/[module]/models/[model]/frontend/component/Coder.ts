@@ -222,6 +222,11 @@ export class Coder {
       },
     });
 
+    this.tree.delete(
+      moduleFrontendAdminComponentPath.replace("Component.tsx", modelName) +
+        "/index.ts",
+    );
+
     // Add component to admin panel
     const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
 

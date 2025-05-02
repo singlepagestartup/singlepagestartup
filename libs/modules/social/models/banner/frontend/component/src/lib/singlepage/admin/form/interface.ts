@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 export { type IModel } from "@sps/social/models/banner/sdk/model";
 import { IModel } from "@sps/social/models/banner/sdk/model";
 import {

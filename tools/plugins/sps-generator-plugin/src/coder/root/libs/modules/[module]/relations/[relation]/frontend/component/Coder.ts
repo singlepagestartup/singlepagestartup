@@ -235,6 +235,7 @@ export class Coder {
       name: this.parent.parent.name,
     });
     const relationNamePascalCased = relationNameStyled.pascalCased.base;
+    const relationNamePropertyCased = relationNameStyled.propertyCased.base;
 
     const leftModel = this.parent.parent.parent.project.relation.models[0];
     const rightModel = this.parent.parent.parent.project.relation.models[1];
@@ -247,13 +248,83 @@ export class Coder {
     const leftModelFormPath = `libs/modules/${leftModel.module}/models/${leftModel.name}/frontend/component/src/lib/singlepage/admin/form/ClientComponent.tsx`;
     const rightModelFormPath = `libs/modules/${rightModel.module}/models/${rightModel.name}/frontend/component/src/lib/singlepage/admin/form/ClientComponent.tsx`;
 
+    // Admin component paths
+    const leftModelAdminPath = `libs/modules/${leftModel.module}/frontend/component/src/lib/admin/${leftModel.name}/Component.tsx`;
+    const rightModelAdminPath = `libs/modules/${rightModel.module}/frontend/component/src/lib/admin/${rightModel.name}/Component.tsx`;
+
     const importRelationForm = new ImportRelationForm();
     const extendInterface = new ExtendInterface({ relationNamePascalCased });
     const addRelationComponent = new AddRelationComponent({
       relationNamePascalCased,
     });
 
-    // Process left model
+    // Process left model admin component
+    if (this.tree.exists(leftModelAdminPath)) {
+      const importRelationComponent = new ImportRelationComponent({
+        relationNamePascalCased,
+        moduleName: this.parent.parent.parent.parent.name,
+        relationName: this.parent.parent.name,
+      });
+
+      const addRelationToAdminComponent = new AddRelationToAdminComponent({
+        relationNamePascalCased,
+        relationNamePropertyCased,
+        leftModel,
+        rightModel,
+        isLeftModel: true,
+      });
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: leftModelAdminPath,
+        regex: importRelationComponent.onCreate.placeRegex,
+        content:
+          importRelationComponent.onCreate.content +
+          importRelationComponent.onCreate.place,
+      });
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: leftModelAdminPath,
+        regex: addRelationToAdminComponent.onCreate.regex,
+        content: addRelationToAdminComponent.onCreate.content,
+      });
+    }
+
+    // Process right model admin component
+    if (this.tree.exists(rightModelAdminPath)) {
+      const importRelationComponent = new ImportRelationComponent({
+        relationNamePascalCased,
+        moduleName: this.parent.parent.parent.parent.name,
+        relationName: this.parent.parent.name,
+      });
+
+      const addRelationToAdminComponent = new AddRelationToAdminComponent({
+        relationNamePascalCased,
+        relationNamePropertyCased,
+        leftModel,
+        rightModel,
+        isLeftModel: false,
+      });
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: rightModelAdminPath,
+        regex: importRelationComponent.onCreate.placeRegex,
+        content:
+          importRelationComponent.onCreate.content +
+          importRelationComponent.onCreate.place,
+      });
+
+      await replaceInFile({
+        tree: this.tree,
+        pathToFile: rightModelAdminPath,
+        regex: addRelationToAdminComponent.onCreate.regex,
+        content: addRelationToAdminComponent.onCreate.content,
+      });
+    }
+
+    // Process left model interface and form
     if (this.tree.exists(leftModelInterfacePath)) {
       const [hasReactNode, hasSpsComponentBase] =
         await importRelationForm.checkImports(
@@ -283,7 +354,7 @@ export class Coder {
       });
     }
 
-    // Process right model
+    // Process right model interface and form
     if (this.tree.exists(rightModelInterfacePath)) {
       const [hasReactNode, hasSpsComponentBase] =
         await importRelationForm.checkImports(
@@ -435,6 +506,7 @@ export class Coder {
       name: this.parent.parent.name,
     });
     const relationNamePascalCased = relationNameStyled.pascalCased.base;
+    const relationNamePropertyCased = relationNameStyled.propertyCased.base;
 
     const leftModel = this.parent.parent.parent.project.relation.models[0];
     const rightModel = this.parent.parent.parent.project.relation.models[1];
@@ -447,29 +519,120 @@ export class Coder {
     const leftModelFormPath = `libs/modules/${leftModel.module}/models/${leftModel.name}/frontend/component/src/lib/singlepage/admin/form/ClientComponent.tsx`;
     const rightModelFormPath = `libs/modules/${rightModel.module}/models/${rightModel.name}/frontend/component/src/lib/singlepage/admin/form/ClientComponent.tsx`;
 
-    // Remove interface property
+    // Admin component paths
+    const leftModelAdminPath = `libs/modules/${leftModel.module}/frontend/component/src/lib/admin/${leftModel.name}/Component.tsx`;
+    const rightModelAdminPath = `libs/modules/${rightModel.module}/frontend/component/src/lib/admin/${rightModel.name}/Component.tsx`;
+
+    // Remove from left model admin component
+    if (this.tree.exists(leftModelAdminPath)) {
+      const removeRelationImport = new RemoveRelationImport({
+        relationNamePascalCased,
+        moduleName: this.parent.parent.parent.parent.name,
+        relationName: this.parent.parent.name,
+      });
+
+      const removeRelationFromAdminComponent =
+        new RemoveRelationFromAdminComponent({
+          relationNamePascalCased,
+          relationNamePropertyCased,
+          leftModel,
+          rightModel,
+          isLeftModel: true,
+        });
+
+      try {
+        await replaceInFile({
+          tree: this.tree,
+          pathToFile: leftModelAdminPath,
+          regex: removeRelationImport.onRemove.regex,
+          content: "",
+        });
+      } catch (error: any) {
+        if (!error.message.includes("No expected value")) {
+          throw error;
+        }
+      }
+
+      try {
+        await replaceInFile({
+          tree: this.tree,
+          pathToFile: leftModelAdminPath,
+          regex: removeRelationFromAdminComponent.onRemove.regex,
+          content: "",
+        });
+      } catch (error: any) {
+        if (!error.message.includes("No expected value")) {
+          throw error;
+        }
+      }
+    }
+
+    // Remove from right model admin component
+    if (this.tree.exists(rightModelAdminPath)) {
+      const removeRelationImport = new RemoveRelationImport({
+        relationNamePascalCased,
+        moduleName: this.parent.parent.parent.parent.name,
+        relationName: this.parent.parent.name,
+      });
+
+      const removeRelationFromAdminComponent =
+        new RemoveRelationFromAdminComponent({
+          relationNamePascalCased,
+          relationNamePropertyCased,
+          leftModel,
+          rightModel,
+          isLeftModel: false,
+        });
+
+      try {
+        await replaceInFile({
+          tree: this.tree,
+          pathToFile: rightModelAdminPath,
+          regex: removeRelationImport.onRemove.regex,
+          content: "",
+        });
+      } catch (error: any) {
+        if (!error.message.includes("No expected value")) {
+          throw error;
+        }
+      }
+
+      try {
+        await replaceInFile({
+          tree: this.tree,
+          pathToFile: rightModelAdminPath,
+          regex: removeRelationFromAdminComponent.onRemove.regex,
+          content: "",
+        });
+      } catch (error: any) {
+        if (!error.message.includes("No expected value")) {
+          throw error;
+        }
+      }
+    }
+
+    // Remove from interface and form components
     const removeRelationFromInterface = new RegexCreator({
       place: "",
       placeRegex: new RegExp(""),
       content: "",
       contentRegex: new RegExp(
-        `(${space})*${relationNamePascalCased}\\?:\\s*\\([\\s\\n]*props:\\s*ISpsComponentBase\\s*&\\s*{\\s*data\\?:\\s*IModel\\s*},[\\s\\n]*\\)\\s*=>\\s*ReactNode;`,
+        `(${space})*${relationNamePropertyCased}\\?:\\s*\\([\\s\\n]*props:\\s*ISpsComponentBase\\s*&\\s*{\\s*data\\?:\\s*IModel\\s*},[\\s\\n]*\\)\\s*=>\\s*ReactNode;`,
         "gm",
       ),
     });
 
-    // Remove component JSX
     const removeRelationFromComponent = new RegexCreator({
       place: "",
       placeRegex: new RegExp(""),
       content: "",
       contentRegex: new RegExp(
-        `${space}{["']\\s*["']}${space}{${space}props\\.${relationNamePascalCased}[\\s\\n]*\\?[\\s\\n]*props\\.${relationNamePascalCased}\\([\\s\\n]*{[\\s\\n]*data:[\\s\\n]*props\\.data,[\\s\\n]*isServer:[\\s\\n]*props\\.isServer,[\\s\\n]*}[\\s\\n]*\\)[\\s\\n]*:[\\s\\n]*null}`,
+        `${space}{["']\\s*["']}${space}{${space}props\\.${relationNamePropertyCased}[\\s\\n]*\\?[\\s\\n]*props\\.${relationNamePropertyCased}\\([\\s\\n]*{[\\s\\n]*data:[\\s\\n]*props\\.data,[\\s\\n]*isServer:[\\s\\n]*props\\.isServer,[\\s\\n]*}[\\s\\n]*\\)[\\s\\n]*:[\\s\\n]*null}`,
         "gm",
       ),
     });
 
-    // Process left model
+    // Process left model interface and form
     if (this.tree.exists(leftModelInterfacePath)) {
       try {
         await replaceInFile({
@@ -500,7 +663,7 @@ export class Coder {
       }
     }
 
-    // Process right model
+    // Process right model interface and form
     if (this.tree.exists(rightModelInterfacePath)) {
       try {
         await replaceInFile({
@@ -682,11 +845,11 @@ export class ExtendInterface extends RegexCreator {
       `export${space}interface${space}IComponentProps${space}extends${space}IParentComponentProps${space}<${space}IModel${comma}${space}typeof${space}variant${space}>${space}{`,
     );
     const content = `
-     ${relationNamePascalCased}?: (
+     ${getNameStyles({ name: relationNamePascalCased }).propertyCased.base}?: (
        props: ISpsComponentBase & { data?: IModel },
      ) => ReactNode;`;
     const contentRegex = new RegExp(
-      `${relationNamePascalCased}\\?:${space}\\(${space}props:${space}ISpsComponentBase${space}&${space}{${space}data\\?:${space}IModel${space}}${space}\\)${space}=>${space}ReactNode;`,
+      `${getNameStyles({ name: relationNamePascalCased }).propertyCased.base}\\?:${space}\\(${space}props:${space}ISpsComponentBase${space}&${space}{${space}data\\?:${space}IModel${space}}${space}\\)${space}=>${space}ReactNode;`,
     );
     super({ place, placeRegex, content, contentRegex });
   }
@@ -702,15 +865,170 @@ export class AddRelationComponent extends RegexCreator {
     const placeRegex = new RegExp(
       '<div[^>]*className\\s*=\\s*"[^"]*flex[^"]*col[^"]*gap-6[^"]*"[^>]*>',
     );
-    const content = `        {props.${relationNamePascalCased}
-          ? props.${relationNamePascalCased}({
+    const propertyName = getNameStyles({ name: relationNamePascalCased })
+      .propertyCased.base;
+    const content = `        {props.${propertyName}
+          ? props.${propertyName}({
               data: props.data,
               isServer: props.isServer,
             })
           : null}`;
     const contentRegex = new RegExp(
-      `{\\s*props\\.${relationNamePascalCased}\\s*\\?\\s*props\\.${relationNamePascalCased}\\s*\\(\\s*{[\\s\\n]*data\\s*:\\s*props\\.data\\s*,[\\s\\n]*isServer\\s*:\\s*props\\.isServer[\\s\\n]*}\\s*\\)\\s*:\\s*null\\s*}`,
+      `{\\s*props\\.${propertyName}\\s*\\?\\s*props\\.${propertyName}\\s*\\(\\s*{[\\s\\n]*data\\s*:\\s*props\\.data\\s*,[\\s\\n]*isServer\\s*:\\s*props\\.isServer[\\s\\n]*}\\s*\\)\\s*:\\s*null\\s*}`,
     );
     super({ place, placeRegex, content, contentRegex });
+  }
+}
+
+export class ImportRelationComponent extends RegexCreator {
+  protected contentRegex: RegExp;
+  protected content: string;
+  protected place: string;
+  protected placeRegex: RegExp;
+  public onCreate: {
+    regex: RegExp;
+    content: string;
+    place: string;
+    placeRegex: RegExp;
+  };
+
+  constructor(props: {
+    relationNamePascalCased: string;
+    moduleName: string;
+    relationName: string;
+  }) {
+    const place = "export function Component";
+    const placeRegex = new RegExp("export function Component");
+    const content = `import { Component as ${props.relationNamePascalCased} } from "@sps/${props.moduleName}/relations/${props.relationName}/frontend/component";\n\n`;
+    const contentRegex = new RegExp(
+      `import${space}{${space}Component${space}as${space}${props.relationNamePascalCased}${space}}${space}from${space}"@sps/${props.moduleName}/relations/${props.relationName}/frontend/component";`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      content,
+      contentRegex,
+    });
+
+    this.place = place;
+    this.placeRegex = placeRegex;
+    this.content = content;
+    this.contentRegex = contentRegex;
+
+    this.onCreate = {
+      regex: this.contentRegex,
+      content: this.content,
+      place: this.place,
+      placeRegex: this.placeRegex,
+    };
+  }
+}
+
+export class AddRelationToAdminComponent extends RegexCreator {
+  constructor(props: {
+    relationNamePascalCased: string;
+    relationNamePropertyCased: string;
+    leftModel: any;
+    rightModel: any;
+    isLeftModel: boolean;
+  }) {
+    const place = 'variant="admin-form"';
+    const placeRegex = new RegExp('variant="admin-form"');
+
+    const currentModel = props.isLeftModel ? props.leftModel : props.rightModel;
+    const currentModelNameStyled = getNameStyles({
+      name: currentModel.name,
+    });
+
+    const content = `
+            ${props.relationNamePropertyCased}={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <${props.relationNamePascalCased}
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "${currentModelNameStyled.propertyCased.base}Id",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}`;
+
+    const contentRegex = new RegExp(
+      `variant="admin-form"[\\s\\n]*${props.relationNamePropertyCased}=\\{\\([\\s\\n]*{[\\s\\n]*data,[\\s\\n]*isServer[\\s\\n]*}[\\s\\n]*\\)[\\s\\n]*=>[\\s\\n]*{[\\s\\n]*if[\\s\\n]*\\(!data\\)[\\s\\n]*{[\\s\\n]*return;[\\s\\n]*}[\\s\\n]*return[\\s\\n]*\\([\\s\\n]*<${props.relationNamePascalCased}[\\s\\n]*isServer={isServer}[\\s\\n]*variant="admin-table"[\\s\\n]*apiProps={{[\\s\\n]*params:[\\s\\n]*{[\\s\\n]*filters:[\\s\\n]*{[\\s\\n]*and:[\\s\\n]*\\[[\\s\\n]*{[\\s\\n]*column:[\\s\\n]*"${currentModelNameStyled.propertyCased.base}Id",[\\s\\n]*method:[\\s\\n]*"eq",[\\s\\n]*value:[\\s\\n]*data\\.id,[\\s\\n]*},[\\s\\n]*\\],[\\s\\n]*},[\\s\\n]*},[\\s\\n]*}}[\\s\\n]*\\/>[\\s\\n]*\\);[\\s\\n]*}}`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      content,
+      contentRegex,
+    });
+  }
+}
+
+export class RemoveRelationImport extends RegexCreator {
+  constructor(props: {
+    relationNamePascalCased: string;
+    moduleName: string;
+    relationName: string;
+  }) {
+    const place = "";
+    const placeRegex = new RegExp("");
+    const content = "";
+    const contentRegex = new RegExp(
+      `import${space}{${space}Component${space}as${space}${props.relationNamePascalCased}${space}}${space}from${space}"@sps/${props.moduleName}/relations/${props.relationName}/frontend/component";[\\s\\n]*`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      content,
+      contentRegex,
+    });
+  }
+}
+
+export class RemoveRelationFromAdminComponent extends RegexCreator {
+  constructor(props: {
+    relationNamePascalCased: string;
+    relationNamePropertyCased: string;
+    leftModel: any;
+    rightModel: any;
+    isLeftModel: boolean;
+  }) {
+    const place = "";
+    const placeRegex = new RegExp("");
+    const content = "";
+
+    const currentModel = props.isLeftModel ? props.leftModel : props.rightModel;
+    const currentModelNameStyled = getNameStyles({
+      name: currentModel.name,
+    });
+
+    const contentRegex = new RegExp(
+      `[\\s\\n]*${props.relationNamePropertyCased}=\\{\\([\\s\\n]*{[\\s\\n]*data,[\\s\\n]*isServer[\\s\\n]*}[\\s\\n]*\\)[\\s\\n]*=>[\\s\\n]*{[\\s\\n]*if[\\s\\n]*\\(!data\\)[\\s\\n]*{[\\s\\n]*return;[\\s\\n]*}[\\s\\n]*return[\\s\\n]*\\([\\s\\n]*<${props.relationNamePascalCased}[\\s\\n]*isServer={isServer}[\\s\\n]*variant="admin-table"[\\s\\n]*apiProps={{[\\s\\n]*params:[\\s\\n]*{[\\s\\n]*filters:[\\s\\n]*{[\\s\\n]*and:[\\s\\n]*\\[[\\s\\n]*{[\\s\\n]*column:[\\s\\n]*"${currentModelNameStyled.propertyCased.base}Id",[\\s\\n]*method:[\\s\\n]*"eq",[\\s\\n]*value:[\\s\\n]*data\\.id,[\\s\\n]*},[\\s\\n]*\\],[\\s\\n]*},[\\s\\n]*},[\\s\\n]*}}[\\s\\n]*\\/>[\\s\\n]*\\);[\\s\\n]*}}`,
+    );
+
+    super({
+      place,
+      placeRegex,
+      content,
+      contentRegex,
+    });
   }
 }
