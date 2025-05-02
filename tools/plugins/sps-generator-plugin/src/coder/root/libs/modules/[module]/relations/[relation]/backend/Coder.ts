@@ -54,7 +54,7 @@ export class Coder {
 
   async create() {
     await this.project.repository.create();
-    // await this.project.app.create();
+    await this.project.app.create();
   }
 
   async migrate(props: { version: string }) {
@@ -63,7 +63,7 @@ export class Coder {
   }
 
   async remove() {
-    // await this.project.app.remove();
+    await this.project.app.remove();
     await this.project.repository.remove();
   }
 }

@@ -14,6 +14,8 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { Component as <%= left_model_name_pascal_cased %> } from "<%= left_model_frontend_component_import_path %>";
+import { Component as <%= right_model_name_pascal_cased %> } from "<%= right_model_frontend_component_import_path %>";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -29,7 +31,9 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
-      slug: props.data?.slug || "",
+      orderIndex: props.data?.orderIndex || 0,
+      <%= left_model_id_field_name %>: props.data?.<%= left_model_id_field_name %> || "",
+      <%= right_model_id_field_name %>: props.data?.<%= right_model_id_field_name %> || "",
     },
   });
 
@@ -58,11 +62,11 @@ export function Component(props: IComponentPropsExtended) {
       <div className="flex flex-col gap-6">
         <FormField
           ui="shadcn"
-          type="text"
-          label="Slug"
-          name="slug"
+          type="number"
+          label="Order index"
+          name="orderIndex"
           form={form}
-          placeholder="Type slug"
+          placeholder="Order index"
         />
 
         <FormField
@@ -82,6 +86,20 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type title"
           options={variants.map((variant) => [variant, variant])}
+        />
+
+        <<%= left_model_name_pascal_cased %>
+          isServer={props.isServer}
+          variant="admin-select-input"
+          formFieldName="<%= left_model_id_field_name %>"
+          form={form}
+        />
+
+        <<%= right_model_name_pascal_cased %>
+          isServer={props.isServer}
+          variant="admin-select-input"
+          formFieldName="<%= right_model_id_field_name %>"
+          form={form}
         />
       </div>
     </ParentAdminForm>

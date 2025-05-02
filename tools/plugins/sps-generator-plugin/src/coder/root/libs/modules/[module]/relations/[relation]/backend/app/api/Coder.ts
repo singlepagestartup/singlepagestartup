@@ -5,45 +5,49 @@ import {
   replaceInFile,
 } from "../../../../../../../../../../utils/file-utils";
 import * as path from "path";
-import * as nxWorkspace from "@nx/workspace";
 import { util as createSpsTSLibrary } from "../../../../../../../../../../utils/create-sps-ts-library";
 import { RegexCreator } from "../../../../../../../../../../utils/regex-utils/RegexCreator";
-import { Coder as AppCoder } from "../Coder";
+import { Coder as BackendCoder } from "../Coder";
 import { Migrator } from "./migrator/Migrator";
+import { util as getNameStyles } from "../../../../../../../../../utils/get-name-styles";
 
 export type IGeneratorProps = unknown;
 
 export class Coder {
-  parent: AppCoder;
+  parent: BackendCoder;
   tree: Tree;
   baseName: string;
   name: string;
   baseDirectory: string;
-  project?: ProjectConfiguration;
   absoluteName: string;
-  importAppAsAsPropertyModelName: ImportAppAsAsPropertyModelName;
-  exportRoute: ExportRoute;
+  project?: ProjectConfiguration;
+  importApp: ImportApp;
+  bindApp: BindApp;
   importPath: string;
 
-  constructor(props: { parent: AppCoder; tree: Tree } & IGeneratorProps) {
+  constructor(props: { parent: BackendCoder; tree: Tree } & IGeneratorProps) {
     this.parent = props.parent;
-    this.tree = props.tree;
-    this.name = "api";
     this.baseName = `${this.parent.baseName}-api`;
     this.baseDirectory = `${this.parent.baseDirectory}/api`;
     this.absoluteName = `${this.parent.absoluteName}/api`;
+    this.tree = props.tree;
+    this.name = "api";
 
     this.importPath = this.absoluteName;
 
     const pluralNameModelName = pluralize(
-      names(this.parent.parent.name).fileName,
+      names(this.parent.parent.parent.name).fileName,
     );
-    const asPropertyModelName = names(this.parent.parent.name).propertyName;
-    this.importAppAsAsPropertyModelName = new ImportAppAsAsPropertyModelName({
-      asPropertyModelName,
+
+    const asPropertyModelName = names(
+      this.parent.parent.parent.name,
+    ).propertyName;
+
+    this.importApp = new ImportApp({
       importPath: this.importPath,
+      asPropertyModelName,
     });
-    this.exportRoute = new ExportRoute({
+    this.bindApp = new BindApp({
       route: `/${pluralNameModelName}`,
       asPropertyModelName,
     });
@@ -65,7 +69,36 @@ export class Coder {
       return;
     }
 
-    const modelImportPath = this.parent.project.model.importPath;
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+
+    const modelRepositoryDatabaseImportPath =
+      this.parent.parent.project.repository.project.database.importPath;
+
+    const relationName = this.parent.parent.parent.name;
+
+    const leftModelModuleName =
+      this.parent.parent.parent.parent.project.relation.models[0].module;
+    const leftModelName =
+      this.parent.parent.parent.parent.project.relation.models[0].name;
+
+    const leftModelNameStyles = getNameStyles({
+      name: leftModelName,
+    });
+
+    const leftModelIdFieldName = `${leftModelNameStyles.propertyCased.base}Id`;
+
+    const rightModelModuleName =
+      this.parent.parent.parent.parent.project.relation.models[1].module;
+    const rightModelName =
+      this.parent.parent.parent.parent.project.relation.models[1].name;
+    const rightModelNameStyles = getNameStyles({
+      name: rightModelName,
+    });
+
+    const rightModelIdFieldName = `${rightModelNameStyles.propertyCased.base}Id`;
+
+    const relationRepositoryDatabaseImportPath =
+      this.parent.parent.project.repository.project.database.importPath;
 
     await createSpsTSLibrary({
       tree: this.tree,
@@ -74,65 +107,63 @@ export class Coder {
       generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
-        model_import_path: modelImportPath,
+        left_model_id_field_name: leftModelIdFieldName,
+        left_model_name_kebab_cased: leftModelNameStyles.kebabCased.base,
+        left_model_module_name: leftModelModuleName,
+        right_model_id_field_name: rightModelIdFieldName,
+        right_model_name_kebab_cased: rightModelNameStyles.kebabCased.base,
+        right_model_module_name: rightModelModuleName,
+        modelRepositoryDatabaseImportPath,
+        module_name: moduleName,
+        relation_name: relationName,
+        relation_repository_database_import_path:
+          relationRepositoryDatabaseImportPath,
       },
     });
 
-    await this.attach();
-
     this.project = getProjects(this.tree).get(this.baseName);
+
+    await this.attach();
   }
 
   async remove() {
-    const project = getProjects(this.tree).get(this.baseName);
-
-    if (!project) {
-      return;
-    }
-
     await this.detach();
 
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
-    });
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
+    }
   }
 
   async attach() {
-    const moduleAppRoutesPath = path.join(
-      this.parent.parent.parent.parent.project.backend.project.app.project.api
-        .baseDirectory,
-      "/src/lib/routes.ts",
-    );
+    const moduleAppPath =
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory + "/src/lib/apps.ts";
 
     await addToFile({
       toTop: true,
-      pathToFile: moduleAppRoutesPath,
-      content: this.importAppAsAsPropertyModelName.onCreate.content,
+      pathToFile: moduleAppPath,
+      content: this.importApp.onCreate.content,
       tree: this.tree,
     });
 
     await replaceInFile({
       tree: this.tree,
-      pathToFile: moduleAppRoutesPath,
-      regex: this.exportRoute.onCreate.regex,
-      content: this.exportRoute.onCreate.content,
+      pathToFile: moduleAppPath,
+      regex: this.bindApp.onCreate.regex,
+      content: this.bindApp.onCreate.content,
     });
   }
 
   async detach() {
-    const moduleAppRoutesPath = path.join(
-      this.parent.parent.parent.parent.project.backend.project.app.project.api
-        .baseDirectory,
-      "/src/lib/routes.ts",
-    );
+    const moduleAppPath =
+      this.parent.parent.parent.parent.parent.project.backend.project.app
+        .project.api.baseDirectory + "/src/lib/apps.ts";
 
     try {
-      const replaceExportRoutes = await replaceInFile({
+      await replaceInFile({
         tree: this.tree,
-        pathToFile: moduleAppRoutesPath,
-        regex: this.exportRoute.onRemove.regex,
+        pathToFile: moduleAppPath,
+        regex: this.bindApp.onRemove.regex,
         content: "",
       });
     } catch (error: any) {
@@ -142,10 +173,10 @@ export class Coder {
     }
 
     try {
-      const replaceImportRoutes = await replaceInFile({
+      await replaceInFile({
         tree: this.tree,
-        pathToFile: moduleAppRoutesPath,
-        regex: this.importAppAsAsPropertyModelName.onRemove.regex,
+        pathToFile: moduleAppPath,
+        regex: this.importApp.onRemove.regex,
         content: "",
       });
     } catch (error: any) {
@@ -156,15 +187,21 @@ export class Coder {
   }
 }
 
-export class ImportAppAsAsPropertyModelName extends RegexCreator {
-  constructor(props: { asPropertyModelName: string; importPath: string }) {
+export class ImportApp extends RegexCreator {
+  constructor({
+    asPropertyModelName,
+    importPath,
+  }: {
+    asPropertyModelName: string;
+    importPath: string;
+  }) {
     const place = "";
     const placeRegex = new RegExp("");
 
-    const content = `import { app as ${props.asPropertyModelName} } from "${props.importPath}";`;
+    const content = `import { app as ${asPropertyModelName} } from "${importPath}";`;
 
     const contentRegex = new RegExp(
-      `import { app as ${props.asPropertyModelName} } from "${props.importPath}";`,
+      `import { app as ${asPropertyModelName} } from "${importPath}";`,
     );
 
     super({
@@ -176,14 +213,27 @@ export class ImportAppAsAsPropertyModelName extends RegexCreator {
   }
 }
 
-export class ExportRoute extends RegexCreator {
-  constructor(props: { route: string; asPropertyModelName: string }) {
-    const place = "export const routes = {";
-    const placeRegex = new RegExp("export const routes = {");
+export class BindApp extends RegexCreator {
+  constructor({
+    route,
+    asPropertyModelName,
+  }: {
+    route: string;
+    asPropertyModelName: string;
+  }) {
+    const place = "bindApps() {";
+    const placeRegex = new RegExp("bindApps\\(\\) {");
 
-    const content = `"${props.route}": ${props.asPropertyModelName},`;
+    const content = `
+    this.apps.push({
+      type: "relation",
+      route: "${route}",
+      app: ${asPropertyModelName},
+    });`;
+
     const contentRegex = new RegExp(
-      `"${props.route}":([\\s]+?)${props.asPropertyModelName},`,
+      `[\\s\\n]*this\\.apps\\.push\\([\\s\\n]*{[\\s\\n]*type:[\\s]*"relation",[\\s\\n]*route:[\\s]*"${route}",[\\s\\n]*app:[\\s]*${asPropertyModelName},[\\s\\n]*}\\);[\\s\\n]*`,
+      "gm",
     );
 
     super({

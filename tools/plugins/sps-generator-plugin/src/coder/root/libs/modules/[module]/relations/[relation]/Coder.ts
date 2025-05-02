@@ -86,8 +86,8 @@ export class Coder {
 
   async create() {
     await this.project.backend.create();
-    // await this.project.sdk.create();
-    // await this.project.frontend.create();
+    await this.project.sdk.create();
+    await this.project.frontend.create();
   }
 
   async migrate(props: { version: string }) {
@@ -97,8 +97,8 @@ export class Coder {
   }
 
   async remove() {
-    // await this.project.frontend.remove();
-    // await this.project.sdk.remove();
+    await this.project.frontend.remove();
+    await this.project.sdk.remove();
     await this.project.backend.remove();
   }
 }

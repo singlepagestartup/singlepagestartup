@@ -84,6 +84,26 @@ export class Coder {
     const moduleName = this.parent.parent.parent.parent.name;
     const modelName = this.parent.parent.name;
 
+    const relationName = this.parent.parent.name;
+
+    const leftModel = this.parent.parent.parent.project.relation.models[0];
+    const leftModelModuleName = leftModel.module;
+    const leftModelName = leftModel.name;
+    const leftModelNameStyles = getNameStyles({
+      name: leftModelName,
+    });
+    const leftModelIdFieldName = `${leftModelNameStyles.propertyCased.base}Id`;
+    const leftModelFrontendComponentImportPath = `@sps/${leftModelModuleName}/models/${leftModelName}/frontend/component`;
+
+    const rightModel = this.parent.parent.parent.project.relation.models[1];
+    const rightModelModuleName = rightModel.module;
+    const rightModelName = rightModel.name;
+    const rightModelNameStyles = getNameStyles({
+      name: rightModelName,
+    });
+    const rightModelIdFieldName = `${rightModelNameStyles.propertyCased.base}Id`;
+    const rightModelFrontendComponentImportPath = `@sps/${rightModelModuleName}/models/${rightModelName}/frontend/component`;
+
     const sdkClientImportPath =
       this.parent.parent.project.sdk.project.client.importPath;
     const sdkServerImportPath =
@@ -127,7 +147,16 @@ export class Coder {
         model_name_kebab_cased_pluralized:
           modelNameStyled.kebabCased.pluralized,
         model_name_pluralized: modelNameStyled.snakeCased.pluralized,
+        relation_name: relationName,
         sdk_model_import_path: sdkModelImportPath,
+        left_model_name_pascal_cased: leftModelNameStyles.pascalCased.base,
+        left_model_id_field_name: leftModelIdFieldName,
+        left_model_frontend_component_import_path:
+          leftModelFrontendComponentImportPath,
+        right_model_name_pascal_cased: rightModelNameStyles.pascalCased.base,
+        right_model_id_field_name: rightModelIdFieldName,
+        right_model_frontend_component_import_path:
+          rightModelFrontendComponentImportPath,
       },
     });
 
@@ -202,50 +231,44 @@ export class Coder {
   }
 
   async attach() {
-    const moduleName = this.parent.parent.parent.parent.name;
-    const modelName = this.parent.parent.name;
-    const modelNameStyles = getNameStyles({ name: modelName });
-
-    const moduleFrontendAdminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
-
-    await createSpsReactLibrary({
-      root: moduleFrontendAdminComponentPath.replace(
-        "Component.tsx",
-        modelName,
-      ),
-      name: this.baseName,
-      tree: this.tree,
-      generateFilesPath: path.join(__dirname, "templates/parent-admin-table"),
-      templateParams: {
-        template: "",
-        model_frontend_component_import_path: this.importPath,
-      },
-    });
-
-    // Add component to admin panel
-    const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
-
-    if (this.tree.exists(adminPanelPath)) {
-      const adminPanelComponent = new AdminPanelComponent({
-        modelName,
-        moduleName,
-      });
-
-      await replaceInFile({
-        tree: this.tree,
-        pathToFile: adminPanelPath,
-        regex: adminPanelComponent.onCreate.regex,
-        content: adminPanelComponent.onCreate.content,
-      });
-
-      // Add import
-      await addToFile({
-        tree: this.tree,
-        pathToFile: adminPanelPath,
-        content: `import { Component as ${modelNameStyles.pascalCased.base} } from "./${modelName}/Component";\n`,
-        toTop: true,
-      });
-    }
+    // const moduleName = this.parent.parent.parent.parent.name;
+    // const modelName = this.parent.parent.name;
+    // const modelNameStyles = getNameStyles({ name: modelName });
+    // const moduleFrontendAdminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+    // await createSpsReactLibrary({
+    //   root: moduleFrontendAdminComponentPath.replace(
+    //     "Component.tsx",
+    //     modelName,
+    //   ),
+    //   name: this.baseName,
+    //   tree: this.tree,
+    //   generateFilesPath: path.join(__dirname, "templates/parent-admin-table"),
+    //   templateParams: {
+    //     template: "",
+    //     model_frontend_component_import_path: this.importPath,
+    //   },
+    // });
+    // // Add component to admin panel
+    // const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+    // if (this.tree.exists(adminPanelPath)) {
+    //   const adminPanelComponent = new AdminPanelComponent({
+    //     modelName,
+    //     moduleName,
+    //   });
+    //   await replaceInFile({
+    //     tree: this.tree,
+    //     pathToFile: adminPanelPath,
+    //     regex: adminPanelComponent.onCreate.regex,
+    //     content: adminPanelComponent.onCreate.content,
+    //   });
+    //   // Add import
+    //   await addToFile({
+    //     tree: this.tree,
+    //     pathToFile: adminPanelPath,
+    //     content: `import { Component as ${modelNameStyles.pascalCased.base} } from "./${modelName}/Component";\n`,
+    //     toTop: true,
+    //   });
+    // }
   }
 
   async removeVariant(props: IVariantProps) {
@@ -346,46 +369,39 @@ export class Coder {
   }
 
   async detach() {
-    const moduleName = this.parent.parent.parent.parent.name;
-    const modelName = this.parent.parent.name;
-    const modelNameStyles = getNameStyles({ name: modelName });
-
-    // Remove component file
-    const adminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/${modelName}`;
-
-    if (this.tree.exists(adminComponentPath)) {
-      this.tree.delete(adminComponentPath);
-    }
-
-    // Remove from admin panel
-    const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
-
-    if (this.tree.exists(adminPanelPath)) {
-      const adminPanelComponent = new AdminPanelComponent({
-        modelName,
-        moduleName,
-      });
-
-      // Remove component import
-      const importRegex = new RegExp(
-        `import\\s*{\\s*Component\\s+as\\s+${modelNameStyles.pascalCased.base}\\s*}\\s*from\\s*"./${modelName}/Component";?\\n?`,
-      );
-
-      await replaceInFile({
-        tree: this.tree,
-        pathToFile: adminPanelPath,
-        regex: importRegex,
-        content: "",
-      });
-
-      // Remove component from models array
-      await replaceInFile({
-        tree: this.tree,
-        pathToFile: adminPanelPath,
-        regex: adminPanelComponent.onRemove.regex,
-        content: "",
-      });
-    }
+    // const moduleName = this.parent.parent.parent.parent.name;
+    // const modelName = this.parent.parent.name;
+    // const modelNameStyles = getNameStyles({ name: modelName });
+    // // Remove component file
+    // const adminComponentPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/${modelName}`;
+    // if (this.tree.exists(adminComponentPath)) {
+    //   this.tree.delete(adminComponentPath);
+    // }
+    // // Remove from admin panel
+    // const adminPanelPath = `libs/modules/${moduleName}/frontend/component/src/lib/admin/Component.tsx`;
+    // if (this.tree.exists(adminPanelPath)) {
+    //   const adminPanelComponent = new AdminPanelComponent({
+    //     modelName,
+    //     moduleName,
+    //   });
+    //   // Remove component import
+    //   const importRegex = new RegExp(
+    //     `import\\s*{\\s*Component\\s+as\\s+${modelNameStyles.pascalCased.base}\\s*}\\s*from\\s*"./${modelName}/Component";?\\n?`,
+    //   );
+    //   await replaceInFile({
+    //     tree: this.tree,
+    //     pathToFile: adminPanelPath,
+    //     regex: importRegex,
+    //     content: "",
+    //   });
+    //   // Remove component from models array
+    //   await replaceInFile({
+    //     tree: this.tree,
+    //     pathToFile: adminPanelPath,
+    //     regex: adminPanelComponent.onRemove.regex,
+    //     content: "",
+    //   });
+    // }
   }
 }
 

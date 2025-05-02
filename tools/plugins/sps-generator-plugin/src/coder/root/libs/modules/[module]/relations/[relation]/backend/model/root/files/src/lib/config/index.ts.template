@@ -1,7 +1,0 @@
-export const config = {
-  <%= left_model_name_property_cased %>Id: "<%= module_lib_name_property_cased %>.<%= left_model_name_property_cased %>.id",
-<% if(right_model_is_external) { %>
-<% } else { %>  
-  <%= right_model_name_property_cased %>Id: "<%= module_lib_name_property_cased %>.<%= right_model_name_property_cased %>.id",
-<% } %>
-};

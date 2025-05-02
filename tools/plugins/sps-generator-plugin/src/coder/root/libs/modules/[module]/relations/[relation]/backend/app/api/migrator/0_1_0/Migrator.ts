@@ -44,11 +44,7 @@ export class Migrator {
       this.parent.coder.tree,
       baseDirectory,
       (filePath) => {
-        const file = this.parent.coder.tree.read(filePath)?.toString("utf8");
-
-        if (!file) {
-          return;
-        }
+        const file = this.parent.coder.tree.read(filePath).toString("utf8");
 
         const newFile = file.replace(
           new RegExp(oldModelImportPath, "g"),

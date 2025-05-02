@@ -1,14 +1,7 @@
-// @ts-ignore
-/**
- * Migration passed, errors ignored
- */
 import {
-  ProjectConfiguration,
-  Tree,
   generateFiles,
   getProjects,
   offsetFromRoot,
-  updateJson,
   updateProjectConfiguration,
 } from "@nx/devkit";
 import { Migrator as ParentMigrator } from "../Migrator";
@@ -63,20 +56,8 @@ export class Migrator {
     const baseDirectory = this.parent.coder.baseDirectory;
     const project = this.parent.coder.project;
 
-    if (!project) {
-      throw new Error(
-        `The project ${this.parent.coder.baseName} does not exist`,
-      );
-    }
-
-    if (!project?.root.endsWith("root")) {
-      const tmpPath = project?.root.split("/").slice(0, -1).join("/") + "/temp";
-
-      if (!project.name) {
-        throw new Error(
-          `The project ${this.parent.coder.baseName} does not have a name`,
-        );
-      }
+    if (!project.root.endsWith("root")) {
+      const tmpPath = project.root.split("/").slice(0, -1).join("/") + "/temp";
 
       await moveGenerator(this.parent.coder.tree, {
         projectName: project.name,

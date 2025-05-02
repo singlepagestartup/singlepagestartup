@@ -6,19 +6,13 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="<%= module_name %>"
-      name="<%= model_name %>"
-      label="<%= model_name %>"
+      name="<%= relation_name %>"
+      label="<%= relation_name %>"
       data={props.data}
       form={props.form}
       variant={props.variant}
       formFieldName={props.formFieldName}
-      renderField={props.renderField || "adminTitle"}
-      renderFunction={(entity) => {
-        const variant = entity.variant ?? "Unknown Variant";
-        const adminTitle = entity.adminTitle;
-
-        return `${adminTitle} | ${variant}`;
-      }}
+      renderField={props.renderField || "id"}
     />
   );
 }

@@ -1,14 +1,13 @@
-import { ProjectConfiguration, Tree, getProjects } from "@nx/devkit";
+import {
+  ProjectConfiguration,
+  Tree,
+  getProjects,
+  updateJson,
+} from "@nx/devkit";
 import path from "path";
 import { util as createSpsTSLibrary } from "tools/plugins/sps-generator-plugin/src/utils/create-sps-ts-library";
-import * as nxWorkspace from "@nx/workspace";
 import { util as getNameStyles } from "../../../../../../../../../utils/get-name-styles";
 import { util as getModuleCuttedStyles } from "../../../../../../../../../utils/get-module-cutted-styles";
-import { RegexCreator } from "tools/plugins/sps-generator-plugin/src/utils/regex-utils/RegexCreator";
-import {
-  addToFile,
-  replaceInFile,
-} from "tools/plugins/sps-generator-plugin/src/utils/file-utils";
 import { Coder as SchemaCoder } from "../Coder";
 import { Migrator } from "./migrator/Migrator";
 
@@ -25,7 +24,6 @@ export class Coder {
   rightModelStyles?: ReturnType<typeof getNameStyles>;
   moduleNameStyles?: ReturnType<typeof getModuleCuttedStyles>;
   relationNameStyles?: ReturnType<typeof getNameStyles>;
-  exportAll?: ExportNamedVariables;
   absoluteName: string;
   tableName?: string;
   leftModelTableUuidName?: string;
@@ -45,52 +43,6 @@ export class Coder {
     this.project = getProjects(this.tree).get(this.baseName);
   }
 
-  async setReplacers() {
-    // const moduleName = this.parent.parent.parent.parent.parent.name;
-    // const leftModelName =
-    //   this.parent.parent.parent.parent.parent.project.models[0].project.model
-    //     .project.backend.project.model.modelName;
-    // const rightModelName =
-    //   this.parent.parent.parent.parent.parent.project.models[1].project.model
-    //     .project.backend.project.model.modelName;
-    // const relationName = this.parent.parent.parent.name;
-    // const leftModelStyles = getNameStyles({
-    //   name: leftModelName,
-    // });
-    // const rightModelStyles = getNameStyles({
-    //   name: rightModelName,
-    // });
-    // this.leftModelStyles = leftModelStyles;
-    // this.rightModelStyles = rightModelStyles;
-    // this.moduleNameStyles = getModuleCuttedStyles({ name: moduleName });
-    // this.relationNameStyles = getNameStyles({ name: relationName });
-    // const tableName = this.relationNameStyles.base;
-    // if (tableName.length > 10) {
-    //   const cuttedTableName = getNameStyles({ name: tableName }).snakeCased
-    //     .baseCutted;
-    //   const randomThreeLetters = Math.random().toString(36).substring(2, 5);
-    //   // Cutted table names can be equal, thats why we add random three letters
-    //   this.tableName = cuttedTableName + "_" + randomThreeLetters;
-    // } else {
-    //   this.tableName = tableName;
-    // }
-    // this.leftModelTableUuidName = `${
-    //   getNameStyles({
-    //     name: this.leftModelStyles.snakeCased.base,
-    //   }).snakeCased.baseCutted
-    // }_id`;
-    // this.rightModelTableUuidName = `${
-    //   getNameStyles({
-    //     name: this.rightModelStyles.snakeCased.base,
-    //   }).snakeCased.baseCutted
-    // }_id`;
-    // this.exportAll = new ExportNamedVariables({
-    //   importPath: this.importPath,
-    //   moduleNamePascalCased: this.moduleNameStyles.pascalCased,
-    //   relationNamePascalCased: this.relationNameStyles.pascalCased.base,
-    // });
-  }
-
   async migrate(props: { version: string }) {
     const migrator = new Migrator({
       coder: this,
@@ -107,10 +59,11 @@ export class Coder {
 
     const relationName = this.parent.parent.parent.name;
 
-    const leftModelModuleName =
-      this.parent.parent.parent.parent.project.relation.models[0].module;
-    const leftModelName =
-      this.parent.parent.parent.parent.project.relation.models[0].name;
+    const leftModel =
+      this.parent.parent.parent.parent.project.relation.models[0];
+
+    const leftModelModuleName = leftModel.module;
+    const leftModelName = leftModel.name;
 
     const leftModelNameStyles = getNameStyles({
       name: leftModelName,
@@ -121,10 +74,11 @@ export class Coder {
     const leftModelIdColumnName = `${leftModelNameStyles.snakeCased.baseCutted}_id`;
     const leftModelIdFieldName = `${leftModelNameStyles.propertyCased.base}Id`;
 
-    const rightModelModuleName =
-      this.parent.parent.parent.parent.project.relation.models[1].module;
-    const rightModelName =
-      this.parent.parent.parent.parent.project.relation.models[1].name;
+    const rightModel =
+      this.parent.parent.parent.parent.project.relation.models[1];
+
+    const rightModelModuleName = rightModel.module;
+    const rightModelName = rightModel.name;
     const rightModelNameStyles = getNameStyles({
       name: rightModelName,
     });
@@ -178,43 +132,98 @@ export class Coder {
   }
 
   async attach() {
-    // const moduleSchemaRootPath = path.join(
-    //   this.parent.parent.parent.parent.parent.project.backend.project.schema
-    //     .project.root.baseDirectory,
-    //   "/src/lib/index.ts",
-    // );
-    // if (!this.exportAll) {
-    //   throw new Error("ExportAll is not defined");
-    // }
-    // await addToFile({
-    //   toTop: true,
-    //   pathToFile: moduleSchemaRootPath,
-    //   content: this.exportAll.onCreate.content,
-    //   tree: this.tree,
-    // });
+    const relationName = this.parent.parent.parent.name;
+    const relationNameStyles = getNameStyles({ name: relationName });
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    const projectJsonPath = `libs/modules/${moduleName}/project.json`;
+
+    // Add model specific targets and root commands
+    for (const type of ["generate", "migrate"] as const) {
+      // Add model specific targets
+      await updateJson(this.tree, projectJsonPath, (json) => {
+        const targetName = `relations:${relationNameStyles.kebabCased.base}:repository-${type}`;
+        const target =
+          type === "generate"
+            ? {
+                executor: "nx:run-commands",
+                options: {
+                  parallel: false,
+                  cwd: `libs/modules/${moduleName}/relations/${relationNameStyles.kebabCased.base}/backend/repository/database`,
+                  commands: [
+                    {
+                      command: "drizzle-kit up --config=./src/lib/config.ts",
+                    },
+                    {
+                      command:
+                        "drizzle-kit generate --config=./src/lib/config.ts",
+                    },
+                  ],
+                },
+              }
+            : {
+                executor: "nx:run-commands",
+                cache: false,
+                options: {
+                  parallel: false,
+                  envFile: "apps/api/.env",
+                  cwd: `libs/modules/${moduleName}/relations/${relationNameStyles.kebabCased.base}/backend/repository/database`,
+                  commands: [
+                    {
+                      command: "bun run ./src/lib/migrate.ts",
+                    },
+                  ],
+                },
+              };
+
+        // Add model specific target
+        json.targets[targetName] = target;
+
+        // Add command to root target
+        const rootTargetName = `relations:repository-${type}`;
+        const rootTarget = json.targets[rootTargetName];
+
+        if (rootTarget) {
+          const command = `nx run @sps/${moduleName}:relations:${relationNameStyles.kebabCased.base}:repository-${type}`;
+          const commands = rootTarget.options.commands || [];
+
+          if (!commands.some((cmd) => cmd.command === command)) {
+            commands.push({ command });
+            rootTarget.options.commands = commands;
+          }
+        }
+
+        return json;
+      });
+    }
   }
 
   async detach() {
-    // const moduleSchemaRootPath = path.join(
-    //   this.parent.parent.parent.parent.parent.project.backend.project.schema
-    //     .project.root.baseDirectory,
-    //   "/src/lib/index.ts",
-    // );
-    // if (!this.exportAll) {
-    //   throw new Error("ExportAll is not defined");
-    // }
-    // try {
-    //   await replaceInFile({
-    //     tree: this.tree,
-    //     pathToFile: moduleSchemaRootPath,
-    //     regex: this.exportAll.onRemove.regex,
-    //     content: "",
-    //   });
-    // } catch (error: any) {
-    //   if (!error.message.includes("No expected value")) {
-    //     throw error;
-    //   }
-    // }
+    const relationName = this.parent.parent.parent.name;
+    const relationNameStyles = getNameStyles({ name: relationName });
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+    const projectJsonPath = `libs/modules/${moduleName}/project.json`;
+
+    // Remove model specific targets and root commands
+    for (const type of ["generate", "migrate"] as const) {
+      await updateJson(this.tree, projectJsonPath, (json) => {
+        // Remove model specific target
+        const targetName = `relations:${relationNameStyles.kebabCased.base}:repository-${type}`;
+        delete json.targets[targetName];
+
+        // Remove command from root target
+        const rootTargetName = `relations:repository-${type}`;
+        const rootTarget = json.targets[rootTargetName];
+
+        if (rootTarget?.options?.commands) {
+          const command = `nx run @sps/${moduleName}:relations:${relationNameStyles.kebabCased.base}:repository-${type}`;
+          rootTarget.options.commands = rootTarget.options.commands.filter(
+            (cmd) => cmd.command !== command,
+          );
+        }
+
+        return json;
+      });
+    }
   }
 
   async remove() {
@@ -223,28 +232,5 @@ export class Coder {
     if (this.tree.exists(this.baseDirectory)) {
       this.tree.delete(this.baseDirectory);
     }
-  }
-}
-
-export class ExportNamedVariables extends RegexCreator {
-  constructor(props: {
-    importPath: string;
-    moduleNamePascalCased: string;
-    relationNamePascalCased: string;
-  }) {
-    const place = "";
-    const placeRegex = new RegExp("");
-
-    const content = `export { Table as ${props.moduleNamePascalCased}${props.relationNamePascalCased}, Relations as ${props.moduleNamePascalCased}${props.relationNamePascalCased}Relations } from "${props.importPath}";`;
-    const contentRegex = new RegExp(
-      `export([\\s]+?)?{([\\s]+?)?Table([\\s]+?)?as([\\s]+?)?${props.moduleNamePascalCased}${props.relationNamePascalCased},([\\s]+?)?Relations as ${props.moduleNamePascalCased}${props.relationNamePascalCased}Relations([,]?)([\\s]+?)?}([\\s]+?)?from([\\s]+?)?"${props.importPath}";`,
-    );
-
-    super({
-      place,
-      placeRegex,
-      content,
-      contentRegex,
-    });
   }
 }

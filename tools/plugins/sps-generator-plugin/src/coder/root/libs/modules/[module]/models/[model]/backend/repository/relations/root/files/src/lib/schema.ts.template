@@ -1,6 +1,0 @@
-import { relations } from "drizzle-orm";
-import { Table } from "<%= parent_model_import_path %>";
-
-export const Relations = relations(Table, (helpers) => {
-  return {};
-});
