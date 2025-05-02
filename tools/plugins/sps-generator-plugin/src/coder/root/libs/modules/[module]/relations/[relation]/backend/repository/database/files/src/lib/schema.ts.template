@@ -1,5 +1,6 @@
 import * as pgCore from "drizzle-orm/pg-core";
-import { fields } from "./fields";
+import { Table as <%= left_model_name_pascal_cased %> } from "<%= left_model_backend_repository_database_import_path %>";
+import { Table as <%= right_model_name_pascal_cased %> } from "<%= right_model_backend_repository_database_import_path %>";
 
 export const moduleName = "<%= module_name_cutted_snake_cased %>";
 export const table = "<%= table_name %>";
@@ -7,5 +8,18 @@ export const table = "<%= table_name %>";
 const pgTable = pgCore.pgTableCreator((name) => `${moduleName}_${name}`);
 
 export const Table = pgTable(table, {
-  ...fields
+  id: pgCore.uuid("id").primaryKey().defaultRandom(),
+  createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
+  updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
+  variant: pgCore.text("variant").notNull().default("default"),
+  orderIndex: pgCore.integer("order_index").notNull().default(0),
+  className: pgCore.text("class_name"),
+  <%= left_model_id_field_name %>: pgCore
+    .uuid("<%= left_model_id_column_name %>")
+    .notNull()
+    .references(() => <%= left_model_name_pascal_cased %>.id, { onDelete: "cascade" }),
+  <%= right_model_id_field_name %>: pgCore
+    .uuid("<%= right_model_id_column_name %>")
+    .notNull()
+    .references(() => <%= right_model_name_pascal_cased %>.id, { onDelete: "cascade" }),
 });

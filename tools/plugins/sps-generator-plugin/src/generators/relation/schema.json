@@ -57,22 +57,6 @@
         "$source": "argv",
         "index": 0
       }
-    },
-    "left_model_is_external": {
-      "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      }
-    },
-    "right_model_is_external": {
-      "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      }
     }
   },
   "required": ["action", "module", "left_model_name", "right_model_name"]

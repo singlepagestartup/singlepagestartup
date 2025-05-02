@@ -21,6 +21,10 @@ export type IGeneratorProps = {
   frontend?: IFrontendCoderGeneratorProps;
   backend?: IBackendCoderGeneratorProps;
   sdk?: ISdkCoderGeneratorProps;
+  models: {
+    name: string;
+    module: string;
+  }[];
 };
 
 /**
@@ -43,6 +47,10 @@ export class Coder {
     sdk: SdkCoder;
     frontend: FrontendCoder;
   };
+  models: {
+    name: string;
+    module: string;
+  }[];
 
   constructor(props: { tree: Tree; parent: RelationsCoder } & IGeneratorProps) {
     this.tree = props.tree;
@@ -54,6 +62,8 @@ export class Coder {
     this.baseName = `${this.parent.baseName}-${this.name}`;
     this.baseDirectory = `${this.parent.baseDirectory}/${this.name}`;
     this.absoluteName = `${this.parent.absoluteName}/${this.name}`;
+
+    this.models = props.models;
 
     this.project.backend = new BackendCoder({
       ...props.backend,

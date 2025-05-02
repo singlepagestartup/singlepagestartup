@@ -46,60 +46,49 @@ export class Coder {
   }
 
   async setReplacers() {
-    const moduleName = this.parent.parent.parent.parent.parent.name;
-
-    const leftModelName =
-      this.parent.parent.parent.parent.parent.project.models[0].project.model
-        .project.backend.project.model.modelName;
-    const rightModelName =
-      this.parent.parent.parent.parent.parent.project.models[1].project.model
-        .project.backend.project.model.modelName;
-
-    const relationName = this.parent.parent.parent.name;
-
-    const leftModelStyles = getNameStyles({
-      name: leftModelName,
-    });
-    const rightModelStyles = getNameStyles({
-      name: rightModelName,
-    });
-
-    this.leftModelStyles = leftModelStyles;
-    this.rightModelStyles = rightModelStyles;
-    this.moduleNameStyles = getModuleCuttedStyles({ name: moduleName });
-    this.relationNameStyles = getNameStyles({ name: relationName });
-
-    const tableName = this.relationNameStyles.base;
-
-    if (tableName.length > 10) {
-      const cuttedTableName = getNameStyles({ name: tableName }).snakeCased
-        .baseCutted;
-
-      const randomThreeLetters = Math.random().toString(36).substring(2, 5);
-
-      // Cutted table names can be equal, thats why we add random three letters
-      this.tableName = cuttedTableName + "_" + randomThreeLetters;
-    } else {
-      this.tableName = tableName;
-    }
-
-    this.leftModelTableUuidName = `${
-      getNameStyles({
-        name: this.leftModelStyles.snakeCased.base,
-      }).snakeCased.baseCutted
-    }_id`;
-
-    this.rightModelTableUuidName = `${
-      getNameStyles({
-        name: this.rightModelStyles.snakeCased.base,
-      }).snakeCased.baseCutted
-    }_id`;
-
-    this.exportAll = new ExportNamedVariables({
-      importPath: this.importPath,
-      moduleNamePascalCased: this.moduleNameStyles.pascalCased,
-      relationNamePascalCased: this.relationNameStyles.pascalCased.base,
-    });
+    // const moduleName = this.parent.parent.parent.parent.parent.name;
+    // const leftModelName =
+    //   this.parent.parent.parent.parent.parent.project.models[0].project.model
+    //     .project.backend.project.model.modelName;
+    // const rightModelName =
+    //   this.parent.parent.parent.parent.parent.project.models[1].project.model
+    //     .project.backend.project.model.modelName;
+    // const relationName = this.parent.parent.parent.name;
+    // const leftModelStyles = getNameStyles({
+    //   name: leftModelName,
+    // });
+    // const rightModelStyles = getNameStyles({
+    //   name: rightModelName,
+    // });
+    // this.leftModelStyles = leftModelStyles;
+    // this.rightModelStyles = rightModelStyles;
+    // this.moduleNameStyles = getModuleCuttedStyles({ name: moduleName });
+    // this.relationNameStyles = getNameStyles({ name: relationName });
+    // const tableName = this.relationNameStyles.base;
+    // if (tableName.length > 10) {
+    //   const cuttedTableName = getNameStyles({ name: tableName }).snakeCased
+    //     .baseCutted;
+    //   const randomThreeLetters = Math.random().toString(36).substring(2, 5);
+    //   // Cutted table names can be equal, thats why we add random three letters
+    //   this.tableName = cuttedTableName + "_" + randomThreeLetters;
+    // } else {
+    //   this.tableName = tableName;
+    // }
+    // this.leftModelTableUuidName = `${
+    //   getNameStyles({
+    //     name: this.leftModelStyles.snakeCased.base,
+    //   }).snakeCased.baseCutted
+    // }_id`;
+    // this.rightModelTableUuidName = `${
+    //   getNameStyles({
+    //     name: this.rightModelStyles.snakeCased.base,
+    //   }).snakeCased.baseCutted
+    // }_id`;
+    // this.exportAll = new ExportNamedVariables({
+    //   importPath: this.importPath,
+    //   moduleNamePascalCased: this.moduleNameStyles.pascalCased,
+    //   relationNamePascalCased: this.relationNameStyles.pascalCased.base,
+    // });
   }
 
   async migrate(props: { version: string }) {
@@ -112,22 +101,54 @@ export class Coder {
   }
 
   async create() {
-    await this.setReplacers();
-
     if (this.project) {
       return;
     }
 
-    const leftProjectSchemaTableImportPath =
-      this.parent.parent.parent.parent.parent.project.models[0].project.model
-        .project.backend.project.schema.project.table.importPath;
-    const rightProjectSchemaImportPath =
-      this.parent.parent.parent.parent.parent.project.models[1].project.model
-        .project.backend.project.schema.project.table.importPath;
+    const relationName = this.parent.parent.parent.name;
 
-    const rightModelIsExternal =
-      this.parent.parent.parent.parent.parent.project.models[1].project.model
-        .isExternal;
+    const leftModelModuleName =
+      this.parent.parent.parent.parent.project.relation.models[0].module;
+    const leftModelName =
+      this.parent.parent.parent.parent.project.relation.models[0].name;
+
+    const leftModelNameStyles = getNameStyles({
+      name: leftModelName,
+    });
+
+    const leftModelBackendRepositoryDatabaseImportPath = `@sps/${leftModelModuleName}/models/${leftModelName}/backend/repository/database`;
+    const leftModelNamePascalCased = leftModelNameStyles.pascalCased.base;
+    const leftModelIdColumnName = `${leftModelNameStyles.snakeCased.baseCutted}_id`;
+    const leftModelIdFieldName = `${leftModelNameStyles.propertyCased.base}Id`;
+
+    const rightModelModuleName =
+      this.parent.parent.parent.parent.project.relation.models[1].module;
+    const rightModelName =
+      this.parent.parent.parent.parent.project.relation.models[1].name;
+    const rightModelNameStyles = getNameStyles({
+      name: rightModelName,
+    });
+
+    const rightModelBackendRepositoryDatabaseImportPath = `@sps/${rightModelModuleName}/models/${rightModelName}/backend/repository/database`;
+    const rightModelNamePascalCased = rightModelNameStyles.pascalCased.base;
+    const rightModelIdColumnName = `${rightModelNameStyles.snakeCased.baseCutted}_id`;
+    const rightModelIdFieldName = `${rightModelNameStyles.propertyCased.base}Id`;
+
+    const relationNameStyles = getNameStyles({ name: relationName });
+    const tableName = relationNameStyles.base;
+    if (tableName.length > 10) {
+      const cuttedTableName = getNameStyles({ name: tableName }).snakeCased
+        .baseCutted;
+      const randomThreeLetters = Math.random().toString(36).substring(2, 5);
+      // Cutted table names can be equal, thats why we add random three letters
+      this.tableName = cuttedTableName + "_" + randomThreeLetters;
+    } else {
+      this.tableName = tableName;
+    }
+
+    const moduleName = this.parent.parent.parent.parent.parent.name;
+
+    const moduleNameStyles = getModuleCuttedStyles({ name: moduleName });
 
     await createSpsTSLibrary({
       tree: this.tree,
@@ -136,21 +157,18 @@ export class Coder {
       generateFilesPath: path.join(__dirname, "files"),
       templateParams: {
         template: "",
-        left_schema_project_import_path: leftProjectSchemaTableImportPath,
-        left_schema_table_name: this.leftModelStyles?.pascalCased.base,
-        left_schema_model_name: this.leftModelStyles?.propertyCased.base,
-        right_model_is_external: rightModelIsExternal,
-        left_model_table_uuid_name: this.leftModelTableUuidName,
-        right_model_table_uuid_name: this.rightModelTableUuidName,
-        right_schema_project_import_path: rightProjectSchemaImportPath,
-        right_schema_table_name: this.rightModelStyles?.pascalCased.base,
-        right_schema_model_name: this.rightModelStyles?.propertyCased.base,
-        module_name_cutted_snake_cased: this.moduleNameStyles?.snakeCased,
-        module_name_cutted_pascal_cased: this.moduleNameStyles?.pascalCased,
+        left_model_backend_repository_database_import_path:
+          leftModelBackendRepositoryDatabaseImportPath,
+        right_model_backend_repository_database_import_path:
+          rightModelBackendRepositoryDatabaseImportPath,
+        left_model_name_pascal_cased: leftModelNamePascalCased,
+        right_model_name_pascal_cased: rightModelNamePascalCased,
         table_name: this.tableName,
-        relation_name_pascal_cased: this.relationNameStyles?.pascalCased.base,
-        relation_name_property_cased:
-          this.relationNameStyles?.propertyCased.base,
+        module_name_cutted_snake_cased: moduleNameStyles.snakeCased,
+        left_model_id_field_name: leftModelIdFieldName,
+        left_model_id_column_name: leftModelIdColumnName,
+        right_model_id_field_name: rightModelIdFieldName,
+        right_model_id_column_name: rightModelIdColumnName,
       },
     });
 
@@ -160,65 +178,51 @@ export class Coder {
   }
 
   async attach() {
-    const moduleSchemaRootPath = path.join(
-      this.parent.parent.parent.parent.parent.project.backend.project.schema
-        .project.root.baseDirectory,
-      "/src/lib/index.ts",
-    );
-
-    if (!this.exportAll) {
-      throw new Error("ExportAll is not defined");
-    }
-
-    await addToFile({
-      toTop: true,
-      pathToFile: moduleSchemaRootPath,
-      content: this.exportAll.onCreate.content,
-      tree: this.tree,
-    });
+    // const moduleSchemaRootPath = path.join(
+    //   this.parent.parent.parent.parent.parent.project.backend.project.schema
+    //     .project.root.baseDirectory,
+    //   "/src/lib/index.ts",
+    // );
+    // if (!this.exportAll) {
+    //   throw new Error("ExportAll is not defined");
+    // }
+    // await addToFile({
+    //   toTop: true,
+    //   pathToFile: moduleSchemaRootPath,
+    //   content: this.exportAll.onCreate.content,
+    //   tree: this.tree,
+    // });
   }
 
   async detach() {
-    const moduleSchemaRootPath = path.join(
-      this.parent.parent.parent.parent.parent.project.backend.project.schema
-        .project.root.baseDirectory,
-      "/src/lib/index.ts",
-    );
-
-    if (!this.exportAll) {
-      throw new Error("ExportAll is not defined");
-    }
-
-    try {
-      await replaceInFile({
-        tree: this.tree,
-        pathToFile: moduleSchemaRootPath,
-        regex: this.exportAll.onRemove.regex,
-        content: "",
-      });
-    } catch (error: any) {
-      if (!error.message.includes("No expected value")) {
-        throw error;
-      }
-    }
+    // const moduleSchemaRootPath = path.join(
+    //   this.parent.parent.parent.parent.parent.project.backend.project.schema
+    //     .project.root.baseDirectory,
+    //   "/src/lib/index.ts",
+    // );
+    // if (!this.exportAll) {
+    //   throw new Error("ExportAll is not defined");
+    // }
+    // try {
+    //   await replaceInFile({
+    //     tree: this.tree,
+    //     pathToFile: moduleSchemaRootPath,
+    //     regex: this.exportAll.onRemove.regex,
+    //     content: "",
+    //   });
+    // } catch (error: any) {
+    //   if (!error.message.includes("No expected value")) {
+    //     throw error;
+    //   }
+    // }
   }
 
   async remove() {
-    await this.setReplacers();
-
-    const project = getProjects(this.tree).get(this.baseName);
-
-    if (!project) {
-      return;
-    }
-
     await this.detach();
 
-    await nxWorkspace.removeGenerator(this.tree, {
-      projectName: this.baseName,
-      skipFormat: true,
-      forceRemove: true,
-    });
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
+    }
   }
 }
 
