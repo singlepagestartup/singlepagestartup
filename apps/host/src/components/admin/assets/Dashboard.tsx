@@ -16,6 +16,7 @@ import { AdminComponent as Notification } from "@sps/notification/frontend/compo
 import { AdminComponent as Rbac } from "@sps/rbac/frontend/component";
 import { AdminComponent as Analytic } from "@sps/analytic/frontend/component";
 import { AdminComponent as Startup } from "@sps/startup/frontend/component";
+import { AdminComponent as Social } from "@sps/social/frontend/component";
 import { Button as ShadcnButton } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentPropsExtended) {
@@ -136,6 +137,13 @@ export function Component(props: IComponentPropsExtended) {
                   }}
                   active={widget === "analytic"}
                 />
+                <Button
+                  title="social"
+                  onClick={() => {
+                    setWidget("social");
+                  }}
+                  active={widget === "social"}
+                />
               </div>
               <div className="bg-white rounded-b-lg">
                 {widget === "host" ? (
@@ -183,6 +191,9 @@ export function Component(props: IComponentPropsExtended) {
                 ) : null}
                 {widget === "analytic" ? (
                   <Analytic {...props} isServer={false} variant="default" />
+                ) : null}
+                {widget === "social" ? (
+                  <Social {...props} isServer={false} variant="default" />
                 ) : null}
               </div>
             </div>

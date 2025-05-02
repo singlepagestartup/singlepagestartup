@@ -29,7 +29,6 @@ import { app as billingApp } from "@sps/billing/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
 import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
-
 import { app as socialApp } from "@sps/social/backend/app/api";
 
 export const app = new Hono().basePath("/");
@@ -130,5 +129,4 @@ app.route("/api/website-builder", websiteBuilderApp.hono);
 app.route("/api/broadcast", broadcastApp.hono);
 app.route("/api/file-storage", fileStorageApp.hono);
 app.route("/api/analytic", analyticApp.hono);
-
 app.route("/api/social", socialApp.hono);
