@@ -1,5 +1,3 @@
-"use client";
-
 import {
   api as parentApi,
   type IProps as IParentProps,

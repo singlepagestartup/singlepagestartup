@@ -19,6 +19,7 @@ export const variants = [
   "article-list-default",
   "article-overview-default",
   "article-overview-with-private-content-default",
+  "article-overview-ecommerce-product-list-default",
 ] as const;
 export const query = {};
 export const options = {

@@ -30,6 +30,7 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || {},
       subtitle: props.data?.subtitle || {},
       description: props.data?.description || {},
+      adminTitle: props.data?.adminTitle || "",
     },
   });
 
@@ -56,6 +57,15 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="adminTitle"
+          label="Admin Title"
+          form={form}
+          placeholder="Type admin title"
+        />
+
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
