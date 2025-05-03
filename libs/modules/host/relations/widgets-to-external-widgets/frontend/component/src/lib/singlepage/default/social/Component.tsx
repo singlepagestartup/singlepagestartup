@@ -1,14 +1,9 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as BlogWidget } from "@sps/blog/models/widget/frontend/component";
-import { Component as Article } from "./article/Component";
+import { Component as Social } from "@sps/social/models/widget/frontend/component";
 
-export function Component(
-  props: IComponentPropsExtended & {
-    language: string;
-  },
-) {
+export function Component(props: IComponentPropsExtended) {
   return (
-    <BlogWidget
+    <Social
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -28,25 +23,15 @@ export function Component(
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <BlogWidget
+            <Social
               key={index}
               isServer={props.isServer}
               variant={entity.variant as any}
               data={entity}
-              language={props.language}
-            >
-              {entity.variant.startsWith("article") ? (
-                <Article
-                  url={props.url}
-                  isServer={props.isServer}
-                  language={props.language}
-                  data={entity}
-                />
-              ) : null}
-            </BlogWidget>
+            />
           );
         });
       }}
-    </BlogWidget>
+    </Social>
   );
 }

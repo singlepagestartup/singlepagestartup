@@ -17,6 +17,7 @@ export const route = "/api/host/widgets-to-external-widgets";
 export const variants = ["default"];
 export const externalModules = [
   "agent",
+  "analytic",
   "billing",
   "blog",
   "broadcast",
@@ -25,6 +26,7 @@ export const externalModules = [
   "file-storage",
   "notification",
   "rbac",
+  "social",
   "startup",
   "website-builder",
 ];
