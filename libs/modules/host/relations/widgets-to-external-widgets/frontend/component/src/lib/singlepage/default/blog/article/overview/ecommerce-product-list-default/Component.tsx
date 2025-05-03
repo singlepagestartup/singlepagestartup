@@ -2,10 +2,8 @@ import { Component as Article } from "@sps/blog/models/article/frontend/componen
 import { Component as Page } from "@sps/host/models/page/frontend/component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
 import { Component as ArticlesToEcommerceModuleProducts } from "@sps/blog/relations/articles-to-ecommerce-module-products/frontend/component";
-import { Component as EcommerceProductAction } from "../../../../ecommerce/product/action/Component";
+import { Component as EcommerceProduct } from "../../../../ecommerce/product/Component";
 
 export function Component(
   props: ISpsComponentBase & {
@@ -92,81 +90,13 @@ export function Component(
                                   {({ data: products }) => {
                                     return products?.map((product, index) => {
                                       return (
-                                        <EcommerceModuleProduct
+                                        <EcommerceProduct
                                           key={index}
                                           isServer={props.isServer}
                                           variant="card-default"
                                           data={product}
                                           language={props.language}
-                                        >
-                                          <StoresToProducts
-                                            isServer={props.isServer}
-                                            variant="find"
-                                            apiProps={{
-                                              params: {
-                                                filters: {
-                                                  and: [
-                                                    {
-                                                      column: "productId",
-                                                      method: "eq",
-                                                      value: product.id,
-                                                    },
-                                                  ],
-                                                },
-                                              },
-                                            }}
-                                          >
-                                            {({ data: storesToProducts }) => {
-                                              return storesToProducts?.map(
-                                                (storeToProduct, index) => {
-                                                  return (
-                                                    <Store
-                                                      key={index}
-                                                      isServer={props.isServer}
-                                                      variant="find"
-                                                      apiProps={{
-                                                        params: {
-                                                          filters: {
-                                                            and: [
-                                                              {
-                                                                column: "id",
-                                                                method: "eq",
-                                                                value:
-                                                                  storeToProduct.storeId,
-                                                              },
-                                                            ],
-                                                          },
-                                                        },
-                                                      }}
-                                                    >
-                                                      {({ data: stores }) => {
-                                                        return stores?.map(
-                                                          (store, index) => {
-                                                            return (
-                                                              <EcommerceProductAction
-                                                                key={index}
-                                                                store={store}
-                                                                isServer={
-                                                                  props.isServer
-                                                                }
-                                                                product={
-                                                                  product
-                                                                }
-                                                                language={
-                                                                  props.language
-                                                                }
-                                                              />
-                                                            );
-                                                          },
-                                                        );
-                                                      }}
-                                                    </Store>
-                                                  );
-                                                },
-                                              );
-                                            }}
-                                          </StoresToProducts>
-                                        </EcommerceModuleProduct>
+                                        />
                                       );
                                     });
                                   }}

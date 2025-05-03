@@ -1,3 +1,4 @@
+import { Component as ButtonDefault } from "./button-default";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -7,6 +8,7 @@ import { Component as Default } from "./default";
 import { Component as OverviewDefault } from "./overview-default";
 
 export const variants = {
+  "button-default": ButtonDefault,
   find: Find,
   "admin-form": AdminForm,
   "admin-table-row": AdminTableRow,

@@ -27,6 +27,7 @@ export function Component(props: IComponentPropsExtended) {
       )}
     >
       <CardHeader>
+        {props.topSlot}
         <CardTitle>
           <Link
             href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.id}`}
@@ -167,8 +168,12 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToAttributes>
+        {props.middleSlot}
       </CardContent>
-      <CardFooter className="w-full flex flex-col">{props.children}</CardFooter>
+      <CardFooter className="w-full flex flex-col">
+        {props.children}
+        {props.bottomSlot}
+      </CardFooter>
     </Card>
   );
 }

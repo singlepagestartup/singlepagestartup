@@ -1,4 +1,4 @@
-import { IComponentProps as ISubjectEcommerceProductListDefaultComponentProps } from "./subject/ecommerce/product/list/default/interface";
+import { IComponentProps as ISubjectEcommerceProductListCardDefaultComponentProps } from "./subject/ecommerce/product/list/card-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -15,7 +15,7 @@ import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subj
 import { IComponentProps as ISubjectsListDefaultComponentProps } from "./subject/list-default/interface";
 
 export type IComponentProps =
-  | ISubjectEcommerceProductListDefaultComponentProps
+  | ISubjectEcommerceProductListCardDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

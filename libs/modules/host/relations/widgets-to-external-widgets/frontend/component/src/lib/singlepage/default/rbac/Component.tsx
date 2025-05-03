@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as RbacWidget } from "@sps/rbac/models/widget/frontend/component";
-import { Component as SubjectWidget } from "./subject/Component";
+import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -24,22 +24,13 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <RbacWidget
+            <Widget
               key={index}
               isServer={props.isServer}
-              variant={entity.variant as any}
               data={entity}
-            >
-              {entity.variant.startsWith("subject") ? (
-                <SubjectWidget
-                  isServer={props.isServer}
-                  variant={entity.variant as any}
-                  url={props.url}
-                  data={entity}
-                  language={props.language}
-                />
-              ) : null}
-            </RbacWidget>
+              language={props.language}
+              url={props.url}
+            />
           );
         });
       }}

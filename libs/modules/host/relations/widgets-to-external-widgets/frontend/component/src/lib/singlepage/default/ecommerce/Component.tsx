@@ -1,8 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
-import { Component as Store } from "./store/Component";
-import { Component as Category } from "./category/Component";
-import { Component as Product } from "./product/Component";
+import { Component as Widget } from "./widget/Component";
 
 export function Component(
   props: IComponentPropsExtended & {
@@ -30,37 +28,13 @@ export function Component(
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <EcommerceWidget
+            <Widget
               key={index}
               isServer={props.isServer}
-              variant={entity.variant as any}
               data={entity}
               language={props.language}
-            >
-              {entity.variant.startsWith("product") ? (
-                <Product
-                  url={props.url}
-                  isServer={props.isServer}
-                  data={entity}
-                  language={props.language}
-                />
-              ) : null}
-              {entity.variant.startsWith("category") ? (
-                <Category
-                  url={props.url}
-                  isServer={props.isServer}
-                  data={entity}
-                  language={props.language}
-                />
-              ) : null}
-              {entity.variant.startsWith("store") ? (
-                <Store
-                  isServer={props.isServer}
-                  data={entity}
-                  language={props.language}
-                />
-              ) : null}
-            </EcommerceWidget>
+              url={props.url}
+            />
           );
         });
       }}

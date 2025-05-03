@@ -1,47 +1,32 @@
-import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IModel } from "@sps/rbac/models/widget/sdk/model";
-import { Component as Identity } from "./identity/Component";
-import { Component as List } from "./list/Component";
-import { Component as Overview } from "./overview/Component";
-import { Component as Ecommerce } from "./ecommerce/Component";
-
+import { Component as EcommerceProductAction } from "./ecommerce-product-action/Component";
+import { IComponentProps as IEcommerceProductActionProps } from "./ecommerce-product-action/interface";
+import { IComponentProps as ISocialModuleProfileButtonDefaultProps } from "./social-module-profile-button-default/interface";
+import { Component as SocialModuleProfileButtonDefault } from "./social-module-profile-button-default/Component";
 export function Component(
-  props: ISpsComponentBase & {
-    data: IModel;
-    variant: string;
-    url: string;
-    language: string;
-  },
+  props: IEcommerceProductActionProps | ISocialModuleProfileButtonDefaultProps,
 ) {
-  if (props.variant.startsWith("subject-identity")) {
+  if (props.variant === "ecommerce-product-action") {
     return (
-      <Identity
+      <EcommerceProductAction
         isServer={props.isServer}
-        variant={props.variant as any}
-        data={props.data}
-      />
-    );
-  }
-
-  if (props.variant.startsWith("subject-list")) {
-    return <List isServer={props.isServer} />;
-  }
-
-  if (props.variant.startsWith("subject-overview")) {
-    return <Overview url={props.url} isServer={props.isServer} />;
-  }
-
-  if (props.variant.startsWith("subject-ecommerce")) {
-    return (
-      <Ecommerce
-        isServer={props.isServer}
-        data={props.data}
-        url={props.url}
-        variant={props.variant}
         language={props.language}
+        billingModuleCurrencyId={props.billingModuleCurrencyId}
+        product={props.product}
+        store={props.store}
+        variant={props.variant}
       />
     );
   }
 
-  return <div className="p-5 bg-red-500"></div>;
+  if (props.variant === "social-module-profile-button-default") {
+    return (
+      <SocialModuleProfileButtonDefault
+        isServer={props.isServer}
+        language={props.language}
+        data={props.data}
+        variant={props.variant}
+      />
+    );
+  }
+  return <></>;
 }

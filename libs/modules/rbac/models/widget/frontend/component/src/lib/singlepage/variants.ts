@@ -1,4 +1,4 @@
-import { Component as SubjectEcommerceProductListDefault } from "./subject/ecommerce/product/list/default";
+import { Component as SubjectEcommerceProductListCardDefault } from "./subject/ecommerce/product/list/card-default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -15,7 +15,8 @@ import { Component as SubjectOverviewDefault } from "./subject/overview-default"
 import { Component as SubjectListDefault } from "./subject/list-default";
 
 export const variants = {
-  "subject-ecommerce-product-list-default": SubjectEcommerceProductListDefault,
+  "subject-ecommerce-product-list-card-default":
+    SubjectEcommerceProductListCardDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

@@ -4,12 +4,16 @@ import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
+import { ReactNode } from "react";
 
 export const variant = "card-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   language: string;
+  topSlot?: ReactNode;
+  middleSlot?: ReactNode;
+  bottomSlot?: ReactNode;
 }
 
 export interface IComponentPropsExtended

@@ -18,11 +18,11 @@ export const variants = [
   "default",
   "store-list-default",
   "order-list-default",
-  "product-list-default",
+  "product-list-card-default",
   "product-overview-default",
   "category-list-default",
   "category-overview-default",
-  "store-product-list-default",
+  "store-product-list-card-default",
 ];
 export const query = {};
 export const options = {
