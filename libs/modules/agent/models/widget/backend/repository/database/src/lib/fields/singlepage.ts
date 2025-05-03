@@ -2,7 +2,18 @@ import { randomWordsGenerator } from "@sps/shared-utils";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export const fields = {
-  title: pgCore.text("title"),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  subtitle: pgCore
+    .jsonb("subtitle")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  description: pgCore
+    .jsonb("description")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),

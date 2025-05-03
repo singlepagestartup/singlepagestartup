@@ -3,15 +3,15 @@ import { Coder } from "../../coder/Coder";
 import { Tree, formatFiles } from "@nx/devkit";
 import pluralize from "pluralize";
 
-// npx nx generate @sps/sps-generator-plugin:frontend-component-variant --name=find --entity_name=widget --action=remove --level=singlepage --module_name=social --type=model --no-interactive --dry-run
+// npx nx generate @sps/sps-generator-plugin:frontend-component-variant --level=singlepage --module_name=rbac --type=model --action=create --path=default --template=default --entity=widget --name=find --no-interactive --dry-run
 export async function frontendComponentVariantGenerator(
   tree: Tree,
   options: FrontendComponentVariantGeneratorSchema,
 ) {
   const name = options.name;
   const level = options.level;
-  const entityName = options.entity_name;
-  const moduleName = options.module_name;
+  const entityName = options.entity;
+  const moduleName = options.module;
   const path = options.path;
   const template = options.template || "default";
 

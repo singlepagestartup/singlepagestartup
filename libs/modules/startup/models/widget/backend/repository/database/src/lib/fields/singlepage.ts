@@ -4,7 +4,18 @@ import { randomWordsGenerator } from "@sps/shared-utils";
 export const fields = {
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   className: pgCore.text("class_name"),
-  title: pgCore.text("title"),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  subtitle: pgCore
+    .jsonb("subtitle")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  description: pgCore
+    .jsonb("description")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),

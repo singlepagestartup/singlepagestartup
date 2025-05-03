@@ -8,6 +8,13 @@
       "when": 1737754264671,
       "tag": "0000_sudden_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1746275126636,
+      "tag": "0001_bouncy_weapon_omega",
+      "breakpoints": true
     }
   ]
 }

@@ -2,6 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/host/models/widget/sdk/client";
+import { internationalization } from "@sps/shared-configuration";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
@@ -20,8 +21,8 @@ export function Component(props: IComponentPropsExtended) {
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
         <div className="flex flex-col gap-0.5 overflow-hidden">
-          <p className="text-xs text-muted-foreground">Title</p>
-          <p className="truncate">{props.data.title}</p>
+          <p className="text-xs text-muted-foreground">Admin Title</p>
+          <p className="truncate">{props.data.adminTitle}</p>
         </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Variant</p>

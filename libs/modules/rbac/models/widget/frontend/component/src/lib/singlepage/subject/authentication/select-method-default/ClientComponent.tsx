@@ -2,6 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { internationalization } from "@sps/shared-configuration";
 import { cn } from "@sps/shared-frontend-client-utils";
 import {
   Button,
@@ -46,9 +47,17 @@ export function Component(props: IComponentPropsExtended) {
         <div className={cn("flex flex-col gap-6", props.className)}>
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">{props.data.title}</CardTitle>
+              <CardTitle className="text-xl">
+                {props.data.title?.[internationalization.defaultLanguage.code]}
+              </CardTitle>
               {props.data.subtitle ? (
-                <CardDescription>{props.data.subtitle}</CardDescription>
+                <CardDescription>
+                  {
+                    props.data.subtitle?.[
+                      internationalization.defaultLanguage.code
+                    ]
+                  }
+                </CardDescription>
               ) : null}
             </CardHeader>
             <CardContent>
@@ -92,7 +101,11 @@ export function Component(props: IComponentPropsExtended) {
           </Card>
           {props.data.description ? (
             <TipTap
-              value={props.data.description}
+              value={
+                props.data.description?.[
+                  internationalization.defaultLanguage.code
+                ] || ""
+              }
               className="text-center prose-sm"
             />
           ) : null}

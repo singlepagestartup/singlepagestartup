@@ -1,19 +1,18 @@
 export { type IModel } from "@sps/host/relations/pages-to-widgets/sdk/model";
 import { IModel } from "@sps/host/relations/pages-to-widgets/sdk/model";
-import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindProps } from "@sps/shared-frontend-api";
-import { Dispatch, SetStateAction } from "react";
+import {
+  IComponentProps as IParentComponentProps,
+  IComponentPropsExtended as IParentComponentPropsExtended,
+} from "@sps/shared-frontend-components/singlepage/find/interface";
 
 export const variant = "find" as const;
 
-export interface IComponentProps extends ISpsComponentBase {
-  variant: typeof variant;
-  set?: Dispatch<SetStateAction<IModel[] | undefined>>;
-  children?: ({ data }: { data: IModel[] | undefined }) => any;
-  apiProps?: {
-    params?: IFindProps["params"];
-    options?: IFindProps["options"];
-  };
-}
+export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {}
 
-export interface IComponentPropsExtended extends IComponentProps {}
+export interface IComponentPropsExtended
+  extends IParentComponentPropsExtended<
+    IModel,
+    typeof variant,
+    IComponentProps
+  > {}

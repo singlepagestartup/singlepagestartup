@@ -1,6 +1,7 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -17,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       <div className="w-full mx-auto max-w-7xl flex flex-col gap-4 lg:gap-10">
         {props.data?.title ? (
           <h1 className="text-2xl font-bold lg:text-4xl w-full">
-            {props.data?.title}
+            {props.data?.title?.[internationalization.defaultLanguage.code]}
           </h1>
         ) : null}
         <div className="w-full lg:w-1/2">

@@ -36,6 +36,7 @@ export function Component(props: IComponentPropsExtended) {
                   variant={entity.variant as any}
                   url={props.url}
                   data={entity}
+                  language={props.language}
                 />
               ) : null}
             </RbacWidget>

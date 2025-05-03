@@ -9,6 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/rbac/models/widget/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
+import { internationalization } from "@sps/shared-configuration";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -23,10 +26,12 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      title: props.data?.title || "",
-      subtitle: props.data?.subtitle || "",
-      description: props.data?.description || "",
-      slug: props.data?.slug || "",
+      title: props.data?.title ?? {},
+      subtitle: props.data?.subtitle ?? {},
+      description: props.data?.description ?? {},
+      adminTitle:
+        props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
 
@@ -56,29 +61,59 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
-          label="Title"
-          name="title"
+          label="Admin title"
+          name="adminTitle"
           form={form}
-          placeholder="Enter title"
+          placeholder="Type admin title"
         />
 
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Subtitle"
-          name="subtitle"
-          form={form}
-          placeholder="Enter subtitle"
-        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
 
-        <FormField
-          ui="shadcn"
-          type="tiptap"
-          label="Description"
-          name="description"
-          form={form}
-          placeholder="Enter description"
-        />
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
 
         <FormField
           ui="shadcn"

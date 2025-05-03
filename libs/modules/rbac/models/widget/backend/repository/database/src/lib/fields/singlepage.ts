@@ -3,9 +3,18 @@ import { randomWordsGenerator } from "@sps/shared-utils";
 
 export const fields = {
   className: pgCore.text("class_name"),
-  title: pgCore.text("title"),
-  subtitle: pgCore.text("subtitle"),
-  description: pgCore.text("description"),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  subtitle: pgCore
+    .jsonb("subtitle")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  description: pgCore
+    .jsonb("description")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),

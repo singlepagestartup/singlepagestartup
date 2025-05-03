@@ -7,6 +7,7 @@ import {
   CardTitle,
   TipTap,
 } from "@sps/shared-ui-shadcn";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -19,9 +20,21 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Card className="w-full flex flex-col gap-3">
         <CardHeader>
-          {props.data.title ? <CardTitle>{props.data.title}</CardTitle> : null}
-          {props.data.description ? (
-            <TipTap value={props.data.description} />
+          {props.data.title ? (
+            <CardTitle>
+              {props.data.title?.[internationalization.defaultLanguage.code]}
+            </CardTitle>
+          ) : null}
+          {props.data.description?.[
+            internationalization.defaultLanguage.code
+          ] ? (
+            <TipTap
+              value={
+                props.data.description?.[
+                  internationalization.defaultLanguage.code
+                ] || ""
+              }
+            />
           ) : null}
         </CardHeader>
         <CardContent>

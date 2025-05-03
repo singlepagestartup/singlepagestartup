@@ -1,3 +1,4 @@
+import { Component as SubjectEcommerceProductListDefault } from "./subject/ecommerce/product/list/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -14,6 +15,7 @@ import { Component as SubjectOverviewDefault } from "./subject/overview-default"
 import { Component as SubjectListDefault } from "./subject/list-default";
 
 export const variants = {
+  "subject-ecommerce-product-list-default": SubjectEcommerceProductListDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

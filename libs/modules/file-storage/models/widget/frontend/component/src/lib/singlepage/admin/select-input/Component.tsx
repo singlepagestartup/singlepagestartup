@@ -1,64 +1,28 @@
 import { IComponentPropsExtended, variant, IModel } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/select-input/Component";
-import { Component as WidgetsToFiles } from "@sps/file-storage/relations/widgets-to-files/frontend/component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent<IModel, typeof variant>
       {...props}
-      module="file-storage"
+      module="host"
       name="widget"
       label="widget"
       formFieldName={props.formFieldName}
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={props.renderField || "title"}
+      renderField={props.renderField || "adminTitle"}
       renderFunction={(entity) => {
-        return <MiniImage entity={entity} />;
+        const title =
+          entity.title?.[internationalization.defaultLanguage.code] ??
+          "Untitled";
+        const variant = entity.variant ?? "Unknown Variant";
+        const adminTitle = entity.adminTitle;
+
+        return `${title} | ${adminTitle} | ${variant}`;
       }}
     />
-  );
-}
-
-function MiniImage(props: { entity: IComponentPropsExtended["data"][0] }) {
-  return (
-    <div className="w-full flex items-center gap-3">
-      <WidgetsToFiles
-        isServer={false}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "widgetId",
-                  method: "eq",
-                  value: props.entity.id,
-                },
-              ],
-            },
-          },
-        }}
-      >
-        {({ data }) => {
-          return (
-            <div className="w-10">
-              {data?.map((entity, index) => {
-                return (
-                  <WidgetsToFiles
-                    key={index}
-                    isServer={false}
-                    variant={entity.variant as any}
-                    data={entity}
-                  />
-                );
-              })}
-            </div>
-          );
-        }}
-      </WidgetsToFiles>
-      <p>{props.entity.title}</p>
-    </div>
   );
 }

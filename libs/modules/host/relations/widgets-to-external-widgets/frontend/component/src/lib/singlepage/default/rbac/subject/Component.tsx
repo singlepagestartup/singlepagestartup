@@ -1,14 +1,16 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { IModel } from "@sps/rbac/models/widget/sdk/model";
 import { Component as Identity } from "./identity/Component";
-import { Component as ListDefault } from "./list-default/Component";
-import { Component as OverviewDefault } from "./overview-default/Component";
+import { Component as List } from "./list/Component";
+import { Component as Overview } from "./overview/Component";
+import { Component as Ecommerce } from "./ecommerce/Component";
 
 export function Component(
   props: ISpsComponentBase & {
     data: IModel;
     variant: string;
     url: string;
+    language: string;
   },
 ) {
   if (props.variant.startsWith("subject-identity")) {
@@ -21,12 +23,24 @@ export function Component(
     );
   }
 
-  if (props.variant.startsWith("subject-list-default")) {
-    return <ListDefault isServer={props.isServer} />;
+  if (props.variant.startsWith("subject-list")) {
+    return <List isServer={props.isServer} />;
   }
 
-  if (props.variant.startsWith("subject-overview-default")) {
-    return <OverviewDefault url={props.url} isServer={props.isServer} />;
+  if (props.variant.startsWith("subject-overview")) {
+    return <Overview url={props.url} isServer={props.isServer} />;
+  }
+
+  if (props.variant.startsWith("subject-ecommerce")) {
+    return (
+      <Ecommerce
+        isServer={props.isServer}
+        data={props.data}
+        url={props.url}
+        variant={props.variant}
+        language={props.language}
+      />
+    );
   }
 
   return <div className="p-5 bg-red-500"></div>;

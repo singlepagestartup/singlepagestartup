@@ -11,6 +11,7 @@ import {
   CardTitle,
   TipTap,
 } from "@sps/shared-ui-shadcn";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -37,9 +38,17 @@ export function Component(props: IComponentPropsExtended) {
         <div className={cn("flex flex-col gap-6", props.className)}>
           <Card className="gap-0">
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">{props.data.title}</CardTitle>
+              <CardTitle className="text-xl">
+                {props.data.title?.[internationalization.defaultLanguage.code]}
+              </CardTitle>
               {props.data.subtitle ? (
-                <CardDescription>{props.data.subtitle}</CardDescription>
+                <CardDescription>
+                  {
+                    props.data.subtitle?.[
+                      internationalization.defaultLanguage.code
+                    ]
+                  }
+                </CardDescription>
               ) : null}
             </CardHeader>
             <CardContent className="hidden">
@@ -49,9 +58,15 @@ export function Component(props: IComponentPropsExtended) {
               />
             </CardContent>
           </Card>
-          {props.data.description ? (
+          {props.data.description?.[
+            internationalization.defaultLanguage.code
+          ] ? (
             <TipTap
-              value={props.data.description}
+              value={
+                props.data.description?.[
+                  internationalization.defaultLanguage.code
+                ] || ""
+              }
               className="text-center prose-sm"
             />
           ) : null}
