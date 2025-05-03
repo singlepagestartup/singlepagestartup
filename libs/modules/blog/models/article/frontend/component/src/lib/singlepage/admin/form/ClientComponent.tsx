@@ -71,7 +71,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Subtitle">
           {internationalization.languages.map((language) => {
             return (
@@ -87,7 +86,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -103,7 +101,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -112,7 +109,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -121,7 +117,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -131,7 +126,6 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         {props.categoriesToArticles
           ? props.categoriesToArticles({
               data: props.data,
@@ -139,7 +133,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.articlesToFileStorageModuleWidgets
           ? props.articlesToFileStorageModuleWidgets({
               data: props.data,
@@ -147,11 +140,16 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.articlesToWebsiteBuilderModuleWidgets
           ? props.articlesToWebsiteBuilderModuleWidgets({
               data: props.data,
 
+              isServer: props.isServer,
+            })
+          : null}
+        {props.articlesToEcommerceModuleProducts
+          ? props.articlesToEcommerceModuleProducts({
+              data: props.data,
               isServer: props.isServer,
             })
           : null}

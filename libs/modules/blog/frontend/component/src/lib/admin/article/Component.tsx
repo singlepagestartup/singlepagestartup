@@ -5,6 +5,8 @@ import { Component as CategoriesToArticles } from "@sps/blog/relations/categorie
 import { Component as ArticlesToFileStorageModuleWidgets } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
 
+import { Component as ArticlesToEcommerceModuleProducts } from "@sps/blog/relations/articles-to-ecommerce-module-products/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -16,6 +18,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            articlesToEcommerceModuleProducts={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ArticlesToEcommerceModuleProducts
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "articleId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             categoriesToArticles={({ data, isServer }) => {
               if (!data) {
                 return;

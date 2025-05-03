@@ -5,7 +5,7 @@ import {
   IModel,
   query,
   options,
-} from "<%= model_sdk_model_import_path %>";
+} from "@sps/blog/relations/articles-to-ecommerce-module-products/sdk/model";
 
 export type IProps = {};
 

@@ -50,15 +50,15 @@ export async function relationGenerator(
         modules: [
           {
             module: {
-              name: "rbac",
+              name: "blog",
               relations: [
                 {
                   relation: {
-                    name: "subjects-to-ecommerce-module-products",
+                    name: "articles-to-ecommerce-module-products",
                     models: [
                       {
-                        name: "subject",
-                        module: "rbac",
+                        name: "article",
+                        module: "blog",
                       },
                       {
                         name: "product",
