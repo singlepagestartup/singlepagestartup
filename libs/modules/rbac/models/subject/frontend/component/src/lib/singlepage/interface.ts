@@ -1,3 +1,4 @@
+import { IComponentProps as ISocialModuleProfilesListDefaultComponentProps } from "./social-module/profile/list/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -24,6 +25,7 @@ import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./ide
 import { IComponentProps as ICrmFormComponentProps } from "./crm/form/interface";
 
 export type IComponentProps =
+  | ISocialModuleProfilesListDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

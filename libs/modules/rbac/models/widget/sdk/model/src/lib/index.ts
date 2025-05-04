@@ -25,6 +25,7 @@ export const variants = [
   "subject-identity-settings-default",
   "subject-authentication-logout-action-default",
   "subject-ecommerce-product-list-card-default",
+  "subject-overview-social-module-profile-overview-default",
 ];
 export const query = {};
 export const options = {

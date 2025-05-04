@@ -1,3 +1,4 @@
+import { Component as SubjectOverviewSocialModuleProfileOverviewDefault } from "./subject/overview/social-module/profile/overview/default";
 import { Component as SubjectEcommerceProductListCardDefault } from "./subject/ecommerce/product/list/card-default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -11,10 +12,12 @@ import { Component as SubjectAuthenticationSelectMethodDefault } from "./subject
 import { Component as SubjectAuthenticationLogoutActionDefault } from "./subject/authentication/logout-action-default";
 import { Component as SubjectAuthenticationEmailAndPasswordRegistrationFormDefault } from "./subject/authentication/email-and-password/registration-form-default";
 import { Component as SubjectAuthenticationEmailAndPasswordResetPasswordFormDefault } from "./subject/authentication/email-and-password/reset-password-form-default";
-import { Component as SubjectOverviewDefault } from "./subject/overview-default";
+import { Component as SubjectOverviewDefault } from "./subject/overview/default";
 import { Component as SubjectListDefault } from "./subject/list-default";
 
 export const variants = {
+  "subject-overview-social-module-profile-overview-default":
+    SubjectOverviewSocialModuleProfileOverviewDefault,
   "subject-ecommerce-product-list-card-default":
     SubjectEcommerceProductListCardDefault,
   find: Find,

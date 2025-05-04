@@ -1,3 +1,4 @@
+import { Component as SocialModuleProfilesListDefault } from "./social-module/profile/list/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -24,6 +25,7 @@ import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } f
 import { Component as CrmForm } from "./crm/form";
 
 export const variants = {
+  "social-module-profiles-list-default": SocialModuleProfilesListDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

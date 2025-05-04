@@ -1,32 +1,51 @@
-import { ISpsComponentBase } from "@sps/ui-adapter";
 import { Component as HostPage } from "@sps/host/models/page/frontend/component";
-import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
+import { IComponentProps } from "./interface";
 
-export function Component(
-  props: ISpsComponentBase & {
-    url: string;
-  },
-) {
+export function Component(props: IComponentProps) {
   return (
     <HostPage
       isServer={props.isServer}
       variant="url-segment-value"
-      segment="rbac.subjects.id"
+      segment="rbac.subjects.slug"
       url={props.url}
     >
-      {({ data }) => {
-        if (!data) {
-          return null;
+      {({ data: slug }) => {
+        if (!slug) {
+          return <></>;
         }
 
         return (
-          <RbacSubject
+          <RbacModuleSubject
             isServer={props.isServer}
-            variant="overview-default"
-            data={{
-              id: data,
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "slug",
+                      method: "eq",
+                      value: slug,
+                    },
+                  ],
+                },
+              },
             }}
-          />
+          >
+            {({ data }) => {
+              return data?.map((subject, index) => {
+                return (
+                  <RbacModuleSubject
+                    key={index}
+                    isServer={props.isServer}
+                    variant="overview-default"
+                    data={subject}
+                  />
+                );
+              });
+            }}
+          </RbacModuleSubject>
         );
       }}
     </HostPage>

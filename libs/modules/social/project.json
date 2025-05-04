@@ -54,7 +54,11 @@
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "commands": []
+        "commands": [
+          {
+            "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-generate"
+          }
+        ]
       }
     },
     "models:repository-migrate": {
@@ -77,7 +81,11 @@
       "cache": false,
       "options": {
         "parallel": false,
-        "commands": []
+        "commands": [
+          {
+            "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-migrate"
+          }
+        ]
       }
     },
     "models:widget:repository-generate": {
@@ -131,6 +139,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/models/profile/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-website-builder-module-widgets:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-website-builder-module-widgets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

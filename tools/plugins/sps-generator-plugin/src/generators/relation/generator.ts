@@ -50,19 +50,19 @@ export async function relationGenerator(
         modules: [
           {
             module: {
-              name: "blog",
+              name: "social",
               relations: [
                 {
                   relation: {
-                    name: "articles-to-ecommerce-module-products",
+                    name: "profiles-to-website-builder-module-widgets",
                     models: [
                       {
-                        name: "article",
-                        module: "blog",
+                        name: "profile",
+                        module: "social",
                       },
                       {
-                        name: "product",
-                        module: "ecommerce",
+                        name: "widget",
+                        module: "website-builder",
                       },
                     ],
                     frontend: {

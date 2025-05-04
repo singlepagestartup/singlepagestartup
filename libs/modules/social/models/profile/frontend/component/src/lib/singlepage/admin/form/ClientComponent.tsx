@@ -25,9 +25,14 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
+      title: props.data?.title ?? {},
+      subtitle: props.data?.subtitle ?? {},
+      description: props.data?.description ?? {},
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
+      adminTitle:
+        props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
     },
   });
 
@@ -57,11 +62,69 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
+          label="Admin title"
+          name="adminTitle"
+          form={form}
+          placeholder="Type admin title"
+        />
+
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Subtitle">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`subtitle.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type subtitle"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <AgregatedInput title="Description">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="tiptap"
+                name={`description.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type description"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <FormField
+          ui="shadcn"
+          type="text"
           label="Slug"
           name="slug"
           form={form}
           placeholder="Type slug"
         />
+
         <FormField
           ui="shadcn"
           type="text"
@@ -70,6 +133,7 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
+
         <FormField
           ui="shadcn"
           type="select"
@@ -79,6 +143,13 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Type title"
           options={variants.map((variant) => [variant, variant])}
         />
+
+        {props.profilesToWebsiteBuilderModuleWidgets
+          ? props.profilesToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

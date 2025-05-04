@@ -7,6 +7,18 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   className: pgCore.text("class_name"),
   variant: pgCore.text("variant").notNull().default("default"),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  subtitle: pgCore
+    .jsonb("subtitle")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
+  description: pgCore
+    .jsonb("description")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()

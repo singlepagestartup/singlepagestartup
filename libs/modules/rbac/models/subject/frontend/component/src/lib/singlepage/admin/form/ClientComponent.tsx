@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/rbac/models/subject/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -23,6 +24,7 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
 
@@ -49,6 +51,15 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
+          form={form}
+          placeholder="Enter slug"
+        />
+
         <FormField
           ui="shadcn"
           type="select"

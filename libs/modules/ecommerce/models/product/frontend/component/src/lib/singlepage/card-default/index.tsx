@@ -8,8 +8,6 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {
-  console.log("🚀 ~ Component ~ props:", props);
-
   return (
     <ParentComponent
       Component={ChildComponent as any}

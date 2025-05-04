@@ -71,7 +71,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type admin title"
         />
-
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
@@ -87,7 +86,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Subtitle">
           {internationalization.languages.map((language) => {
             return (
@@ -103,7 +101,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -119,7 +116,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -128,7 +124,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -137,7 +132,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type anchor"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -146,7 +140,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -156,35 +149,30 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         {props.widgetsToButtonsArrays
           ? props.widgetsToButtonsArrays({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToFeatures
           ? props.widgetsToFeatures({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToFileStorageModuleWidgets
           ? props.widgetsToFileStorageModuleWidgets({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToLogotypes
           ? props.widgetsToLogotypes({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToSliders
           ? props.widgetsToSliders({
               data: props.data,

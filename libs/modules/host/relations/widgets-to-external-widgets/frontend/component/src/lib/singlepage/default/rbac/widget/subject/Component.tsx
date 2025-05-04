@@ -28,7 +28,14 @@ export function Component(
   }
 
   if (props.variant.startsWith("subject-overview")) {
-    return <Overview url={props.url} isServer={props.isServer} />;
+    return (
+      <Overview
+        url={props.url}
+        isServer={props.isServer}
+        language={props.language}
+        variant={props.variant as any}
+      />
+    );
   }
 
   if (props.variant.startsWith("subject-ecommerce")) {
@@ -43,5 +50,5 @@ export function Component(
     );
   }
 
-  return <div className="p-5 bg-red-500"></div>;
+  return <></>;
 }

@@ -73,7 +73,7 @@ export function Component(props: IComponentPropsExtended) {
           </SubjectsToIdentities>
         </div>
         <Button variant="outline" asChild={true} className="w-fit">
-          <Link href={`/rbac/subjects/${props.data.id}`}>View profile</Link>
+          <Link href={`/rbac/subjects/${props.data.slug}`}>View profile</Link>
         </Button>
       </div>
     </div>
