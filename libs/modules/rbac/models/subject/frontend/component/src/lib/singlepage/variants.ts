@@ -15,8 +15,8 @@ import { Component as AuthenticationSelectMethodDefault } from "./authentication
 import { Component as AuthenticationEthereumVirtualMachineDefault } from "./authentication/ethereum-virtual-machine-default";
 import { Component as AuthenticationMeDefault } from "./authentication/me-default";
 import { Component as GetEmails } from "./identity/get-emails";
-import { Component as EcommerceProductCheckout } from "./ecommerce/product/checkout";
-import { Component as EcommerceProductCart } from "./ecommerce/product/cart";
+import { Component as EcommerceModuleProductCheckout } from "./ecommerce-module/product/checkout";
+import { Component as EcommerceModuleProductCart } from "./ecommerce-module/product/cart";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
@@ -50,8 +50,8 @@ export const variants = {
   "authentication-email-and-password-registration-form-default":
     AuthenticationEmailAndPasswordRegistrationFormDefault,
   "identity-settings-default": IdentityUpdateDefault,
-  "ecommerce-product-checkout": EcommerceProductCheckout,
-  "ecommerce-product-cart": EcommerceProductCart,
+  "ecommerce-module-product-checkout": EcommerceModuleProductCheckout,
+  "ecommerce-module-product-cart": EcommerceModuleProductCart,
   "get-emails": GetEmails,
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,

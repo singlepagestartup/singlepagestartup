@@ -1,17 +1,19 @@
 export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
-import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
-import { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/subject-default/interface";
+import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
+import { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 
-export const variant = "ecommerce-product-cart" as const;
+export const variant = "ecommerce-module-product-checkout" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   product: IProduct;
+  billingModuleCurrencyId?: string;
+  language: string;
   store: IStore;
 }
 

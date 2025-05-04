@@ -5,7 +5,8 @@ import {
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 
-export const variant = "subject-ecommerce-product-list-card-default" as const;
+export const variant =
+  "subject-overview-ecommerce-module-product-list-card-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
