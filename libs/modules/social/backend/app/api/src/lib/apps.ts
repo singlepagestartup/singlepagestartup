@@ -1,3 +1,4 @@
+import { app as profilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api";
 import { app as profilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/backend/app/api";
 import { app as profile } from "@sps/social/models/profile/backend/app/api";
 import { app as widget } from "@sps/social/models/widget/backend/app/api";
@@ -12,6 +13,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-file-storage-module-files",
+      app: profilesToFileStorageModuleFiles,
+    });
     this.apps.push({
       type: "relation",
       route: "/profiles-to-website-builder-module-widgets",

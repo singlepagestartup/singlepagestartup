@@ -1,6 +1,7 @@
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -25,6 +26,37 @@ export function Component(props: IComponentPropsExtended) {
         {props.data.description?.[props.language] ? (
           <TipTap value={props.data.description[props.language] ?? ""} />
         ) : null}
+        <ProfilesToWebsiteBuilderModuleWidgets
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "profileId",
+                    method: "eq",
+                    value: props.data?.id,
+                  },
+                ],
+              },
+            },
+          }}
+        >
+          {({ data }) => {
+            return data?.map((profileToWebsiteBuilderModuleWidget, index) => {
+              return (
+                <ProfilesToWebsiteBuilderModuleWidgets
+                  key={index}
+                  isServer={props.isServer}
+                  variant={profileToWebsiteBuilderModuleWidget.variant as any}
+                  data={profileToWebsiteBuilderModuleWidget}
+                  language={props.language}
+                />
+              );
+            });
+          }}
+        </ProfilesToWebsiteBuilderModuleWidgets>
       </div>
     </div>
   );

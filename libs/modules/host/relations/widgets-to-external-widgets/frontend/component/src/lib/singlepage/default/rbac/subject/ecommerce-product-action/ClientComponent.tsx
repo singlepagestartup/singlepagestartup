@@ -16,7 +16,7 @@ export function Component(props: IComponentProps) {
           <div className="w-full flex flex-col gap-4">
             <RbacSubject
               isServer={false}
-              variant="ecommerce-product-checkout"
+              variant="ecommerce-module-product-checkout"
               data={subject}
               product={props.product}
               billingModuleCurrencyId={props.billingModuleCurrencyId}
@@ -26,7 +26,7 @@ export function Component(props: IComponentProps) {
             <SelectSeparator className="my-2" />
             <RbacSubject
               isServer={false}
-              variant="ecommerce-product-cart"
+              variant="ecommerce-module-product-cart"
               data={subject}
               product={props.product}
               store={props.store}

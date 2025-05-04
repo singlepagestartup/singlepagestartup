@@ -71,7 +71,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type admin title"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -81,7 +80,6 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         <FormField
           ui="shadcn"
           type="file"
@@ -90,7 +88,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Select file"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -99,7 +96,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type container class name"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -108,7 +104,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         {props.widgetsToFiles
           ? props.widgetsToFiles({
               data: props.data,

@@ -1,4 +1,4 @@
-import { Component as RbacWidget } from "@sps/rbac/models/widget/frontend/component";
+import { Component as RbacModuleWidget } from "@sps/rbac/models/widget/frontend/component";
 import { Component as Subject } from "./subject/Component";
 import { IModel } from "@sps/rbac/models/widget/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
@@ -11,7 +11,7 @@ export function Component(
   },
 ) {
   return (
-    <RbacWidget
+    <RbacModuleWidget
       isServer={props.isServer}
       variant={props.data.variant as any}
       data={props.data}
@@ -26,6 +26,6 @@ export function Component(
           variant={props.data.variant}
         />
       ) : null}
-    </RbacWidget>
+    </RbacModuleWidget>
   );
 }

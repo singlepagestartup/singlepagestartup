@@ -17,7 +17,7 @@ export interface IComponentProps
   widgetsToFeatures?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-  widgetsToFileStorageModuleWidgets?: (
+  widgetsToFileStorageModuleFiles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   widgetsToLogotypes?: (

@@ -3,7 +3,7 @@
 import { Component as ParentComponent } from "@sps/website-builder/models/widget/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
-import { Component as WidgetsToFileStorageWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
+import { Component as WidgetsToFileStorageModuleFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
 
@@ -68,13 +68,13 @@ export function Component() {
                 />
               );
             }}
-            widgetsToFileStorageModuleWidgets={({ data, isServer }) => {
+            widgetsToFileStorageModuleFiles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <WidgetsToFileStorageWidgets
+                <WidgetsToFileStorageModuleFiles
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

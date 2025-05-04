@@ -1,10 +1,10 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as RbacWidget } from "@sps/rbac/models/widget/frontend/component";
+import { Component as RbacModuleWidget } from "@sps/rbac/models/widget/frontend/component";
 import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <RbacWidget
+    <RbacModuleWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -34,6 +34,6 @@ export function Component(props: IComponentPropsExtended) {
           );
         });
       }}
-    </RbacWidget>
+    </RbacModuleWidget>
   );
 }

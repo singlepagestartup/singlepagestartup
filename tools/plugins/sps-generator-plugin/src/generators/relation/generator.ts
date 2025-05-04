@@ -54,15 +54,15 @@ export async function relationGenerator(
               relations: [
                 {
                   relation: {
-                    name: "profiles-to-website-builder-module-widgets",
+                    name: "profiles-to-file-storage-module-files",
                     models: [
                       {
                         name: "profile",
                         module: "social",
                       },
                       {
-                        name: "widget",
-                        module: "website-builder",
+                        name: "file",
+                        module: "file-storage",
                       },
                     ],
                     frontend: {

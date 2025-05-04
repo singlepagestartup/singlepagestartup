@@ -4,6 +4,7 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as WidgetsToFileStorageWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
+import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
 import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
@@ -132,6 +133,39 @@ export function Component(props: IComponentPropsExtended) {
               });
             }}
           </WidgetsToSliders>
+        </div>
+        <div className="w-full flex">
+          <WidgetsToFeatures
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "widgetId",
+                      method: "eq",
+                      value: props.data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data }) => {
+              return data?.map((entity, index) => {
+                return (
+                  <WidgetsToFeatures
+                    key={index}
+                    isServer={props.isServer}
+                    variant={entity.variant as any}
+                    data={entity}
+                    language={props.language}
+                  />
+                );
+              });
+            }}
+          </WidgetsToFeatures>
         </div>
       </div>
     </div>

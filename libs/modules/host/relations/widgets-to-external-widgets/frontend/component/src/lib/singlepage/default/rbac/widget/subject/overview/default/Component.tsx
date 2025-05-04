@@ -41,6 +41,7 @@ export function Component(props: IComponentProps) {
                     isServer={props.isServer}
                     variant="overview-default"
                     data={subject}
+                    language={props.language}
                   />
                 );
               });
