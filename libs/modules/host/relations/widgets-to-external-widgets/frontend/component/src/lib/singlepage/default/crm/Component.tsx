@@ -37,6 +37,7 @@ export function Component(props: IComponentPropsExtended) {
                   isServer={props.isServer}
                   data={entity}
                   language={props.language}
+                  variant={entity.variant}
                 />
               ) : null}
             </CrmWidget>
