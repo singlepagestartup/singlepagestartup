@@ -2,6 +2,8 @@
 
 import { Component as ParentComponent } from "@sps/blog/models/widget/frontend/component";
 
+import { Component as WidgetsToArticles } from "@sps/blog/relations/widgets-to-articles/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -13,6 +15,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            widgetsToArticles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <WidgetsToArticles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "widgetId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
           />
         );
       }}

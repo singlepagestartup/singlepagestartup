@@ -1,19 +1,68 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Card, CardContent, CardHeader, TipTap } from "@sps/shared-ui-shadcn";
+import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
+import Link from "next/link";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
-      data-module="blog"
+    <Link
+      data-module="startup"
       data-model="article"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full py-10 text-center flex flex-col gap-1")}
+      href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/blog/articles/${props.data.slug}`}
+      className={cn(
+        "flex flex-col w-full gap-3 cursor-pointer",
+        props.className,
+      )}
     >
-      <p className="font-bold">Generated variant</p>
-      <p className="font-bold text-4xl">Module: blog</p>
-      <p className="font-bold text-3xl">Model: article</p>
-      <p className="font-bold text-xl">Variant: {props.variant}</p>
-    </div>
+      <Card>
+        <ArticlesToFileStorageModuleFiles
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "articleId",
+                    method: "eq",
+                    value: props.data.id,
+                  },
+                ],
+              },
+            },
+          }}
+        >
+          {({ data }) => {
+            return (
+              <CardHeader>
+                <p className="font-bold text-4xl">
+                  {props.data.title?.[props.language]}
+                </p>
+                {data?.map((entity, index) => {
+                  return (
+                    <ArticlesToFileStorageModuleFiles
+                      key={index}
+                      isServer={props.isServer}
+                      variant={entity.variant as any}
+                      data={entity}
+                    />
+                  );
+                })}
+              </CardHeader>
+            );
+          }}
+        </ArticlesToFileStorageModuleFiles>
+
+        <CardContent>
+          {props.data.subtitle?.[props.language] ? (
+            <TipTap value={props.data.subtitle[props.language] || ""} />
+          ) : null}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

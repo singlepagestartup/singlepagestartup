@@ -1,3 +1,4 @@
+import { app as widgetsToArticles } from "@sps/blog/relations/widgets-to-articles/backend/app/api";
 import { app as articlesToEcommerceModuleProducts } from "@sps/blog/relations/articles-to-ecommerce-module-products/backend/app/api";
 import { app as widgetApp } from "@sps/blog/models/widget/backend/app/api";
 import { app as articleApp } from "@sps/blog/models/article/backend/app/api";
@@ -16,6 +17,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/widgets-to-articles",
+      app: widgetsToArticles,
+    });
     this.apps.push({
       type: "relation",
       route: "/articles-to-ecommerce-module-products",

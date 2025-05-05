@@ -100,10 +100,10 @@ import {
   type IResult as IIdentityCreateResult,
 } from "./actions/identity/create";
 import {
-  action as crmFromsCreate,
-  type IProps as ICrmFromsCreateProps,
-  type IResult as ICrmFromsCreateResult,
-} from "./actions/crm/froms/request";
+  action as crmModuleFromRequestCreate,
+  type IProps as ICrmModuleFromRequestCreateProps,
+  type IResult as ICrmModuleFromRequestCreateResult,
+} from "./actions/crm-module/from/request/create";
 
 export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -124,7 +124,7 @@ export type IProps = {
   IEcommerceOrderUpdateProps: IEcommerceOrderUpdateProps;
   IEcommerceOrderCheckoutProps: IEcommerceOrderCheckoutProps;
   IEcommerceOrderDeleteProps: IEcommerceOrderDeleteProps;
-  ICrmFromsCreateProps: ICrmFromsCreateProps;
+  ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 };
 
 export type IResult = {
@@ -146,7 +146,7 @@ export type IResult = {
   IEcommerceOrderUpdateResult: IEcommerceOrderUpdateResult;
   IEcommerceOrderCheckoutResult: IEcommerceOrderCheckoutResult;
   IEcommerceOrderDeleteResult: IEcommerceOrderDeleteResult;
-  ICrmFromsCreateResult: ICrmFromsCreateResult;
+  ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 };
 
 export const api = {
@@ -175,5 +175,5 @@ export const api = {
   ecommerceOrderUpdate,
   ecommerceOrderCheckout,
   ecommerceOrderDelete,
-  crmFromsCreate,
+  crmModuleFromRequestCreate,
 };

@@ -22,7 +22,7 @@ import { IComponentProps as IEcommerceModuleProductCartComponentProps } from "./
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
-import { IComponentProps as ICrmFormComponentProps } from "./crm/form/interface";
+import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
 
 export type IComponentProps =
   | ISocialModuleProfilesListDefaultComponentProps
@@ -49,5 +49,5 @@ export type IComponentProps =
   | IAuthenticationEmailAndPasswordForgotPasswordComponentProps
   | IAuthenticationEmailAndPasswordResetPasswordComponentProps
   | IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps
-  | ICrmFormComponentProps
+  | ICrmModuleFormRequestCreateComponentProps
   | never;

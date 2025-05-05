@@ -50,19 +50,19 @@ export async function relationGenerator(
         modules: [
           {
             module: {
-              name: "social",
+              name: "blog",
               relations: [
                 {
                   relation: {
-                    name: "profiles-to-file-storage-module-files",
+                    name: "widgets-to-articles",
                     models: [
                       {
-                        name: "profile",
-                        module: "social",
+                        name: "widget",
+                        module: "blog",
                       },
                       {
-                        name: "file",
-                        module: "file-storage",
+                        name: "article",
+                        module: "blog",
                       },
                     ],
                     frontend: {

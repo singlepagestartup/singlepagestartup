@@ -107,10 +107,10 @@ import {
   type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
 } from "./actions/authentication/email-and-password/registration";
 import {
-  action as crmFromRequest,
-  type IProps as ICrmFromRequestProps,
-  type IResult as ICrmFromRequestResult,
-} from "./actions/crm/form/request";
+  action as crmModuleFromRequestCreate,
+  type IProps as ICrmModuleFromRequestCreateProps,
+  type IResult as ICrmModuleFromRequestCreateResult,
+} from "./actions/crm-module/form/request/create";
 
 export type IProps = {
   IAuthenticationMeProps: IAuthenticationMeProps;
@@ -133,7 +133,7 @@ export type IProps = {
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
-  ICrmFromRequestProps: ICrmFromRequestProps;
+  ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 };
 
 export type IResult = {
@@ -157,7 +157,7 @@ export type IResult = {
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
-  ICrmFromRequestResult: ICrmFromRequestResult;
+  ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 };
 
 export const api = {
@@ -187,5 +187,5 @@ export const api = {
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,
-  crmFromRequest,
+  crmModuleFromRequestCreate,
 };

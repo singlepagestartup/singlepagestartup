@@ -24,6 +24,7 @@ export function Component(
           isServer={props.isServer}
           language={props.language}
           variant={props.data.variant}
+          data={props.data}
         />
       ) : null}
       {props.data.variant.startsWith("category") ? (
@@ -32,6 +33,7 @@ export function Component(
           isServer={props.isServer}
           language={props.language}
           variant={props.data.variant}
+          data={props.data}
         />
       ) : null}
     </BlogModuleWidget>

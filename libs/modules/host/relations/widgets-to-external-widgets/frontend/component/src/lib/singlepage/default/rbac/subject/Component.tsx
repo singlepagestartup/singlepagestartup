@@ -1,10 +1,9 @@
 import { Component as EcommerceProductAction } from "./ecommerce-product-action/Component";
-import { IComponentProps as IEcommerceProductActionProps } from "./ecommerce-product-action/interface";
-import { IComponentProps as ISocialModuleProfileButtonDefaultProps } from "./social-module-profile-button-default/interface";
 import { Component as SocialModuleProfileButtonDefault } from "./social-module-profile-button-default/Component";
-export function Component(
-  props: IEcommerceProductActionProps | ISocialModuleProfileButtonDefaultProps,
-) {
+import { Component as CrmModuleFormRequestCreate } from "./crm-module-form-request-create/Component";
+import { IComponentProps } from "./interface";
+
+export function Component(props: IComponentProps) {
   if (props.variant === "ecommerce-product-action") {
     return (
       <EcommerceProductAction
@@ -28,5 +27,17 @@ export function Component(
       />
     );
   }
+
+  if (props.variant === "crm-module-form-request-create") {
+    return (
+      <CrmModuleFormRequestCreate
+        isServer={props.isServer}
+        language={props.language}
+        form={props.form}
+        variant={props.variant}
+      />
+    );
+  }
+
   return <></>;
 }

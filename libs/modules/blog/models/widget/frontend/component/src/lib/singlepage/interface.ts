@@ -1,5 +1,4 @@
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview/default/interface";
-import { IComponentProps as ICategoryListButtonDefaultComponentProps } from "./category/list/button-default/interface";
 import { IComponentProps as ICategoryListCardDefaultComponentProps } from "./category/list/card-default/interface";
 import { IComponentProps as IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./article/overview/ecommerce-module/product/list/card-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
@@ -14,7 +13,6 @@ import { IComponentProps as IArticleOverviewWithPrivateContentDefaultComponentPr
 
 export type IComponentProps =
   | ICategoryOverviewDefaultComponentProps
-  | ICategoryListButtonDefaultComponentProps
   | ICategoryListCardDefaultComponentProps
   | IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps
   | IFindComponentProps

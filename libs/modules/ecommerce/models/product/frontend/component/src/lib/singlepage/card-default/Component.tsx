@@ -30,7 +30,7 @@ export function Component(props: IComponentPropsExtended) {
         {props.topSlot}
         <CardTitle>
           <Link
-            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.id}`}
+            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
             className="w-fit"
           >
             {props.data.title?.[props.language]}

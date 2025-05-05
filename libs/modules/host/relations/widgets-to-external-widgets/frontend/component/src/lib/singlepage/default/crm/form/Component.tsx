@@ -1,8 +1,8 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { IModel } from "@sps/crm/models/widget/sdk/model";
-import { Component as Default } from "./default/Component";
 import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
 import { Component as Form } from "@sps/crm/models/form/frontend/component";
+import { Component as RbacSubject } from "../../rbac/subject/Component";
 
 export function Component(
   props: ISpsComponentBase & {
@@ -54,11 +54,12 @@ export function Component(
                 {({ data }) => {
                   return data?.map((entity, index) => {
                     return (
-                      <Default
+                      <RbacSubject
                         key={index}
                         isServer={props.isServer}
                         form={entity}
                         language={props.language}
+                        variant="crm-module-form-request-create"
                       />
                     );
                   });

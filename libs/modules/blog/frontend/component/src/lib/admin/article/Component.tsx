@@ -7,6 +7,8 @@ import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/re
 
 import { Component as ArticlesToEcommerceModuleProducts } from "@sps/blog/relations/articles-to-ecommerce-module-products/frontend/component";
 
+import { Component as WidgetsToArticles } from "@sps/blog/relations/widgets-to-articles/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -18,6 +20,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            widgetsToArticles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <WidgetsToArticles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "articleId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             articlesToEcommerceModuleProducts={({ data, isServer }) => {
               if (!data) {
                 return;

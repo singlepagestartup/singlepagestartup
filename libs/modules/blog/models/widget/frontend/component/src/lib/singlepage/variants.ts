@@ -1,5 +1,4 @@
 import { Component as CategoryOverviewDefault } from "./category/overview/default";
-import { Component as CategoryListButtonDefault } from "./category/list/button-default";
 import { Component as CategoryListCardDefault } from "./category/list/card-default";
 import { Component as ArticleOverviewEcommerceModuleProductListCardDefault } from "./article/overview/ecommerce-module/product/list/card-default";
 import { Component as Find } from "./find";
@@ -14,7 +13,6 @@ import { Component as ArticleOverviewWithPrivateContentDefault } from "./article
 
 export const variants = {
   "category-overview-default": CategoryOverviewDefault,
-  "category-list-button-default": CategoryListButtonDefault,
   "category-list-card-default": CategoryListCardDefault,
   "article-overview-ecommerce-module-product-list-card-default":
     ArticleOverviewEcommerceModuleProductListCardDefault,

@@ -22,7 +22,7 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
 import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
-import { Component as CrmForm } from "./crm/form";
+import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/request/create";
 
 export const variants = {
   "social-module-profiles-list-default": SocialModuleProfilesListDefault,
@@ -55,5 +55,5 @@ export const variants = {
   "get-emails": GetEmails,
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
-  "crm-form": CrmForm,
+  "crm-module-form-request-create": CrmModuleFormRequestCreate,
 };

@@ -17,7 +17,7 @@ export function Component(
     <Page
       isServer={props.isServer}
       variant="url-segment-value"
-      segment="ecommerce.products.id"
+      segment="ecommerce.products.slug"
       url={props.url}
     >
       {({ data }) => {
@@ -34,7 +34,7 @@ export function Component(
                 filters: {
                   and: [
                     {
-                      column: "id",
+                      column: "slug",
                       method: "eq",
                       value: data,
                     },

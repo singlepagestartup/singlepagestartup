@@ -1,3 +1,4 @@
+import { randomWordsGenerator } from "@sps/shared-utils";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export const fields = {
@@ -6,7 +7,11 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   type: pgCore.text("type").notNull().default("one_off"),
-  sku: pgCore.text("sku").notNull().unique(),
+  slug: pgCore
+    .text("slug")
+    .notNull()
+    .unique()
+    .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
   title: pgCore
     .jsonb("title")
     .$type<{ [key: string]: string | undefined }>()
@@ -19,4 +24,8 @@ export const fields = {
     .jsonb("description")
     .$type<{ [key: string]: string | undefined }>()
     .default({}),
+  adminTitle: pgCore
+    .text("admin_title")
+    .notNull()
+    .$defaultFn(() => randomWordsGenerator({ type: "title" })),
 };
