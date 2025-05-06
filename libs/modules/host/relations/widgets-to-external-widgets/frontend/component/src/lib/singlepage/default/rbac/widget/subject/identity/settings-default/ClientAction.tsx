@@ -1,18 +1,18 @@
 "use client";
 
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { Component as Subject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <Subject isServer={false} variant="authentication-me-default">
+    <RbacModuleSubject isServer={false} variant="authentication-me-default">
       {({ data }) => {
         if (!data) {
           return;
         }
 
         return (
-          <Subject
+          <RbacModuleSubject
             isServer={false}
             variant="identity-settings-default"
             data={{
@@ -21,6 +21,6 @@ export function Component(props: ISpsComponentBase) {
           />
         );
       }}
-    </Subject>
+    </RbacModuleSubject>
   );
 }

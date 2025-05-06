@@ -16,13 +16,13 @@ export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/blog/widgets";
 export const variants = [
   "default",
-  "article-list-card-default",
+  "article-list-default",
   "article-overview-default",
   "article-overview-with-private-content-default",
   "article-overview-ecommerce-module-product-list-card-default",
   "category-overview-default",
   "category-list-button-default",
-  "category-list-card-default",
+  "category-list-default",
 ] as const;
 export const query = {};
 export const options = {

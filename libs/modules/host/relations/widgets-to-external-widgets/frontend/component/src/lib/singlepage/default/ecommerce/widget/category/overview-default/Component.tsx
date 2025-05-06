@@ -1,10 +1,10 @@
-import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject/ecommerce-product-action/Component";
-import { Component as Page } from "@sps/host/models/page/frontend/component";
-import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
-import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
-import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
+import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
+import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce-product-action/Component";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
+import { Component as EcommerceModuleCategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
+import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
+import { Component as EcommerceModuleCategory } from "@sps/ecommerce/models/category/frontend/component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component(
@@ -14,7 +14,7 @@ export function Component(
   },
 ) {
   return (
-    <Page
+    <HostModulePage
       isServer={props.isServer}
       variant="url-segment-value"
       segment="ecommerce.categories.id"
@@ -26,7 +26,7 @@ export function Component(
         }
 
         return (
-          <Category
+          <EcommerceModuleCategory
             isServer={props.isServer}
             variant="overview-default"
             data={{
@@ -35,7 +35,7 @@ export function Component(
             language={props.language}
           >
             <div className="grid lg:grid-cols-2 gap-4">
-              <CategoriesToProducts
+              <EcommerceModuleCategoriesToProducts
                 isServer={props.isServer}
                 variant="find"
                 apiProps={{
@@ -55,7 +55,7 @@ export function Component(
                 {({ data }) => {
                   return data?.map((entity, index) => {
                     return (
-                      <Product
+                      <EcommerceModuleProduct
                         key={index}
                         isServer={props.isServer}
                         variant="find"
@@ -80,14 +80,14 @@ export function Component(
 
                           return products.map((product, index) => {
                             return (
-                              <Product
+                              <EcommerceModuleProduct
                                 key={index}
                                 isServer={props.isServer}
                                 variant="default"
                                 data={product}
                                 language={props.language}
                               >
-                                <StoresToProducts
+                                <EcommerceModuleStoresToProducts
                                   isServer={props.isServer}
                                   variant="find"
                                   apiProps={{
@@ -108,7 +108,7 @@ export function Component(
                                     return storesToProducts?.map(
                                       (storeToProduct, index) => {
                                         return (
-                                          <Store
+                                          <EcommerceModuleStore
                                             key={index}
                                             isServer={props.isServer}
                                             variant="find"
@@ -137,31 +137,31 @@ export function Component(
                                                       product={product}
                                                       store={store}
                                                       language={props.language}
-                                                      variant="ecommerce-product-action"
+                                                      variant="me-ecommerce-product-action"
                                                     />
                                                   );
                                                 },
                                               );
                                             }}
-                                          </Store>
+                                          </EcommerceModuleStore>
                                         );
                                       },
                                     );
                                   }}
-                                </StoresToProducts>
-                              </Product>
+                                </EcommerceModuleStoresToProducts>
+                              </EcommerceModuleProduct>
                             );
                           });
                         }}
-                      </Product>
+                      </EcommerceModuleProduct>
                     );
                   });
                 }}
-              </CategoriesToProducts>
+              </EcommerceModuleCategoriesToProducts>
             </div>
-          </Category>
+          </EcommerceModuleCategory>
         );
       }}
-    </Page>
+    </HostModulePage>
   );
 }

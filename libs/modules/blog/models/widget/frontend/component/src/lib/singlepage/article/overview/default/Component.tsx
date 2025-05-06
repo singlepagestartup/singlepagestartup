@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex", props.data.className)}
     >
-      {props.children}
+      <div className="w-full max-w-7xl mx-auto">{props.children}</div>
     </div>
   );
 }

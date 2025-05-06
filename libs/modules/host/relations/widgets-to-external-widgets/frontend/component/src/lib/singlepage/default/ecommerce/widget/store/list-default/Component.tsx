@@ -1,7 +1,7 @@
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
-import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject/ecommerce-product-action/Component";
+import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
+import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
+import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce-product-action/Component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component(
@@ -10,18 +10,18 @@ export function Component(
   },
 ) {
   return (
-    <Store isServer={props.isServer} variant="find">
+    <EcommerceModuleStore isServer={props.isServer} variant="find">
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <Store
+            <EcommerceModuleStore
               key={index}
               isServer={props.isServer}
               variant="default"
               data={entity}
               language={props.language}
             >
-              <StoresToProducts
+              <EcommerceModuleStoresToProducts
                 isServer={props.isServer}
                 variant="find"
                 apiProps={{
@@ -41,7 +41,7 @@ export function Component(
                 {({ data }) => {
                   return data?.map((storeToProduct, index) => {
                     return (
-                      <Product
+                      <EcommerceModuleProduct
                         key={index}
                         isServer={props.isServer}
                         variant="find"
@@ -62,7 +62,7 @@ export function Component(
                         {({ data }) => {
                           return data?.map((product, index) => {
                             return (
-                              <Product
+                              <EcommerceModuleProduct
                                 key={index}
                                 isServer={props.isServer}
                                 variant="default"
@@ -74,21 +74,21 @@ export function Component(
                                   product={product}
                                   language={props.language}
                                   store={entity}
-                                  variant="ecommerce-product-action"
+                                  variant="me-ecommerce-product-action"
                                 />
-                              </Product>
+                              </EcommerceModuleProduct>
                             );
                           });
                         }}
-                      </Product>
+                      </EcommerceModuleProduct>
                     );
                   });
                 }}
-              </StoresToProducts>
-            </Store>
+              </EcommerceModuleStoresToProducts>
+            </EcommerceModuleStore>
           );
         });
       }}
-    </Store>
+    </EcommerceModuleStore>
   );
 }

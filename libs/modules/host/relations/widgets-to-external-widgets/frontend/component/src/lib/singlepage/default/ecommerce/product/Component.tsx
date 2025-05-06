@@ -1,10 +1,10 @@
-import { Component as CardDefault } from "./card-default/Component";
-import { IComponentProps as ICardDefaultComponentProps } from "./card-default/interface";
+import { Component as Default } from "./default/Component";
+import { IComponentProps as ICardDefaultComponentProps } from "./default/interface";
 
 export function Component(props: ICardDefaultComponentProps) {
-  if (props.variant === "card-default") {
+  if (props.variant === "default") {
     return (
-      <CardDefault
+      <Default
         isServer={props.isServer}
         language={props.language}
         variant={props.variant}

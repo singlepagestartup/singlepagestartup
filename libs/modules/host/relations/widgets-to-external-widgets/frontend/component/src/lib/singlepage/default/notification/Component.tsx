@@ -1,9 +1,9 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as Notification } from "@sps/notification/models/widget/frontend/component";
+import { Component as NotificationModuleWidget } from "@sps/notification/models/widget/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <Notification
+    <NotificationModuleWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <Notification
+            <NotificationModuleWidget
               key={index}
               isServer={props.isServer}
               variant={entity.variant as any}
@@ -32,6 +32,6 @@ export function Component(props: IComponentPropsExtended) {
           );
         });
       }}
-    </Notification>
+    </NotificationModuleWidget>
   );
 }

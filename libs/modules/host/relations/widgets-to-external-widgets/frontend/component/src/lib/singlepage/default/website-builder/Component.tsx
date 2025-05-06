@@ -1,10 +1,10 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as WebsiteBuilder } from "@sps/website-builder/models/widget/frontend/component";
-import { Component as RbacProfileButtonDefault } from "../rbac/profile-button-default/Component";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
+import { Component as RbacSubject } from "../rbac/subject/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <WebsiteBuilder
+    <WebsiteBuilderModuleWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -24,7 +24,7 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((widget) => {
           return (
-            <WebsiteBuilder
+            <WebsiteBuilderModuleWidget
               key={widget.id}
               isServer={props.isServer}
               data={widget}
@@ -32,12 +32,16 @@ export function Component(props: IComponentPropsExtended) {
               language={props.language}
             >
               {widget.variant.includes("navbar") ? (
-                <RbacProfileButtonDefault isServer={props.isServer} />
+                <RbacSubject
+                  isServer={props.isServer}
+                  language={props.language}
+                  variant="me-authentication-default"
+                />
               ) : null}
-            </WebsiteBuilder>
+            </WebsiteBuilderModuleWidget>
           );
         });
       }}
-    </WebsiteBuilder>
+    </WebsiteBuilderModuleWidget>
   );
 }

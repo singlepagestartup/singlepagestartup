@@ -1,8 +1,8 @@
 "use client";
 
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as ArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
+import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as BlogModuleArticlesToWebsiteBuilderModuleWidgets } from "@sps/blog/relations/articles-to-website-builder-module-widgets/frontend/component";
 import { IModel } from "@sps/blog/models/article/sdk/model";
 
 export function Component(
@@ -13,7 +13,7 @@ export function Component(
   },
 ) {
   return (
-    <RbacSubject
+    <RbacModuleSubject
       isServer={false}
       variant="authentication-is-authorized-wrapper-default"
       apiProps={{
@@ -26,7 +26,7 @@ export function Component(
       }}
       fallback={<div className="p-5 bg-blue-400">Not authorized</div>}
     >
-      <ArticlesToWebsiteBuilderModuleWidgets
+      <BlogModuleArticlesToWebsiteBuilderModuleWidgets
         isServer={false}
         variant="find"
         apiProps={{
@@ -46,7 +46,7 @@ export function Component(
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <ArticlesToWebsiteBuilderModuleWidgets
+              <BlogModuleArticlesToWebsiteBuilderModuleWidgets
                 key={index}
                 isServer={false}
                 variant={entity.variant as any}
@@ -56,7 +56,7 @@ export function Component(
             );
           });
         }}
-      </ArticlesToWebsiteBuilderModuleWidgets>
-    </RbacSubject>
+      </BlogModuleArticlesToWebsiteBuilderModuleWidgets>
+    </RbacModuleSubject>
   );
 }

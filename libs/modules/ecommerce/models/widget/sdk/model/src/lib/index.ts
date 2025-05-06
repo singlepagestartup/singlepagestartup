@@ -15,14 +15,14 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/widgets";
 export const variants = [
-  "default",
-  "store-list-default",
-  "order-list-default",
-  "product-list-card-default",
-  "product-overview-default",
   "category-list-default",
   "category-overview-default",
-  "store-product-list-card-default",
+  "default",
+  "order-list-default",
+  "product-list-default",
+  "product-overview-default",
+  "store-list-default",
+  "store-product-list-default",
 ];
 export const query = {};
 export const options = {

@@ -5,7 +5,6 @@ import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/sele
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
-import { IComponentProps as ICardDefaultComponentProps } from "./card-default/interface";
 import { IComponentProps as IPriceDefaultComponentProps } from "./price-default/interface";
 import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency/toggle-group-default/interface";
 
@@ -17,7 +16,6 @@ export type IComponentProps =
   | IAdminFormComponentProps
   | IDefaultComponentProps
   | IOverviewDefaultComponentProps
-  | ICardDefaultComponentProps
   | IPriceDefaultComponentProps
   | ICurrencyToggleGroupDefaultComponentProps
   | never;

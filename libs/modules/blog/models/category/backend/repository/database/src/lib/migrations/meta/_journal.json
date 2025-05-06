@@ -15,6 +15,13 @@
       "when": 1738272455882,
       "tag": "0001_dashing_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746550175233,
+      "tag": "0002_rainy_slayback",
+      "breakpoints": true
     }
   ]
 }

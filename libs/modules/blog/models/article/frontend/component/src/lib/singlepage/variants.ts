@@ -1,4 +1,3 @@
-import { Component as CardDefault } from "./card-default";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -9,7 +8,6 @@ import { Component as OverviewDefault } from "./overview-default";
 import { Component as OverviewWithPrivateContentDefault } from "./overview-with-private-content-default";
 
 export const variants = {
-  "card-default": CardDefault,
   find: Find,
   "admin-form": AdminForm,
   "admin-table-row": AdminTableRow,

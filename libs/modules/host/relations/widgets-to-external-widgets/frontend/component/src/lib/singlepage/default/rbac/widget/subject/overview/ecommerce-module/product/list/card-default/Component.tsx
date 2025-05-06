@@ -1,13 +1,13 @@
-import { Component as HostPage } from "@sps/host/models/page/frontend/component";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
+import { Component as RbacModuleSubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceProduct } from "../../../../../../../../ecommerce/product/Component";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
   return (
-    <HostPage
+    <HostModulePage
       isServer={props.isServer}
       variant="url-segment-value"
       segment="rbac.subjects.slug"
@@ -39,7 +39,7 @@ export function Component(props: IComponentProps) {
             {({ data }) => {
               return data?.map((subject, index) => {
                 return (
-                  <SubjectsToEcommerceModuleProducts
+                  <RbacModuleSubjectsToEcommerceModuleProducts
                     key={index}
                     isServer={props.isServer}
                     variant="find"
@@ -88,7 +88,7 @@ export function Component(props: IComponentProps) {
                                         <EcommerceProduct
                                           key={index}
                                           isServer={props.isServer}
-                                          variant="card-default"
+                                          variant={product.variant as any}
                                           data={product}
                                           language={props.language}
                                         />
@@ -102,13 +102,13 @@ export function Component(props: IComponentProps) {
                         </div>
                       );
                     }}
-                  </SubjectsToEcommerceModuleProducts>
+                  </RbacModuleSubjectsToEcommerceModuleProducts>
                 );
               });
             }}
           </RbacModuleSubject>
         );
       }}
-    </HostPage>
+    </HostModulePage>
   );
 }

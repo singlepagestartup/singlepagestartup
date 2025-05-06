@@ -1,10 +1,10 @@
-import { Component as Category } from "@sps/blog/models/category/frontend/component";
-import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as BlogModuleCategory } from "@sps/blog/models/category/frontend/component";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
   return (
-    <Page
+    <HostModulePage
       isServer={props.isServer}
       variant="url-segment-value"
       segment="blog.categories.slug"
@@ -16,7 +16,7 @@ export function Component(props: IComponentProps) {
         }
 
         return (
-          <Category
+          <BlogModuleCategory
             isServer={props.isServer}
             variant="find"
             apiProps={{
@@ -36,7 +36,7 @@ export function Component(props: IComponentProps) {
             {({ data }) => {
               return data?.map((entity, index) => {
                 return (
-                  <Category
+                  <BlogModuleCategory
                     key={index}
                     isServer={props.isServer}
                     variant="overview-default"
@@ -46,9 +46,9 @@ export function Component(props: IComponentProps) {
                 );
               });
             }}
-          </Category>
+          </BlogModuleCategory>
         );
       }}
-    </Page>
+    </HostModulePage>
   );
 }

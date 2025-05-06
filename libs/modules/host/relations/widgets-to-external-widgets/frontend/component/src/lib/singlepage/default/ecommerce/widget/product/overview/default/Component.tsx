@@ -1,9 +1,9 @@
-import { Component as Product } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as RbacSubject } from "../../../../../rbac/subject/ecommerce-product-action/Component";
-import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
+import { Component as RbacSubject } from "../../../../../rbac/subject/me/ecommerce-product-action/Component";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { Component as StoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
-import { Component as Store } from "@sps/ecommerce/models/store/frontend/component";
+import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
+import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
 import { IModel } from "@sps/ecommerce/models/widget/sdk/model";
 export function Component(
   props: ISpsComponentBase & {
@@ -14,7 +14,7 @@ export function Component(
   },
 ) {
   return (
-    <Page
+    <HostModulePage
       isServer={props.isServer}
       variant="url-segment-value"
       segment="ecommerce.products.slug"
@@ -26,7 +26,7 @@ export function Component(
         }
 
         return (
-          <Product
+          <EcommerceModuleProduct
             isServer={props.isServer}
             variant="find"
             apiProps={{
@@ -46,14 +46,14 @@ export function Component(
             {({ data: products }) => {
               return products?.map((product, index) => {
                 return (
-                  <Product
+                  <EcommerceModuleProduct
                     key={index}
                     isServer={props.isServer}
                     variant="overview-default"
                     data={product}
                     language={props.language}
                   >
-                    <StoresToProducts
+                    <EcommerceModuleStoresToProducts
                       isServer={props.isServer}
                       variant="find"
                       apiProps={{
@@ -74,7 +74,7 @@ export function Component(
                         return storesToProducts?.map(
                           (storeToProduct, index) => {
                             return (
-                              <Store
+                              <EcommerceModuleStore
                                 key={index}
                                 isServer={props.isServer}
                                 variant="find"
@@ -101,24 +101,24 @@ export function Component(
                                         isServer={props.isServer}
                                         product={product}
                                         language={props.language}
-                                        variant="ecommerce-product-action"
+                                        variant="me-ecommerce-product-action"
                                       />
                                     );
                                   });
                                 }}
-                              </Store>
+                              </EcommerceModuleStore>
                             );
                           },
                         );
                       }}
-                    </StoresToProducts>
-                  </Product>
+                    </EcommerceModuleStoresToProducts>
+                  </EcommerceModuleProduct>
                 );
               });
             }}
-          </Product>
+          </EcommerceModuleProduct>
         );
       }}
-    </Page>
+    </HostModulePage>
   );
 }

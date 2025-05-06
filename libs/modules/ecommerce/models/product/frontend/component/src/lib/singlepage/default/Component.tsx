@@ -2,21 +2,43 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
-import { Component as ProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
+import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@sps/shared-ui-shadcn";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
+    <Card
       data-module="ecommerce"
       data-model="product"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className || "")}
+      className={cn(
+        "w-full flex flex-col justify-between",
+        props.className || "",
+      )}
     >
-      <div className="w-full">
-        <ProductsToFileStorageModuleFiles
+      <CardHeader>
+        {props.topSlot}
+        <CardTitle>
+          <Link
+            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
+            className="w-fit"
+          >
+            {props.data.title?.[props.language]}
+          </Link>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="w-full flex flex-col mt-auto gap-2">
+        <ProductsToFileStorageModuleWidgets
           isServer={props.isServer}
           variant="find"
           apiProps={{
@@ -28,6 +50,11 @@ export function Component(props: IComponentPropsExtended) {
                     method: "eq",
                     value: props.data.id,
                   },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "default",
+                  },
                 ],
               },
             },
@@ -36,7 +63,7 @@ export function Component(props: IComponentPropsExtended) {
           {({ data }) => {
             return data?.map((entity, index) => {
               return (
-                <ProductsToFileStorageModuleFiles
+                <ProductsToFileStorageModuleWidgets
                   key={index}
                   isServer={props.isServer}
                   variant={entity.variant as any}
@@ -45,12 +72,10 @@ export function Component(props: IComponentPropsExtended) {
               );
             });
           }}
-        </ProductsToFileStorageModuleFiles>
-      </div>
-      <Link href={`/ecommerce/products/${props.data.id}`} className="w-fit">
-        <p className="font-bold w-fit">{props.data.title?.[props.language]}</p>
-      </Link>
-      <div className="flex flex-col gap-3">
+        </ProductsToFileStorageModuleWidgets>
+        <p className="w-full text-sm text-gray-600 mt-auto">
+          {props.data.shortDescription?.[props.language]}
+        </p>
         <ProductsToAttributes
           isServer={props.isServer}
           variant="find"
@@ -143,8 +168,12 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToAttributes>
-      </div>
-      {props.children}
-    </div>
+        {props.middleSlot}
+      </CardContent>
+      <CardFooter className="w-full flex flex-col">
+        {props.children}
+        {props.bottomSlot}
+      </CardFooter>
+    </Card>
   );
 }

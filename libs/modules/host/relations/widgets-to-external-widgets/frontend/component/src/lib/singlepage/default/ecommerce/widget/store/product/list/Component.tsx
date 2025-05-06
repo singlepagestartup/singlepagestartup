@@ -1,6 +1,6 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { IModel } from "@sps/ecommerce/models/widget/sdk/model";
-import { Component as CardDefault } from "./card-default/Component";
+import { Component as Default } from "./default/Component";
 
 export function Component(
   props: ISpsComponentBase & {
@@ -10,8 +10,8 @@ export function Component(
     variant: string;
   },
 ) {
-  if (props.variant === "store-product-list-card-default") {
-    return <CardDefault {...props} />;
+  if (props.variant === "store-product-list-default") {
+    return <Default {...props} />;
   }
 
   return <></>;

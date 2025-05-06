@@ -1,4 +1,3 @@
-import { IComponentProps as ICardDefaultComponentProps } from "./card-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -9,7 +8,6 @@ import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-de
 import { IComponentProps as IOverviewWithPrivateContentDefaultComponentProps } from "./overview-with-private-content-default/interface";
 
 export type IComponentProps =
-  | ICardDefaultComponentProps
   | IFindComponentProps
   | IAdminFormComponentProps
   | IAdminTableRowComponentProps

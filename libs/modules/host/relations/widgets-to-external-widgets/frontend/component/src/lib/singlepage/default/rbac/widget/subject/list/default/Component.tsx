@@ -1,10 +1,10 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as RbacSubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
+import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
+import { Component as RbacModuleSubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 
 export function Component(props: ISpsComponentBase) {
   return (
-    <RbacSubject isServer={props.isServer} variant="find">
+    <RbacModuleSubject isServer={props.isServer} variant="find">
       {({ data }) => {
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -13,7 +13,7 @@ export function Component(props: ISpsComponentBase) {
                 /**
                  * Anonumus subjects does not have identities
                  */
-                <RbacSubjectsToIdentities
+                <RbacModuleSubjectsToIdentities
                   key={index}
                   isServer={props.isServer}
                   variant="find"
@@ -34,7 +34,7 @@ export function Component(props: ISpsComponentBase) {
                   {({ data }) => {
                     return data?.map((entity, index) => {
                       return (
-                        <RbacSubject
+                        <RbacModuleSubject
                           key={index}
                           isServer={props.isServer}
                           variant="default"
@@ -43,12 +43,12 @@ export function Component(props: ISpsComponentBase) {
                       );
                     });
                   }}
-                </RbacSubjectsToIdentities>
+                </RbacModuleSubjectsToIdentities>
               );
             })}
           </div>
         );
       }}
-    </RbacSubject>
+    </RbacModuleSubject>
   );
 }

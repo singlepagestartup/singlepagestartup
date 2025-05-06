@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="widgets-to-articles"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full py-10 text-center flex flex-col gap-1")}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       <Article
         variant="find"

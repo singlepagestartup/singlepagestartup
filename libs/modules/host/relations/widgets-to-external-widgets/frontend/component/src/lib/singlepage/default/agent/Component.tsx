@@ -1,9 +1,9 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as Agent } from "@sps/agent/models/widget/frontend/component";
+import { Component as AgentModuleWidget } from "@sps/agent/models/widget/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <Agent
+    <AgentModuleWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <Agent
+            <AgentModuleWidget
               key={index}
               isServer={props.isServer}
               variant={entity.variant as any}
@@ -32,6 +32,6 @@ export function Component(props: IComponentPropsExtended) {
           );
         });
       }}
-    </Agent>
+    </AgentModuleWidget>
   );
 }

@@ -1,11 +1,11 @@
-import { Component as Article } from "@sps/blog/models/article/frontend/component";
-import { Component as Page } from "@sps/host/models/page/frontend/component";
+import { Component as BlogModuleArticle } from "@sps/blog/models/article/frontend/component";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { Component as ClientComponent } from "./ClientComponent";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
   return (
-    <Page
+    <HostModulePage
       isServer={props.isServer}
       variant="url-segment-value"
       segment="blog.articles.slug"
@@ -17,7 +17,7 @@ export function Component(props: IComponentProps) {
         }
 
         return (
-          <Article
+          <BlogModuleArticle
             isServer={props.isServer}
             variant="find"
             apiProps={{
@@ -37,14 +37,14 @@ export function Component(props: IComponentProps) {
             {({ data }) => {
               return data?.map((entity, index) => {
                 return (
-                  <Article
+                  <BlogModuleArticle
                     key={index}
                     isServer={props.isServer}
                     variant="overview-with-private-content-default"
                     data={entity}
                     language={props.language}
                   >
-                    <Article
+                    <BlogModuleArticle
                       isServer={props.isServer}
                       data={entity}
                       variant="default"
@@ -55,13 +55,13 @@ export function Component(props: IComponentProps) {
                       data={entity}
                       language={props.language}
                     />
-                  </Article>
+                  </BlogModuleArticle>
                 );
               });
             }}
-          </Article>
+          </BlogModuleArticle>
         );
       }}
-    </Page>
+    </HostModulePage>
   );
 }
