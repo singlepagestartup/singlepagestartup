@@ -40,7 +40,7 @@ export function Component(props: IComponentPropsExtended) {
         </CardContent>
         <CardFooter>
           <Button variant="outline">
-            <p>Read more</p>
+            <p>More</p>
           </Button>
         </CardFooter>
       </Card>

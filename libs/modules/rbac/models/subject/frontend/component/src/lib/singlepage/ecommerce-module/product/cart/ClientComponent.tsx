@@ -179,7 +179,6 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
-                                        store={props.store}
                                       />
                                       <OrdersDelete
                                         isServer={false}
@@ -187,7 +186,6 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
-                                        store={props.store}
                                       />
                                       <OrdersCheckout
                                         isServer={false}
@@ -195,7 +193,6 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
-                                        store={props.store}
                                       />
                                     </div>
                                   );

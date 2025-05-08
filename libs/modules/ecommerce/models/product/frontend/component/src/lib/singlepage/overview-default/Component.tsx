@@ -2,20 +2,30 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
-import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
+import { Component as ProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  TipTap,
+} from "@sps/shared-ui-shadcn";
+import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
+    <Card
       data-module="ecommerce"
       data-model="product"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className || "")}
+      className={cn("w-full flex flex-col", props.className)}
     >
-      <div className="w-full">
-        <ProductsToFileStorageModuleWidgets
+      {props.topSlot}
+      <CardHeader className="w-full grid grid-cols-2 lg:grid-cols-3 gap-2">
+        <ProductsToFileStorageModuleFiles
           isServer={props.isServer}
           variant="find"
           apiProps={{
@@ -35,7 +45,7 @@ export function Component(props: IComponentPropsExtended) {
           {({ data }) => {
             return data?.map((entity, index) => {
               return (
-                <ProductsToFileStorageModuleWidgets
+                <ProductsToFileStorageModuleFiles
                   key={index}
                   isServer={props.isServer}
                   variant={entity.variant as any}
@@ -44,10 +54,13 @@ export function Component(props: IComponentPropsExtended) {
               );
             });
           }}
-        </ProductsToFileStorageModuleWidgets>
-      </div>
-      <p className="font-bold">{props.data.title?.[props.language]}</p>
-      <div className="flex flex-col gap-3">
+        </ProductsToFileStorageModuleFiles>
+      </CardHeader>
+      <CardContent>
+        <CardTitle>{props.data.title?.[props.language]}</CardTitle>
+      </CardContent>
+      {props.middleSlot}
+      <CardContent className="flex flex-col gap-3">
         <ProductsToAttributes
           isServer={props.isServer}
           variant="find"
@@ -140,8 +153,16 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToAttributes>
-      </div>
-      {props.children}
-    </div>
+        {props.data.description?.[props.language] &&
+        props.data.description[props.language] !== TIPTAP_EMPTY_DOC ? (
+          <TipTap
+            value={props.data.description?.[props.language] || ""}
+            className="text-sm text-muted-foreground"
+          />
+        ) : null}
+      </CardContent>
+      {props.bottomSlot}
+      <CardFooter>{props.children}</CardFooter>
+    </Card>
   );
 }

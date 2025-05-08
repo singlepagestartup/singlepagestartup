@@ -10,7 +10,7 @@ export const variant = "price-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
-  billingModuleCurrencyId: IBillingModuleCurrency["id"];
+  billingModuleCurrencyId?: IBillingModuleCurrency["id"];
   language: string;
 }
 

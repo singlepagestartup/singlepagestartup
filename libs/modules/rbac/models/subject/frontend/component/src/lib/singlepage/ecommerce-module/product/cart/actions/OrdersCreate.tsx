@@ -12,7 +12,7 @@ import { Button, Form } from "@sps/shared-ui-shadcn";
 const formSchema = z.object({
   quantity: z.number(),
   productId: z.string(),
-  storeId: z.string(),
+  storeId: z.string().optional(),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       quantity: 1,
       productId: props.product.id,
-      storeId: props.store.id,
+      storeId: props.store?.id || undefined,
     },
   });
 

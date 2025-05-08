@@ -19,7 +19,7 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   data: {
     productId: string;
-    storeId: string;
+    storeId?: string;
     quantity: number;
   };
 }

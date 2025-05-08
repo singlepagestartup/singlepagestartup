@@ -11,8 +11,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  TipTap,
 } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
+import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -21,13 +23,10 @@ export function Component(props: IComponentPropsExtended) {
       data-model="product"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn(
-        "w-full flex flex-col justify-between",
-        props.className || "",
-      )}
+      className={cn("w-full flex flex-col justify-between", props.className)}
     >
+      {props.topSlot}
       <CardHeader>
-        {props.topSlot}
         <CardTitle>
           <Link
             href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
@@ -73,9 +72,12 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToFileStorageModuleWidgets>
-        <p className="w-full text-sm text-gray-600 mt-auto">
-          {props.data.shortDescription?.[props.language]}
-        </p>
+        {props.data.shortDescription?.[props.language] !== TIPTAP_EMPTY_DOC ? (
+          <TipTap
+            value={props.data.shortDescription?.[props.language] || ""}
+            className="text-sm text-muted-foreground"
+          />
+        ) : null}
         <ProductsToAttributes
           isServer={props.isServer}
           variant="find"
@@ -168,12 +170,10 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToAttributes>
-        {props.middleSlot}
       </CardContent>
-      <CardFooter className="w-full flex flex-col">
-        {props.children}
-        {props.bottomSlot}
-      </CardFooter>
+      {props.middleSlot}
+      <CardFooter className="w-full flex flex-col">{props.children}</CardFooter>
+      {props.bottomSlot}
     </Card>
   );
 }

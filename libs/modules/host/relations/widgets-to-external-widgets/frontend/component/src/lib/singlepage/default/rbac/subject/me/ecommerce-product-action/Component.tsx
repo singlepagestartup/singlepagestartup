@@ -8,7 +8,6 @@ export function Component(props: IComponentProps) {
       product={props.product}
       className={props.className}
       skeleton={props.skeleton}
-      billingModuleCurrencyId={props.billingModuleCurrencyId}
       language={props.language}
       store={props.store}
       variant={props.variant}

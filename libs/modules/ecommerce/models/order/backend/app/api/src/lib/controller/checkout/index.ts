@@ -6,6 +6,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as billingPaymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
@@ -48,9 +49,6 @@ export class Handler {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -68,6 +66,30 @@ export class Handler {
         throw new HTTPException(400, {
           message: "CurrencyId is not provided",
         });
+      }
+
+      let billingModuleCurrencyId = data["billingModuleCurrencyId"];
+
+      if (!billingModuleCurrencyId) {
+        const currencies = await billingModuleCurrencyApi.find({
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (currencies?.length === 0) {
+          throw new Error("No currencies found");
+        }
+
+        if (currencies?.length && currencies.length > 1) {
+          throw new Error(
+            "Multiple currencies found. Pass 'data.billingModuleCurrencyId'",
+          );
+        }
+
+        billingModuleCurrencyId = currencies?.[0]?.id;
       }
 
       const metadata = {
@@ -100,9 +122,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -116,7 +136,7 @@ export class Handler {
       const { amount, type, interval } =
         await this.service.getCheckoutAttributes({
           id: uuid,
-          billingModuleCurrencyId: data["billingModuleCurrencyId"],
+          billingModuleCurrencyId,
         });
 
       const paymentIntent = await billingPaymentIntentApi.create({
@@ -128,9 +148,6 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -151,9 +168,7 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -165,9 +180,6 @@ export class Handler {
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
               },
             },
           });
@@ -183,23 +195,17 @@ export class Handler {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
       await ordersToBillingModuleCurrenciesApi.create({
         data: {
           orderId: uuid,
-          billingModuleCurrencyId: data["billingModuleCurrencyId"],
+          billingModuleCurrencyId,
         },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -207,14 +213,11 @@ export class Handler {
       await billingPaymentIntentsToCurrenciesApi.create({
         data: {
           paymentIntentId: paymentIntent.id,
-          currencyId: data["billingModuleCurrencyId"],
+          currencyId: billingModuleCurrencyId,
         },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -224,14 +227,11 @@ export class Handler {
         data: {
           provider,
           metadata,
-          currencyId: data["billingModuleCurrencyId"],
+          currencyId: billingModuleCurrencyId,
         },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });

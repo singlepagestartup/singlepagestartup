@@ -1,19 +1,11 @@
-import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IModel } from "@sps/ecommerce/models/widget/sdk/model";
-import { Component as ListDefault } from "./list-default/Component";
-import { Component as Product } from "./product/Component";
+import { Component as List } from "./list/Component";
+import { Component as Overview } from "./overview/Component";
+import { IComponentProps } from "./interface";
 
-export function Component(
-  props: ISpsComponentBase & {
-    data: IModel;
-    language: string;
-    url: string;
-    variant: string;
-  },
-) {
-  if (props.data.variant.startsWith("store-product")) {
+export function Component(props: IComponentProps) {
+  if (props.data.variant.startsWith("store-list")) {
     return (
-      <Product
+      <List
         isServer={props.isServer}
         language={props.language}
         data={props.data}
@@ -23,8 +15,16 @@ export function Component(
     );
   }
 
-  if (props.data.variant === "store-list-default") {
-    return <ListDefault isServer={props.isServer} language={props.language} />;
+  if (props.data.variant.startsWith("store-overview")) {
+    return (
+      <Overview
+        isServer={props.isServer}
+        data={props.data}
+        language={props.language}
+        url={props.url}
+        variant={props.data.variant}
+      />
+    );
   }
 
   return <></>;

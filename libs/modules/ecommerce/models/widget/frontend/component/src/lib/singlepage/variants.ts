@@ -10,8 +10,7 @@ import { Component as ProductOverviewDefault } from "./product/overview-default"
 import { Component as CategoryListDefault } from "./category/list-default";
 import { Component as StoreListDefault } from "./store/list-default";
 import { Component as CategoryOverviewDefault } from "./category/overview-default";
-import { Component as StoreProductListDefault } from "./store/product/list-default";
-
+import { Component as StoreOverviewDefault } from "./store/overview-default";
 export const variants = {
   find: Find,
   "admin-table-row": AdminTableRow,
@@ -25,5 +24,5 @@ export const variants = {
   "category-list-default": CategoryListDefault,
   "category-overview-default": CategoryOverviewDefault,
   "store-list-default": StoreListDefault,
-  "store-product-list-default": StoreProductListDefault,
+  "store-overview-default": StoreOverviewDefault,
 };

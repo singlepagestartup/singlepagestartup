@@ -19,7 +19,7 @@ export interface IProps {
   revalidate?: number;
   id: string;
   params?: any;
-  options?: NextRequestOptions;
+  options?: Partial<NextRequestOptions>;
   data: {
     [key: string]: any;
     provider: string;

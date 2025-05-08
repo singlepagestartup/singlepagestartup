@@ -10,7 +10,7 @@ export function Component(
     variant: string;
   },
 ) {
-  if (props.variant === "store-product-list-default") {
+  if (props.variant === "store-list-default") {
     return <Default {...props} />;
   }
 

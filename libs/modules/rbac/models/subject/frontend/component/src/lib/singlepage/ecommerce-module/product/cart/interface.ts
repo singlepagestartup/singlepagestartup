@@ -12,7 +12,7 @@ export const variant = "ecommerce-module-product-cart" as const;
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   product: IProduct;
-  store: IStore;
+  store?: IStore;
 }
 
 export interface IComponentPropsExtended

@@ -19,7 +19,6 @@ export function Component(props: IComponentProps) {
               variant="ecommerce-module-product-checkout"
               data={subject}
               product={props.product}
-              billingModuleCurrencyId={props.billingModuleCurrencyId}
               language={props.language}
               store={props.store}
             />

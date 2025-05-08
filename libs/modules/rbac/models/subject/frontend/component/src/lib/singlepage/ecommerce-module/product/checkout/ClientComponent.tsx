@@ -9,7 +9,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { FormField } from "@sps/ui-adapter";
-import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 
 const providers = [
@@ -39,8 +38,8 @@ const formSchema = z.object({
   email: z.string().email(),
   quantity: z.number().int().positive(),
   comment: z.string().optional(),
-  storeId: z.string(),
-  billingModuleCurrencyId: z.string(),
+  storeId: z.string().optional(),
+  billingModuleCurrencyId: z.string().optional(),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -53,8 +52,8 @@ export function Component(props: IComponentPropsExtended) {
       email: "",
       quantity: 1,
       comment: "",
-      storeId: props.store.id,
-      billingModuleCurrencyId: props.billingModuleCurrencyId || "",
+      storeId: props.store?.id || undefined,
+      billingModuleCurrencyId: "",
     },
   });
 

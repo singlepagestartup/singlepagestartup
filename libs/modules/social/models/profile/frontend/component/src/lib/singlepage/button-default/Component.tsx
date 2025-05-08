@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
       variant="outline"
       size="sm"
     >
-      {props.data.slug}
+      {props.data.title?.[props.language]}
     </Button>
   );
 }

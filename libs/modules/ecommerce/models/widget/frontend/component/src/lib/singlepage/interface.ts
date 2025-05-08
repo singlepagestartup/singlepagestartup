@@ -10,6 +10,7 @@ import { IComponentProps as IProductOverviewDefaultComponentProps } from "./prod
 import { IComponentProps as ICategoryListDefaultComponentProps } from "./category/list-default/interface";
 import { IComponentProps as IStoreListDefaultComponentProps } from "./store/list-default/interface";
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview-default/interface";
+import { IComponentProps as IStoreOverviewDefaultComponentProps } from "./store/overview-default/interface";
 
 export type IComponentProps =
   | IFindComponentProps
@@ -24,4 +25,5 @@ export type IComponentProps =
   | ICategoryListDefaultComponentProps
   | ICategoryOverviewDefaultComponentProps
   | IStoreListDefaultComponentProps
+  | IStoreOverviewDefaultComponentProps
   | never;

@@ -4,8 +4,7 @@ import { IModel as IEcommerceStore } from "@sps/ecommerce/models/store/sdk/model
 
 export type IComponentProps = ISpsComponentBase & {
   product: IEcommerceProduct;
-  store: IEcommerceStore;
-  billingModuleCurrencyId?: string;
+  store?: IEcommerceStore;
   language: string;
   variant: "me-ecommerce-product-action";
 };

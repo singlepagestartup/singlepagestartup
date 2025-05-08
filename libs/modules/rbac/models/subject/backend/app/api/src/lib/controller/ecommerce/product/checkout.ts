@@ -5,6 +5,7 @@ import { Service } from "../../../service";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
+import { api as ecommerceModuleStoreApi } from "@sps/ecommerce/models/store/sdk/server";
 
 export class Handler {
   service: Service;
@@ -47,10 +48,26 @@ export class Handler {
         throw new Error("Invalid JSON in body['data']. Got: " + body["data"]);
       }
 
-      const storeId = data.storeId;
+      let storeId = data.storeId;
 
       if (!storeId) {
-        throw new Error("No data.storeId provided");
+        const stores = await ecommerceModuleStoreApi.find({
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (stores?.length === 0) {
+          throw new Error("No stores found");
+        }
+
+        if (stores?.length && stores.length > 1) {
+          throw new Error("Multiple stores found. Pass 'data.storeId'");
+        }
+
+        storeId = stores?.[0]?.id;
       }
 
       const entity = await this.service.findById({ id });
