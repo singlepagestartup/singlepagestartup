@@ -16,7 +16,7 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const ecommerceProductsCart = api.ecommerceOrderCreate({});
+  const ecommerceProductsCart = api.ecommerceModuleOrderCreate({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

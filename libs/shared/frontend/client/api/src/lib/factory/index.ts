@@ -57,7 +57,7 @@ type SetRequestId = (requestId: string) => void;
 
 const activeSubscriptions = new Set<string>();
 
-function subscription(route: string, queryClient: QueryClient) {
+export function subscription(route: string, queryClient: QueryClient) {
   if (activeSubscriptions.has(route)) {
     return;
   }
@@ -85,11 +85,12 @@ function subscription(route: string, queryClient: QueryClient) {
           if (
             message.result?.["payload"] &&
             typeof message.result?.["payload"] === "string" &&
-            message.result["payload"].includes(route)
+            (route.includes(message.result["payload"]) ||
+              message.result["payload"].includes(route))
           ) {
             setTimeout(() => {
               queryClient.invalidateQueries({
-                queryKey: [message.result["payload"]],
+                queryKey: [route],
               });
             }, 1000);
           }
@@ -102,12 +103,15 @@ function subscription(route: string, queryClient: QueryClient) {
 export function factory<T>(factoryProps: IFactoryProps<T>) {
   const api = {
     findById: (props: {
-      id?: IFindByIdQueryProps<T>["id"];
+      id: IFindByIdQueryProps<T>["id"];
       params?: IFindByIdQueryProps<T>["params"];
       options?: IFindByIdQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
-      subscription(factoryProps.route, factoryProps.queryClient);
+      subscription(
+        `${factoryProps.route}/${props.id}`,
+        factoryProps.queryClient,
+      );
 
       return useQuery<T | undefined>({
         queryKey: props.id
@@ -123,7 +127,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
         queryFn: props.id
           ? findByIdQuery({
               ...factoryProps,
-              id: props.id,
               cb: (data) => {
                 addToGlobalStore({
                   name: factoryProps.route,
@@ -207,13 +210,13 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       });
     },
     update: (props?: {
-      id?: IUpdateMutationProps<T>["id"];
+      id: IUpdateMutationProps<T>["id"];
       params?: IUpdateMutationProps<T>["params"];
       options?: IUpdateMutationProps<T>["options"];
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
-      subscription(factoryProps.route, factoryProps.queryClient);
+      subscription(`${factoryProps.route}`, factoryProps.queryClient);
 
       return useMutation<T, DefaultError, IUpdateMutationFunctionProps>({
         mutationKey: props?.id

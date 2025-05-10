@@ -23,6 +23,8 @@ import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profil
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
+import { IComponentProps as IEcommerceModuleOrderTotalDefaultComponentProps } from "./ecommerce-module/order/total-default/interface";
+import { IComponentProps as IEcommerceModuleOrderQuantityDefaultComponentProps } from "./ecommerce-module/order/quantity-default/interface";
 
 export type IComponentProps =
   | ISocialModuleProfilesListDefaultComponentProps
@@ -50,4 +52,6 @@ export type IComponentProps =
   | IAuthenticationEmailAndPasswordResetPasswordComponentProps
   | IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps
   | ICrmModuleFormRequestCreateComponentProps
+  | IEcommerceModuleOrderTotalDefaultComponentProps
+  | IEcommerceModuleOrderQuantityDefaultComponentProps
   | never;

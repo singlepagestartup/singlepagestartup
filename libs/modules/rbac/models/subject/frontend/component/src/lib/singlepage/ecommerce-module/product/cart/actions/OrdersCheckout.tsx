@@ -40,7 +40,7 @@ export function Component(
     order: IOrder;
   },
 ) {
-  const checkoutEntity = api.ecommerceOrderCheckout({});
+  const checkoutEntity = api.ecommerceModuleOrderCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

@@ -103,11 +103,34 @@ export function Component(props: IComponentPropsExtended) {
                     <Role
                       key={index}
                       isServer={props.isServer}
-                      variant="default"
-                      data={{
-                        id: subjectToRole.roleId,
+                      variant="find"
+                      apiProps={{
+                        params: {
+                          filters: {
+                            and: [
+                              {
+                                column: "id",
+                                method: "eq",
+                                value: subjectToRole.roleId,
+                              },
+                            ],
+                          },
+                        },
                       }}
-                    />
+                    >
+                      {({ data }) => {
+                        return data?.map((role, index) => {
+                          return (
+                            <Role
+                              key={index}
+                              isServer={props.isServer}
+                              variant="default"
+                              data={role}
+                            />
+                          );
+                        });
+                      }}
+                    </Role>
                   );
                 });
               }}

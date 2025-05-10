@@ -6,7 +6,7 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IEntityFieldComponentProps } from "./entity-field-default/interface";
 import { IComponentProps as IAmountComponentProps } from "./amount/interface";
-
+import { IComponentProps as IIdTotalDefaultComponentProps } from "./id/total-default/interface";
 export type IComponentProps =
   | IFindComponentProps
   | IAdminTableRowComponentProps
@@ -16,4 +16,5 @@ export type IComponentProps =
   | IDefaultComponentProps
   | IEntityFieldComponentProps
   | IAmountComponentProps
+  | IIdTotalDefaultComponentProps
   | never;

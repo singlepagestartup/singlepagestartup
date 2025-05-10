@@ -1,3 +1,5 @@
+import { IComponentProps as IIdTotalDefaultComponentProps } from "./id/total-default/interface";
+import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -8,6 +10,8 @@ import { IComponentProps as ICreateComponentProps } from "./create/interface";
 import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
 
 export type IComponentProps =
+  | IIdTotalDefaultComponentProps
+  | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

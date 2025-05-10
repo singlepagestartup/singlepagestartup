@@ -128,7 +128,7 @@ export default function Client(props: IComponentProps) {
     }
 
     const amount = attributes.reduce((acc, attribute) => {
-      return acc + Number(attribute.number);
+      return acc + Number(attribute.number) * data.quantity;
     }, 0);
 
     setAmount(amount.toString());
@@ -138,7 +138,7 @@ export default function Client(props: IComponentProps) {
     if (data?.id) {
       getAmount();
     }
-  }, [data?.id]);
+  }, [data?.id, data?.quantity]);
 
   if (isFetching || isLoading || !amount) {
     return <></>;

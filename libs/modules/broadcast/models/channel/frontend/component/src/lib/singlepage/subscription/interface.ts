@@ -7,7 +7,7 @@ export const variant = "subscription" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;
-  data: Partial<IModel>;
+  data: IModel;
   apiProps?: {
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];

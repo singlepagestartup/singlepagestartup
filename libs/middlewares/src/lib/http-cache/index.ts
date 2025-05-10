@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
-import { KV_PROVIDER, KV_TTL } from "@sps/shared-utils";
+import { KV_PROVIDER, KV_TTL, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 
 export type IMiddlewareGeneric = {
@@ -83,10 +83,7 @@ export class Middleware {
             prefix: path,
           });
 
-          const pathWithoutId = path.replace(
-            /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}($|\?.*)/,
-            "",
-          );
+          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
 
           await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
@@ -112,10 +109,7 @@ export class Middleware {
             });
           }
 
-          const pathWithoutId = path.replace(
-            /\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}($|\?.*)/,
-            "",
-          );
+          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
 
           await this.storeProvider.delByPrefix({
             prefix: pathWithoutId,
@@ -133,10 +127,7 @@ export class Middleware {
         await this.storeProvider.delByPrefix({
           prefix: path,
         });
-        const pathWithoutId = path.replace(
-          /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
-          "",
-        );
+        const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
         await this.storeProvider.delByPrefix({
           prefix: pathWithoutId,
         });

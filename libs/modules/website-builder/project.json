@@ -57,9 +57,6 @@
             "command": "nx run @sps/website-builder:models:logotype:repository-generate"
           },
           {
-            "command": "nx run @sps/website-builder:models:modal:repository-generate"
-          },
-          {
             "command": "nx run @sps/website-builder:models:slide:repository-generate"
           },
           {
@@ -135,9 +132,6 @@
           },
           {
             "command": "nx run @sps/website-builder:models:logotype:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/website-builder:models:modal:repository-migrate"
           },
           {
             "command": "nx run @sps/website-builder:models:slide:repository-migrate"
@@ -305,35 +299,6 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/website-builder/models/logotype/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "models:modal:repository-generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "cwd": "libs/modules/website-builder/models/modal/backend/repository/database",
-        "commands": [
-          {
-            "command": "drizzle-kit up --config=./src/lib/config.ts"
-          },
-          {
-            "command": "drizzle-kit generate --config=./src/lib/config.ts"
-          }
-        ]
-      }
-    },
-    "models:modal:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/website-builder/models/modal/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

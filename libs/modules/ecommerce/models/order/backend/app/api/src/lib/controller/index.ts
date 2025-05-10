@@ -9,6 +9,8 @@ import { Handler as Update } from "./update";
 import { Handler as Check } from "./check";
 import { Handler as CheckoutAttributes } from "./checkout-attributes";
 import { Handler as ClearOldOrders } from "./clear-old-orders";
+import { Handler as Total } from "./total";
+import { Handler as Quantity } from "./quantity";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -70,6 +72,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/clear-old-orders",
         handler: this.clearOldOrders,
       },
+      {
+        method: "GET",
+        path: "/:id/total",
+        handler: this.total,
+      },
+      {
+        method: "GET",
+        path: "/:id/quantity",
+        handler: this.quantity,
+      },
     ]);
   }
 
@@ -91,5 +103,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async clearOldOrders(c: Context, next: any): Promise<Response> {
     return new ClearOldOrders(this.service).execute(c, next);
+  }
+
+  async total(c: Context, next: any): Promise<Response> {
+    return new Total(this.service).execute(c, next);
+  }
+
+  async quantity(c: Context, next: any): Promise<Response> {
+    return new Quantity(this.service).execute(c, next);
   }
 }

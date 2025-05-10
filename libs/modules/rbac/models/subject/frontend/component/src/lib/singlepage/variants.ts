@@ -23,7 +23,8 @@ import { Component as IdentityUpdateDefault } from "./identity/settings-default"
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
 import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
 import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/request/create";
-
+import { Component as EcommerceModuleOrderTotalDefault } from "./ecommerce-module/order/total-default";
+import { Component as EcommerceModuleOrderQuantityDefault } from "./ecommerce-module/order/quantity-default";
 export const variants = {
   "social-module-profiles-list-default": SocialModuleProfilesListDefault,
   find: Find,
@@ -56,4 +57,7 @@ export const variants = {
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
   "crm-module-form-request-create": CrmModuleFormRequestCreate,
+  "ecommerce-module-order-total-default": EcommerceModuleOrderTotalDefault,
+  "ecommerce-module-order-quantity-default":
+    EcommerceModuleOrderQuantityDefault,
 };

@@ -20,14 +20,17 @@ import { Handler as Check } from "./check";
 import { Handler as IdentitiesUpdate } from "./identity/update";
 import { Handler as IdentitiesCreate } from "./identity/create";
 import { Handler as IdentitiesDelete } from "./identity/delete";
-import { Handler as EcommerceProductsEnforce } from "./ecommerce/product/enforce";
-import { Handler as EcommerceOrdersCreate } from "./ecommerce/order/create";
-import { Handler as EcommerceOrdersUpdate } from "./ecommerce/order/update";
-import { Handler as EcommerceOrdersDelete } from "./ecommerce/order/delete";
-import { Handler as EcommerceOrdersCheckout } from "./ecommerce/order/checkout";
-import { Handler as EcommerceProductsCheckout } from "./ecommerce/product/checkout";
+import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/product/enforce";
+import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
+import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
+import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/order/id/delete";
+import { Handler as EcommerceModuleOrderIdCheckout } from "./ecommerce-module/order/id/checkout";
+import { Handler as EcommerceModuleOrderTotal } from "./ecommerce-module/order/total";
+import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/order/quantity";
+import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order/id/total";
+import { Handler as EcommerceModuleOrderIdQuantity } from "./ecommerce-module/order/id/quantity";
+import { Handler as EcommerceModuleProductsCheckout } from "./ecommerce-module/product/checkout";
 import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
-
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -133,33 +136,53 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/:id/ecommerce/orders",
-        handler: this.ecommerceOrdersCreate,
+        path: "/:id/ecommerce-module/orders",
+        handler: this.ecommerceModuleOrderCreate,
       },
       {
         method: "POST",
-        path: "/:id/ecommerce/products/:productId/checkout",
-        handler: this.ecommerceProductsCheckout,
+        path: "/:id/ecommerce-module/products/:productId/checkout",
+        handler: this.ecommerceModuleProductsCheckout,
       },
       {
         method: "POST",
-        path: "/:uuid/ecommerce/products/:productId/enforce",
-        handler: this.ecommerceProductsEnforce,
+        path: "/:uuid/ecommerce-module/products/:productId/enforce",
+        handler: this.ecommerceModuleProductsEnforce,
       },
       {
         method: "POST",
-        path: "/:id/ecommerce/orders/:orderId/checkout",
-        handler: this.ecommerceOrdersCheckout,
+        path: "/:id/ecommerce-module/orders/:orderId/checkout",
+        handler: this.ecommerceModuleOrderIdCheckout,
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders/quantity",
+        handler: this.ecommerceModuleOrderQuantity,
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders/total",
+        handler: this.ecommerceModuleOrderTotal,
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders/:orderId/quantity",
+        handler: this.ecommerceModuleOrderIdQuantity,
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders/:orderId/total",
+        handler: this.ecommerceModuleOrderIdTotal,
       },
       {
         method: "PATCH",
-        path: "/:id/ecommerce/orders/:orderId",
-        handler: this.ecommerceOrdersUpdate,
+        path: "/:id/ecommerce-module/orders/:orderId",
+        handler: this.ecommerceModuleOrderIdUpdate,
       },
       {
         method: "DELETE",
-        path: "/:id/ecommerce/orders/:orderId",
-        handler: this.ecommerceOrdersDelete,
+        path: "/:id/ecommerce-module/orders/:orderId",
+        handler: this.ecommerceModuleOrderIdDelete,
       },
       {
         method: "PATCH",
@@ -279,27 +302,55 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new IdentitiesDelete(this.service).execute(c, next);
   }
 
-  async ecommerceOrdersCreate(c: Context, next: any): Promise<Response> {
-    return new EcommerceOrdersCreate(this.service).execute(c, next);
+  async ecommerceModuleOrderCreate(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderCreate(this.service).execute(c, next);
   }
 
-  async ecommerceOrdersUpdate(c: Context, next: any): Promise<Response> {
-    return new EcommerceOrdersUpdate(this.service).execute(c, next);
+  async ecommerceModuleOrderIdUpdate(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderIdUpdate(this.service).execute(c, next);
   }
 
-  async ecommerceOrdersDelete(c: Context, next: any): Promise<Response> {
-    return new EcommerceOrdersDelete(this.service).execute(c, next);
+  async ecommerceModuleOrderIdDelete(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderIdDelete(this.service).execute(c, next);
   }
 
-  async ecommerceOrdersCheckout(c: Context, next: any): Promise<Response> {
-    return new EcommerceOrdersCheckout(this.service).execute(c, next);
+  async ecommerceModuleOrderIdCheckout(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new EcommerceModuleOrderIdCheckout(this.service).execute(c, next);
   }
 
-  async ecommerceProductsCheckout(c: Context, next: any): Promise<Response> {
-    return new EcommerceProductsCheckout(this.service).execute(c, next);
+  async ecommerceModuleProductsCheckout(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new EcommerceModuleProductsCheckout(this.service).execute(c, next);
   }
 
-  async ecommerceProductsEnforce(c: Context, next: any): Promise<Response> {
-    return new EcommerceProductsEnforce(this.service).execute(c, next);
+  async ecommerceModuleProductsEnforce(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new EcommerceModuleProductsEnforce(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderQuantity(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderQuantity(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderTotal(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderTotal(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderIdQuantity(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new EcommerceModuleOrderIdQuantity(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderIdTotal(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderIdTotal(this.service).execute(c, next);
   }
 }

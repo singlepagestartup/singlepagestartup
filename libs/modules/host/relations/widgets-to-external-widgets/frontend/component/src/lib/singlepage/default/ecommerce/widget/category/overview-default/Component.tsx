@@ -1,6 +1,6 @@
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce-product-action/Component";
+import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce/product/action/Component";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { Component as EcommerceModuleCategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
 import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";

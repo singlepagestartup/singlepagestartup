@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
+// import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -11,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      <SubjectsToIdentities
+      {/* <SubjectsToIdentities
         isServer={props.isServer}
         variant="find"
         apiProps={{
@@ -56,7 +56,7 @@ export function Component(props: IComponentPropsExtended) {
             );
           });
         }}
-      </SubjectsToIdentities>
+      </SubjectsToIdentities> */}
     </div>
   );
 }

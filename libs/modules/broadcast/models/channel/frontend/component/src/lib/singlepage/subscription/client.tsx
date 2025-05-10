@@ -1,14 +1,14 @@
 "use client";
 import "client-only";
 
-import { Component } from "./Component";
+import { Component as ChildComponent } from "./Component";
 import { ErrorBoundary } from "@sps/ui-adapter";
 import { Skeleton } from "./Skeleton";
 import { Error } from "./Error";
 import { IComponentProps } from "./interface";
 import { api } from "@sps/broadcast/models/channel/sdk/client";
 
-export default function Client(props: IComponentProps) {
+export function Component(props: IComponentProps) {
   const { data, isFetching, isLoading } = api.findById({
     id: props.data.id,
     ...props.apiProps,
@@ -20,7 +20,7 @@ export default function Client(props: IComponentProps) {
 
   return (
     <ErrorBoundary fallback={Error}>
-      <Component {...props} data={data} />
+      <ChildComponent {...props} data={data} />
     </ErrorBoundary>
   );
 }

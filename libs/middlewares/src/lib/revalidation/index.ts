@@ -2,10 +2,11 @@ import {
   HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
   STALE_TIME,
+  UUID_PATH_SUFFIX_REGEX,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
-import { websocketManager } from "@sps/backend-utils"; // Импорт WebSocket Manager
+import { websocketManager } from "@sps/backend-utils";
 
 export type IMiddlewareGeneric = unknown;
 
@@ -39,13 +40,21 @@ export class Middleware {
           });
 
           await this.revalidateTag(path);
+
+          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+
+          websocketManager.broadcastMessage({
+            slug: "revalidation",
+            payload: pathWithoutId,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
+          });
+
+          await this.revalidateTag(pathWithoutId);
         }
 
-        if (["POST", "DELETE"].includes(method)) {
-          const pathWithoutId = path.replace(
-            /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?*/,
-            "",
-          );
+        if (["DELETE"].includes(method)) {
+          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
 
           websocketManager.broadcastMessage({
             slug: "revalidation",

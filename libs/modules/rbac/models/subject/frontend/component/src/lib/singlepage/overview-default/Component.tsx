@@ -43,11 +43,34 @@ export function Component(props: IComponentPropsExtended) {
                   <Identity
                     key={index}
                     isServer={props.isServer}
-                    variant="default"
-                    data={{
-                      id: subjectToIdentity.identityId,
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "id",
+                              method: "eq",
+                              value: subjectToIdentity.identityId,
+                            },
+                          ],
+                        },
+                      },
                     }}
-                  />
+                  >
+                    {({ data: identitities }) => {
+                      return identitities?.map((identity, index) => {
+                        return (
+                          <Identity
+                            key={index}
+                            isServer={props.isServer}
+                            variant="default"
+                            data={identity}
+                          />
+                        );
+                      });
+                    }}
+                  </Identity>
                 );
               })}
             </div>

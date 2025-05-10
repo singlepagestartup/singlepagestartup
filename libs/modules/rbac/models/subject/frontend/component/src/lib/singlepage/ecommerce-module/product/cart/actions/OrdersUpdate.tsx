@@ -20,7 +20,7 @@ export function Component(
     order: IOrder;
   },
 ) {
-  const updateEntity = api.ecommerceOrderUpdate({});
+  const updateEntity = api.ecommerceModuleOrderUpdate({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

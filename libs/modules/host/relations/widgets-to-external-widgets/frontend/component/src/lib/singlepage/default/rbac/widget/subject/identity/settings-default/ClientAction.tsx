@@ -15,9 +15,7 @@ export function Component(props: ISpsComponentBase) {
           <RbacModuleSubject
             isServer={false}
             variant="identity-settings-default"
-            data={{
-              id: data.id,
-            }}
+            data={data}
           />
         );
       }}

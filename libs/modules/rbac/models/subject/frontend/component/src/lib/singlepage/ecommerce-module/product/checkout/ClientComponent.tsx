@@ -43,7 +43,7 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const productCheckout = api.ecommerceProductCheckout({});
+  const productCheckout = api.ecommerceModuleProductCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

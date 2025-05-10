@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 export interface IComponentProps<M extends { id: string }, V>
   extends ISpsComponentBase {
   variant: V;
-  data: Partial<M>;
+  data: M;
   apiProps?: {
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];

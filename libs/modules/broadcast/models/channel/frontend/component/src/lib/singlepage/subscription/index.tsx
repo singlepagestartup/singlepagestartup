@@ -1,6 +1,6 @@
 import { IComponentProps } from "./interface";
-import Client from "./client";
-import Server from "./server";
+import { Component as Client } from "./client";
+import { Component as Server } from "./server";
 import { Provider as ApiProvider } from "@sps/broadcast/models/channel/sdk/client";
 import { Suspense } from "react";
 

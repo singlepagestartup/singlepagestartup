@@ -7,7 +7,7 @@ import { Component as Skeleton } from "./Skeleton";
 import { ReactNode } from "react";
 
 export function Component<
-  M extends { id?: string },
+  M extends { id: string },
   V,
   A extends {
     api: ReturnType<typeof factory<M>>;
@@ -19,9 +19,10 @@ export function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
-  if (props.data) {
+
+  if (props.data?.id) {
     const { data, isLoading } = props.api.findById({
-      id: props.data?.id,
+      id: props.data.id,
       ...props.apiProps,
     });
 

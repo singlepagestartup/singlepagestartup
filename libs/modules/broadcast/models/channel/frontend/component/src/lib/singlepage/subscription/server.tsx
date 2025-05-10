@@ -5,9 +5,9 @@ import { ErrorBoundary } from "@sps/ui-adapter";
 import { IComponentProps } from "./interface";
 import { Error } from "./Error";
 import { api } from "@sps/broadcast/models/channel/sdk/server";
-import { Component } from "./Component";
+import { Component as ChildComponent } from "./Component";
 
-export default async function Server(props: IComponentProps) {
+export async function Component(props: IComponentProps) {
   try {
     if (!props.data.id) {
       return <></>;
@@ -24,7 +24,7 @@ export default async function Server(props: IComponentProps) {
 
     return (
       <ErrorBoundary fallback={Error}>
-        <Component {...props} data={data} />
+        <ChildComponent {...props} data={data} />
       </ErrorBoundary>
     );
   } catch (error) {
