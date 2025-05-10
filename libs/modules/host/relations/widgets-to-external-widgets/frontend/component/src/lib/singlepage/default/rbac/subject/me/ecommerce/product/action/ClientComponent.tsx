@@ -16,7 +16,7 @@ export function Component(props: IComponentProps) {
           <div className="w-full flex flex-col gap-4">
             <RbacModuleSubject
               isServer={false}
-              variant="ecommerce-module-product-checkout"
+              variant="ecommerce-module-product-checkout-default"
               data={subject}
               product={props.product}
               language={props.language}

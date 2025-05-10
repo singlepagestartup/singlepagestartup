@@ -74,7 +74,7 @@ export class Handler {
 
       if (!subjectsToEcommerceModuleOrders?.length) {
         return c.json({
-          data: [],
+          data: 0,
         });
       }
 
@@ -103,7 +103,7 @@ export class Handler {
 
       if (!ecommerceModuleOrdersWithCartType?.length) {
         return c.json({
-          data: [],
+          data: 0,
         });
       }
 

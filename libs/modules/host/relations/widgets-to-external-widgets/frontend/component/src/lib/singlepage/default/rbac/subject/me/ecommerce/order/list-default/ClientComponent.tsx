@@ -15,12 +15,20 @@ export function Component(props: IComponentProps) {
         }
 
         return (
-          <div className="w-full flex flex-col gap-4 p-5 bg-red-300">
+          <div className="w-fit flex flex-row items-center gap-2 p-5 bg-red-300">
             <RbacModuleSubject
               isServer={false}
               variant="ecommerce-module-order-quantity-default"
               data={subject}
               language={props.language}
+              className="w-fit"
+            ></RbacModuleSubject>
+            <RbacModuleSubject
+              isServer={false}
+              variant="ecommerce-module-order-total-default"
+              data={subject}
+              language={props.language}
+              className="w-fit"
             ></RbacModuleSubject>
 
             {/* <EcommerceModuleSubjectsToEcommerceModuleOrders

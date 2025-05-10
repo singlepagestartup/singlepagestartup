@@ -3,7 +3,6 @@ import "client-only";
 
 import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { Component as Child } from "./Component";
 
 export function Component(props: IComponentProps) {
   const { data } = api.ecommerceModuleOrderQuantity({
@@ -15,5 +14,9 @@ export function Component(props: IComponentProps) {
     return null;
   }
 
-  return <Child {...props} data={data} />;
+  if (props.children) {
+    return props.children({ data });
+  }
+
+  return <></>;
 }

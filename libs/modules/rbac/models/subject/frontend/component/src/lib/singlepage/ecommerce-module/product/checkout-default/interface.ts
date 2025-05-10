@@ -7,7 +7,7 @@ import {
 import { IModel as IProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { IModel as IStore } from "@sps/ecommerce/models/store/sdk/model";
 
-export const variant = "ecommerce-module-product-checkout" as const;
+export const variant = "ecommerce-module-product-checkout-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
