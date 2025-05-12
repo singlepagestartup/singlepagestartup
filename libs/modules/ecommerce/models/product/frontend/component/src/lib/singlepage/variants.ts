@@ -1,3 +1,4 @@
+import { Component as CartDefault } from "./cart/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -9,6 +10,7 @@ import { Component as PriceDefault } from "./price-default";
 import { Component as CurrencyToggleGroupDefault } from "./currency/toggle-group-default";
 
 export const variants = {
+  "cart-default": CartDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

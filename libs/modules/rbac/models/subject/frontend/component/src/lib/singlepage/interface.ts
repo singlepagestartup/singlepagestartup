@@ -1,3 +1,7 @@
+import { IComponentProps as IEcommerceModuleOrderCheckoutDefaultComponentProps } from "./ecommerce-module/order/checkout-default/interface";
+import { IComponentProps as IEcommerceModuleOrderUpdateDefaultComponentProps } from "./ecommerce-module/order/update-default/interface";
+import { IComponentProps as IEcommerceModuleOrderCreateDefaultComponentProps } from "./ecommerce-module/order/create-default/interface";
+import { IComponentProps as IEcommerceModuleOrderDeleteDefaultComponentProps } from "./ecommerce-module/order/delete-default/interface";
 import { IComponentProps as ISocialModuleProfilesListDefaultComponentProps } from "./social-module/profile/list/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -23,10 +27,14 @@ import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profil
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
-import { IComponentProps as IEcommerceModuleOrderTotalDefaultComponentProps } from "./ecommerce-module/order/total-default/interface";
-import { IComponentProps as IEcommerceModuleOrderQuantityDefaultComponentProps } from "./ecommerce-module/order/quantity-default/interface";
+import { IComponentProps as IEcommerceModuleOrderListTotalDefaultComponentProps } from "./ecommerce-module/order/list/total-default/interface";
+import { IComponentProps as IEcommerceModuleOrderListQuantityDefaultComponentProps } from "./ecommerce-module/order/list/quantity-default/interface";
 
 export type IComponentProps =
+  | IEcommerceModuleOrderCheckoutDefaultComponentProps
+  | IEcommerceModuleOrderUpdateDefaultComponentProps
+  | IEcommerceModuleOrderCreateDefaultComponentProps
+  | IEcommerceModuleOrderDeleteDefaultComponentProps
   | ISocialModuleProfilesListDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
@@ -52,6 +60,6 @@ export type IComponentProps =
   | IAuthenticationEmailAndPasswordResetPasswordComponentProps
   | IAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps
   | ICrmModuleFormRequestCreateComponentProps
-  | IEcommerceModuleOrderTotalDefaultComponentProps
-  | IEcommerceModuleOrderQuantityDefaultComponentProps
+  | IEcommerceModuleOrderListTotalDefaultComponentProps
+  | IEcommerceModuleOrderListQuantityDefaultComponentProps
   | never;

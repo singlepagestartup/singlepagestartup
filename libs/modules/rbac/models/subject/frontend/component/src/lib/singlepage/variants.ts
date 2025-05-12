@@ -1,3 +1,7 @@
+import { Component as EcommerceModuleOrderCheckoutDefault } from "./ecommerce-module/order/checkout-default";
+import { Component as EcommerceModuleOrderUpdateDefault } from "./ecommerce-module/order/update-default";
+import { Component as EcommerceModuleOrderCreateDefault } from "./ecommerce-module/order/create-default";
+import { Component as EcommerceModuleOrderDeleteDefault } from "./ecommerce-module/order/delete-default";
 import { Component as SocialModuleProfilesListDefault } from "./social-module/profile/list/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -23,9 +27,14 @@ import { Component as IdentityUpdateDefault } from "./identity/settings-default"
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
 import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } from "./authentication/email-and-password/reset-password-form-default";
 import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/request/create";
-import { Component as EcommerceModuleOrderTotalDefault } from "./ecommerce-module/order/total-default";
-import { Component as EcommerceModuleOrderQuantityDefault } from "./ecommerce-module/order/quantity-default";
+import { Component as EcommerceModuleOrderListTotalDefault } from "./ecommerce-module/order/list/total-default";
+import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerce-module/order/list/quantity-default";
 export const variants = {
+  "ecommerce-module-order-checkout-default":
+    EcommerceModuleOrderCheckoutDefault,
+  "ecommerce-module-order-update-default": EcommerceModuleOrderUpdateDefault,
+  "ecommerce-module-order-create-default": EcommerceModuleOrderCreateDefault,
+  "ecommerce-module-order-delete-default": EcommerceModuleOrderDeleteDefault,
   "social-module-profiles-list-default": SocialModuleProfilesListDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
@@ -58,7 +67,8 @@ export const variants = {
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,
   "crm-module-form-request-create": CrmModuleFormRequestCreate,
-  "ecommerce-module-order-total-default": EcommerceModuleOrderTotalDefault,
-  "ecommerce-module-order-quantity-default":
-    EcommerceModuleOrderQuantityDefault,
+  "ecommerce-module-order-list-total-default":
+    EcommerceModuleOrderListTotalDefault,
+  "ecommerce-module-order-list-quantity-default":
+    EcommerceModuleOrderListQuantityDefault,
 };

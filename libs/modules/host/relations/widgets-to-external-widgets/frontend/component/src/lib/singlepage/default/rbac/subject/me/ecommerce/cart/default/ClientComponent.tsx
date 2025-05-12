@@ -33,7 +33,7 @@ export function Component(props: IComponentProps) {
 
                 <RbacModuleSubject
                   isServer={false}
-                  variant="ecommerce-module-order-quantity-default"
+                  variant="ecommerce-module-order-list-quantity-default"
                   data={subject}
                   language={props.language}
                   className=""

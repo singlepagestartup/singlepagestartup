@@ -1,8 +1,9 @@
 "use client";
 
-import { IComponentPropsExtended } from "../interface";
+import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { useForm } from "react-hook-form";
+import { cn } from "@sps/shared-frontend-client-utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -41,16 +42,24 @@ export function Component(props: IComponentPropsExtended) {
   }, [ecommerceProductsCart.isSuccess]);
 
   return (
-    <Form {...form}>
-      <div className="flex w-full gap-1">
-        <Button
-          onClick={form.handleSubmit(onSubmit)}
-          variant="secondary"
-          className="w-full flex flex-shrink-0"
-        >
-          Add to cart
-        </Button>
-      </div>
-    </Form>
+    <div
+      data-module="rbac"
+      data-model="subject"
+      data-id={props.data?.id || ""}
+      data-variant={props.variant}
+      className={cn("w-full flex flex-col", props.className)}
+    >
+      <Form {...form}>
+        <div className="flex w-full gap-1">
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            variant="secondary"
+            className="w-full flex flex-shrink-0"
+          >
+            Add to cart
+          </Button>
+        </div>
+      </Form>
+    </div>
   );
 }

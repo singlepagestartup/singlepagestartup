@@ -29,6 +29,7 @@ export function Component(props: IComponentProps) {
               data={subject}
               product={props.product}
               store={props.store}
+              language={props.language}
             />
           </div>
         );

@@ -5,10 +5,10 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
-import { Component as OrdersCreate } from "./actions/OrdersCreate";
 import { Component as OrdersUpdate } from "./actions/OrdersUpdate";
 import { Component as OrdersDelete } from "./actions/OrdersDelete";
 import { Component as OrdersCheckout } from "./actions/OrdersCheckout";
+import { Component as OrderCreateDefault } from "../../order/create-default/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -38,7 +38,16 @@ export function Component(props: IComponentPropsExtended) {
       >
         {({ data: subjectsToEcommerceOrders }) => {
           if (!subjectsToEcommerceOrders) {
-            return <OrdersCreate {...props} />;
+            return (
+              <OrderCreateDefault
+                isServer={false}
+                variant="ecommerce-module-order-create-default"
+                language={props.language}
+                data={props.data}
+                product={props.product}
+                store={props.store}
+              />
+            );
           }
 
           return (
@@ -68,7 +77,16 @@ export function Component(props: IComponentPropsExtended) {
             >
               {({ data }) => {
                 if (!data || !data?.length) {
-                  return <OrdersCreate {...props} />;
+                  return (
+                    <OrderCreateDefault
+                      isServer={false}
+                      variant="ecommerce-module-order-create-default"
+                      language={props.language}
+                      data={props.data}
+                      product={props.product}
+                      store={props.store}
+                    />
+                  );
                 }
 
                 return (
@@ -94,7 +112,16 @@ export function Component(props: IComponentPropsExtended) {
                         !ordersWithCurrentProduct ||
                         !ordersWithCurrentProduct?.length
                       ) {
-                        return <OrdersCreate {...props} />;
+                        return (
+                          <OrderCreateDefault
+                            isServer={false}
+                            variant="ecommerce-module-order-create-default"
+                            language={props.language}
+                            data={props.data}
+                            product={props.product}
+                            store={props.store}
+                          />
+                        );
                       }
 
                       const cartOrdersWithCurrentProduct =
@@ -109,7 +136,16 @@ export function Component(props: IComponentPropsExtended) {
                         );
 
                       if (!cartOrdersWithCurrentProduct.length) {
-                        return <OrdersCreate {...props} />;
+                        return (
+                          <OrderCreateDefault
+                            isServer={false}
+                            variant="ecommerce-module-order-create-default"
+                            language={props.language}
+                            data={props.data}
+                            product={props.product}
+                            store={props.store}
+                          />
+                        );
                       }
 
                       return data?.map((order, index) => {
@@ -179,6 +215,7 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
+                                        language={props.language}
                                       />
                                       <OrdersDelete
                                         isServer={false}
@@ -186,6 +223,7 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
+                                        language={props.language}
                                       />
                                       <OrdersCheckout
                                         isServer={false}
@@ -193,6 +231,7 @@ export function Component(props: IComponentPropsExtended) {
                                         product={props.product}
                                         order={order}
                                         data={props.data}
+                                        language={props.language}
                                       />
                                     </div>
                                   );

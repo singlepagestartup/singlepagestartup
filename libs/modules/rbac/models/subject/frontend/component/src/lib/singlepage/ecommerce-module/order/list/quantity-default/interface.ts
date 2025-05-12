@@ -4,7 +4,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 import { type IProps, type IResult } from "@sps/rbac/models/subject/sdk/server";
 import { NextRequestOptions } from "@sps/shared-utils";
 
-export const variant = "ecommerce-module-order-quantity-default" as const;
+export const variant = "ecommerce-module-order-list-quantity-default" as const;
 
 export interface IComponentProps extends ISpsComponentBase {
   variant: typeof variant;

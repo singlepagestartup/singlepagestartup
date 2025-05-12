@@ -4,7 +4,7 @@ import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/fronten
 import { IComponentProps } from "./interface";
 import { Component as EcommerceModuleSubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
-import { Component as EcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
+import { Component as EcommerceOrder } from "../../../../../../ecommerce/order/Component";
 
 export function Component(props: IComponentProps) {
   return (
@@ -18,20 +18,20 @@ export function Component(props: IComponentProps) {
           <div className="w-fit flex flex-row items-center gap-2 p-5 bg-red-300">
             <RbacModuleSubject
               isServer={false}
-              variant="ecommerce-module-order-quantity-default"
+              variant="ecommerce-module-order-list-quantity-default"
               data={subject}
               language={props.language}
               className="w-fit"
             ></RbacModuleSubject>
             <RbacModuleSubject
               isServer={false}
-              variant="ecommerce-module-order-total-default"
+              variant="ecommerce-module-order-list-total-default"
               data={subject}
               language={props.language}
               className="w-fit"
             ></RbacModuleSubject>
 
-            {/* <EcommerceModuleSubjectsToEcommerceModuleOrders
+            <EcommerceModuleSubjectsToEcommerceModuleOrders
               isServer={false}
               variant="find"
               apiProps={{
@@ -75,51 +75,28 @@ export function Component(props: IComponentProps) {
                     }}
                   >
                     {({ data: ecommerceModuleOrders }) => {
-                      return ecommerceModuleOrders?.map(
-                        (ecommerceModuleOrder, index) => {
-                          return (
-                            <EcommerceModuleOrdersToProducts
-                              key={index}
-                              isServer={false}
-                              variant="find"
-                              apiProps={{
-                                params: {
-                                  filters: {
-                                    and: [
-                                      {
-                                        column: "orderId",
-                                        method: "eq",
-                                        value: ecommerceModuleOrder.id,
-                                      },
-                                    ],
-                                  },
-                                },
-                              }}
-                            >
-                              {({ data: ecommerceModuleOrdersToProducts }) => {
-                                return ecommerceModuleOrdersToProducts?.map(
-                                  (ecommerceModuleOrdersToProduct, index) => {
-                                    return (
-                                      <EcommerceModuleOrdersToProducts
-                                        key={index}
-                                        isServer={false}
-                                        variant="id-total-default"
-                                        data={ecommerceModuleOrdersToProduct}
-                                        language={props.language}
-                                      />
-                                    );
-                                  },
-                                );
-                              }}
-                            </EcommerceModuleOrdersToProducts>
-                          );
-                        },
+                      return (
+                        <div className="flex flex-col gap-1">
+                          {ecommerceModuleOrders?.map(
+                            (ecommerceModuleOrder, index) => {
+                              return (
+                                <EcommerceOrder
+                                  key={index}
+                                  isServer={false}
+                                  variant="default"
+                                  data={ecommerceModuleOrder}
+                                  language={props.language}
+                                />
+                              );
+                            },
+                          )}
+                        </div>
                       );
                     }}
                   </EcommerceModuleOrder>
                 );
               }}
-            </EcommerceModuleSubjectsToEcommerceModuleOrders> */}
+            </EcommerceModuleSubjectsToEcommerceModuleOrders>
           </div>
         );
       }}
