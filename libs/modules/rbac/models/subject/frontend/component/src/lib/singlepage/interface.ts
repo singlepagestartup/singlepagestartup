@@ -22,7 +22,7 @@ import { IComponentProps as IAuthenticationEmailAndPasswordRegistrationFormDefau
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as IIdentityGetEmailsComponentProps } from "./identity/get-emails/interface";
 import { IComponentProps as IEcommerceModuleProductCheckoutDefaultComponentProps } from "./ecommerce-module/product/checkout-default/interface";
-import { IComponentProps as IEcommerceModuleProductCartComponentProps } from "./ecommerce-module/product/cart/interface";
+import { IComponentProps as IEcommerceModuleProductCartDefaultComponentProps } from "./ecommerce-module/product/cart-default/interface";
 import { IComponentProps as IProfileButtonDefaultComponentProps } from "./profile-button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
@@ -45,7 +45,7 @@ export type IComponentProps =
   | IEcommerceModuleProductCheckoutDefaultComponentProps
   | IProfileButtonDefaultComponentProps
   | IOverviewDefaultComponentProps
-  | IEcommerceModuleProductCartComponentProps
+  | IEcommerceModuleProductCartDefaultComponentProps
   | IAuthenticationInitDefaultComponentProps
   | IAuthenticationEmailAndPasswordAuthenticationFormDefaultComponentProps
   | IAuthenticationLogoutActionComponentProps

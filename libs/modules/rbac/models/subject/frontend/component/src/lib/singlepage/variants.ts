@@ -20,7 +20,7 @@ import { Component as AuthenticationEthereumVirtualMachineDefault } from "./auth
 import { Component as AuthenticationMeDefault } from "./authentication/me-default";
 import { Component as GetEmails } from "./identity/get-emails";
 import { Component as EcommerceModuleProductCheckoutDefault } from "./ecommerce-module/product/checkout-default";
-import { Component as EcommerceModuleProductCart } from "./ecommerce-module/product/cart";
+import { Component as EcommerceModuleProductCartDefault } from "./ecommerce-module/product/cart-default";
 import { Component as ProfileButtonDefault } from "./profile-button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
@@ -62,7 +62,7 @@ export const variants = {
   "identity-settings-default": IdentityUpdateDefault,
   "ecommerce-module-product-checkout-default":
     EcommerceModuleProductCheckoutDefault,
-  "ecommerce-module-product-cart": EcommerceModuleProductCart,
+  "ecommerce-module-product-cart-default": EcommerceModuleProductCartDefault,
   "get-emails": GetEmails,
   "profile-button-default": ProfileButtonDefault,
   "overview-default": OverviewDefault,

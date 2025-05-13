@@ -4,7 +4,7 @@ import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/fronten
 import { IComponentProps } from "./interface";
 import { Component as EcommerceModuleSubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
-import { Component as EcommerceOrder } from "../../../../../../ecommerce/order/Component";
+import { Component as EcommerceOrder } from "../../../../../../../ecommerce/order/Component";
 
 export function Component(props: IComponentProps) {
   return (
@@ -86,7 +86,15 @@ export function Component(props: IComponentProps) {
                                   variant="default"
                                   data={ecommerceModuleOrder}
                                   language={props.language}
-                                />
+                                >
+                                  <RbacModuleSubject
+                                    isServer={false}
+                                    variant="ecommerce-module-order-delete-default"
+                                    data={subject}
+                                    language={props.language}
+                                    order={ecommerceModuleOrder}
+                                  />
+                                </EcommerceOrder>
                               );
                             },
                           )}

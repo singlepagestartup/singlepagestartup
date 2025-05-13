@@ -5,10 +5,10 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
-import { Component as OrdersUpdate } from "./actions/OrdersUpdate";
-import { Component as OrdersDelete } from "./actions/OrdersDelete";
-import { Component as OrdersCheckout } from "./actions/OrdersCheckout";
 import { Component as OrderCreateDefault } from "../../order/create-default/Component";
+import { Component as OrderUpdateDefault } from "../../order/update-default/Component";
+import { Component as OrderDeleteDefault } from "../../order/delete-default/Component";
+import { Component as OrderCheckoutDefault } from "../../order/checkout-default/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -209,25 +209,24 @@ export function Component(props: IComponentPropsExtended) {
                                       key={index}
                                       className="flex flex-col gap-2"
                                     >
-                                      <OrdersUpdate
+                                      <OrderUpdateDefault
                                         isServer={false}
-                                        variant={props.variant}
+                                        variant="ecommerce-module-order-update-default"
                                         product={props.product}
                                         order={order}
                                         data={props.data}
                                         language={props.language}
                                       />
-                                      <OrdersDelete
+                                      <OrderDeleteDefault
                                         isServer={false}
-                                        variant={props.variant}
-                                        product={props.product}
+                                        variant="ecommerce-module-order-delete-default"
                                         order={order}
                                         data={props.data}
                                         language={props.language}
                                       />
-                                      <OrdersCheckout
+                                      <OrderCheckoutDefault
                                         isServer={false}
-                                        variant={props.variant}
+                                        variant="ecommerce-module-order-checkout-default"
                                         product={props.product}
                                         order={order}
                                         data={props.data}

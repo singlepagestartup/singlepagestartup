@@ -105,82 +105,89 @@ export function Component(props: IComponentProps) {
                             return ecommerceModuleOrders?.map(
                               (ecommerceModuleOrder, index) => {
                                 return (
-                                  <EcommerceModuleOrdersToProducts
-                                    key={index}
+                                  <EcommerceModuleOrder
                                     isServer={false}
-                                    variant="find"
-                                    apiProps={{
-                                      params: {
-                                        filters: {
-                                          and: [
-                                            {
-                                              column: "orderId",
-                                              method: "eq",
-                                              value: ecommerceModuleOrder.id,
-                                            },
-                                          ],
-                                        },
-                                      },
-                                    }}
+                                    variant="default"
+                                    data={ecommerceModuleOrder}
+                                    language={props.language}
                                   >
-                                    {({
-                                      data: ecommerceModuleOrdersToProducts,
-                                    }) => {
-                                      return ecommerceModuleOrdersToProducts?.map(
-                                        (
-                                          ecommerceModuleOrdersToProduct,
-                                          index,
-                                        ) => {
-                                          return (
-                                            <EcommerceModuleProduct
-                                              key={index}
-                                              isServer={false}
-                                              variant="find"
-                                              apiProps={{
-                                                params: {
-                                                  filters: {
-                                                    and: [
-                                                      {
-                                                        column: "id",
-                                                        method: "eq",
-                                                        value:
-                                                          ecommerceModuleOrdersToProduct.productId,
-                                                      },
-                                                    ],
-                                                  },
-                                                },
-                                              }}
-                                            >
-                                              {({
-                                                data: ecommerceModuleProducts,
-                                              }) => {
-                                                return ecommerceModuleProducts?.map(
-                                                  (
-                                                    ecommerceModuleProduct,
-                                                    index,
-                                                  ) => {
-                                                    return (
-                                                      <EcommerceProduct
-                                                        key={index}
-                                                        isServer={false}
-                                                        variant="default"
-                                                        data={
-                                                          ecommerceModuleProduct
-                                                        }
-                                                        language={
-                                                          props.language
-                                                        }
-                                                      />
-                                                    );
-                                                  },
-                                                );
-                                              }}
-                                            </EcommerceModuleProduct>
-                                          );
+                                    <EcommerceModuleOrdersToProducts
+                                      key={index}
+                                      isServer={false}
+                                      variant="find"
+                                      apiProps={{
+                                        params: {
+                                          filters: {
+                                            and: [
+                                              {
+                                                column: "orderId",
+                                                method: "eq",
+                                                value: ecommerceModuleOrder.id,
+                                              },
+                                            ],
+                                          },
                                         },
-                                      );
-                                    }}
-                                  </EcommerceModuleOrdersToProducts>
+                                      }}
+                                    >
+                                      {({
+                                        data: ecommerceModuleOrdersToProducts,
+                                      }) => {
+                                        return ecommerceModuleOrdersToProducts?.map(
+                                          (
+                                            ecommerceModuleOrdersToProduct,
+                                            index,
+                                          ) => {
+                                            return (
+                                              <EcommerceModuleProduct
+                                                key={index}
+                                                isServer={false}
+                                                variant="find"
+                                                apiProps={{
+                                                  params: {
+                                                    filters: {
+                                                      and: [
+                                                        {
+                                                          column: "id",
+                                                          method: "eq",
+                                                          value:
+                                                            ecommerceModuleOrdersToProduct.productId,
+                                                        },
+                                                      ],
+                                                    },
+                                                  },
+                                                }}
+                                              >
+                                                {({
+                                                  data: ecommerceModuleProducts,
+                                                }) => {
+                                                  return ecommerceModuleProducts?.map(
+                                                    (
+                                                      ecommerceModuleProduct,
+                                                      index,
+                                                    ) => {
+                                                      return (
+                                                        <EcommerceProduct
+                                                          key={index}
+                                                          isServer={false}
+                                                          variant="cart-default"
+                                                          data={
+                                                            ecommerceModuleProduct
+                                                          }
+                                                          language={
+                                                            props.language
+                                                          }
+                                                        />
+                                                      );
+                                                    },
+                                                  );
+                                                }}
+                                              </EcommerceModuleProduct>
+                                            );
+                                          },
+                                        );
+                                      }}
+                                    </EcommerceModuleOrdersToProducts>
+                                  </EcommerceModuleOrder>
                                 );
                               },
                             );

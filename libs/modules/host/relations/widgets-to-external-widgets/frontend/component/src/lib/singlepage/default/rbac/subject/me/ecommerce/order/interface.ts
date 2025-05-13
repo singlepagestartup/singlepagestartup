@@ -1,3 +1,3 @@
-import { IComponentProps as IActionComponentProps } from "./list-default/interface";
+import { IComponentProps as IListComponentProps } from "./list/interface";
 
-export type IComponentProps = IActionComponentProps;
+export type IComponentProps = IListComponentProps;

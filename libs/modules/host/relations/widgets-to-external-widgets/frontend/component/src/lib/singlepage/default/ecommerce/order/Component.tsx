@@ -9,6 +9,7 @@ export function Component(props: IComponentProps) {
         language={props.language}
         variant={props.variant}
         data={props.data}
+        children={props.children}
       />
     );
   }

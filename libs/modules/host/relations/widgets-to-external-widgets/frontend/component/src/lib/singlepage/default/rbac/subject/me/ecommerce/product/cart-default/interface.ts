@@ -6,5 +6,5 @@ export type IComponentProps = ISpsComponentBase & {
   product: IEcommerceProduct;
   store?: IEcommerceStore;
   language: string;
-  variant: "me-ecommerce-product-action";
+  variant: "me-ecommerce-product-cart-default";
 };

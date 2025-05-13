@@ -37,7 +37,7 @@ export function Component(props: IComponentProps) {
         isServer={props.isServer}
         product={props.data}
         language={props.language}
-        variant="me-ecommerce-product-action"
+        variant="me-ecommerce-product-cart-default"
       />
     </EcommerceModuleProduct>
   );

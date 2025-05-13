@@ -5,16 +5,8 @@ import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations
 import { Component as ProductsToFileStorageModuleWidgets } from "@sps/ecommerce/relations/products-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  TipTap,
-} from "@sps/shared-ui-shadcn";
+import { Card, CardHeader, CardTitle } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
-import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -25,17 +17,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col justify-between", props.className)}
     >
-      <CardHeader>
-        <CardTitle>
-          <Link
-            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
-            className="w-fit"
-          >
-            {props.data.title?.[props.language]}
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="w-full flex flex-col mt-auto gap-2">
+      <CardHeader className="grid grid-cols-3 gap-2 p-2">
         <ProductsToFileStorageModuleWidgets
           isServer={props.isServer}
           variant="find"
@@ -71,100 +53,114 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToFileStorageModuleWidgets>
-        <ProductsToAttributes
-          isServer={props.isServer}
-          variant="find"
-          apiProps={{
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "productId",
-                    method: "eq",
-                    value: props.data.id,
-                  },
-                ],
-              },
-            },
-          }}
-        >
-          {({ data }) => {
-            return data?.map((productToAttribute, index) => {
-              return (
-                <AttributeKeysToAttributes
-                  key={index}
-                  isServer={props.isServer}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "attributeId",
-                            method: "eq",
-                            value: productToAttribute.attributeId,
-                          },
-                        ],
-                      },
+        <div className="text-sm flex flex-col gap-1">
+          <CardTitle>
+            <Link
+              href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
+              className="w-fit"
+            >
+              {props.data.title?.[props.language]}
+            </Link>
+          </CardTitle>
+          <ProductsToAttributes
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "productId",
+                      method: "eq",
+                      value: props.data.id,
                     },
-                  }}
-                >
-                  {({ data: attributeKeysToAttributes }) => {
-                    return attributeKeysToAttributes?.map(
-                      (attributeKeyToAttribute, index) => {
-                        return (
-                          <AttributeKey
-                            key={index}
-                            isServer={props.isServer}
-                            variant="find"
-                            apiProps={{
-                              params: {
-                                filters: {
-                                  and: [
-                                    {
-                                      column: "id",
-                                      method: "eq",
-                                      value:
-                                        attributeKeyToAttribute.attributeKeyId,
-                                    },
-                                  ],
-                                },
-                              },
-                            }}
-                          >
-                            {({ data }) => {
-                              return data?.map((attributeKey, index) => {
-                                return (
-                                  <div key={index} className="w-fit flex gap-2">
-                                    <AttributeKey
-                                      isServer={props.isServer}
-                                      variant="default"
-                                      data={attributeKey}
-                                      language={props.language}
-                                    />
-                                    <ProductsToAttributes
-                                      isServer={props.isServer}
-                                      variant="default"
-                                      data={productToAttribute}
-                                      attributeField={attributeKey.field}
-                                      language={props.language}
-                                    />
-                                  </div>
-                                );
-                              });
-                            }}
-                          </AttributeKey>
-                        );
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data }) => {
+              return data?.map((productToAttribute, index) => {
+                return (
+                  <AttributeKeysToAttributes
+                    key={index}
+                    isServer={props.isServer}
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "attributeId",
+                              method: "eq",
+                              value: productToAttribute.attributeId,
+                            },
+                          ],
+                        },
                       },
-                    );
-                  }}
-                </AttributeKeysToAttributes>
-              );
-            });
-          }}
-        </ProductsToAttributes>
-      </CardContent>
-      <CardFooter className="w-full flex flex-col">{props.children}</CardFooter>
+                    }}
+                  >
+                    {({ data: attributeKeysToAttributes }) => {
+                      return attributeKeysToAttributes?.map(
+                        (attributeKeyToAttribute, index) => {
+                          return (
+                            <AttributeKey
+                              key={index}
+                              isServer={props.isServer}
+                              variant="find"
+                              apiProps={{
+                                params: {
+                                  filters: {
+                                    and: [
+                                      {
+                                        column: "id",
+                                        method: "eq",
+                                        value:
+                                          attributeKeyToAttribute.attributeKeyId,
+                                      },
+                                    ],
+                                  },
+                                },
+                              }}
+                            >
+                              {({ data }) => {
+                                return data?.map((attributeKey, index) => {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="w-fit flex gap-2"
+                                    >
+                                      <AttributeKey
+                                        isServer={props.isServer}
+                                        variant="default"
+                                        data={attributeKey}
+                                        language={props.language}
+                                      />
+                                      <ProductsToAttributes
+                                        isServer={props.isServer}
+                                        variant="default"
+                                        data={productToAttribute}
+                                        attributeField={attributeKey.field}
+                                        language={props.language}
+                                      />
+                                    </div>
+                                  );
+                                });
+                              }}
+                            </AttributeKey>
+                          );
+                        },
+                      );
+                    }}
+                  </AttributeKeysToAttributes>
+                );
+              });
+            }}
+          </ProductsToAttributes>
+          {props.middleSlot}
+        </div>
+        <div>{props.children}</div>
+      </CardHeader>
     </Card>
   );
 }

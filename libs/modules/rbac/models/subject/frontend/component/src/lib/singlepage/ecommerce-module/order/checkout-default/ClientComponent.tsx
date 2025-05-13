@@ -1,8 +1,7 @@
 "use client";
 
-import { IComponentPropsExtended } from "../interface";
+import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { IModel as IOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,11 +34,7 @@ const formSchema = z.object({
   billingModuleCurrencyId: z.string(),
 });
 
-export function Component(
-  props: IComponentPropsExtended & {
-    order: IOrder;
-  },
-) {
+export function Component(props: IComponentPropsExtended) {
   const checkoutEntity = api.ecommerceModuleOrderCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({

@@ -74,6 +74,7 @@ export function Component(props: IComponentProps) {
                           );
                         }}
                       </EcommerceModuleProduct>
+                      {props.children}
                     </div>
                   );
                 },
