@@ -5,7 +5,6 @@ import * as jwt from "hono/jwt";
 import { authorization } from "@sps/backend-utils";
 import { Service } from "../../../../service";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 
 export class Handler {
   service: Service;
@@ -59,6 +58,12 @@ export class Handler {
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
+      if (decoded?.["subject"]?.["id"] !== id) {
+        throw new HTTPException(403, {
+          message: "Only order owner can update order",
+        });
+      }
+
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -74,9 +79,9 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      if (decoded?.["subject"]?.["id"] !== id) {
-        throw new HTTPException(403, {
-          message: "Only order owner can update order",
+      if (!data.ordersToProducts) {
+        throw new HTTPException(400, {
+          message: "No ordersToProducts provided",
         });
       }
 
@@ -111,53 +116,9 @@ export class Handler {
         });
       }
 
-      const quantity = data.quantity;
-
-      if (!quantity) {
-        throw new HTTPException(400, {
-          message: "No quantity provided",
-        });
-      }
-
-      if (quantity < 1) {
-        throw new HTTPException(400, {
-          message: "Quantity must be greater than 0",
-        });
-      }
-
-      const ordersToProducts = await ecommerceOrdersToProductsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "eq",
-                value: orderId,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!ordersToProducts?.length) {
-        throw new HTTPException(404, {
-          message: "No orders to products found",
-        });
-      }
-
-      const orderToProduct = ordersToProducts[0];
-
-      await ecommerceOrdersToProductsApi.update({
-        id: orderToProduct.id,
-        data: {
-          ...orderToProduct,
-          quantity,
-        },
+      await ecommerceOrderApi.update({
+        id: orderId,
+        data,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -168,7 +129,6 @@ export class Handler {
       return c.json({
         data: {
           ...entity,
-          data,
         },
       });
     } catch (error: any) {

@@ -11,7 +11,12 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
-  quantity: z.number(),
+  ordersToProducts: z.array(
+    z.object({
+      id: z.string(),
+      quantity: z.number(),
+    }),
+  ),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -20,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantity: 1,
+      ordersToProducts: [],
     },
   });
 
@@ -39,52 +44,60 @@ export function Component(props: IComponentPropsExtended) {
   }, [updateEntity.isSuccess]);
 
   return (
-    <EcommerceOrdersToProducts
-      isServer={false}
-      variant="find"
-      apiProps={{
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "eq",
-                value: props.order.id,
+    <Form {...form}>
+      <div className="flex flex-row gap-1">
+        <EcommerceOrdersToProducts
+          isServer={false}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "orderId",
+                    method: "eq",
+                    value: props.order.id,
+                  },
+                ],
               },
-              {
-                column: "productId",
-                method: "eq",
-                value: props.product.id,
-              },
-            ],
-          },
-        },
-      }}
-    >
-      {({ data }) => {
-        return data?.map((entity, index) => {
-          return (
-            <Form key={index} {...form}>
-              <div className="flex w-full gap-1">
-                <EcommerceOrdersToProducts
-                  isServer={false}
-                  variant="entity-field-default"
-                  field="quantity"
-                  data={entity}
-                  form={form}
-                />
-                <Button
-                  onClick={form.handleSubmit(onSubmit)}
-                  variant="secondary"
-                  className="w-fit flex flex-shrink-0"
-                >
-                  Update
-                </Button>
-              </div>
-            </Form>
-          );
-        });
-      }}
-    </EcommerceOrdersToProducts>
+            },
+          }}
+        >
+          {({ data }) => {
+            return data?.map((entity, index) => {
+              return (
+                <div key={index} className="flex w-full gap-1">
+                  <EcommerceOrdersToProducts
+                    isServer={false}
+                    variant="entity-field-default"
+                    field="id"
+                    data={entity}
+                    form={form}
+                    name={`ordersToProducts.${index}.id`}
+                    className="hidden"
+                  />
+                  <EcommerceOrdersToProducts
+                    isServer={false}
+                    variant="entity-field-default"
+                    field="quantity"
+                    data={entity}
+                    form={form}
+                    type="number"
+                    name={`ordersToProducts.${index}.quantity`}
+                  />
+                </div>
+              );
+            });
+          }}
+        </EcommerceOrdersToProducts>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          variant="secondary"
+          className="w-fit flex flex-shrink-0"
+        >
+          Update
+        </Button>
+      </div>
+    </Form>
   );
 }

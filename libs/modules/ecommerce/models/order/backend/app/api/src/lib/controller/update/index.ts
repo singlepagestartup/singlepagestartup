@@ -51,6 +51,59 @@ export class Handler {
 
       let entity = await this.service.update({ id: uuid, data });
 
+      if (data.ordersToProducts) {
+        const ordersToProducts = await ordersToProductsApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (!ordersToProducts?.length) {
+          throw new HTTPException(404, {
+            message: "No orders to products found",
+          });
+        }
+
+        for (const orderToProduct of data.ordersToProducts) {
+          const existingOrderToProduct = ordersToProducts.find(
+            (item) => item.id === orderToProduct.id,
+          );
+
+          if (existingOrderToProduct) {
+            await api.ordersToProductsUpdate({
+              id: uuid,
+              orderToProductId: orderToProduct.id,
+              data: {
+                ...existingOrderToProduct,
+                quantity: orderToProduct.quantity,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
+        }
+
+        return c.json({
+          data: entity,
+        });
+      }
+
       if (
         entity?.status === "approving" &&
         previousEntity?.status === "paying"

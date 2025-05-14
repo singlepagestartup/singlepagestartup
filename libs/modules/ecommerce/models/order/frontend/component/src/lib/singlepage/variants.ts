@@ -1,4 +1,3 @@
-import { Component as IdTotalDefault } from "./id/total-default";
 import { Component as OrdersToProductsQuantityDefault } from "./orders-to-products/quantity/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -8,9 +7,9 @@ import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
 import { Component as Create } from "./create";
 import { Component as Delete } from "./delete";
+import { Component as CartDefault } from "./cart-default";
 
 export const variants = {
-  "id-total-default": IdTotalDefault,
   "orders-to-products-quantity-default": OrdersToProductsQuantityDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
@@ -20,4 +19,5 @@ export const variants = {
   default: Default,
   create: Create,
   delete: Delete,
+  "cart-default": CartDefault,
 };

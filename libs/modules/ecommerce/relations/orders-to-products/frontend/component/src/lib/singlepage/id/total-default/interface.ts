@@ -18,7 +18,7 @@ export interface IComponentProps extends ISpsComponentBase {
     params?: IProps["ITotalProps"];
     options?: Partial<NextRequestOptions>;
   };
-  children?: ReactNode;
+  children?: (props: { data: IResult["ITotalResult"] }) => ReactNode;
   className?: string;
 }
 

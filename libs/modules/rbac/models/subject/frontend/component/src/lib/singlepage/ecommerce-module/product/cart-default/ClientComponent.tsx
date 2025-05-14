@@ -212,7 +212,6 @@ export function Component(props: IComponentPropsExtended) {
                                       <OrderUpdateDefault
                                         isServer={false}
                                         variant="ecommerce-module-order-update-default"
-                                        product={props.product}
                                         order={order}
                                         data={props.data}
                                         language={props.language}

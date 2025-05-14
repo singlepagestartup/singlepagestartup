@@ -7,22 +7,21 @@ import { useEffect } from "react";
 
 export function Component(props: IComponentPropsExtended) {
   useEffect(() => {
-    const q = props.form.getValues("quantity");
-    props.form.setValue("quantity", props.data?.quantity || 0);
-  }, [props.data.quantity]);
+    props.form.setValue(props.name, props.data[props.field] || 0);
+  }, [props.data, props.name, props.field]);
 
   return (
     <FormField
       ui="shadcn"
-      type="number"
-      name={props.field}
+      type={props.type || "text"}
+      name={props.name}
       form={props.form}
-      placeholder="Type quantity"
+      placeholder={props.placeholder}
       data-module="ecommerce"
       data-relation="orders-to-products"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className)}
+      className={cn("w-full flex", props.data.className, props.className)}
     />
   );
 }

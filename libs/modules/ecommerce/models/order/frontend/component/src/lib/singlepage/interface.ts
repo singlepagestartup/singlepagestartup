@@ -1,4 +1,3 @@
-import { IComponentProps as IIdTotalDefaultComponentProps } from "./id/total-default/interface";
 import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
@@ -8,9 +7,8 @@ import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interf
 import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as ICreateComponentProps } from "./create/interface";
 import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
-
+import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
 export type IComponentProps =
-  | IIdTotalDefaultComponentProps
   | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
@@ -20,4 +18,5 @@ export type IComponentProps =
   | IDefaultComponentProps
   | ICreateComponentProps
   | IDeleteComponentProps
+  | ICartDefaultComponentProps
   | never;

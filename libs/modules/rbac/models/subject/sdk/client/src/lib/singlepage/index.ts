@@ -85,10 +85,15 @@ import {
   type IResult as IEcommerceModuleOrderUpdateResult,
 } from "./ecommerce-module/order/id/update";
 import {
+  action as ecommerceModuleOrderIdCheckout,
+  type IProps as IEcommerceModuleOrderIdCheckoutProps,
+  type IResult as IEcommerceModuleOrderIdCheckoutResult,
+} from "./ecommerce-module/order/id/checkout";
+import {
   action as ecommerceModuleOrderCheckout,
   type IProps as IEcommerceModuleOrderCheckoutProps,
   type IResult as IEcommerceModuleOrderCheckoutResult,
-} from "./ecommerce-module/order/id/checkout";
+} from "./ecommerce-module/order/checkout";
 import {
   action as ecommerceModuleOrderDelete,
   type IProps as IEcommerceModuleOrderDeleteProps,
@@ -137,6 +142,7 @@ export type IProps = {
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
   IEcommerceModuleOrderTotalProps: IEcommerceModuleOrderTotalProps;
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
+  IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
 };
 
 export type IResult = {
@@ -161,6 +167,7 @@ export type IResult = {
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
   IEcommerceModuleOrderTotalResult: IEcommerceModuleOrderTotalResult;
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
+  IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
 };
 
 export const api = {
@@ -192,4 +199,5 @@ export const api = {
   crmModuleFromRequestCreate,
   ecommerceModuleOrderTotal,
   ecommerceModuleOrderQuantity,
+  ecommerceModuleOrderIdCheckout,
 };

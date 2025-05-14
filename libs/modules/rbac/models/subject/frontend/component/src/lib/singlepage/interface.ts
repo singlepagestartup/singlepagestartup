@@ -1,4 +1,5 @@
 import { IComponentProps as IEcommerceModuleOrderCheckoutDefaultComponentProps } from "./ecommerce-module/order/checkout-default/interface";
+import { IComponentProps as IEcommerceModuleOrderListCheckoutDefaultComponentProps } from "./ecommerce-module/order/list/checkout-default/interface";
 import { IComponentProps as IEcommerceModuleOrderUpdateDefaultComponentProps } from "./ecommerce-module/order/update-default/interface";
 import { IComponentProps as IEcommerceModuleOrderCreateDefaultComponentProps } from "./ecommerce-module/order/create-default/interface";
 import { IComponentProps as IEcommerceModuleOrderDeleteDefaultComponentProps } from "./ecommerce-module/order/delete-default/interface";
@@ -32,6 +33,7 @@ import { IComponentProps as IEcommerceModuleOrderListQuantityDefaultComponentPro
 
 export type IComponentProps =
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
+  | IEcommerceModuleOrderListCheckoutDefaultComponentProps
   | IEcommerceModuleOrderUpdateDefaultComponentProps
   | IEcommerceModuleOrderCreateDefaultComponentProps
   | IEcommerceModuleOrderDeleteDefaultComponentProps

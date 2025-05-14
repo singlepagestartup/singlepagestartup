@@ -3,7 +3,6 @@ import "client-only";
 
 import { IComponentProps } from "./interface";
 import { api } from "@sps/ecommerce/relations/orders-to-products/sdk/client";
-import { Component as Child } from "./Component";
 
 export function Component(props: IComponentProps) {
   const { data } = api.total({
@@ -15,5 +14,9 @@ export function Component(props: IComponentProps) {
     return null;
   }
 
-  return <Child {...props} data={data} />;
+  if (props.children) {
+    return props.children({ data });
+  }
+
+  return <></>;
 }

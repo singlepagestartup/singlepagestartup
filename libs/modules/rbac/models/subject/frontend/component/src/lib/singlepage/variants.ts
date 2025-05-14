@@ -1,4 +1,5 @@
 import { Component as EcommerceModuleOrderCheckoutDefault } from "./ecommerce-module/order/checkout-default";
+import { Component as EcommerceModuleOrderListCheckoutDefault } from "./ecommerce-module/order/list/checkout-default";
 import { Component as EcommerceModuleOrderUpdateDefault } from "./ecommerce-module/order/update-default";
 import { Component as EcommerceModuleOrderCreateDefault } from "./ecommerce-module/order/create-default";
 import { Component as EcommerceModuleOrderDeleteDefault } from "./ecommerce-module/order/delete-default";
@@ -32,6 +33,8 @@ import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerc
 export const variants = {
   "ecommerce-module-order-checkout-default":
     EcommerceModuleOrderCheckoutDefault,
+  "ecommerce-module-order-list-checkout-default":
+    EcommerceModuleOrderListCheckoutDefault,
   "ecommerce-module-order-update-default": EcommerceModuleOrderUpdateDefault,
   "ecommerce-module-order-create-default": EcommerceModuleOrderCreateDefault,
   "ecommerce-module-order-delete-default": EcommerceModuleOrderDeleteDefault,

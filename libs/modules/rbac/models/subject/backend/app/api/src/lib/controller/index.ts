@@ -31,6 +31,8 @@ import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order
 import { Handler as EcommerceModuleOrderIdQuantity } from "./ecommerce-module/order/id/quantity";
 import { Handler as EcommerceModuleProductsCheckout } from "./ecommerce-module/product/checkout";
 import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
+import { Handler as EcommerceModuleOrderCheckout } from "./ecommerce-module/order/checkout";
+
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   service: Service;
@@ -163,6 +165,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/ecommerce-module/orders/total",
         handler: this.ecommerceModuleOrderTotal,
+      },
+      {
+        method: "POST",
+        path: "/:id/ecommerce-module/orders/checkout",
+        handler: this.ecommerceModuleOrderCheckout,
       },
       {
         method: "GET",
@@ -352,5 +359,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderIdTotal(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderIdTotal(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderCheckout(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderCheckout(this.service).execute(c, next);
   }
 }

@@ -11,6 +11,7 @@ import { Handler as CheckoutAttributes } from "./checkout-attributes";
 import { Handler as ClearOldOrders } from "./clear-old-orders";
 import { Handler as Total } from "./total";
 import { Handler as Quantity } from "./quantity";
+import { Handler as OrdersToProductsUpdate } from "./orders-to-products/update";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -82,6 +83,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:id/quantity",
         handler: this.quantity,
       },
+      {
+        method: "PATCH",
+        path: "/:id/orders-to-products/:orderToProductId",
+        handler: this.ordersToProductsUpdate,
+      },
     ]);
   }
 
@@ -111,5 +117,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async quantity(c: Context, next: any): Promise<Response> {
     return new Quantity(this.service).execute(c, next);
+  }
+
+  async ordersToProductsUpdate(c: Context, next: any): Promise<Response> {
+    return new OrdersToProductsUpdate(this.service).execute(c, next);
   }
 }

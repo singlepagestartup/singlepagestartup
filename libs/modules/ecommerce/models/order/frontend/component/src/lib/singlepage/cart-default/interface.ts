@@ -1,20 +1,16 @@
-export { type IModel } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import { IModel } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+export { type IModel } from "@sps/ecommerce/models/order/sdk/model";
+import { IModel } from "@sps/ecommerce/models/order/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
-import { UseFormReturn } from "react-hook-form";
 
-export const variant = "entity-field-default" as const;
+export const variant = "cart-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
-  form: UseFormReturn<any>;
-  field: string;
-  placeholder?: string;
-  name: string;
-  type?: any;
+  language: string;
+  billingModuleCurrencyId?: string;
 }
 
 export interface IComponentPropsExtended

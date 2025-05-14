@@ -20,17 +20,17 @@ export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
-export type IResult = IParentResult["IEcommerceModuleOrderIdCheckoutResult"];
+export type IResult = IParentResult["IEcommerceModuleOrderCheckoutResult"];
 
 export function action(props: IProps) {
   return useMutation<
-    IParentResult["IEcommerceModuleOrderIdCheckoutResult"],
+    IResult,
     DefaultError,
-    IParentProps["IEcommerceModuleOrderIdCheckoutProps"]
+    IParentProps["IEcommerceModuleOrderCheckoutProps"]
   >({
-    mutationKey: [`${route}/:id/ecommerce-module/orders/:orderId/checkout`],
+    mutationKey: [`${route}/:id/ecommerce-module/orders/checkout`],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["IEcommerceModuleOrderIdCheckoutProps"],
+      mutationFunctionProps: IParentProps["IEcommerceModuleOrderCheckoutProps"],
     ) => {
       try {
         const result = await api.ecommerceModuleOrderCheckout({
@@ -52,7 +52,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/:id/ecommerce-module/orders/:orderId/checkout`,
+        name: `${route}/:id/ecommerce-module/orders/checkout`,
         props: this,
         result: data,
         timestamp: Date.now(),

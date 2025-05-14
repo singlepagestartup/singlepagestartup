@@ -8,8 +8,6 @@ export function Component(props: IComponentPropsExtended) {
       variant={props.variant}
       data={props.data}
       language={props.language}
-      order={props.order}
-      store={props.store}
     />
   );
 }

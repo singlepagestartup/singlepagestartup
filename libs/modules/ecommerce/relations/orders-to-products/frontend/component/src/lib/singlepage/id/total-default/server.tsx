@@ -3,7 +3,6 @@ import "server-only";
 
 import { IComponentProps } from "./interface";
 import { api } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { Component as Child } from "./Component";
 
 export async function Component(props: IComponentProps) {
   const data = await api.total({
@@ -15,5 +14,9 @@ export async function Component(props: IComponentProps) {
     return null;
   }
 
-  return <Child {...props} data={data} />;
+  if (props.children) {
+    return props.children({ data });
+  }
+
+  return <></>;
 }
