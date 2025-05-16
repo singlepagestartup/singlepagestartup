@@ -31,7 +31,11 @@ import {
 import {
   Service as EcommerceOrderNotificationCreate,
   IExecuteProps as IEcommerceOrderNotificationCreateExecuteProps,
-} from "./ecommerce/order-notification-create";
+} from "./ecommerce/order/notification-create";
+import {
+  Service as EcommerceOrderCheckout,
+  IExecuteProps as IEcommerceOrderCheckoutExecuteProps,
+} from "./ecommerce/order/checkout";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -77,5 +81,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: IEcommerceOrderNotificationCreateExecuteProps,
   ) {
     return new EcommerceOrderNotificationCreate(this.repository).execute(props);
+  }
+
+  async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
+    return new EcommerceOrderCheckout(this.repository).execute(props);
   }
 }

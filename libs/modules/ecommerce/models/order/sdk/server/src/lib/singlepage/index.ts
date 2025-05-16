@@ -7,11 +7,6 @@ import {
   options,
 } from "@sps/ecommerce/models/order/sdk/model";
 import {
-  action as checkout,
-  type IProps as ICheckoutProps,
-  type IResult as ICheckoutResult,
-} from "./checkout";
-import {
   action as checkoutAttributes,
   type IProps as ICheckoutAttributesProps,
   type IResult as ICheckoutAttributesResult,
@@ -38,7 +33,6 @@ import {
 } from "./orders-to-products/update";
 
 export type IProps = {
-  ICheckoutProps: ICheckoutProps;
   ICheckoutAttributesProps: ICheckoutAttributesProps;
   IChearOldOrdersProps: IChearOldOrdersProps;
   ITotalProps: ITotalProps;
@@ -47,7 +41,6 @@ export type IProps = {
 };
 
 export type IResult = {
-  ICheckoutResult: ICheckoutResult;
   ICheckoutAttributesResult: ICheckoutAttributesResult;
   IChearOldOrdersResult: IChearOldOrdersResult;
   ITotalResult: ITotalResult;
@@ -62,7 +55,6 @@ export const api = {
     options,
     params: query,
   }),
-  checkout,
   checkoutAttributes,
   clearOldOrders,
   total,

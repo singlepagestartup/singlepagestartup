@@ -7,7 +7,6 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { FormField } from "@sps/ui-adapter";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 
@@ -39,7 +38,11 @@ const formSchema = z.object({
   quantity: z.number().int().positive(),
   comment: z.string().optional(),
   storeId: z.string().optional(),
-  billingModuleCurrencyId: z.string().optional(),
+  billingModule: z.object({
+    currency: z.object({
+      id: z.string().optional(),
+    }),
+  }),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -53,27 +56,26 @@ export function Component(props: IComponentPropsExtended) {
       quantity: 1,
       comment: "",
       storeId: props.store?.id || undefined,
-      billingModuleCurrencyId: "",
+      billingModule: {
+        currency: {
+          id: undefined,
+        },
+      },
     },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    productCheckout.mutate({
-      id: props.data.id,
-      productId: props.product.id,
-      data,
-    });
+    productCheckout
+      .mutateAsync({
+        id: props.data.id,
+        productId: props.product.id,
+        data,
+      })
+      .then((result) => {
+        const paymentUrl = result.billingModule.invoices[0].paymentUrl;
+        window.location.href = paymentUrl;
+      });
   }
-
-  useEffect(() => {
-    if (productCheckout.isSuccess) {
-      const paymentUrl =
-        productCheckout.data.subjectsToEcommerceModuleOrders[0].order
-          .ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent
-          .invoices[0].paymentUrl;
-      window.location.href = paymentUrl;
-    }
-  }, [productCheckout.isSuccess]);
 
   return (
     <div
@@ -125,7 +127,7 @@ export function Component(props: IComponentPropsExtended) {
           >
             <div className="w-full flex justify-center items-center gap-1">
               One step checkout
-              {form.watch("billingModuleCurrencyId") ? (
+              {form.watch("billingModule.currency.id") ? (
                 <div className="w-fit flex items-center gap-2">
                   for
                   <EcommerceProduct
@@ -134,7 +136,7 @@ export function Component(props: IComponentPropsExtended) {
                     data={props.product}
                     className="text-white"
                     billingModuleCurrencyId={form.watch(
-                      "billingModuleCurrencyId",
+                      "billingModule.currency.id",
                     )}
                     language={props.language}
                   />

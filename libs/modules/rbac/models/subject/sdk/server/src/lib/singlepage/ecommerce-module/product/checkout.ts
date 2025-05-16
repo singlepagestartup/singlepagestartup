@@ -21,16 +21,10 @@ export interface IProps {
   data?: any;
 }
 
-export type IResult = IModel & {
-  subjectsToEcommerceModuleOrders: {
-    order: {
-      ordersToBillingModulePaymentIntents: {
-        billingModulePaymentIntent: {
-          invoices: IInvoice[];
-        };
-      }[];
-    };
-  }[];
+export type IResult = {
+  billingModule: {
+    invoices: IInvoice[];
+  };
 };
 
 export async function action(props: IProps): Promise<IResult> {

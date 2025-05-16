@@ -83,7 +83,13 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   return (
-    <Form {...form}>
+    <Form
+      data-module="rbac"
+      data-model="subject"
+      data-model-id={props.data.id}
+      data-variant={props.data.variant}
+      {...form}
+    >
       <div className="flex flex-col w-full gap-2">
         <SubjectsToEcommerceModuleOrders
           isServer={false}

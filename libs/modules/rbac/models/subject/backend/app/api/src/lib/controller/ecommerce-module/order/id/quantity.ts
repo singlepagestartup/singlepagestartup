@@ -105,14 +105,8 @@ export class Handler {
         email: data["email"],
       });
 
-      const result = await this.service.ecommerceOrdersCheckout({
-        id: id,
-        orderId: orderId,
-        data,
-      });
-
       return c.json({
-        data: result,
+        data: true,
       });
     } catch (error: any) {
       throw new HTTPException(500, {

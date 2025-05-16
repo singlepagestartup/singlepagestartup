@@ -1,7 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../service";
+import { Service } from "../../../../service";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
@@ -106,10 +106,19 @@ export class Handler {
         },
       });
 
-      const result = await this.service.ecommerceOrderNotificationCreate({
+      const result = await this.service.ecommerceOrderCheckout({
         id,
-        orderId: order.id,
-        data,
+        email: data.email,
+        provider: data.provider,
+        ecommerceModule: {
+          orders: [{ id: order.id }],
+        },
+        comment: data.comment,
+        billingModule: {
+          currency: {
+            id: data.billingModule?.currency?.id,
+          },
+        },
       });
 
       return c.json({ data: result });

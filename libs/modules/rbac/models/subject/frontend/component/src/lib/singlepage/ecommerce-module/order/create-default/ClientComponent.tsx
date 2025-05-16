@@ -55,8 +55,9 @@ export function Component(props: IComponentPropsExtended) {
             onClick={form.handleSubmit(onSubmit)}
             variant="secondary"
             className="w-full flex flex-shrink-0"
+            disabled={ecommerceProductsCart.isPending}
           >
-            Add to cart
+            {ecommerceProductsCart.isPending ? "Adding..." : "Add to cart"}
           </Button>
         </div>
       </Form>
