@@ -22,7 +22,7 @@ import { Component as AuthenticationMeDefault } from "./authentication/me-defaul
 import { Component as GetEmails } from "./identity/get-emails";
 import { Component as EcommerceModuleProductCheckoutDefault } from "./ecommerce-module/product/checkout-default";
 import { Component as EcommerceModuleProductCartDefault } from "./ecommerce-module/product/cart-default";
-import { Component as ProfileButtonDefault } from "./profile-button-default";
+import { Component as AuthenticationButtonDefault } from "./authentication/button-default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as IdentityUpdateDefault } from "./identity/settings-default";
 import { Component as AuthenticationEmailAndPasswordForgotPasswordFormDefault } from "./authentication/email-and-password/forgot-password-form-default";
@@ -67,7 +67,7 @@ export const variants = {
     EcommerceModuleProductCheckoutDefault,
   "ecommerce-module-product-cart-default": EcommerceModuleProductCartDefault,
   "get-emails": GetEmails,
-  "profile-button-default": ProfileButtonDefault,
+  "authentication-button-default": AuthenticationButtonDefault,
   "overview-default": OverviewDefault,
   "crm-module-form-request-create": CrmModuleFormRequestCreate,
   "ecommerce-module-order-list-total-default":

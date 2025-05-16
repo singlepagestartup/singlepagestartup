@@ -46,7 +46,7 @@ export function Component(props: IComponentProps) {
 
                 return (
                   <RbacModuleSubject
-                    variant="profile-button-default"
+                    variant="authentication-button-default"
                     data={subject}
                     isServer={false}
                   />

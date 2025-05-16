@@ -35,7 +35,7 @@ export function Component(props: IComponentPropsExtended) {
                 <RbacSubject
                   isServer={props.isServer}
                   language={props.language}
-                  variant="me-ecommerce-order-list-checkout-default"
+                  variant="me-ecommerce-module-cart-default"
                 />
               ) : null}
             </WebsiteBuilderModuleWidget>

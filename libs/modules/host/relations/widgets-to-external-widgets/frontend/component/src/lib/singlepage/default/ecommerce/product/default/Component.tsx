@@ -38,14 +38,14 @@ export function Component(props: IComponentProps) {
           isServer={props.isServer}
           product={props.data}
           language={props.language}
-          variant="me-ecommerce-product-cart-default"
+          variant="me-ecommerce-module-product-cart-default"
           className="w-full"
         />
         <RbacSubject
           isServer={props.isServer}
           product={props.data}
           language={props.language}
-          variant="me-ecommerce-product-checkout-default"
+          variant="me-ecommerce-module-product-checkout-default"
           className="w-full"
         />
       </>

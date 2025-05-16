@@ -1,6 +1,6 @@
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as EcommerceModuleStore } from "@sps/ecommerce/models/store/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce/product/cart-default/Component";
+import { Component as RbacSubject } from "../../../../rbac/subject/me/ecommerce-module/product/cart-default/Component";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { Component as EcommerceModuleCategoriesToProducts } from "@sps/ecommerce/relations/categories-to-products/frontend/component";
 import { Component as EcommerceModuleStoresToProducts } from "@sps/ecommerce/relations/stores-to-products/frontend/component";
@@ -160,7 +160,7 @@ export function Component(
                                                               language={
                                                                 props.language
                                                               }
-                                                              variant="me-ecommerce-product-cart-default"
+                                                              variant="me-ecommerce-module-product-cart-default"
                                                             />
                                                           );
                                                         },

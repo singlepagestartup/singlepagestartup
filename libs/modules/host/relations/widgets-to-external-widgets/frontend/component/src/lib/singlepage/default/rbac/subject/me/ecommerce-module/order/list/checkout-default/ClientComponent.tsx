@@ -12,7 +12,7 @@ export function Component(props: IComponentProps) {
         }
 
         return (
-          <div className="w-fit flex flex-row items-center gap-2 p-5 bg-red-300">
+          <div className="w-fit flex flex-row items-center gap-2 p-5">
             <RbacModuleSubject
               isServer={false}
               variant="ecommerce-module-order-list-checkout-default"

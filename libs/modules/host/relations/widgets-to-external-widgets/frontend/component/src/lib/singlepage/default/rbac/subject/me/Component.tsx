@@ -1,4 +1,4 @@
-import { Component as Ecommerce } from "./ecommerce/Component";
+import { Component as Ecommerce } from "./ecommerce-module/Component";
 import { Component as CrmModuleFormRequestCreate } from "./crm-module-form-request-create/Component";
 import { IComponentProps } from "./interface";
 import { Component as AuthenticationDefault } from "./authentication/Component";
@@ -8,7 +8,7 @@ export function Component(props: IComponentProps) {
     return <AuthenticationDefault {...(props as any)} />;
   }
 
-  if (props.variant.startsWith("me-ecommerce")) {
+  if (props.variant.startsWith("me-ecommerce-module")) {
     return <Ecommerce {...(props as any)} />;
   }
 
