@@ -24,7 +24,6 @@ import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/pr
 import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
 import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
 import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/order/id/delete";
-import { Handler as EcommerceModuleOrderIdCheckout } from "./ecommerce-module/order/id/checkout";
 import { Handler as EcommerceModuleOrderTotal } from "./ecommerce-module/order/total";
 import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/order/quantity";
 import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order/id/total";
@@ -150,11 +149,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:uuid/ecommerce-module/products/:productId/enforce",
         handler: this.ecommerceModuleProductsEnforce,
-      },
-      {
-        method: "POST",
-        path: "/:id/ecommerce-module/orders/:orderId/checkout",
-        handler: this.ecommerceModuleOrderIdCheckout,
       },
       {
         method: "GET",
@@ -319,13 +313,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderIdDelete(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderIdDelete(this.service).execute(c, next);
-  }
-
-  async ecommerceModuleOrderIdCheckout(
-    c: Context,
-    next: any,
-  ): Promise<Response> {
-    return new EcommerceModuleOrderIdCheckout(this.service).execute(c, next);
   }
 
   async ecommerceModuleProductsCheckout(

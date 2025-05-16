@@ -1,5 +1,5 @@
 import {
-  RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
@@ -31,9 +31,10 @@ export class Handler {
         });
       }
 
-      if (!RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS) {
+      if (!RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS) {
         throw new HTTPException(400, {
-          message: "RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
+          message:
+            "RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
         });
       }
 
@@ -65,7 +66,7 @@ export class Handler {
         {
           exp:
             Math.floor(Date.now() / 1000) +
-            RBAC_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+            RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
           iat: Math.floor(Date.now() / 1000),
           subject: entity,
         },

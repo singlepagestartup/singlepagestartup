@@ -106,7 +106,7 @@ export class Handler {
         },
       });
 
-      const result = await this.service.ecommerceOrdersCheckout({
+      const result = await this.service.ecommerceOrderNotificationCreate({
         id,
         orderId: order.id,
         data,

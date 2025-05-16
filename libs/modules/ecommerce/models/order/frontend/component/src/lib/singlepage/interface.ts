@@ -8,6 +8,7 @@ import { IComponentProps as IDefaultComponentProps } from "./default/interface";
 import { IComponentProps as ICreateComponentProps } from "./create/interface";
 import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
 import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
+import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 export type IComponentProps =
   | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps
@@ -19,4 +20,5 @@ export type IComponentProps =
   | ICreateComponentProps
   | IDeleteComponentProps
   | ICartDefaultComponentProps
+  | IFormFieldDefaultComponentProps
   | never;

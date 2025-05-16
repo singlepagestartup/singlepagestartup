@@ -26,7 +26,9 @@ export class Service {
               {
                 column: "createdAt",
                 method: "lt",
-                value: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                value: new Date(
+                  Date.now() - 1000 * 60 * 60 * 24 * 30,
+                ).toISOString(),
               },
             ],
           },

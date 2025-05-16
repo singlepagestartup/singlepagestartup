@@ -4,7 +4,6 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
-import { Handler as Checkout } from "./checkout";
 import { Handler as Update } from "./update";
 import { Handler as Check } from "./check";
 import { Handler as CheckoutAttributes } from "./checkout-attributes";
@@ -60,11 +59,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/:uuid/checkout",
-        handler: this.checkout,
-      },
-      {
-        method: "POST",
         path: "/:uuid/check",
         handler: this.check,
       },
@@ -89,10 +83,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         handler: this.ordersToProductsUpdate,
       },
     ]);
-  }
-
-  async checkout(c: Context, next: any): Promise<Response> {
-    return new Checkout(this.service).execute(c, next);
   }
 
   async update(c: Context, next: any): Promise<Response> {

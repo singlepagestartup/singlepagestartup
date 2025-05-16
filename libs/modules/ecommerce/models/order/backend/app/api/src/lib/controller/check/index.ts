@@ -60,16 +60,10 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
-
-      if (!ordersToBillingModuleCurrencies?.length) {
-        throw new Error("Orders to billing module currencies not found");
-      }
 
       if (entity.status === "paying") {
         const updatedAt = new Date(entity.updatedAt).getTime();
@@ -87,9 +81,6 @@ export class Handler {
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
               },
             },
           });
@@ -110,9 +101,7 @@ export class Handler {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
+                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -142,9 +131,6 @@ export class Handler {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 "Cache-Control": "no-store",
               },
-              next: {
-                cache: "no-store",
-              },
             },
           });
 
@@ -160,6 +146,10 @@ export class Handler {
 
           if (!paymentIntentIsSucceeded) {
             throw new Error("Payment intent is not succeeded");
+          }
+
+          if (!ordersToBillingModuleCurrencies?.length) {
+            throw new Error("Orders to billing module currencies not found");
           }
 
           const attributes = await this.service.getCheckoutAttributes({
@@ -180,13 +170,14 @@ export class Handler {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
-              next: {
-                cache: "no-store",
-              },
             },
           });
         }
       } else if (entity.status === "delivering") {
+        if (!ordersToBillingModuleCurrencies?.length) {
+          throw new Error("Orders to billing module currencies not found");
+        }
+
         const attributes = await this.service.getCheckoutAttributes({
           id: uuid,
           billingModuleCurrencyId:
@@ -261,9 +252,7 @@ export class Handler {
                 options: {
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                  next: {
-                    cache: "no-store",
+                    "Cache-Control": "no-store",
                   },
                 },
               });
@@ -293,9 +282,6 @@ export class Handler {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                   "Cache-Control": "no-store",
                 },
-                next: {
-                  cache: "no-store",
-                },
               },
             });
 
@@ -321,9 +307,7 @@ export class Handler {
                 options: {
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                  next: {
-                    cache: "no-store",
+                    "Cache-Control": "no-store",
                   },
                 },
               });
@@ -355,9 +339,7 @@ export class Handler {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
+                  "Cache-Control": "no-store",
                 },
               },
             });

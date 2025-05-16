@@ -5,7 +5,6 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
 import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
@@ -31,38 +30,54 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.string().email(),
-  billingModuleCurrencyId: z.string(),
+  billingModule: z.object({
+    currency: z.object({
+      id: z.string(),
+    }),
+  }),
+  ecommerceModule: z.object({
+    orders: z.array(
+      z.object({
+        id: z.string(),
+      }),
+    ),
+  }),
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const checkoutEntity = api.ecommerceModuleOrderIdCheckout({});
+  const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       provider: "stripe",
       email: "",
-      billingModuleCurrencyId: "",
+      billingModule: {
+        currency: {
+          id: undefined,
+        },
+      },
+      ecommerceModule: {
+        orders: [
+          {
+            id: props.order.id,
+          },
+        ],
+      },
     },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    checkoutEntity.mutate({
-      id: props.data.id,
-      orderId: props.order.id,
-      data,
-    });
+    ecommerceModuleOrderCheckout
+      .mutateAsync({
+        id: props.data.id,
+        data,
+      })
+      .then((res) => {
+        const paymentUrl = res.billingModule.invoices[0].paymentUrl;
+        window.location.href = paymentUrl;
+      });
   }
-
-  useEffect(() => {
-    if (checkoutEntity.isSuccess) {
-      const paymentUrl =
-        checkoutEntity.data.subjectsToEcommerceModuleOrders[0].order
-          .ordersToBillingModulePaymentIntents[0].billingModulePaymentIntent
-          .invoices[0].paymentUrl;
-      window.location.href = paymentUrl;
-    }
-  }, [checkoutEntity.isSuccess]);
 
   return (
     <Form {...form}>
@@ -71,7 +86,7 @@ export function Component(props: IComponentPropsExtended) {
           isServer={false}
           variant="toggle-group-default"
           form={form}
-          formFieldName="billingModuleCurrencyId"
+          formFieldName="billingModule.currency.id"
           className="w-fit"
         />
         <FormField
@@ -93,7 +108,7 @@ export function Component(props: IComponentPropsExtended) {
           onClick={form.handleSubmit(onSubmit)}
           variant="primary"
           className="w-full flex flex-shrink-0"
-          disabled={checkoutEntity.isPending}
+          disabled={ecommerceModuleOrderCheckout.isPending}
         >
           Checkout
         </Button>

@@ -69,7 +69,7 @@ export function Component(props: IComponentPropsExtended) {
                 <div key={index} className="flex w-full gap-1">
                   <EcommerceOrdersToProducts
                     isServer={false}
-                    variant="entity-field-default"
+                    variant="form-field-default"
                     field="id"
                     data={entity}
                     form={form}
@@ -78,7 +78,7 @@ export function Component(props: IComponentPropsExtended) {
                   />
                   <EcommerceOrdersToProducts
                     isServer={false}
-                    variant="entity-field-default"
+                    variant="form-field-default"
                     field="quantity"
                     data={entity}
                     form={form}

@@ -4,7 +4,7 @@ import { Component as AdminTable } from "./admin/table";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminForm } from "./admin/form";
 import { Component as Default } from "./default";
-import { Component as EntityField } from "./entity-field-default";
+import { Component as FormField } from "./form-field-default";
 import { Component as Amount } from "./amount";
 import { Component as Total } from "./id/total-default";
 
@@ -15,7 +15,7 @@ export const variants = {
   "admin-select-input": AdminSelectInput,
   "admin-form": AdminForm,
   default: Default,
-  "entity-field-default": EntityField,
+  "form-field-default": FormField,
   amount: Amount,
   "id-total-default": Total,
 };

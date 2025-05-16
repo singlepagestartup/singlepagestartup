@@ -52,16 +52,6 @@ export class Service {
       });
     }
 
-    await ecommerceOrderApi.checkout({
-      id: props.orderId,
-      data: props.data,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
     const updatedOrder = await ecommerceOrderApi.findById({
       id: props.orderId,
       options: {
@@ -429,9 +419,6 @@ export class Service {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
-              next: {
-                cache: "no-store",
-              },
             },
           });
         }
@@ -567,37 +554,6 @@ export class Service {
         }
       }
     }
-
-    await broadcastChannelApi.pushMessage({
-      data: {
-        slug: "observer",
-        payload: JSON.stringify({
-          trigger: {
-            type: "request",
-            method: "PATCH",
-            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-          },
-          pipe: [
-            {
-              type: "request",
-              method: "POST",
-              url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          ],
-        }),
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
 
     return {
       ...entity,

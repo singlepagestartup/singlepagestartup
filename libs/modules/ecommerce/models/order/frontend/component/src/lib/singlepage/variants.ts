@@ -8,6 +8,7 @@ import { Component as Default } from "./default";
 import { Component as Create } from "./create";
 import { Component as Delete } from "./delete";
 import { Component as CartDefault } from "./cart-default";
+import { Component as FormFieldDefault } from "./form-field-default";
 
 export const variants = {
   "orders-to-products-quantity-default": OrdersToProductsQuantityDefault,
@@ -20,4 +21,5 @@ export const variants = {
   create: Create,
   delete: Delete,
   "cart-default": CartDefault,
+  "form-field-default": FormFieldDefault,
 };
