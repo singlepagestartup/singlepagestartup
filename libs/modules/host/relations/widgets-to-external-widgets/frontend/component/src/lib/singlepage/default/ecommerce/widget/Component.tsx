@@ -1,4 +1,4 @@
-import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
+import { Component as EcommerceModuleWidget } from "@sps/ecommerce/models/widget/frontend/component";
 import { Component as Store } from "./store/Component";
 import { Component as Category } from "./category/Component";
 import { Component as Product } from "./product/Component";
@@ -13,7 +13,7 @@ export function Component(
   },
 ) {
   return (
-    <EcommerceWidget
+    <EcommerceModuleWidget
       isServer={props.isServer}
       variant={props.data.variant as any}
       data={props.data}
@@ -45,6 +45,6 @@ export function Component(
           variant={props.data.variant}
         />
       ) : null}
-    </EcommerceWidget>
+    </EcommerceModuleWidget>
   );
 }

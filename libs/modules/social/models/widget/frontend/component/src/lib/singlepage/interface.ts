@@ -3,10 +3,13 @@ import { IComponentProps as IAdminTableComponentProps } from "./admin/table/inte
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+
 export type IComponentProps =
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps
   | IAdminTableRowComponentProps
   | IFindComponentProps
+  | IDefaultComponentProps
   | never;

@@ -52,15 +52,13 @@ export function Component(props: IComponentProps) {
             <SheetContent className="w-[400px] sm:w-[540px]">
               <SheetHeader>
                 <SheetTitle>Cart</SheetTitle>
-                <SheetDescription>
-                  <RbacModuleSubject
-                    isServer={false}
-                    variant="ecommerce-module-order-list-checkout-default"
-                    data={subject}
-                    language={props.language}
-                    className="w-fit"
-                  ></RbacModuleSubject>
-                </SheetDescription>
+                <RbacModuleSubject
+                  isServer={false}
+                  variant="ecommerce-module-order-list-checkout-default"
+                  data={subject}
+                  language={props.language}
+                  className="w-fit"
+                ></RbacModuleSubject>
               </SheetHeader>
             </SheetContent>
           </Sheet>

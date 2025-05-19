@@ -1,5 +1,5 @@
 import { IComponentPropsExtended } from "../interface";
-import { Component as EcommerceWidget } from "@sps/ecommerce/models/widget/frontend/component";
+import { Component as EcommerceModuleWidget } from "@sps/ecommerce/models/widget/frontend/component";
 import { Component as Widget } from "./widget/Component";
 
 export function Component(
@@ -8,7 +8,7 @@ export function Component(
   },
 ) {
   return (
-    <EcommerceWidget
+    <EcommerceModuleWidget
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -38,6 +38,6 @@ export function Component(
           );
         });
       }}
-    </EcommerceWidget>
+    </EcommerceModuleWidget>
   );
 }

@@ -26,7 +26,7 @@ export function Component(props: IComponentPropsExtended) {
       id: props.data.id,
       data: {
         ...data,
-        formId: props.form.id,
+        formId: props.crmModuleForm.id,
       },
     });
   }
@@ -53,7 +53,11 @@ export function Component(props: IComponentPropsExtended) {
               params: {
                 filters: {
                   and: [
-                    { column: "formId", method: "eq", value: props.form.id },
+                    {
+                      column: "formId",
+                      method: "eq",
+                      value: props.crmModuleForm.id,
+                    },
                   ],
                 },
               },

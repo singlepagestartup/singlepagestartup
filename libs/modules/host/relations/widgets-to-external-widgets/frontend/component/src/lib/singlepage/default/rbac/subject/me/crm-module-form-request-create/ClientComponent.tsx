@@ -16,7 +16,7 @@ export function Component(props: IComponentProps) {
             isServer={false}
             variant="crm-module-form-request-create"
             data={subject}
-            form={props.form}
+            crmModuleForm={props.crmModuleForm}
             language={props.language}
           />
         );

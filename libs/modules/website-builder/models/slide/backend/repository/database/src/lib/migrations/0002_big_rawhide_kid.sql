@@ -1,0 +1,1 @@
+ALTER TABLE "sps_w_b_slide" ADD COLUMN "url" text;

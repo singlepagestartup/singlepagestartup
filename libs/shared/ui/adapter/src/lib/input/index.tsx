@@ -97,16 +97,18 @@ export const Component = (props: IComponentProps) => {
           placeholder={props.placeholder}
           type="number"
           {...props.field}
+          value={
+            typeof props.field.value === "number" && !isNaN(props.field.value)
+              ? props.field.value
+              : ""
+          }
           min={props.min}
           max={props.max}
           step={props.step}
           className={props.className}
           onChange={(event) => {
-            const value = +event.target.value;
-
-            if (!isNaN(value)) {
-              props.field.onChange(value);
-            }
+            const value = event.target.value === "" ? "" : +event.target.value;
+            props.field.onChange(value);
           }}
         />
       </FormControl>

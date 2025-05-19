@@ -2,6 +2,7 @@ import { IComponentProps } from "./interface";
 import { Component as RbacModuleSubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
 import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as RbacSubject } from "../../../rbac/subject/Component";
+import Link from "next/link";
 
 export function Component(props: IComponentProps) {
   return (
@@ -47,13 +48,18 @@ export function Component(props: IComponentProps) {
                 {({ data: subjects }) => {
                   return subjects?.map((subject, index) => {
                     return (
-                      <RbacSubject
+                      <Link
                         key={index}
-                        isServer={props.isServer}
-                        data={subject}
-                        variant="social-module-profile-button-default"
-                        language={props.language}
-                      />
+                        href={`/rbac/subjects/${subject.slug}/social/profile`}
+                        className="w-fit"
+                      >
+                        <RbacSubject
+                          isServer={props.isServer}
+                          data={subject}
+                          variant="social-module-profile-button-default"
+                          language={props.language}
+                        />
+                      </Link>
                     );
                   });
                 }}

@@ -15,6 +15,13 @@
       "when": 1738270168038,
       "tag": "0001_same_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1747674865892,
+      "tag": "0002_big_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

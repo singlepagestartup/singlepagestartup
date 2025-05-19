@@ -33,12 +33,22 @@ export function Component(props: IComponentProps) {
         </CardContent>
       }
     >
-      <RbacSubject
-        isServer={props.isServer}
-        product={props.data}
-        language={props.language}
-        variant="me-ecommerce-module-product-cart-default"
-      />
+      <div className="w-full flex flex-col gap-4">
+        <RbacSubject
+          isServer={props.isServer}
+          product={props.data}
+          language={props.language}
+          variant="me-ecommerce-module-product-cart-default"
+          className="w-full"
+        />
+        <RbacSubject
+          isServer={props.isServer}
+          product={props.data}
+          language={props.language}
+          variant="me-ecommerce-module-product-checkout-default"
+          className="w-full"
+        />
+      </div>
     </EcommerceModuleProduct>
   );
 }

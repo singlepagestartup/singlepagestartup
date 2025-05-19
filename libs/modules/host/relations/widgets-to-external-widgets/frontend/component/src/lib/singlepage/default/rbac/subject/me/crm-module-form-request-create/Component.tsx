@@ -9,7 +9,7 @@ export function Component(props: IComponentProps) {
       skeleton={props.skeleton}
       language={props.language}
       variant={props.variant}
-      form={props.form}
+      crmModuleForm={props.crmModuleForm}
     />
   );
 }

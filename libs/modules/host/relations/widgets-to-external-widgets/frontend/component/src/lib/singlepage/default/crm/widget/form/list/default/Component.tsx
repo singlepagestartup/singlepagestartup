@@ -1,6 +1,6 @@
 import { Component as CrmModuleWidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
 import { Component as CrmModuleForm } from "@sps/crm/models/form/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject/Component";
+import { Component as RbacSubject } from "../../../../../rbac/subject/Component";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
@@ -49,7 +49,7 @@ export function Component(props: IComponentProps) {
                     <RbacSubject
                       key={index}
                       isServer={props.isServer}
-                      form={entity}
+                      crmModuleForm={entity}
                       language={props.language}
                       variant="me-crm-module-form-request-create"
                     />

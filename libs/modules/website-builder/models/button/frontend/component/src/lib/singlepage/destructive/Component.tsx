@@ -3,15 +3,15 @@ import Link from "next/link";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
+import { saveLanguageContext } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    props.data.url || "",
+    props.language,
+    internationalization.languages,
+  );
   const withProtocol = props.data.url?.includes(":");
-  const languageSwitcher = internationalization.languages.find((language) => {
-    return "/" + language.code === props.data.url;
-  });
-  const saveLanguageLink = languageSwitcher
-    ? props.data.url || "/"
-    : `/${props.language}${props.data.url}`;
 
   return (
     <Button
@@ -23,10 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       variant="destructive"
       asChild={true}
     >
-      <Link
-        href={withProtocol ? props.data.url || "" : saveLanguageLink}
-        target={withProtocol ? "_blank" : undefined}
-      >
+      <Link href={href} target={withProtocol ? "_blank" : undefined}>
         {props.data.title?.[props.language]}
       </Link>
     </Button>

@@ -30,6 +30,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
+      url: props.data?.url || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       title: props.data?.title ?? {},
       subtitle: props.data?.subtitle ?? {},
@@ -117,6 +118,15 @@ export function Component(props: IComponentPropsExtended) {
           name="slug"
           form={form}
           placeholder="Type slug"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Url"
+          name="url"
+          form={form}
+          placeholder="Type url"
         />
 
         <FormField
