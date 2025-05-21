@@ -16,7 +16,7 @@ export function Component<M extends { id: string }, V>(
     <div
       data-module={props.module}
       data-variant={props.variant}
-      className={cn("relative w-full", props.className)}
+      className={cn("w-full", props.className)}
       {...(props.type === "relation"
         ? {
             "data-relation": props.name,

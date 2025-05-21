@@ -5,13 +5,13 @@ import { Component as Analytic } from "./analytic/Component";
 import { Component as Billing } from "./billing/Component";
 // import { Component as Blog } from "./blog/Component";
 // import { Component as Crm } from "./crm/Component";
-import { Component as Ecommerce } from "./ecommerce/Component";
+// import { Component as Ecommerce } from "./ecommerce/Component";
 // import { Component as FileStorage } from "./file-storage/Component";
 // import { Component as Notification } from "./notification/Component";
 import { Component as Rbac } from "./rbac/Component";
 // import { Component as Social } from "./social/Component";
 // import { Component as Startup } from "./startup/Component";
-import { Component as WebsiteBuilder } from "./website-builder/Component";
+// import { Component as WebsiteBuilder } from "./website-builder/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -42,9 +42,9 @@ export function Component(props: IComponentPropsExtended) {
         <Crm {...props} isServer={props.isServer} data={props.data} />
       ) : null} */}
 
-      {props.data.externalModule === "ecommerce" ? (
+      {/* {props.data.externalModule === "ecommerce" ? (
         <Ecommerce {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
+      ) : null} */}
 
       {/* {props.data.externalModule === "file-storage" ? (
         <FileStorage {...props} isServer={props.isServer} data={props.data} />
@@ -66,13 +66,13 @@ export function Component(props: IComponentPropsExtended) {
         <Startup {...props} isServer={props.isServer} data={props.data} />
       ) : null} */}
 
-      {props.data.externalModule === "website-builder" ? (
+      {/* {props.data.externalModule === "website-builder" ? (
         <WebsiteBuilder
           {...props}
           isServer={props.isServer}
           data={props.data}
         />
-      ) : null}
+      ) : null} */}
     </div>
   );
 }

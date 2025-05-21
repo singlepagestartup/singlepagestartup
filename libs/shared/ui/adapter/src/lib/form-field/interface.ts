@@ -13,7 +13,6 @@ type TUniversalProps = {
   labelContainerClassName?: string;
   disabled?: boolean;
   children?: React.ReactNode;
-  value?: any;
 };
 
 export type IComponentProps = TUniversalProps & TTypedProps;

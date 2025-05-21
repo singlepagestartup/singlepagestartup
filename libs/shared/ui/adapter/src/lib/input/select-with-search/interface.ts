@@ -22,6 +22,7 @@ export type TTypedProps = {
   options: Option[];
   selectContentClassName?: string;
   selectItemClassName?: string;
+  portalContainer?: HTMLElement | null;
 };
 
 export type IComponentProps = IUniversalProps & TTypedProps;

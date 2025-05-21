@@ -11,6 +11,7 @@ import {
 import { IComponentPropsExtended, IComponentProps } from "./interface";
 import { UseFormReturn } from "react-hook-form";
 import { ReactNode } from "react";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component<M extends { id: string }, V>(
   props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
@@ -29,7 +30,7 @@ export function Component<M extends { id: string }, V>(
       data-module={props.module}
       data-id={props.id || ""}
       data-variant={props.variant}
-      className={props.className || ""}
+      className={cn("w-full", props.className)}
       {...(props.type === "relation"
         ? {
             "data-relation": props.name,
