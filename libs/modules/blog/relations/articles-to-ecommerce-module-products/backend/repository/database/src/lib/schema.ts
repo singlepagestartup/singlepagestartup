@@ -19,7 +19,7 @@ export const Table = pgTable(table, {
     .notNull()
     .references(() => Article.id, { onDelete: "cascade" }),
   ecommerceModuleProductId: pgCore
-    .uuid("pt_id")
+    .uuid("ee_me_pt_id")
     .notNull()
     .references(() => EcommerceModuleProduct.id, { onDelete: "cascade" }),
 });

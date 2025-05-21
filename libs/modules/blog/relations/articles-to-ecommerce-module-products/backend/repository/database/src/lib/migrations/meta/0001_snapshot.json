@@ -1,0 +1,104 @@
+{
+  "id": "1e8cf5de-3bb4-4785-9ba6-f88994e0efa2",
+  "prevId": "404aab00-6453-4dda-88c6-239e08cdc0ac",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.bg_as_to_ee_me_ps_bd9": {
+      "name": "bg_as_to_ee_me_ps_bd9",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ae_id": {
+          "name": "ae_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ee_me_pt_id": {
+          "name": "ee_me_pt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bg_as_to_ee_me_ps_bd9_ae_id_sps_blog_article_id_fk": {
+          "name": "bg_as_to_ee_me_ps_bd9_ae_id_sps_blog_article_id_fk",
+          "tableFrom": "bg_as_to_ee_me_ps_bd9",
+          "tableTo": "sps_blog_article",
+          "columnsFrom": ["ae_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bg_as_to_ee_me_ps_bd9_ee_me_pt_id_sps_ee_product_id_fk": {
+          "name": "bg_as_to_ee_me_ps_bd9_ee_me_pt_id_sps_ee_product_id_fk",
+          "tableFrom": "bg_as_to_ee_me_ps_bd9",
+          "tableTo": "sps_ee_product",
+          "columnsFrom": ["ee_me_pt_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
