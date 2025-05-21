@@ -45,7 +45,7 @@ export class Configuration extends ParentConfiguration {
               },
             },
             {
-              field: "productId",
+              field: "ecommerceModuleProductId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
@@ -55,7 +55,9 @@ export class Configuration extends ParentConfiguration {
                       seed.module === "ecommerce",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.productId,
+                    (seed) =>
+                      seed.dump.id ===
+                      data.entity.dump.ecommerceModuleProductId,
                   );
 
                 return relationEntites?.[0].new.id;
