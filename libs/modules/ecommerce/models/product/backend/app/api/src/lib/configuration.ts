@@ -28,10 +28,10 @@ export class Configuration extends ParentConfiguration {
           type: "model",
           filters: [
             {
-              column: "sku",
+              column: "slug",
               method: "eq",
               value: (data) => {
-                return data.entity.dump.sku;
+                return data.entity.dump.slug;
               },
             },
           ],
