@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Blog",
+    "ru": "Blog"
+  },
+  "subtitle": {},
+  "url": "/blog",
+  "className": "w-fit",
+  "id": "e84aa628-9370-498b-952a-2e381a28b3b4",
+  "createdAt": "2025-05-06T15:17:11.095Z",
+  "updatedAt": "2025-05-06T15:20:39.374Z",
+  "variant": "default",
+  "adminTitle": "salty apricot loon",
+  "slug": "burning-copper-badger"
+}

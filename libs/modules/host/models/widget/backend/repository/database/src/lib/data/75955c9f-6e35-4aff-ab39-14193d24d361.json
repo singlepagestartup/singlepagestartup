@@ -1,10 +1,14 @@
 {
-  "title": "RBAC | Authentication Select Method",
+  "title": {
+    "en": "RBAC | Authentication Select Method"
+  },
+  "subtitle": {},
+  "description": {},
   "id": "75955c9f-6e35-4aff-ab39-14193d24d361",
   "createdAt": "2025-01-24T23:47:55.469Z",
-  "updatedAt": "2025-01-24T23:52:03.532Z",
+  "updatedAt": "2025-05-05T13:03:47.822Z",
   "variant": "default",
   "className": "",
-  "adminTitle": "HgBNEcHTQE",
+  "adminTitle": "RBAC | Authentication Select Method",
   "slug": "rbac-select-method"
 }

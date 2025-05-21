@@ -1,8 +1,14 @@
 {
   "className": null,
-  "title": "Create an account",
-  "subtitle": "Fill the fields below to create an account",
-  "description": "",
+  "title": {
+    "en": "Create an account"
+  },
+  "subtitle": {
+    "en": "Fill the fields below to create an account"
+  },
+  "description": {
+    "en": ""
+  },
   "id": "c8609195-fb03-4a8f-88bc-7154e6686a03",
   "createdAt": "2025-01-24T23:47:55.689Z",
   "updatedAt": "2025-01-24T23:52:03.764Z",

@@ -4,11 +4,12 @@
   "updatedAt": "2025-01-31T08:17:07.779Z",
   "variant": "default",
   "type": "one_off",
-  "sku": "website",
+  "slug": "website",
   "title": {
     "en": "Website",
     "ru": "Веб-сайт"
   },
   "shortDescription": {},
-  "description": {}
+  "description": {},
+  "adminTitle": "product-e13709ae-58ea-416f-b6d5-d2802c9f5bce"
 }

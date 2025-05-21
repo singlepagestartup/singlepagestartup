@@ -1,10 +1,10 @@
 {
   "id": "ad34d520-a87d-4543-8106-8e18683be712",
   "title": "EC | Category | Overview",
-  "url": "/ecommerce/categories/[ecommerce.categories.id]",
+  "url": "/ecommerce/categories/[ecommerce.categories.slug]",
   "description": "Description",
   "createdAt": "2025-01-24T23:47:55.471Z",
-  "updatedAt": "2025-01-24T23:52:03.545Z",
+  "updatedAt": "2025-05-08T14:05:57.696Z",
   "variant": "default",
   "className": null,
   "language": "en",

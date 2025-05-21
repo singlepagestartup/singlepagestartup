@@ -1,10 +1,14 @@
 {
-  "title": "EC | Product | Overview",
+  "title": {
+    "en": "EC | Product | Overview"
+  },
+  "subtitle": {},
+  "description": {},
   "id": "54446c64-94e5-4972-b634-c6bb9cf73873",
   "createdAt": "2025-01-24T23:47:55.476Z",
-  "updatedAt": "2025-01-24T23:52:03.546Z",
+  "updatedAt": "2025-05-05T13:04:20.196Z",
   "variant": "default",
   "className": "",
-  "adminTitle": "xWoMmczefk",
+  "adminTitle": "EC | Product | Overview",
   "slug": "ecommerce-product-overview"
 }

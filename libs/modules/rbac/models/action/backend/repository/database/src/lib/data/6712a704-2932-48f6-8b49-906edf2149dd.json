@@ -1,0 +1,9 @@
+{
+  "id": "6712a704-2932-48f6-8b49-906edf2149dd",
+  "createdAt": "2025-05-05T13:01:38.818Z",
+  "updatedAt": "2025-05-05T13:01:38.818Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-website-builder-module-widgets/[social.profiles-to-website-builder-module-widgets.id]"
+}

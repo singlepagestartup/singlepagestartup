@@ -1,8 +1,14 @@
 {
   "className": null,
-  "title": "Subject Overview",
-  "subtitle": null,
-  "description": null,
+  "title": {
+    "en": "Subject Overview"
+  },
+  "subtitle": {
+    "en": null
+  },
+  "description": {
+    "en": null
+  },
   "id": "c5d54b85-3e9d-4427-aed0-38fa9ef50b91",
   "createdAt": "2025-01-24T23:47:55.641Z",
   "updatedAt": "2025-01-24T23:52:03.754Z",

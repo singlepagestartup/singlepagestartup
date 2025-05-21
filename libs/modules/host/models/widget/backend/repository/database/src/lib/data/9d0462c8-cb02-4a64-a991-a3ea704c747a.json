@@ -1,10 +1,14 @@
 {
-  "title": "RBAC | Subject | List",
+  "title": {
+    "en": "RBAC | Subject | List"
+  },
+  "subtitle": {},
+  "description": {},
   "id": "9d0462c8-cb02-4a64-a991-a3ea704c747a",
   "createdAt": "2025-01-24T23:47:55.459Z",
-  "updatedAt": "2025-01-24T23:52:03.517Z",
+  "updatedAt": "2025-05-05T13:03:25.691Z",
   "variant": "default",
   "className": "",
-  "adminTitle": "dbhCuLmKy7",
+  "adminTitle": "RBAC | Subject | List",
   "slug": "rbac-subject-list"
 }

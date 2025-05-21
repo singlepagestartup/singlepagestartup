@@ -5,5 +5,5 @@
   "variant": "default",
   "type": "HTTP",
   "method": "POST",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce/orders/[ecommerce.orders.id]/checkout"
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders/checkout"
 }

@@ -1,8 +1,14 @@
 {
   "className": null,
-  "title": "Logout",
-  "subtitle": "",
-  "description": "",
+  "title": {
+    "en": "Logout"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": ""
+  },
   "id": "50923ea5-090d-4450-aa82-129b6d5d1435",
   "createdAt": "2025-01-24T23:47:55.646Z",
   "updatedAt": "2025-01-24T23:52:03.759Z",
