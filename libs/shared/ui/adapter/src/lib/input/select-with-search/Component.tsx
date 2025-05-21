@@ -1,34 +1,20 @@
 "use client";
 
 import {
-  Button,
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  FormControl,
-  Popover,
-  PopoverContent,
 } from "@sps/shared-ui-shadcn";
 import { IComponentProps } from "./interface";
-import { useEffect, useMemo, useRef, useState } from "react";
-// import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentProps) {
-  // const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  // const [triggerWidth, setTriggerWidth] = useState<string | undefined>();
-  // const triggerRef = useRef<HTMLDivElement>(null);
-
-  // useEffect(() => {
-  //   if (triggerRef.current) {
-  //     setTriggerWidth(`${triggerRef.current.offsetWidth}px`);
-  //   }
-  // }, []);
 
   const filteredOptions = useMemo(() => {
     if (!searchValue.trim()) {
@@ -55,8 +41,10 @@ export function Component(props: IComponentProps) {
         value={searchValue}
         onValueChange={(value) => setSearchValue(value)}
       />
-      <CommandList className="relative block max-h-60 overflow-y-auto border-t">
-        <CommandEmpty>No found items.</CommandEmpty>
+      <CommandList className="relative block w-full h-40 overflow-y-auto border-t">
+        <CommandEmpty className="mt-16 text-center text-muted-foreground">
+          No found items.
+        </CommandEmpty>
         <CommandGroup>
           {filteredOptions.map((option) => {
             const itemValue = `${option[0]} ${option[1]}`;
@@ -66,23 +54,25 @@ export function Component(props: IComponentProps) {
                 value={itemValue}
                 onSelect={() => {
                   props.form.setValue(props.field.name, option[0]);
-                  // setOpen(false);
                   setSearchValue("");
                 }}
+                data-is-selected={selectedOption?.[0] === option[0]}
+                className="cursor-pointer data-[is-selected=true]:bg-accent data-[is-selected=true]:text-accent-foreground"
               >
-                {option[2]
-                  ? typeof option[2] === "function"
-                    ? option[2](option)
-                    : option[2]
-                  : option[1]}
                 <Check
                   className={cn(
-                    "ml-auto",
+                    "mr-1",
                     selectedOption?.[0] === option[0]
                       ? "opacity-100"
                       : "opacity-0",
                   )}
                 />
+
+                {option[2]
+                  ? typeof option[2] === "function"
+                    ? option[2](option)
+                    : option[2]
+                  : option[1]}
               </CommandItem>
             );
           })}
@@ -90,75 +80,4 @@ export function Component(props: IComponentProps) {
       </CommandList>
     </Command>
   );
-
-  // Bug with radix dialog + popovers, cant be fixed
-  // return (
-  //   <Popover open={open} onOpenChange={setOpen} modal={true}>
-  //     <PopoverTrigger asChild>
-  //       <div ref={triggerRef}>
-  //         <Button
-  //           variant="outline"
-  //           role="combobox"
-  //           className={cn(
-  //             "w-full justify-between",
-  //             props.className,
-  //             !props.field.value && "text-muted-foreground",
-  //           )}
-  //         >
-  //           {selectedOption
-  //             ? selectedOption[2]
-  //               ? typeof selectedOption[2] === "function"
-  //                 ? selectedOption[2](selectedOption)
-  //                 : selectedOption[2]
-  //               : selectedOption[1]
-  //             : props.placeholder}
-  //           <ChevronsUpDown className="opacity-50" />
-  //         </Button>
-  //       </div>
-  //     </PopoverTrigger>
-  //     <PopoverContent className="w-full p-0" style={{ width: triggerWidth }}>
-  //       <Command className="w-full">
-  //         <CommandInput
-  //           placeholder={props.placeholder}
-  //           className="h-9"
-  //           value={searchValue}
-  //           onValueChange={(value) => setSearchValue(value)}
-  //         />
-  //         <CommandList className="relative block max-h-60 overflow-y-auto border-t">
-  //           <CommandEmpty>No found items.</CommandEmpty>
-  //           <CommandGroup>
-  //             {filteredOptions.map((option) => {
-  //               const itemValue = `${option[0]} ${option[1]}`;
-  //               return (
-  //                 <CommandItem
-  //                   key={option[0]}
-  //                   value={itemValue}
-  //                   onSelect={() => {
-  //                     props.form.setValue(props.field.name, option[0]);
-  //                     setOpen(false);
-  //                     setSearchValue("");
-  //                   }}
-  //                 >
-  //                   {option[2]
-  //                     ? typeof option[2] === "function"
-  //                       ? option[2](option)
-  //                       : option[2]
-  //                     : option[1]}
-  //                   <Check
-  //                     className={cn(
-  //                       "ml-auto",
-  //                       selectedOption?.[0] === option[0]
-  //                         ? "opacity-100"
-  //                         : "opacity-0",
-  //                     )}
-  //                   />
-  //                 </CommandItem>
-  //               );
-  //             })}
-  //           </CommandGroup>
-  //         </CommandList>
-  //       </Command>
-  //     </PopoverContent>
-  //   </Popover>
-  // );
 }
