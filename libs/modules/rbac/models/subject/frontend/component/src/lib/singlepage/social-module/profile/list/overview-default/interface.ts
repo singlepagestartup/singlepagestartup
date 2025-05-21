@@ -5,7 +5,7 @@ import {
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 
-export const variant = "social-module-profiles-list-default" as const;
+export const variant = "social-module-profile-list-overview-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {

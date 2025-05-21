@@ -3,7 +3,7 @@ import { IComponentProps as IEcommerceModuleOrderListCheckoutDefaultComponentPro
 import { IComponentProps as IEcommerceModuleOrderUpdateDefaultComponentProps } from "./ecommerce-module/order/update-default/interface";
 import { IComponentProps as IEcommerceModuleOrderCreateDefaultComponentProps } from "./ecommerce-module/order/create-default/interface";
 import { IComponentProps as IEcommerceModuleOrderDeleteDefaultComponentProps } from "./ecommerce-module/order/delete-default/interface";
-import { IComponentProps as ISocialModuleProfilesListDefaultComponentProps } from "./social-module/profile/list/default/interface";
+import { IComponentProps as ISocialModuleProfileListOverviewDefaultComponentProps } from "./social-module/profile/list/overview-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -37,7 +37,7 @@ export type IComponentProps =
   | IEcommerceModuleOrderUpdateDefaultComponentProps
   | IEcommerceModuleOrderCreateDefaultComponentProps
   | IEcommerceModuleOrderDeleteDefaultComponentProps
-  | ISocialModuleProfilesListDefaultComponentProps
+  | ISocialModuleProfileListOverviewDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

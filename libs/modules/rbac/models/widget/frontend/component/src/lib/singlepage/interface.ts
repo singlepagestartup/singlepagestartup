@@ -1,3 +1,4 @@
+import { IComponentProps as ISubjectListSocialModuleProfileDefaultComponentProps } from "./subject/list/social-module/profile/default/interface";
 import { IComponentProps as ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps } from "./subject/overview/social-module/profile/overview/default/interface";
 import { IComponentProps as ISubjectOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./subject/overview/ecommerce-module/product/list/card-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
@@ -13,9 +14,10 @@ import { IComponentProps as ISubjectAuthenticationLogoutActionDefaultComponentPr
 import { IComponentProps as ISubjectAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps } from "./subject/authentication/email-and-password/registration-form-default/interface";
 import { IComponentProps as ISubjectAuthenticationEmailAndPasswordResetPasswordFormDefaultComponentProps } from "./subject/authentication/email-and-password/reset-password-form-default/interface";
 import { IComponentProps as ISubjectOverviewDefaultComponentProps } from "./subject/overview/default/interface";
-import { IComponentProps as ISubjectsListDefaultComponentProps } from "./subject/list-default/interface";
+import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/list/default/interface";
 
 export type IComponentProps =
+  | ISubjectListSocialModuleProfileDefaultComponentProps
   | ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps
   | ISubjectOverviewEcommerceModuleProductListCardDefaultComponentProps
   | IFindComponentProps
@@ -31,5 +33,5 @@ export type IComponentProps =
   | ISubjectAuthenticationEmailAndPasswordRegistrationFormDefaultComponentProps
   | ISubjectAuthenticationEmailAndPasswordResetPasswordFormDefaultComponentProps
   | ISubjectOverviewDefaultComponentProps
-  | ISubjectsListDefaultComponentProps
+  | ISubjectListDefaultComponentProps
   | never;

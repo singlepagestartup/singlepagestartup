@@ -39,7 +39,7 @@ export function Component(props: IComponentProps) {
                   <RbacModuleSubject
                     key={index}
                     isServer={props.isServer}
-                    variant="social-module-profiles-list-default"
+                    variant="social-module-profile-list-overview-default"
                     data={subject}
                     language={props.language}
                   />

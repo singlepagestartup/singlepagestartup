@@ -24,7 +24,14 @@ export function Component(
   }
 
   if (props.variant.startsWith("subject-list")) {
-    return <List isServer={props.isServer} />;
+    return (
+      <List
+        url={props.url}
+        isServer={props.isServer}
+        language={props.language}
+        variant={props.variant as any}
+      />
+    );
   }
 
   if (props.variant.startsWith("subject-overview")) {

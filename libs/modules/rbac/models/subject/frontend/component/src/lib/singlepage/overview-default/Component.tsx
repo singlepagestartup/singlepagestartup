@@ -2,7 +2,7 @@ import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
-import { Component as SocialModuleProfileListDefault } from "../social-module/profile/list/default/Component";
+import { Component as SocialModuleProfileListOverviewDefault } from "../social-module/profile/list/overview-default/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -77,9 +77,9 @@ export function Component(props: IComponentPropsExtended) {
           );
         }}
       </SubjectsToIdentities>
-      <SocialModuleProfileListDefault
+      <SocialModuleProfileListOverviewDefault
         isServer={props.isServer}
-        variant="social-module-profiles-list-default"
+        variant="social-module-profile-list-overview-default"
         data={props.data}
         language={props.language}
       />

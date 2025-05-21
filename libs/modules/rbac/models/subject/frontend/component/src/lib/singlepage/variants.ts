@@ -3,7 +3,7 @@ import { Component as EcommerceModuleOrderListCheckoutDefault } from "./ecommerc
 import { Component as EcommerceModuleOrderUpdateDefault } from "./ecommerce-module/order/update-default";
 import { Component as EcommerceModuleOrderCreateDefault } from "./ecommerce-module/order/create-default";
 import { Component as EcommerceModuleOrderDeleteDefault } from "./ecommerce-module/order/delete-default";
-import { Component as SocialModuleProfilesListDefault } from "./social-module/profile/list/default";
+import { Component as SocialModuleProfileListOverviewDefault } from "./social-module/profile/list/overview-default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -38,7 +38,8 @@ export const variants = {
   "ecommerce-module-order-update-default": EcommerceModuleOrderUpdateDefault,
   "ecommerce-module-order-create-default": EcommerceModuleOrderCreateDefault,
   "ecommerce-module-order-delete-default": EcommerceModuleOrderDeleteDefault,
-  "social-module-profiles-list-default": SocialModuleProfilesListDefault,
+  "social-module-profile-list-overview-default":
+    SocialModuleProfileListOverviewDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

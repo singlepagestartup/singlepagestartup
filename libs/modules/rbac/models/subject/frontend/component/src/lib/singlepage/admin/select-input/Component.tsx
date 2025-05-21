@@ -12,7 +12,7 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={props.renderField}
+      renderField={props.renderField || "slug"}
     />
   );
 }

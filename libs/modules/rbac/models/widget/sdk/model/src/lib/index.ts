@@ -22,6 +22,7 @@ export const variants = [
   "subject-authentication-email-and-password-reset-password-form-default",
   "subject-overview-default",
   "subject-list-default",
+  "subject-list-social-module-profile-default",
   "subject-identity-settings-default",
   "subject-authentication-logout-action-default",
   "subject-overview-ecommerce-module-product-list-card-default",
