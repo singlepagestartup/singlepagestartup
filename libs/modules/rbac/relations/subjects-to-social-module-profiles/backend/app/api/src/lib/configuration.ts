@@ -17,12 +17,12 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "rbac",
           name: "subjects-to-social-module-profiles",
           type: "relation",
