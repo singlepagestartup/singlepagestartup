@@ -11,7 +11,10 @@
     "host:start": "nx run host:next:start",
     "lint": "nx run-many --target=eslint:lint --parallel=2 --all",
     "test:file": "npx nx run --target=jest:test --testFile",
-    "prepare": "husky"
+    "prepare": "husky",
+    "telegram:dev": "nx run telegram:dev",
+    "telegram:start": "nx run telegram:start",
+    "telegram:build": "nx run telegram:build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.717.0",

@@ -1,0 +1,31 @@
+{
+  "name": "telegram",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/telegram",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/telegram",
+        "command": "bun run dev"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/telegram",
+        "command": "bun run start"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/telegram",
+        "command": "bun build src/bot.ts --outdir dist --target bun"
+      }
+    },
+    "eslint:lint": {}
+  }
+}
