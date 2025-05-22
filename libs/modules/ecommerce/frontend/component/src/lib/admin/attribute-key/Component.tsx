@@ -1,7 +1,7 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/attribute-key/frontend/component";
-import { Component as AttributesToAttributeKeys } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
+import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
 
 export function Component() {
   return (
@@ -14,13 +14,13 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
-            attributesToAttributeKeys={({ data, isServer }) => {
+            attributeKeysToAttributes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <AttributesToAttributeKeys
+                <AttributeKeysToAttributes
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

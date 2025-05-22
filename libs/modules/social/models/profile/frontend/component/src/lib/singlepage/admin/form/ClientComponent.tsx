@@ -151,6 +151,13 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.profilesToAttributes
+          ? props.profilesToAttributes({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

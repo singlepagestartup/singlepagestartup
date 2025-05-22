@@ -149,8 +149,8 @@ export function Component(props: IComponentPropsExtended) {
           options={variants.map((variant) => [variant, variant])}
         />
 
-        {props.attributesToAttributeKeys
-          ? props.attributesToAttributeKeys({
+        {props.attributeKeysToAttributes
+          ? props.attributeKeysToAttributes({
               data: props.data,
 
               isServer: props.isServer,

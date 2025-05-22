@@ -42,6 +42,12 @@
         "parallel": false,
         "commands": [
           {
+            "command": "nx run @sps/social:models:attribute-key:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:models:attribute:repository-generate"
+          },
+          {
             "command": "nx run @sps/social:models:widget:repository-generate"
           },
           {
@@ -55,6 +61,12 @@
       "options": {
         "parallel": false,
         "commands": [
+          {
+            "command": "nx run @sps/social:relations:attribute-keys-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-attributes:repository-generate"
+          },
           {
             "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-generate"
           },
@@ -71,6 +83,12 @@
         "parallel": false,
         "commands": [
           {
+            "command": "nx run @sps/social:models:attribute-key:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:models:attribute:repository-migrate"
+          },
+          {
             "command": "nx run @sps/social:models:widget:repository-migrate"
           },
           {
@@ -85,6 +103,12 @@
       "options": {
         "parallel": false,
         "commands": [
+          {
+            "command": "nx run @sps/social:relations:attribute-keys-to-attributes:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-attributes:repository-migrate"
+          },
           {
             "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-migrate"
           },
@@ -152,6 +176,64 @@
         ]
       }
     },
+    "models:attribute-key:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/models/attribute-key/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:attribute-key:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/models/attribute-key/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:attribute:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/models/attribute/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:attribute:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/models/attribute/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
     "relations:profiles-to-website-builder-module-widgets:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -203,6 +285,64 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/profiles-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:attribute-keys-to-attributes:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/attribute-keys-to-attributes/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:attribute-keys-to-attributes:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/attribute-keys-to-attributes/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-attributes:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-attributes/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-attributes:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-attributes/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

@@ -2,8 +2,8 @@
 
 import { Component as ParentComponent } from "@sps/social/models/profile/frontend/component";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
-
 import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
+import { Component as ProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/frontend/component";
 
 export function Component() {
   return (
@@ -48,6 +48,31 @@ export function Component() {
 
               return (
                 <ProfilesToWebsiteBuilderModuleWidgets
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "profileId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            profilesToAttributes={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ProfilesToAttributes
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

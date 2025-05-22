@@ -17,6 +17,9 @@ export interface IComponentProps
   profilesToWebsiteBuilderModuleWidgets?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  profilesToAttributes?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended
