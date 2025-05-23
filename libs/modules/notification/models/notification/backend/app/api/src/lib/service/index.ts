@@ -7,7 +7,7 @@ import { api } from "@sps/notification/models/notification/sdk/server";
 import {
   AWS_SES_FROM_EMAIL,
   RBAC_SECRET_KEY,
-  TELEGRAM_BOT_TOKEN,
+  TELEGRAM_SERVICE_BOT_TOKEN,
 } from "@sps/shared-utils";
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
@@ -114,7 +114,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Template not found");
       }
 
-      if (entity.reciever && TELEGRAM_BOT_TOKEN) {
+      if (entity.reciever && TELEGRAM_SERVICE_BOT_TOKEN) {
         const renderResult = await templateApi.render({
           id: props.template.id,
           data: entity.data ? JSON.parse(entity.data) : {},
@@ -131,7 +131,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         const parsedRenderResult = JSON.parse(renderResult);
 
-        const bot = new Bot(TELEGRAM_BOT_TOKEN);
+        const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
         if (validAttachments?.length) {
           await bot.api.sendMediaGroup(
