@@ -1,5 +1,5 @@
 import {
-  TELEGRAM_SERVICE_URL,
+  NEXT_PUBLIC_TELEGRAM_SERVICE_URL,
   TELEGRAM_SERVICE_BOT_TOKEN,
 } from "@sps/shared-utils";
 import {
@@ -130,7 +130,7 @@ export class TelegarmBot {
       throw new Error("TELEGRAM_BOT_TOKEN is not set");
     }
 
-    const endpoint = TELEGRAM_SERVICE_URL + "/api/telegram";
+    const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
 
     const res = await this.instance.api.setWebhook(endpoint);
 
