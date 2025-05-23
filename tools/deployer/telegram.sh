@@ -1,0 +1,91 @@
+#!/bin/bash
+. ./get_environment_type.sh
+
+get_environment_type $2
+
+./create_inventory.sh
+
+. ./get_env.sh
+
+DOMAIN=$(get_env "$BASH_SOURCE" "DOMAIN")
+
+API_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "API_SERVICE_SUBDOMAIN")
+
+SERVICE_NAME=$(get_env "$BASH_SOURCE" "TELEGRAM_SERVICE_NAME")
+SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "TELEGRAM_SERVICE_SUBDOMAIN")
+
+PORTAINER_USERNAME=$(get_env "$BASH_SOURCE" "PORTAINER_USERNAME")
+PORTAINER_PASSWORD=$(get_env "$BASH_SOURCE" "PORTAINER_PASSWORD")
+PORTAINER_SERVICE_SUBDOMAIN=$(get_env "$BASH_SOURCE" "PORTAINER_SERVICE_SUBDOMAIN")
+
+TELEGRAM_SERVICE_BOT_TOKEN=$(get_env "$BASH_SOURCE" "TELEGRAM_SERVICE_BOT_TOKEN")
+
+DOCKER_HUB_URL=$(get_env "$BASH_SOURCE" "DOCKER_HUB_URL")
+DOCKER_HUB_SERVICE_REPOSITORY=$(get_env "$BASH_SOURCE" "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME")
+
+GITHUB_TOKEN=$(get_env "$BASH_SOURCE" "GITHUB_TOKEN")
+GITHUB_REPOSITORY=$(get_env "$BASH_SOURCE" "GITHUB_REPOSITORY")
+
+PORTAINER_URL=$PORTAINER_SERVICE_SUBDOMAIN.$DOMAIN
+
+if [ -z "$API_SERVICE_SUBDOMAIN" ]
+then
+    API_SERVICE_URL=$DOMAIN
+else
+    API_SERVICE_URL=$API_SERVICE_SUBDOMAIN.$DOMAIN
+fi
+
+if [ -z "$SERVICE_SUBDOMAIN" ]
+then
+    SERVICE_A="@"
+    SERVICE_URL=$DOMAIN
+else 
+    SERVICE_A=$SERVICE_SUBDOMAIN
+    SERVICE_URL=$SERVICE_SUBDOMAIN.$DOMAIN
+fi
+
+if [ -z $SERVICE_NAME ]
+then
+    echo "Skip $0"
+    exit 0
+fi
+
+if [ -z $DOCKER_HUB_SERVICE_REPOSITORY ]
+then
+    echo "No docker hub repository name for service $SERVICE_NAME"
+    exit 0
+fi
+
+if [ "$1" != "down" ]
+then
+    ./domain.sh present $SERVICE_URL $SERVICE_A && \
+    ansible-playbook \
+        ./telegram/create_telegram.yaml \
+        -e "SERVICE_NAME=$SERVICE_NAME \
+            PORTAINER_URL=$PORTAINER_URL \
+            PORTAINER_USERNAME=$PORTAINER_USERNAME \
+            PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
+            DOCKER_HUB_URL=$DOCKER_HUB_URL \
+            DOCKER_HUB_SERVICE_REPOSITORY=$DOCKER_HUB_SERVICE_REPOSITORY \
+            API_SERVICE_URL=$API_SERVICE_URL \
+            TELEGRAM_SERVICE_BOT_TOKEN=$TELEGRAM_SERVICE_BOT_TOKEN \
+            SERVICE_URL=$SERVICE_URL \
+            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
+    ansible-playbook \
+        ./telegram/fill_github.yaml \
+        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
+            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
+            PORTAINER_URL=$PORTAINER_URL \
+            SERVICE_URL=$SERVICE_URL \
+            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE"
+else
+    ansible-playbook \
+        ./telegram/clear_github.yaml \
+        -e "GITHUB_TOKEN=$GITHUB_TOKEN \
+            GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
+            ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
+    ansible-playbook \
+        ./telegram/delete_telegram.yaml \
+        -e "SERVICE_NAME=$SERVICE_NAME" && \
+    ./domain.sh down $SERVICE_URL $SERVICE_A
+fi

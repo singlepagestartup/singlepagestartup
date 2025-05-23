@@ -6,6 +6,7 @@ get_environment_type $1
 ./create_inventory.sh
 
 ./host.sh down $ENVIRONMENT_TYPE && \
+    ./telegram.sh down $ENVIRONMENT_TYPE && \
     ./api.sh down $ENVIRONMENT_TYPE && \
     ./redis.sh down $ENVIRONMENT_TYPE && \
     ./postgres.sh down $ENVIRONMENT_TYPE && \

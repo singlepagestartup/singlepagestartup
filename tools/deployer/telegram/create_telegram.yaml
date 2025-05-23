@@ -1,0 +1,116 @@
+---
+- name: Create telegram
+  hosts: all
+  become: yes
+  vars:
+    - service_name: "{{ SERVICE_NAME }}"
+    - portainer_username: "{{ PORTAINER_USERNAME }}"
+    - portainer_password: "{{ PORTAINER_PASSWORD }}"
+    - portainer_url: "{{ PORTAINER_URL }}"
+  tasks:
+    - name: Copy set-portainer-webhook.js
+      copy:
+        src: ../portainer/set-portainer-webhook.js
+        dest: /home/code/set-portainer-webhook.js
+
+    - name: Get registry_id from file
+      shell: cat /home/code/docker_hub_registry_id
+      register: cmd_docker_hub_registry_id
+
+    - name: Create X-Registry-Auth
+      ansible.builtin.shell:
+        cmd: echo '{"registryId":{{ cmd_docker_hub_registry_id.stdout }}}' | base64
+      register: x_rgistry_auth
+
+    - name: Login to Portainer
+      uri:
+        url: "https://{{ portainer_url }}/api/auth"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ portainer_username }}"
+          password: "{{ portainer_password }}"
+      register: portainer_login
+
+    - name: Create telegram.env file
+      ansible.builtin.template:
+        src: telegram.env.j2
+        dest: /home/code/telegram.env
+
+    - name: Copy docker-compose file
+      ansible.builtin.template:
+        src: docker-compose.telegram.yaml.j2
+        dest: /home/code/docker-compose.telegram.yaml
+
+    - name: Run telegram service
+      shell: docker stack deploy --compose-file=/home/code/docker-compose.telegram.yaml telegram
+
+    - name: Get api service id
+      shell:
+        cmd: "docker service ls -f name=telegram_telegram -q"
+      register: cmd_telegram_service_id
+
+    - name: Set telegram_service_id
+      set_fact:
+        telegram_service_id: "{{ cmd_telegram_service_id.stdout_lines[0] }}"
+
+    - name: Get service version
+      shell:
+        cmd: "docker service inspect {{ telegram_service_id }} {%raw%}--format='{{.Version}}'{%endraw%}"
+      register: cmd_service_version
+
+    - name: Set service_version
+      set_fact:
+        service_version: "{{ cmd_service_version.stdout_lines[0] }}"
+
+    - name: Get service ID
+      shell:
+        cmd: "docker service inspect {{ telegram_service_id }} {%raw%}--format='{{.ID}}'{%endraw%}"
+      register: cmd_service_id
+
+    - name: Set service_id
+      set_fact:
+        service_id: "{{ cmd_service_id.stdout_lines[0] }}"
+
+    - name: Get service data
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ service_id }}"
+        method: GET
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+      register: service_data
+
+    - name: Run set-portainer-webhook.js
+      shell:
+        cmd: node /home/code/set-portainer-webhook.js "{{ telegram_service_id }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "telegram_webhook"
+      register: cmd_set_telegram_webhook
+
+    # - debug:
+    #     msg: "{{ cmd_set_api_webhook }}"
+
+    # Passing X-Registry-Auth here helps Portainer to get private repo
+    # without that all webhooks will be failed
+    - name: Set image
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ telegram_service_id }}/update?version={{ service_version }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+          X-Registry-Auth: "{{ x_rgistry_auth.stdout }}"
+        body: "{{ service_data.json.Spec }}"
+      register: service_update
+
+    - name: Copy webhook info file
+      fetch:
+        src: /home/code/telegram_webhook.json
+        dest: "./"
+        flat: yes
+
+    - name: Delete artifacts
+      file:
+        path: "/home/code/{{ item }}"
+        state: absent
+      loop:
+        - "set-portainer-webhook.js"

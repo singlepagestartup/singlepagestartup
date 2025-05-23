@@ -1,0 +1,55 @@
+---
+- name: Delete telegram secrets from GitHub
+  hosts: all
+  become: yes
+  vars:
+    - github_token: "{{ GITHUB_TOKEN }}"
+    - github_repository: "{{ GITHUB_REPOSITORY }}"
+    - environment_type: "{{ ENVIRONMENT_TYPE }}"
+  tasks:
+    - name: Delete artifacts
+      file:
+        path: /home/code/github-node-api/
+        state: absent
+
+    - name: Set ENVIRONMENT_TYPE_PREFIX
+      set_fact:
+        ENVIRONMENT_TYPE_PREFIX: "{{ environment_type | default('') ~ '_' if environment_type else '' }}"
+
+    - name: Create github-node-api directory
+      file:
+        path: "/home/code/github-node-api"
+        state: directory
+
+    - name: Fill github-node-api directory from local
+      copy:
+        src: "{{ playbook_dir }}/../github/github-node-api/{{ item }}"
+        dest: "/home/code/github-node-api/{{ item }}"
+      loop:
+        - delete_secret.js
+        - package.json
+
+    - name: Install dependencies
+      shell:
+        cmd: "npm install"
+        chdir: "/home/code/github-node-api"
+
+    - name: Delete secrets from GitHub
+      no_log: true
+      shell:
+        cmd: "node ./delete_secret.js {{ github_token }} {{ github_repository }} {{ item.secret_name }} {{ item.secret_scope }}"
+        chdir: "/home/code/github-node-api"
+      loop:
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'PORTAINER_TELEGRAM_SERVICE_UPDATE_URL' }}",
+            secret_scope: actions,
+          }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_TELEGRAM_SERVICE_URL' }}",
+            secret_scope: actions,
+          }
+
+    - name: Delete artifacts
+      file:
+        path: /home/code/github-node-api/
+        state: absent
