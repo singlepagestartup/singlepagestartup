@@ -340,7 +340,7 @@ export class Service {
                   {
                     type: "request",
                     method: "GET",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
+                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
                     headers: {
                       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                     },
@@ -462,7 +462,7 @@ export class Service {
                           {
                             type: "request",
                             method: "GET",
-                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/orders/${updatedOrder.id}`,
+                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
                             headers: {
                               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                             },

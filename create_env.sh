@@ -12,6 +12,12 @@ elif [ "$1" = "api" ]; then
     printenv >> apps/api/.env
     exit 0
   fi
+elif [ "$1" = "telegram" ]; then
+  if [ "$2" = "deployment" ]; then
+    cat apps/telegram/.env.production > apps/telegram/.env
+    printenv >> apps/telegram/.env
+    exit 0
+  fi
 fi
 
 cd apps/db && ./create_env.sh

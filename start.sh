@@ -9,7 +9,11 @@ elif [ "$1" = "api" ]; then
   ./migrate.sh seed &
   npm run api:start
   exit 0
+elif [ "$1" = "telegram" ]; then
+  ./create_env.sh telegram deployment
+  npm run telegram:start
+  exit 0
 fi
 
-echo "Usage: ./start.sh [host|api]"
+echo "Usage: ./start.sh [host|api|telegram]"
 exit 1
