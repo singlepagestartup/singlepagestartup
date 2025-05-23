@@ -1,14 +1,14 @@
 {
   "title": {
-    "en": "RBAC | Subject | List"
+    "en": ""
   },
   "subtitle": {},
   "description": {},
   "id": "9d0462c8-cb02-4a64-a991-a3ea704c747a",
   "createdAt": "2025-01-24T23:47:55.459Z",
-  "updatedAt": "2025-05-05T13:03:25.691Z",
+  "updatedAt": "2025-05-21T22:54:00.891Z",
   "variant": "default",
   "className": "",
-  "adminTitle": "RBAC | Subject | List",
+  "adminTitle": "RBAC | Subject | List | Social Module Profile Default",
   "slug": "rbac-subject-list"
 }

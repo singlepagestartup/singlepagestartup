@@ -1,0 +1,3 @@
+
+echo "TELEGRAM_SERVICE_BOT_TOKEN=" >> .env
+echo "NEXT_PUBLIC_TELEGRAM_SERVICE_URL=" >> .env

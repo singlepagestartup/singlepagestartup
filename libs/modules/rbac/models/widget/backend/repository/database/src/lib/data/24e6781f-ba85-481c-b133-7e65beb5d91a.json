@@ -1,7 +1,8 @@
 {
   "className": null,
   "title": {
-    "en": "Team Members"
+    "en": "Subjects",
+    "ru": "Subjects"
   },
   "subtitle": {
     "en": ""
@@ -11,8 +12,8 @@
   },
   "id": "24e6781f-ba85-481c-b133-7e65beb5d91a",
   "createdAt": "2025-01-24T23:47:55.682Z",
-  "updatedAt": "2025-01-24T23:52:03.762Z",
-  "variant": "subject-list-default",
+  "updatedAt": "2025-05-21T23:41:22.002Z",
+  "variant": "subject-list-social-module-profile-default",
   "adminTitle": "tpnVl7TTA8",
-  "slug": "subject-list-default"
+  "slug": "subject-list-social-module-profile-default"
 }
