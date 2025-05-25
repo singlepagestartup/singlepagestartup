@@ -1,4 +1,4 @@
-import { SQL, getOperators } from "drizzle-orm";
+import { SQL, getOperators, sql } from "drizzle-orm";
 import { PgTableWithColumns } from "drizzle-orm/pg-core";
 
 interface QueryBuilderFilterMethods extends ReturnType<typeof getOperators> {}
@@ -58,40 +58,65 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
     const tableColumn = table[filterColumn];
 
     let filterValue: any;
-
-    switch (tableColumn?.["dataType"]) {
-      case "date":
-        filterValue = new Date(filter?.value);
-        break;
-      case "integer":
-        filterValue = parseInt(filter?.value);
-        break;
-      case "boolean":
-        filterValue = filter?.value === "true";
-        break;
-      case "json":
-        filterValue = JSON.parse(filter?.value);
-        break;
-      default:
-        filterValue = filter?.value;
-    }
-
-    if (!tableColumn) {
-      throw new Error("You are missing a column in the filter object");
-    }
-
+    let isJsonField = false;
+    let columnName = filterColumn.toString();
     const method: keyof QueryBuilderFilterMethods = filterMethod;
 
     if (!method) {
       throw new Error("You are missing a method in the filter object");
     }
 
+    if (columnName.includes("->>")) {
+      isJsonField = true;
+      const [column, jsonField] = columnName.split("->>");
+      const baseColumn = table[column.trim()];
+
+      if (!baseColumn) {
+        throw new Error(`Column ${column.trim()} not found in table`);
+      }
+
+      filterValue = filter?.value;
+    } else {
+      if (!tableColumn) {
+        throw new Error("You are missing a column in the filter object");
+      }
+
+      switch (tableColumn?.["dataType"]) {
+        case "date":
+          filterValue = new Date(filter?.value);
+          break;
+        case "integer":
+          filterValue = parseInt(filter?.value);
+          break;
+        case "boolean":
+          filterValue = filter?.value === "true";
+          break;
+        case "json":
+          filterValue = JSON.parse(filter?.value);
+          break;
+        default:
+          filterValue = filter?.value;
+      }
+    }
+
     if (method === "notInArray" || method === "inArray") {
       const arrayFilter: string[] = [];
 
       if (!filterValue) {
-        resultQueries.push(queryFunctions.isNull(tableColumn) as SQL<any>);
-
+        if (isJsonField) {
+          const [column, jsonField] = columnName.split("->>");
+          const baseColumn = table[column.trim()];
+          if (!baseColumn) {
+            throw new Error(`Column ${column.trim()} not found in table`);
+          }
+          resultQueries.push(
+            queryFunctions.isNull(
+              sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
+            ) as SQL<any>,
+          );
+        } else if (tableColumn) {
+          resultQueries.push(queryFunctions.isNull(tableColumn) as SQL<any>);
+        }
         continue;
       } else if (Array.isArray(filterValue)) {
         filterValue.forEach((value) => {
@@ -103,9 +128,23 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         });
       }
 
-      resultQueries.push(
-        queryFunctions[method](tableColumn, arrayFilter) as SQL<any>,
-      );
+      if (isJsonField) {
+        const [column, jsonField] = columnName.split("->>");
+        const baseColumn = table[column.trim()];
+        if (!baseColumn) {
+          throw new Error(`Column ${column.trim()} not found in table`);
+        }
+        resultQueries.push(
+          queryFunctions[method](
+            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
+            arrayFilter,
+          ) as SQL<any>,
+        );
+      } else if (tableColumn) {
+        resultQueries.push(
+          queryFunctions[method](tableColumn, arrayFilter) as SQL<any>,
+        );
+      }
     }
 
     if (
@@ -117,9 +156,25 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       method === "gte" ||
       method === "ne"
     ) {
-      resultQueries.push(
-        queryFunctions[method](tableColumn, filterValue) as SQL<any>,
-      );
+      if (isJsonField) {
+        const [column, jsonField] = columnName.split("->>");
+        const baseColumn = table[column.trim()];
+
+        if (!baseColumn) {
+          throw new Error(`Column ${column.trim()} not found in table`);
+        }
+
+        resultQueries.push(
+          queryFunctions[method](
+            sql`${baseColumn}->>${sql.raw(`'${jsonField}'`)}`,
+            filterValue,
+          ) as SQL<any>,
+        );
+      } else if (tableColumn) {
+        resultQueries.push(
+          queryFunctions[method](tableColumn, filterValue) as SQL<any>,
+        );
+      }
     }
 
     if (
@@ -128,33 +183,28 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       method === "ilike" ||
       method === "like"
     ) {
-      resultQueries.push(
-        queryFunctions[method](
-          tableColumn,
-          "%" + filterValue + "%",
-        ) as SQL<any>,
-      );
-    }
-
-    if (
-      method === "exists" ||
-      method === "notExists" ||
-      method === "isNull" ||
-      method === "isNotNull"
-    ) {
-      resultQueries.push(queryFunctions[method](tableColumn));
-    }
-
-    if (
-      method === "between" ||
-      method === "notBetween" ||
-      method === "or" ||
-      method === "sql" ||
-      method === "and"
-    ) {
-      throw new Error(`Method '${method}' not implemented`);
+      if (isJsonField) {
+        const [column, jsonField] = columnName.split("->>");
+        const baseColumn = table[column.trim()];
+        if (!baseColumn) {
+          throw new Error(`Column ${column.trim()} not found in table`);
+        }
+        resultQueries.push(
+          queryFunctions[method](
+            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
+            "%" + filterValue + "%",
+          ) as SQL<any>,
+        );
+      } else if (tableColumn) {
+        resultQueries.push(
+          queryFunctions[method](
+            tableColumn,
+            "%" + filterValue + "%",
+          ) as SQL<any>,
+        );
+      }
     }
   }
 
-  return queryFunctions.and(...resultQueries);
+  return resultQueries;
 };

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { PgTableWithColumns, jsonb } from "drizzle-orm/pg-core";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { inject, injectable } from "inversify";
 import { getDrizzle } from "@sps/shared-backend-database-config";
@@ -16,6 +16,7 @@ import {
 import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
 import fs from "fs/promises";
 import { logger } from "@sps/backend-utils";
+import { sql } from "drizzle-orm";
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -41,9 +42,9 @@ export class Database<T extends PgTableWithColumns<any>>
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {
     try {
       const filters = queryBuilder.filters({
-        table: this.Table,
-        filters: props?.params?.filters,
+        table: this.Table as T,
         queryFunctions: methods,
+        filters: props?.params?.filters,
       });
 
       if (props?.params?.orderBy?.and && !props.params.orderBy.and?.[0]) {
@@ -65,7 +66,7 @@ export class Database<T extends PgTableWithColumns<any>>
       const records = await this.db
         .select()
         .from(this.Table)
-        .where(filters)
+        .where(filters ? methods.and(...filters) : undefined)
         .limit(Number(props?.params?.limit) as number)
         .offset(Number(props?.params?.offset) as number)
         .orderBy(order)
