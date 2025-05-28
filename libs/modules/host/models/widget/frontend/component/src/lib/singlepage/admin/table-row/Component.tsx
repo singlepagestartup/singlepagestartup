@@ -20,7 +20,7 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
-        <div className="flex flex-col gap-0.5 overflow-hidden">
+        <div className="flex flex-col col-span-3 gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Admin Title</p>
           <p className="truncate">{props.data.adminTitle}</p>
         </div>

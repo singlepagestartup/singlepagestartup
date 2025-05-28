@@ -1,6 +1,5 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as SocialModuleWidget } from "@sps/social/models/widget/frontend/component";
-import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -24,12 +23,12 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <Widget
+            <SocialModuleWidget
               key={index}
               isServer={props.isServer}
               data={entity}
               language={props.language}
-              url={props.url}
+              variant={entity.variant as any}
             />
           );
         });

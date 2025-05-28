@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
-import { Component as RbacSubject } from "../rbac/subject/Component";
+import { Component as RbacSubject } from "../rbac/subject";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -22,16 +22,16 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       {({ data }) => {
-        return data?.map((widget) => {
+        return data?.map((entity, index) => {
           return (
             <WebsiteBuilderModuleWidget
-              key={widget.id}
+              key={index}
               isServer={props.isServer}
-              data={widget}
-              variant={widget.variant as any}
+              data={entity}
+              variant={entity.variant as any}
               language={props.language}
             >
-              {widget.variant.includes("navbar") ? (
+              {entity.variant.includes("navbar") ? (
                 <RbacSubject
                   isServer={props.isServer}
                   language={props.language}

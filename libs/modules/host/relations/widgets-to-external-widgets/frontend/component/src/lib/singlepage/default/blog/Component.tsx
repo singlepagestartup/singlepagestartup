@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as BlogModuleWidget } from "@sps/blog/models/widget/frontend/component";
-import { Component as Widget } from "./widget/Component";
+import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -24,13 +24,15 @@ export function Component(props: IComponentPropsExtended) {
       {({ data }) => {
         return data?.map((entity, index) => {
           return (
-            <Widget
+            <BlogModuleWidget
               key={index}
               isServer={props.isServer}
               data={entity}
               language={props.language}
-              url={props.url}
-            />
+              variant={entity.variant as any}
+            >
+              <Widget {...props} data={entity} variant={entity.variant} />
+            </BlogModuleWidget>
           );
         });
       }}

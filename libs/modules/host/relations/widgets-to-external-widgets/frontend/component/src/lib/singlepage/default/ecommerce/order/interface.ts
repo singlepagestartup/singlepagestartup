@@ -1,3 +1,6 @@
-import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as ISinglepageComponentProps } from "./singlepage/interface";
+import { IComponentProps as IStartupComponentProps } from "./startup/interface";
 
-export type IComponentProps = IDefaultComponentProps;
+export type IComponentProps =
+  | ISinglepageComponentProps
+  | IStartupComponentProps;

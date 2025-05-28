@@ -158,6 +158,8 @@ export const preset = {
   safelist: [
     // Save all paddings
     { pattern: /^p\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
+    // Save all margins
+    { pattern: /^m\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
     // Save all widhts
     { pattern: /^w\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
     // Save all heights

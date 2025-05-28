@@ -17,6 +17,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn(
         "relative flex items-center justify-center w-full",
         props.data.containerClassName,
+        props.containerClassName,
       )}
     >
       {props.data.file && props.data.mimeType?.includes("image") ? (

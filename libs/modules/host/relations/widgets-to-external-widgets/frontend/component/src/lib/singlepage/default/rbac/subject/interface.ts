@@ -1,6 +1,6 @@
-import { IComponentProps as IMeComponentProps } from "./me/interface";
-import { IComponentProps as ISocialModuleProfileButtonDefaultComponentProps } from "./social-module-profile-button-default/interface";
+import { IComponentProps as ISinglepageComponentProps } from "./singlepage/interface";
+import { IComponentProps as IStartupComponentProps } from "./startup/interface";
 
 export type IComponentProps =
-  | IMeComponentProps
-  | ISocialModuleProfileButtonDefaultComponentProps;
+  | ISinglepageComponentProps
+  | IStartupComponentProps;
