@@ -12,4 +12,5 @@ export const variants = {
   "admin-form": AdminForm,
   default: Default,
   additional: Default,
+  extra: Default,
 };

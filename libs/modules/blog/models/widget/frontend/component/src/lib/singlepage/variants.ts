@@ -1,6 +1,6 @@
 import { Component as CategoryOverviewDefault } from "./category/overview/default";
 import { Component as CategoryListDefault } from "./category/list/default";
-import { Component as ArticleOverviewEcommerceModuleProductListCardDefault } from "./article/overview/ecommerce-module/product/list/card-default";
+import { Component as ArticleOverviewEcommerceModuleProductListDefault } from "./article/overview/ecommerce-module/product/list/default";
 import { Component as Find } from "./find";
 import { Component as AdminForm } from "./admin/form";
 import { Component as AdminTableRow } from "./admin/table-row";
@@ -14,8 +14,8 @@ import { Component as ArticleOverviewWithPrivateContentDefault } from "./article
 export const variants = {
   "category-overview-default": CategoryOverviewDefault,
   "category-list-default": CategoryListDefault,
-  "article-overview-ecommerce-module-product-list-card-default":
-    ArticleOverviewEcommerceModuleProductListCardDefault,
+  "article-overview-ecommerce-module-product-list-default":
+    ArticleOverviewEcommerceModuleProductListDefault,
   find: Find,
   "admin-form": AdminForm,
   "admin-table-row": AdminTableRow,

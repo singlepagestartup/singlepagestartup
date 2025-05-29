@@ -19,7 +19,7 @@ export const variants = [
   "article-list-default",
   "article-overview-default",
   "article-overview-with-private-content-default",
-  "article-overview-ecommerce-module-product-list-card-default",
+  "article-overview-ecommerce-module-product-list-default",
   "category-overview-default",
   "category-list-button-default",
   "category-list-default",

@@ -1,6 +1,6 @@
 import { Component as SubjectListSocialModuleProfileDefault } from "./subject/list/social-module/profile/default";
 import { Component as SubjectOverviewSocialModuleProfileOverviewDefault } from "./subject/overview/social-module/profile/overview/default";
-import { Component as SubjectOverviewEcommerceModuleProductListCardDefault } from "./subject/overview/ecommerce-module/product/list/card-default";
+import { Component as SubjectOverviewEcommerceModuleProductListDefault } from "./subject/overview/ecommerce-module/product/list/default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -21,8 +21,8 @@ export const variants = {
     SubjectListSocialModuleProfileDefault,
   "subject-overview-social-module-profile-overview-default":
     SubjectOverviewSocialModuleProfileOverviewDefault,
-  "subject-overview-ecommerce-module-product-list-card-default":
-    SubjectOverviewEcommerceModuleProductListCardDefault,
+  "subject-overview-ecommerce-module-product-list-default":
+    SubjectOverviewEcommerceModuleProductListDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

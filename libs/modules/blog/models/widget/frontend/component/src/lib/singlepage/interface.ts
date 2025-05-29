@@ -1,6 +1,6 @@
 import { IComponentProps as ICategoryOverviewDefaultComponentProps } from "./category/overview/default/interface";
 import { IComponentProps as ICategoryListDefaultComponentProps } from "./category/list/default/interface";
-import { IComponentProps as IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./article/overview/ecommerce-module/product/list/card-default/interface";
+import { IComponentProps as IArticleOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./article/overview/ecommerce-module/product/list/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";

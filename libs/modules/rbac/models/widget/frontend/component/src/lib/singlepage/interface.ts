@@ -1,6 +1,6 @@
 import { IComponentProps as ISubjectListSocialModuleProfileDefaultComponentProps } from "./subject/list/social-module/profile/default/interface";
 import { IComponentProps as ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps } from "./subject/overview/social-module/profile/overview/default/interface";
-import { IComponentProps as ISubjectOverviewEcommerceModuleProductListCardDefaultComponentProps } from "./subject/overview/ecommerce-module/product/list/card-default/interface";
+import { IComponentProps as ISubjectOverviewEcommerceModuleProductListDefaultComponentProps } from "./subject/overview/ecommerce-module/product/list/default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -19,7 +19,7 @@ import { IComponentProps as ISubjectListDefaultComponentProps } from "./subject/
 export type IComponentProps =
   | ISubjectListSocialModuleProfileDefaultComponentProps
   | ISubjectOverviewSocialModuleProfileOverviewDefaultComponentProps
-  | ISubjectOverviewEcommerceModuleProductListCardDefaultComponentProps
+  | ISubjectOverviewEcommerceModuleProductListDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps
