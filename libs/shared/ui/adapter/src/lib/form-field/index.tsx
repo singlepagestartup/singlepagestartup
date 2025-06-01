@@ -17,11 +17,16 @@ export function Component(props: IComponentProps) {
       name={props.name}
       render={({ field }) => {
         return (
-          <FormItem className={props.className}>
+          <FormItem className={cn("w-full flex flex-col", props.className)}>
+            <Input
+              field={field}
+              {...props}
+              className={cn("order-2 w-full", props.inputClassName)}
+            />
             {props.label && props.type !== "checkbox" ? (
               <div
                 className={cn(
-                  "flex items-center",
+                  "flex items-center order-1 w-full",
                   props.labelContainerClassName,
                 )}
               >
@@ -31,9 +36,8 @@ export function Component(props: IComponentProps) {
                 {props.children}
               </div>
             ) : null}
-            <Input field={field} {...props} className={props.inputClassName} />
             {props.label && props.type === "checkbox" ? (
-              <FormLabel className={props.labelClassName}>
+              <FormLabel className={cn("w-full order-3", props.labelClassName)}>
                 {props.label}
               </FormLabel>
             ) : null}

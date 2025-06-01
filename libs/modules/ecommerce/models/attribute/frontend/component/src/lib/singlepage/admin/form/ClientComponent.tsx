@@ -28,7 +28,7 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      boolean: props.data?.boolean || null,
+      boolean: props.data?.boolean || false,
       date: props.data?.date ? new Date(props.data.date) : null,
       datetime: props.data?.datetime ? new Date(props.data.datetime) : null,
       number: props.data?.number || null,
@@ -109,6 +109,8 @@ export function Component(props: IComponentPropsExtended) {
           label="Boolean"
           form={form}
           placeholder="Select boolean"
+          className="flex flex-row items-center gap-2"
+          inputClassName="w-4"
         />
 
         <FormField
