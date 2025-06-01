@@ -21,7 +21,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="orders-to-products"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className, props.className)}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     />
   );
 }

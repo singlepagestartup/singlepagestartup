@@ -21,7 +21,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="order"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.className)}
+      className={cn("w-full flex flex-col", props.className)}
     >
       <Button
         variant="destructive"
