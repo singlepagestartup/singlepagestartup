@@ -1,5 +1,5 @@
 import { Component as MeAuthenticationDefaultComponentProps } from "./me/authentication";
-import { Component as MeCrmModuleFormRequestCreateDefaultComponentProps } from "./me/crm-module-form-request-create";
+import { Component as MeCrmModuleFormRequestCreateComponentProps } from "./me/crm-module-form-request-create";
 import { Component as MeEcommerceModuleCartDefaultComponentProps } from "./me/ecommerce-module/cart/default";
 import { Component as MeEcommerceModuleOrderListCheckoutDefaultComponentProps } from "./me/ecommerce-module/order/list/checkout-default";
 import { Component as MeEcommerceModuleProductCartDefaultComponentProps } from "./me/ecommerce-module/product/cart-default";
@@ -8,8 +8,8 @@ import { Component as SocialModuleProfileButtonDefaultComponentProps } from "./s
 
 export const variants = {
   "me-authentication-default": MeAuthenticationDefaultComponentProps,
-  "me-crm-module-form-request-create-default":
-    MeCrmModuleFormRequestCreateDefaultComponentProps,
+  "me-crm-module-form-request-create":
+    MeCrmModuleFormRequestCreateComponentProps,
   "me-ecommerce-module-cart-default":
     MeEcommerceModuleCartDefaultComponentProps,
   "me-ecommerce-module-order-list-checkout-default":

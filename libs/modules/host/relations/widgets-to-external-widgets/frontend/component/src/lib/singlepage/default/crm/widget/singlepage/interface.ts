@@ -1,3 +1,3 @@
-import { IComponentProps as IListDefaultComponentProps } from "./form/list/default/interface";
+import { IComponentProps as IFormListDefaultComponentProps } from "./form/list/default/interface";
 
-export type IComponentProps = IListDefaultComponentProps;
+export type IComponentProps = IFormListDefaultComponentProps;

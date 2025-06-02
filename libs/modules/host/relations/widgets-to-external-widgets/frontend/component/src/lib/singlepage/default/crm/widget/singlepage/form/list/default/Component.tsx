@@ -46,13 +46,20 @@ export function Component(props: IComponentProps) {
               {({ data }) => {
                 return data?.map((entity, index) => {
                   return (
-                    <RbacSubject
+                    <CrmModuleForm
                       key={index}
                       isServer={props.isServer}
-                      crmModuleForm={entity}
+                      variant={entity.variant as any}
+                      data={entity}
                       language={props.language}
-                      variant="me-crm-module-form-request-create"
-                    />
+                    >
+                      <RbacSubject
+                        isServer={props.isServer}
+                        crmModuleForm={entity}
+                        language={props.language}
+                        variant="me-crm-module-form-request-create"
+                      />
+                    </CrmModuleForm>
                   );
                 });
               }}

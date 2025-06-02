@@ -197,7 +197,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/:id/crm-mocule/form/request",
+        path: "/:id/crm-module/form/request",
         handler: this.crmModuleFormRequestCreate,
       },
       {
