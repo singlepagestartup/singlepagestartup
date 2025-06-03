@@ -15,9 +15,4 @@ export const fields = {
     .text("admin_title")
     .notNull()
     .$defaultFn(() => randomWordsGenerator({ type: "title" })),
-  slug: pgCore
-    .text("slug")
-    .notNull()
-    .unique()
-    .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
 };
