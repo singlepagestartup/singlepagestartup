@@ -7,8 +7,15 @@ import Link from "next/link";
 import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
 import { Card, CardHeader, CardTitle } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
+import { saveLanguageContext } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    `/ecommerce/products/${props.data.slug}`,
+    props.language,
+    internationalization.languages,
+  );
+
   return (
     <Card
       data-module="ecommerce"
@@ -55,10 +62,7 @@ export function Component(props: IComponentPropsExtended) {
         </ProductsToFileStorageModuleWidgets>
         <div className="text-sm flex flex-col gap-1">
           <CardTitle>
-            <Link
-              href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
-              className="w-fit"
-            >
+            <Link href={href} className="w-fit">
               {props.data.title?.[props.language]}
             </Link>
           </CardTitle>

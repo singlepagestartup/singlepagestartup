@@ -12,15 +12,22 @@ import {
 import { Component as ArticlesToFileStorageModuleFiles } from "@sps/blog/relations/articles-to-file-storage-module-files/frontend/component";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
+import { saveLanguageContext } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    `/blog/articles/${props.data.slug}`,
+    props.language,
+    internationalization.languages,
+  );
+
   return (
     <Link
       data-module="blog"
       data-model="article"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/blog/articles/${props.data.slug}`}
+      href={href}
       className={cn("flex flex-col w-full cursor-pointer", props.className)}
     >
       <Card className="w-full flex flex-col hover:border-primary duration-300">

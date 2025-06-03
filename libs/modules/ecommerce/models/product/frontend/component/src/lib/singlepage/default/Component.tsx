@@ -14,9 +14,15 @@ import {
   TipTap,
 } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
-import { TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
+import { saveLanguageContext, TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    `/ecommerce/products/${props.data.slug}`,
+    props.language,
+    internationalization.languages,
+  );
+
   return (
     <Card
       data-module="ecommerce"
@@ -28,10 +34,7 @@ export function Component(props: IComponentPropsExtended) {
       {props.topSlot}
       <CardHeader>
         <CardTitle>
-          <Link
-            href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/ecommerce/products/${props.data.slug}`}
-            className="w-fit"
-          >
+          <Link href={href} className="w-fit">
             {props.data.title?.[props.language]}
           </Link>
         </CardTitle>

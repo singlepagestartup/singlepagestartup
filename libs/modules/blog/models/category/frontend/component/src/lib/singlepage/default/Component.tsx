@@ -11,15 +11,22 @@ import {
 } from "@sps/shared-ui-shadcn";
 import Link from "next/link";
 import { internationalization } from "@sps/shared-configuration";
+import { saveLanguageContext } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    `/blog/categories/${props.data.slug}`,
+    props.language,
+    internationalization.languages,
+  );
+
   return (
     <Link
       data-module="blog"
-      data-model="article"
+      data-model="category"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      href={`${props.language === internationalization.defaultLanguage.code ? "" : "/" + props.language}/blog/categories/${props.data.slug}`}
+      href={href}
       className={cn("flex flex-col w-full cursor-pointer", props.className)}
     >
       <Card className="w-full flex flex-col hover:border-primary duration-300">

@@ -4,8 +4,16 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 import { Component as Identity } from "@sps/rbac/models/identity/frontend/component";
+import { saveLanguageContext } from "@sps/shared-utils";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
+  const href = saveLanguageContext(
+    `/rbac/subjects/${props.data.slug}`,
+    props.language,
+    internationalization.languages,
+  );
+
   return (
     <div
       data-module="rbac"
@@ -73,7 +81,7 @@ export function Component(props: IComponentPropsExtended) {
           </SubjectsToIdentities>
         </div>
         <Button variant="outline" asChild={true} className="w-fit">
-          <Link href={`/rbac/subjects/${props.data.slug}`}>View profile</Link>
+          <Link href={href}>View profile</Link>
         </Button>
       </div>
     </div>

@@ -1,8 +1,8 @@
-import { ISpsComponentBase } from "@sps/ui-adapter";
+import { IComponentProps } from "./interface";
 import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as RbacModuleSubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/frontend/component";
 
-export function Component(props: ISpsComponentBase) {
+export function Component(props: IComponentProps) {
   return (
     <RbacModuleSubject isServer={props.isServer} variant="find">
       {({ data }) => {
@@ -39,6 +39,7 @@ export function Component(props: ISpsComponentBase) {
                           isServer={props.isServer}
                           variant="default"
                           data={subject}
+                          language={props.language}
                         />
                       );
                     });
