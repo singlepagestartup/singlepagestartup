@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
-import { Component as RbacSubject } from "../rbac/subject";
+import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -31,13 +31,11 @@ export function Component(props: IComponentPropsExtended) {
               variant={entity.variant as any}
               language={props.language}
             >
-              {entity.variant.includes("navbar") ? (
-                <RbacSubject
-                  isServer={props.isServer}
-                  language={props.language}
-                  variant="me-ecommerce-module-cart-default"
-                />
-              ) : null}
+              <Widget
+                {...props}
+                data={entity}
+                variant={entity.variant as any}
+              />
             </WebsiteBuilderModuleWidget>
           );
         });
