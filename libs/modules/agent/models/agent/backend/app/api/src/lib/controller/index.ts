@@ -6,6 +6,7 @@ import { Service } from "../service";
 import { Context } from "hono";
 import { Handler as Dummy } from "./dummy";
 import { Handler as Cron } from "./cron";
+import { Handler as HostModulePageCache } from "./host-module/page/cache";
 import { Handler as EcommerceOrderCheck } from "./ecommerce/order/check";
 
 @injectable()
@@ -61,6 +62,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:uuid",
         handler: this.delete,
       },
+      {
+        method: "POST",
+        path: "/host-module-page-cache",
+        handler: this.hostModulePageCache,
+      },
     ]);
   }
 
@@ -74,5 +80,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceOrderCheck(c: Context, next: any): Promise<Response> {
     return new EcommerceOrderCheck(this.service).execute(c, next);
+  }
+
+  async hostModulePageCache(c: Context, next: any): Promise<Response> {
+    return new HostModulePageCache(this.service).execute(c, next);
   }
 }

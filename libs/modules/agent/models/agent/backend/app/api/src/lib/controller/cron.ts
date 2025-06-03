@@ -34,7 +34,7 @@ export class Handler {
         broadcastChannelApi.find({
           params: {
             filters: {
-              and: [{ column: "title", method: "eq", value: "cron" }],
+              and: [{ column: "slug", method: "eq", value: "cron" }],
             },
           },
         }),
@@ -77,6 +77,7 @@ export class Handler {
           let lastExecutionTime: Date | null = lastExecution
             ? new Date(lastExecution.datetime)
             : null;
+
           const youngerThanMaxDuration =
             lastExecutionTime &&
             lastExecutionTime.getTime() >
@@ -102,7 +103,10 @@ export class Handler {
               currentDate: lastExecutionTime || now,
             });
             const nextExecutionTime = interval.next().toDate();
-            if (now >= nextExecutionTime) {
+
+            if (!lastExecutionTime) {
+              needToExecute = true;
+            } else if (now >= nextExecutionTime) {
               needToExecute = true;
             }
           } catch (err) {
@@ -113,7 +117,9 @@ export class Handler {
             return;
           }
 
-          if (!needToExecute) return;
+          if (!needToExecute) {
+            return;
+          }
 
           executingAgents.push(agent);
 
@@ -178,16 +184,15 @@ export class Handler {
         options: { headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY } },
       });
 
-      const agentExecutionResult = await fetch(
-        API_SERVICE_URL + "/api/agent/agents/" + agent.slug,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+      const url = API_SERVICE_URL + "/api/agent/agents/" + agent.slug;
+
+      const agentExecutionResult = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-      )
+      })
         .then(async (res) => {
           if (!res.ok) {
             const errorText = await res.text();
