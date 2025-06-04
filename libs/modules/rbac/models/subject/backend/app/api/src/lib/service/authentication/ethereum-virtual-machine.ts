@@ -20,7 +20,7 @@ export type IExecuteProps = {
     signature: Hex;
     address: Address;
   };
-  roles?: [{ uid: string }];
+  roles?: [{ slug: string }];
 };
 
 export class Service {
@@ -137,9 +137,9 @@ export class Service {
       const rolesFilters = props.roles?.length
         ? [
             {
-              column: "uid",
+              column: "slug",
               method: "in",
-              value: props.roles?.map((role) => role.uid),
+              value: props.roles?.map((role) => role.slug),
             },
           ]
         : [];

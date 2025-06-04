@@ -21,7 +21,7 @@ export type IExecuteProps = {
 
 export interface IRegistrationDTO {
   type: "registration";
-  roles: [{ uid: string }];
+  roles: [{ slug: string }];
 }
 
 export interface IAuthenticationDTO {
@@ -102,9 +102,9 @@ export class Service {
       const rolesFilters = props.roles.length
         ? [
             {
-              column: "uid",
+              column: "slug",
               method: "in",
-              value: props.roles?.map((role) => role.uid),
+              value: props.roles?.map((role) => role.slug),
             },
           ]
         : [];

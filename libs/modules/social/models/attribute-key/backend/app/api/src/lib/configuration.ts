@@ -26,6 +26,15 @@ export class Configuration extends ParentConfiguration {
           module: "social",
           name: "attribute-key",
           type: "model",
+          filters: [
+            {
+              column: "slug",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.slug;
+              },
+            },
+          ],
         },
       },
     });

@@ -18,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
           <RbacRole isServer={false} variant="find">
             {({ data: roles }) => {
               const adminRole = roles?.find((role) => {
-                return role.uid === "admin";
+                return role.slug === "admin";
               });
 
               if (!adminRole) {

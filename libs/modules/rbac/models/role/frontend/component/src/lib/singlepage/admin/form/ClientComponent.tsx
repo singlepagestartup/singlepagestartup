@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/rbac/models/role/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -24,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
-      uid: props.data?.uid || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       availableOnRegistration: props.data?.availableOnRegistration || false,
     },
   });
@@ -64,10 +65,10 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
-          label="Uid"
-          name="uid"
+          label="Slug"
+          name="slug"
           form={form}
-          placeholder="Type uid"
+          placeholder="Type slug"
         />
 
         <FormField

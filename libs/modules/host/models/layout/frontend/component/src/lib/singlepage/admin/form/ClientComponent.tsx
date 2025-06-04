@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/host/models/layout/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -24,6 +25,9 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       title: props.data?.title || "",
       variant: props.data?.variant || "default",
+      adminTitle:
+        props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
 
@@ -50,6 +54,24 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="adminTitle"
+          label="Admin title"
+          form={form}
+          placeholder="Type admin title"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="slug"
+          label="Slug"
+          form={form}
+          placeholder="Type slug"
+        />
+
         <FormField
           ui="shadcn"
           type="text"
