@@ -45,23 +45,39 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       tags: [route],
       ...options?.next,
     },
+    signal: AbortSignal.timeout(10000),
   };
 
-  const res = await fetch(
-    `${host}${route}?${stringifiedQuery}`,
-    requestOptions,
-  );
+  let retries = 3;
+  let lastError;
 
-  const json = await responsePipe<{ data: IResult<T> }>({
-    res,
-    catchErrors: props.catchErrors || productionBuild,
-  });
+  while (retries > 0) {
+    try {
+      const res = await fetch(
+        `${host}${route}?${stringifiedQuery}`,
+        requestOptions,
+      );
 
-  if (!json) {
-    return;
+      const json = await responsePipe<{ data: IResult<T> }>({
+        res,
+        catchErrors: props.catchErrors || productionBuild,
+      });
+
+      if (!json) {
+        return;
+      }
+
+      const transformedData = transformResponseItem<IResult<T>>(json);
+
+      return transformedData;
+    } catch (error) {
+      lastError = error;
+      retries--;
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
   }
 
-  const transformedData = transformResponseItem<IResult<T>>(json);
-
-  return transformedData;
+  throw lastError;
 }

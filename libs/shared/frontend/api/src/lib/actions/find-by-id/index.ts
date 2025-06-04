@@ -43,18 +43,34 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       tags: [[route, id].join("/")],
       ...options?.next,
     },
+    signal: AbortSignal.timeout(10000),
   };
 
-  const res = await fetch(
-    `${host}${route}/${id}?${stringifiedQuery}`,
-    requestOptions,
-  );
+  let retries = 3;
+  let lastError;
 
-  const json = await responsePipe<{ data: IResult<T> }>({
-    res,
-  });
+  while (retries > 0) {
+    try {
+      const res = await fetch(
+        `${host}${route}/${id}?${stringifiedQuery}`,
+        requestOptions,
+      );
 
-  const transformedData = transformResponseItem<IResult<T>>(json);
+      const json = await responsePipe<{ data: IResult<T> }>({
+        res,
+      });
 
-  return transformedData;
+      const transformedData = transformResponseItem<IResult<T>>(json);
+
+      return transformedData;
+    } catch (error) {
+      lastError = error;
+      retries--;
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  }
+
+  throw lastError;
 }
