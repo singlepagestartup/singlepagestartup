@@ -63,6 +63,15 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Admin title"
+          name="adminTitle"
+          form={form}
+          placeholder="Type admin title"
+        />
+
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
