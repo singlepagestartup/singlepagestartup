@@ -120,14 +120,10 @@ export const Component = (props: IComponentProps) => {
       <FormControl>
         <DateTimePicker
           {...props.field}
-          mode="single"
           placeholder={props.placeholder}
           value={props.field.value}
           onChange={props.field.onChange}
           className={props.className}
-          disabled={(date) =>
-            date > new Date() || date < new Date("1900-01-01")
-          }
         />
       </FormControl>
     );

@@ -13,6 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn(
         "w-full flex flex-col",
         props.data.className || "px-2 py-20 lg:py-32",
+        props.className,
       )}
     >
       <div className="w-full mx-auto max-w-7xl flex flex-col gap-4 lg:gap-10">

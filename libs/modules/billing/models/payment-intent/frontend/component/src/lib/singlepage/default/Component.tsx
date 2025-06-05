@@ -1,3 +1,4 @@
+import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 import { Component as PaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/frontend/component";
 
@@ -8,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="payment-intent"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className="w-full flex flex-col"
+      className={cn("w-full flex flex-col", props.className)}
     >
       <PaymentIntentsToInvoices
         isServer={props.isServer}

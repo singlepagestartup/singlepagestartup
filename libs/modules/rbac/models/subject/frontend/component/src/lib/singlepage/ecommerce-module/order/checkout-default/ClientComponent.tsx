@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
 import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 const providers = [
   "stripe",
@@ -87,7 +88,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       {...form}
     >
-      <div className="flex flex-col w-full gap-2">
+      <div className={cn("flex flex-col w-full gap-2", props.className)}>
         <BillingCurrency
           isServer={false}
           variant="toggle-group-default"

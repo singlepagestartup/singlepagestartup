@@ -9,6 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 const formSchema = z.object({});
 
@@ -58,7 +59,7 @@ export function Component(props: IComponentPropsExtended) {
               <Button
                 onClick={form.handleSubmit(onSubmit)}
                 variant="destructive"
-                className="w-full flex flex-shrink-0"
+                className={cn("w-full flex flex-shrink-0", props.className)}
               >
                 Delete
               </Button>

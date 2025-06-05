@@ -1,5 +1,6 @@
 import { Button } from "@sps/shared-ui-shadcn";
 import { IComponentPropsExtended } from "./interface";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -8,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="profile"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className="w-fit"
+      className={cn("w-full", props.data.className, props.className)}
       variant="outline"
       size="sm"
     >

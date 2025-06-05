@@ -28,7 +28,11 @@ export function Component(props: IComponentPropsExtended) {
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       href={href}
-      className={cn("flex flex-col w-full cursor-pointer", props.className)}
+      className={cn(
+        "flex flex-col w-full cursor-pointer",
+        props.data.className,
+        props.className,
+      )}
     >
       <Card className="w-full flex flex-col hover:border-primary duration-300">
         <CardHeader className="flex flex-col gap-1">

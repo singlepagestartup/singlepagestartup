@@ -1,3 +1,4 @@
+import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
@@ -7,7 +8,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="subjects-to-roles"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className="w-full py-10 text-center flex flex-col gap-1"
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       <p className="font-bold">Generated variant</p>
       <p className="font-bold text-4xl">Relation: subjects-to-roles</p>

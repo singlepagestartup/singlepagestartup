@@ -18,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="button"
       data-id={props.data?.id || ""}
       data-variant={props.data.variant}
-      className={cn("w-full flex", props.data.className)}
+      className={cn("w-full flex", props.data.className, props.className)}
       href={withProtocol ? props.data.url || "" : saveLanguageLink}
       target={withProtocol ? "_blank" : undefined}
     >

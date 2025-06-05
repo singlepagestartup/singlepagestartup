@@ -18,7 +18,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="product"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-row", props.className || "")}
+      className={cn("w-full flex flex-row", props.className)}
     >
       <ProductsToAttributes
         isServer={props.isServer}

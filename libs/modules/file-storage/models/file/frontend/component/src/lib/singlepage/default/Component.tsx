@@ -38,6 +38,7 @@ export function Component(props: IComponentPropsExtended) {
           className={cn(
             "flex w-full h-full max-w-full max-h-full object-contain",
             props.data.className,
+            props.className,
           )}
           sizes="100vw"
         />

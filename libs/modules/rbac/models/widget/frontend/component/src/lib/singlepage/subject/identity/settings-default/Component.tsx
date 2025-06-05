@@ -16,7 +16,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col max-w-7xl mx-auto", props.className)}
+      className={cn(
+        "w-full flex flex-col max-w-7xl mx-auto",
+        props.data.className,
+        props.className,
+      )}
     >
       <Card className="w-full flex flex-col gap-3">
         <CardHeader>

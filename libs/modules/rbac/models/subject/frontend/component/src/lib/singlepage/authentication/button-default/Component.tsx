@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="subject"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className || "")}
+      className={cn("w-full flex flex-col", props.className)}
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild={true}>

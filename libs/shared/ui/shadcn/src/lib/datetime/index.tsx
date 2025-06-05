@@ -1,185 +1,132 @@
 "use client";
 
-import React, { ComponentProps, forwardRef, useEffect, useState } from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
+import * as React from "react";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Calendar } from "../calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../popover";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
-type DateTimePickerProps = ComponentProps<typeof Calendar> & {
+import { Button } from "../button";
+import { Calendar } from "../calendar";
+import { Input } from "../input";
+
+interface IDateTimePickerProps {
   value: string;
+  onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  onChange: (value: string) => void;
-};
+}
 
-export const DateTimePicker = forwardRef<HTMLInputElement, DateTimePickerProps>(
-  (props, ref) => {
-    const [localValue, setLocalValue] = useState<Date | undefined>(
-      props.value && props.value !== "" ? new Date(props.value) : undefined,
-    );
-    const [hour, setHour] = useState<string>("00");
-    const [minute, setMinute] = useState<string>("00");
+export function DateTimePicker(props: IDateTimePickerProps) {
+  const { value, onChange, placeholder, className } = props;
+  const [date, setDate] = React.useState<Date | undefined>(
+    value && value !== "" ? new Date(value) : undefined,
+  );
+  const [inputValue, setInputValue] = React.useState<string>(
+    value && value !== "" && dayjs(value).isValid()
+      ? dayjs(value).format("DD.MM.YYYY HH:mm")
+      : "",
+  );
 
-    function onChange(event: Date | undefined) {
-      if (!event) {
-        return;
-      }
-
-      if (!hour) {
-        setHour(dayjs(event).format("HH"));
-      }
-
-      if (!minute) {
-        setMinute(dayjs(event).format("mm"));
-      }
-
-      setLocalValue(event);
+  React.useEffect(() => {
+    if (!value) return;
+    setDate(new Date(value));
+    if (dayjs(value).isValid()) {
+      setInputValue(dayjs(value).format("DD.MM.YYYY HH:mm"));
     }
+  }, [value]);
 
-    function getSanitizedValue({
-      type,
-      value,
-    }: {
-      type: "hour" | "minute";
-      value: string;
-    }) {
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      const newDate = new Date(selectedDate);
+      if (date) {
+        newDate.setHours(date.getHours());
+        newDate.setMinutes(date.getMinutes());
+      }
+      setDate(newDate);
+      setInputValue(dayjs(newDate).format("DD.MM.YYYY HH:mm"));
+      onChange(dayjs(newDate).toISOString());
+    }
+  };
+
+  const handleTimeChange = (type: "hour" | "minute", valueStr: string) => {
+    if (date) {
+      const newDate = new Date(date);
       if (type === "hour") {
-        if (Number(hour) > 23 || Number(hour) < 0) {
-          return;
-        }
+        newDate.setHours(parseInt(valueStr));
       } else if (type === "minute") {
-        if (Number(minute) > 59 || Number(minute) < 0) {
-          return;
-        }
+        newDate.setMinutes(parseInt(valueStr));
       }
-
-      if (value.length === 0) {
-        return "00";
-      }
-
-      if (Number(value) < 0) {
-        return "00";
-      }
-
-      if (Number(value) < 10) {
-        return `0${Number(value)}`;
-      }
-
-      return value;
+      setDate(newDate);
+      setInputValue(dayjs(newDate).format("DD.MM.YYYY HH:mm"));
+      onChange(dayjs(newDate).toISOString());
     }
+  };
 
-    useEffect(() => {
-      if (!localValue) {
-        return;
-      }
-      const sanitizedHour = getSanitizedValue({ type: "hour", value: hour });
-      const sanitizedMinute = getSanitizedValue({
-        type: "minute",
-        value: minute,
-      });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    const parsed = dayjs(val, "DD.MM.YYYY HH:mm", true);
+    if (parsed.isValid()) {
+      setDate(parsed.toDate());
+      onChange(parsed.toISOString());
+    }
+  };
 
-      const newIsoValue = new Date(
-        `${dayjs(localValue).format("YYYY-MM-DD")}T${sanitizedHour}:${sanitizedMinute}:00`,
-      );
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
-      const isValid = !isNaN(newIsoValue.getTime());
-
-      if (!isValid) {
-        return;
-      }
-
-      if (newIsoValue.getTime() === localValue.getTime()) {
-        return;
-      }
-
-      setLocalValue(newIsoValue);
-    }, [hour, minute, localValue]);
-
-    useEffect(() => {
-      if (!localValue) {
-        return;
-      }
-
-      const sanitizedHour = getSanitizedValue({ type: "hour", value: hour });
-      const sanitizedMinute = getSanitizedValue({
-        type: "minute",
-        value: minute,
-      });
-
-      const date = new Date(
-        `${dayjs(localValue).format("YYYY-MM-DD")}T${sanitizedHour}:${sanitizedMinute}:00`,
-      );
-
-      const isValid = !isNaN(date.getTime());
-
-      if (!isValid) {
-        return;
-      }
-
-      const isoValue = dayjs(date).format("YYYY-MM-DDTHH:mm:ss");
-
-      if (isoValue === props.value) {
-        return;
-      }
-
-      props.onChange(dayjs(date).toISOString());
-    }, [localValue]);
-
-    useEffect(() => {
-      const isValid = dayjs(props.value).isValid();
-      if (!isValid) {
-        return;
-      }
-
-      setHour(dayjs(props.value).format("HH"));
-      setMinute(dayjs(props.value).format("mm"));
-    }, [props.value]);
-
-    return (
-      <Popover>
-        <PopoverTrigger
-          className={cn(
-            "flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-            props.className,
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {(dayjs(props.value).isValid() &&
-            dayjs(props.value).format("DD/MM/YYYY HH:mm")) || (
-            <span className="text-muted-foreground">
-              {props.placeholder || "Select date and time"}
-            </span>
-          )}
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-3">
-          <Calendar mode="single" selected={localValue} onDayClick={onChange} />
-          <div className="flex items-center gap-3">
-            <InputOTP
-              maxLength={2}
-              value={hour}
-              onChange={(value) => setHour(value)}
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-              </InputOTPGroup>
-            </InputOTP>
-            <InputOTP
-              maxLength={2}
-              value={minute}
-              onChange={(value) => setMinute(value)}
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-              </InputOTPGroup>
-            </InputOTP>
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-2 border border-input rounded-md p-2",
+        className,
+      )}
+    >
+      <Input
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder={placeholder || "ДД.ММ.ГГГГ ЧЧ:мм"}
+        type="text"
+        className="mb-2"
+      />
+      <div className="w-full flex gap-2">
+        <div className="w-1/3 px-2">
+          <Calendar mode="single" selected={date} onSelect={handleDateSelect} />
+        </div>
+        <div className="w-1/3 p-2 flex flex-col gap-2">
+          <p className="text-sm font-medium">Hours</p>
+          <div className="grid grid-cols-4 gap-2">
+            {hours.map((hour) => (
+              <Button
+                key={hour}
+                variant={date && date.getHours() === hour ? "default" : "ghost"}
+                className="w-full h-full border border-input"
+                onClick={() => handleTimeChange("hour", hour.toString())}
+              >
+                {hour.toString().padStart(2, "0")}
+              </Button>
+            ))}
           </div>
-        </PopoverContent>
-      </Popover>
-    );
-  },
-);
+        </div>
+        <div className="w-1/3 p-2 flex flex-col gap-2">
+          <p className="text-sm font-medium">Minutes</p>
+          <div className="grid grid-cols-4 gap-2">
+            {minutes.map((minute) => (
+              <Button
+                key={minute}
+                variant={
+                  date && date.getMinutes() === minute ? "default" : "ghost"
+                }
+                className="w-full h-full border border-input"
+                onClick={() => handleTimeChange("minute", minute.toString())}
+              >
+                {minute.toString().padStart(2, "0")}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

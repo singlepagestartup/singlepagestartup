@@ -10,7 +10,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="profile"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.data.className)}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       <div className="w-full flex items-start flex-col gap-5 mx-auto max-w-7xl">
         {props.data?.subtitle ? (

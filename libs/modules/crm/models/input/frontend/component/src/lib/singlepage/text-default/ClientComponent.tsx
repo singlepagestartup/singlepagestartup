@@ -19,7 +19,8 @@ export function Component(props: IComponentPropsExtended) {
       placeholder={props.data.placeholder?.[props.language] ?? ""}
       className={cn(
         "flex w-full flex-col",
-        props.data.className || props.className,
+        props.data.className,
+        props.className,
       )}
     />
   );

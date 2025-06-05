@@ -20,7 +20,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="widgets-to-external-widgets"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.data.className || "")}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       {props.data.externalModule === "agent" ? (
         <Agent {...props} isServer={props.isServer} data={props.data} />

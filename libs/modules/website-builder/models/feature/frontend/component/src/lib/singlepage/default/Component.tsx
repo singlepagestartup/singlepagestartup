@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="elements.feature"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("flex flex-col w-full", props.data.className)}
+      className={cn(
+        "flex flex-col w-full",
+        props.data.className,
+        props.className,
+      )}
     >
       {props.data.title?.[props.language] ? (
         <p className="text-3xl font-medium leading-6 text-gray-900">

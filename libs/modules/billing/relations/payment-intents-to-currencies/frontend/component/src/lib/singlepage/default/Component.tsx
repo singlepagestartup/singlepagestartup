@@ -9,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="payment-intents-to-currencies"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className)}
+      className={cn("w-full flex", props.data.className, props.className)}
     >
       <Currency
         variant="find"

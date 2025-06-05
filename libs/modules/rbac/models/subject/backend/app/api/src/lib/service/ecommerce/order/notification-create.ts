@@ -308,7 +308,7 @@ export class Service {
         filters: {
           and: [
             {
-              column: "uid",
+              column: "slug",
               method: "ilike",
               value: "admin",
             },

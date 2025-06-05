@@ -49,7 +49,7 @@ export function Component(props: IComponentPropsExtended) {
       data-module="ecommerce"
       data-model="order"
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className || "")}
+      className={cn("w-full flex flex-col", props.className)}
     >
       <Form {...form}>
         <Button onClick={form.handleSubmit(onSubmit)} variant="primary">

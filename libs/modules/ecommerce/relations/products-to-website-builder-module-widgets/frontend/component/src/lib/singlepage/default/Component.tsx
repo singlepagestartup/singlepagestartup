@@ -9,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="products-to-website-builder-module-widgets"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className)}
+      className={cn("w-full flex", props.data.className, props.className)}
     >
       <WebsiteBuilderModuleWidget
         variant="find"

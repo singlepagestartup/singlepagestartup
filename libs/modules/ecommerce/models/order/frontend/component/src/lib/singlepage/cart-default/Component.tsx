@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       {({ data: ecommerceModuleOrdersToProducts }) => {
         return (
-          <div className="flex flex-col gap-1">
+          <div className={cn("flex flex-col gap-1", props.className)}>
             {ecommerceModuleOrdersToProducts?.map(
               (ecommerceModuleOrdersToProduct, index) => {
                 return (

@@ -1,3 +1,4 @@
+import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
 import { Component as WidgetsToFiles } from "@sps/file-storage/relations/widgets-to-files/frontend/component";
 
@@ -8,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className="w-full flex"
+      className={cn("w-full flex", props.className)}
     >
       <WidgetsToFiles
         isServer={props.isServer}

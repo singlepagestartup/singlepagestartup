@@ -13,7 +13,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="product"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className || "")}
+      className={cn("w-full flex flex-col", props.className)}
     >
       <div className="flex flex-col gap-3">
         <ProductsToAttributes

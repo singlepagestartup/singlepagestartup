@@ -9,7 +9,7 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="slides-to-buttons-arrays"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex", props.data.className)}
+      className={cn("w-full flex", props.data.className, props.className)}
     >
       <ButtonsArrays
         isServer={props.isServer}

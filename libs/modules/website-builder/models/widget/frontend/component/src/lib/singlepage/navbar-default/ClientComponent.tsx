@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { IComponentPropsExtended } from "./interface";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full">
+    <div className={cn("w-full", props.data.className, props.className)}>
       <div className="mx-auto flex flex-row w-full overflow-hidden px-2 py-3 gap-2">
         <div className="flex items-center">{props.logotype}</div>
         <div

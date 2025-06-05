@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="subjects-to-ecommerce-module-orders"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       <Order
         isServer={props.isServer}

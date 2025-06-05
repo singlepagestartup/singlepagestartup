@@ -8,7 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       data-model="attribute"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-row gap-0.5", props.className || "")}
+      className={cn("w-full flex", props.className)}
     >
       <p>
         {props.field === "string"

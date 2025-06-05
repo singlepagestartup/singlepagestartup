@@ -17,6 +17,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn(
         "w-full flex flex-col",
         props.data.className || "px-2 py-20 lg:py-32",
+        props.className,
       )}
     >
       <div className="w-full flex items-start flex-col gap-5 mx-auto max-w-7xl">

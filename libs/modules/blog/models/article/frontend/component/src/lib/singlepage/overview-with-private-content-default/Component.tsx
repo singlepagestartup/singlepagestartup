@@ -8,7 +8,11 @@ export function Component(props: IComponentPropsExtended) {
       data-model="article"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.data.className)}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       {props.children}
     </div>

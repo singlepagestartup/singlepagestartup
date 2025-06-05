@@ -9,7 +9,11 @@ export function Component(props: IComponentPropsExtended) {
       data-relation="pages-to-widgets"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.data.className)}
+      className={cn(
+        "w-full flex flex-col",
+        props.data.className,
+        props.className,
+      )}
     >
       <Widget
         isServer={props.isServer}
