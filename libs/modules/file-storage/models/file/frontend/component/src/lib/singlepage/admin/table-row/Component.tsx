@@ -1,9 +1,7 @@
 "use client";
 
-import { ErrorBoundary } from "@sps/ui-adapter";
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/file-storage/models/file/sdk/client";
-import Image from "next/image";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 import { Component as Default } from "../../default";
 import { internationalization } from "@sps/shared-configuration";
@@ -23,6 +21,10 @@ export function Component(props: IComponentPropsExtended) {
       }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <p className="text-xs text-muted-foreground">Admin title</p>
+          <p className="truncate">{props.data.adminTitle}</p>
+        </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Variant</p>
           <p className="truncate">{props.data.variant}</p>
