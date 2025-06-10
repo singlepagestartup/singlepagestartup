@@ -11,6 +11,7 @@ type TUniversalProps = {
   inputClassName?: string;
   labelClassName?: string;
   labelContainerClassName?: string;
+  messageClassName?: string;
   disabled?: boolean;
   children?: React.ReactNode;
 };

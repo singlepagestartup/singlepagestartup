@@ -5,6 +5,8 @@ import QueryString from "qs";
 import { createElement } from "react";
 import { Component as ChildComponent } from "./component";
 import pako from "pako";
+import fs from "fs/promises";
+import path from "path";
 
 const fontsURLs: {
   [key in "Default" | "Primary"]: {
@@ -367,25 +369,67 @@ export const GET = async (request: NextRequest) => {
 
         while (!isSuccess && repeats < maxRetries) {
           try {
-            const fontData = await fetch(
-              `${HOST_SERVICE_URL}${fontStyle.url}`,
-              {
-                cache: "no-store",
-                headers: {
-                  "Cache-Control": "no-store",
+            const fileName = path.basename(fontStyle.url.pathname);
+
+            const possiblePaths = [
+              path.join(process.cwd(), "styles", "fonts", fontType, fileName),
+              path.join(process.cwd(), ".next", "server", "assets", fileName),
+              fontStyle.url.pathname,
+            ];
+
+            let fontData: Buffer | ArrayBuffer | null = null;
+            let usedPath = "";
+
+            try {
+              console.log(
+                `Trying to fetch font from: ${HOST_SERVICE_URL}${fontStyle.url}`,
+              );
+              const response = await fetch(
+                `${HOST_SERVICE_URL}${fontStyle.url}`,
+                {
+                  cache: "no-store",
+                  headers: {
+                    "Cache-Control": "no-store",
+                  },
                 },
-              },
-            ).then(async (res) => {
-              if (!res.ok) {
+              );
+
+              if (!response.ok) {
                 throw new Error(
-                  `Failed to fetch ${fontStyle.url}: ${res.status}`,
+                  `Failed to fetch ${fontStyle.url}: ${response.status}`,
                 );
               }
-              return res.arrayBuffer();
-            });
+
+              fontData = await response.arrayBuffer();
+              usedPath = `${HOST_SERVICE_URL}${fontStyle.url}`;
+            } catch (error) {
+              console.log(
+                `Failed to fetch font: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+
+              for (const fontPath of possiblePaths) {
+                try {
+                  const fileData = await fs.readFile(fontPath);
+                  fontData = fileData;
+                  usedPath = fontPath;
+                  break;
+                } catch (err) {
+                  console.log(
+                    `Failed to read from ${fontPath}: ${
+                      err instanceof Error ? err.message : String(err)
+                    }`,
+                  );
+                  continue;
+                }
+              }
+            }
 
             if (!fontData) {
-              throw new Error("No font data received");
+              throw new Error(
+                "Font file not found in any of the possible locations",
+              );
             }
 
             fonts.push({
@@ -399,12 +443,12 @@ export const GET = async (request: NextRequest) => {
           } catch (error) {
             repeats++;
             console.error(
-              `Attempt ${repeats} failed for ${fontStyle.url}:`,
+              `Attempt ${repeats} failed for ${fontStyle.url.pathname}:`,
               error,
             );
             if (repeats >= maxRetries) {
               console.error(
-                `Max retries reached for ${fontStyle.url}. Skipping...`,
+                `Max retries reached for ${fontStyle.url.pathname}. Skipping...`,
               );
               break;
             }

@@ -33,5 +33,6 @@
   "workbench.preferredDarkColorTheme": "Default Dark+",
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "liveshare.accessibility.soundsEnabled": false
+  "liveshare.accessibility.soundsEnabled": false,
+  "nxConsole.generateAiAgentRules": true
 }

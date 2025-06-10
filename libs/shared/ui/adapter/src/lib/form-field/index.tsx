@@ -41,7 +41,7 @@ export function Component(props: IComponentProps) {
                 {props.label}
               </FormLabel>
             ) : null}
-            <FormMessage />
+            <FormMessage className={cn("order-4", props.messageClassName)} />
           </FormItem>
         );
       }}
