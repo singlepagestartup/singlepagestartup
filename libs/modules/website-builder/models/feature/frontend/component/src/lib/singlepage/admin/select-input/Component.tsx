@@ -13,10 +13,10 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={
-        props.renderField ||
-        (`title.[${internationalization.defaultLanguage.code}]` as keyof IModel)
-      }
+      renderField="adminTitle"
+      renderFunction={(entity) => {
+        return `${entity.adminTitle} | ${entity.title?.[internationalization.defaultLanguage.code] ?? "Untitled"} | ${entity?.variant} | ${entity.slug}`;
+      }}
     />
   );
 }

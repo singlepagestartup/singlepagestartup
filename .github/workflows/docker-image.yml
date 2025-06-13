@@ -30,6 +30,7 @@ jobs:
             echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.PREVIEW_DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_SERVICE_WS_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_API_SERVICE_WS_URL }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
           else
             echo "IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
@@ -37,6 +38,7 @@ jobs:
             echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_SERVICE_WS_URL=${{ secrets.NEXT_PUBLIC_API_SERVICE_WS_URL }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
           fi
       - name: Login to registry
@@ -59,6 +61,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
+            NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
 
       - if: ${{ inputs.PRERELEASE == false }}
         name: Build image for release
@@ -73,7 +76,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
-
+            NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
       - name: Inspect release tag image
         run: docker image inspect ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
 

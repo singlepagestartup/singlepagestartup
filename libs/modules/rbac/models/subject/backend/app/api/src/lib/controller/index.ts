@@ -24,6 +24,7 @@ import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/pr
 import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
 import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
 import { Handler as EcommerceModuleOrderIdDelete } from "./ecommerce-module/order/id/delete";
+import { Handler as EcommerceModuleOrderList } from "./ecommerce-module/order/list";
 import { Handler as EcommerceModuleOrderTotal } from "./ecommerce-module/order/total";
 import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/order/quantity";
 import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order/id/total";
@@ -159,6 +160,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/ecommerce-module/orders/total",
         handler: this.ecommerceModuleOrderTotal,
+      },
+      {
+        method: "GET",
+        path: "/:id/ecommerce-module/orders",
+        handler: this.ecommerceModuleOrderList,
       },
       {
         method: "POST",
@@ -350,5 +356,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderCheckout(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderCheckout(this.service).execute(c, next);
+  }
+
+  async ecommerceModuleOrderList(c: Context, next: any): Promise<Response> {
+    return new EcommerceModuleOrderList(this.service).execute(c, next);
   }
 }

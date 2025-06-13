@@ -1,7 +1,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { TipTap } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as WidgetsToFileStorageWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
+import { Component as WidgetsToFileStorageFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
@@ -70,7 +70,7 @@ export function Component(props: IComponentPropsExtended) {
         </div>
         {props.children}
         <div className="w-full">
-          <WidgetsToFileStorageWidgets
+          <WidgetsToFileStorageFiles
             isServer={props.isServer}
             variant="find"
             apiProps={{
@@ -90,7 +90,7 @@ export function Component(props: IComponentPropsExtended) {
             {({ data }) => {
               return data?.map((entity, index) => {
                 return (
-                  <WidgetsToFileStorageWidgets
+                  <WidgetsToFileStorageFiles
                     key={index}
                     isServer={props.isServer}
                     variant={entity.variant as any}
@@ -100,7 +100,7 @@ export function Component(props: IComponentPropsExtended) {
                 );
               });
             }}
-          </WidgetsToFileStorageWidgets>
+          </WidgetsToFileStorageFiles>
         </div>
         <div className="w-full flex">
           <WidgetsToSliders

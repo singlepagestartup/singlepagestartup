@@ -30,6 +30,7 @@ import { Component as AuthenticationEmailAndPasswordResetPasswordFormDefault } f
 import { Component as CrmModuleFormRequestCreate } from "./crm-module/form/request/create";
 import { Component as EcommerceModuleOrderListTotalDefault } from "./ecommerce-module/order/list/total-default";
 import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerce-module/order/list/quantity-default";
+import { Component as EcommerceModuleOrderListDefault } from "./ecommerce-module/order/list/default";
 export const variants = {
   "ecommerce-module-order-checkout-default":
     EcommerceModuleOrderCheckoutDefault,
@@ -75,4 +76,5 @@ export const variants = {
     EcommerceModuleOrderListTotalDefault,
   "ecommerce-module-order-list-quantity-default":
     EcommerceModuleOrderListQuantityDefault,
+  "ecommerce-module-order-list-default": EcommerceModuleOrderListDefault,
 };

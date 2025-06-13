@@ -61,3 +61,45 @@ input[type="number"] {
     @apply bg-input animate-pulse rounded-md;
   }
 }
+
+.prose-xl
+  :where(.prose-xl > ul > li > p:last-child):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.prose,
+.prose-xl {
+  p {
+    @apply text-sm lg:text-base mb-0 mt-0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply mt-0 mb-0;
+  }
+
+  h3 {
+    @apply text-4xl lg:text-6xl;
+  }
+
+  h5 {
+    @apply text-2xl lg:text-4xl;
+  }
+
+  ul {
+    @apply my-0;
+
+    li {
+      p {
+        @apply mb-0 mt-0;
+      }
+    }
+  }
+}

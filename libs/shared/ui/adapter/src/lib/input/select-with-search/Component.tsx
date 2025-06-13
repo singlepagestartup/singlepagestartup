@@ -34,7 +34,9 @@ export function Component(props: IComponentProps) {
   }, [props.field.value, props.options]);
 
   return (
-    <Command className="w-full border rounded-md border-input">
+    <Command
+      className={cn("w-full border rounded-md border-input", props.className)}
+    >
       <CommandInput
         placeholder={props.placeholder}
         className="h-9"

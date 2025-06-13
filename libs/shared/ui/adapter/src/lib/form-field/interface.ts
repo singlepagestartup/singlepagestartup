@@ -3,7 +3,7 @@ import { TTypedProps } from "../input/interface";
 
 type TUniversalProps = {
   ui: "shadcn" | "sps";
-  label?: string;
+  label?: string | React.ReactNode;
   name: string;
   placeholder?: string;
   form: UseFormReturn<any>;

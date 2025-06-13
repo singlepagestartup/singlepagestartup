@@ -196,7 +196,7 @@ export const TipTapEditable = forwardRef<
   }
 
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className={cn("relative flex flex-col gap-1", props.className)}>
       {editor ? (
         <div className="rounded-lg bg-white flex gap-1 max-w-full">
           <Toggle

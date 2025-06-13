@@ -30,7 +30,7 @@ export function Component(props: IComponentProps) {
                   props.labelContainerClassName,
                 )}
               >
-                <FormLabel className={props.labelClassName}>
+                <FormLabel className={cn("mb-2", props.labelClassName)}>
                   {props.label}
                 </FormLabel>
                 {props.children}

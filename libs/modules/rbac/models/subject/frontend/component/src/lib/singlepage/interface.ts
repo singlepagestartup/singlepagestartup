@@ -30,6 +30,7 @@ import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./ide
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
 import { IComponentProps as IEcommerceModuleOrderListTotalDefaultComponentProps } from "./ecommerce-module/order/list/total-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListQuantityDefaultComponentProps } from "./ecommerce-module/order/list/quantity-default/interface";
+import { IComponentProps as IEcommerceModuleOrderListDefaultComponentProps } from "./ecommerce-module/order/list/default/interface";
 
 export type IComponentProps =
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
@@ -64,4 +65,5 @@ export type IComponentProps =
   | ICrmModuleFormRequestCreateComponentProps
   | IEcommerceModuleOrderListTotalDefaultComponentProps
   | IEcommerceModuleOrderListQuantityDefaultComponentProps
+  | IEcommerceModuleOrderListDefaultComponentProps
   | never;

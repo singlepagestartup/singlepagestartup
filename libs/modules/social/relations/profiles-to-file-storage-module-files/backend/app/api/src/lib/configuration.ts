@@ -45,7 +45,7 @@ export class Configuration extends ParentConfiguration {
               },
             },
             {
-              field: "fileId",
+              field: "fileStorageModuleFileId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
@@ -55,7 +55,8 @@ export class Configuration extends ParentConfiguration {
                       seed.module === "file-storage",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.fileId,
+                    (seed) =>
+                      seed.dump.id === data.entity.dump.fileStorageModuleFileId,
                   );
 
                 return relationEntites?.[0].new.id;

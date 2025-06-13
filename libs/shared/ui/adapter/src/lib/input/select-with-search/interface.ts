@@ -6,7 +6,7 @@ type TRenderComponent = ReactNode | ((props: any) => ReactNode);
 type IUniversalProps = {
   field: ControllerRenderProps<any, string>;
   placeholder?: string;
-  label?: string;
+  label?: string | ReactNode;
   form: UseFormReturn<any>;
   disabled?: boolean;
   className?: string;

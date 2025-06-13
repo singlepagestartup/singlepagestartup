@@ -72,6 +72,11 @@ import {
   type IResult as IEcommerceModuleOrderCheckoutResult,
 } from "./ecommerce-module/order/checkout";
 import {
+  action as ecommerceModuleOrderList,
+  type IProps as IEcommerceModuleOrderListProps,
+  type IResult as IEcommerceModuleOrderListResult,
+} from "./ecommerce-module/order/list";
+import {
   action as identityUpdate,
   type IProps as IIdentityUpdateProps,
   type IResult as IIdentityUpdateResult,
@@ -152,6 +157,7 @@ export type IProps = {
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
   IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
+  IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
 };
 
 export type IResult = {
@@ -179,6 +185,7 @@ export type IResult = {
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
   IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
+  IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
 };
 
 export const api = {
@@ -198,6 +205,7 @@ export const api = {
   ecommerceModuleOrderTotal,
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderIdCheckout,
+  ecommerceModuleOrderList,
   identityUpdate,
   identityCreate,
   identityDelete,
