@@ -43,10 +43,9 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       tags: [[route, id].join("/")],
       ...options?.next,
     },
-    signal: AbortSignal.timeout(10000),
   };
 
-  let retries = 3;
+  let retries = 30;
   let lastError;
 
   while (retries > 0) {
@@ -63,8 +62,13 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       const transformedData = transformResponseItem<IResult<T>>(json);
 
       return transformedData;
-    } catch (error) {
+    } catch (error: any) {
       lastError = error;
+
+      if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {
+        throw error;
+      }
+
       retries--;
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, 1000));

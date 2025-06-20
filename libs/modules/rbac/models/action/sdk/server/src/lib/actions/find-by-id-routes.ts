@@ -8,26 +8,23 @@ import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 export interface IProps {
+  id: string;
   host?: string;
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
-  params: {
-    action: {
-      route: string;
-      method: string;
-      type?: "HTTP";
-    };
-  };
-  options?: Partial<NextRequestOptions>;
+  params?: any;
+  options?: NextRequestOptions;
 }
 
-export type IResult = IModel | undefined;
+export type IResult = IModel & {
+  routes: string[];
+};
 
 export async function action(props: IProps): Promise<IResult> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
-  const { params, options, host = serverHost } = props;
+  const { params, options, id, host = serverHost } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,
@@ -52,7 +49,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/find-by-action-route?${stringifiedQuery}`,
+    `${host}${route}/${id}/routes?${stringifiedQuery}`,
     requestOptions,
   );
 
@@ -60,10 +57,6 @@ export async function action(props: IProps): Promise<IResult> {
     res,
     catchErrors: props.catchErrors || productionBuild,
   });
-
-  if (!json) {
-    return;
-  }
 
   const transformedData = transformResponseItem<IResult>(json);
 

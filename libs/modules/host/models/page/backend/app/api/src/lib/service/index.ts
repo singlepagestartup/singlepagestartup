@@ -30,11 +30,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const pageWithEqualUrlParts = pages?.filter((page) => {
       const pageUrlParts = page.url?.split("/").filter((url) => url !== "");
 
-      if (splittedUrl.length !== pageUrlParts?.length) {
-        return false;
+      if (page.url?.includes(":pagination:")) {
+        if (
+          splittedUrl.length === pageUrlParts?.length ||
+          splittedUrl.length === pageUrlParts?.length - 1
+        ) {
+          return true;
+        }
+      } else {
+        if (splittedUrl.length === pageUrlParts?.length) {
+          return true;
+        }
       }
 
-      return true;
+      return false;
     });
 
     const filledPages: EntityWithUrls[] = [];
@@ -78,6 +87,44 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return populatedPage;
   }
 
+  private async processPaginationSegment(segment: string): Promise<string[]> {
+    const [moduleInfo, paginationType, pageSize] = segment.split(":");
+
+    if (paginationType !== "pagination") {
+      throw new Error("Invalid pagination format");
+    }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("RBAC_SECRET_KEY not found");
+    }
+
+    const [moduleName, modelName] = moduleInfo.split(".");
+    const pageSizeNum = parseInt(pageSize, 10);
+
+    if (isNaN(pageSizeNum)) {
+      throw new Error("Invalid page size");
+    }
+
+    const moduleData = await fetch(
+      `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
+      {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY as string,
+        },
+      },
+    ).then((res) => res.json());
+
+    const totalItems = moduleData?.data?.length || 0;
+
+    const remainingItems = Math.max(0, totalItems - pageSizeNum);
+    const totalPages = Math.ceil(remainingItems / pageSizeNum);
+
+    return [
+      "",
+      ...Array.from({ length: totalPages }, (_, i) => (i + 1).toString()),
+    ];
+  }
+
   async withUrls(props: { id: string }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("RBAC_SECRET_KEY not found");
@@ -99,6 +146,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       for (const segment of segments) {
         if (segment.includes("[")) {
           const moduleSegment = segment.replace("[", "").replace("]", "");
+
+          if (moduleSegment.includes(":pagination:")) {
+            const pageNumbers =
+              await this.processPaginationSegment(moduleSegment);
+            saturatedSegments.push(pageNumbers);
+            continue;
+          }
+
           const moduleName = moduleSegment.split(".")[0];
           const modelName = moduleSegment.split(".")[1];
           const param = moduleSegment.split(".")[2];
@@ -140,10 +195,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     const urls: EntityWithUrls["urls"] = constructedUrls.map((url) => {
+      let urlString = url.join("/");
+
+      if (urlString.endsWith("/") && urlString.length > 1) {
+        urlString = urlString.slice(0, -1);
+      }
+
       return {
-        url: url.join("/").startsWith("/")
-          ? url.join("/")
-          : `/${url.join("/")}`,
+        url: urlString.startsWith("/") ? urlString : `/${urlString}`,
       };
     });
 
@@ -187,8 +246,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const urlParts = props.url.split("/").filter((part) => part !== "");
     const segmentValue = urlParts[segmentIndex];
 
-    if (!segmentValue) {
-      return undefined;
+    if (segmentValue === undefined) {
+      const maskPart = entityUrlParts[segmentIndex];
+      if (maskPart?.includes(":pagination:")) {
+        return "0";
+      }
     }
 
     return segmentValue;

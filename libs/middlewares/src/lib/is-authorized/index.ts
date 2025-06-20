@@ -47,6 +47,14 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
+    regexPath: /\/api\/rbac\/actions$/,
+    methods: ["GET"],
+  },
+  {
+    regexPath: /\/api\/rbac\/actions\/.*/,
+    methods: ["GET"],
+  },
+  {
     regexPath: /\/api\/telegram/,
     methods: ["POST"],
   },
@@ -103,7 +111,7 @@ export class Middleware {
           params: {
             action: { route: reqPath, method: reqMethod, type: "HTTP" },
           },
-          options: { headers, next: { cache: "no-store" } },
+          options: { headers },
         });
       } catch (error: any) {
         throw new HTTPException(401, {

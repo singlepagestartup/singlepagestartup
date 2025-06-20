@@ -37,9 +37,6 @@ export class Service {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -61,9 +58,6 @@ export class Service {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
-              next: {
-                cache: "no-store",
-              },
             },
           });
 
@@ -73,9 +67,6 @@ export class Service {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
                 },
               },
             });

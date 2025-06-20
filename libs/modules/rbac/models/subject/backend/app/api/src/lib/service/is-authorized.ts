@@ -67,9 +67,6 @@ export class Service {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
       } catch (error) {
@@ -91,9 +88,6 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -121,7 +115,6 @@ export class Service {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -149,9 +142,6 @@ export class Service {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -172,9 +162,6 @@ export class Service {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -185,7 +172,7 @@ export class Service {
           authorized = true;
         }
 
-        if (subjectsToRoles?.length) {
+        if (subjectsToRoles?.length && !authorized) {
           for (const subjectToRole of subjectsToRoles) {
             const rolesToActions = await rolesToActionsApi.find({
               params: {
@@ -207,9 +194,6 @@ export class Service {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
                 },
               },
             });

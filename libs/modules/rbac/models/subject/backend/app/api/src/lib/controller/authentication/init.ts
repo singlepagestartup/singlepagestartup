@@ -38,16 +38,11 @@ export class Handler {
         });
       }
 
-      this.service.deleteAnonymousSubjects();
-
       const entity = await api.create({
         data: {},
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });

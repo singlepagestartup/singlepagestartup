@@ -21,6 +21,9 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
   data: {
     url: string;
+    containerClassName?: string;
+    adminTitle?: string;
+    className?: string;
   };
 }
 

@@ -2,16 +2,8 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import QueryString from "qs";
-import { Table } from "@sps/rbac/models/action/backend/repository/database";
-import {
-  API_SERVICE_URL,
-  buildTreePaths,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
-
-type ActionWithSaturatedRoutes = typeof Table.$inferSelect & {
-  routes: string[];
-};
+import { api } from "@sps/rbac/models/action/sdk/server";
+import { IModel } from "@sps/rbac/models/action/sdk/model";
 
 export class Handler {
   service: Service;
@@ -40,7 +32,7 @@ export class Handler {
         throw new Error("Type query parameter is required");
       }
 
-      const findResult = await this.service.find({
+      const findResult = await api.find({
         params: {
           filters: {
             and: [
@@ -64,7 +56,7 @@ export class Handler {
         },
       });
 
-      if (findResult?.length > 0) {
+      if (findResult && findResult?.length > 0) {
         return c.json({
           data: findResult[0],
         });
@@ -80,7 +72,7 @@ export class Handler {
         throw new Error("Wrong path filter");
       }
 
-      const actions = await this.service.find();
+      const actions = await api.find();
 
       const actionsWithEqualPathParts = actions?.filter((action) => {
         const actionPathParts = action.path
@@ -94,18 +86,20 @@ export class Handler {
         return true;
       });
 
-      const filledActions: ActionWithSaturatedRoutes[] = [];
+      const filledActions: (IModel & { routes: string[] })[] = [];
 
-      for (const actionsWithEqualPathPart of actionsWithEqualPathParts) {
-        const entityWithRoutes = await this.withRoutes({
-          id: actionsWithEqualPathPart.id,
-        });
+      if (actionsWithEqualPathParts && actionsWithEqualPathParts?.length) {
+        for (const actionsWithEqualPathPart of actionsWithEqualPathParts) {
+          const entityWithRoutes = await api.findByIdRoutes({
+            id: actionsWithEqualPathPart.id,
+          });
 
-        if (!entityWithRoutes) {
-          continue;
+          if (!entityWithRoutes) {
+            continue;
+          }
+
+          filledActions.push(entityWithRoutes);
         }
-
-        filledActions.push(entityWithRoutes);
       }
 
       const targetAction = filledActions.find((action) => {
@@ -158,77 +152,5 @@ export class Handler {
         cause: error,
       });
     }
-  }
-
-  private async withRoutes(props: { id: string }) {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY not found");
-    }
-
-    const result = await this.service.findById({
-      id: props.id,
-    });
-
-    if (!result) {
-      throw new Error(`Entity with id ${props.id} not found`);
-    }
-
-    const segments = result.path?.split("/").filter((url) => url !== "");
-
-    const saturatedSegments: Array<string | string[]> = [];
-
-    if (segments?.length) {
-      for (const segment of segments) {
-        if (segment.includes("[")) {
-          const moduleSegment = segment.replace("[", "").replace("]", "");
-          const moduleName = moduleSegment.split(".")[0];
-          const modelName = moduleSegment.split(".")[1];
-          const param = moduleSegment.split(".")[2];
-          const moduleSegmentPaths: string[] = [];
-
-          const moduleData = await fetch(
-            `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
-            {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          ).then((res) => res.json());
-
-          if (moduleData?.data?.length) {
-            moduleData.data.forEach((entity: unknown) => {
-              if (!entity?.[param]) {
-                throw new Error(`Entity with param ${param} not found`);
-              }
-
-              moduleSegmentPaths.push(entity[param]);
-            });
-          }
-
-          saturatedSegments.push(moduleSegmentPaths);
-          continue;
-        }
-
-        saturatedSegments.push(segment);
-      }
-    }
-
-    if (saturatedSegments.length === 0) {
-      return { ...result, routes: ["/"] };
-    }
-
-    const constructedUrls = buildTreePaths({
-      segments: saturatedSegments,
-    });
-
-    const routes: ActionWithSaturatedRoutes["routes"] = constructedUrls.map(
-      (route) => {
-        return route.join("/").startsWith("/")
-          ? route.join("/")
-          : `/${route.join("/")}`;
-      },
-    );
-
-    return { ...result, routes };
   }
 }

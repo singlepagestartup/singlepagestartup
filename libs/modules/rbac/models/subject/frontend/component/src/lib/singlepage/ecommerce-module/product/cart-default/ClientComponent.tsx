@@ -2,7 +2,7 @@
 
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
+import { Component as EcommerceModuleOrderListDefault } from "../../order/list/default";
 import { Component as EcommerceOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as EcommerceOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/frontend/component";
 import { Component as OrderCreateDefault } from "../../order/create-default/Component";
@@ -19,25 +19,14 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      <SubjectsToEcommerceModuleOrders
+      <EcommerceModuleOrderListDefault
         isServer={false}
-        variant="find"
-        apiProps={{
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: props.data.id,
-                },
-              ],
-            },
-          },
-        }}
+        variant="ecommerce-module-order-list-default"
+        data={props.data}
+        language={props.language}
       >
-        {({ data: subjectsToEcommerceOrders }) => {
-          if (!subjectsToEcommerceOrders) {
+        {({ data: ecommerceModuleOrders }) => {
+          if (!ecommerceModuleOrders) {
             return (
               <OrderCreateDefault
                 isServer={false}
@@ -61,8 +50,8 @@ export function Component(props: IComponentPropsExtended) {
                       {
                         column: "id",
                         method: "inArray",
-                        value: subjectsToEcommerceOrders?.map(
-                          (entity) => entity.ecommerceModuleOrderId,
+                        value: ecommerceModuleOrders?.map(
+                          (entity) => entity.id,
                         ),
                       },
                       {
@@ -103,6 +92,11 @@ export function Component(props: IComponentPropsExtended) {
                               value: props.product.id,
                             },
                           ],
+                        },
+                      },
+                      options: {
+                        headers: {
+                          "Cache-Control": "no-store",
                         },
                       },
                     }}
@@ -180,27 +174,27 @@ export function Component(props: IComponentPropsExtended) {
 
                               return ordersWithCurrentProduct
                                 .filter((ordersWithCurrentProduct) => {
-                                  return subjectsToEcommerceOrders.find(
-                                    (subjectToEcommerceModuleOrder) => {
+                                  return ecommerceModuleOrders.find(
+                                    (ecommerceModuleOrder) => {
                                       return (
-                                        subjectToEcommerceModuleOrder.ecommerceModuleOrderId ===
+                                        ecommerceModuleOrder.id ===
                                         ordersWithCurrentProduct.orderId
                                       );
                                     },
                                   );
                                 })
                                 .map((orderToProduct, index) => {
-                                  const subjectToEcommerceModuleOrder =
-                                    subjectsToEcommerceOrders.find(
-                                      (subjectToEcommerceModuleOrder) => {
+                                  const ecommerceModuleOrder =
+                                    ecommerceModuleOrders.find(
+                                      (ecommerceModuleOrder) => {
                                         return (
-                                          subjectToEcommerceModuleOrder.ecommerceModuleOrderId ===
+                                          ecommerceModuleOrder.id ===
                                           orderToProduct.orderId
                                         );
                                       },
                                     );
 
-                                  if (!subjectToEcommerceModuleOrder) {
+                                  if (!ecommerceModuleOrder) {
                                     return;
                                   }
 
@@ -245,7 +239,7 @@ export function Component(props: IComponentPropsExtended) {
             </EcommerceOrder>
           );
         }}
-      </SubjectsToEcommerceModuleOrders>
+      </EcommerceModuleOrderListDefault>
     </div>
   );
 }

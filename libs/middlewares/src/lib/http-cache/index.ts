@@ -124,13 +124,19 @@ export class Middleware {
           }
         }
       } else {
-        await this.storeProvider.delByPrefix({
-          prefix: path,
-        });
-        const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-        await this.storeProvider.delByPrefix({
-          prefix: pathWithoutId,
-        });
+        if (path.includes("rbac/actions")) {
+          return;
+        }
+
+        if (c.res.status >= 500) {
+          await this.storeProvider.delByPrefix({
+            prefix: path,
+          });
+          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+          await this.storeProvider.delByPrefix({
+            prefix: pathWithoutId,
+          });
+        }
       }
 
       return;

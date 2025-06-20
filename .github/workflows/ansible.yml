@@ -44,6 +44,7 @@ jobs:
             "ROOT_AWS_SECRET_ACCESS_KEY ${{ secrets.PREVIEW_ROOT_AWS_SECRET_ACCESS_KEY }}"\
             "AWS_S3_BUCKET_NAME ${{ secrets.PREVIEW_AWS_S3_BUCKET_NAME }}"\
             "AWS_REGION ${{ secrets.PREVIEW_AWS_REGION }}"\
+            "AWS_SES_FROM_EMAIL ${{ secrets.PREVIEW_AWS_SES_FROM_EMAIL }}"\
             "FILE_STORAGE_PROVIDER ${{ secrets.PREVIEW_FILE_STORAGE_PROVIDER }}"\
             "BLOB_READ_WRITE_TOKEN ${{ secrets.PREVIEW_BLOB_READ_WRITE_TOKEN }}"\
             "TRAEFIK_USERNAME ${{ secrets.PREVIEW_TRAEFIK_USERNAME }}"\
@@ -105,6 +106,7 @@ jobs:
             "ROOT_AWS_SECRET_ACCESS_KEY ${{ secrets.ROOT_AWS_SECRET_ACCESS_KEY }}"\
             "AWS_S3_BUCKET_NAME ${{ secrets.AWS_S3_BUCKET_NAME }}"\
             "AWS_REGION ${{ secrets.AWS_REGION }}"\
+            "AWS_SES_FROM_EMAIL ${{ secrets.AWS_SES_FROM_EMAIL }}"\
             "FILE_STORAGE_PROVIDER ${{ secrets.FILE_STORAGE_PROVIDER }}"\
             "BLOB_READ_WRITE_TOKEN ${{ secrets.BLOB_READ_WRITE_TOKEN }}"\
             "TRAEFIK_USERNAME ${{ secrets.TRAEFIK_USERNAME }}"\
