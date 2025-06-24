@@ -14,7 +14,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params?: any;
-  options?: NextRequestOptions;
+  options?: Partial<NextRequestOptions>;
 }
 
 export type IResult = IModel & {

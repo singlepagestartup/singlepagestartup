@@ -36,6 +36,13 @@ export class Handler {
         data: entity,
       });
     } catch (error: any) {
+      if (error.message.includes("not found")) {
+        throw new HTTPException(404, {
+          message: error.message || "Not Found",
+          cause: error,
+        });
+      }
+
       throw new HTTPException(500, {
         message: error.message || "Internal Server Error",
         cause: error,

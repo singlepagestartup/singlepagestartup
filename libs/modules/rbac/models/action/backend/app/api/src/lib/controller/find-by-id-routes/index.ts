@@ -7,6 +7,7 @@ import {
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/action/sdk/server";
+import { HTTPException } from "hono/http-exception";
 
 type ActionWithSaturatedRoutes = typeof Table.$inferSelect & {
   routes: string[];
@@ -28,10 +29,17 @@ export class Handler {
 
     const result = await api.findById({
       id: uuid,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
     });
 
     if (!result) {
-      throw new Error(`Entity with id ${uuid} not found`);
+      throw new HTTPException(404, {
+        message: `Not found. Entity with id ${uuid} not found`,
+      });
     }
 
     const segments = result.path?.split("/").filter((url) => url !== "");

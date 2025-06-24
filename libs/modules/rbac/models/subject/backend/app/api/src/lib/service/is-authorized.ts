@@ -46,9 +46,9 @@ export class Service {
         const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
 
         if (!decoded.subject?.["id"]) {
-          throw new HTTPException(401, {
-            message: "No subject provided in the token",
-          });
+          throw new Error(
+            "Authorization error. No subject provided in the token",
+          );
         }
 
         subjectsToRoles = await subjectsToRolesApi.find({
@@ -70,9 +70,10 @@ export class Service {
           },
         });
       } catch (error) {
-        throw new HTTPException(401, {
-          message: error?.["message"] || "Invalid authorization token provided",
-        });
+        throw new Error(
+          "Authorization error. " +
+            (error?.["message"] || "Invalid authorization token provided"),
+        );
       }
     }
 
@@ -209,9 +210,9 @@ export class Service {
     }
 
     if (!authorized) {
-      throw new HTTPException(401, {
-        message: `Authorization error. You don't have access to this resource: ${JSON.stringify(props.action)}`,
-      });
+      throw new Error(
+        `Authorization error. You do not have access to this resource: ${JSON.stringify(props.action)}`,
+      );
     } else {
       return {
         ok: true,

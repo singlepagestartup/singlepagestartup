@@ -4,6 +4,7 @@ import { Service } from "../../service";
 import QueryString from "qs";
 import { api } from "@sps/rbac/models/action/sdk/server";
 import { IModel } from "@sps/rbac/models/action/sdk/model";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export class Handler {
   service: Service;
@@ -14,22 +15,26 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("Evironment error. RBAC_SECRET_KEY not found");
+      }
+
       const query = QueryString.parse(c.req.url.split("?")[1]);
 
       if (!query.action) {
-        throw new Error("Action query parameter is required");
+        throw new Error("Request error. Action query parameter is required");
       }
 
       if (!query.action["route"]) {
-        throw new Error("Route query parameter is required");
+        throw new Error("Request error. Route query parameter is required");
       }
 
       if (!query.action["method"]) {
-        throw new Error("Method query parameter is required");
+        throw new Error("Request error. Method query parameter is required");
       }
 
       if (!query.action["type"]) {
-        throw new Error("Type query parameter is required");
+        throw new Error("Request error. Type query parameter is required");
       }
 
       const findResult = await api.find({
@@ -54,6 +59,11 @@ export class Handler {
             ],
           },
         },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
       });
 
       if (findResult && findResult?.length > 0) {
@@ -69,7 +79,7 @@ export class Handler {
         .filter((url: string) => url !== "");
 
       if (!splittedUrl.length) {
-        throw new Error("Wrong path filter");
+        throw new Error("Request error. Wrong path filter");
       }
 
       const actions = await api.find();
@@ -92,6 +102,11 @@ export class Handler {
         for (const actionsWithEqualPathPart of actionsWithEqualPathParts) {
           const entityWithRoutes = await api.findByIdRoutes({
             id: actionsWithEqualPathPart.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
           });
 
           if (!entityWithRoutes) {
@@ -122,31 +137,50 @@ export class Handler {
       });
 
       if (!targetAction) {
-        throw new HTTPException(404, {
-          message: `Action with route ${routeParameter} and method ${query.action["method"]} not found`,
-        });
+        throw new Error(
+          `Not found. Action with route ${routeParameter} and method ${query.action["method"]} not found`,
+        );
       }
 
       if (targetAction?.method !== query.action["method"]) {
-        throw new HTTPException(404, {
-          message: `Action with route ${routeParameter} and method ${query.action["method"]} not found`,
-        });
+        throw new Error(
+          `Not found. Action with route ${routeParameter} and method ${query.action["method"]} not found`,
+        );
       }
 
       if (targetAction?.type !== query.action["type"]) {
-        throw new HTTPException(404, {
-          message: `Action with route ${routeParameter}, method ${query.action["method"]} and type ${query.action["type"]} not found`,
-        });
+        throw new Error(
+          `Not found. Action with route ${routeParameter}, method ${query.action["method"]} and type ${query.action["type"]} not found`,
+        );
       }
 
-      const action = await this.service.findById({
+      const action = await api.findById({
         id: targetAction.id,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
       });
 
       return c.json({
         data: action,
       });
     } catch (error: any) {
+      if (error.message.includes("Not found")) {
+        throw new HTTPException(404, {
+          message: error.message || "Not Found",
+          cause: error,
+        });
+      }
+
+      if (error.message.includes("Request error")) {
+        throw new HTTPException(400, {
+          message: error.message || "Bad Request",
+          cause: error,
+        });
+      }
+
       throw new HTTPException(500, {
         message: error.message || "Internal Server Error",
         cause: error,

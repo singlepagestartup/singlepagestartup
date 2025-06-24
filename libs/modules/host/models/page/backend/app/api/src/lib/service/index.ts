@@ -115,13 +115,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     ).then((res) => res.json());
 
     const totalItems = moduleData?.data?.length || 0;
-
-    const remainingItems = Math.max(0, totalItems - pageSizeNum);
-    const totalPages = Math.ceil(remainingItems / pageSizeNum);
+    const totalPages = Math.ceil(totalItems / pageSizeNum);
 
     return [
       "",
-      ...Array.from({ length: totalPages }, (_, i) => (i + 1).toString()),
+      ...Array.from({ length: totalPages - 1 }, (_, i) => (i + 2).toString()),
     ];
   }
 
@@ -240,6 +238,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (segmentIndex === -1) {
+      const urlParts = props.url.split("/").filter((part) => part !== "");
+      if (urlParts.length === entityUrlParts.length - 1) {
+        return "1";
+      }
       return undefined;
     }
 
@@ -249,7 +251,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (segmentValue === undefined) {
       const maskPart = entityUrlParts[segmentIndex];
       if (maskPart?.includes(":pagination:")) {
-        return "0";
+        return "1";
       }
     }
 

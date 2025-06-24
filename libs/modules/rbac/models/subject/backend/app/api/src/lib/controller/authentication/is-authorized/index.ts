@@ -75,6 +75,13 @@ export class Handler {
         data,
       });
     } catch (error: any) {
+      if (error.message.includes("Authorization error")) {
+        throw new HTTPException(401, {
+          message: error.message || "Unauthorized",
+          cause: error,
+        });
+      }
+
       throw new HTTPException(500, {
         message: error.message || "Internal server error",
         cause: error,
