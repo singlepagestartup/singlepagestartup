@@ -1,0 +1,254 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+
+# Lock files (keep package-lock.json but ignore others)
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.generated.*
+*.min.js
+*.min.css
+
+# Test files
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+test-results.xml
+
+# SPS specific
+# Docker volumes and data
+apps/db/data/
+apps/redis/data/
+
+# Generated API docs
+docs/api/
+
+# Deployment artifacts
+tools/deployer/ansible.cfg
+tools/deployer/inventory.yaml
+
+# Local development files
+*.local
+local.*
+
+# Cache directories
+.cache/
+.temp/
+.tmp/
+
+# IDE specific
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Git hooks (if using husky)
+.husky/
+
+# Sentry
+.sentryclirc
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify
+
+# Railway
+.railway
+
+# Fly.io
+fly.toml
+
+# Heroku
+.heroku/
+
+# Local SSL certificates
+*.pem
+*.key
+*.crt
+
+# Local database dumps
+*.dump
+*.sql
+
+# Local logs
+logs/
+*.log
+
+# Temporary uploads
+uploads/
+temp-uploads/
+
+# Local file storage
+apps/api/public/file-storage/dynamic/
+apps/host/public/file-storage/dynamic/
+
+# Generated components (if any)
+**/generated/
+
+# Test snapshots
+__snapshots__/
+
+# Performance monitoring
+.webpack/
+
+# Bundle analyzer
+bundle-analyzer-report.html
+
+# Local development certificates
+.cert/
+.certs/
+
+# Local development databases
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Local development cache
+.cache/
+.temp/
+.tmp/
+
+# Local development logs
+*.log
+logs/
+
+# Local development uploads
+uploads/
+temp-uploads/
+
+# Local development file storage
+apps/api/public/file-storage/dynamic/
+apps/host/public/file-storage/dynamic/
+
+# Local development generated files
+**/generated/
+
+# Local development test snapshots
+__snapshots__/
+
+# Local development performance monitoring
+.webpack/
+
+# Local development bundle analyzer
+bundle-analyzer-report.html
+
+# Local development certificates
+.cert/
+.certs/
+
+# Local development databases
+*.db-journal
+*.db-wal
+*.db-shm
+
+# SPS Database backup files
+libs/modules/*/(models|relations)/*/backend/repository/database/src/lib/data/*.json

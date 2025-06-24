@@ -2,7 +2,7 @@
 
 ## Project Description
 
-SinglePageStartup (SPS) is a modular framework for rapid development of projects ranging from MVPs to full-scale business platforms.
+SinglePageStartup (SPS) is a modular framework designed to dramatically accelerate the development of web projects, from MVPs to full-scale business platforms. SPS enforces a unified architecture where every business entity is implemented as a separate model with its own REST API and frontend display components. The framework organizes all modules and their relationships into a clear folder structure, separating backend, frontend, models, and relations for maximum scalability and code reuse. The project root contains dedicated directories for applications (API, frontend, database, Redis, Telegram bot), business modules, shared utilities, providers, and infrastructure tools. By following a single, consistent pattern for all entities and modules, SPS helps developers save countless hours on setup, integration, and maintenance, letting them focus on building features that matter.
 
 ### Key Principles:
 
@@ -21,7 +21,9 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
-└── redis/  # Docker service for Redis
+├── redis/  # Docker service for Redis
+└── telegram/  # Telegram bot app
+
 
 libs/
 ├── modules/  # Business modules
@@ -36,6 +38,7 @@ libs/
 │   ├── host/         # Hosting and deployment
 │   ├── notification/ # Notification system
 │   ├── rbac/         # Role-Based Access Control
+│   ├── social/       # Social network module
 │   ├── startup/      # Startup-specific features
 │   ├── telegram/     # Telegram integration
 │   └── website-builder/ # Website building tools
@@ -294,21 +297,23 @@ git pull upstream main --allow-unrelated-histories
 
 Detailed documentation for each module can be found in their respective directories:
 
-- [Blog Module](./libs/modules/blog/README.md)
-- [Ecommerce Module](./libs/modules/ecommerce/README.md)
-- [CRM Module](./libs/modules/crm/README.md)
-- [RBAC Module](./libs/modules/rbac/README.md)
-- [Notification Module](./libs/modules/notification/README.md)
-- [File Storage Module](./libs/modules/file-storage/README.md)
-- [Billing Module](./libs/modules/billing/README.md)
-- [Website Builder Module](./libs/modules/website-builder/README.md)
-- [Startup Module](./libs/modules/startup/README.md)
-- [Broadcast Module](./libs/modules/broadcast/README.md)
-- [Telegram Module](./libs/modules/telegram/README.md)
-- [Analytic Module](./libs/modules/analytic/README.md)
 - [Agent Module](./libs/modules/agent/README.md)
+- [Analytic Module](./libs/modules/analytic/README.md)
+- [Billing Module](./libs/modules/blog/README.md)
+- [Blog Module](./libs/modules/blog/README.md)
+- [Broadcast Module](./libs/modules/broadcast/README.md)
+- [CRM Module](./libs/modules/crm/README.md)
+- [Ecommerce Module](./libs/modules/ecommerce/README.md)
+- [File Storage Module](./libs/modules/file-storage/README.md)
 - [Host Module](./libs/modules/host/README.md)
+- [Notification Module](./libs/modules/notification/README.md)
+- [RBAC Module](./libs/modules/rbac/README.md)
+- [Social Module](./libs/modules/social/README.md)
+- [Startup Module](./libs/modules/startup/README.md)
+- [Website Builder Module](./libs/modules/website-builder/README.md)
 
 ## License
 
-MIT
+This software is proprietary and confidential. You may use this code as a foundation for your own projects, but selling, sublicensing, distributing, or providing it as a paid product, subscription, or any commercial offering to third parties is strictly prohibited without explicit written permission from the copyright holder.
+
+See full license terms in the [LICENSE](./LICENSE) file.

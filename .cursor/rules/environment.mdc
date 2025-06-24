@@ -16,7 +16,8 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
-└── redis/  # Docker service for Redis
+├── redis/  # Docker service for Redis
+└── telegram/  # Telegram bot application
 
 libs/
 ├── modules/  # Business modules
@@ -31,6 +32,7 @@ libs/
 │   ├── host/         # Hosting and deployment
 │   ├── notification/ # Notification system
 │   ├── rbac/         # Role-Based Access Control
+│   ├── social/       # Social module
 │   ├── startup/      # Startup-specific features
 │   ├── telegram/     # Telegram integration
 │   └── website-builder/ # Website building tools
