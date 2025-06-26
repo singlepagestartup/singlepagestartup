@@ -40,6 +40,8 @@ import { Handler as EcommerceModuleOrderCheckout } from "./ecommerce-module/orde
 import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
 
 import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/profile/find-by-id/chat/find";
+import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-module/profile/find-by-id/chat/find-by-id";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessage } from "./social-module/profile/find-by-id/chat/find-by-id/message";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -227,6 +229,22 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
         ],
       },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId",
+        handler: this.socialModuleProfileFindByIdChatFindById,
+        middlewares: [
+          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
+        ],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessage,
+        middlewares: [
+          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
+        ],
+      },
     ]);
   }
 
@@ -386,5 +404,24 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       c,
       next,
     );
+  }
+
+  async socialModuleProfileFindByIdChatFindById(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindById(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessage(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessage(
+      this.service,
+    ).execute(c, next);
   }
 }

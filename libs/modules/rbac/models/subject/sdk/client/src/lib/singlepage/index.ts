@@ -129,6 +129,16 @@ import {
   type IProps as ISocialModuleProfileFindByIdChatFindProps,
   type IResult as ISocialModuleProfileFindByIdChatFindResult,
 } from "./social-module/profile/find-by-id/chat/find";
+import {
+  action as socialModuleProfileFindByIdChatFindById,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/find-by-id";
+import {
+  action as socialModuleProfileFindByIdChatFindByIdMessage,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/message";
 
 export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -158,6 +168,8 @@ export type IProps = {
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
   ISocialModuleProfileFindByIdChatFindProps: ISocialModuleProfileFindByIdChatFindProps;
+  ISocialModuleProfileFindByIdChatFindByIdProps: ISocialModuleProfileFindByIdChatFindByIdProps;
+  ISocialModuleProfileFindByIdChatFindByIdMessageProps: ISocialModuleProfileFindByIdChatFindByIdMessageProps;
 };
 
 export type IResult = {
@@ -188,6 +200,8 @@ export type IResult = {
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
   ISocialModuleProfileFindByIdChatFindResult: ISocialModuleProfileFindByIdChatFindResult;
+  ISocialModuleProfileFindByIdChatFindByIdResult: ISocialModuleProfileFindByIdChatFindByIdResult;
+  ISocialModuleProfileFindByIdChatFindByIdMessageResult: ISocialModuleProfileFindByIdChatFindByIdMessageResult;
 };
 
 export const api = {
@@ -225,4 +239,6 @@ export const api = {
   crmModuleFromRequestCreate,
 
   socialModuleProfileFindByIdChatFind,
+  socialModuleProfileFindByIdChatFindById,
+  socialModuleProfileFindByIdChatFindByIdMessage,
 };

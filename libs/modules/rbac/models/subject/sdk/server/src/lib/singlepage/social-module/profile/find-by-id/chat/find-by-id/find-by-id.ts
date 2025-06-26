@@ -10,6 +10,7 @@ import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 export interface IProps {
   id: string;
   socialModuleProfileId: string;
+  socialModuleChatId: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -19,12 +20,13 @@ export interface IProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = ISocialModuleChat[];
+export type IResult = ISocialModuleChat;
 
 export async function action(props: IProps): Promise<IResult> {
   const {
     id,
     socialModuleProfileId,
+    socialModuleChatId,
     params,
     options,
     host = serverHost,
@@ -44,7 +46,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats?${stringifiedQuery}`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}?${stringifiedQuery}`,
     requestOptions,
   );
 

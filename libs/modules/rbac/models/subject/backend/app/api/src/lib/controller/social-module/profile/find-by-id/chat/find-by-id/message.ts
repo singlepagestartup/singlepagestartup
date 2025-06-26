@@ -1,10 +1,10 @@
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../../service";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { Service } from "../../../../../../service";
+import { api } from "@sps/rbac/models/subject/sdk/server";
+import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
+import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 
 export class Handler {
   service: Service;
@@ -35,33 +35,35 @@ export class Handler {
         throw new Error("Validation error. No socialModuleProfileId provided");
       }
 
-      const socialModuleProfile = await socialModuleProfileApi.findById({
-        id: socialModuleProfileId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const socialModuleChatId = c.req.param("socialModuleChatId");
 
-      if (!socialModuleProfile) {
-        throw new Error(
-          "Not found error. Requested social-module profile not found",
-        );
+      if (!socialModuleChatId) {
+        throw new Error("Validation error. No socialModuleChatId provided");
       }
 
-      const socialModuleProfilesToChats =
-        await socialModuleProfilesToChatsApi.find({
+      const limit = c.req.query("limit") || 100;
+      const offset = c.req.query("offset") || 0;
+
+      const socialModuleChatsToMessages =
+        await socialModuleChatsToMessagesApi.find({
           params: {
-            filers: {
+            filters: {
               and: [
                 {
-                  column: "profileId",
+                  column: "chatId",
                   method: "eq",
-                  value: socialModuleProfileId,
+                  value: socialModuleChatId,
                 },
               ],
             },
+            limit,
+            offset,
+            order: [
+              {
+                column: "createdAt",
+                direction: "desc",
+              },
+            ],
           },
           options: {
             headers: {
@@ -70,22 +72,22 @@ export class Handler {
           },
         });
 
-      if (!socialModuleProfilesToChats?.length) {
+      if (!socialModuleChatsToMessages?.length) {
         return c.json({
           data: [],
         });
       }
 
-      const socialModuleChats = await socialModuleChatApi.find({
+      const socialModuleMessages = await socialModuleMessageApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "id",
                 method: "inArray",
-                value: socialModuleProfilesToChats?.map(
-                  (socialModuleProfileToChat) => {
-                    return socialModuleProfileToChat.chatId;
+                value: socialModuleChatsToMessages?.map(
+                  (socialModuleChatsToMessage) => {
+                    return socialModuleChatsToMessage.messageId;
                   },
                 ),
               },
@@ -100,7 +102,7 @@ export class Handler {
       });
 
       return c.json({
-        data: socialModuleChats,
+        data: socialModuleMessages,
       });
     } catch (error: any) {
       if (error.message?.includes("Configuration error")) {

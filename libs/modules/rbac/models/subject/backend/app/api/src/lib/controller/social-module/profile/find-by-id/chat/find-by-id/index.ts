@@ -1,10 +1,8 @@
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../../service";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { Service } from "../../../../../../service";
+import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export class Handler {
   service: Service;
@@ -35,8 +33,15 @@ export class Handler {
         throw new Error("Validation error. No socialModuleProfileId provided");
       }
 
-      const socialModuleProfile = await socialModuleProfileApi.findById({
-        id: socialModuleProfileId,
+      const socialModuleChatId = c.req.param("socialModuleChatId");
+
+      if (!socialModuleChatId) {
+        throw new Error("Validation error. No socialModuleChatId provided");
+      }
+
+      const socialModuleChats = await api.socialModuleProfileFindByIdChatFind({
+        id,
+        socialModuleProfileId,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -44,63 +49,18 @@ export class Handler {
         },
       });
 
-      if (!socialModuleProfile) {
+      const socialModuleChat = socialModuleChats.find(
+        (socialModuleChat) => socialModuleChat.id === socialModuleChatId,
+      );
+
+      if (!socialModuleChat) {
         throw new Error(
-          "Not found error. Requested social-module profile not found",
+          "Not found error. Requested social-module chat not found",
         );
       }
 
-      const socialModuleProfilesToChats =
-        await socialModuleProfilesToChatsApi.find({
-          params: {
-            filers: {
-              and: [
-                {
-                  column: "profileId",
-                  method: "eq",
-                  value: socialModuleProfileId,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-
-      if (!socialModuleProfilesToChats?.length) {
-        return c.json({
-          data: [],
-        });
-      }
-
-      const socialModuleChats = await socialModuleChatApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: socialModuleProfilesToChats?.map(
-                  (socialModuleProfileToChat) => {
-                    return socialModuleProfileToChat.chatId;
-                  },
-                ),
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
       return c.json({
-        data: socialModuleChats,
+        data: socialModuleChat,
       });
     } catch (error: any) {
       if (error.message?.includes("Configuration error")) {

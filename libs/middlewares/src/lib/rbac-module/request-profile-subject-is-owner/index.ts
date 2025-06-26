@@ -1,10 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { getCookie } from "hono/cookie";
-import { authorization } from "@sps/backend-utils";
-import * as jwt from "hono/jwt";
 import { Middleware as RbacModuleRequestSubjectIsOwnerMiddleware } from "../request-subject-is-owner";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";

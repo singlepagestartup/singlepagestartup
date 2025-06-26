@@ -10,7 +10,8 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       className={props.className}
       socialModuleProfile={props.socialModuleProfile}
-      socialModuleChats={props.socialModuleChats}
+      socialModuleChat={props.socialModuleChat}
+      socialModuleMessages={props.socialModuleMessages}
     />
   );
 }

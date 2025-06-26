@@ -7,9 +7,10 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Skeleton } from "./Skeleton";
 
 export default function Component(props: IComponentProps) {
-  const { data, isLoading } = api.socialModuleProfileFindByIdChatFind({
+  const { data, isLoading } = api.socialModuleProfileFindByIdChatFindById({
     id: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChatId,
     options: {
       headers: {
         "Cache-Control": "no-store",
@@ -21,5 +22,5 @@ export default function Component(props: IComponentProps) {
     return <Skeleton />;
   }
 
-  return <ChildComponent {...props} socialModuleChats={data} />;
+  return <ChildComponent {...props} socialModuleChat={data} />;
 }
