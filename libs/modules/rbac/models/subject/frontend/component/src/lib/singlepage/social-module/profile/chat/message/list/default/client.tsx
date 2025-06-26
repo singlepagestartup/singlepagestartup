@@ -8,7 +8,7 @@ import { Skeleton } from "./Skeleton";
 
 export default function Component(props: IComponentProps) {
   const { data, isLoading } =
-    api.socialModuleProfileFindByIdChatFindByIdMessage({
+    api.socialModuleProfileFindByIdChatFindByIdMessageFind({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,

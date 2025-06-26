@@ -14,13 +14,13 @@ import { queryClient, subscription } from "@sps/shared-frontend-client-api";
 import { STALE_TIME } from "@sps/shared-utils";
 
 export type IProps =
-  IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageProps"] & {
+  IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindProps"] & {
     reactQueryOptions?: Partial<UseQueryOptions<any>>;
     mute?: boolean;
   };
 
 export type IResult =
-  IParentResult["ISocialModuleProfileFindByIdChatFindByIdMessageResult"];
+  IParentResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"];
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/messages`;
@@ -29,14 +29,15 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: [queryKey],
     queryFn: async () => {
-      const result = await api.socialModuleProfileFindByIdChatFindByIdMessage({
-        ...props,
-        options: {
-          ...props.options,
-          headers: saturateHeaders(props.options?.headers),
-        },
-        host: clientHost,
-      });
+      const result =
+        await api.socialModuleProfileFindByIdChatFindByIdMessageFind({
+          ...props,
+          options: {
+            ...props.options,
+            headers: saturateHeaders(props.options?.headers),
+          },
+          host: clientHost,
+        });
 
       return result;
     },

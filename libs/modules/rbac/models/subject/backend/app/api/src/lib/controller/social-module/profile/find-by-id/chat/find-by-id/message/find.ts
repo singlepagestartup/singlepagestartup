@@ -1,8 +1,7 @@
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../../../service";
-import { api } from "@sps/rbac/models/subject/sdk/server";
+import { Service } from "../../../../../../../service";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 
@@ -93,6 +92,12 @@ export class Handler {
               },
             ],
           },
+          order: [
+            {
+              column: "createdAt",
+              direction: "desc",
+            },
+          ],
         },
         options: {
           headers: {

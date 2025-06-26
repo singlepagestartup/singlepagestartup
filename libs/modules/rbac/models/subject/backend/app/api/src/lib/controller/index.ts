@@ -41,7 +41,8 @@ import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request
 
 import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/profile/find-by-id/chat/find";
 import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-module/profile/find-by-id/chat/find-by-id";
-import { Handler as SocialModuleProfileFindByIdChatFindByIdMessage } from "./social-module/profile/find-by-id/chat/find-by-id/message";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from "./social-module/profile/find-by-id/chat/find-by-id/message/find";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -240,7 +241,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
-        handler: this.socialModuleProfileFindByIdChatFindByIdMessage,
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessageFind,
+        middlewares: [
+          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
+        ],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessageCreate,
         middlewares: [
           new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
         ],
@@ -416,11 +425,20 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async socialModuleProfileFindByIdChatFindByIdMessage(
+  async socialModuleProfileFindByIdChatFindByIdMessageFind(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new SocialModuleProfileFindByIdChatFindByIdMessage(
+    return new SocialModuleProfileFindByIdChatFindByIdMessageFind(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessageCreate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageCreate(
       this.service,
     ).execute(c, next);
   }
