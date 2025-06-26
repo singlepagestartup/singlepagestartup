@@ -4,6 +4,8 @@ import { Component as Profile } from "./profile/Component";
 import { Component as Widget } from "./widget/Component";
 import { Component as Attribute } from "./attribute/Component";
 import { Component as AttributeKey } from "./attribute-key/Component";
+import { Component as Message } from "./message/Component";
+import { Component as Chat } from "./chat/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
@@ -22,6 +24,14 @@ export function Component(props: IComponentProps) {
     {
       name: "attribute-key",
       Comp: AttributeKey,
+    },
+    {
+      name: "message",
+      Comp: Message,
+    },
+    {
+      name: "chat",
+      Comp: Chat,
     },
   ];
 

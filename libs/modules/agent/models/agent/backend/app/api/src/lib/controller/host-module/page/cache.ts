@@ -36,32 +36,48 @@ export class Handler {
         },
       });
 
+      await fetch(HOST_SERVICE_URL + "/api/revalidate?path=/&type=layout", {
+        method: "GET",
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to revalidate page");
+          }
+        })
+        .catch((err) => {
+          logger.error("Failed to revalidate page", {
+            error: err,
+          });
+        });
+
       const urls = await hostModulePageApi.urls({});
 
       if (urls?.length) {
-        for (const url of urls) {
-          const path = HOST_SERVICE_URL + "/" + url.url.join("/");
+        await Promise.all(
+          urls.map(async (url) => {
+            const path = HOST_SERVICE_URL + "/" + url.url.join("/");
+            logger.info("Revalidating page", {
+              page: path,
+            });
 
-          await fetch(path, {
-            method: "GET",
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          })
-            .then((res) => {
-              if (res.ok) {
-                return;
+            try {
+              const res = await fetch(path, {
+                method: "GET",
+                headers: {
+                  "X-RBAC-SECRET-KEY": String(RBAC_SECRET_KEY),
+                },
+              });
+              if (!res.ok) {
+                throw new Error("Failed to fetch page");
               }
-
-              throw new Error("Failed to fetch page");
-            })
-            .catch((err) => {
-              logger.error("Failed to fetch page", {
+            } catch (err) {
+              logger.error(path + " - Failed to fetch page", {
                 page: path,
                 error: err,
               });
-            });
-        }
+            }
+          }),
+        );
       }
 
       if (topics?.length) {

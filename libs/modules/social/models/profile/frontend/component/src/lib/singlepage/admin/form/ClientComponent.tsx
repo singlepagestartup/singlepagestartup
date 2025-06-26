@@ -158,6 +158,20 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.profilesToMessages
+          ? props.profilesToMessages({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+
+        {props.profilesToChats
+          ? props.profilesToChats({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

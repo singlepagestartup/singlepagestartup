@@ -20,6 +20,10 @@ export interface IComponentProps
   profilesToAttributes?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  profilesToChats?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  profilesToMessages?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

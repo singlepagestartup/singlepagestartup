@@ -51,6 +51,12 @@
             "command": "nx run @sps/social:models:widget:repository-generate"
           },
           {
+            "command": "nx run @sps/social:models:message:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:models:chat:repository-generate"
+          },
+          {
             "command": "nx run @sps/social:models:profile:repository-generate"
           }
         ]
@@ -66,6 +72,15 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-messages:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-messages:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-chats:repository-generate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-generate"
@@ -92,6 +107,12 @@
             "command": "nx run @sps/social:models:widget:repository-migrate"
           },
           {
+            "command": "nx run @sps/social:models:message:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:models:chat:repository-migrate"
+          },
+          {
             "command": "nx run @sps/social:models:profile:repository-migrate"
           }
         ]
@@ -108,6 +129,15 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-attributes:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-messages:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-messages:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-chats:repository-migrate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-website-builder-module-widgets:repository-migrate"
@@ -169,6 +199,64 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/models/profile/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:message:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/models/message/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:message:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/models/message/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:chat:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/models/chat/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:chat:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/models/chat/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -343,6 +431,93 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/profiles-to-attributes/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-messages:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-messages/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-messages:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-messages/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-chats:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-chats/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-chats:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-chats/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-messages:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/chats-to-messages/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-messages:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/chats-to-messages/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

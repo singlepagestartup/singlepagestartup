@@ -1,0 +1,104 @@
+{
+  "id": "71e27a43-8564-4147-a450-01abf2475929",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_cs_to_ms_e6r": {
+      "name": "sl_cs_to_ms_e6r",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ct_id": {
+          "name": "ct_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "me_id": {
+          "name": "me_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sl_cs_to_ms_e6r_ct_id_sl_widget_id_fk": {
+          "name": "sl_cs_to_ms_e6r_ct_id_sl_widget_id_fk",
+          "tableFrom": "sl_cs_to_ms_e6r",
+          "tableTo": "sl_widget",
+          "columnsFrom": ["ct_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_cs_to_ms_e6r_me_id_sl_message_id_fk": {
+          "name": "sl_cs_to_ms_e6r_me_id_sl_message_id_fk",
+          "tableFrom": "sl_cs_to_ms_e6r",
+          "tableTo": "sl_message",
+          "columnsFrom": ["me_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
