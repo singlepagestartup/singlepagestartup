@@ -10,4 +10,4 @@ CREATE TABLE "sl_ps_to_cs_m2s" (
 );
 --> statement-breakpoint
 ALTER TABLE "sl_ps_to_cs_m2s" ADD CONSTRAINT "sl_ps_to_cs_m2s_pe_id_sl_profile_id_fk" FOREIGN KEY ("pe_id") REFERENCES "public"."sl_profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sl_ps_to_cs_m2s" ADD CONSTRAINT "sl_ps_to_cs_m2s_ct_id_sl_widget_id_fk" FOREIGN KEY ("ct_id") REFERENCES "public"."sl_widget"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "sl_ps_to_cs_m2s" ADD CONSTRAINT "sl_ps_to_cs_m2s_ct_id_sl_chat_id_fk" FOREIGN KEY ("ct_id") REFERENCES "public"."sl_chat"("id") ON DELETE cascade ON UPDATE no action;

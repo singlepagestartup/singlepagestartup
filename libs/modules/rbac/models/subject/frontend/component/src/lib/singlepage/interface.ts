@@ -27,10 +27,12 @@ import { IComponentProps as IEcommerceModuleProductCartDefaultComponentProps } f
 import { IComponentProps as IAuthenticationButtonDefaultComponentProps } from "./authentication/button-default/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
 import { IComponentProps as IIdentitySettingsDefaultComponentProps } from "./identity/settings-default/interface";
-import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
 import { IComponentProps as IEcommerceModuleOrderListTotalDefaultComponentProps } from "./ecommerce-module/order/list/total-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListQuantityDefaultComponentProps } from "./ecommerce-module/order/list/quantity-default/interface";
 import { IComponentProps as IEcommerceModuleOrderListDefaultComponentProps } from "./ecommerce-module/order/list/default/interface";
+
+import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
+import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } from "./social-module/profile/chat/list/default/interface";
 
 export type IComponentProps =
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
@@ -66,4 +68,5 @@ export type IComponentProps =
   | IEcommerceModuleOrderListTotalDefaultComponentProps
   | IEcommerceModuleOrderListQuantityDefaultComponentProps
   | IEcommerceModuleOrderListDefaultComponentProps
+  | ISocialModuleProfileChatListDefaultComponentProps
   | never;

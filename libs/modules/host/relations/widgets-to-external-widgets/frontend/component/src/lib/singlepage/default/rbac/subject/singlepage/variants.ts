@@ -5,6 +5,7 @@ import { Component as MeEcommerceModuleOrderListCheckoutDefaultComponentProps } 
 import { Component as MeEcommerceModuleProductCartDefaultComponentProps } from "./me/ecommerce-module/product/cart-default";
 import { Component as MeEcommerceModuleProductCheckoutDefaultComponentProps } from "./me/ecommerce-module/product/checkout-default";
 import { Component as SocialModuleProfileButtonDefaultComponentProps } from "./social-module-profile-button-default";
+import { Component as MeSocialModuleProfileChatListDefaultComponentProps } from "./me/social-module-profile-chat-list-default";
 
 export const variants = {
   "me-authentication-default": MeAuthenticationDefaultComponentProps,
@@ -20,4 +21,6 @@ export const variants = {
     MeEcommerceModuleProductCheckoutDefaultComponentProps,
   "social-module-profile-button-default":
     SocialModuleProfileButtonDefaultComponentProps,
+  "me-social-module-profile-chat-list-default":
+    MeSocialModuleProfileChatListDefaultComponentProps,
 };

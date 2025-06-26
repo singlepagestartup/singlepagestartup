@@ -1,5 +1,5 @@
 {
-  "id": "a7f66058-290a-46b3-ba4d-f89a7e6a7760",
+  "id": "69c3a7b9-847c-4e7b-a9a5-05a405b3c444",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -73,10 +73,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "sl_ps_to_cs_m2s_ct_id_sl_widget_id_fk": {
-          "name": "sl_ps_to_cs_m2s_ct_id_sl_widget_id_fk",
+        "sl_ps_to_cs_m2s_ct_id_sl_chat_id_fk": {
+          "name": "sl_ps_to_cs_m2s_ct_id_sl_chat_id_fk",
           "tableFrom": "sl_ps_to_cs_m2s",
-          "tableTo": "sl_widget",
+          "tableTo": "sl_chat",
           "columnsFrom": ["ct_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",

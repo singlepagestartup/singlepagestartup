@@ -3,8 +3,13 @@ import { app as profilesToWebsiteBuilderModuleWidgets } from "@sps/social/relati
 import { app as profile } from "@sps/social/models/profile/backend/app/api";
 import { app as widget } from "@sps/social/models/widget/backend/app/api";
 import { app as attribute } from "@sps/social/models/attribute/backend/app/api";
+import { app as message } from "@sps/social/models/message/backend/app/api";
+import { app as chat } from "@sps/social/models/chat/backend/app/api";
 import { app as attributeKey } from "@sps/social/models/attribute-key/backend/app/api";
 import { app as profilesToAttributes } from "@sps/social/relations/profiles-to-attributes/backend/app/api";
+import { app as chatsToMessages } from "@sps/social/relations/chats-to-messages/backend/app/api";
+import { app as profilesToChats } from "@sps/social/relations/profiles-to-chats/backend/app/api";
+import { app as profilesToMessages } from "@sps/social/relations/profiles-to-messages/backend/app/api";
 import { app as attributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
@@ -34,6 +39,16 @@ export class Apps {
     });
     this.apps.push({
       type: "model",
+      route: "/messages",
+      app: message,
+    });
+    this.apps.push({
+      type: "model",
+      route: "/chats",
+      app: chat,
+    });
+    this.apps.push({
+      type: "model",
       route: "/widgets",
       app: widget,
     });
@@ -51,6 +66,21 @@ export class Apps {
       type: "relation",
       route: "/profiles-to-attributes",
       app: profilesToAttributes,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-chats",
+      app: profilesToChats,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-messages",
+      app: profilesToMessages,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/chats-to-messages",
+      app: chatsToMessages,
     });
     this.apps.push({
       type: "relation",

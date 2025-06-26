@@ -4,9 +4,10 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
+import { RbacModuleRequestProfileSubjectIsOwnerMiddleware } from "@sps/middlewares";
+
 import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
-import { Handler as IdentitiesList } from "./identity/find";
 import { Handler as AuthenticationLogout } from "./authentication/logout";
 import { Handler as AuthenticationEmailAndPasswordForgotPassword } from "./authentication/email-and-password/forgot-password";
 import { Handler as AuthenticationEmailAndPasswordResetPassword } from "./authentication/email-and-password/reset-password";
@@ -15,11 +16,15 @@ import { Handler as AuthenticationInit } from "./authentication/init";
 import { Handler as AuthenticationEmailAndPasswordAuthentication } from "./authentication/email-and-password/authentication";
 import { Handler as AuthenticationRefresh } from "./authentication/refresh";
 import { Handler as AuthenticationEthereumVirtualMachine } from "./authentication/ethereum-virtual-machine";
+
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
+
+import { Handler as IdentitiesList } from "./identity/find";
 import { Handler as IdentitiesUpdate } from "./identity/update";
 import { Handler as IdentitiesCreate } from "./identity/create";
 import { Handler as IdentitiesDelete } from "./identity/delete";
+
 import { Handler as EcommerceModuleProductsEnforce } from "./ecommerce-module/product/enforce";
 import { Handler as EcommerceModuleOrderCreate } from "./ecommerce-module/order/create";
 import { Handler as EcommerceModuleOrderIdUpdate } from "./ecommerce-module/order/id/update";
@@ -30,8 +35,11 @@ import { Handler as EcommerceModuleOrderQuantity } from "./ecommerce-module/orde
 import { Handler as EcommerceModuleOrderIdTotal } from "./ecommerce-module/order/id/total";
 import { Handler as EcommerceModuleOrderIdQuantity } from "./ecommerce-module/order/id/quantity";
 import { Handler as EcommerceModuleProductIdCheckout } from "./ecommerce-module/product/id/checkout";
-import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
 import { Handler as EcommerceModuleOrderCheckout } from "./ecommerce-module/order/checkout";
+
+import { Handler as CrmModuleFromRequestCreate } from "./crm-module/from/request/create";
+
+import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/profile/find-by-id/chat/find";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -211,6 +219,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:uuid/identities/:identityUuid",
         handler: this.identitiesDelete,
       },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats",
+        handler: this.socialModuleProfileFindByIdChatFind,
+        middlewares: [
+          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
+        ],
+      },
     ]);
   }
 
@@ -360,5 +376,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async ecommerceModuleOrderList(c: Context, next: any): Promise<Response> {
     return new EcommerceModuleOrderList(this.service).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFind(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFind(this.service).execute(
+      c,
+      next,
+    );
   }
 }

@@ -19,3 +19,11 @@ export {
   Middleware as RequestIdMiddleware,
   type IMiddlewareGeneric as IRequestIdMiddlewareGeneric,
 } from "./request-id";
+export {
+  Middleware as RbacModuleRequestSubjectIsOwnerMiddleware,
+  type IMiddlewareGeneric as IRbacModuleRequestSubjectIsOwnerMiddlewareGeneric,
+} from "./rbac-module/request-subject-is-owner";
+export {
+  Middleware as RbacModuleRequestProfileSubjectIsOwnerMiddleware,
+  type IMiddlewareGeneric as IRbacModuleRequestProfileSubjectIsOwnerMiddlewareGeneric,
+} from "./rbac-module/request-profile-subject-is-owner";

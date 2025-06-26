@@ -1,7 +1,12 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as SocialModuleWidget } from "@sps/social/models/widget/frontend/component";
+import { Component as Widget } from "./widget";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(
+  props: IComponentPropsExtended & {
+    language: string;
+  },
+) {
   return (
     <SocialModuleWidget
       isServer={props.isServer}
@@ -29,7 +34,9 @@ export function Component(props: IComponentPropsExtended) {
               data={entity}
               language={props.language}
               variant={entity.variant as any}
-            />
+            >
+              <Widget {...props} data={entity} variant={entity.variant} />
+            </SocialModuleWidget>
           );
         });
       }}

@@ -6,31 +6,13 @@ import {
   query,
   options,
 } from "@sps/rbac/models/subject/sdk/model";
+
 import {
-  action as authenticationMe,
-  type IProps as IAuthenticationMeProps,
-  type IResult as IAuthenticationMeResult,
-} from "./authentication/me";
-import {
-  action as authenticationLogout,
-  type IProps as IAuthenticationLogoutProps,
-  type IResult as IAuthenticationLogoutResult,
-} from "./authentication/logout";
-import {
-  action as authenticationRefresh,
-  type IProps as IAuthenticationRefreshProps,
-  type IResult as IAuthenticationRefreshResult,
-} from "./authentication/refresh";
-import {
-  action as authenticationIsAuthorized,
-  type IProps as IAuthenticationIsAuthorizedProps,
-  type IResult as IAuthenticationIsAuthorizedResult,
-} from "./authentication/is-authorized";
-import {
-  action as identityFind,
-  type IProps as IIdentityFindProps,
-  type IResult as IIdentityFindResult,
-} from "./identity/find";
+  action as notify,
+  type IProps as INotifyProps,
+  type IResult as INotifyResult,
+} from "./notify";
+
 import {
   action as ecommerceModuleProductCheckout,
   type IProps as IEcommerceModuleProductCheckoutProps,
@@ -76,6 +58,12 @@ import {
   type IProps as IEcommerceModuleOrderListProps,
   type IResult as IEcommerceModuleOrderListResult,
 } from "./ecommerce-module/order/list";
+
+import {
+  action as identityFind,
+  type IProps as IIdentityFindProps,
+  type IResult as IIdentityFindResult,
+} from "./identity/find";
 import {
   action as identityUpdate,
   type IProps as IIdentityUpdateProps,
@@ -91,6 +79,27 @@ import {
   type IProps as IIdentityDeleteProps,
   type IResult as IIdentityDeleteResult,
 } from "./identity/delete";
+
+import {
+  action as authenticationMe,
+  type IProps as IAuthenticationMeProps,
+  type IResult as IAuthenticationMeResult,
+} from "./authentication/me";
+import {
+  action as authenticationLogout,
+  type IProps as IAuthenticationLogoutProps,
+  type IResult as IAuthenticationLogoutResult,
+} from "./authentication/logout";
+import {
+  action as authenticationRefresh,
+  type IProps as IAuthenticationRefreshProps,
+  type IResult as IAuthenticationRefreshResult,
+} from "./authentication/refresh";
+import {
+  action as authenticationIsAuthorized,
+  type IProps as IAuthenticationIsAuthorizedProps,
+  type IResult as IAuthenticationIsAuthorizedResult,
+} from "./authentication/is-authorized";
 import {
   action as authenticationEmailAndPasswordForgotPassword,
   type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,
@@ -101,11 +110,6 @@ import {
   type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
   type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
 } from "./authentication/email-and-password/reset-password";
-import {
-  action as notify,
-  type IProps as INotifyProps,
-  type IResult as INotifyResult,
-} from "./notify";
 import {
   action as authenticationInit,
   type IProps as IAuthenticationInitProps,
@@ -126,16 +130,22 @@ import {
   type IProps as IAuthenticationEmailAndPasswordRegistrationProps,
   type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
 } from "./authentication/email-and-password/registration";
+
 import {
   action as crmModuleFromRequestCreate,
   type IProps as ICrmModuleFromRequestCreateProps,
   type IResult as ICrmModuleFromRequestCreateResult,
 } from "./crm-module/form/request/create";
 
+import {
+  action as socialModuleProfileFindByIdChatFind,
+  type IProps as ISocialModuleProfileFindByIdChatFindProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindResult,
+} from "./social-module/profile/find-by-id/chat/find";
+
 export type IProps = {
-  IAuthenticationMeProps: IAuthenticationMeProps;
   INotifyProps: INotifyProps;
-  IIdentityFindProps: IIdentityFindProps;
+
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
@@ -143,9 +153,15 @@ export type IProps = {
   IEcommerceModuleOrderCheckoutProps: IEcommerceModuleOrderCheckoutProps;
   IEcommerceModuleOrderTotalProps: IEcommerceModuleOrderTotalProps;
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
+  IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
+  IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+
+  IIdentityFindProps: IIdentityFindProps;
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityCreateProps: IIdentityCreateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
+
+  IAuthenticationMeProps: IAuthenticationMeProps;
   IAuthenticationInitProps: IAuthenticationInitProps;
   IAuthenticationEthereumVirtualMachineProps: IAuthenticationEthereumVirtualMachineProps;
   IAuthenticationEmailAndPasswordAuthenticationProps: IAuthenticationEmailAndPasswordAuthenticationProps;
@@ -155,15 +171,15 @@ export type IProps = {
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
+
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
-  IEcommerceModuleOrderIdCheckoutProps: IEcommerceModuleOrderIdCheckoutProps;
-  IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+
+  ISocialModuleProfileFindByIdChatFindProps: ISocialModuleProfileFindByIdChatFindProps;
 };
 
 export type IResult = {
-  IAuthenticationMeResult: IAuthenticationMeResult;
   INotifyResult: INotifyResult;
-  IIdentityFindResult: IIdentityFindResult;
+
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
@@ -171,9 +187,15 @@ export type IResult = {
   IEcommerceModuleOrderCheckoutResult: IEcommerceModuleOrderCheckoutResult;
   IEcommerceModuleOrderTotalResult: IEcommerceModuleOrderTotalResult;
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
+  IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
+  IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+
+  IIdentityFindResult: IIdentityFindResult;
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityCreateResult: IIdentityCreateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
+
+  IAuthenticationMeResult: IAuthenticationMeResult;
   IAuthenticationInitResult: IAuthenticationInitResult;
   IAuthenticationEthereumVirtualMachineResult: IAuthenticationEthereumVirtualMachineResult;
   IAuthenticationEmailAndPasswordAuthenticationResult: IAuthenticationEmailAndPasswordAuthenticationResult;
@@ -183,9 +205,10 @@ export type IResult = {
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
+
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
-  IEcommerceModuleOrderIdCheckoutResult: IEcommerceModuleOrderIdCheckoutResult;
-  IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+
+  ISocialModuleProfileFindByIdChatFindResult: ISocialModuleProfileFindByIdChatFindResult;
 };
 
 export const api = {
@@ -195,8 +218,9 @@ export const api = {
     options,
     params: query,
   }),
-  authenticationMe,
-  identityFind,
+
+  notify,
+
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
   ecommerceModuleOrderUpdate,
@@ -206,10 +230,13 @@ export const api = {
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderIdCheckout,
   ecommerceModuleOrderList,
+
+  identityFind,
   identityUpdate,
   identityCreate,
   identityDelete,
-  notify,
+
+  authenticationMe,
   authenticationInit,
   authenticationEthereumVirtualMachine,
   authenticationEmailAndPasswordAuthentication,
@@ -219,5 +246,8 @@ export const api = {
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,
+
   crmModuleFromRequestCreate,
+
+  socialModuleProfileFindByIdChatFind,
 };

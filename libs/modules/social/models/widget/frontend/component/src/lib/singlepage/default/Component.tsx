@@ -4,7 +4,7 @@ import { cn } from "@sps/shared-frontend-client-utils";
 export function Component(props: IComponentPropsExtended) {
   return (
     <div
-      data-module="startup"
+      data-module="social"
       data-model="widget"
       data-id={props.data?.id || ""}
       data-variant={props.variant}

@@ -7,7 +7,7 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="social"
-      name="widget"
+      name="chat"
       variant={props.variant}
       adminForm={
         props.adminForm
@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
             <AdminTableRow
               key={index}
               module="social"
-              name="widget"
+              name="chat"
               isServer={props.isServer}
               variant="admin-table-row"
               adminForm={props.adminForm}

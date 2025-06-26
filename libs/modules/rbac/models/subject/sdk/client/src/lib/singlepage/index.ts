@@ -9,6 +9,7 @@ import {
 } from "@sps/rbac/models/subject/sdk/model";
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
+
 import {
   action as authenticationInit,
   type IProps as IAuthenticationInitProps,
@@ -55,6 +56,12 @@ import {
   type IResult as IAuthenticationEthereumVirtualMachineResult,
 } from "./authentication/ethereum-virtual-machine";
 import {
+  action as authenticationEmailAndPasswordResetPassword,
+  type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
+  type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
+} from "./authentication/email-and-password/reset-password";
+
+import {
   action as ecommerceModuleProductCheckout,
   type IProps as IEcommerceModuleProductCheckoutProps,
   type IResult as IEcommerceModuleProductCheckoutResult,
@@ -80,11 +87,6 @@ import {
   type IResult as IEcommerceModuleOrderQuantityResult,
 } from "./ecommerce-module/order/quantity";
 import {
-  action as authenticationEmailAndPasswordResetPassword,
-  type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
-  type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
-} from "./authentication/email-and-password/reset-password";
-import {
   action as ecommerceModuleOrderUpdate,
   type IProps as IEcommerceModuleOrderUpdateProps,
   type IResult as IEcommerceModuleOrderUpdateResult,
@@ -99,6 +101,7 @@ import {
   type IProps as IEcommerceModuleOrderDeleteProps,
   type IResult as IEcommerceModuleOrderDeleteResult,
 } from "./ecommerce-module/order/id/delete";
+
 import {
   action as identityUpdate,
   type IProps as IIdentityUpdateProps,
@@ -114,11 +117,18 @@ import {
   type IProps as IIdentityCreateProps,
   type IResult as IIdentityCreateResult,
 } from "./identity/create";
+
 import {
   action as crmModuleFromRequestCreate,
   type IProps as ICrmModuleFromRequestCreateProps,
   type IResult as ICrmModuleFromRequestCreateResult,
 } from "./crm-module/from/request/create";
+
+import {
+  action as socialModuleProfileFindByIdChatFind,
+  type IProps as ISocialModuleProfileFindByIdChatFindProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindResult,
+} from "./social-module/profile/find-by-id/chat/find";
 
 export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -131,18 +141,23 @@ export type IProps = {
   IAuthenticationEmailAndPasswordForgotPasswordProps: IAuthenticationEmailAndPasswordForgotPasswordProps;
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationEmailAndPasswordResetPasswordProps: IAuthenticationEmailAndPasswordResetPasswordProps;
+
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
   IIdentityCreateProps: IIdentityCreateProps;
+
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
   IEcommerceModuleOrderUpdateProps: IEcommerceModuleOrderUpdateProps;
   IEcommerceModuleOrderCheckoutProps: IEcommerceModuleOrderCheckoutProps;
   IEcommerceModuleOrderDeleteProps: IEcommerceModuleOrderDeleteProps;
-  ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
   IEcommerceModuleOrderTotalProps: IEcommerceModuleOrderTotalProps;
   IEcommerceModuleOrderQuantityProps: IEcommerceModuleOrderQuantityProps;
   IEcommerceModuleOrderListProps: IEcommerceModuleOrderListProps;
+
+  ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
+
+  ISocialModuleProfileFindByIdChatFindProps: ISocialModuleProfileFindByIdChatFindProps;
 };
 
 export type IResult = {
@@ -156,18 +171,23 @@ export type IResult = {
   IAuthenticationEmailAndPasswordForgotPasswordResult: IAuthenticationEmailAndPasswordForgotPasswordResult;
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationEmailAndPasswordResetPasswordResult: IAuthenticationEmailAndPasswordResetPasswordResult;
+
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
   IIdentityCreateResult: IIdentityCreateResult;
+
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
   IEcommerceModuleOrderUpdateResult: IEcommerceModuleOrderUpdateResult;
   IEcommerceModuleOrderCheckoutResult: IEcommerceModuleOrderCheckoutResult;
   IEcommerceModuleOrderDeleteResult: IEcommerceModuleOrderDeleteResult;
-  ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
   IEcommerceModuleOrderTotalResult: IEcommerceModuleOrderTotalResult;
   IEcommerceModuleOrderQuantityResult: IEcommerceModuleOrderQuantityResult;
   IEcommerceModuleOrderListResult: IEcommerceModuleOrderListResult;
+
+  ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
+
+  ISocialModuleProfileFindByIdChatFindResult: ISocialModuleProfileFindByIdChatFindResult;
 };
 
 export const api = {
@@ -188,16 +208,21 @@ export const api = {
   authenticationEmailAndPasswordForgotPassword,
   authenticationLogout,
   authenticationEmailAndPasswordResetPassword,
+
   identityUpdate,
   identityDelete,
   identityCreate,
+
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,
   ecommerceModuleOrderUpdate,
   ecommerceModuleOrderCheckout,
   ecommerceModuleOrderDelete,
-  crmModuleFromRequestCreate,
   ecommerceModuleOrderTotal,
   ecommerceModuleOrderQuantity,
   ecommerceModuleOrderList,
+
+  crmModuleFromRequestCreate,
+
+  socialModuleProfileFindByIdChatFind,
 };

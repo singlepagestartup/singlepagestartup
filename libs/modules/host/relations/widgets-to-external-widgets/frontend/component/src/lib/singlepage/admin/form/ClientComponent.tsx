@@ -20,6 +20,7 @@ import { Component as Billing } from "@sps/billing/models/widget/frontend/compon
 import { Component as Ecommerce } from "@sps/ecommerce/models/widget/frontend/component";
 import { Component as Blog } from "@sps/blog/models/widget/frontend/component";
 import { Component as Crm } from "@sps/crm/models/widget/frontend/component";
+import { Component as Social } from "@sps/social/models/widget/frontend/component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
@@ -170,6 +171,15 @@ export function Component(props: IComponentPropsExtended) {
 
         {watchData.externalModule === "crm" ? (
           <Crm
+            isServer={props.isServer}
+            variant="admin-select-input"
+            form={form}
+            formFieldName="externalWidgetId"
+          />
+        ) : null}
+
+        {watchData.externalModule === "social" ? (
+          <Social
             isServer={props.isServer}
             variant="admin-select-input"
             form={form}
