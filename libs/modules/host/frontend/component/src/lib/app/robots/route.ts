@@ -1,7 +1,7 @@
-import { HOST_SERVICE_URL } from "@sps/shared-utils";
+import { NEXT_PUBLIC_HOST_SERVICE_URL } from "@sps/shared-utils";
 
 async function generateRobots() {
-  return `User-agent: *\nSitemap: ${HOST_SERVICE_URL}/sitemap.xml`;
+  return `User-agent: *\nSitemap: ${NEXT_PUBLIC_HOST_SERVICE_URL}/sitemap.xml`;
 }
 
 export async function GET() {

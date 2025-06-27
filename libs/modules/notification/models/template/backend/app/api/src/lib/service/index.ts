@@ -2,7 +2,10 @@ import "reflect-metadata";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/template/backend/repository/database";
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import QueryString from "qs";
 import pako from "pako";
 
@@ -15,10 +18,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Secret key not found");
-    }
-
-    if (!HOST_SERVICE_URL) {
-      throw new Error("Host Service Url not found");
     }
 
     const template = await this.findById({
@@ -51,7 +50,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (params.type === "email") {
       const data = await fetch(
-        HOST_SERVICE_URL + "/api/email-generator/index.html?" + query,
+        NEXT_PUBLIC_HOST_SERVICE_URL +
+          "/api/email-generator/index.html?" +
+          query,
         {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -62,7 +63,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return data;
     } else if (params.type === "telegram") {
       const data = await fetch(
-        HOST_SERVICE_URL + "/api/telegram-generator?" + query,
+        NEXT_PUBLIC_HOST_SERVICE_URL + "/api/telegram-generator?" + query,
         {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

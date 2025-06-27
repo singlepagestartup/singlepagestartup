@@ -10,10 +10,10 @@ export const ALLOWED_BILLING_SERVICE_PROVIDERS =
   process.env["ALLOWED_BILLING_SERVICE_PROVIDERS"] ||
   "stripe,0xprocessing,payselection,cloudpayments,tiptoppay,dummy";
 export const API_SERVICE_PORT = Number(process.env["API_SERVICE_PORT"]) || 4000;
+export const NEXT_PUBLIC_HOST_SERVICE_URL =
+  process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] || "http://localhost:3000";
 export const HOST_SERVICE_URL =
-  process.env["NEXT_PUBLIC_HOST_SERVICE_URL"] ||
-  process.env["HOST_SERVICE_URL"] ||
-  "http://localhost:3000";
+  process.env["HOST_SERVICE_URL"] || "http://localhost:3000";
 export const STALE_TIME =
   Number(process.env["NEXT_PUBLIC_STALE_TIME"]) || 60 * 1000;
 export const REVALIDATE: number | undefined =

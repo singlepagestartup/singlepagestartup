@@ -22,9 +22,7 @@ import {
   PAYSELECTION_INT_SECRET_KEY,
   PAYSELECTION_INT_SITE_NAME,
   PAYSELECTION_INT_WEBHOOK_URL,
-  CLOUDPAYMENTS_API_SECRET,
-  CLOUDPAYMENTS_PUBLIC_ID,
-  HOST_SERVICE_URL,
+  NEXT_PUBLIC_HOST_SERVICE_URL,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
@@ -746,9 +744,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           amount: props.entity.amount,
           status: "open",
           providerId: `${randomString}`,
-          paymentUrl: HOST_SERVICE_URL,
-          successUrl: HOST_SERVICE_URL,
-          cancelUrl: HOST_SERVICE_URL,
+          paymentUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
+          successUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
+          cancelUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
           provider: "dummy",
         },
         options: {

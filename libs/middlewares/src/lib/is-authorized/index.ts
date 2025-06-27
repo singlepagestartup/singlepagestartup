@@ -1,6 +1,9 @@
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { getCookie } from "hono/cookie";
@@ -84,7 +87,7 @@ export class Middleware {
       const origin = c.req.header("Host");
       const allowedOrigins = new Set([
         "http://localhost:3000",
-        HOST_SERVICE_URL,
+        NEXT_PUBLIC_HOST_SERVICE_URL,
       ]);
 
       if (origin && allowedOrigins.has(origin)) {

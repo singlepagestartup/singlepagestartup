@@ -3,9 +3,9 @@ import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   RBAC_SECRET_KEY,
-  HOST_SERVICE_URL,
   TIPTOPPAY_PUBLIC_ID,
   TIPTOPPAY_API_SECRET,
+  NEXT_PUBLIC_HOST_SERVICE_URL,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
@@ -81,8 +81,8 @@ export class Service {
         data: {
           amount: props.entity.amount,
           status: "open",
-          successUrl: HOST_SERVICE_URL,
-          cancelUrl: HOST_SERVICE_URL,
+          successUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
+          cancelUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
           provider: "tiptoppay",
         },
         options: {
