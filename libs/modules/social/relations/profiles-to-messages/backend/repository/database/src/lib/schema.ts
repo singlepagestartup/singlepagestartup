@@ -22,4 +22,5 @@ export const Table = pgTable(table, {
     .uuid("me_id")
     .notNull()
     .references(() => Message.id, { onDelete: "cascade" }),
+  isRead: pgCore.boolean("is_read").notNull().default(false),
 });

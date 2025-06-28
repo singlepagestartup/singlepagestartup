@@ -6,7 +6,7 @@ import {
   clientHost,
   query,
   options,
-} from "@sps/agent/models/agent/sdk/model";
+} from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/model";
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 

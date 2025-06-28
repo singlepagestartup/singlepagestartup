@@ -2,7 +2,7 @@ import { Component as RbacSubject } from "../../../../rbac/subject";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as CategoryRowButtonDefault } from "../category-row-button-default";
-import { Component as RbacModuleSubjectProfileButtonDefault } from "../rbac-module-subject-profile-button-default";
+import { Component as SocialModuleProfileButtonDefault } from "../social-module-profile-button-default";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentProps) {
@@ -24,10 +24,10 @@ export function Component(props: IComponentProps) {
       }
       middleSlot={
         <CardContent>
-          <RbacModuleSubjectProfileButtonDefault
+          <SocialModuleProfileButtonDefault
             isServer={props.isServer}
             language={props.language}
-            variant="rbac-module-subject-profile-button-default"
+            variant="social-module-profile-button-default"
             data={props.data}
           />
         </CardContent>

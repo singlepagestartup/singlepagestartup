@@ -83,6 +83,7 @@
     "next": "14.2.3",
     "next-themes": "0.3.0",
     "nodemailer": "6.9.14",
+    "openai": "5.8.2",
     "pako": "2.1.0",
     "pino": "9.5.0",
     "postgres": "3.4.4",

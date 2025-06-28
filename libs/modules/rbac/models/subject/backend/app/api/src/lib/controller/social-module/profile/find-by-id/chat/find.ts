@@ -53,7 +53,7 @@ export class Handler {
       const socialModuleProfilesToChats =
         await socialModuleProfilesToChatsApi.find({
           params: {
-            filers: {
+            filters: {
               and: [
                 {
                   column: "profileId",

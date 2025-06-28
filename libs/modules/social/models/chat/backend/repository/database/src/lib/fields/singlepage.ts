@@ -18,4 +18,5 @@ export const fields = {
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
+  sourceSystemId: pgCore.text("source_system_id"),
 };

@@ -1,0 +1,1 @@
+ALTER TABLE "sl_ps_to_ms_b03" ADD COLUMN "is_read" boolean DEFAULT false NOT NULL;

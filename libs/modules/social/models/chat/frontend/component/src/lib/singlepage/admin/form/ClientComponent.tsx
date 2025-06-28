@@ -32,6 +32,7 @@ export function Component(props: IComponentPropsExtended) {
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
       title: props.data?.title || "",
       description: props.data?.description || "",
+      sourceSystemId: props.data?.sourceSystemId || "",
     },
   });
 
@@ -83,6 +84,15 @@ export function Component(props: IComponentPropsExtended) {
           name="description"
           form={form}
           placeholder="Type description"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Source System ID"
+          name="sourceSystemId"
+          form={form}
+          placeholder="Type source system id"
         />
 
         <FormField

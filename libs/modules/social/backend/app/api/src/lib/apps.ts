@@ -11,6 +11,8 @@ import { app as chatsToMessages } from "@sps/social/relations/chats-to-messages/
 import { app as profilesToChats } from "@sps/social/relations/profiles-to-chats/backend/app/api";
 import { app as profilesToMessages } from "@sps/social/relations/profiles-to-messages/backend/app/api";
 import { app as attributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api";
+import { app as profilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api";
+import { app as profilesToTelegramModuleChats } from "@sps/social/relations/profiles-to-telegram-module-chats/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -86,6 +88,16 @@ export class Apps {
       type: "relation",
       route: "/attribute-keys-to-attributes",
       app: attributeKeysToAttributes,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-ecommerce-module-products",
+      app: profilesToEcommerceModuleProducts,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-telegram-module-chats",
+      app: profilesToTelegramModuleChats,
     });
   }
 }

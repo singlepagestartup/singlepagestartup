@@ -33,6 +33,7 @@ export class Middleware {
               "Validation error. No socialModuleProfileId provided",
             );
           }
+
           const subjectsToSocialModuleProfiles =
             await subjectsToSocialModuleProfilesApi.find({
               params: {

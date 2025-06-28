@@ -36,48 +36,37 @@ export class Handler {
         },
       });
 
-      await fetch(HOST_SERVICE_URL + "/api/revalidate?path=/&type=layout", {
-        method: "GET",
-      })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Failed to revalidate page");
-          }
-        })
-        .catch((err) => {
-          logger.error("Failed to revalidate page", {
-            error: err,
-          });
-        });
-
       const urls = await hostModulePageApi.urls({});
 
       if (urls?.length) {
-        await Promise.all(
-          urls.map(async (url) => {
-            const path = HOST_SERVICE_URL + "/" + url.url.join("/");
-            logger.info("Revalidating page", {
-              page: path,
+        for (const [index, url] of urls.entries()) {
+          const path = HOST_SERVICE_URL + "/" + url.url.join("/");
+
+          logger.info(`🔄 Revalidating page ${index + 1} of ${urls.length}`, {
+            page: path,
+          });
+
+          try {
+            await this.revalidatePage(path);
+
+            const res = await fetch(path, {
+              method: "GET",
             });
 
-            try {
-              const res = await fetch(path, {
-                method: "GET",
-                headers: {
-                  "X-RBAC-SECRET-KEY": String(RBAC_SECRET_KEY),
-                },
-              });
-              if (!res.ok) {
-                throw new Error("Failed to fetch page");
-              }
-            } catch (err) {
-              logger.error(path + " - Failed to fetch page", {
-                page: path,
-                error: err,
-              });
+            if (!res.ok) {
+              throw new Error("Failed to fetch page");
             }
-          }),
-        );
+
+            logger.info(`✅ Revalidated page ${index + 1} of ${urls.length}`, {
+              page: path,
+            });
+          } catch (err) {
+            logger.error(path + " - Failed to fetch page", {
+              page: path,
+              error: err,
+            });
+          }
+        }
       }
 
       if (topics?.length) {
@@ -158,5 +147,23 @@ export class Handler {
         cause: error,
       });
     }
+  }
+
+  async revalidatePage(path: string) {
+    const res = await fetch(
+      HOST_SERVICE_URL + `/api/revalidate?path=${path}&type=page`,
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to revalidate page");
+        }
+      })
+      .catch((err) => {
+        logger.error("Failed to revalidate page", {
+          error: err,
+        });
+      });
+
+    return res;
   }
 }

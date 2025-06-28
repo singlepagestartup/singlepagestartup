@@ -12,6 +12,7 @@ import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
@@ -34,6 +35,19 @@ import {
     });
   } else {
     seeds.push(agentModelsSeeds);
+  }
+
+  const telegramModelsSeeds = await telegramApp.seed({
+    type: "model",
+    seeds,
+  });
+
+  if (Array.isArray(telegramModelsSeeds)) {
+    telegramModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(telegramModelsSeeds);
   }
 
   const broadcastModelsSeeds = await broadcastApp.seed({
@@ -204,6 +218,18 @@ import {
     });
   } else {
     seeds.push(hostRelationsSeeds);
+  }
+
+  const telegramRelationsSeeds = await telegramApp.seed({
+    type: "relation",
+    seeds,
+  });
+  if (Array.isArray(telegramRelationsSeeds)) {
+    telegramRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(telegramRelationsSeeds);
   }
 
   const broadcastRelationsSeeds = await broadcastApp.seed({

@@ -43,6 +43,7 @@ import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/
 import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-module/profile/find-by-id/chat/find-by-id";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from "./social-module/profile/find-by-id/chat/find-by-id/message/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReact } from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -254,6 +255,14 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
         ],
       },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react",
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessageReact,
+        middlewares: [
+          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
+        ],
+      },
     ]);
   }
 
@@ -439,6 +448,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageCreate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessageReact(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageReact(
       this.service,
     ).execute(c, next);
   }

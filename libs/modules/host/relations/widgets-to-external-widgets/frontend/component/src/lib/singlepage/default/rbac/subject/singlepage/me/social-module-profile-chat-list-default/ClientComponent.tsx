@@ -19,7 +19,7 @@ export function Component(props: IComponentProps) {
             variant="find"
             apiProps={{
               params: {
-                filers: {
+                filters: {
                   and: [
                     {
                       column: "subjectId",
@@ -41,7 +41,7 @@ export function Component(props: IComponentProps) {
                       variant="find"
                       apiProps={{
                         params: {
-                          filers: {
+                          filters: {
                             and: [
                               {
                                 column: "id",

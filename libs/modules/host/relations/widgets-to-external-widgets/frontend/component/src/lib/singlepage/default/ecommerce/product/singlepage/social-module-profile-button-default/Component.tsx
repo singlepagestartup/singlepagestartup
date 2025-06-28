@@ -1,14 +1,13 @@
 import { IComponentProps } from "./interface";
-import { Component as RbacModuleSubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
-import { Component as RbacModuleSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Component as RbacSubject } from "../../../../rbac/subject";
+import { Component as SocialModuleProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
 import Link from "next/link";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
+import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 
 export function Component(props: IComponentProps) {
   return (
-    <RbacModuleSubjectsToEcommerceModuleProducts
+    <SocialModuleProfilesToEcommerceModuleProducts
       isServer={props.isServer}
       variant="find"
       apiProps={{
@@ -25,11 +24,11 @@ export function Component(props: IComponentProps) {
         },
       }}
     >
-      {({ data: subjectsToEcommerceModuleProducts }) => {
-        return subjectsToEcommerceModuleProducts?.map(
-          (subjectToEcommerceModuleProduct, index) => {
+      {({ data: profilesToEcommerceModuleProducts }) => {
+        return profilesToEcommerceModuleProducts?.map(
+          (profileToEcommerceModuleProduct, index) => {
             return (
-              <RbacModuleSubject
+              <SocialModuleProfile
                 key={index}
                 isServer={props.isServer}
                 variant="find"
@@ -40,17 +39,17 @@ export function Component(props: IComponentProps) {
                         {
                           column: "id",
                           method: "eq",
-                          value: subjectToEcommerceModuleProduct.subjectId,
+                          value: profileToEcommerceModuleProduct.profileId,
                         },
                       ],
                     },
                   },
                 }}
               >
-                {({ data: subjects }) => {
-                  return subjects?.map((subject, index) => {
+                {({ data: profiles }) => {
+                  return profiles?.map((profile, index) => {
                     const href = saveLanguageContext(
-                      `/rbac/subjects/${subject.slug}/social/profile`,
+                      `/social/profiles/${profile.slug}`,
                       props.language,
                       internationalization.languages,
                     );
@@ -61,21 +60,22 @@ export function Component(props: IComponentProps) {
                         key={index}
                         className="w-fit flex items-center"
                       >
-                        <RbacSubject
+                        <SocialModuleProfile
+                          key={index}
                           isServer={props.isServer}
-                          data={subject}
-                          variant="social-module-profile-button-default"
+                          variant="button-default"
+                          data={profile}
                           language={props.language}
                         />
                       </Link>
                     );
                   });
                 }}
-              </RbacModuleSubject>
+              </SocialModuleProfile>
             );
           },
         );
       }}
-    </RbacModuleSubjectsToEcommerceModuleProducts>
+    </SocialModuleProfilesToEcommerceModuleProducts>
   );
 }

@@ -2,7 +2,7 @@ import { Component as RbacSubject } from "../../../../rbac/subject";
 import { Component as EcommerceModuleProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as CategoryRowButtonDefault } from "../category-row-button-default/Component";
-import { Component as RbacModuleSubjectProfileButtonDefault } from "../rbac-module-subject-profile-button-default/Component";
+import { Component as RbacModuleSubjectProfileButtonDefault } from "../social-module-profile-button-default/Component";
 import { CardContent, CardHeader } from "@sps/shared-ui-shadcn";
 
 export function Component(props: IComponentProps) {

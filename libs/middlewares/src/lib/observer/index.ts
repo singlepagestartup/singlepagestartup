@@ -60,11 +60,6 @@ export class Middleware {
               ],
             },
           },
-          options: {
-            next: {
-              cache: "no-store",
-            },
-          },
         });
 
         if (!observerChannels?.length) {
@@ -116,8 +111,9 @@ export class Middleware {
             },
           },
           options: {
-            next: {
-              cache: "no-store",
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -221,9 +217,6 @@ export class Middleware {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });

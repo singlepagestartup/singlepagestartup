@@ -11,6 +11,7 @@ import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
 import { app as startupApp } from "@sps/startup/backend/app/api";
 import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { app as telegramApp } from "@sps/telegram/backend/app/api";
 import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
@@ -76,6 +77,11 @@ import { exit } from "process";
     dumps: [],
   });
 
+  await telegramApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
   await agentApp.dump({
     type: "model",
     dumps: [],
@@ -127,6 +133,11 @@ import { exit } from "process";
   });
 
   await socialApp.dump({
+    type: "relation",
+    dumps: [],
+  });
+
+  await telegramApp.dump({
     type: "relation",
     dumps: [],
   });

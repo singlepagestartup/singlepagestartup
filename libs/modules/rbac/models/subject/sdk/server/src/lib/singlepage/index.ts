@@ -157,6 +157,11 @@ import {
   type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
+import {
+  action as socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
 
 export type IProps = {
   INotifyProps: INotifyProps;
@@ -193,6 +198,7 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdProps: ISocialModuleProfileFindByIdChatFindByIdProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps;
+  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps;
 };
 
 export type IResult = {
@@ -230,6 +236,7 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdResult: ISocialModuleProfileFindByIdChatFindByIdResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult;
+  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult;
 };
 
 export const api = {
@@ -274,4 +281,5 @@ export const api = {
   socialModuleProfileFindByIdChatFindById,
   socialModuleProfileFindByIdChatFindByIdMessageFind,
   socialModuleProfileFindByIdChatFindByIdMessageCreate,
+  socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact,
 };

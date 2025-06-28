@@ -5,7 +5,11 @@ import {
   IModel,
   query,
   options,
-} from "@sps/agent/models/agent/sdk/model";
+} from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/model";
+
+export type IProps = {};
+
+export type IResult = {};
 
 export const api = factory<IModel>({
   route,

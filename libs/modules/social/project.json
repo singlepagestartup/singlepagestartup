@@ -80,6 +80,9 @@
             "command": "nx run @sps/social:relations:profiles-to-messages:repository-generate"
           },
           {
+            "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-products:repository-generate"
+          },
+          {
             "command": "nx run @sps/social:relations:profiles-to-chats:repository-generate"
           },
           {
@@ -135,6 +138,9 @@
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-messages:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-ecommerce-module-products:repository-migrate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-chats:repository-migrate"
@@ -489,6 +495,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/profiles-to-chats/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-ecommerce-module-products:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-products/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-ecommerce-module-products:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-ecommerce-module-products/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
