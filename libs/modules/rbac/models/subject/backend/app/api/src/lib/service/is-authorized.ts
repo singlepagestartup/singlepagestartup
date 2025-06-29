@@ -30,11 +30,11 @@ export class Service {
     let authorized = false;
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error("Configuration error. RBAC_JWT_SECRET is not defined");
     }
 
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const authorization = props.authorization.value;

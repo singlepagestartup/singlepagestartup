@@ -55,12 +55,18 @@ export class Handler {
           const param = moduleSegment.split(".")[2];
           const moduleSegmentPaths: string[] = [];
 
+          const headers = {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          };
+
+          if (moduleName === "rbac" && modelName === "subject") {
+            headers["Cache-Control"] = "no-store";
+          }
+
           const moduleData = await fetch(
             `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
             {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers,
             },
           ).then((res) => res.json());
 

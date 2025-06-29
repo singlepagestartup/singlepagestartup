@@ -27,9 +27,6 @@ export interface IComponentProps
   profilesToEcommerceModuleProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-  profilesToTelegramModuleChats?: (
-    props: ISpsComponentBase & { data?: IModel },
-  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

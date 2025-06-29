@@ -26,7 +26,14 @@ export class Service {
       throw new Error("RBAC_SECRET_KEY is not defined");
     }
 
-    const entity = await api.findById({ id: props.id });
+    const entity = await api.findById({
+      id: props.id,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
 
     if (!entity) {
       throw new Error("Entity not found");
@@ -48,9 +55,6 @@ export class Service {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-        next: {
-          cache: "no-store",
-        },
       },
     });
 
@@ -70,9 +74,6 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
         },
       },
     });
@@ -96,9 +97,6 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
         },
       },
     });
@@ -130,9 +128,6 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });

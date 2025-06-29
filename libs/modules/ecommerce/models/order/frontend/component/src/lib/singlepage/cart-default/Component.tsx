@@ -27,6 +27,11 @@ export function Component(props: IComponentPropsExtended) {
             ],
           },
         },
+        options: {
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        },
       }}
     >
       {({ data: ecommerceModuleOrdersToProducts }) => {

@@ -80,6 +80,10 @@ export class Middleware {
 
         if (["PUT", "PATCH"].includes(method)) {
           await this.storeProvider.delByPrefix({
+            prefix: "/rbac/actions",
+          });
+
+          await this.storeProvider.delByPrefix({
             prefix: path,
           });
 
@@ -99,6 +103,10 @@ export class Middleware {
         }
 
         if (["POST", "DELETE"].includes(method)) {
+          await this.storeProvider.delByPrefix({
+            prefix: "/rbac/actions",
+          });
+
           const pathWithIdBase = path.match(
             /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/,
           )?.[1];

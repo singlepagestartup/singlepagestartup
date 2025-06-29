@@ -2,12 +2,6 @@ import { OPEN_AI_API_KEY, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
-import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
-import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
-import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
-import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
-import { logger } from "@sps/backend-utils";
 import OpenAI from "openai";
 
 export class Handler {

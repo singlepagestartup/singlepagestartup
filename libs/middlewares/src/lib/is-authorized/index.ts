@@ -108,6 +108,7 @@ export class Middleware {
         const headers: HeadersInit = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),
           ...(authorization ? { Authorization: authorization } : {}),
+          "Cache-Control": "no-store",
         };
 
         const isAuthorized = await subjectApi.authenticationIsAuthorized({

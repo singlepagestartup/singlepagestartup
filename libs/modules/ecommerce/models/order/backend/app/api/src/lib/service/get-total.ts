@@ -36,9 +36,6 @@ export class Service {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
-        next: {
-          cache: "no-store",
-        },
       },
     });
 
