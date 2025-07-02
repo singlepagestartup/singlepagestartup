@@ -222,39 +222,51 @@ Strict layered architecture: Repository → Service → Controller → App.
 - Bun ^1.2.3
 - Docker and Docker Compose
 
-### Installing Dependencies
+### 1. Installing Dependencies
 
 ```bash
-bun install
+npm install
 ```
 
-### Starting Services
+### 2. Creating envs and starting Required Services
+
+Creating envs in all services and running them
 
 ```bash
-# Start Postgres and Redis
-docker-compose up -d
-
-# Create env files
-./create_env.sh
+./up.sh
 ```
 
-### Running the Project
+### 3. Migrating database
 
 ```bash
-# Development
-bun run host:dev
+./migrate.sh
+```
 
-# Production
-bun run host:production
+### 3\*. Seeding base data
 
+If you want to run SinglePageStartup with precreated data, run seeding
 
+```bash
+npx nx api:db:seed
+```
+
+### 4. Running the API Project
+
+```bash
+npm run api:dev
+```
+
+### 5. Running the Host Project
+
+```bash
+npm run host:dev
 ```
 
 ## Attaching Upstream
 
 After creating repository based on singlepagestartup template, call command:
 
-```
+```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
 git pull upstream main
 ```
@@ -288,7 +300,7 @@ fatal: Need to specify how to reconcile divergent branches.
 
 Call:
 
-```
+```bash
 git config pull.rebase false
 git pull upstream main --allow-unrelated-histories
 ```
