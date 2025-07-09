@@ -112,6 +112,10 @@ export class TelegarmBot {
     });
 
     this.instance.command("start", async (ctx) => {
+      const payload = ctx.match;
+      if (payload) {
+        ctx.reply(payload);
+      }
       ctx.reply("Hello!", {
         reply_markup: {
           inline_keyboard: [

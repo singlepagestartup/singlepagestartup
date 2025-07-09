@@ -16,3 +16,8 @@ coverage
 # Sentry
 ############################
 .sentryclirc
+
+############################
+# Cloudflare Tunel
+############################
+config.yml
