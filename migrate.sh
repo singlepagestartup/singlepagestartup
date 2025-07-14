@@ -7,8 +7,8 @@ npx nx run @sps/website-builder:repository-migrate
 npx nx run @sps/notification:repository-migrate
 npx nx run @sps/crm:repository-migrate
 npx nx run @sps/billing:repository-migrate
-npx nx run @sps/blog:repository-migrate
 npx nx run @sps/ecommerce:repository-migrate
+npx nx run @sps/blog:repository-migrate
 npx nx run @sps/startup:repository-migrate
 npx nx run @sps/social:repository-migrate
 npx nx run @sps/rbac:repository-migrate
