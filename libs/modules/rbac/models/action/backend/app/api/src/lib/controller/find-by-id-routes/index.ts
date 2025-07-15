@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 import { Context } from "hono";
 import { Service } from "../../service";
 import { Table } from "@sps/rbac/models/action/backend/repository/database";
@@ -20,6 +23,9 @@ export class Handler {
     this.service = service;
   }
 
+  /**
+   * @deprecated
+   */
   async execute(c: Context, next: any): Promise<Response> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("RBAC_SECRET_KEY not found");

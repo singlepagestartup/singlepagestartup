@@ -5,7 +5,6 @@ import { Table } from "@sps/rbac/models/action/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
 import { Handler as FindByActionRoute } from "./find-by-action-route";
-import { Handler as FindByIdRoutes } from "./find-by-id-routes";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -51,19 +50,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/:uuid",
         handler: this.delete,
       },
-      {
-        method: "GET",
-        path: "/:uuid/routes",
-        handler: this.findByIdRoutes,
-      },
     ]);
   }
 
   public async findByActionRoute(c: Context, next: any): Promise<Response> {
     return new FindByActionRoute(this.service).execute(c, next);
-  }
-
-  public async findByIdRoutes(c: Context, next: any): Promise<Response> {
-    return new FindByIdRoutes(this.service).execute(c, next);
   }
 }

@@ -3,8 +3,8 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import QueryString from "qs";
 import { api } from "@sps/rbac/models/action/sdk/server";
-import { IModel } from "@sps/rbac/models/action/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { match } from "path-to-regexp";
 
 export class Handler {
   service: Service;
@@ -16,46 +16,28 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("Evironment error. RBAC_SECRET_KEY not found");
+        throw new Error("Environment error. RBAC_SECRET_KEY not found");
       }
 
       const query = QueryString.parse(c.req.url.split("?")[1]);
 
-      if (!query.action) {
-        throw new Error("Request error. Action query parameter is required");
+      const route = query.action?.["route"] as string;
+      const method = query.action?.["method"] as string;
+      const type = query.action?.["type"] as string;
+
+      if (!route || !method || !type) {
+        throw new HTTPException(400, {
+          message:
+            "Missing one or more action parameters (route, method, type)",
+        });
       }
 
-      if (!query.action["route"]) {
-        throw new Error("Request error. Route query parameter is required");
-      }
-
-      if (!query.action["method"]) {
-        throw new Error("Request error. Method query parameter is required");
-      }
-
-      if (!query.action["type"]) {
-        throw new Error("Request error. Type query parameter is required");
-      }
-
-      const findResult = await api.find({
+      const actions = await api.find({
         params: {
           filters: {
             and: [
-              {
-                column: "path",
-                method: "eq",
-                value: query.action["route"],
-              },
-              {
-                column: "method",
-                method: "eq",
-                value: query.action["method"],
-              },
-              {
-                column: "type",
-                method: "eq",
-                value: query.action["type"],
-              },
+              { column: "type", method: "eq", value: type },
+              { column: "method", method: "eq", value: method },
             ],
           },
         },
@@ -66,122 +48,40 @@ export class Handler {
         },
       });
 
-      if (findResult && findResult?.length > 0) {
-        return c.json({
-          data: findResult[0],
+      if (!actions?.length) {
+        throw new HTTPException(404, {
+          message: `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
         });
       }
 
-      const routeParameter = query.action["route"];
-
-      const splittedUrl = routeParameter
-        .split("/")
-        .filter((url: string) => url !== "");
-
-      if (!splittedUrl.length) {
-        throw new Error("Request error. Wrong path filter");
-      }
-
-      const actions = await api.find();
-
-      const actionsWithEqualPathParts = actions?.filter((action) => {
-        const actionPathParts = action.path
-          ?.split("/")
-          .filter((url) => url !== "");
-
-        if (splittedUrl.length !== actionPathParts?.length) {
-          return false;
+      for (const action of actions) {
+        if (action.path === "*") {
+          return c.json({ data: action });
         }
 
-        return true;
-      });
+        if (!action.path) {
+          continue;
+        }
 
-      const filledActions: (IModel & { routes: string[] })[] = [];
+        const template = action.path.replace(
+          /\[(.+?)\]/g,
+          (_, p1) => `:${p1.replace(/[.\-]/g, "_")}`,
+        );
+        const matcher = match(template, {
+          decode: decodeURIComponent,
+          end: true,
+        });
 
-      if (actionsWithEqualPathParts && actionsWithEqualPathParts?.length) {
-        for (const actionsWithEqualPathPart of actionsWithEqualPathParts) {
-          const entityWithRoutes = await api.findByIdRoutes({
-            id: actionsWithEqualPathPart.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          if (!entityWithRoutes) {
-            continue;
-          }
-
-          filledActions.push(entityWithRoutes);
+        const result = matcher(route);
+        if (result) {
+          return c.json({ data: action });
         }
       }
 
-      const targetAction = filledActions.find((action) => {
-        if (
-          action.routes.find((route) => {
-            if (
-              route === routeParameter &&
-              query.action?.["method"] === action.method
-            ) {
-              return true;
-            }
-
-            return false;
-          })
-        ) {
-          return true;
-        }
-
-        return false;
-      });
-
-      if (!targetAction) {
-        throw new Error(
-          `Not found. Action with route ${routeParameter} and method ${query.action["method"]} not found`,
-        );
-      }
-
-      if (targetAction?.method !== query.action["method"]) {
-        throw new Error(
-          `Not found. Action with route ${routeParameter} and method ${query.action["method"]} not found`,
-        );
-      }
-
-      if (targetAction?.type !== query.action["type"]) {
-        throw new Error(
-          `Not found. Action with route ${routeParameter}, method ${query.action["method"]} and type ${query.action["type"]} not found`,
-        );
-      }
-
-      const action = await api.findById({
-        id: targetAction.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      return c.json({
-        data: action,
+      throw new HTTPException(404, {
+        message: `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
       });
     } catch (error: any) {
-      if (error.message.includes("Not found")) {
-        throw new HTTPException(404, {
-          message: error.message || "Not Found",
-          cause: error,
-        });
-      }
-
-      if (error.message.includes("Request error")) {
-        throw new HTTPException(400, {
-          message: error.message || "Bad Request",
-          cause: error,
-        });
-      }
-
       throw new HTTPException(500, {
         message: error.message || "Internal Server Error",
         cause: error,
