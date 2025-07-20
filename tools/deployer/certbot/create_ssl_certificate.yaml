@@ -1,0 +1,34 @@
+- name: Create SSL certificate with certbot
+  hosts: all
+  become: yes
+  vars:
+    fqdn: "{{ SERVICE_URL }}"
+    email: "{{ CERTBOT_EMAIL }}"
+  tasks:
+    - name: Ensure webroot path exists
+      file:
+        path: /home/code/certbot/.well-known/acme-challenge
+        state: directory
+        mode: "0755"
+        recurse: yes
+
+    - name: Create SSL certificate using certbot webroot
+      command: >
+        certbot certonly --webroot -w /home/code/certbot
+        -d {{ fqdn }}
+        --email {{ email }}
+        --agree-tos --no-eff-email --non-interactive
+      args:
+        creates: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+
+    - name: Copy fullchain.pem to /certs
+      copy:
+        remote_src: yes
+        src: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+        dest: "/home/code/certs/{{ fqdn }}.crt"
+
+    - name: Copy privkey.pem to /certs
+      copy:
+        remote_src: yes
+        src: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
+        dest: "/home/code/certs/{{ fqdn }}.key"

@@ -1,0 +1,27 @@
+---
+- name: Delete certbot
+  hosts: all
+  become: yes
+  vars:
+    service_name: "{{ SERVICE_NAME }}"
+  tasks:
+    - name: Remove certbot stack
+      shell: docker stack rm {{ service_name }}
+      register: result
+      failed_when: result.rc != 0
+      ignore_errors: false
+
+    - name: Debug result of removing certbot stack
+      debug:
+        var: result
+
+    - name: Ensure certbot stack is removed
+      shell: docker stack ls | grep {{ service_name }}
+      register: check_certbot
+      failed_when: check_certbot.rc == 0
+      ignore_errors: true
+
+    - name: Delete docker-compose file
+      file:
+        path: /home/code/docker-compose.certbot.yaml
+        state: absent

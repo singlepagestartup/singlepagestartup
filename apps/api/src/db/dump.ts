@@ -17,6 +17,11 @@ import { logger } from "@sps/backend-utils";
 import { exit } from "process";
 
 (async () => {
+  await broadcastApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
   await fileStorageApp.dump({
     type: "model",
     dumps: [],

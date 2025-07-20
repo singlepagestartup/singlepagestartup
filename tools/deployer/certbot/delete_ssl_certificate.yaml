@@ -1,0 +1,30 @@
+- name: Delete SSL certificate issued by certbot
+  hosts: all
+  become: yes
+  vars:
+    fqdn: "{{ SERVICE_URL }}"
+  tasks:
+    - name: Delete certificate from /etc/letsencrypt/live/
+      file:
+        path: "/etc/letsencrypt/live/{{ fqdn }}"
+        state: absent
+
+    - name: Delete certificate archive files
+      file:
+        path: "/etc/letsencrypt/archive/{{ fqdn }}"
+        state: absent
+
+    - name: Delete renewal config file
+      file:
+        path: "/etc/letsencrypt/renewal/{{ fqdn }}.conf"
+        state: absent
+
+    - name: Delete fullchain.pem from /home/code/certs
+      file:
+        path: "/home/code/certs/{{ fqdn }}.crt"
+        state: absent
+
+    - name: Delete privkey.pem from /home/code/certs
+      file:
+        path: "/home/code/certs/{{ fqdn }}.key"
+        state: absent

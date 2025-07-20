@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  {{ SERVICE_NAME }}:
+    image: nginx:alpine
+    volumes:
+      - /home/code/certbot:/usr/share/nginx/html:ro
+    networks:
+      - traefik_overlay
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.{{ SERVICE_NAME }}.rule=PathPrefix(`/.well-known/acme-challenge/`)
+        - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=web
+        - traefik.http.routers.{{ SERVICE_NAME }}.service={{ SERVICE_NAME }}
+        - traefik.http.services.{{ SERVICE_NAME }}.loadbalancer.server.port=80
+        - traefik.docker.network=traefik_overlay
+
+networks:
+  traefik_overlay:
+    external: true

@@ -1,0 +1,25 @@
+- name: Install certbot
+  hosts: all
+  become: yes
+  tasks:
+    - name: Wait for apt lock
+      shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
+
+    - name: Wait for apt lock
+      shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
+
+    - name: Apt Update
+      shell: sudo apt-get update
+
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: present
+        force_apt_get: yes
+      register: result
+      until: result is not failed
+      retries: 5
+      delay: 5
+      loop:
+        - certbot
+        - python3-certbot-nginx

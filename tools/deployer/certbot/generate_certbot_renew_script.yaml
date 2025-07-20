@@ -1,0 +1,38 @@
+- name: Generate certbot_renew_ssl_and_update_traefik.sh
+  hosts: all
+  become: yes
+  vars:
+    services:
+      - name: host
+        subdomain: "{{ HOST_SERVICE_SUBDOMAIN }}"
+      - name: api
+        subdomain: "{{ API_SERVICE_SUBDOMAIN }}"
+      - name: telegram
+        subdomain: "{{ TELEGRAM_SERVICE_SUBDOMAIN }}"
+      - name: traefik
+        subdomain: "{{ TRAEFIK_SERVICE_SUBDOMAIN }}"
+      - name: portainer
+        subdomain: "{{ PORTAINER_SERVICE_SUBDOMAIN }}"
+  tasks:
+    - name: Initialize fqdn_services
+      set_fact:
+        fqdn_services: []
+
+    - name: Add FQDNs for each service
+      set_fact:
+        fqdn_services: "{{ fqdn_services + [ { 'fqdn': (item.subdomain | length > 0) | ternary(item.subdomain ~ '.' ~ DOMAIN, DOMAIN) }] }}"
+      loop: "{{ services }}"
+
+    - name: Template certbot_renew_ssl_and_update_traefik.sh
+      template:
+        src: certbot_renew_ssl_and_update_traefik.sh.j2
+        dest: /home/code/certbot_renew_ssl_and_update_traefik.sh
+        mode: "0755"
+
+    - name: Ensure certbot_renew_ssl_and_update_traefik.sh is scheduled in crontab
+      cron:
+        name: "Renew Let's Encrypt certificates and reload Traefik"
+        job: "/home/code/certbot_renew_ssl_and_update_traefik.sh >> /var/log/letsencrypt/renew.log 2>&1"
+        minute: "0"
+        hour: "4"
+        user: root

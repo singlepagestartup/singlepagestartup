@@ -2,7 +2,7 @@ import {
   api as parentApi,
   type IProps as IParentProps,
   type IResult as IParentResult,
-} from "./singlepage";
+} from "../singlepage";
 
 export type IProps = IParentProps & {};
 
