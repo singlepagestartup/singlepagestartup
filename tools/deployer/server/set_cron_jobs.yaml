@@ -17,15 +17,6 @@
         minute: "*/5"
         job: "yes | docker container prune  >> /home/code/docker_container_prune.log"
 
-    - name: host agent cron
-      cron:
-        name: "host agent cron"
-        minute: "*"
-        job:
-          "curl -k -X POST https://{{ api_service_url }}/api/agent/agents/cron \
-          -H 'X-RBAC-SECRET-KEY: {{ rbac_secret_key }}' \
-          -F 'data={}' >> /home/code/host_api_agent_agents_cron.log 2>&1"
-
     - name: Create postgres dump directory
       file:
         path: /home/code/db_backups

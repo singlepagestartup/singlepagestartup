@@ -14,10 +14,12 @@ export type IProps = {};
 
 export type IResult = {};
 
-export const api = factory<IModel>({
-  queryClient,
-  route,
-  host: clientHost,
-  params: query,
-  options,
-});
+export const api = {
+  ...factory<IModel>({
+    queryClient,
+    route,
+    host: clientHost,
+    params: query,
+    options,
+  }),
+};

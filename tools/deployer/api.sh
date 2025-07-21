@@ -128,6 +128,10 @@ then
             TELEGRAM_SERVICE_BOT_TOKEN=$TELEGRAM_SERVICE_BOT_TOKEN \
             ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
     ansible-playbook \
+        ./api/set_cron_jobs.yaml \
+        -e "API_SERVICE_URL=$SERVICE_URL \
+            RBAC_SECRET_KEY=$RBAC_SECRET_KEY" && \
+    ansible-playbook \
         ./api/fill_github.yaml \
         -e "GITHUB_TOKEN=$GITHUB_TOKEN \
             GITHUB_REPOSITORY=$GITHUB_REPOSITORY \

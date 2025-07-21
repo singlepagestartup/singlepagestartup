@@ -6,6 +6,7 @@ import { Service } from "../service";
 import { Context } from "hono";
 import { Handler as Provider } from "./provider";
 import { Handler as ProviderWebhook } from "./provider-webhook";
+import { Handler as Check } from "./check";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -52,6 +53,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
+        path: "/:uuid/check",
+        handler: this.check,
+      },
+      {
+        method: "POST",
         path: "/:uuid/:provider",
         handler: this.provider,
       },
@@ -64,5 +70,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async providerWebhook(c: Context, next: any): Promise<Response> {
     return new ProviderWebhook(this.service).execute(c, next);
+  }
+
+  async check(c: Context, next: any): Promise<Response> {
+    return new Check(this.service).execute(c, next);
   }
 }

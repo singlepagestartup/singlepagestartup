@@ -85,6 +85,7 @@
     "nodemailer": "6.9.14",
     "openai": "5.8.2",
     "pako": "2.1.0",
+    "path-to-regexp": "0.1.12",
     "pino": "9.5.0",
     "postgres": "3.4.4",
     "qs": "6.12.1",

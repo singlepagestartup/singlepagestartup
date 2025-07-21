@@ -6,10 +6,12 @@ import {
   query,
   options,
 } from "@sps/billing/models/payment-intent/sdk/model";
-import { action as provider } from "./actions/provider";
+import { action as provider } from "./provider";
+import { action as check } from "./check";
 
 export const api = {
   provider,
+  check,
   ...factory<IModel>({
     route,
     host: serverHost,

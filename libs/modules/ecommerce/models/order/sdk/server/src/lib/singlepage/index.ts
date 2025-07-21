@@ -31,6 +31,11 @@ import {
   type IProps as IOrdersToProductsUpdateProps,
   type IResult as IOrdersToProductsUpdateResult,
 } from "./orders-to-products/update";
+import {
+  action as check,
+  type IProps as ICheckProps,
+  type IResult as ICheckResult,
+} from "./check";
 
 export type IProps = {
   ICheckoutAttributesProps: ICheckoutAttributesProps;
@@ -38,6 +43,7 @@ export type IProps = {
   ITotalProps: ITotalProps;
   IQuantityProps: IQuantityProps;
   IOrdersToProductsUpdateProps: IOrdersToProductsUpdateProps;
+  ICheckProps: ICheckProps;
 };
 
 export type IResult = {
@@ -46,6 +52,7 @@ export type IResult = {
   ITotalResult: ITotalResult;
   IQuantityResult: IQuantityResult;
   IOrdersToProductsUpdateResult: IOrdersToProductsUpdateResult;
+  ICheckResult: ICheckResult;
 };
 
 export const api = {
@@ -60,4 +67,5 @@ export const api = {
   total,
   quantity,
   ordersToProductsUpdate,
+  check,
 };
