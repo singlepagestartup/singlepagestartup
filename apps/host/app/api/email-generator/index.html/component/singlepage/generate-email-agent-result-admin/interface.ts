@@ -1,4 +1,4 @@
-export const variant = "reset-password" as const;
+export const variant = "generate-email-agent-result-admin" as const;
 
 export interface IComponentProps {
   variant: typeof variant;
