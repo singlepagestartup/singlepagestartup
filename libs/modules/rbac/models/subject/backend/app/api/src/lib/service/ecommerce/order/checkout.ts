@@ -299,6 +299,7 @@ export class Service {
         data: {
           slug: "observer",
           payload: JSON.stringify({
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
             trigger: {
               type: "request",
               method: "POST",
@@ -325,6 +326,7 @@ export class Service {
 
       await broadcastModuleChannelApi.pushMessage({
         data: {
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
           slug: "observer",
           payload: JSON.stringify({
             trigger: {

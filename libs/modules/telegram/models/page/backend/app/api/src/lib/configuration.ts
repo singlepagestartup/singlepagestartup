@@ -28,7 +28,7 @@ export class Configuration extends ParentConfiguration {
           type: "model",
           filters: [
             {
-              column: "url",
+              column: "slug",
               method: "eq",
               value: (data) => {
                 return data.entity.dump.slug;

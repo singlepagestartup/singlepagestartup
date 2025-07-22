@@ -8,6 +8,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
 
 export class Handler {
   service: Service;
@@ -56,7 +57,7 @@ export class Handler {
         });
       }
 
-      if (entity.status === "succeeded") {
+      if (["succeeded", "failed"].includes(entity.status)) {
         return c.json({
           data: entity,
         });
@@ -230,6 +231,37 @@ export class Handler {
 
               await this.service.updatePaymentIntentStatus({
                 invoice,
+              });
+            }
+
+            if (
+              new Date(invoice.createdAt).getTime() + 24 * 60 * 60 * 1000 <
+              Date.now()
+            ) {
+              await invoiceApi.update({
+                id: invoice.id,
+                data: {
+                  ...invoice,
+                  status: "failed",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+
+              await api.update({
+                id: entity.id,
+                data: {
+                  ...entity,
+                  status: "failed",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
               });
             }
 

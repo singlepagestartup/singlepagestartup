@@ -62,6 +62,8 @@ app.use(
 const exceptionFilter = new ExceptionFilter();
 app.onError((err, c) => exceptionFilter.catch(err, c));
 
+app.use("/public/*", serveStatic({ root: "./" }));
+
 const requestIdMiddleware = new RequestIdMiddleware();
 app.use(requestIdMiddleware.init());
 
@@ -71,8 +73,6 @@ app.options("*", (c) => {
 
 const observerMiddleware = new ObserverMiddleware();
 app.use(observerMiddleware.init());
-
-app.use("/public/*", serveStatic({ root: "./" }));
 
 app.get(
   "/ws/revalidation",

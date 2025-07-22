@@ -38,7 +38,7 @@
           Content-Type: "application/json"
         body_format: json
         body:
-          value: "{{ (use_cloudflare_ssl | bool) | ternary('strict', 'flexible') }}"
+          value: "strict"
         status_code: 200
       when: zone_id is defined
 
