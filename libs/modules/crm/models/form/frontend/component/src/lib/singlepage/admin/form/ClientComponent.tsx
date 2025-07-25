@@ -27,10 +27,10 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
-      slug: props.data?.slug || "",
       title: props.data?.title || {},
       subtitle: props.data?.subtitle || {},
       description: props.data?.description || {},
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       adminTitle:
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
     },

@@ -12,6 +12,12 @@
         mode: "0755"
         recurse: yes
 
+    - name: Ensure /home/code/certs directory exists
+      file:
+        path: /home/code/certs
+        state: directory
+        mode: "0755"
+
     - name: Create SSL certificate using certbot webroot
       command: >
         certbot certonly --webroot -w /home/code/certbot

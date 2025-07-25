@@ -23,3 +23,9 @@
       loop:
         - certbot
         - python3-certbot-nginx
+
+    - name: Check certbot installed
+      command: certbot --version
+      register: certbot_check
+      changed_when: false
+      failed_when: certbot_check.rc != 0

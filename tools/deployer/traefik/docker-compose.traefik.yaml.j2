@@ -29,9 +29,9 @@ services:
         constraints:
           - node.role == manager
       labels:
-        # Redirect to HTTPS
+        # Redirect to HTTPS (excluding ACME challenge)
         - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-        - traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`)
+        - traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`) && !PathPrefix(`/.well-known/acme-challenge/`)
         - traefik.http.routers.redirs.entrypoints=web
         - traefik.http.routers.redirs.middlewares=redirect-to-https
         # Dashboard
@@ -45,6 +45,4 @@ services:
 
 networks:
   traefik_overlay:
-    name: traefik_overlay
-    external: false
-    attachable: true
+    external: true
