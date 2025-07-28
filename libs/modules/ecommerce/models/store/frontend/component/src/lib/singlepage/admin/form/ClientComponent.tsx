@@ -11,6 +11,7 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -28,7 +29,9 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || {},
       description: props.data?.description || {},
       shortDescription: props.data?.shortDescription || {},
-      slug: props.data?.slug || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
+      adminTitle:
+        props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
     },
   });
 

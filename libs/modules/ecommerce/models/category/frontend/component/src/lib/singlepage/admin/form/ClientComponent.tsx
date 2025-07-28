@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       title: props.data?.title || {},
       className: props.data?.className || "",
-      slug: props.data?.slug || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       description: props.data?.description ?? {},
       adminTitle:
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),

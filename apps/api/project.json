@@ -44,10 +44,10 @@
             "command": "npx nx run @sps/billing:repository-generate"
           },
           {
-            "command": "npx nx run @sps/blog:repository-generate"
+            "command": "npx nx run @sps/ecommerce:repository-generate"
           },
           {
-            "command": "npx nx run @sps/ecommerce:repository-generate"
+            "command": "npx nx run @sps/blog:repository-generate"
           },
           {
             "command": "npx nx run @sps/startup:repository-generate"

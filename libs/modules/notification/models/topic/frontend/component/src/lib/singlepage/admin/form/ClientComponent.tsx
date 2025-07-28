@@ -13,6 +13,7 @@ import {
 } from "@sps/notification/models/topic/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -29,7 +30,9 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
       type: props.data?.type || "info",
-      slug: props.data?.slug || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
+      adminTitle:
+        props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
     },
   });
 

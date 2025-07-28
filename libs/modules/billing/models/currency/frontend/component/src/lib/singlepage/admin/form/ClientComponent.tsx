@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { variants, insertSchema } from "@sps/billing/models/currency/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -25,7 +26,7 @@ export function Component(props: IComponentPropsExtended) {
       variant: props.data?.variant || "default",
       isDefault: props.data?.isDefault || false,
       symbol: props.data?.symbol || "",
-      slug: props.data?.slug || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
       title: props.data?.title || "",
     },
   });
