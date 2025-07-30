@@ -153,6 +153,7 @@
         ]
       }
     },
-    "eslint:lint": {}
+    "eslint:lint": {},
+    "jest:test": {}
   }
 }
