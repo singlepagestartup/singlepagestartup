@@ -76,11 +76,6 @@ export class Handler {
         provider: data.provider,
         ecommerceModule: data.ecommerceModule,
         comment: data.comment,
-        billingModule: {
-          currency: {
-            id: data.billingModule.currency.id,
-          },
-        },
       });
 
       return c.json({

@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
-import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 import { cn } from "@sps/shared-frontend-client-utils";
 
 const providers = [
@@ -31,11 +30,6 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.string().email(),
-  billingModule: z.object({
-    currency: z.object({
-      id: z.string(),
-    }),
-  }),
   ecommerceModule: z.object({
     orders: z.array(
       z.object({
@@ -53,11 +47,6 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
-      billingModule: {
-        currency: {
-          id: undefined,
-        },
-      },
       ecommerceModule: {
         orders: [
           {
@@ -89,13 +78,6 @@ export function Component(props: IComponentPropsExtended) {
       {...form}
     >
       <div className={cn("flex flex-col w-full gap-2", props.className)}>
-        <BillingCurrency
-          isServer={false}
-          variant="toggle-group-default"
-          form={form}
-          formFieldName="billingModule.currency.id"
-          className="w-fit"
-        />
         <FormField
           ui="shadcn"
           type="select"

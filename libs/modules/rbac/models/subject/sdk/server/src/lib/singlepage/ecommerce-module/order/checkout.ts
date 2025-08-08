@@ -20,9 +20,6 @@ export interface IProps {
   data: {
     email: string;
     provider: string;
-    billingModule: {
-      currency: { id: string };
-    };
   };
 }
 

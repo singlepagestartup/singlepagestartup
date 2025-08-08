@@ -21,6 +21,7 @@ export interface IProps {
     productId: string;
     storeId?: string;
     quantity: number;
+    billingModuleCurrencyId?: string;
   };
 }
 

@@ -6,6 +6,10 @@ import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/or
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceStoresToOrdersToApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 import { api as ecommerceModuleStoreApi } from "@sps/ecommerce/models/store/sdk/server";
+import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
+import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
+import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
+import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 export class Handler {
   service: Service;
@@ -49,6 +53,7 @@ export class Handler {
       }
 
       let storeId = data.storeId;
+      let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
 
       if (!storeId) {
         const stores = await ecommerceModuleStoreApi.find({
@@ -78,6 +83,87 @@ export class Handler {
 
       await this.service.deanonymize({ id, email: data.email });
 
+      const ecommerceModuleProductsToAttributes =
+        await ecommerceModuleProductsToAttributesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "eq",
+                  value: productId,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      const attributesToBillingModuleCurrencies =
+        await attributesToBillingModuleCurrenciesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "attributeId",
+                  method: "inArray",
+                  value:
+                    ecommerceModuleProductsToAttributes?.map(
+                      (productToAttribute) => productToAttribute.attributeId,
+                    ) || [],
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      if (
+        attributesToBillingModuleCurrencies?.length &&
+        !billingModuleCurrencyId
+      ) {
+        const defaultBillingModuleCurrency =
+          await billingModuleCurrencyApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "isDefault",
+                    method: "eq",
+                    value: true,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        if (defaultBillingModuleCurrency?.length) {
+          billingModuleCurrencyId = attributesToBillingModuleCurrencies.find(
+            (attributeToBillingModuleCurrency) =>
+              attributeToBillingModuleCurrency.billingModuleCurrencyId ===
+              defaultBillingModuleCurrency[0].id,
+          )?.billingModuleCurrencyId;
+
+          if (!billingModuleCurrencyId) {
+            billingModuleCurrencyId =
+              attributesToBillingModuleCurrencies[0]?.billingModuleCurrencyId;
+          }
+        }
+      }
+
       const order = await ecommerceOrderApi.create({
         data: { comment: data.comment },
         options: {
@@ -106,6 +192,25 @@ export class Handler {
         },
       });
 
+      const ordersToBillingModuleCurrencies =
+        await ecommerceOrdersToBillingModuleCurrenciesApi.create({
+          data: {
+            orderId: order.id,
+            billingModuleCurrencyId: billingModuleCurrencyId,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      if (!ordersToBillingModuleCurrencies) {
+        throw new HTTPException(404, {
+          message: "No orders to billing module currencies found",
+        });
+      }
+
       const result = await this.service.ecommerceOrderCheckout({
         id,
         email: data.email,
@@ -114,11 +219,6 @@ export class Handler {
           orders: [{ id: order.id }],
         },
         comment: data.comment,
-        billingModule: {
-          currency: {
-            id: data.billingModule?.currency?.id,
-          },
-        },
       });
 
       return c.json({ data: result });

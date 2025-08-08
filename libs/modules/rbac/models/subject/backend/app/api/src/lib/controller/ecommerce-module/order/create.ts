@@ -9,6 +9,10 @@ import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/or
 import { api as ecommerceStoresToOrdersApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceModuleStoreApi } from "@sps/ecommerce/models/store/sdk/server";
+import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
+import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
+import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
+import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 export class Handler {
   service: Service;
@@ -82,6 +86,7 @@ export class Handler {
       }
 
       const productId = data["productId"];
+      let billingModuleCurrencyId = data["billingModule"]?.currency?.id;
 
       let storeId = data.storeId;
 
@@ -113,6 +118,87 @@ export class Handler {
         throw new HTTPException(404, {
           message: "No entity found",
         });
+      }
+
+      const ecommerceModuleProductsToAttributes =
+        await ecommerceModuleProductsToAttributesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "eq",
+                  value: productId,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      const attributesToBillingModuleCurrencies =
+        await attributesToBillingModuleCurrenciesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "attributeId",
+                  method: "inArray",
+                  value:
+                    ecommerceModuleProductsToAttributes?.map(
+                      (productToAttribute) => productToAttribute.attributeId,
+                    ) || [],
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      if (
+        attributesToBillingModuleCurrencies?.length &&
+        !billingModuleCurrencyId
+      ) {
+        const defaultBillingModuleCurrency =
+          await billingModuleCurrencyApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "isDefault",
+                    method: "eq",
+                    value: true,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        if (defaultBillingModuleCurrency?.length) {
+          billingModuleCurrencyId = attributesToBillingModuleCurrencies.find(
+            (attributeToBillingModuleCurrency) =>
+              attributeToBillingModuleCurrency.billingModuleCurrencyId ===
+              defaultBillingModuleCurrency[0].id,
+          )?.billingModuleCurrencyId;
+
+          if (!billingModuleCurrencyId) {
+            billingModuleCurrencyId =
+              attributesToBillingModuleCurrencies[0]?.billingModuleCurrencyId;
+          }
+        }
       }
 
       const existingOrdersToProducts = await ecommerceOrdersToProductsApi.find({
@@ -223,9 +309,34 @@ export class Handler {
                 });
 
               if (existingStoresToOrders?.length) {
-                throw new HTTPException(400, {
-                  message: "Order already exists",
-                });
+                const ordersToBillingModuleCurrencies =
+                  await ecommerceOrdersToBillingModuleCurrenciesApi.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "orderId",
+                            method: "inArray",
+                            value:
+                              existingStoresToOrders?.map(
+                                (storeToOrder) => storeToOrder.orderId,
+                              ) || [],
+                          },
+                        ],
+                      },
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      },
+                    },
+                  });
+
+                if (ordersToBillingModuleCurrencies?.length) {
+                  throw new HTTPException(400, {
+                    message: "Order already exists",
+                  });
+                }
               }
             }
           }
@@ -293,6 +404,25 @@ export class Handler {
       if (!storesToOrders) {
         throw new HTTPException(404, {
           message: "No stores to orders found",
+        });
+      }
+
+      const ordersToBillingModuleCurrencies =
+        await ecommerceOrdersToBillingModuleCurrenciesApi.create({
+          data: {
+            orderId: order.id,
+            billingModuleCurrencyId: billingModuleCurrencyId,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+      if (!ordersToBillingModuleCurrencies) {
+        throw new HTTPException(404, {
+          message: "No orders to billing module currencies found",
         });
       }
 

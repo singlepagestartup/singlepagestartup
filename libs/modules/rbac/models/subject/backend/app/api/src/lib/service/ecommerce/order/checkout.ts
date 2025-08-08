@@ -8,6 +8,7 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as ecommerceModuleOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
@@ -61,48 +62,6 @@ export class Service {
       });
     }
 
-    let billingModuleCurrencyId = props.billingModule?.["currency"]?.["id"];
-
-    if (!billingModuleCurrencyId) {
-      const billingModuleCurrencies = await billingModuleCurrencyApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "isDefault",
-                method: "eq",
-                value: true,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (billingModuleCurrencies?.length === 0) {
-        throw new Error("No currencies found");
-      }
-
-      if (
-        billingModuleCurrencies?.length &&
-        billingModuleCurrencies.length > 1
-      ) {
-        throw new Error(
-          "Multiple currencies found. Pass 'data.billingModuleCurrencyId'",
-        );
-      }
-
-      billingModuleCurrencyId = billingModuleCurrencies?.[0]?.id;
-    }
-
-    if (!billingModuleCurrencyId) {
-      throw new Error("No billing module currency id found");
-    }
-
     const metadata = {
       orders: props.ecommerceModule.orders.map((order: { id: string }) => {
         return {
@@ -112,18 +71,17 @@ export class Service {
       email: props.email,
     };
 
-    let total = 0;
-    const types: string[] = [];
-    const intervals: string[] = [];
-    for (const order of props.ecommerceModule.orders) {
-      const orderToProducts = await ecommerceModuleOrdersToProductsApi.find({
+    const ordersToBillingModuleCurrencies =
+      await ecommerceModuleOrdersToBillingModuleCurrenciesApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "orderId",
-                method: "eq",
-                value: order["id"],
+                method: "inArray",
+                value: props.ecommerceModule.orders.map(
+                  (order: { id: string }) => order.id,
+                ),
               },
             ],
           },
@@ -131,58 +89,15 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
 
-      if (!orderToProducts?.length) {
-        throw new HTTPException(404, {
-          message: "No products found for order: " + order["id"],
-        });
-      }
-
-      const { amount, type, interval } =
-        await ecommerceModuleOrderApi.checkoutAttributes({
-          id: order["id"],
-          billingModuleCurrencyId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
-
-      total += amount;
-      types.push(type);
-      intervals.push(interval);
-    }
-
-    if (!types.every((type) => type === types[0])) {
-      throw new Error("All types must be the same");
-    }
-
-    if (!intervals.every((interval) => interval === intervals[0])) {
-      throw new Error("All intervals must be the same");
-    }
-
-    const type = types[0];
-    const interval = intervals[0];
-
-    const billingModulePaymentIntent =
-      await billingModulePaymentIntentApi.create({
-        data: {
-          amount: total,
-          interval,
-          type,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
+    if (!ordersToBillingModuleCurrencies?.length) {
+      throw new HTTPException(404, {
+        message: "No orders to billing module currencies found",
       });
+    }
 
     const ordersToBillingModulePaymentIntents =
       await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.find({
@@ -220,7 +135,103 @@ export class Service {
       }
     }
 
+    const billingModulePaymentIntents: {
+      billingModulePaymentIntent: IBillingModulePaymentIntent;
+      billingModuleCurrencyId: string;
+      checkoutAttributes: {
+        type: string;
+        interval: string;
+      };
+    }[] = [];
+
     for (const order of props.ecommerceModule.orders) {
+      const billingModuleCurrencyId = ordersToBillingModuleCurrencies.find(
+        (orderToBillingModuleCurrency) =>
+          orderToBillingModuleCurrency.orderId === order["id"],
+      )?.billingModuleCurrencyId;
+
+      if (!billingModuleCurrencyId) {
+        throw new HTTPException(404, {
+          message:
+            "No billing module currency id found for order: " + order["id"],
+        });
+      }
+
+      const { amount, type, interval } =
+        await ecommerceModuleOrderApi.checkoutAttributes({
+          id: order["id"],
+          billingModuleCurrencyId,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
+        billingModulePaymentIntents.find(
+          (billingModulePaymentIntent) =>
+            billingModulePaymentIntent.billingModuleCurrencyId ===
+              billingModuleCurrencyId &&
+            billingModulePaymentIntent.checkoutAttributes.type === type &&
+            billingModulePaymentIntent.checkoutAttributes.interval === interval,
+        );
+
+      if (
+        existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+      ) {
+        const updatedBillingModulePaymentIntent =
+          await billingModulePaymentIntentApi.update({
+            id: existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+              .billingModulePaymentIntent.id,
+            data: {
+              ...existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes.billingModulePaymentIntent,
+              amount:
+                amount +
+                existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes
+                  .billingModulePaymentIntent.amount,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+        billingModulePaymentIntents.splice(
+          billingModulePaymentIntents.indexOf(
+            existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes,
+          ),
+          1,
+        );
+
+        billingModulePaymentIntents.push({
+          billingModulePaymentIntent: updatedBillingModulePaymentIntent,
+          billingModuleCurrencyId,
+          checkoutAttributes: {
+            type,
+            interval,
+          },
+        });
+
+        continue;
+      }
+
+      const billingModulePaymentIntent =
+        await billingModulePaymentIntentApi.create({
+          data: {
+            amount,
+            interval,
+            type,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
       await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
         data: {
           orderId: order["id"],
@@ -233,22 +244,23 @@ export class Service {
         },
       });
 
-      await ecommerceModuleOrdersToBillingModuleCurrenciesApi.create({
-        data: {
-          orderId: order["id"],
-          billingModuleCurrencyId,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+      billingModulePaymentIntents.push({
+        billingModulePaymentIntent,
+        billingModuleCurrencyId,
+        checkoutAttributes: {
+          type,
+          interval,
         },
       });
+    }
 
-      await billingModulePaymentIntentsToCurrenciesApi.create({
+    for (const billingModulePaymentIntent of billingModulePaymentIntents) {
+      await billingModulePaymentIntentApi.provider({
+        id: billingModulePaymentIntent.billingModulePaymentIntent.id,
         data: {
-          paymentIntentId: billingModulePaymentIntent.id,
-          currencyId: billingModuleCurrencyId,
+          provider: props.provider,
+          metadata,
+          currencyId: billingModulePaymentIntent.billingModuleCurrencyId,
         },
         options: {
           headers: {
@@ -257,20 +269,6 @@ export class Service {
         },
       });
     }
-
-    await billingModulePaymentIntentApi.provider({
-      id: billingModulePaymentIntent.id,
-      data: {
-        provider: props.provider,
-        metadata,
-        currencyId: billingModuleCurrencyId,
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
 
     for (const order of props.ecommerceModule.orders) {
       const orderToUpdate = await ecommerceModuleOrderApi.findById({
@@ -372,8 +370,11 @@ export class Service {
             and: [
               {
                 column: "paymentIntentId",
-                method: "eq",
-                value: billingModulePaymentIntent.id,
+                method: "inArray",
+                value: billingModulePaymentIntents.map(
+                  (billingModulePaymentIntent) =>
+                    billingModulePaymentIntent.billingModulePaymentIntent.id,
+                ),
               },
             ],
           },
@@ -411,6 +412,8 @@ export class Service {
         },
       },
     });
+
+    console.log("🚀 ~ execute ~ billingModuleInvoices:", billingModuleInvoices);
 
     return {
       billingModule: {

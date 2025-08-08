@@ -7,12 +7,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@sps/ui-adapter";
-import { Component as BillingCurrency } from "@sps/billing/models/currency/frontend/component";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as EcommerceModuleOrder } from "@sps/ecommerce/models/order/frontend/component";
 import { Component as DeleteDefault } from "../../delete-default";
 import { Component as UpdateDefault } from "../../update-default";
 import { Component as TotalDefault } from "../total-default";
+import { useState } from "react";
+import Link from "next/link";
 
 const providers = [
   "stripe",
@@ -35,11 +36,6 @@ const formSchema = z.object({
       "Invalid provider",
     ),
   email: z.string().email(),
-  billingModule: z.object({
-    currency: z.object({
-      id: z.string(),
-    }),
-  }),
   ecommerceModule: z.object({
     orders: z.array(
       z.object({
@@ -50,6 +46,8 @@ const formSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
+  const [paymentUrls, setPaymentUrls] = useState<string[]>([]);
+
   const ecommerceModuleOrderCheckout = api.ecommerceModuleOrderCheckout({});
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,18 +55,11 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       provider: "stripe",
       email: "",
-      billingModule: {
-        currency: {
-          id: undefined,
-        },
-      },
       ecommerceModule: {
         orders: [],
       },
     },
   });
-
-  const watch = form.watch();
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     ecommerceModuleOrderCheckout
@@ -77,8 +68,14 @@ export function Component(props: IComponentPropsExtended) {
         data,
       })
       .then((res) => {
-        const paymentUrl = res.billingModule.invoices[0].paymentUrl;
-        window.location.href = paymentUrl;
+        const paymentUrls = res.billingModule.invoices.map(
+          (invoice) => invoice.paymentUrl,
+        );
+        if (paymentUrls.length > 1) {
+          setPaymentUrls(paymentUrls);
+        } else {
+          window.location.href = paymentUrls[0];
+        }
       });
   }
 
@@ -146,9 +143,6 @@ export function Component(props: IComponentPropsExtended) {
                               variant="cart-default"
                               data={ecommerceModuleOrder}
                               language={props.language}
-                              billingModuleCurrencyId={form.getValues(
-                                "billingModule.currency.id",
-                              )}
                             >
                               <>
                                 <EcommerceModuleOrder
@@ -193,30 +187,16 @@ export function Component(props: IComponentPropsExtended) {
           language={props.language}
         >
           {({ data: totals }) => {
-            return totals
-              ?.filter((total) => {
-                return (
-                  total.billingModuleCurrency.id ===
-                  watch.billingModule.currency.id
-                );
-              })
-              ?.map((total, index) => {
-                return (
-                  <p key={index} className="text-lg font-bold">
-                    {total.total}
-                    {total.billingModuleCurrency.symbol}
-                  </p>
-                );
-              });
+            return totals?.map((total, index) => {
+              return (
+                <p key={index} className="text-lg font-bold">
+                  {total.total}
+                  {total.billingModuleCurrency.symbol}
+                </p>
+              );
+            });
           }}
         </TotalDefault>
-        <BillingCurrency
-          isServer={false}
-          variant="toggle-group-default"
-          form={form}
-          formFieldName="billingModule.currency.id"
-          className="w-fit"
-        />
         <FormField
           ui="shadcn"
           type="select"
@@ -232,14 +212,33 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Email for invoice"
         />
-        <Button
-          onClick={form.handleSubmit(onSubmit)}
-          variant="primary"
-          className="w-full flex flex-shrink-0"
-          disabled={ecommerceModuleOrderCheckout.isPending}
-        >
-          Checkout
-        </Button>
+        {paymentUrls.length ? (
+          <div className="flex flex-col gap-2">
+            {paymentUrls.map((paymentUrl, index) => {
+              return (
+                <Button
+                  key={index}
+                  variant="primary"
+                  className="w-full flex flex-shrink-0"
+                  asChild={true}
+                >
+                  <Link href={paymentUrl} target="_blank">
+                    Payment Link
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
+        ) : (
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            variant="primary"
+            className="w-full flex flex-shrink-0"
+            disabled={ecommerceModuleOrderCheckout.isPending}
+          >
+            Checkout
+          </Button>
+        )}
       </div>
     </Form>
   );
