@@ -97,6 +97,9 @@
           },
           {
             "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-products:repository-generate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-blog-module-articles:repository-generate"
           }
         ]
       }
@@ -163,6 +166,9 @@
           },
           {
             "command": "nx run @sps/rbac:relations:subjects-to-ecommerce-module-products:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/rbac:relations:subjects-to-blog-module-articles:repository-migrate"
           }
         ]
       }
@@ -624,6 +630,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/relations/subjects-to-ecommerce-module-products/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:subjects-to-blog-module-articles:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/rbac/relations/subjects-to-blog-module-articles/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:subjects-to-blog-module-articles:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/rbac/relations/subjects-to-blog-module-articles/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

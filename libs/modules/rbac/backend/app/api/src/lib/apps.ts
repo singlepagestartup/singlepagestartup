@@ -13,6 +13,7 @@ import { app as subjectsToSessions } from "@sps/rbac/relations/subjects-to-sessi
 import { app as subjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
 import { app as subjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/backend/app/api";
 import { app as subjectsToBillingModulePaymentIntentsApp } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api";
+import { app as subjectsToBlogModuleArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
 import { app as rolesToEcommerceModuleProductsApp } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
@@ -104,6 +105,11 @@ export class Apps {
       type: "relation",
       route: "/roles-to-ecommerce-module-products",
       app: rolesToEcommerceModuleProductsApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/subjects-to-blog-module-articles",
+      app: subjectsToBlogModuleArticlesApp,
     });
   }
 }

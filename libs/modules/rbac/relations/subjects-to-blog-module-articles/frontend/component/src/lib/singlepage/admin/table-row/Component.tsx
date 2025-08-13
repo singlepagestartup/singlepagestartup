@@ -1,7 +1,8 @@
 "use client";
 
 import { IComponentPropsExtended } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/client";
+import { api } from "@sps/rbac/relations/subjects-to-blog-module-articles/sdk/client";
+import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
@@ -11,7 +12,13 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent
       {...props}
       module="rbac"
-      name="subject"
+      name="subjects-to-blog-module-articles"
+      type="relation"
+      adminForm={() => {
+        return (
+          <AdminForm isServer={false} variant="admin-form" data={props.data} />
+        );
+      }}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });
@@ -22,10 +29,6 @@ export function Component(props: IComponentPropsExtended) {
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Variant</p>
           <p className="truncate">{props.data.variant}</p>
-        </div>
-        <div className="flex flex-col gap-0.5 overflow-hidden">
-          <p className="text-xs text-muted-foreground">Slug</p>
-          <p className="truncate">{props.data.slug}</p>
         </div>
       </div>
     </ParentComponent>

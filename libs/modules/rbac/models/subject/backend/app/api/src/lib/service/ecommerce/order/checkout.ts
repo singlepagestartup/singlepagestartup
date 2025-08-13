@@ -215,6 +215,18 @@ export class Service {
           },
         });
 
+        await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.create({
+          data: {
+            orderId: order["id"],
+            billingModulePaymentIntentId: updatedBillingModulePaymentIntent.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
         continue;
       }
 
@@ -412,8 +424,6 @@ export class Service {
         },
       },
     });
-
-    console.log("🚀 ~ execute ~ billingModuleInvoices:", billingModuleInvoices);
 
     return {
       billingModule: {

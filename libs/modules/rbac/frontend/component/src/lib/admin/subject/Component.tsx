@@ -7,8 +7,8 @@ import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relation
 import { Component as SubjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/frontend/component";
 import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/frontend/component";
 import { Component as SubjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/frontend/component";
-
 import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
+import { Component as SubjectsToBlogModuleArticles } from "@sps/rbac/relations/subjects-to-blog-module-articles/frontend/component";
 
 export function Component() {
   return (
@@ -178,6 +178,31 @@ export function Component() {
 
               return (
                 <SubjectsToRoles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToBlogModuleArticles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToBlogModuleArticles
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

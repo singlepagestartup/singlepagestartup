@@ -33,6 +33,9 @@ export interface IComponentProps
   subjectsToBillingModulePaymentIntents?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  subjectsToBlogModuleArticles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended
