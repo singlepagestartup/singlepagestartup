@@ -14,6 +14,9 @@ export interface IComponentProps
   categoriesToArticles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  widgetsToCategories?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

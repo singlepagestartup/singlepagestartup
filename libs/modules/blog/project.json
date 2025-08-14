@@ -72,6 +72,9 @@
           },
           {
             "command": "nx run @sps/blog:relations:widgets-to-articles:repository-generate"
+          },
+          {
+            "command": "nx run @sps/blog:relations:widgets-to-categories:repository-generate"
           }
         ]
       }
@@ -114,6 +117,9 @@
           },
           {
             "command": "nx run @sps/blog:relations:widgets-to-articles:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/blog:relations:widgets-to-categories:repository-migrate"
           }
         ]
       }
@@ -343,6 +349,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/blog/relations/widgets-to-articles/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-categories:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/blog/relations/widgets-to-categories/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-categories:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/blog/relations/widgets-to-categories/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
