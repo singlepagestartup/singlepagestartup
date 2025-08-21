@@ -4,7 +4,7 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../service";
 import { Context } from "hono";
-import { RbacModuleRequestProfileSubjectIsOwnerMiddleware } from "@sps/middlewares";
+import { RequestProfileSubjectIdOwner } from "../../../../middlewares";
 
 import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
@@ -227,41 +227,31 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats",
         handler: this.socialModuleProfileFindByIdChatFind,
-        middlewares: [
-          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
-        ],
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId",
         handler: this.socialModuleProfileFindByIdChatFindById,
-        middlewares: [
-          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
-        ],
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageFind,
-        middlewares: [
-          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
-        ],
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageCreate,
-        middlewares: [
-          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
-        ],
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageReact,
-        middlewares: [
-          new RbacModuleRequestProfileSubjectIsOwnerMiddleware().init(),
-        ],
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
     ]);
   }

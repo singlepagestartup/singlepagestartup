@@ -1,6 +1,5 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as Agent } from "./agent/Component";
 import { Component as Analytic } from "./analytic/Component";
 import { Component as Billing } from "./billing/Component";
 import { Component as Blog } from "./blog/Component";
@@ -26,10 +25,6 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      {props.data.externalModule === "agent" ? (
-        <Agent {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
       {props.data.externalModule === "analytic" ? (
         <Analytic {...props} isServer={props.isServer} data={props.data} />
       ) : null}

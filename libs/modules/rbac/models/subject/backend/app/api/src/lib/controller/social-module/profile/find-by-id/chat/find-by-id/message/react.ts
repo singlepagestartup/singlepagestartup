@@ -2,8 +2,8 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
-import { api } from "@sps/rbac/models/subject/sdk/server";
-import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
+// import { api } from "@sps/rbac/models/subject/sdk/server";
+// import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 
 export class Handler {
@@ -81,32 +81,34 @@ export class Handler {
         );
       }
 
-      const agentModuleAgentAiOpenAiGpt4oMini =
-        await agentModuleAgentApi.aiOpenAiGpt4oMini({
-          data: {
-            description: socialModuleMessage.description,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+      // const agentModuleAgentAiOpenAiGpt4oMini =
+      //   await agentModuleAgentApi.aiOpenAiGpt4oMini({
+      //     data: {
+      //       description: socialModuleMessage.description,
+      //     },
+      //     options: {
+      //       headers: {
+      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //       },
+      //     },
+      //   });
 
-      const message =
-        await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-          id,
-          socialModuleProfileId,
-          socialModuleChatId,
-          data: {
-            description: agentModuleAgentAiOpenAiGpt4oMini.output_text,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+      // const message =
+      //   await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
+      //     id,
+      //     socialModuleProfileId,
+      //     socialModuleChatId,
+      //     data: {
+      //       description: agentModuleAgentAiOpenAiGpt4oMini.output_text,
+      //     },
+      //     options: {
+      //       headers: {
+      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //       },
+      //     },
+      //   });
+
+      const message = "test";
 
       return c.json({
         data: message,
