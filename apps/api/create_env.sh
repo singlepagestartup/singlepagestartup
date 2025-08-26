@@ -87,3 +87,6 @@ RBAC_SECRET_KEY=$(generate_random_string)
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
 add_env "FILE_STORAGE_PROVIDER" "local"
+
+add_env "RBAC_SUBJECT_IDENTITY_EMAIL" "admin@example.com"
+add_env "RBAC_SUBJECT_IDENTITY_PASSWORD" "Password123!"
