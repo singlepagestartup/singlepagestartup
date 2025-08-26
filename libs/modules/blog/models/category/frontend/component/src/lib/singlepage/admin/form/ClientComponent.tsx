@@ -158,6 +158,13 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.categoriesToWebsiteBuilderModuleWidgets
+          ? props.categoriesToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );

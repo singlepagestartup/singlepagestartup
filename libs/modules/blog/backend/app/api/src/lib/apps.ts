@@ -7,6 +7,7 @@ import { app as categoriesToArticlesApp } from "@sps/blog/relations/categories-t
 import { app as articlesToFileStorageModuleWidgetsApp } from "@sps/blog/relations/articles-to-file-storage-module-files/backend/app/api";
 import { app as articlesToWebsiteBuilderModuleWidgetsApp } from "@sps/blog/relations/articles-to-website-builder-module-widgets/backend/app/api";
 import { app as widgetsToCategoriesApp } from "@sps/blog/relations/widgets-to-categories/backend/app/api";
+import { app as categoriesToWebsiteBuilderModuleWidgetsApp } from "@sps/blog/relations/categories-to-website-builder-module-widgets/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -62,6 +63,11 @@ export class Apps {
       type: "relation",
       route: "/widgets-to-categories",
       app: widgetsToCategoriesApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/categories-to-website-builder-module-widgets",
+      app: categoriesToWebsiteBuilderModuleWidgetsApp,
     });
   }
 }
