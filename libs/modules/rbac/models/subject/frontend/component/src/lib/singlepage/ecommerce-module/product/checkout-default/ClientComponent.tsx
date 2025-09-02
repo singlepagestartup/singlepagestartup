@@ -18,6 +18,7 @@ const providers = [
   "tiptoppay",
   "cloudpayments",
   "dummy",
+  "paykeeper",
 ] as const;
 
 const formSchema = z.object({
@@ -31,7 +32,8 @@ const formSchema = z.object({
         value === "payselection-international" ||
         value === "cloudpayments" ||
         value === "tiptoppay" ||
-        value === "dummy",
+        value === "dummy" ||
+        value === "paykeeper",
       "Invalid provider",
     ),
   email: z.string().email(),
@@ -64,6 +66,10 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
+  const watchData = form.watch();
+
+  console.log("🚀 ~ Component ~ watchData:", watchData);
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
     productCheckout
       .mutateAsync({
@@ -91,7 +97,7 @@ export function Component(props: IComponentPropsExtended) {
             isServer={false}
             variant="currency-toggle-group-default"
             form={form}
-            formFieldName="billingModuleCurrencyId"
+            formFieldName="billingModule.currency.id"
             className="w-fit"
             data={props.product}
           />

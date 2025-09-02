@@ -38,6 +38,10 @@ import {
   Service as Tiptoppay,
   IServiceProceedProps as ITiptippayProceedProps,
 } from "./tiptoppay";
+import {
+  Service as Paykeeper,
+  IServiceProceedProps as IPaykeeperProceedProps,
+} from "./paykeeper";
 import { logger } from "@sps/backend-utils";
 
 @injectable()
@@ -1207,5 +1211,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       return invoice;
     }
+  }
+
+  async paykeeper(props: IPaykeeperProceedProps) {
+    const paykeeper = new Paykeeper();
+    return paykeeper.proceed(props);
   }
 }

@@ -209,6 +209,14 @@ export class Handler {
               logger.error("Error:", error);
             });
         }, 10000);
+      } else if (provider === "paykeeper") {
+        result = await this.service.paykeeper({
+          entity,
+          action: "create",
+          email: data.metadata.email,
+          currency: currency.slug,
+          metadata: data.metadata,
+        });
       }
 
       return c.json(

@@ -3,19 +3,74 @@ import { injectable } from "inversify";
 import { Table } from "@sps/billing/models/payment-intent/backend/repository/database";
 import {
   RBAC_SECRET_KEY,
-  CLOUDPAYMENTS_API_SECRET,
-  CLOUDPAYMENTS_PUBLIC_ID,
   NEXT_PUBLIC_HOST_SERVICE_URL,
   PAYKEEPER_BASE_URL,
   PAYKEEPER_API_LOGIN,
   PAYKEEPER_API_PASSWORD,
   PAYKEEPER_WEBHOOK_SECRET,
+  PAYKEEPER_SUCCESS_URL,
+  PAYKEEPER_FAIL_URL,
 } from "@sps/shared-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
 import { logger } from "@sps/backend-utils";
+
+export interface IPayKeeperTokenResponse {
+  token: string;
+}
+
+export interface IPayKeeperPaymentData {
+  pay_amount: number;
+  clientid?: string;
+  orderid: string;
+  service_name: string;
+  client_email: string;
+  client_phone?: string;
+  expiry?: string;
+  token: string;
+}
+
+export interface IPayKeeperPaymentResponse {
+  invoice_id?: string;
+  invoice_url?: string;
+  invoice?: string;
+  result?: string;
+  msg?: string;
+  error_code?: string;
+}
+
+export interface IPayKeeperWebhookData {
+  id: string;
+  sum: string;
+  clientid: string;
+  orderid: string;
+  key: string;
+  pk_hostname: string;
+  ps_id: string;
+  client_email: string;
+  client_phone: string;
+  service_name: string;
+  fop_receipt_key: string;
+  obtain_datetime: string;
+}
+
+export interface IPayKeeperInvoiceData {
+  id: string;
+  status: "created" | "sent" | "paid" | "expired";
+  pay_amount: string;
+  clientid: string;
+  orderid: string;
+  service_name: string;
+  client_email: string;
+  client_phone: string;
+  expiry_datetime: string;
+  created_datetime: string;
+  paid_datetime: string | null;
+  user_id: number;
+  paymentid: string | null;
+}
 
 export type IServiceProceedProps =
   | {
@@ -25,36 +80,17 @@ export type IServiceProceedProps =
       currency: string;
       metadata: {
         paymentIntentId: string;
+        clientPhone?: string;
+        serviceName?: string;
       };
     }
   | {
       action: "webhook";
-      data: {
-        TransactionId: string;
-        Amount: number;
-        Currency: "RUB" | "USD" | "EUR" | "GBP";
-        PaymentAmount: string;
-        PaymentCurrency: "RUB" | "USD" | "EUR" | "GBP";
-        DateTime: string;
-        CardId?: string;
-        CardFirstSix?: string;
-        CardLastFour?: string;
-        CardType: "Visa" | "Mastercard" | "Maestro" | "МИР";
-        CardExpDate: string;
-        TestMode: boolean;
-        Status: "Authorized" | "Completed";
-        OperationType: "Payment" | "CardPayout";
-        GatewayName?: string;
-        InvoiceId?: string;
-        AccountId?: string;
-        SubscriptionId?: string;
-        CustomFields: any;
-        Data: string;
-      };
+      data: IPayKeeperWebhookData;
       rawBody: string;
       headers: {
-        "x-content-hmac": string;
-        "content-hmac": string;
+        "x-content-hmac"?: string;
+        "content-hmac"?: string;
       };
       callback: ({
         invoice,
@@ -81,9 +117,85 @@ export class Service {
     ).toString("base64");
     return {
       Authorization: `Basic ${basic}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
     };
+  }
+
+  private async verifyWebhookSignature(
+    data: string,
+    signature: string,
+  ): Promise<boolean> {
+    if (!PAYKEEPER_WEBHOOK_SECRET) {
+      throw new Error("Paykeeper webhook secret not found");
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", PAYKEEPER_WEBHOOK_SECRET)
+      .update(data)
+      .digest("hex");
+
+    return expectedSignature === signature;
+  }
+
+  private async getSecurityToken(): Promise<string> {
+    try {
+      const response = await fetch(
+        `${PAYKEEPER_BASE_URL}/info/settings/token/`,
+        {
+          method: "GET",
+          headers: await this.authHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `PayKeeper token request failed: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const tokenResponse: IPayKeeperTokenResponse = await response.json();
+
+      if (!tokenResponse.token) {
+        throw new Error("PayKeeper did not return security token");
+      }
+
+      return tokenResponse.token;
+    } catch (error) {
+      logger.error("Failed to get PayKeeper security token:", error);
+      throw new Error(`Failed to get security token: ${error}`);
+    }
+  }
+
+  private async getInvoiceData(
+    invoiceId: string,
+  ): Promise<IPayKeeperInvoiceData> {
+    try {
+      const response = await fetch(
+        `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${invoiceId}`,
+        {
+          method: "GET",
+          headers: await this.authHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `PayKeeper invoice request failed: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const invoiceResponse: IPayKeeperInvoiceData[] = await response.json();
+
+      if (!invoiceResponse || invoiceResponse.length === 0) {
+        throw new Error("PayKeeper did not return invoice data");
+      }
+
+      return invoiceResponse[0];
+    } catch (error) {
+      logger.error("Failed to get PayKeeper invoice data:", error);
+      throw new Error(`Failed to get invoice data: ${error}`);
+    }
   }
 
   async proceed(props: IServiceProceedProps) {
@@ -112,8 +224,8 @@ export class Service {
         data: {
           amount: props.entity.amount,
           status: "open",
-          successUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
-          cancelUrl: NEXT_PUBLIC_HOST_SERVICE_URL,
+          successUrl: PAYKEEPER_SUCCESS_URL || NEXT_PUBLIC_HOST_SERVICE_URL,
+          cancelUrl: PAYKEEPER_FAIL_URL || NEXT_PUBLIC_HOST_SERVICE_URL,
           provider: "paykeeper",
         },
         options: {
@@ -123,167 +235,82 @@ export class Service {
         },
       });
 
-      const checkoutData: {
-        Amount: number;
-        Currency: "RUB" | "USD" | "EUR" | "GBP";
-        Description: string;
-        Email: string;
-        RequireConfirmation?: boolean;
-        SendEmail?: boolean;
-        InvoiceId?: string;
-        AccountId?: string;
-        OfferUri?: string;
-        Phone?: string;
-        SendSms?: boolean;
-        SendViber?: boolean;
-        CultureName?: "ru-RU" | "en-US";
-        SubscriptionBehavior?: "CreateWeekly" | "CreateMonthly";
-        SuccessRedirectUrl?: string;
-        FailRedirectUrl?: string;
-        JsonData?: any;
-      } = {
-        Amount: props.entity.amount,
-        Currency: props.currency.toUpperCase() as "RUB" | "USD" | "EUR" | "GBP",
-        Description: `Checkout invoice id: ${props.entity.id}`,
-        Email: props.email,
-        JsonData: { ...props.metadata, invoiceId: invoice.id },
+      const paymentData: Omit<IPayKeeperPaymentData, "token"> = {
+        pay_amount: Math.round(props.entity.amount),
+        client_email: props.email,
+        service_name: props.metadata.serviceName || "Оплата товаров",
+        orderid: props.entity.id,
+        client_phone: props.metadata.clientPhone,
+        expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
       };
 
-      const checkout: {
-        Model: {
-          Id: string;
-          Number: number;
-          Amount: number;
-          Currency: (typeof checkoutData)["Currency"];
-          CurrencyCode: number;
-          Email: (typeof checkoutData)["Email"];
-          Phone: (typeof checkoutData)["Phone"];
-          Description: (typeof checkoutData)["Description"];
-          RequireConfirmation: (typeof checkoutData)["RequireConfirmation"];
-          Url: string;
-          CultureName: (typeof checkoutData)["CultureName"];
-          CreatedDate: string;
-          CreatedDateIso: string;
-          PaymentDate: null;
-          PaymentDateIso: null;
-          StatusCode: number;
-          Status: string;
-          InternalId: number;
-        };
-        Success: boolean;
-        Message: null;
-      } = await fetch("https://api.cloudpayments.ru/orders/create", {
-        method: "POST",
-        body: JSON.stringify(checkoutData),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${Buffer.from(`${CLOUDPAYMENTS_PUBLIC_ID}:${CLOUDPAYMENTS_API_SECRET}`).toString("base64")}`,
-        },
-      }).then((res) => res.json());
+      console.log("🚀 ~ proceed ~ paymentData:", paymentData);
 
-      logger.debug("🚀 ~ checkout:", checkout);
+      try {
+        const securityToken = await this.getSecurityToken();
 
-      invoice = await invoiceApi.update({
-        id: invoice.id,
-        data: {
-          ...invoice,
-          providerId: `${checkout.Model.InternalId}`,
-          paymentUrl: checkout.Model.Url,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
+        const formData = new URLSearchParams();
 
-      if (!invoice) {
-        throw new Error("Invoice not found");
-      }
-
-      await paymentIntentsToInvoicesApi.create({
-        data: {
-          paymentIntentId: props.entity.id,
-          invoiceId: invoice.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
-
-      return invoice;
-    } else {
-      const parsedData:
-        | {
-            orderId: string;
-            invoiceId: string;
+        Object.entries(paymentData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
           }
-        | undefined = JSON.parse(props.data?.Data);
+        });
 
-      if (!parsedData) {
-        throw new Error("Data in transaction not found");
-      }
+        formData.append("token", securityToken);
 
-      const invoices = await invoiceApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "eq",
-                value: parsedData.invoiceId,
-              },
-            ],
+        const response = await fetch(
+          `${PAYKEEPER_BASE_URL}/change/invoice/preview/`,
+          {
+            method: "POST",
+            headers: await this.authHeaders(),
+            body: formData,
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
-          },
-        },
-      });
+        );
 
-      if (!invoices?.length) {
-        throw new Error("Invoice not found");
-      }
+        if (!response.ok) {
+          throw new Error(
+            `PayKeeper API error: ${response.status} ${response.statusText}`,
+          );
+        }
 
-      if (invoices.length > 1) {
-        throw new Error("Multiple invoices found");
-      }
+        const paykeeperResponse: IPayKeeperPaymentResponse =
+          await response.json();
 
-      let invoice = invoices[0];
+        if (paykeeperResponse.result === "fail") {
+          const errorMessage = paykeeperResponse.msg || "Unknown error";
+          throw new Error(`PayKeeper invoice creation failed: ${errorMessage}`);
+        }
 
-      const signature = crypto
-        .createHmac("sha256", CLOUDPAYMENTS_API_SECRET)
-        .update(props.rawBody)
-        .digest("base64");
+        if (!paykeeperResponse.invoice_id || !paykeeperResponse.invoice_url) {
+          throw new Error(
+            "PayKeeper invoice creation failed: missing required fields",
+          );
+        }
 
-      if (signature !== props.headers["content-hmac"]) {
-        throw new Error("Signature mismatch");
-      }
+        const paykeeperInvoiceId = paykeeperResponse.invoice_id;
 
-      if (props.data.Status === "Completed") {
+        if (!paykeeperInvoiceId) {
+          throw new Error(
+            "PayKeeper invoice creation failed: missing required fields",
+          );
+        }
+
         invoice = await invoiceApi.update({
           id: invoice.id,
           data: {
             ...invoice,
-            amount: parseInt(props.data.PaymentAmount),
-            status: "paid",
+            providerId: paykeeperInvoiceId,
+            paymentUrl: paykeeperResponse.invoice_url,
           },
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
             },
           },
         });
@@ -292,10 +319,124 @@ export class Service {
           throw new Error("Invoice not found");
         }
 
-        await props.callback({ invoice });
-      }
+        await paymentIntentsToInvoicesApi.create({
+          data: {
+            paymentIntentId: props.entity.id,
+            invoiceId: invoice.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
 
-      return { code: 0 };
+        return invoice;
+      } catch (error) {
+        logger.error("PayKeeper invoice creation error:", error);
+        throw error;
+      }
+    } else {
+      // Обработка webhook от PayKeeper
+      const { data, rawBody, headers } = props;
+
+      try {
+        logger.debug("🚀 ~ Processing webhook for orderid:", data.orderid);
+        logger.debug("🚀 ~ Webhook data:", data);
+
+        // Ищем связь между payment-intent и invoice
+        const paymentIntentToInvoice = await paymentIntentsToInvoicesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "paymentIntentId",
+                  method: "eq",
+                  value: data.orderid, // orderid = payment-intent ID
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!paymentIntentToInvoice || paymentIntentToInvoice.length === 0) {
+          throw new Error(
+            `Payment intent to invoice relation not found for payment-intent ID: ${data.orderid}`,
+          );
+        }
+
+        // Получаем invoice по ID из связи
+        const invoice = await invoiceApi.findById({
+          id: paymentIntentToInvoice[0].invoiceId,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+            next: {
+              cache: "no-store",
+            },
+          },
+        });
+
+        if (!invoice) {
+          throw new Error(
+            `Invoice not found for ID: ${paymentIntentToInvoice[0].invoiceId}`,
+          );
+        }
+
+        logger.debug("🚀 ~ Found invoice for webhook:", invoice);
+
+        // Получаем актуальные данные счёта от PayKeeper
+        const paykeeperInvoiceData = await this.getInvoiceData(data.id);
+        logger.debug("🚀 ~ PayKeeper invoice data:", paykeeperInvoiceData);
+
+        // Определяем статус платежа на основе данных от PayKeeper
+        let paymentStatus: "success" | "fail" | "in_process";
+
+        switch (paykeeperInvoiceData.status) {
+          case "paid":
+            paymentStatus = "success";
+            break;
+          case "expired":
+            paymentStatus = "fail";
+            break;
+          case "created":
+          case "sent":
+          default:
+            paymentStatus = "in_process";
+            break;
+        }
+
+        logger.debug("🚀 ~ Determined payment status:", paymentStatus);
+        logger.debug(
+          "🚀 ~ PayKeeper invoice status:",
+          paykeeperInvoiceData.status,
+        );
+
+        // Вызываем callback для обновления статуса
+        const result = await props.callback({ invoice });
+
+        if (!result.ok) {
+          throw new Error("Failed to update payment intent status");
+        }
+
+        logger.debug("🚀 ~ Payment intent status updated successfully");
+        return { ok: true };
+      } catch (error) {
+        logger.error("Webhook processing error:", error);
+        throw error;
+      }
     }
   }
 }

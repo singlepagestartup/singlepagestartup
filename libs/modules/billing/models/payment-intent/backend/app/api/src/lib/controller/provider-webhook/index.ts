@@ -108,6 +108,14 @@ export class Handler {
           data: data["data"],
           action: "webhook",
         });
+      } else if (provider === "paykeeper") {
+        result = await this.service.paykeeper({
+          data,
+          action: "webhook",
+          headers,
+          rawBody,
+          callback: this.service.updatePaymentIntentStatus,
+        });
       }
 
       return c.json(
