@@ -4,8 +4,8 @@ import {
   api as parentApi,
   type IProps as IParentProps,
   type IResult as IParentResult,
-} from "./singlepage";
-export { Provider, queryClient } from "./singlepage";
+} from "../singlepage/singlepage";
+export { Provider, queryClient } from "../singlepage/singlepage";
 
 export type IProps = IParentProps & {};
 

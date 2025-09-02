@@ -10,7 +10,7 @@ import {
   action as requestCreate,
   type IProps as IRequestCreateProps,
   type IResult as IRequestCreateResult,
-} from "./actions/request/create";
+} from "./request/create";
 
 export type IProps = {
   IRequestCreateProps: IRequestCreateProps;

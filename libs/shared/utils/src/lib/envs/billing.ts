@@ -57,3 +57,14 @@ export const CLOUDPAYMENTS_API_SECRET = process.env["CLOUDPAYMENTS_API_SECRET"];
  */
 export const TIPTOPPAY_PUBLIC_ID = process.env["TIPTOPPAY_PUBLIC_ID"];
 export const TIPTOPPAY_API_SECRET = process.env["TIPTOPPAY_API_SECRET"];
+
+/**
+ * Paykeeper credentials
+ * @see https://docs.paykeeper.ru
+ */
+export const PAYKEEPER_BASE_URL = process.env["PAYKEEPER_BASE_URL"];
+export const PAYKEEPER_API_LOGIN = process.env["PAYKEEPER_API_LOGIN"];
+export const PAYKEEPER_API_PASSWORD = process.env["PAYKEEPER_API_PASSWORD"];
+export const PAYKEEPER_WEBHOOK_SECRET = process.env["PAYKEEPER_WEBHOOK_SECRET"];
+export const PAYKEEPER_SUCCESS_URL = process.env["PAYKEEPER_SUCCESS_URL"];
+export const PAYKEEPER_FAIL_URL = process.env["PAYKEEPER_FAIL_URL"];
