@@ -15,7 +15,6 @@ import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payme
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
-import { logger } from "@sps/backend-utils";
 
 export interface IPayKeeperTokenResponse {
   token: string;
@@ -162,7 +161,7 @@ export class Service {
 
       return tokenResponse.token;
     } catch (error) {
-      logger.error("Failed to get PayKeeper security token:", error);
+      console.log("Failed to get PayKeeper security token:", error);
       throw new Error(`Failed to get security token: ${error}`);
     }
   }
@@ -171,29 +170,53 @@ export class Service {
     invoiceId: string,
   ): Promise<IPayKeeperInvoiceData> {
     try {
-      const response = await fetch(
-        `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${invoiceId}`,
-        {
-          method: "GET",
-          headers: await this.authHeaders(),
-        },
+      console.log("🚀 ~ Getting invoice data for ID:", invoiceId);
+
+      const authHeaders = await this.authHeaders();
+      console.log("🚀 ~ Auth headers:", authHeaders);
+
+      const requestUrl = `${PAYKEEPER_BASE_URL}/info/invoice/byid/?id=${invoiceId}`;
+      console.log("🚀 ~ Request URL:", requestUrl);
+
+      const response = await fetch(requestUrl, {
+        method: "GET",
+        headers: authHeaders,
+      });
+
+      console.log("🚀 ~ PayKeeper response status:", response.status);
+      console.log(
+        "🚀 ~ PayKeeper response headers:",
+        Object.fromEntries(response.headers.entries()),
       );
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log("🚀 ~ PayKeeper error response:", errorText);
         throw new Error(
-          `PayKeeper invoice request failed: ${response.status} ${response.statusText}`,
+          `PayKeeper invoice request failed: ${response.status} ${response.statusText}. Response: ${errorText}`,
         );
       }
 
-      const invoiceResponse: IPayKeeperInvoiceData[] = await response.json();
+      const responseText = await response.text();
+      console.log("🚀 ~ PayKeeper raw response:", responseText);
 
-      if (!invoiceResponse || invoiceResponse.length === 0) {
+      let invoiceResponse: IPayKeeperInvoiceData;
+      try {
+        invoiceResponse = JSON.parse(responseText);
+      } catch (parseError) {
+        console.log("🚀 ~ Failed to parse PayKeeper response:", parseError);
+        throw new Error(`Failed to parse PayKeeper response: ${responseText}`);
+      }
+
+      console.log("🚀 ~ Parsed invoice response:", invoiceResponse);
+
+      if (!invoiceResponse) {
         throw new Error("PayKeeper did not return invoice data");
       }
 
-      return invoiceResponse[0];
+      return invoiceResponse;
     } catch (error) {
-      logger.error("Failed to get PayKeeper invoice data:", error);
+      console.log("Failed to get PayKeeper invoice data:", error);
       throw new Error(`Failed to get invoice data: ${error}`);
     }
   }
@@ -238,7 +261,7 @@ export class Service {
       const paymentData: Omit<IPayKeeperPaymentData, "token"> = {
         pay_amount: Math.round(props.entity.amount),
         client_email: props.email,
-        service_name: props.metadata.serviceName || "Оплата товаров",
+        service_name: props.metadata.serviceName || "SinglePageStartup Payment",
         orderid: props.entity.id,
         client_phone: props.metadata.clientPhone,
         expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -336,16 +359,17 @@ export class Service {
 
         return invoice;
       } catch (error) {
-        logger.error("PayKeeper invoice creation error:", error);
+        console.log("PayKeeper invoice creation error:", error);
         throw error;
       }
     } else {
-      // Обработка webhook от PayKeeper
-      const { data, rawBody, headers } = props;
+      const { data } = props;
+      console.log("🚀 ~ proceed ~ props:", props);
 
       try {
-        logger.debug("🚀 ~ Processing webhook for orderid:", data.orderid);
-        logger.debug("🚀 ~ Webhook data:", data);
+        console.log("🚀 ~ Processing webhook for orderid:", data.orderid);
+        console.log("🚀 ~ Webhook data:", data);
+        console.log("🚀 ~ Webhook data.id (PayKeeper invoice ID):", data.id);
 
         // Ищем связь между payment-intent и invoice
         const paymentIntentToInvoice = await paymentIntentsToInvoicesApi.find({
@@ -364,9 +388,6 @@ export class Service {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -377,14 +398,11 @@ export class Service {
         }
 
         // Получаем invoice по ID из связи
-        const invoice = await invoiceApi.findById({
+        let invoice = await invoiceApi.findById({
           id: paymentIntentToInvoice[0].invoiceId,
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -395,31 +413,51 @@ export class Service {
           );
         }
 
-        logger.debug("🚀 ~ Found invoice for webhook:", invoice);
+        console.log("🚀 ~ Found invoice for webhook:", invoice);
+        console.log("🚀 ~ Invoice providerId:", invoice.providerId);
 
         // Получаем актуальные данные счёта от PayKeeper
-        const paykeeperInvoiceData = await this.getInvoiceData(data.id);
-        logger.debug("🚀 ~ PayKeeper invoice data:", paykeeperInvoiceData);
-
-        // Определяем статус платежа на основе данных от PayKeeper
-        let paymentStatus: "success" | "fail" | "in_process";
-
-        switch (paykeeperInvoiceData.status) {
-          case "paid":
-            paymentStatus = "success";
-            break;
-          case "expired":
-            paymentStatus = "fail";
-            break;
-          case "created":
-          case "sent":
-          default:
-            paymentStatus = "in_process";
-            break;
+        // Используем providerId из invoice, который содержит ID счёта в PayKeeper
+        if (!invoice.providerId) {
+          throw new Error(
+            "Invoice providerId not found - cannot get PayKeeper invoice data",
+          );
         }
 
-        logger.debug("🚀 ~ Determined payment status:", paymentStatus);
-        logger.debug(
+        console.log(
+          "🚀 ~ Getting PayKeeper invoice data for providerId:",
+          invoice.providerId,
+        );
+        const paykeeperInvoiceData = await this.getInvoiceData(
+          invoice.providerId,
+        );
+        console.log("🚀 ~ PayKeeper invoice data:", paykeeperInvoiceData);
+        console.log(
+          "🚀 ~ PayKeeper invoice status:",
+          paykeeperInvoiceData?.status,
+        );
+
+        if (!paykeeperInvoiceData) {
+          throw new Error("Failed to get invoice data from PayKeeper");
+        }
+
+        if (paykeeperInvoiceData.status === "paid") {
+          invoice = await invoiceApi.update({
+            id: invoice.id,
+            data: {
+              ...invoice,
+              amount: parseInt(paykeeperInvoiceData.pay_amount),
+              status: "paid",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+
+        console.log(
           "🚀 ~ PayKeeper invoice status:",
           paykeeperInvoiceData.status,
         );
@@ -431,10 +469,10 @@ export class Service {
           throw new Error("Failed to update payment intent status");
         }
 
-        logger.debug("🚀 ~ Payment intent status updated successfully");
+        console.log("🚀 ~ Payment intent status updated successfully");
         return { ok: true };
       } catch (error) {
-        logger.error("Webhook processing error:", error);
+        console.log("Webhook processing error:", error);
         throw error;
       }
     }

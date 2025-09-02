@@ -26,7 +26,8 @@ const formSchema = z.object({
         value === "0xprocessing" ||
         value === "payselection" ||
         value === "cloudpayments" ||
-        value === "dummy",
+        value === "dummy" ||
+        value === "paykeeper",
       "Invalid provider",
     ),
   email: z.string().email(),
