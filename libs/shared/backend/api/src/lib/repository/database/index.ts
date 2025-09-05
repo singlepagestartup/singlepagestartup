@@ -16,7 +16,6 @@ import {
 import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
 import fs from "fs/promises";
 import { logger } from "@sps/backend-utils";
-import { sql } from "drizzle-orm";
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -122,8 +121,6 @@ export class Database<T extends PgTableWithColumns<any>>
     try {
       const [record] = await this.findByField(field, value);
 
-      // const sanitizedRecord = this.selectSchema.parse(record);
-
       return record;
     } catch (error: any) {
       logger.error(error);
@@ -141,8 +138,6 @@ export class Database<T extends PgTableWithColumns<any>>
       const shape = this.insertSchema.shape;
 
       delete data.id;
-      delete data.createdAt;
-      delete data.updatedAt;
 
       Object.entries(shape).forEach(([key, value]) => {
         const isOptionalDate =
@@ -152,10 +147,6 @@ export class Database<T extends PgTableWithColumns<any>>
 
         if ((isDate || isOptionalDate) && typeof data[key] === "string") {
           data[key] = new Date(data[key]);
-        }
-
-        if (["updatedAt", "createdAt"].includes(key)) {
-          data[key] = new Date();
         }
 
         if (
@@ -169,6 +160,14 @@ export class Database<T extends PgTableWithColumns<any>>
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);
+        }
+
+        if (key === "createdAt" && !data[key]) {
+          data[key] = new Date();
+        }
+
+        if (key === "updatedAt") {
+          data[key] = new Date();
         }
       });
 
@@ -244,10 +243,6 @@ export class Database<T extends PgTableWithColumns<any>>
           data[key] = new Date(data[key]);
         }
 
-        if (["updatedAt", "createdAt"].includes(key)) {
-          data[key] = new Date();
-        }
-
         if (
           [
             "expiresAt",
@@ -255,14 +250,18 @@ export class Database<T extends PgTableWithColumns<any>>
             "datetime",
             "sendAfter",
             "ozonUpdatedAt",
+            "createdAt",
           ].includes(key) &&
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);
         }
+
+        if (key === "updatedAt") {
+          data[key] = new Date();
+        }
       });
 
-      delete data.createdAt;
       data.updatedAt = new Date();
 
       const plainData: T["$inferInsert"] = this.insertSchema.parse(data);
@@ -324,6 +323,12 @@ export class Database<T extends PgTableWithColumns<any>>
   }
 
   async seed(props?: { seeds: ISeedResult[] }): Promise<ISeedResult> {
+    console.log(
+      "Seeding. Module:",
+      this.configuration.repository.seed.module,
+      "Name:",
+      this.configuration.repository.seed.name,
+    );
     const result: ISeedResult = {
       module: this.configuration.repository.seed.module,
       name: this.configuration.repository.seed.name,
