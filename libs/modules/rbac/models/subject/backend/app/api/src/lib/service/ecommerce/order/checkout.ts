@@ -8,6 +8,11 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as ecommerceModuleOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
+import { api as ecommerceModuleAttributesKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
+import { api as ecommerceModuleProductApi } from "@sps/ecommerce/models/product/sdk/server";
+import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
+import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
@@ -62,14 +67,301 @@ export class Service {
       });
     }
 
+    const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: props.ecommerceModule.orders.map(
+                (order: { id: string }) => order.id,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!ecommerceModuleOrders?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module orders found",
+      });
+    }
+
+    const ordersToProducts = await ecommerceModuleOrdersToProductsApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "inArray",
+              value: ecommerceModuleOrders.map((order) => order.id),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!ordersToProducts?.length) {
+      throw new HTTPException(404, {
+        message: "No orders to products found",
+      });
+    }
+
+    const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ordersToProducts.map(
+                (orderToProduct) => orderToProduct.productId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!ecommerceModuleProducts?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module products found",
+      });
+    }
+
+    const ecommerceModuleProductsToAttributes =
+      await ecommerceModuleProductsToAttributesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "productId",
+                method: "inArray",
+                value: ecommerceModuleProducts.map(
+                  (ecommerceModuleProduct) => ecommerceModuleProduct.id,
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleProductsToAttributes?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module products to attributes found",
+      });
+    }
+
+    const ecommerceModuleAttributesKeysToAttributes =
+      await ecommerceModuleAttributesKeysToAttributesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeId",
+                method: "inArray",
+                value: ecommerceModuleProductsToAttributes.map(
+                  (ecommerceModuleProductToAttribute) =>
+                    ecommerceModuleProductToAttribute.attributeId,
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleAttributesKeysToAttributes?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module attributes keys to attributes found",
+      });
+    }
+
+    const ecommerceModuleAttributesKeys =
+      await ecommerceModuleAttributeKeyApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ecommerceModuleAttributesKeysToAttributes.map(
+                  (ecommerceModuleAttributesKeysToAttribute) =>
+                    ecommerceModuleAttributesKeysToAttribute.attributeKeyId,
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleAttributesKeysToAttributes?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module attributes keys to attributes found",
+      });
+    }
+
+    if (!ecommerceModuleAttributesKeys?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module attributes keys found",
+      });
+    }
+
+    const ecommerceModuleAttributes = await ecommerceModuleAttributeApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: ecommerceModuleProductsToAttributes.map(
+                (ecommerceModuleProductToAttribute) =>
+                  ecommerceModuleProductToAttribute.attributeId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!ecommerceModuleAttributes?.length) {
+      throw new HTTPException(404, {
+        message: "No ecommerce module attributes found",
+      });
+    }
+
     const metadata = {
-      orders: props.ecommerceModule.orders.map((order: { id: string }) => {
-        return {
-          id: order.id,
-        };
-      }),
+      ecommerceModule: {
+        orders: ecommerceModuleOrders.map((ecommerceModuleOrder) => {
+          return {
+            id: ecommerceModuleOrder.id,
+            ordersToProducts: ordersToProducts
+              .filter((orderToProduct) => {
+                return orderToProduct.orderId === ecommerceModuleOrder.id;
+              })
+              .map((orderToProduct) => {
+                return {
+                  ...orderToProduct,
+                  products: ecommerceModuleProducts
+                    ?.filter((ecommerceModuleProduct) => {
+                      return (
+                        ecommerceModuleProduct.id === orderToProduct.productId
+                      );
+                    })
+                    ?.map((ecommerceModuleProduct) => {
+                      return {
+                        ...ecommerceModuleProduct,
+                        productsToAttributes:
+                          ecommerceModuleProductsToAttributes
+                            .filter((ecommerceModuleProductToAttribute) => {
+                              return (
+                                ecommerceModuleProductToAttribute.productId ===
+                                ecommerceModuleProduct.id
+                              );
+                            })
+                            .map((ecommerceModuleProductToAttribute) => {
+                              return {
+                                ...ecommerceModuleProductToAttribute,
+                                attributes: ecommerceModuleAttributes
+                                  .filter((ecommerceModuleAttribute) => {
+                                    return (
+                                      ecommerceModuleAttribute.id ===
+                                      ecommerceModuleProductToAttribute.attributeId
+                                    );
+                                  })
+                                  .map((ecommerceModuleAttribute) => {
+                                    return {
+                                      ...ecommerceModuleAttribute,
+                                      attributesKeysToAttributes:
+                                        ecommerceModuleAttributesKeysToAttributes
+                                          .filter(
+                                            (
+                                              ecommerceModuleAttributesKeysToAttribute,
+                                            ) => {
+                                              return (
+                                                ecommerceModuleAttributesKeysToAttribute.attributeId ===
+                                                ecommerceModuleProductToAttribute.attributeId
+                                              );
+                                            },
+                                          )
+                                          .map(
+                                            (
+                                              ecommerceModuleAttributesKeysToAttribute,
+                                            ) => {
+                                              return {
+                                                ...ecommerceModuleAttributesKeysToAttribute,
+                                                attributeKey:
+                                                  ecommerceModuleAttributesKeys.find(
+                                                    (
+                                                      ecommerceModuleAttributesKey,
+                                                    ) => {
+                                                      return (
+                                                        ecommerceModuleAttributesKey.id ===
+                                                        ecommerceModuleAttributesKeysToAttribute.attributeKeyId
+                                                      );
+                                                    },
+                                                  ),
+                                              };
+                                            },
+                                          ),
+                                    };
+                                  }),
+                              };
+                            }),
+                      };
+                    }),
+                };
+              }),
+          };
+        }),
+      },
       email: props.email,
     };
+
+    console.log("🚀 ~ execute ~ metadata:", JSON.stringify(metadata, null, 2));
 
     const ordersToBillingModuleCurrencies =
       await ecommerceModuleOrdersToBillingModuleCurrenciesApi.find({

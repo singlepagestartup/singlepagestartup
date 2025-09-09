@@ -392,12 +392,25 @@ import {
     });
 
   setTimeout(async () => {
-    await fetch(HOST_SERVICE_URL)
+    if (!RBAC_SECRET_KEY) {
+      return;
+    }
+
+    await fetch(API_SERVICE_URL + "/api/agent/agents/host-module-page-cache", {
+      headers: {
+        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      },
+    })
       .then((res) => {
-        return res.text();
+        return res.json();
       })
       .catch((error) => {
-        logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
+        logger.error(
+          "🚀 ~ " +
+            API_SERVICE_URL +
+            "/api/agent/agents/host-module-page-cache error:",
+          error,
+        );
       });
   }, 10000);
 })()

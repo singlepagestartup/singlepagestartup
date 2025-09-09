@@ -16,19 +16,122 @@ import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
 import * as crypto from "crypto";
 
+// Интерфейс для metadata
+interface IMetadata {
+  ecommerceModule?: {
+    orders?: Array<{
+      id: string;
+      ordersToProducts?: Array<{
+        id: string;
+        quantity: number;
+        products?: Array<{
+          id: string;
+          title?: {
+            [key: string]: string;
+          };
+          adminTitle?: string;
+          productsToAttributes?: Array<{
+            attributes?: Array<{
+              number?: string;
+              attributesKeysToAttributes?: Array<{
+                attributeKey?: {
+                  type?: string;
+                  field?: string;
+                };
+              }>;
+            }>;
+          }>;
+        }>;
+      }>;
+    }>;
+  };
+  clientPhone?: string;
+  serviceName?: string;
+}
+
 export interface IPayKeeperTokenResponse {
   token: string;
+}
+
+export interface IPayKeeperCartItem {
+  name: string;
+  price: number;
+  quantity: number;
+  sum: number;
+  tax:
+    | "none"
+    | "vat0"
+    | "vat5"
+    | "vat7"
+    | "vat10"
+    | "vat20"
+    | "vat105"
+    | "vat107"
+    | "vat110"
+    | "vat120";
+  item_type?:
+    | "goods"
+    | "service"
+    | "work"
+    | "excise"
+    | "ip"
+    | "payment"
+    | "agent"
+    | "property_right"
+    | "non_operating"
+    | "sales_tax"
+    | "resort_fee"
+    | "other"
+    | "exc_uncoded"
+    | "exc_coded"
+    | "goods_uncoded"
+    | "goods_coded";
+  payment_type?:
+    | "prepay"
+    | "part_prepay"
+    | "advance"
+    | "full"
+    | "part_credit"
+    | "credit"
+    | "credit_payment";
+  item_id?: string;
+  item_code?: string;
+  item_code_b64?: string;
+  items_in_package?: number;
+  items_sold_from_package?: number;
+  measure?: string;
+  item_country?: string;
+  customs_declaration?: string;
+  excise?: number;
+  industry_attribute?: Array<{
+    [key: string]: string | number | boolean;
+  }>;
+  item_code_validated?: boolean;
+  agent?: {
+    [key: string]: string | number | boolean;
+  };
+  supplier?: {
+    [key: string]: string | number | boolean;
+  };
+}
+
+export interface IPayKeeperServiceName {
+  cart?: string; // JSON-строка с массивом товаров
+  receipt_properties?: string; // JSON-строка с дополнительными свойствами чека
+  lang?: "ru" | "en";
+  user_result_callback?: string;
+  service_name?: string;
 }
 
 export interface IPayKeeperPaymentData {
   pay_amount: number;
   clientid?: string;
   orderid: string;
-  service_name: string;
   client_email: string;
   client_phone?: string;
   expiry?: string;
   token: string;
+  service_name?: string | IPayKeeperServiceName; // Может быть строкой или JSON-объектом
 }
 
 export interface IPayKeeperPaymentResponse {
@@ -119,22 +222,6 @@ export class Service {
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
     };
-  }
-
-  private async verifyWebhookSignature(
-    data: string,
-    signature: string,
-  ): Promise<boolean> {
-    if (!PAYKEEPER_WEBHOOK_SECRET) {
-      throw new Error("Paykeeper webhook secret not found");
-    }
-
-    const expectedSignature = crypto
-      .createHmac("sha256", PAYKEEPER_WEBHOOK_SECRET)
-      .update(data)
-      .digest("hex");
-
-    return expectedSignature === signature;
   }
 
   private async getSecurityToken(): Promise<string> {
@@ -261,12 +348,17 @@ export class Service {
       const paymentData: Omit<IPayKeeperPaymentData, "token"> = {
         pay_amount: Math.round(props.entity.amount),
         client_email: props.email,
-        service_name: props.metadata.serviceName || "SinglePageStartup Payment",
         orderid: props.entity.id,
         client_phone: props.metadata.clientPhone,
         expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
           .toISOString()
           .split("T")[0],
+        service_name: {
+          cart: JSON.stringify(this.buildCartFromMetadata(props.metadata)),
+          service_name:
+            props.metadata.serviceName || "SinglePageStartup Payment",
+          lang: "ru",
+        },
       };
 
       console.log("🚀 ~ proceed ~ paymentData:", paymentData);
@@ -278,7 +370,11 @@ export class Service {
 
         Object.entries(paymentData).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
+            if (key === "service_name" && typeof value === "object") {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, String(value));
+            }
           }
         });
 
@@ -371,7 +467,6 @@ export class Service {
         console.log("🚀 ~ Webhook data:", data);
         console.log("🚀 ~ Webhook data.id (PayKeeper invoice ID):", data.id);
 
-        // Ищем связь между payment-intent и invoice
         const paymentIntentToInvoice = await paymentIntentsToInvoicesApi.find({
           params: {
             filters: {
@@ -379,7 +474,7 @@ export class Service {
                 {
                   column: "paymentIntentId",
                   method: "eq",
-                  value: data.orderid, // orderid = payment-intent ID
+                  value: data.orderid,
                 },
               ],
             },
@@ -397,7 +492,6 @@ export class Service {
           );
         }
 
-        // Получаем invoice по ID из связи
         let invoice = await invoiceApi.findById({
           id: paymentIntentToInvoice[0].invoiceId,
           options: {
@@ -416,8 +510,6 @@ export class Service {
         console.log("🚀 ~ Found invoice for webhook:", invoice);
         console.log("🚀 ~ Invoice providerId:", invoice.providerId);
 
-        // Получаем актуальные данные счёта от PayKeeper
-        // Используем providerId из invoice, который содержит ID счёта в PayKeeper
         if (!invoice.providerId) {
           throw new Error(
             "Invoice providerId not found - cannot get PayKeeper invoice data",
@@ -462,7 +554,6 @@ export class Service {
           paykeeperInvoiceData.status,
         );
 
-        // Вызываем callback для обновления статуса
         const result = await props.callback({ invoice });
 
         if (!result.ok) {
@@ -476,5 +567,103 @@ export class Service {
         throw error;
       }
     }
+  }
+
+  private buildCartFromMetadata(metadata: IMetadata) {
+    const cartItems: Array<{
+      name: string;
+      price: number;
+      quantity: number;
+      sum: number;
+      tax: string;
+      item_type: string;
+      payment_type: string;
+    }> = [];
+
+    if (!metadata?.ecommerceModule?.orders) {
+      return cartItems;
+    }
+
+    for (const order of metadata.ecommerceModule.orders) {
+      if (!order.ordersToProducts) continue;
+
+      for (const orderToProduct of order.ordersToProducts) {
+        if (!orderToProduct.products) continue;
+
+        for (const product of orderToProduct.products) {
+          const productName = this.getProductName(product);
+          const productPrice = this.getProductPrice(product);
+          const quantity = orderToProduct.quantity || 1;
+
+          cartItems.push({
+            name: productName,
+            price: Math.round(productPrice),
+            quantity: quantity,
+            sum: Math.round(productPrice * quantity),
+            tax: "none",
+            item_type: "goods",
+            payment_type: "full",
+          });
+        }
+      }
+    }
+
+    return cartItems;
+  }
+
+  private getProductName(product: {
+    title?: { [key: string]: string };
+    adminTitle?: string;
+  }): string {
+    if (product.title?.ru) {
+      return product.title.ru;
+    }
+    if (product.title?.en) {
+      return product.title.en;
+    }
+    if (product.adminTitle) {
+      return product.adminTitle;
+    }
+    return "Товар";
+  }
+
+  private getProductPrice(product: {
+    productsToAttributes?: Array<{
+      attributes?: Array<{
+        number?: string;
+        attributesKeysToAttributes?: Array<{
+          attributeKey?: {
+            type?: string;
+            field?: string;
+          };
+        }>;
+      }>;
+    }>;
+  }): number {
+    if (!product.productsToAttributes) {
+      return 0;
+    }
+
+    for (const productToAttribute of product.productsToAttributes) {
+      if (!productToAttribute.attributes) continue;
+
+      for (const attribute of productToAttribute.attributes) {
+        if (!attribute.attributesKeysToAttributes) continue;
+
+        for (const attributeKeyToAttribute of attribute.attributesKeysToAttributes) {
+          const attributeKey = attributeKeyToAttribute.attributeKey;
+
+          if (
+            attributeKey?.type === "price" &&
+            attributeKey?.field === "number"
+          ) {
+            const priceValue = parseFloat(attribute.number || "0");
+            return priceValue;
+          }
+        }
+      }
+    }
+
+    return 0;
   }
 }

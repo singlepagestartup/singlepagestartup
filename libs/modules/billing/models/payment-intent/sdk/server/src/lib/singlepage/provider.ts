@@ -12,18 +12,109 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
+interface IAttributeKey {
+  id: string;
+  variant: string;
+  type: string;
+  field: string;
+  adminTitle: string;
+  slug: string;
+  title: {
+    [key: string]: string | undefined;
+  } | null;
+  prefix: {
+    [key: string]: string | undefined;
+  } | null;
+  suffix: {
+    [key: string]: string | undefined;
+  } | null;
+  [key: string]: unknown;
+}
+
+interface IAttributesKeysToAttributes {
+  id: string;
+  variant: string;
+  attributeKeyId: string;
+  attributeId: string;
+  attributeKey?: IAttributeKey;
+  [key: string]: unknown;
+}
+
+interface IAttribute {
+  id: string;
+  variant: string;
+  number?: string | null;
+  boolean?: boolean | null;
+  date?: Date | null;
+  datetime?: Date | null;
+  string?: {
+    [key: string]: string | undefined;
+  } | null;
+  attributesKeysToAttributes: IAttributesKeysToAttributes[];
+  [key: string]: unknown;
+}
+
+interface IProductsToAttributes {
+  id: string;
+  variant: string;
+  orderIndex: number;
+  productId: string;
+  attributeId: string;
+  attributes: IAttribute[];
+  [key: string]: unknown;
+}
+
+interface IProduct {
+  id: string;
+  variant: string;
+  type: string;
+  slug: string;
+  title: {
+    [key: string]: string | undefined;
+  } | null;
+  adminTitle: string;
+  productsToAttributes: IProductsToAttributes[];
+  [key: string]: unknown;
+}
+
+interface IOrdersToProducts {
+  id: string;
+  variant: string;
+  orderIndex: number;
+  quantity: number;
+  orderId: string;
+  productId: string;
+  products: IProduct[];
+  [key: string]: unknown;
+}
+
+interface IOrder {
+  id: string;
+  ordersToProducts: IOrdersToProducts[];
+}
+
+interface IEcommerceModule {
+  orders: IOrder[];
+}
+
+interface IMetadata {
+  ecommerceModule: IEcommerceModule;
+  email: string;
+}
+
 export interface IProps {
   host?: string;
   catchErrors?: boolean;
   tag?: string;
   revalidate?: number;
   id: string;
-  params?: any;
+  params?: Record<string, unknown>;
   options?: Partial<NextRequestOptions>;
   data: {
-    [key: string]: any;
+    [key: string]: unknown;
     provider: string;
     currencyId: string;
+    metadata?: IMetadata;
   };
 }
 

@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { logger } from "@sps/backend-utils";
 import { api as hostModulePageApi } from "@sps/host/models/page/sdk/server";
+import { internationalization } from "@sps/shared-configuration";
 
 export class Handler {
   service: Service;
@@ -24,31 +25,41 @@ export class Handler {
 
       if (urls?.length) {
         for (const [index, url] of urls.entries()) {
-          const path = HOST_SERVICE_URL + "/" + url.url.join("/");
+          for (const language of internationalization.languages) {
+            const code =
+              language.code === internationalization.defaultLanguage.code
+                ? ""
+                : language.code + "/";
 
-          logger.info(`🔄 Revalidating page ${index + 1} of ${urls.length}`, {
-            page: path,
-          });
+            const path = HOST_SERVICE_URL + "/" + code + url.url.join("/");
 
-          try {
-            await this.revalidatePage(path);
-
-            const res = await fetch(path, {
-              method: "GET",
+            logger.info(`🔄 Revalidating page ${index + 1} of ${urls.length}`, {
+              page: path,
             });
 
-            if (!res.ok) {
-              throw new Error("Failed to fetch page");
+            try {
+              await this.revalidatePage(path);
+
+              const res = await fetch(path, {
+                method: "GET",
+              });
+
+              if (!res.ok) {
+                throw new Error("Failed to fetch page");
+              }
+
+              logger.info(
+                `✅ Revalidated page ${index + 1} of ${urls.length}`,
+                {
+                  page: path,
+                },
+              );
+            } catch (err) {
+              logger.error(path + " - Failed to fetch page", {
+                page: path,
+                error: err,
+              });
             }
-
-            logger.info(`✅ Revalidated page ${index + 1} of ${urls.length}`, {
-              page: path,
-            });
-          } catch (err) {
-            logger.error(path + " - Failed to fetch page", {
-              page: path,
-              error: err,
-            });
           }
         }
       }

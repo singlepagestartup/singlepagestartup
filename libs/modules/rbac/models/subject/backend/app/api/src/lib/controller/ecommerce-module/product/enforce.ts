@@ -526,26 +526,26 @@ export class Handler {
             continue;
           }
 
-          await billingPaymentIntentApi.provider({
-            id: paymentIntentId,
-            data: {
-              provider: latestInvoice.provider,
-              currencyId:
-                ecommerceOrdersToBillingModuleCurrencies[0]
-                  .billingModuleCurrencyId,
-              metadata: {
-                email: identities[0].email,
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
-              },
-            },
-          });
+          // await billingPaymentIntentApi.provider({
+          //   id: paymentIntentId,
+          //   data: {
+          //     provider: latestInvoice.provider,
+          //     currencyId:
+          //       ecommerceOrdersToBillingModuleCurrencies[0]
+          //         .billingModuleCurrencyId,
+          //     metadata: {
+          //       email: identities[0].email,
+          //     },
+          //   },
+          //   options: {
+          //     headers: {
+          //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //     },
+          //     next: {
+          //       cache: "no-store",
+          //     },
+          //   },
+          // });
         }
       }
 
