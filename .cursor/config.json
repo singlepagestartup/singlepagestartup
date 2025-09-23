@@ -1,9 +1,5 @@
 {
   "projectName": "SinglePageStartup",
-  "rules": {
-    "environmentRulesPath": ".cursor/rules/environment.mdc",
-    "expertRulesPath": ".cursor/rules/expert.mdc"
-  },
   "linting": {
     "enablePrettier": true,
     "enableESLint": true
