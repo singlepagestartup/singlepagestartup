@@ -31,5 +31,6 @@ export interface IResponseProps {
         })[];
       };
     };
+    comment: string;
   };
 }

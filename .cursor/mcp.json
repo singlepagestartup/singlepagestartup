@@ -1,7 +1,9 @@
 {
   "mcpServers": {
-    "nx-mcp": {
-      "url": "http://localhost:9637/sse"
+    "singlepagestartup-mcp": {
+      "command": "bun",
+      "cwd": ".",
+      "args": ["/apps/mcp/server.ts"]
     }
   }
 }

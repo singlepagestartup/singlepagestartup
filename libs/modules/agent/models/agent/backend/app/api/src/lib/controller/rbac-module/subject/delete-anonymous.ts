@@ -8,6 +8,7 @@ import { Service } from "../../../service";
 import { logger } from "@sps/backend-utils";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as rbacModuleSubjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
+import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 
 export class Handler {
   service: Service;
@@ -62,21 +63,48 @@ export class Handler {
         },
       );
 
+      const subjectsToSocialModuleProfiles =
+        await rbacModuleSubjectsToSocialModuleProfilesApi.find({
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
       if (!oldSubjects?.length) {
         return c.json({ data: { ok: true } });
       }
 
-      const expiredSubjects = oldSubjects.filter((subject) => {
-        const subjectToIdentities = subjectsToIdentities?.find(
-          (subjectToIdentity) => subjectToIdentity.subjectId === subject.id,
-        );
+      const expiredSubjects = oldSubjects
+        .filter((subject) => {
+          const subjectToIdentities = subjectsToIdentities?.find(
+            (subjectToIdentity) => subjectToIdentity.subjectId === subject.id,
+          );
 
-        if (!subjectToIdentities) {
-          return true;
-        }
+          if (!subjectToIdentities) {
+            return true;
+          }
 
-        return false;
-      });
+          return false;
+        })
+        .filter((subject) => {
+          if (!subjectsToSocialModuleProfiles?.length) {
+            return true;
+          }
+
+          const subjectToSocialModuleProfiles =
+            subjectsToSocialModuleProfiles?.filter(
+              (subjectToSocialModuleProfile) =>
+                subjectToSocialModuleProfile.subjectId === subject.id,
+            );
+
+          if (!subjectToSocialModuleProfiles.length) {
+            return true;
+          }
+
+          return false;
+        });
 
       if (expiredSubjects?.length) {
         for (const expiredSubject of expiredSubjects) {

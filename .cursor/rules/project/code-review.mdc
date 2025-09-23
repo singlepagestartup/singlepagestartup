@@ -1,0 +1,34 @@
+---
+description: Code Review Checklist
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+@rule
+
+## Frontend Review
+
+- TailwindCSS only: verify all styling uses Tailwind utility classes; any missing tokens (colors, spacing, etc.) must be added to `apps/host/styles/presets/shadcn.ts` instead of inline CSS or arbitrary class names.
+- Variant structure: ensure new variants follow the pattern from `rules/project/frontend.mdc` (`interface.ts` → `index.tsx` → `Component.tsx` with optional `ClientComponent.tsx`). Extra helpers belong in `assets/` and must be imported from there.
+- Data layer: if a variant needs custom data fetching, mirror the `singlepage/default` pattern by moving logic into `server.tsx` / `client.tsx` and keeping `Component.tsx` dumb; do not embed fetch calls directly in presentation components.
+- Client behavior: components handling browser interactions must declare `"use client"`. After that, downstream relation/model components must receive `isServer={false}` to prevent cross-boundary rendering issues.
+- SDK usage: confirm every data access goes through module SDK providers (`Provider`, `clientApi`, `serverApi`) with filters expressed via `apiProps`.
+
+@rule
+
+## Backend Review
+
+- API aggregation: all routes must be mounted in `apps/api/app.ts`; modules cannot expose standalone servers.
+- Module layout: check that each backend package keeps `backend/app/api` (App/Controller/Service/Repository/Configuration/Bootstrap) and `backend/repository/database` (schema, migrations, dump/seed) and exports only through its root `index.ts`.
+- Layer boundaries: controllers should extend `RESTController`, services `CRUDService`, repositories `DatabaseRepository`; configuration must wire the table and dump/seed flags correctly.
+- Middleware usage: `libs/middlewares` components may only be instantiated inside `apps/api`; modules must not import them directly.
+- Operational scripts: new models should register in their module `apps.ts`, be mounted in `apps/api/app.ts`, and update any required Nx targets (`repository-generate`, `repository-migrate`, `db:*`).
+
+@rule
+
+## General Review
+
+- Enforce TypeScript interface-first style, PascalCase components, and export order per SPS standards.
+- Confirm data flows respect relation components and many-to-many patterns documented in `rules/project/frontend.mdc` and `rules/project/backend.mdc`.
+- Reject code that bypasses shared utilities (logging, caching, revalidation, RBAC) or introduces direct cross-layer coupling.

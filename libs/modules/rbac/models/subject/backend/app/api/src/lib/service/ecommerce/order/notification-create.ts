@@ -22,7 +22,9 @@ import { api as notificationTemplateApi } from "@sps/notification/models/templat
 export type IExecuteProps = {
   orderId: string;
   id: string;
-  data: any;
+  data: {
+    comment: string;
+  };
 };
 
 export class Service {
@@ -406,6 +408,7 @@ export class Service {
                                   ordersToFileStorageModuleFiles: [],
                                 },
                               },
+                              comment: props.data.comment,
                             }),
                           },
                         },
@@ -529,6 +532,7 @@ export class Service {
                                           ordersToFileStorageModuleFiles: [],
                                         },
                                       },
+                                      comment: props.data.comment,
                                     }),
                                   },
                                 },

@@ -21,6 +21,7 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
+├── mcp/    # MCP server for generating contend in apps/api/
 ├── redis/  # Docker service for Redis
 └── telegram/  # Telegram bot app
 
@@ -131,7 +132,11 @@ Strict layered architecture: Repository → Service → Controller → App.
       },
     }}
   >
-    {({ data }) => <ChildComponent data={data} />}
+    {({ data }) => {
+      return data?.map((entity, index) => {
+        return <ChildComponent key={index} isServer={props.isServer} data={entity} variant={entity.variant as any} />;
+      });
+    }}
   </RelationComponent>
   ```
 
@@ -247,7 +252,7 @@ Creating envs in all services and running them
 If you want to run SinglePageStartup with precreated data, run seeding
 
 ```bash
-npx nx api:db:seed
+npx nx run api:db:seed
 ```
 
 ### 4. Running the API Project

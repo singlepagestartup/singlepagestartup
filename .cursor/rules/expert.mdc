@@ -1,14 +1,17 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # AI Assistant Rules for SinglePageStartup (SPS) Project
 
 ## General Description
+
 @when start
 @rule
 You are an expert in the following technologies:
+
 - TypeScript
 - Node.js
 - Next.js App Router
@@ -20,8 +23,11 @@ You are an expert in the following technologies:
 You are creating a Full-Stack project based on a special framework called SinglePageStartup (SPS).
 
 ## Project Architecture
+
 @note
+
 ### Key Features:
+
 - Decomposition of all elements into REST API models with frontend display variants
 - Models are related via explicit Relation Models
 - Frontend components are strictly separated between server-side and client-side logic
@@ -29,8 +35,11 @@ You are creating a Full-Stack project based on a special framework called Single
 - Models and relations must follow strict modular structure and best practices
 
 ## Code Standards
+
 @rule
+
 ### Structure and Style:
+
 - Write concise, technical TypeScript code with accurate examples
 - Use functional and declarative programming patterns
 - Prefer iteration and modularization over code duplication
@@ -38,12 +47,16 @@ You are creating a Full-Stack project based on a special framework called Single
 - Structure files: exported component, subcomponents, helpers, static content, types
 
 ### Naming Conventions:
+
 - Use lowercase with dashes for directories (e.g., `components/auth-wizard`)
 - Use PascalCase for components and interfaces
 
 ## TypeScript
+
 @rule
+
 ### Core Principles:
+
 - Use TypeScript for all code
 - Prefer interfaces over types
 - Place interfaces near the component or function they belong to, in `interface.ts`
@@ -51,27 +64,37 @@ You are creating a Full-Stack project based on a special framework called Single
 - Use functional components with strict TypeScript interfaces
 
 ### Syntax and Formatting:
+
 - Use the "function" keyword for pure functions
 - Avoid unnecessary curly braces in conditionals
 - Use clean, declarative JSX for UI
 
 ## UI and Styling
+
 @rule
+
 ### Components and Styles:
+
 - Use Shadcn UI, Radix UI, and TailwindCSS for components and styling
 - Implement responsive design with TailwindCSS using a mobile-first approach
 
 ## Performance Optimization
+
 @rule
+
 ### Key Principles:
+
 - Minimize the use of 'use client', 'useEffect', and 'setState'
 - Favor React Server Components (RSC) for better performance
 - Wrap client components in Suspense with a fallback if needed
 - Use dynamic loading for non-critical components
 
 ## Key Conventions
+
 @rule
+
 ### Core Rules:
+
 - Optimize Web Vitals (LCP, CLS, FID)
 - Limit the usage of client-only components
 - Follow Next.js official recommendations for:
@@ -81,44 +104,57 @@ You are creating a Full-Stack project based on a special framework called Single
 
 @note
 Always act as a Senior Engineer who understands:
+
 - The full project codebase
 - Project architecture
 - Detailed internal abstractions
 
 ## SPS-Specific Patterns
+
 @rule
+
 ### Model Structure:
+
 - Models must follow the pattern: models/{model}/frontend/component
 - Relations must be defined in relations/{relation}/frontend/component
 - All models must have SDK, frontend, and backend layers
 
 ### Component Structure:
+
 - Components must use ParentComponent wrapper
 - Must implement IComponentProps and IComponentPropsExtended
 - Must follow the startup/singlepage structure
 
 ## Data Management
+
 @rule
+
 ### Data Fetching:
+
 - Use SDK Providers for all data operations
 - Implement Relation Components for related data
 - Follow the many-to-many relation pattern
 - Cache data at the Provider level
 
 ### State Management:
+
 - Minimize local state usage
 - Prefer server state over client state
 - Use React Query for client-side state when needed
 
 ## Integration Rules
+
 @rule
+
 ### Module Integration:
+
 - Follow the standard module structure
 - Use explicit relation models
 - Implement proper error handling
 - Follow the file-storage integration pattern
 
 ### API Integration:
+
 - Use Hono + Bun for API endpoints
 - Follow REST API standards
 - Implement proper error responses

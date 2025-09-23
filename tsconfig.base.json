@@ -86,7 +86,8 @@
       "@sps/startup/*": ["libs/modules/startup/*"],
       "@sps/telegram/*": ["libs/modules/telegram/*"],
       "@sps/ui-adapter": ["libs/shared/ui/adapter/src/index.ts"],
-      "@sps/website-builder/*": ["libs/modules/website-builder/*"]
+      "@sps/website-builder/*": ["libs/modules/website-builder/*"],
+      "@sps/mcp": ["apps/mcp/src/index.ts"]
     },
     "typeRoots": [
       "./node_modules/@types",

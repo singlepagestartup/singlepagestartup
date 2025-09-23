@@ -1,0 +1,11 @@
+{
+  "name": "mcp",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch server.ts",
+    "start": "bun server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1"
+  }
+}

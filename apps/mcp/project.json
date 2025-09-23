@@ -1,0 +1,25 @@
+{
+  "name": "mcp",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mcp",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/mcp",
+        "command": "bun run dev"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/mcp",
+        "command": "bun run start"
+      }
+    },
+    "eslint:lint": {},
+    "jest:test": {}
+  }
+}

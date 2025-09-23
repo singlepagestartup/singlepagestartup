@@ -1,0 +1,62 @@
+---
+description: Backend Architecture Rules
+globs:
+  - "apps/api/**/*"
+  - "libs/modules/*/backend/**/*"
+  - "libs/middlewares/**/*"
+alwaysApply: true
+---
+
+@rule
+
+## API Host (`apps/api`)
+
+- Treat `apps/api` as the single Bun + Hono host that aggregates every module backend package.
+- All public REST routes must be registered here by mounting module apps inside `app/app.ts` via `app.route("/api/<module>", moduleApp.hono)`.
+- Configure global middleware (CORS, request id, RBAC, cache, observer, revalidation, sessions) only in `apps/api`; remove any direct middleware usage from modules.
+- Keep WebSocket endpoints, environment bootstrap, and nx run targets (`dev`, `start`, `db:*`) scoped to this app.
+
+@rule
+
+## Module Backend Packages (`libs/modules/<module>/backend`)
+
+- Each module exposes its backend API through `backend/app/api` and persistence through `backend/repository`.
+- Structure: `backend/app/api/src/lib/{app,controller,service,repository,configuration}` and `backend/repository/database/src/**` for schema + migrations + seed/dump data.
+- Export only through package root (`index.ts` → `src/index.ts`), keeping a stable API for the host.
+
+@rule
+
+## Model Backend Stack
+
+- Repository Layer (`backend/repository/database`): define Drizzle schema in `fields/`, `schema.ts`; expose `Table`, `insertSchema`, `selectSchema`, migration config, and optional seed/dump data files.
+- Application Layer (`backend/app/api`): bootstrap Inversify container, bind `Repository`, `Service`, `Controller`, `Configuration`, and `App`.
+- Controller must extend `RESTController` and declare all routes via `this.bindHttpRoutes`; Service must extend `CRUDService`; Repository must extend `DatabaseRepository`; App must extend `DefaultApp` or conform to `IDefaultApp`.
+- Configuration determines repository type, dump/seed settings, and table bindings.
+
+@rule
+
+## Implementation Checklist for a New Model
+
+1. Create schema + migrations under `backend/repository/database` and re-export via `index.ts`.
+2. Implement `Repository`, `Service`, `Controller`, `Configuration`, `App`, and `bootstrap` inside `backend/app/api`.
+3. Ensure `index.ts` exports the bootstrapped `app` using `const { app } = await bootstrap();`.
+4. Register the module app inside `libs/modules/<module>/backend/app/api/src/lib/apps.ts` (or equivalent aggregator) with correct `route` and `type` (`model` or `relation`).
+5. Update `apps/api/app.ts` so the host mounts the module route.
+6. Provide seed/dump scripts and ensure Nx targets (`repository-generate`, `repository-migrate`) are configured if needed.
+
+@rule
+
+## Middlewares (`libs/middlewares`)
+
+- Middlewares live in `libs/middlewares` and are only instantiated inside `apps/api`.
+- Never import these middlewares from module backend packages; modules must remain pure and unaware of global cross-cutting concerns.
+- `apps/api` controls middleware order: request id → observer → CORS → session → authorization → caching → revalidation, etc.
+
+@rule
+
+## Integration Flow for Backend Changes
+
+1. Add or update module backend logic under `libs/modules/<module>/backend` following the stack rules above.
+2. Export the module app and ensure the host mounts it.
+3. Wire global middleware only in `apps/api` (do not duplicate inside modules).
+4. Run migrations/seeds through Nx targets defined in `apps/api/project.json` before shipping changes.

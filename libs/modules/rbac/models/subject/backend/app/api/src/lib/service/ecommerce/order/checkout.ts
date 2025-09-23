@@ -361,8 +361,6 @@ export class Service {
       email: props.email,
     };
 
-    console.log("🚀 ~ execute ~ metadata:", JSON.stringify(metadata, null, 2));
-
     const ordersToBillingModuleCurrencies =
       await ecommerceModuleOrdersToBillingModuleCurrenciesApi.find({
         params: {
