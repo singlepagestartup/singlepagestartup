@@ -85,6 +85,7 @@ export class Middleware {
           options: {
             headers: {
               "Cache-Control": "no-store",
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
           },
         });

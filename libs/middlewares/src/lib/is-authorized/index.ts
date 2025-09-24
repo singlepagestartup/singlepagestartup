@@ -22,7 +22,7 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/broadcast\/(channels|messages)/,
+    regexPath: /\/api\/broadcast\/channels/,
     methods: ["GET"],
   },
   {
