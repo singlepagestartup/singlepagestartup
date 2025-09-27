@@ -3,12 +3,12 @@
   hosts: all
   become: yes
   vars:
-    - sentry_api_key: "{{ SENTRY_API_KEY }}"
-    - sentry_organization_slug: "{{ SENTRY_ORGANIZATION_SLUG }}"
-    - sentry_team_slug: "{{ SENTRY_TEAM_SLUG }}"
-    - project_name: "{{ PROJECT_NAME }}"
-    - service_name: "{{ SERVICE_NAME }}"
-    - platform: "{{ PLATFORM }}"
+    sentry_api_key: "{{ SENTRY_API_KEY }}"
+    sentry_organization_slug: "{{ SENTRY_ORGANIZATION_SLUG }}"
+    sentry_team_slug: "{{ SENTRY_TEAM_SLUG }}"
+    project_name: "{{ PROJECT_NAME }}"
+    service_name: "{{ SERVICE_NAME }}"
+    platform: "{{ PLATFORM }}"
   tasks:
     - name: Create sentry project
       uri:

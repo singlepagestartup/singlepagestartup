@@ -3,12 +3,12 @@
   hosts: all
   become: yes
   vars:
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - docker_hub_password: "{{ DOCKER_HUB_PASSWORD }}"
-    - docker_hub_url: "{{ DOCKER_HUB_URL }}"
-    - docker_hub_login_username: "{{ DOCKER_HUB_LOGIN_USERNAME }}"
-    - service_url: "{{ SERVICE_URL }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    docker_hub_password: "{{ DOCKER_HUB_PASSWORD }}"
+    docker_hub_url: "{{ DOCKER_HUB_URL }}"
+    docker_hub_login_username: "{{ DOCKER_HUB_LOGIN_USERNAME }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
     - name: Check is docker_hub_registry_id file exists
       stat:

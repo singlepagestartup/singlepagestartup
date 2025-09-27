@@ -10,7 +10,6 @@
     service_url: "{{ SERVICE_URL }}"
     service_a: "{{ SERVICE_A }}"
     use_cloudflare_ssl: "{{ USE_CLOUDFLARE_SSL | default('true') }}"
-
   tasks:
     - name: Fetch zone ID from Cloudflare API
       uri:

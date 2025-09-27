@@ -3,11 +3,11 @@
   hosts: all
   become: yes
   vars:
-    - root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
-    - root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
-    - aws_region: "{{ AWS_REGION }}"
-    - project_name: "{{ PROJECT_NAME }}"
-    - aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
+    root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
+    root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
+    aws_region: "{{ AWS_REGION }}"
+    project_name: "{{ PROJECT_NAME }}"
+    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
   tasks:
     - name: Check is S3 file exists
       stat:

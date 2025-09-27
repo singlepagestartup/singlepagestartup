@@ -3,12 +3,12 @@
   hosts: all
   become: yes
   vars:
-    - github_token: "{{ GITHUB_TOKEN }}"
-    - github_repository: "{{ GITHUB_REPOSITORY }}"
-    - portainer_url: "{{ PORTAINER_URL }}"
-    - service_url: "{{ SERVICE_URL }}"
-    - environment_type: "{{ ENVIRONMENT_TYPE }}"
-    - api_service_url: "{{ API_SERVICE_URL }}"
+    github_token: "{{ GITHUB_TOKEN }}"
+    github_repository: "{{ GITHUB_REPOSITORY }}"
+    portainer_url: "{{ PORTAINER_URL }}"
+    service_url: "{{ SERVICE_URL }}"
+    environment_type: "{{ ENVIRONMENT_TYPE }}"
+    api_service_url: "{{ API_SERVICE_URL }}"
   tasks:
     - name: Delete artifacts
       file:

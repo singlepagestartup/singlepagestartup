@@ -1,3 +1,4 @@
+---
 - name: Create working directory
   hosts: all
   become: yes

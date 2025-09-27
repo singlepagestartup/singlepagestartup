@@ -3,10 +3,10 @@
   hosts: all
   become: yes
   vars:
-    - service_name: "{{ SERVICE_NAME }}"
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - portainer_url: "{{ PORTAINER_URL }}"
+    service_name: "{{ SERVICE_NAME }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    portainer_url: "{{ PORTAINER_URL }}"
   tasks:
     - name: Copy set-portainer-webhook.js
       copy:

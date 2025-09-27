@@ -1,3 +1,4 @@
+---
 - name: Delete SSL certificate issued by certbot
   hosts: all
   become: yes

@@ -3,9 +3,9 @@
   hosts: all
   become: yes
   vars:
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - service_url: "{{ SERVICE_URL }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
     - name: Create Portainer user request
       retries: 10

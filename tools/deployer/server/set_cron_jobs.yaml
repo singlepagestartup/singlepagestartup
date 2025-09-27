@@ -2,8 +2,8 @@
   hosts: all
   become: yes
   vars:
-    - api_service_url: "{{ API_SERVICE_URL }}"
-    - rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
+    api_service_url: "{{ API_SERVICE_URL }}"
+    rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
   tasks:
     - name: docker image prune cron
       cron:

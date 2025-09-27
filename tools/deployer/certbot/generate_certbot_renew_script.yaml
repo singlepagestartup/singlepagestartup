@@ -1,3 +1,4 @@
+---
 - name: Generate certbot_renew_ssl_and_update_traefik.sh
   hosts: all
   become: yes

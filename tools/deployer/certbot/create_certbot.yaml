@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars:
-    - service_name: "{{ SERVICE_NAME }}"
+    service_name: "{{ SERVICE_NAME }}"
   tasks:
     - name: Copy docker-compose file
       ansible.builtin.template:

@@ -3,11 +3,11 @@
   hosts: all
   become: yes
   vars:
-    - service_name: "{{ SERVICE_NAME }}"
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - portainer_url: "{{ PORTAINER_URL }}"
-    - telegram_service_bot_token: "{{ TELEGRAM_SERVICE_BOT_TOKEN }}"
+    service_name: "{{ SERVICE_NAME }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    portainer_url: "{{ PORTAINER_URL }}"
+    telegram_service_bot_token: "{{ TELEGRAM_SERVICE_BOT_TOKEN }}"
   tasks:
     - name: Create api_data directory
       file:

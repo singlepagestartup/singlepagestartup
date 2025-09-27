@@ -1,3 +1,4 @@
+---
 - name: Create SSL certificate with certbot
   hosts: all
   become: yes

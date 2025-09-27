@@ -3,10 +3,10 @@
   hosts: all
   become: yes
   vars:
-    - service_name: "{{ SERVICE_NAME }}"
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - portainer_url: "{{ PORTAINER_URL }}"
+    service_name: "{{ SERVICE_NAME }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    portainer_url: "{{ PORTAINER_URL }}"
   tasks:
     - name: Read iam.env and set AWS_ACCESS_KEY_ID
       shell: grep "^AWS_ACCESS_KEY_ID=" /home/code/iam.env | cut -d '=' -f2

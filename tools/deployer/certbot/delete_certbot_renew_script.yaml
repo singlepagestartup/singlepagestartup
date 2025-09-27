@@ -1,3 +1,4 @@
+---
 - name: Remove certbot_renew_ssl_and_update_traefik.sh and crontab entry
   hosts: all
   become: yes
