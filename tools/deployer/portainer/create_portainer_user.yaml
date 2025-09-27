@@ -16,7 +16,9 @@
         url: "https://{{ service_url }}/api/users/admin/init"
         status_code: 200,409
         method: POST
-        body: "{{ lookup('template','create_portainer_user_body.json.j2') | to_json }}"
+        body:
+          Username: "{{ portainer_username }}"
+          Password: "{{ portainer_password }}"
         body_format: json
         headers:
           Content-Type: "application/json"

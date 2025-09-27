@@ -23,6 +23,7 @@ add_env "HOST_SEED" true
 add_env "WEBSITE_BUILDER_SEED" true
 add_env "FILE_STORAGE_SEED" true
 add_env "STARTUP_SEED" true
+add_env "FILE_STORAGE_FOLDER" "file-storage/static"
 
 if [ ! -z $CODESPACE_NAME ]; then
     NEXT_PUBLIC_API_SERVICE_URL=https://$CODESPACE_NAME-4000.app.github.dev
