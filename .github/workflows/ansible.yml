@@ -98,6 +98,7 @@ jobs:
             "PAYKEEPER_API_LOGIN ${{ secrets.PREVIEW_PAYKEEPER_API_LOGIN }}"\
             "PAYKEEPER_API_PASSWORD ${{ secrets.PREVIEW_PAYKEEPER_API_PASSWORD }}"\
             "PAYKEEPER_WEBHOOK_SECRET ${{ secrets.PREVIEW_PAYKEEPER_WEBHOOK_SECRET }}"\
+            "YANDEX_METRIKA_ID ${{ secrets.PREVIEW_YANDEX_METRIKA_ID }}"\
           )
 
           for secret in "${secrets[@]}"; do
@@ -175,6 +176,7 @@ jobs:
             "PAYKEEPER_API_LOGIN ${{ secrets.PAYKEEPER_API_LOGIN }}"\
             "PAYKEEPER_API_PASSWORD ${{ secrets.PAYKEEPER_API_PASSWORD }}"\
             "PAYKEEPER_WEBHOOK_SECRET ${{ secrets.PAYKEEPER_WEBHOOK_SECRET }}"\
+            "YANDEX_METRIKA_ID ${{ secrets.YANDEX_METRIKA_ID }}"\
           )
 
           for secret in "${secrets[@]}"; do
