@@ -16,3 +16,7 @@ export const GOOGLE_ANALYTICS_ID =
 
 export const MOYSKLAD_USERNAME = process.env["MOYSKLAD_USERNAME"];
 export const MOYSKLAD_PASSWORD = process.env["MOYSKLAD_PASSWORD"];
+
+export const YANDEX_METRIKA_ID =
+  process.env["NEXT_PUBLIC_YANDEX_METRIKA_ID"] ||
+  process.env["YANDEX_METRIKA_ID"];

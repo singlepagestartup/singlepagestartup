@@ -13,10 +13,15 @@ import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/comp
 import { Provider as RbacProvider } from "@sps/rbac/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
-import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID } from "@sps/shared-utils";
+import {
+  GOOGLE_ANALYTICS_ID,
+  GOOGLE_TAG_MANAGER_ID,
+  YANDEX_METRIKA_ID,
+} from "@sps/shared-utils";
 import { Component as Revalidation } from "../src/components/revalidation";
 import http from "http";
 import https from "https";
+import { YandexMetrika } from "@sps/shared-third-parties";
 
 http.globalAgent.maxSockets = 1000;
 https.globalAgent.maxSockets = 1000;
@@ -31,6 +36,7 @@ export default async function RootLayout({
       {GOOGLE_TAG_MANAGER_ID ? (
         <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID} />
       ) : null}
+      {YANDEX_METRIKA_ID ? <YandexMetrika id={YANDEX_METRIKA_ID} /> : null}
       <body
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >

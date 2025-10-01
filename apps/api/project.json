@@ -47,6 +47,9 @@
             "command": "npx nx run @sps/ecommerce:repository-generate"
           },
           {
+            "command": "npx nx run @sps/social:repository-generate"
+          },
+          {
             "command": "npx nx run @sps/blog:repository-generate"
           },
           {
@@ -94,6 +97,9 @@
           },
           {
             "command": "npx nx run @sps/ecommerce:repository-migrate"
+          },
+          {
+            "command": "npx nx run @sps/social:repository-migrate"
           },
           {
             "command": "npx nx run @sps/blog:repository-migrate"
