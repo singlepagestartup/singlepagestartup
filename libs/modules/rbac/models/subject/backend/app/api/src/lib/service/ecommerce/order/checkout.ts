@@ -22,6 +22,7 @@ import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { Service as NotificationCreateService } from "./notification-create";
+import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 export type IExecuteProps = {
   id: string;
@@ -273,6 +274,25 @@ export class Service {
       });
     }
 
+    const ecommerceModuleAttributesToBillingModuleCurrencies =
+      await ecommerceModuleAttributesToBillingModuleCurrenciesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeId",
+                method: "inArray",
+                value: ecommerceModuleAttributes.map(
+                  (ecommerceModuleAttribute) => ecommerceModuleAttribute.id,
+                ),
+              },
+            ],
+          },
+        },
+      });
+
+    const billingModuleCurrencies = await billingModuleCurrencyApi.find({});
+
     const metadata = {
       ecommerceModule: {
         orders: ecommerceModuleOrders.map((ecommerceModuleOrder) => {
@@ -343,6 +363,33 @@ export class Service {
                                                         ecommerceModuleAttributesKeysToAttribute.attributeKeyId
                                                       );
                                                     },
+                                                  ),
+                                              };
+                                            },
+                                          ),
+                                      attributesToBillingModuleCurrencies:
+                                        ecommerceModuleAttributesToBillingModuleCurrencies
+                                          ?.filter(
+                                            (
+                                              ecommerceModuleAttributeToBillingModuleCurrency,
+                                            ) => {
+                                              return (
+                                                ecommerceModuleAttributeToBillingModuleCurrency.attributeId ===
+                                                ecommerceModuleAttribute.id
+                                              );
+                                            },
+                                          )
+                                          .map(
+                                            (
+                                              ecommerceModuleAttributeToBillingModuleCurrency,
+                                            ) => {
+                                              return {
+                                                ...ecommerceModuleAttributeToBillingModuleCurrency,
+                                                billingModuleCurrency:
+                                                  billingModuleCurrencies?.find(
+                                                    (billingModuleCurrency) =>
+                                                      billingModuleCurrency.id ===
+                                                      ecommerceModuleAttributeToBillingModuleCurrency.billingModuleCurrencyId,
                                                   ),
                                               };
                                             },

@@ -40,6 +40,16 @@ interface IMetadata {
                 };
               }>;
             }>;
+            attributesToBillingModuleCurrencies?: Array<{
+              id: string;
+              billingModuleCurrencyId: string;
+              attributeId: string;
+              billingModuleCurrency?: {
+                id?: string;
+                slug?: string;
+                symbol?: string;
+              };
+            }>;
           }>;
         }>;
       }>;
@@ -585,12 +595,38 @@ export class Service {
     }
 
     for (const order of metadata.ecommerceModule.orders) {
-      if (!order.ordersToProducts) continue;
+      if (!order.ordersToProducts) {
+        continue;
+      }
 
       for (const orderToProduct of order.ordersToProducts) {
-        if (!orderToProduct.products) continue;
+        if (!orderToProduct.products) {
+          continue;
+        }
 
         for (const product of orderToProduct.products) {
+          const rubProductCurrency = product.productsToAttributes?.filter(
+            (productToAttribute) => {
+              return productToAttribute.attributesToBillingModuleCurrencies?.find(
+                (attributeToBillingModuleCurrency) => {
+                  console.log(
+                    "🚀 ~ buildCartFromMetadata ~ attributeToBillingModuleCurrency:",
+                    attributeToBillingModuleCurrency,
+                  );
+
+                  return (
+                    attributeToBillingModuleCurrency?.billingModuleCurrency
+                      ?.slug === "rub"
+                  );
+                },
+              );
+            },
+          );
+
+          if (!rubProductCurrency) {
+            continue;
+          }
+
           const productName = this.getProductName(product);
           const productPrice = this.getProductPrice(product);
           const quantity = orderToProduct.quantity || 1;
