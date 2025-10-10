@@ -9,4 +9,5 @@ export const fields = {
   title: pgCore.text("title"),
   subtitle: pgCore.text("subtitle"),
   description: pgCore.text("description"),
+  sourceSystemId: pgCore.text("source_system_id"),
 };
