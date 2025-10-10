@@ -15,6 +15,9 @@ export interface IComponentProps
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   chatsToMessages?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  messagesToFileStorageModuleFiles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended
