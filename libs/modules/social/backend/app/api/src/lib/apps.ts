@@ -12,6 +12,7 @@ import { app as profilesToChats } from "@sps/social/relations/profiles-to-chats/
 import { app as profilesToMessages } from "@sps/social/relations/profiles-to-messages/backend/app/api";
 import { app as attributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api";
 import { app as profilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api";
+import { app as messagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -27,6 +28,11 @@ export class Apps {
       type: "relation",
       route: "/profiles-to-file-storage-module-files",
       app: profilesToFileStorageModuleFiles,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/messages-to-file-storage-module-files",
+      app: messagesToFileStorageModuleFiles,
     });
     this.apps.push({
       type: "relation",
