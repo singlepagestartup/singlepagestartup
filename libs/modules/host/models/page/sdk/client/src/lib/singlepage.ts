@@ -122,19 +122,19 @@ export const api = {
     });
   },
   urlSegmentValue: (props: IUrlSegmentValueProps) => {
+    const { url, segment } = props;
+
+    const stringifiedQuery = QueryString.stringify(
+      { ...props?.params, url, segment },
+      {
+        encodeValuesOnly: true,
+      },
+    );
+
     return useQuery<string>({
-      queryKey: [`${route}/url-segment-value`],
+      queryKey: [`${route}/url-segment-value?${stringifiedQuery}`],
       queryFn: async () => {
         try {
-          const { url, segment } = props;
-
-          const stringifiedQuery = QueryString.stringify(
-            { ...props?.params, url, segment },
-            {
-              encodeValuesOnly: true,
-            },
-          );
-
           const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
           const cacheControlOptions: NextRequestOptions["headers"] = noCache
             ? { "Cache-Control": "no-store" }
@@ -172,7 +172,7 @@ export const api = {
       select(data) {
         globalActionsStore.getState().addAction({
           type: "query",
-          name: `${route}/url-segment-value`,
+          name: `${route}/url-segment-value?${stringifiedQuery}`,
           props: this,
           result: data,
           timestamp: Date.now(),

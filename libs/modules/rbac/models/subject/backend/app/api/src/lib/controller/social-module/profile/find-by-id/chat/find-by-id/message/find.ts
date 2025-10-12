@@ -40,8 +40,10 @@ export class Handler {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
 
-      const limit = c.req.query("limit") || 100;
-      const offset = c.req.query("offset") || 0;
+      const parsedQuery = c.get("parsedQuery");
+      const limit = parsedQuery?.limit || 100;
+      const offset = parsedQuery?.offset || 0;
+      const orderBy = parsedQuery?.orderBy;
 
       const socialModuleChatsToMessages =
         await socialModuleChatsToMessagesApi.find({
@@ -57,12 +59,7 @@ export class Handler {
             },
             limit,
             offset,
-            order: [
-              {
-                column: "createdAt",
-                direction: "desc",
-              },
-            ],
+            orderBy,
           },
           options: {
             headers: {
@@ -92,12 +89,7 @@ export class Handler {
               },
             ],
           },
-          order: [
-            {
-              column: "createdAt",
-              direction: "desc",
-            },
-          ],
+          orderBy,
         },
         options: {
           headers: {

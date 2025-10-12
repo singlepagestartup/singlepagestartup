@@ -24,6 +24,7 @@ import { app as widgetsToCategoriesApp } from "@sps/ecommerce/relations/widgets-
 import { app as widgetsToProductsApp } from "@sps/ecommerce/relations/widgets-to-products/backend/app/api";
 import { app as widgetsToStoresApp } from "@sps/ecommerce/relations/widgets-to-stores/backend/app/api";
 import { app as attributesToBillingModuleCurrenciesApp } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api";
+import { app as ordersToSocialModuleChatsApp } from "@sps/ecommerce/relations/orders-to-social-module-chats/backend/app/api";
 
 export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
@@ -158,6 +159,11 @@ export class Apps {
       type: "relation",
       route: "/attributes-to-billing-module-currencies",
       app: attributesToBillingModuleCurrenciesApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/orders-to-social-module-chats",
+      app: ordersToSocialModuleChatsApp,
     });
   }
 }

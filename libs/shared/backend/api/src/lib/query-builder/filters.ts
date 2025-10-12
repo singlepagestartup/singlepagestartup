@@ -204,6 +204,23 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         );
       }
     }
+
+    if (method === "isNull" || method === "isNotNull") {
+      if (isJsonField) {
+        const [column, jsonField] = columnName.split("->>");
+        const baseColumn = table[column.trim()];
+        if (!baseColumn) {
+          throw new Error(`Column ${column.trim()} not found in table`);
+        }
+        resultQueries.push(
+          queryFunctions[method](
+            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
+          ) as SQL<any>,
+        );
+      } else if (tableColumn) {
+        resultQueries.push(queryFunctions[method](tableColumn) as SQL<any>);
+      }
+    }
   }
 
   return resultQueries;

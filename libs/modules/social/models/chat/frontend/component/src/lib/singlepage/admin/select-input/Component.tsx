@@ -7,8 +7,8 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="social"
-      name="widget"
-      label="widget"
+      name="chat"
+      label="chat"
       data={props.data}
       form={props.form}
       variant={props.variant}

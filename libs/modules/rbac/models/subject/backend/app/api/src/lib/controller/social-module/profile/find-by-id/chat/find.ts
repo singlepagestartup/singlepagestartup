@@ -50,6 +50,11 @@ export class Handler {
         );
       }
 
+      const parsedQuery = c.get("parsedQuery");
+      const limit = parsedQuery?.limit || 100;
+      const offset = parsedQuery?.offset || 0;
+      const orderBy = parsedQuery?.orderBy;
+
       const socialModuleProfilesToChats =
         await socialModuleProfilesToChatsApi.find({
           params: {
@@ -91,6 +96,9 @@ export class Handler {
               },
             ],
           },
+          orderBy,
+          limit,
+          offset,
         },
         options: {
           headers: {
