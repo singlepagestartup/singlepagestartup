@@ -1,5 +1,6 @@
 import { IComponentPropsExtended } from "../interface";
 import { Component as StartupModuleWidget } from "@sps/startup/models/widget/frontend/component";
+import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -26,9 +27,12 @@ export function Component(props: IComponentPropsExtended) {
             <StartupModuleWidget
               key={index}
               isServer={props.isServer}
-              variant={entity.variant as any}
               data={entity}
-            />
+              language={props.language}
+              variant={entity.variant as any}
+            >
+              <Widget {...props} data={entity} variant={entity.variant} />
+            </StartupModuleWidget>
           );
         });
       }}
