@@ -1,22 +1,14 @@
 import { IComponentPropsExtended } from "./interface";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
-      data-module="crm"
-      data-model="form"
-      data-id={props.data?.id || ""}
-      data-variant={props.variant}
-      className={cn(
-        "w-full flex flex-col",
-        props.data.className,
-        props.className,
-      )}
-    >
-      <p className="font-bold">Generated variant</p>
-      <p className="font-bold text-4xl">Model: form</p>
-      <p className="font-bold text-4xl">Variant: default</p>
-    </div>
+    <ClientComponent
+      isServer={props.isServer}
+      variant={props.variant}
+      data={props.data}
+      language={props.language}
+      className={props.className}
+    />
   );
 }

@@ -1,3 +1,4 @@
+import { Component as SelectInputDefault } from "./select-input-default";
 import { Component as Find } from "./find";
 import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as AdminTable } from "./admin/table";
@@ -8,6 +9,7 @@ import { Component as TextDefault } from "./text-default";
 import { Component as TextareaDefault } from "./textarea-default";
 
 export const variants = {
+  "select-input-default": SelectInputDefault,
   find: Find,
   "admin-table-row": AdminTableRow,
   "admin-table": AdminTable,

@@ -75,7 +75,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Subtitle">
           {internationalization.languages.map((language) => {
             return (
@@ -91,7 +90,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -107,7 +105,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Label">
           {internationalization.languages.map((language) => {
             return (
@@ -123,7 +120,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Placeholder">
           {internationalization.languages.map((language) => {
             return (
@@ -139,7 +135,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -148,7 +143,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -157,7 +151,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Enter class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -167,11 +160,16 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         {props.formsToInputs
           ? props.formsToInputs({
               data: props.data,
 
+              isServer: props.isServer,
+            })
+          : null}
+        {props.inputsToOptions
+          ? props.inputsToOptions({
+              data: props.data,
               isServer: props.isServer,
             })
           : null}

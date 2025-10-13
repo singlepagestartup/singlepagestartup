@@ -1,3 +1,4 @@
+import { IComponentProps as ISelectInputDefaultComponentProps } from "./select-input-default/interface";
 import { IComponentProps as IFindComponentProps } from "./find/interface";
 import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
@@ -8,6 +9,7 @@ import { IComponentProps as ITextDefaultComponentProps } from "./text-default/in
 import { IComponentProps as ITextareaDefaultComponentProps } from "./textarea-default/interface";
 
 export type IComponentProps =
+  | ISelectInputDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps

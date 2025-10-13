@@ -19,6 +19,7 @@ export const variants = [
   "text-default",
   "textarea-default",
   "number-default",
+  "select-input-default",
 ];
 export const query = {};
 export const options = {

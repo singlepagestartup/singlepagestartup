@@ -1,3 +1,5 @@
+import { app as inputsToOptions } from "@sps/crm/relations/inputs-to-options/backend/app/api";
+import { app as option } from "@sps/crm/models/option/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { app as widgetApp } from "@sps/crm/models/widget/backend/app/api";
 import { app as formApp } from "@sps/crm/models/form/backend/app/api";
@@ -16,6 +18,16 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/inputs-to-options",
+      app: inputsToOptions,
+    });
+    this.apps.push({
+      type: "model",
+      route: "/options",
+      app: option,
+    });
     this.apps.push({
       type: "model",
       route: "/widgets",
