@@ -1,9 +1,0 @@
-{
-  "id": "a0e76f51-b5f1-44ec-88f6-6175f94599a7",
-  "createdAt": "2025-04-06T18:12:09.787Z",
-  "updatedAt": "2025-04-06T18:18:01.002Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/crm/form/request"
-}

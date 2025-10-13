@@ -1,0 +1,18 @@
+{
+  "id": "3d3c7598-ccff-49c7-b0d9-98ecc412fee6",
+  "createdAt": "2025-05-02T23:15:28.741Z",
+  "updatedAt": "2025-10-13T18:58:02.111Z",
+  "className": "",
+  "variant": "default",
+  "title": {
+    "en": "Rogwild",
+    "ru": "Rogwild"
+  },
+  "subtitle": {
+    "en": "Full-Stack Developer",
+    "ru": "Full-Stack Developer"
+  },
+  "description": {},
+  "adminTitle": "precise purple hoverfly",
+  "slug": "rogwild"
+}

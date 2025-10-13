@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "About",
+    "ru": "О нас"
+  },
+  "subtitle": {},
+  "url": "/about",
+  "className": "w-fit",
+  "id": "05eea951-3554-4da8-b2db-3ff2d8b49eac",
+  "createdAt": "2025-01-24T23:47:55.523Z",
+  "updatedAt": "2025-10-13T18:57:58.195Z",
+  "variant": "default",
+  "adminTitle": "9yAvJFxqTm",
+  "slug": "about"
+}

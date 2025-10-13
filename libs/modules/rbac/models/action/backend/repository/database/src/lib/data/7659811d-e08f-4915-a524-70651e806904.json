@@ -1,0 +1,9 @@
+{
+  "id": "7659811d-e08f-4915-a524-70651e806904",
+  "createdAt": "2025-06-26T21:21:42.488Z",
+  "updatedAt": "2025-10-13T18:58:06.943Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-messages"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "250d22c6-6b02-44e0-82dd-a2b83c3af6bd",
+  "createdAt": "2025-05-04T18:52:27.498Z",
+  "updatedAt": "2025-10-13T18:58:15.466Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": "",
+  "widgetId": "e15d7bff-2b45-4dab-80d7-ae5b49927461",
+  "externalModule": "rbac",
+  "externalWidgetId": "e6f63730-a1db-4397-842a-10b4f8b23efc"
+}

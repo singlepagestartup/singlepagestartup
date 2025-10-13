@@ -1,0 +1,25 @@
+{
+  "id": "8bde47fc-f8d6-46e9-97eb-de7d02cf3ee9",
+  "createdAt": "2025-10-13T20:46:05.933Z",
+  "updatedAt": "2025-10-13T20:50:18.000Z",
+  "variant": "select-input-default",
+  "type": "default",
+  "isRequired": false,
+  "title": {
+    "en": "Select",
+    "ru": "Выбор"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "select",
+  "placeholder": {
+    "en": "Select",
+    "ru": "Выбор"
+  },
+  "label": {
+    "en": "Select",
+    "ru": "Выбор"
+  }
+}
