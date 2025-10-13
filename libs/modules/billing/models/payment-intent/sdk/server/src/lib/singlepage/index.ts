@@ -6,16 +6,34 @@ import {
   query,
   options,
 } from "@sps/billing/models/payment-intent/sdk/model";
-import { action as provider } from "./provider";
-import { action as check } from "./check";
+import {
+  action as provider,
+  type IProps as IProviderProps,
+  type IResult as IProviderResult,
+} from "./provider";
+import {
+  action as check,
+  type IProps as ICheckProps,
+  type IResult as ICheckResult,
+} from "./check";
+
+export type IProps = {
+  ICheckProps: ICheckProps;
+  IProviderProps: IProviderProps;
+};
+
+export type IResult = {
+  ICheckResult: ICheckResult;
+  IProviderResult: IProviderResult;
+};
 
 export const api = {
-  provider,
-  check,
   ...factory<IModel>({
     route,
     host: serverHost,
     options,
     params: query,
   }),
+  provider,
+  check,
 };

@@ -6,7 +6,19 @@ import {
   query,
   options,
 } from "@sps/rbac/models/action/sdk/model";
-import { action as findByRoute } from "./actions/find-by-route";
+import {
+  action as findByRoute,
+  type IProps as IFoundByRouteProps,
+  type IResult as IFoundByRouteResult,
+} from "./actions/find-by-route";
+
+export type IProps = {
+  IFoundByRouteProps: IFoundByRouteProps;
+};
+
+export type IResult = {
+  IFoundByRouteResult: IFoundByRouteResult;
+};
 
 export const api = {
   ...factory<IModel>({

@@ -6,7 +6,19 @@ import {
   query,
   options,
 } from "@sps/notification/models/notification/sdk/model";
-import { action as send } from "./actions/send";
+import {
+  action as send,
+  type IProps as ISendProps,
+  type IResult as ISendResult,
+} from "./actions/send";
+
+export type IProps = {
+  ISendProps: ISendProps;
+};
+
+export type IResult = {
+  ISendResult: ISendResult;
+};
 
 export const api = {
   ...factory<IModel>({

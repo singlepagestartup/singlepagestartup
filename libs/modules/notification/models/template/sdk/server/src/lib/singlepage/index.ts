@@ -6,7 +6,20 @@ import {
   query,
   options,
 } from "@sps/notification/models/template/sdk/model";
-import { action as render } from "./actions/render";
+
+import {
+  action as render,
+  type IProps as IRenderProps,
+  type IResult as IRenderResult,
+} from "./actions/render";
+
+export type IProps = {
+  IRenderProps: IRenderProps;
+};
+
+export type IResult = {
+  IRenderResult: IRenderResult;
+};
 
 export const api = {
   ...factory<IModel>({

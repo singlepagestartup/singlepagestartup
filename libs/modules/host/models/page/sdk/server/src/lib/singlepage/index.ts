@@ -9,6 +9,10 @@ import {
   query,
 } from "@sps/host/models/page/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export interface Params {
   url?: string | string[];
 }
