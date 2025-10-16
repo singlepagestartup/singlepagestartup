@@ -1,9 +1,9 @@
-import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../service";
+import { Service } from "../../../../service";
 import { logger } from "@sps/backend-utils";
-import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 
 export class Handler {
   service: Service;
@@ -18,16 +18,23 @@ export class Handler {
         throw new Error("RBAC_SECRET_KEY not set");
       }
 
-      logger.info("Billing module payment intent check started");
+      logger.info("Billing module invoice delete failed started");
 
-      const notSucceededPaymentIntents = await paymentIntentApi.find({
+      const notSucceededInvoices = await invoiceApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "status",
-                method: "ne",
-                value: "succeeded",
+                method: "eq",
+                value: "failed",
+              },
+              {
+                column: "createdAt",
+                method: "lt",
+                value: new Date(
+                  Date.now() - 2 * 24 * 60 * 60 * 1000,
+                ).toISOString(),
               },
             ],
           },
@@ -39,12 +46,11 @@ export class Handler {
         },
       });
 
-      if (notSucceededPaymentIntents?.length) {
-        for (const paymentIntent of notSucceededPaymentIntents) {
+      if (notSucceededInvoices?.length) {
+        for (const invoice of notSucceededInvoices) {
           try {
-            await paymentIntentApi.check({
-              id: paymentIntent.id,
-              data: {},
+            await invoiceApi.delete({
+              id: invoice.id,
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -59,7 +65,7 @@ export class Handler {
         }
       }
 
-      logger.info("Billing module payment intent check finished");
+      logger.info("Billing module invoice delete failed finished");
 
       return c.json({ data: { ok: true } });
     } catch (error: any) {

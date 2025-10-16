@@ -1,7 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";

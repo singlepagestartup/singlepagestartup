@@ -1,9 +1,9 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../service";
+import { Service } from "../../../../service";
 import { logger } from "@sps/backend-utils";
-import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 
 export class Handler {
   service: Service;
@@ -15,21 +15,26 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
-      logger.info("Ecommerce module order check started");
+      logger.info("Billing module payment intent delete failed started");
 
-      const notSucceededOrders = await ecommerceModuleOrderApi.find({
+      const notSucceededPaymentIntents = await paymentIntentApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "status",
-                method: "ne",
-                value: "paid",
+                method: "eq",
+                value: "failed",
+              },
+              {
+                column: "createdAt",
+                method: "lt",
+                value: new Date(
+                  Date.now() - 2 * 24 * 60 * 60 * 1000,
+                ).toISOString(),
               },
             ],
           },
@@ -41,12 +46,11 @@ export class Handler {
         },
       });
 
-      if (notSucceededOrders?.length) {
-        for (const order of notSucceededOrders) {
+      if (notSucceededPaymentIntents?.length) {
+        for (const paymentIntent of notSucceededPaymentIntents) {
           try {
-            await ecommerceModuleOrderApi.check({
-              id: order.id,
-              data: {},
+            await paymentIntentApi.delete({
+              id: paymentIntent.id,
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -54,20 +58,16 @@ export class Handler {
               },
             });
           } catch (error: any) {
-            // logger.error("Ecommerce module order check failed", {
+            // logger.error("Billing module payment intent check failed", {
             //   error: error,
             // });
           }
         }
       }
 
-      logger.info("Ecommerce module order check finished");
+      logger.info("Billing module payment intent delete failed finished");
 
-      return c.json({
-        data: {
-          ok: true,
-        },
-      });
+      return c.json({ data: { ok: true } });
     } catch (error: any) {
       throw new HTTPException(500, {
         message: error.message || "Internal Server Error",

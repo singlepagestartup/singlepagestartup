@@ -5,7 +5,7 @@ import {
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../service";
+import { Service } from "../../service";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api } from "@sps/agent/models/agent/sdk/server";
 import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
