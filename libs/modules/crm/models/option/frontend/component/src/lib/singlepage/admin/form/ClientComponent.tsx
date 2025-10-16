@@ -10,6 +10,8 @@ import { FormField } from "@sps/ui-adapter";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { randomWordsGenerator } from "@sps/shared-utils";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -55,26 +57,35 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
+          label="Admin title"
+          name="adminTitle"
+          form={form}
+          placeholder="Type admin title"
+        />
+
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
+
+        <FormField
+          ui="shadcn"
+          type="text"
           label="Slug"
           name="slug"
           form={form}
           placeholder="Type slug"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="name"
-          label="Name"
-          form={form}
-          placeholder="Type name"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="value"
-          label="Value"
-          form={form}
-          placeholder="Type value"
         />
         <FormField
           ui="shadcn"

@@ -11,11 +11,13 @@ export const fields = {
     .text("admin_title")
     .notNull()
     .$defaultFn(() => randomWordsGenerator({ type: "title" })),
+  title: pgCore
+    .jsonb("title")
+    .$type<{ [key: string]: string | undefined }>()
+    .default({}),
   slug: pgCore
     .text("slug")
     .notNull()
     .unique()
     .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
-  name: pgCore.text("name").notNull(),
-  value: pgCore.text("value").notNull(),
 };

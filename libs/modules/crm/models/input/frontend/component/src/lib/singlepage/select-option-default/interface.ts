@@ -6,7 +6,7 @@ import {
 } from "@sps/shared-frontend-components/singlepage/default/interface";
 import { UseFormReturn } from "react-hook-form";
 
-export const variant = "select-input-default" as const;
+export const variant = "select-option-default" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
