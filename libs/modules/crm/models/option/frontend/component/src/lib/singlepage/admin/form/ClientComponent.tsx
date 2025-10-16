@@ -54,6 +54,13 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.optionsToFileStorageModuleFiles
+          ? props.optionsToFileStorageModuleFiles({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -62,7 +69,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type admin title"
         />
-
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
@@ -78,7 +84,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -98,6 +103,12 @@ export function Component(props: IComponentPropsExtended) {
         />
         {props.inputsToOptions
           ? props.inputsToOptions({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+        {props.optionsToFileStorageModuleFiles
+          ? props.optionsToFileStorageModuleFiles({
               data: props.data,
               isServer: props.isServer,
             })

@@ -75,6 +75,9 @@
           },
           {
             "command": "nx run @sps/crm:relations:inputs-to-options:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:options-to-file-storage-module-files:repository-generate"
           }
         ]
       }
@@ -120,6 +123,9 @@
           },
           {
             "command": "nx run @sps/crm:relations:inputs-to-options:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:options-to-file-storage-module-files:repository-migrate"
           }
         ]
       }
@@ -378,6 +384,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/relations/inputs-to-options/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:options-to-file-storage-module-files:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/options-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:options-to-file-storage-module-files:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/options-to-file-storage-module-files/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

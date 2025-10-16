@@ -1,5 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as OptionsToFileStorageModuleWidgets } from "@sps/crm/relations/options-to-file-storage-module-files/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -8,12 +9,42 @@ export function Component(props: IComponentPropsExtended) {
       data-model="option"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
-      className={cn("w-full flex flex-col", props.className)}
+      className={cn("w-full h-full flex items-center gap-4", props.className)}
     >
-      <p className="font-bold">Generated variant</p>
-      <p className="font-bold text-4xl">Module: crm</p>
-      <p className="font-bold text-3xl">Model: option</p>
-      <p className="font-bold text-xl">Variant: {props.variant}</p>
+      <OptionsToFileStorageModuleWidgets
+        isServer={props.isServer}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "optionId",
+                  method: "eq",
+                  value: props.data.id,
+                },
+              ],
+            },
+          },
+        }}
+      >
+        {({ data }) => {
+          return data?.map((entity, index) => {
+            return (
+              <div key={index} className="relative h-5 aspect-1 shrink-0">
+                <div className="absolute inset-0">
+                  <OptionsToFileStorageModuleWidgets
+                    isServer={props.isServer}
+                    variant={entity.variant as any}
+                    data={entity}
+                  />
+                </div>
+              </div>
+            );
+          });
+        }}
+      </OptionsToFileStorageModuleWidgets>
+      <span>{props.data.title?.[props.language]}</span>
     </div>
   );
 }

@@ -3,10 +3,15 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { FormField } from "@sps/ui-adapter";
+import { ReactNode } from "react";
 
 export function Component(
   props: IComponentPropsExtended & {
-    options: [value: string, title: string][];
+    options: [
+      string,
+      string,
+      ReactNode | ((props: any) => ReactNode | undefined),
+    ][];
   },
 ) {
   return (
