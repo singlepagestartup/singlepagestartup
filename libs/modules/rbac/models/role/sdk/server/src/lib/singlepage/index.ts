@@ -7,6 +7,10 @@ import {
   options,
 } from "@sps/rbac/models/role/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

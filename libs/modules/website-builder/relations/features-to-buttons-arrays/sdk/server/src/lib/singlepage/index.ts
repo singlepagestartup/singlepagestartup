@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/website-builder/relations/features-to-buttons-arrays/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

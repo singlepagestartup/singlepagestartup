@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

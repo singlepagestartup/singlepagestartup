@@ -8,6 +8,10 @@ import {
 } from "@sps/host/models/metadata/sdk/model";
 import { action as generate } from "./actions/generate";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = {
   ...factory<IModel>({
     route,

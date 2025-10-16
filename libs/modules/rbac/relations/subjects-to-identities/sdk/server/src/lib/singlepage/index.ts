@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/rbac/relations/subjects-to-identities/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

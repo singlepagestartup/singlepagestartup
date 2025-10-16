@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,
