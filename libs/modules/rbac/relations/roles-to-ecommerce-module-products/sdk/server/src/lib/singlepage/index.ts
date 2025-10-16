@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

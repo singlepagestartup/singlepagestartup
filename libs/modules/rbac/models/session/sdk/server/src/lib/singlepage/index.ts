@@ -12,6 +12,10 @@ import {
   options,
 } from "@sps/rbac/models/session/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = {
   ...factory<IModel>({
     route,

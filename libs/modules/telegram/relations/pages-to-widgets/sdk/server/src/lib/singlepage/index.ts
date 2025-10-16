@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/telegram/relations/pages-to-widgets/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

@@ -1,5 +1,5 @@
 {
-  "id": "93aa1936-2f65-4939-8e91-722116883ac8",
+  "id": "d3dc7e96-5842-4f01-bf67-91bbd127aa54",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -48,20 +48,15 @@
           "primaryKey": false,
           "notNull": true
         },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
         "slug": {
           "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value": {
-          "name": "value",
           "type": "text",
           "primaryKey": false,
           "notNull": true

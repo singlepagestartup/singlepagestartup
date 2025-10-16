@@ -1,3 +1,4 @@
+import { app as optionsToFileStorageModuleFiles } from "@sps/crm/relations/options-to-file-storage-module-files/backend/app/api";
 import { app as inputsToOptions } from "@sps/crm/relations/inputs-to-options/backend/app/api";
 import { app as option } from "@sps/crm/models/option/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
@@ -18,6 +19,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/options-to-file-storage-module-files",
+      app: optionsToFileStorageModuleFiles,
+    });
     this.apps.push({
       type: "relation",
       route: "/inputs-to-options",

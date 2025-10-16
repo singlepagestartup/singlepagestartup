@@ -1,3 +1,1 @@
-import { api as parentApi } from "./startup";
-
-export const api = parentApi;
+export * from "./startup";

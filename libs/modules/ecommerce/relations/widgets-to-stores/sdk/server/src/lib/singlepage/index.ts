@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/ecommerce/relations/widgets-to-stores/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

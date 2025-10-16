@@ -10,6 +10,8 @@ import { FormField } from "@sps/ui-adapter";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { randomWordsGenerator } from "@sps/shared-utils";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -52,6 +54,36 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.optionsToFileStorageModuleFiles
+          ? props.optionsToFileStorageModuleFiles({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Admin title"
+          name="adminTitle"
+          form={form}
+          placeholder="Type admin title"
+        />
+        <AgregatedInput title="Title">
+          {internationalization.languages.map((language) => {
+            return (
+              <FormField
+                key={language.code}
+                ui="shadcn"
+                type="text"
+                name={`title.${language.code}`}
+                label={language.title}
+                form={form}
+                placeholder="Type title"
+              />
+            );
+          })}
+        </AgregatedInput>
         <FormField
           ui="shadcn"
           type="text"
@@ -59,22 +91,6 @@ export function Component(props: IComponentPropsExtended) {
           name="slug"
           form={form}
           placeholder="Type slug"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="name"
-          label="Name"
-          form={form}
-          placeholder="Type name"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          name="value"
-          label="Value"
-          form={form}
-          placeholder="Type value"
         />
         <FormField
           ui="shadcn"
@@ -87,6 +103,12 @@ export function Component(props: IComponentPropsExtended) {
         />
         {props.inputsToOptions
           ? props.inputsToOptions({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+        {props.optionsToFileStorageModuleFiles
+          ? props.optionsToFileStorageModuleFiles({
               data: props.data,
               isServer: props.isServer,
             })

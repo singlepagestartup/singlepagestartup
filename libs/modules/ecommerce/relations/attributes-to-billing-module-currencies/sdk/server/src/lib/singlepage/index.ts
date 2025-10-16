@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,
