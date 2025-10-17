@@ -12,6 +12,7 @@ import { api as notificationTemplateApi } from "@sps/notification/models/templat
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -23,9 +24,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
@@ -37,9 +36,7 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
@@ -269,10 +266,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
