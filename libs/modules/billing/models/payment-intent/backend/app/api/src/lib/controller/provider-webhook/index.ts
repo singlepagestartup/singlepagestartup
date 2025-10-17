@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { STRIPE_SECRET_KEY } from "@sps/shared-utils";
 import Stripe from "stripe";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -29,9 +29,7 @@ export class Handler {
         const body = await c.req.parseBody();
 
         if (body["data"] instanceof File) {
-          throw new HTTPException(400, {
-            message: "Files are not supported",
-          });
+          throw new Error("Files are not supported");
         }
 
         if (typeof body["data"] !== "string") {
@@ -67,9 +65,7 @@ export class Handler {
             },
           });
         } else {
-          throw new HTTPException(400, {
-            message: "Missing headers",
-          });
+          throw new Error("Missing headers");
         }
       } else if (provider === "cloudpayments") {
         if ("x-content-hmac" in headers && "content-hmac" in headers) {
@@ -99,9 +95,7 @@ export class Handler {
         }
       } else if (provider === "dummy") {
         if (!data?.["data"]?.["id"]) {
-          throw new HTTPException(400, {
-            message: "Invalid data",
-          });
+          throw new Error("Invalid data");
         }
 
         result = await this.service.dummy({
@@ -125,10 +119,8 @@ export class Handler {
         200,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

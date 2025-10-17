@@ -9,6 +9,7 @@ import { Service } from "../../service";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -20,25 +21,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id",
-        });
+        throw new Error("Invalid id");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const entity = await this.service.findById({ id: uuid });
@@ -46,15 +41,11 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data) {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       if (!entity) {
-        throw new HTTPException(400, {
-          message: "Not found",
-        });
+        throw new Error("Not found");
       }
 
       if (["succeeded", "failed"].includes(entity.status)) {
@@ -83,9 +74,7 @@ export class Handler {
       });
 
       if (!paymentIntentsToInvoices?.length) {
-        throw new HTTPException(400, {
-          message: "Payment intents to invoices not found",
-        });
+        throw new Error("Payment intents to invoices not found");
       }
 
       const invoices = await invoiceApi.find({
@@ -111,15 +100,11 @@ export class Handler {
         for (const invoice of invoices) {
           if (invoice.provider === "cloudpayments") {
             if (!CLOUDPAYMENTS_PUBLIC_ID || !CLOUDPAYMENTS_API_SECRET) {
-              throw new HTTPException(400, {
-                message: "Cloudpayments credentials not found",
-              });
+              throw new Error("Cloudpayments credentials not found");
             }
 
             if (!invoice.providerId) {
-              throw new HTTPException(400, {
-                message: "Cloudpayments invoice id not found",
-              });
+              throw new Error("Cloudpayments invoice id not found");
             }
 
             const paymentsList = await fetch(
@@ -276,10 +261,8 @@ export class Handler {
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

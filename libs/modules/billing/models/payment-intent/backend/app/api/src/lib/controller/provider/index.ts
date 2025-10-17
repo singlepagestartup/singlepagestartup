@@ -8,7 +8,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -20,26 +20,20 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id",
-        });
+        throw new Error("Invalid id");
       }
 
       const body = await c.req.parseBody();
       const provider = c.req.param("provider");
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const entity = await this.service.findById({ id: uuid });
@@ -47,24 +41,18 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data) {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       logger.debug("provider", provider);
       logger.debug("data", data);
 
       if (!entity) {
-        throw new HTTPException(400, {
-          message: "Payment intent not found",
-        });
+        throw new Error("Payment intent not found");
       }
 
       if (!data.currencyId) {
-        throw new HTTPException(400, {
-          message: "Currency is required",
-        });
+        throw new Error("Currency is required");
       }
 
       const currency = await billingCurrencyApi.findById({
@@ -79,9 +67,7 @@ export class Handler {
       });
 
       if (!currency) {
-        throw new HTTPException(400, {
-          message: "Currency not found",
-        });
+        throw new Error("Currency not found");
       }
 
       logger.debug("currency", currency);
@@ -91,16 +77,12 @@ export class Handler {
       const allowedProviders = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
 
       if (!allowedProviders.includes(provider)) {
-        throw new HTTPException(400, {
-          message: `Provider ${provider} is not allowed`,
-        });
+        throw new Error(`Provider ${provider} is not allowed`);
       }
 
       if (provider === "stripe") {
         if (!data.metadata?.email) {
-          throw new HTTPException(400, {
-            message: "Email is required",
-          });
+          throw new Error("Email is required");
         }
 
         result = await this.service.stripe({
@@ -115,9 +97,7 @@ export class Handler {
         });
       } else if (provider === "0xprocessing") {
         if (!data.metadata?.email) {
-          throw new HTTPException(400, {
-            message: "Email is required",
-          });
+          throw new Error("Email is required");
         }
 
         result = await this.service.OxProcessing({
@@ -130,9 +110,7 @@ export class Handler {
         });
       } else if (provider.includes("payselection")) {
         if (!data.metadata?.email) {
-          throw new HTTPException(400, {
-            message: "Email is required",
-          });
+          throw new Error("Email is required");
         }
 
         const credentialsType = provider.includes("international")
@@ -146,9 +124,7 @@ export class Handler {
         });
       } else if (provider === "cloudpayments") {
         if (!data.metadata?.email) {
-          throw new HTTPException(400, {
-            message: "Email is required",
-          });
+          throw new Error("Email is required");
         }
 
         result = await this.service.cloudpayments({
@@ -160,9 +136,7 @@ export class Handler {
         });
       } else if (provider === "tiptoppay") {
         if (!data.metadata?.email) {
-          throw new HTTPException(400, {
-            message: "Email is required",
-          });
+          throw new Error("Email is required");
         }
 
         result = await this.service.tiptoppay({
@@ -226,10 +200,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
