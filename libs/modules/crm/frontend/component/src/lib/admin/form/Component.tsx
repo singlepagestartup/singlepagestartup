@@ -2,8 +2,8 @@
 
 import { Component as ParentComponent } from "@sps/crm/models/form/frontend/component";
 import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
-import { Component as FormsToInputs } from "@sps/crm/relations/forms-to-inputs/frontend/component";
 import { Component as FormsToRequests } from "@sps/crm/relations/forms-to-requests/frontend/component";
+import { Component as FormsToSteps } from "@sps/crm/relations/forms-to-steps/frontend/component";
 
 export function Component() {
   return (
@@ -16,13 +16,13 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
-            widgetsToForms={({ data, isServer }) => {
+            formsToSteps={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <WidgetsToForms
+                <FormsToSteps
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{
@@ -41,13 +41,13 @@ export function Component() {
                 />
               );
             }}
-            formsToInputs={({ data, isServer }) => {
+            widgetsToForms={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <FormsToInputs
+                <WidgetsToForms
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

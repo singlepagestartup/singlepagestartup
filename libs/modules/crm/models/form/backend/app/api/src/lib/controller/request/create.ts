@@ -2,8 +2,6 @@ import { ADMIN_EMAILS, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { api } from "@sps/crm/models/form/sdk/server";
-import { api as inputApi } from "@sps/crm/models/input/sdk/server";
-import { api as formsToInputsApi } from "@sps/crm/relations/forms-to-inputs/sdk/server";
 import { api as formsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
 import { api as requestApi } from "@sps/crm/models/request/sdk/server";
 import { Service } from "../../service";
@@ -56,50 +54,6 @@ export class Handler {
       if (!entity) {
         throw new Error("Form not found");
       }
-
-      const formsToInputs = await formsToInputsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "formId",
-                method: "eq",
-                value: id,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!formsToInputs) {
-        throw new Error("No inputs found for form with id " + id);
-      }
-
-      const inputs = await inputApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: formsToInputs?.map((formToInput) => {
-                  return formToInput.inputId;
-                }),
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
 
       const request = await requestApi.create({
         data: {

@@ -11,6 +11,7 @@ export const variant = "admin-form" as const;
 
 export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
+  stepsToInputs?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
   inputsToOptions?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
   formsToInputs?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 }

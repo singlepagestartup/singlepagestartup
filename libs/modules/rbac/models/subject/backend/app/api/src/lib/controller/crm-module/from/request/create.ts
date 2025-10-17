@@ -7,7 +7,6 @@ import { Service } from "../../../../service";
 import { api as crmFormApi } from "@sps/crm/models/form/sdk/server";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
-import { api as crmFormsToInputsApi } from "@sps/crm/relations/forms-to-inputs/sdk/server";
 import { api as crmFormsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
 import { api as crmRequestApi } from "@sps/crm/models/request/sdk/server";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
@@ -110,29 +109,6 @@ export class Handler {
         throw new HTTPException(404, {
           message: "No form found",
         });
-      }
-
-      const formsToInputs = await crmFormsToInputsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "formId",
-                method: "eq",
-                value: id,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-      if (!formsToInputs) {
-        throw new Error("No inputs found for form with id " + id);
       }
 
       const request = await crmRequestApi.create({

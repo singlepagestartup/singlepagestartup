@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { z } from "zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
@@ -8,7 +8,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Button } from "@sps/shared-ui-shadcn";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as CrmModuleFormsToInputs } from "@sps/crm/relations/forms-to-inputs/frontend/component";
+import { Component as CrmModuleFormsToSteps } from "@sps/crm/relations/forms-to-steps/frontend/component";
+import { Component as CrmModuleStep } from "@sps/crm/models/step/frontend/component";
 import { toast } from "sonner";
 
 const formSchema = z.any();
@@ -46,7 +47,7 @@ export function Component(props: IComponentPropsExtended) {
     >
       <Form {...form}>
         <div className="w-full grid gap-4">
-          <CrmModuleFormsToInputs
+          <CrmModuleFormsToSteps
             isServer={false}
             variant="find"
             apiProps={{
@@ -66,22 +67,51 @@ export function Component(props: IComponentPropsExtended) {
             {({ data }) => {
               return data?.map((entity, index) => {
                 return (
-                  <CrmModuleFormsToInputs
+                  <CrmModuleStep
                     key={index}
                     isServer={false}
-                    variant={entity.variant as any}
-                    data={entity}
-                    form={form}
-                    disabled={crmModuleFromRequestCreate.isPending}
-                    language={props.language}
-                  />
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "id",
+                              method: "eq",
+                              value: entity.stepId,
+                            },
+                          ],
+                        },
+                      },
+                    }}
+                  >
+                    {({ data }) => {
+                      return data?.map((entity, index) => {
+                        return (
+                          <CrmModuleStep
+                            key={index}
+                            isServer={false}
+                            variant={entity.variant as any}
+                            data={entity}
+                            form={form}
+                            disabled={crmModuleFromRequestCreate.isPending}
+                            language={props.language}
+                          />
+                        );
+                      });
+                    }}
+                  </CrmModuleStep>
                 );
               });
             }}
-          </CrmModuleFormsToInputs>
+          </CrmModuleFormsToSteps>
 
-          <Button variant="primary" onClick={form.handleSubmit(onSubmit)}>
-            Submit
+          <Button
+            variant="primary"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={crmModuleFromRequestCreate.isPending}
+          >
+            {props.language === "ru" ? "Отправить" : "Submit"}
           </Button>
         </div>
       </Form>

@@ -160,10 +160,9 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-        {props.formsToInputs
-          ? props.formsToInputs({
+        {props.stepsToInputs
+          ? props.stepsToInputs({
               data: props.data,
-
               isServer: props.isServer,
             })
           : null}
