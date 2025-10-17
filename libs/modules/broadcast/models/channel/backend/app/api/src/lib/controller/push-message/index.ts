@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api } from "@sps/broadcast/models/channel/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -14,25 +15,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY is not defined",
-        });
+        throw new Error("RBAC_SECRET_KEY is not defined");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data, data is required.",
-        });
+        throw new Error("Invalid data, data is required.");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.slug || !data.payload) {
-        throw new HTTPException(400, {
-          message: "Invalid data, slug and payload are required.",
-        });
+        throw new Error("Invalid data, slug and payload are required.");
       }
 
       const channels = await api.find({
@@ -71,9 +66,7 @@ export class Handler {
       }
 
       if (!channel) {
-        throw new HTTPException(400, {
-          message: "Channel not found",
-        });
+        throw new Error("Channel not found");
       }
 
       const createdMessage = await api.messageCreate({
@@ -90,10 +83,8 @@ export class Handler {
         data: createdMessage,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
 import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -17,9 +18,7 @@ export class Handler {
       const headers = c.req.header();
 
       if (!id) {
-        throw new HTTPException(400, {
-          message: "Invalid id, id is required.",
-        });
+        throw new Error("Invalid id, id is required.");
       }
 
       /**
@@ -72,10 +71,8 @@ export class Handler {
         data: [],
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

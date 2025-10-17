@@ -4,6 +4,7 @@ import { Service } from "../../../service";
 import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -15,25 +16,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY is not defined",
-        });
+        throw new Error("RBAC_SECRET_KEY is not defined");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new HTTPException(400, {
-          message: "Invalid id, id is required.",
-        });
+        throw new Error("Invalid id, id is required.");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data, data is required.",
-        });
+        throw new Error("Invalid data, data is required.");
       }
 
       const data = JSON.parse(body["data"]);
@@ -63,10 +58,8 @@ export class Handler {
         data: message,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
