@@ -1,11 +1,16 @@
-// httpErrorPatterns.ts
-export const httpErrorPatterns = new Map<number, (string | RegExp)[]>([
+import { ContentfulStatusCode } from "hono/utils/http-status";
+
+export const httpErrorPatterns = new Map<
+  ContentfulStatusCode,
+  (string | RegExp)[]
+>([
   [
     400,
     [
       "Telegram bot is not running",
       "RBAC_SECRET_KEY not set",
       "RBAC_SECRET_KEY is not defined",
+      "RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
       "RBAC secret key not found",
       "Invalid id",
       "Invalid id, id is required",
@@ -30,7 +35,10 @@ export const httpErrorPatterns = new Map<number, (string | RegExp)[]>([
     ],
   ],
 
-  [401, ["Unauthorized", "Token required", "No session"]],
+  [
+    401,
+    [/invalid credentials/i, /unauthorized/i, /token required/i, /no session/i],
+  ],
 
   [403, ["Forbidden", "Authentication", "Permission"]],
 
