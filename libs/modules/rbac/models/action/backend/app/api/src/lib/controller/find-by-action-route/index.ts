@@ -5,6 +5,7 @@ import QueryString from "qs";
 import { api } from "@sps/rbac/models/action/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { match } from "path-to-regexp";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -26,10 +27,9 @@ export class Handler {
       const type = query.action?.["type"] as string;
 
       if (!route || !method || !type) {
-        throw new HTTPException(400, {
-          message:
-            "Missing one or more action parameters (route, method, type)",
-        });
+        throw new Error(
+          "Missing one or more action parameters (route, method, type)",
+        );
       }
 
       const actions = await api.find({
@@ -49,9 +49,9 @@ export class Handler {
       });
 
       if (!actions?.length) {
-        throw new HTTPException(404, {
-          message: `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
-        });
+        throw new Error(
+          `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
+        );
       }
 
       for (const action of actions) {
@@ -78,14 +78,12 @@ export class Handler {
         }
       }
 
-      throw new HTTPException(404, {
-        message: `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
-      });
+      throw new Error(
+        `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
+      );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

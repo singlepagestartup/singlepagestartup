@@ -9,6 +9,7 @@ import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/r
 import { api as rolesToEcommerceModuleProductsApi } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -20,17 +21,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "No uuid provided",
-        });
+        throw new Error("No uuid provided");
       }
 
       const subjectsToEcommerceModuleOrders =
@@ -85,9 +82,7 @@ export class Handler {
       });
 
       if (!orders?.length) {
-        throw new HTTPException(404, {
-          message: "No orders found",
-        });
+        throw new Error("No orders found");
       }
 
       for (const order of orders) {
@@ -252,10 +247,8 @@ export class Handler {
         },
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

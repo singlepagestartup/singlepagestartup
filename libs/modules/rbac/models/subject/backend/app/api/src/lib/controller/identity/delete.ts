@@ -2,7 +2,7 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
-import { authorization } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../service";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
@@ -18,15 +18,11 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new HTTPException(400, {
-          message: "RBAC_JWT_SECRET not set",
-        });
+        throw new Error("RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const token = authorization(c);
@@ -48,9 +44,7 @@ export class Handler {
       const identityUuid = c.req.param("identityUuid");
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
-        throw new HTTPException(403, {
-          message: "Only identity owner can create identity.",
-        });
+        throw new Error("Only identity owner can create identity.");
       }
 
       const subjectsToAllIdentities = await subjectsToIdentitiesApi.find({
@@ -157,10 +151,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

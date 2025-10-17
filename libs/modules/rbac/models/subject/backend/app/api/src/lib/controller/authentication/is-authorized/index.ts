@@ -4,6 +4,7 @@ import { getCookie } from "hono/cookie";
 import QueryString from "qs";
 import { Service } from "../../../service";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -19,9 +20,7 @@ export class Handler {
       const secretKey = secretKeyHeader || secretKeyCookie;
 
       if (secretKey && secretKey !== RBAC_SECRET_KEY) {
-        throw new HTTPException(401, {
-          message: "Unauthorized",
-        });
+        throw new Error("Unauthorized");
       }
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
@@ -36,21 +35,15 @@ export class Handler {
       const parsedQuery = QueryString.parse(params);
 
       if (!parsedQuery?.["action"]) {
-        throw new HTTPException(400, {
-          message: "No action provided in query",
-        });
+        throw new Error("No action provided in query");
       }
 
       if (!parsedQuery?.["action"]?.["route"]) {
-        throw new HTTPException(400, {
-          message: "No route provided in 'action' query",
-        });
+        throw new Error("No route provided in 'action' query");
       }
 
       if (!parsedQuery?.["action"]?.["method"]) {
-        throw new HTTPException(400, {
-          message: "No method provided in 'action' query",
-        });
+        throw new Error("No method provided in 'action' query");
       }
 
       const authorizationCookie = getCookie(c, "rbac.subject.jwt");
@@ -75,17 +68,8 @@ export class Handler {
         data,
       });
     } catch (error: any) {
-      if (error.message.includes("Authorization error")) {
-        throw new HTTPException(401, {
-          message: error.message || "Unauthorized",
-          cause: error,
-        });
-      }
-
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

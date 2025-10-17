@@ -5,6 +5,7 @@ import { Service } from "../../service";
 import QueryString from "qs";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -16,17 +17,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id",
-        });
+        throw new Error("Invalid id");
       }
 
       const params = c.req.query();
@@ -55,9 +52,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities) {
-        throw new HTTPException(404, {
-          message: "No subjects to identities found",
-        });
+        throw new Error("No subjects to identities found");
       }
 
       const queryFilters = parsedQuery.filters?.["and"] || [];
@@ -89,10 +84,8 @@ export class Handler {
         data: identities,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

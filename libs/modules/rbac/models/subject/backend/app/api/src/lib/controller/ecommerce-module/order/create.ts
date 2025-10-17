@@ -2,7 +2,7 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
-import { authorization } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../service";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
@@ -24,23 +24,17 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new HTTPException(400, {
-          message: "RBAC_JWT_SECRET not set",
-        });
+        throw new Error("RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new HTTPException(400, {
-          message: "No id provided",
-        });
+        throw new Error("No id provided");
       }
 
       const token = authorization(c);
@@ -74,15 +68,11 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new HTTPException(403, {
-          message: "Only order owner can update order",
-        });
+        throw new Error("Only order owner can update order");
       }
 
       if (!data["productId"]) {
-        throw new HTTPException(400, {
-          message: "No data.productId provided",
-        });
+        throw new Error("No data.productId provided");
       }
 
       const productId = data["productId"];
@@ -115,9 +105,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "No entity found",
-        });
+        throw new Error("No entity found");
       }
 
       const ecommerceModuleProductsToAttributes =
@@ -333,9 +321,7 @@ export class Handler {
                   });
 
                 if (ordersToBillingModuleCurrencies?.length) {
-                  throw new HTTPException(400, {
-                    message: "Order already exists",
-                  });
+                  throw new Error("Order already exists");
                 }
               }
             }
@@ -353,9 +339,7 @@ export class Handler {
       });
 
       if (!order) {
-        throw new HTTPException(404, {
-          message: "No order found",
-        });
+        throw new Error("No order found");
       }
 
       await subjectsToEcommerceModuleOrdersApi.create({
@@ -384,9 +368,7 @@ export class Handler {
       });
 
       if (!ordersToProducts) {
-        throw new HTTPException(404, {
-          message: "No orders to products found",
-        });
+        throw new Error("No orders to products found");
       }
 
       const storesToOrders = await ecommerceStoresToOrdersApi.create({
@@ -402,9 +384,7 @@ export class Handler {
       });
 
       if (!storesToOrders) {
-        throw new HTTPException(404, {
-          message: "No stores to orders found",
-        });
+        throw new Error("No stores to orders found");
       }
 
       const ordersToBillingModuleCurrencies =
@@ -421,9 +401,7 @@ export class Handler {
         });
 
       if (!ordersToBillingModuleCurrencies) {
-        throw new HTTPException(404, {
-          message: "No orders to billing module currencies found",
-        });
+        throw new Error("No orders to billing module currencies found");
       }
 
       return c.json({
@@ -433,10 +411,8 @@ export class Handler {
         },
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

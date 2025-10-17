@@ -10,6 +10,7 @@ import * as jwt from "hono/jwt";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { Service } from "../../service";
 import { setCookie } from "hono/cookie";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -21,21 +22,16 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
       if (!RBAC_JWT_SECRET) {
-        throw new HTTPException(400, {
-          message: "RBAC_JWT_SECRET not set",
-        });
+        throw new Error("RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS) {
-        throw new HTTPException(400, {
-          message:
-            "RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
-        });
+        throw new Error(
+          "RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
+        );
       }
 
       const entity = await api.create({
@@ -71,9 +67,7 @@ export class Handler {
       const decodedJwt = await jwt.verify(jwtToken, RBAC_JWT_SECRET);
 
       if (!decodedJwt.exp) {
-        throw new HTTPException(400, {
-          message: "Invalid token issued",
-        });
+        throw new Error("Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", jwtToken, {
@@ -94,10 +88,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

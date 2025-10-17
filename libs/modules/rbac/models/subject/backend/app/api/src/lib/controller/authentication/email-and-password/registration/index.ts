@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { Service } from "../../../../service";
 import { setCookie } from "hono/cookie";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -15,9 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new HTTPException(400, {
-          message: "RBAC_JWT_SECRET not set",
-        });
+        throw new Error("RBAC_JWT_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -37,9 +36,7 @@ export class Handler {
       const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
 
       if (!decodedJwt.exp) {
-        throw new HTTPException(400, {
-          message: "Invalid token issued",
-        });
+        throw new Error("Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", entity.jwt, {
@@ -57,10 +54,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

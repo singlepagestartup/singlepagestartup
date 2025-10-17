@@ -4,6 +4,7 @@ import { DI, type IService, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/session/backend/repository/database";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -51,9 +52,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         ok: true,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

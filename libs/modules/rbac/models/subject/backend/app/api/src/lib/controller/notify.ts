@@ -17,6 +17,7 @@ import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/se
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { api as ecommerceOrdersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -28,25 +29,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "No uuid provided",
-        });
+        throw new Error("No uuid provided");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid body",
-        });
+        throw new Error("Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -72,9 +67,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new HTTPException(404, {
-          message: "No subjects to identities found",
-        });
+        throw new Error("No subjects to identities found");
       }
 
       const identities = await identityApi.find({
@@ -98,21 +91,15 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new HTTPException(404, {
-          message: "No identities found",
-        });
+        throw new Error("No identities found");
       }
 
       if (!data.notification?.notification?.method) {
-        throw new HTTPException(400, {
-          message: "No notification.notification.method provided",
-        });
+        throw new Error("No notification.notification.method provided");
       }
 
       if (!data.notification?.topic?.slug) {
-        throw new HTTPException(400, {
-          message: "No notification.topic.slug provided",
-        });
+        throw new Error("No notification.topic.slug provided");
       }
 
       const topics = await notificationTopicApi.find({
@@ -135,23 +122,17 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new HTTPException(404, {
-          message: "No topic found",
-        });
+        throw new Error("No topic found");
       }
 
       const topic = topics[0];
 
       if (!data.notification?.template?.variant) {
-        throw new HTTPException(400, {
-          message: "No template variant provided",
-        });
+        throw new Error("No template variant provided");
       }
 
       if (!["email"].includes(data.notification.notification.method)) {
-        throw new HTTPException(400, {
-          message: "Invalid notification method",
-        });
+        throw new Error("Invalid notification method");
       }
 
       const templates = await notificationTemplateApi.find({
@@ -174,9 +155,7 @@ export class Handler {
       });
 
       if (!templates?.length) {
-        throw new HTTPException(404, {
-          message: "No template found",
-        });
+        throw new Error("No template found");
       }
 
       const template = templates[0];
@@ -199,9 +178,7 @@ export class Handler {
         });
 
         if (!order) {
-          throw new HTTPException(404, {
-            message: "No order found",
-          });
+          throw new Error("No order found");
         }
 
         if (order.status === "approving") {
@@ -449,19 +426,15 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "No entity found",
-        });
+        throw new Error("No entity found");
       }
 
       return c.json({
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -5,6 +5,7 @@ import { Service } from "../../../../../../../service";
 // import { api } from "@sps/rbac/models/subject/sdk/server";
 // import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -114,38 +115,8 @@ export class Handler {
         data: message,
       });
     } catch (error: any) {
-      if (error.message?.includes("Configuration error")) {
-        throw new HTTPException(500, {
-          message: error.message || "Configuration error",
-          cause: error,
-        });
-      }
-
-      if (error.message?.includes("Validation error")) {
-        throw new HTTPException(400, {
-          message: error.message || "Validation error",
-          cause: error,
-        });
-      }
-
-      if (error.message?.includes("Unauthorized")) {
-        throw new HTTPException(403, {
-          message: error.message || "Unauthorized",
-          cause: error,
-        });
-      }
-
-      if (error.message?.includes("Not found")) {
-        throw new HTTPException(404, {
-          message: error.message || "Not found",
-          cause: error,
-        });
-      }
-
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

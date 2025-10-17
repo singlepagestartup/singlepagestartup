@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { Service } from "../../../service";
 import bcrypt from "bcrypt";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -15,9 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET not set",
-        });
+        throw new Error("RBAC_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -29,9 +28,7 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data.code) {
-        throw new HTTPException(400, {
-          message: "No code provided",
-        });
+        throw new Error("No code provided");
       }
 
       const identities = await identityApi.find({
@@ -62,9 +59,7 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new HTTPException(404, {
-          message: "No identities found",
-        });
+        throw new Error("No identities found");
       }
 
       const identity = identities[0];
@@ -74,27 +69,19 @@ export class Handler {
       const codeExpired = new Date().getTime() - updatedAt < 3600000;
 
       if (!codeExpired) {
-        throw new HTTPException(400, {
-          message: "Code is expired. Resend again.",
-        });
+        throw new Error("Code is expired. Resend again.");
       }
 
       if (!data.password) {
-        throw new HTTPException(400, {
-          message: "No password provided",
-        });
+        throw new Error("No password provided");
       }
 
       if (data.password !== data.passwordConfirmation) {
-        throw new HTTPException(400, {
-          message: "Passwords do not match",
-        });
+        throw new Error("Passwords do not match");
       }
 
       if (!identity.salt) {
-        throw new HTTPException(400, {
-          message: "No salt found for this identity",
-        });
+        throw new Error("No salt found for this identity");
       }
 
       await identityApi.update({
@@ -123,10 +110,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

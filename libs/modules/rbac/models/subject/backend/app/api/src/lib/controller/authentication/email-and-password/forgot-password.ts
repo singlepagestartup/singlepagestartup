@@ -6,6 +6,7 @@ import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import bcrypt from "bcrypt";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -17,9 +18,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET not set",
-        });
+        throw new Error("RBAC_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -50,15 +49,11 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new HTTPException(404, {
-          message: "No identities found",
-        });
+        throw new Error("No identities found");
       }
 
       if (identities.length > 1) {
-        throw new HTTPException(400, {
-          message: "Multiple identities found",
-        });
+        throw new Error("Multiple identities found");
       }
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.find({
@@ -76,9 +71,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new HTTPException(404, {
-          message: "No subjects to identities found",
-        });
+        throw new Error("No subjects to identities found");
       }
 
       const code = bcrypt.genSaltSync(10).replaceAll("/", "");
@@ -100,9 +93,7 @@ export class Handler {
       });
 
       if (!identity) {
-        throw new HTTPException(400, {
-          message: "Could not update identity",
-        });
+        throw new Error("Could not update identity");
       }
 
       await api.notify({
@@ -144,10 +135,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -4,6 +4,7 @@ import { Service } from "../../service";
 import { api as topicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
 import { api as notificationApi } from "@sps/notification/models/notification/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -15,9 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY is required",
-        });
+        throw new Error("RBAC_SECRET_KEY is required");
       }
 
       const topics = await this.service.find();
@@ -83,10 +82,8 @@ export class Handler {
         ok: true,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

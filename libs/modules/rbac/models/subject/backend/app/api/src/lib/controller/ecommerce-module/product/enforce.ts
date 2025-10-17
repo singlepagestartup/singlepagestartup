@@ -16,7 +16,7 @@ import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-inte
 import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -28,25 +28,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC_SECRET_KEY not set",
-        });
+        throw new Error("RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "No uuid provided",
-        });
+        throw new Error("No uuid provided");
       }
 
       const productId = c.req.param("productId");
 
       if (!productId) {
-        throw new HTTPException(400, {
-          message: "No productId provided",
-        });
+        throw new Error("No productId provided");
       }
 
       const body = await c.req.parseBody();
@@ -69,9 +63,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "No entity found",
-        });
+        throw new Error("No entity found");
       }
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.find({
@@ -97,9 +89,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new HTTPException(404, {
-          message: "No subjects to identities found",
-        });
+        throw new Error("No subjects to identities found");
       }
 
       const identities = await identityApi.find({
@@ -129,9 +119,7 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new HTTPException(404, {
-          message: "No identities found",
-        });
+        throw new Error("No identities found");
       }
 
       let price: IEcommerceAttribute | undefined;
@@ -157,9 +145,7 @@ export class Handler {
       });
 
       if (!productsToAttributes?.length) {
-        throw new HTTPException(404, {
-          message: "No products to attributes found",
-        });
+        throw new Error("No products to attributes found");
       }
 
       const attributes = await ecommerceAttributeApi.find({
@@ -182,9 +168,7 @@ export class Handler {
       });
 
       if (!attributes?.length) {
-        throw new HTTPException(404, {
-          message: "No attributes found",
-        });
+        throw new Error("No attributes found");
       }
 
       for (const attribute of attributes) {
@@ -209,9 +193,7 @@ export class Handler {
           });
 
         if (!attributeKeysToAttributes?.length) {
-          throw new HTTPException(404, {
-            message: "No attribute keys to attributes found",
-          });
+          throw new Error("No attribute keys to attributes found");
         }
 
         const attributeKey = await ecommerceAttributeKeyApi.find({
@@ -269,9 +251,7 @@ export class Handler {
       });
 
       if (!ordersToProducts?.length) {
-        throw new HTTPException(404, {
-          message: "No orders to products found",
-        });
+        throw new Error("No orders to products found");
       }
 
       const orders = await ecommerceOrderApi.find({
@@ -299,9 +279,7 @@ export class Handler {
       });
 
       if (!orders?.length) {
-        throw new HTTPException(404, {
-          message: "No orders found",
-        });
+        throw new Error("No orders found");
       }
 
       for (const order of orders) {
@@ -330,9 +308,7 @@ export class Handler {
         }
 
         if (ordersToBillingModulePaymentIntents.length > 1) {
-          throw new HTTPException(400, {
-            message: "Multiple billing module payment intents found",
-          });
+          throw new Error("Multiple billing module payment intents found");
         }
 
         const paymentIntentId =
@@ -348,9 +324,7 @@ export class Handler {
         });
 
         if (!paymentIntent) {
-          throw new HTTPException(400, {
-            message: "Payment intent not found",
-          });
+          throw new Error("Payment intent not found");
         }
 
         const paymentIntentsToInvoices =
@@ -510,9 +484,9 @@ export class Handler {
             });
 
           if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
-            throw new HTTPException(404, {
-              message: "No ecommerce orders to billing module currencies found",
-            });
+            throw new Error(
+              "No ecommerce orders to billing module currencies found",
+            );
           }
 
           if (
@@ -553,10 +527,8 @@ export class Handler {
         data: {},
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

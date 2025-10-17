@@ -10,6 +10,7 @@ import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommer
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -206,9 +207,7 @@ export class Handler {
         });
 
       if (!ordersToBillingModuleCurrencies) {
-        throw new HTTPException(404, {
-          message: "No orders to billing module currencies found",
-        });
+        throw new Error("No orders to billing module currencies found");
       }
 
       const result = await this.service.ecommerceOrderCheckout({
@@ -223,10 +222,8 @@ export class Handler {
 
       return c.json({ data: result });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

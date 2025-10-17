@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -19,25 +20,20 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "Not found",
-        });
+        throw new Error("Not found");
       }
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + uuid,
-        });
+        throw new Error("Invalid id. Got: " + uuid);
       }
 
       if (body["data"] && typeof body["data"] !== "string") {
-        throw new HTTPException(422, {
-          message:
-            "Invalid body['data']: " +
+        throw new Error(
+          "Invalid body['data']: " +
             body["data"] +
             ". Expected string, got: " +
             typeof body["data"],
-        });
+        );
       }
 
       const payloadData = JSON.parse(body["data"]);
@@ -49,9 +45,7 @@ export class Handler {
           : null;
 
       if (!type) {
-        throw new HTTPException(422, {
-          message: "Invalid type. Expected email, got: " + type,
-        });
+        throw new Error("Invalid type. Expected email, got: " + type);
       }
 
       const data = await this.service.render({
@@ -61,25 +55,19 @@ export class Handler {
       });
 
       if (!data) {
-        throw new HTTPException(404, {
-          message: "Not Found",
-        });
+        throw new Error("Not Found");
       }
 
       if (!Object.keys(data).length) {
-        throw new HTTPException(422, {
-          message: "Unprocessable Entity",
-        });
+        throw new Error("Unprocessable Entity");
       }
 
       return c.json({
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

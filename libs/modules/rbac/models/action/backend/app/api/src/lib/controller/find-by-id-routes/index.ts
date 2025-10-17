@@ -43,9 +43,7 @@ export class Handler {
     });
 
     if (!result) {
-      throw new HTTPException(404, {
-        message: `Not found. Entity with id ${uuid} not found`,
-      });
+      throw new Error(`Not found. Entity with id ${uuid} not found`);
     }
 
     const segments = result.path?.split("/").filter((url) => url !== "");

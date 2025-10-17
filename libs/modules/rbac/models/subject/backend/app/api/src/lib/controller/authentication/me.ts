@@ -2,7 +2,7 @@ import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
-import { authorization } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../service";
 
 export class Handler {
@@ -28,17 +28,13 @@ export class Handler {
       }
 
       if (!RBAC_JWT_SECRET) {
-        throw new HTTPException(500, {
-          message: "JWT secret not provided",
-        });
+        throw new Error("JWT secret not provided");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
       if (!decoded.subject?.["id"]) {
-        throw new HTTPException(401, {
-          message: "No subject provided in the token",
-        });
+        throw new Error("No subject provided in the token");
       }
 
       // const entity = await this.service.findById({
@@ -46,19 +42,15 @@ export class Handler {
       // });
 
       if (!decoded.subject) {
-        throw new HTTPException(401, {
-          message: "No subject provided in the token",
-        });
+        throw new Error("No subject provided in the token");
       }
 
       return c.json({
         data: decoded.subject,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
