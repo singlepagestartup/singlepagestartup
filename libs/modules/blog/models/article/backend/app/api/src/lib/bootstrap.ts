@@ -6,8 +6,8 @@ import {
 } from "@sps/shared-backend-api";
 import { Configuration } from "./configuration";
 import { Repository } from "./repository";
-import { Controller } from "./startup";
-import { Service } from "./startup";
+import { Controller } from "./controller";
+import { Service } from "./service";
 import { App } from "./app";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
