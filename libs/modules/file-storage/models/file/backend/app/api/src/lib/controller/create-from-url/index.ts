@@ -5,6 +5,7 @@ import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -18,23 +19,17 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (!body) {
-        throw new HTTPException(400, {
-          message: "Invalid body",
-        });
+        throw new Error("Invalid body");
       }
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.url) {
-        throw new HTTPException(400, {
-          message: "Invalid url",
-        });
+        throw new Error("Invalid url");
       }
 
       const file = await fetch(data.url)
@@ -50,9 +45,7 @@ export class Handler {
         });
 
       if (!file) {
-        throw new HTTPException(400, {
-          message: "Invalid file",
-        });
+        throw new Error("Invalid file");
       }
 
       const fileStorage = new Provider({
@@ -104,10 +97,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

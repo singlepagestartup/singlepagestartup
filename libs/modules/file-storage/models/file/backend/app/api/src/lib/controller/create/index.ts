@@ -5,6 +5,7 @@ import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import { fileTypeFromBuffer } from "file-type";
 import { imageSize } from "image-size";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -18,9 +19,7 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (!body) {
-        throw new HTTPException(400, {
-          message: "Invalid body",
-        });
+        throw new Error("Invalid body");
       }
 
       const parsedBody: {
@@ -68,15 +67,11 @@ export class Handler {
 
       for (const [name, file] of Object.entries(parsedBody.files)) {
         if (Array.isArray(file)) {
-          throw new HTTPException(400, {
-            message: "Multiple files are not allowed",
-          });
+          throw new Error("Multiple files are not allowed");
         }
 
         if (typeof file === "string") {
-          throw new HTTPException(400, {
-            message: "Invalid file type",
-          });
+          throw new Error("Invalid file type");
         }
 
         const data: any = parsedBody.data ?? {};
@@ -133,14 +128,10 @@ export class Handler {
         );
       }
 
-      throw new HTTPException(400, {
-        message: "Invalid file",
-      });
+      throw new Error("Invalid file");
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

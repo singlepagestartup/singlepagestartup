@@ -7,6 +7,7 @@ export const httpErrorPatterns = new Map<
   [
     400,
     [
+      "Invalid url",
       "Telegram bot is not running",
       "RBAC_SECRET_KEY not set",
       "RBAC_SECRET_KEY is not defined",
@@ -18,6 +19,8 @@ export const httpErrorPatterns = new Map<
       "Currency not found",
       "Invalid id, id is required",
       "Invalid id. Got:",
+      "Query segment is required",
+      "Query url is required",
       "Invalid orderToProductId",
       "Invalid messageId, messageId is required",
       "Invalid data",
@@ -47,6 +50,9 @@ export const httpErrorPatterns = new Map<
       "Orders to billing module payment intents not found",
       "Payment intents not found",
       "Payment intent is not succeeded",
+      "Invalid file",
+      "Invalid file type",
+      "Multiple files are not allowed",
     ],
   ],
 
@@ -60,6 +66,7 @@ export const httpErrorPatterns = new Map<
   [
     404,
     [
+      "not found",
       "Not found",
       "Form not found",
       "Entity not found",

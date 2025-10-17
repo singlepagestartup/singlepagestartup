@@ -5,6 +5,7 @@ import pako from "pako";
 import { api } from "@sps/file-storage/models/file/sdk/server";
 import { HOST_SERVICE_URL, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import QueryString from "qs";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -16,17 +17,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
@@ -60,10 +57,8 @@ export class Handler {
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

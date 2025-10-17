@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -16,9 +17,7 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + uuid,
-        });
+        throw new Error("Invalid id. Got: " + uuid);
       }
 
       const previous = await this.service.findById({ id: uuid });
@@ -40,10 +39,8 @@ export class Handler {
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
