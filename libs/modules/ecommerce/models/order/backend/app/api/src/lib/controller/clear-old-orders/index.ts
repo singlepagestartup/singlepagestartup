@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { Service } from "../../service";
 import { HTTPException } from "hono/http-exception";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -19,10 +20,8 @@ export class Handler {
         },
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

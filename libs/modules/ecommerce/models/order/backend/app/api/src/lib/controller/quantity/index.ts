@@ -2,6 +2,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -13,25 +14,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + id,
-        });
+        throw new Error("Invalid id. Got: " + id);
       }
 
       let entity = await this.service.findById({ id });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "Order not found",
-        });
+        throw new Error("Order not found");
       }
 
       const quantity = await this.service.getQuantity({ id });
@@ -40,10 +35,8 @@ export class Handler {
         data: quantity,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -8,7 +8,7 @@ import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -373,10 +373,8 @@ export class Handler {
         },
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

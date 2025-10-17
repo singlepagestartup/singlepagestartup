@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -14,17 +15,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + id,
-        });
+        throw new Error("Invalid id. Got: " + id);
       }
 
       const orderToProductId = c.req.param("orderToProductId");
@@ -68,9 +65,7 @@ export class Handler {
       });
 
       if (!orderToProduct) {
-        throw new HTTPException(404, {
-          message: "Order to product not found",
-        });
+        throw new Error("Order to product not found");
       }
 
       const result = await ordersToProductsApi.update({
@@ -87,10 +82,8 @@ export class Handler {
         data: result,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

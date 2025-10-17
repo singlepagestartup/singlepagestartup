@@ -10,6 +10,7 @@ import { api as ordersToFileStorageModuleFilesApi } from "@sps/ecommerce/relatio
 import { api as productsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -21,28 +22,23 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new HTTPException(400, {
-          message: "RBAC secret key not found",
-        });
+        throw new Error("RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + uuid,
-        });
+        throw new Error("Invalid id. Got: " + uuid);
       }
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(422, {
-          message:
-            "Invalid body['data']: " +
+        throw new Error(
+          "Invalid body['data']: " +
             body["data"] +
             ". Expected string, got: " +
             typeof body["data"],
-        });
+        );
       }
 
       const previousEntity = await this.service.findById({ id: uuid });
@@ -72,9 +68,7 @@ export class Handler {
         });
 
         if (!ordersToProducts?.length) {
-          throw new HTTPException(404, {
-            message: "No orders to products found",
-          });
+          throw new Error("No orders to products found");
         }
 
         for (const orderToProduct of data.ordersToProducts) {
@@ -132,9 +126,7 @@ export class Handler {
           });
 
         if (!ordersToBillingModuleCurrencies?.length) {
-          throw new HTTPException(404, {
-            message: "Orders to billing module currencies not found",
-          });
+          throw new Error("Orders to billing module currencies not found");
         }
 
         const billingCurrencies = await billingCurrencyApi.find({
@@ -159,9 +151,7 @@ export class Handler {
         });
 
         if (!billingCurrencies?.length) {
-          throw new HTTPException(404, {
-            message: "Billing currencies not found",
-          });
+          throw new Error("Billing currencies not found");
         }
 
         const checkoutAttributes = await api.checkoutAttributes({
@@ -198,9 +188,7 @@ export class Handler {
         });
 
         if (!ordersToProducts?.length) {
-          throw new HTTPException(404, {
-            message: "Orders to products not found",
-          });
+          throw new Error("Orders to products not found");
         }
 
         const products = await productApi.find({
@@ -225,9 +213,7 @@ export class Handler {
         });
 
         if (!products?.length) {
-          throw new HTTPException(404, {
-            message: "Products not found",
-          });
+          throw new Error("Products not found");
         }
 
         const fileStorageReceiptTemplateFiles = await fileStorageFileApi.find({
@@ -444,10 +430,8 @@ export class Handler {
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal server error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

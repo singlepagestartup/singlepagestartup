@@ -44,6 +44,9 @@ export const httpErrorPatterns = new Map<
       "Invalid id, id is required.",
       "Invalid messageId, messageId is required.",
       "Stripe secret key not found",
+      "Orders to billing module payment intents not found",
+      "Payment intents not found",
+      "Payment intent is not succeeded",
     ],
   ],
 
