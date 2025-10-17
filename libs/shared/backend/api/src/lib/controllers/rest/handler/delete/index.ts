@@ -5,6 +5,7 @@ import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -18,9 +19,7 @@ export class Handler<
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id. Got: " + uuid,
-        });
+        throw new Error("Invalid id. Got: " + uuid);
       }
 
       const data = await this.service.delete({ id: uuid });
@@ -29,10 +28,8 @@ export class Handler<
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

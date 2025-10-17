@@ -27,9 +27,7 @@ export class Handler {
       const orderToProductId = c.req.param("orderToProductId");
 
       if (!orderToProductId) {
-        throw new HTTPException(400, {
-          message: "Invalid orderToProductId. Got: " + orderToProductId,
-        });
+        throw new Error("Invalid orderToProductId. Got: " + orderToProductId);
       }
 
       const body = await c.req.parseBody();
@@ -50,9 +48,7 @@ export class Handler {
       let entity = await this.service.findById({ id });
 
       if (!entity) {
-        throw new HTTPException(404, {
-          message: "Order not found",
-        });
+        throw new Error("Order not found");
       }
 
       const orderToProduct = await ordersToProductsApi.findById({

@@ -29,9 +29,7 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Invalid data");
       }
 
       const data = JSON.parse(body["data"]);

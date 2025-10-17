@@ -7,6 +7,7 @@ import {
 import { MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { getCookie } from "hono/cookie";
+import { getHttpErrorType } from "@sps/backend-utils";
 /**
  * Routes that are allowed to be accessed without authentication
  * @type {Array<{ regexPath: RegExp; methods: string[] }>}
@@ -118,9 +119,8 @@ export class Middleware {
           options: { headers },
         });
       } catch (error: any) {
-        throw new HTTPException(401, {
-          message: error.message,
-        });
+        const { status, message, details } = getHttpErrorType(error);
+        throw new HTTPException(status, { message, cause: details });
       }
 
       return next();

@@ -49,9 +49,7 @@ export class Service {
     });
 
     if (!entity) {
-      throw new HTTPException(404, {
-        message: "No entity found",
-      });
+      throw new Error("No entity found");
     }
 
     const updatedOrder = await ecommerceOrderApi.findById({
@@ -99,9 +97,7 @@ export class Service {
       });
 
     if (!ordersToBillingModulePaymentIntents?.length) {
-      throw new HTTPException(404, {
-        message: "No payment intents found",
-      });
+      throw new Error("No payment intents found");
     }
 
     const billingPaymentIntentsToInvoices =
@@ -128,9 +124,7 @@ export class Service {
       });
 
     if (!billingPaymentIntentsToInvoices?.length) {
-      throw new HTTPException(404, {
-        message: "No payment intents to invoices found",
-      });
+      throw new Error("No payment intents to invoices found");
     }
 
     const invoices = await billingInvoiceApi.find({
@@ -156,9 +150,7 @@ export class Service {
     });
 
     if (!invoices?.length) {
-      throw new HTTPException(404, {
-        message: "No invoices found",
-      });
+      throw new Error("No invoices found");
     }
 
     if (!updatedOrder) {
@@ -186,9 +178,7 @@ export class Service {
     });
 
     if (!ordersToProducts?.length) {
-      throw new HTTPException(404, {
-        message: "Orders to products not found",
-      });
+      throw new Error("Orders to products not found");
     }
 
     const products = await productApi.find({
@@ -213,9 +203,7 @@ export class Service {
     });
 
     if (!products?.length) {
-      throw new HTTPException(404, {
-        message: "Products not found",
-      });
+      throw new Error("Products not found");
     }
 
     const ecommerceOrdersToBillingModuleCurrencies =
@@ -240,9 +228,7 @@ export class Service {
       });
 
     if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
-      throw new HTTPException(404, {
-        message: "Orders to billing module currencies not found",
-      });
+      throw new Error("Orders to billing module currencies not found");
     }
 
     const billingModuleCurrencies = await billingModuleCurrencyApi.find({
@@ -269,9 +255,7 @@ export class Service {
     });
 
     if (!billingModuleCurrencies?.length) {
-      throw new HTTPException(404, {
-        message: "Billing module currencies not found",
-      });
+      throw new Error("Billing module currencies not found");
     }
 
     const checkoutAttributes = await ecommerceOrderApi.checkoutAttributes({

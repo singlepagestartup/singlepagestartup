@@ -10,7 +10,7 @@ import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/se
 import { api } from "@sps/agent/models/agent/sdk/server";
 import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
 import cronParser from "cron-parser";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -135,10 +135,8 @@ export class Handler {
 
       return c.json({ data: executingAgents });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 

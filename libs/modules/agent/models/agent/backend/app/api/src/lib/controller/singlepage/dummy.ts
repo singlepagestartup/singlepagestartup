@@ -7,7 +7,7 @@ import { api as notificationTemplateApi } from "@sps/notification/models/templat
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 export class Handler {
   service: Service;
 
@@ -109,10 +109,8 @@ export class Handler {
 
       return c.json({ data: { ok: true } });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }
