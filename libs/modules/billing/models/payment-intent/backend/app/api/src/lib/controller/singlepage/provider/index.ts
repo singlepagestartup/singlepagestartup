@@ -6,7 +6,7 @@ import {
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../service";
+import { Service } from "../../../service";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 
