@@ -3,9 +3,17 @@
   "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/shared/backend/utils/src",
   "projectType": "library",
+  
   "tags": [],
   "targets": {
     "eslint:lint": {},
-    "tsc:build": {}
+    "tsc:build": {},
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "libs/shared/backend/utils/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
   }
 }
