@@ -1,6 +1,7 @@
 import { ErrorPatternEntry } from "../type";
 
 export const httpErrorPatterns: ErrorPatternEntry[] = [
+  // Authentication (Specific)
   {
     status: 401,
     category: "Authentication error",
@@ -11,30 +12,10 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /no session/i,
       /authorization error/i,
       /no subject provided in the token/i,
+      /invalid token issued/i,
     ],
   },
-  {
-    status: 400,
-    category: "Validation error",
-    patterns: [
-      /invalid request body/i,
-      /validation error/i,
-      /no id provided/i,
-      /invalid url/i,
-      /invalid (data|body)/i,
-      /invalid data, (slug and payload|data) are required([.]|.)?/i,
-      /invalid data, should be array/i,
-      /invalid notification method/i,
-      /missing headers/i,
-      /invalid provider/i,
-      /invalid ordertoproductid/i,
-      /invalid messageid([.,]|, messageid is required)?/i,
-      /invalid id([.,]|, id is required)?/i,
-      /invalid type[.]? expected email, got:?/i,
-      /expected string/i,
-      /invalid body\['data'\]/i,
-    ],
-  },
+  // Permissions (Specific)
   {
     status: 403,
     category: "Permission error",
@@ -46,44 +27,35 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /only identity owner can create identity/i,
     ],
   },
-  // Not Found — no entity, no data, not found
+  // Unprocessable Entity (Specific Semantic Validation)
   {
-    status: 404,
-    category: "Not Found error",
+    status: 422,
+    category: "Unprocessable Entity error",
     patterns: [
-      /not found/i,
-      /entity not found/i,
-      /form not found/i,
-      /entity with param .* not found/i,
-      /no (inputs|uuid|productid|orderid|email|stores|template|attributes?|products?|orders?|subjects to identities|attribute keys to attributes|orders to products|ecommerce orders to billing module currencies|billing module currency id) found/i,
-      /order already exists/i,
-      /order is not in 'new' status/i,
-      /not found[.]? entity with id/i,
-      /not found[.]? no matching action for route:?/i,
-      /no updated order found/i,
-      /no payment intents found/i,
-      /no invoices found/i,
-      /no payment intents to invoices found/i,
-      /no ecommerce(module)?( orders)?( products)?( attributes)?(?:.*) provided/i,
+      /expected string/i,
+      /invalid body\['data'\]/i,
+      /unprocessable entity/i,
+      /invalid type[.]? expected email, got:/i,
     ],
   },
+  // Payment Errors (Can include 'not found')
   {
     status: 400,
     category: "Payment error",
     patterns: [
       /payment intent not found/i,
-      /payment intents to invoices not found/i,
       /cloudpayments (credentials|invoice id) not found/i,
       /stripe secret key not found/i,
       /payment intent is not succeeded/i,
       /orders to billing module payment intents not found/i,
-      /orders to billing module currencies not found/i,
-      /billing currencies not found/i,
       /billing module currencies not found/i,
       /multiple billing module payment/i,
       /channel not found/i,
+      /currency is required/i,
+      /currency not found/i,
     ],
   },
+  // Internal/Server Errors (Can include 'not found')
   {
     status: 500,
     category: "Internal error",
@@ -99,6 +71,48 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /request not created/i,
       /jwt secret not provided/i,
       /server error/i,
+    ],
+  },
+  // General Not Found (Broad pattern, checked after specific ones)
+  {
+    status: 404,
+    category: "Not Found error",
+    patterns: [
+      /not found/i,
+      /entity not found/i,
+      /form not found/i,
+      /entity with param .* not found/i,
+      /no (inputs|email|stores|template|attributes?|products?|orders?|subjects to identities|attribute keys to attributes|orders to products|ecommerce orders to billing module currencies|billing module currency id) found/i,
+      /order already exists/i,
+      /order is not in 'new' status/i,
+    ],
+  },
+  // General Validation (Broad, checked last for 400)
+  {
+    status: 400,
+    category: "Validation error",
+    patterns: [
+      /invalid request body/i,
+      /validation error/i,
+      /invalid url/i,
+      /invalid (data|body)/i,
+      /invalid data, (slug and payload|data) are required([.]|.)?/i,
+      /invalid data, should be array/i,
+      /invalid notification method/i,
+      /missing headers/i,
+      /invalid provider/i,
+      /invalid ordertoproductid/i,
+      /invalid messageid([.,]|, messageid is required)?/i,
+      /invalid id([.,]|, id is required)?/i,
+      /no refresh token provided/i,
+      /passwords do not match/i,
+      /account already exists/i,
+      /code is expired/i,
+      /provider .* is not allowed/i,
+      /no (uuid|productid|notification\.topic\.slug) provided/i,
+      /files are not supported/i,
+      /multiple files are not allowed/i,
+      /no id provided/i,
     ],
   },
 ];
