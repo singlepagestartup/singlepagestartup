@@ -15,7 +15,7 @@ import { Component as AgregatedInput } from "@sps/shared-frontend-components/sin
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { Component as Option } from "@sps/crm/models/option/frontend/component";
-import { Component as FileStorage } from "@sps/file-storage/models/file/frontend/component";
+import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -33,7 +33,7 @@ export function Component(props: IComponentPropsExtended) {
       className: props.data?.className || "",
       orderIndex: props.data?.orderIndex || 0,
       optionId: props.data?.optionId || "",
-      fileStorageId: props.data?.fileStorageId || "",
+      fileStorageModuleFileId: props.data?.fileStorageModuleFileId || "",
     },
   });
 
@@ -95,10 +95,10 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
         />
 
-        <FileStorage
+        <FileStorageModuleFile
           isServer={props.isServer}
           variant="admin-select-input"
-          formFieldName="fileStorageId"
+          formFieldName="fileStorageModuleFileId"
           form={form}
         />
       </div>

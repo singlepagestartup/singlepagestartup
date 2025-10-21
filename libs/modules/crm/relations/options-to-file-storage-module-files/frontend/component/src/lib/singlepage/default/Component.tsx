@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as FileStorage } from "@sps/file-storage/models/file/frontend/component";
+import { Component as FileStorageModuleFile } from "@sps/file-storage/models/file/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -11,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      <FileStorage
+      <FileStorageModuleFile
         variant="find"
         isServer={props.isServer}
         apiProps={{
@@ -21,7 +21,7 @@ export function Component(props: IComponentPropsExtended) {
                 {
                   column: "id",
                   method: "eq",
-                  value: props.data.fileStorageId,
+                  value: props.data.fileStorageModuleFileId,
                 },
               ],
             },
@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <FileStorage
+              <FileStorageModuleFile
                 key={index}
                 isServer={props.isServer}
                 variant={entity.variant as any}
@@ -41,7 +41,7 @@ export function Component(props: IComponentPropsExtended) {
             );
           });
         }}
-      </FileStorage>
+      </FileStorageModuleFile>
     </div>
   );
 }
