@@ -1,20 +1,24 @@
 import { factory } from "@sps/shared-frontend-server-api";
 import {
-  NextRequestOptions,
-  responsePipe,
-  transformResponseItem,
-} from "@sps/shared-utils";
-import {
   serverHost,
   route,
   IModel,
   query,
   options,
 } from "@sps/rbac/models/session/sdk/model";
+import {
+  action as init,
+  type IProps as IInitProps,
+  type IResult as IInitResult,
+} from "./actions/init";
 
-export type IProps = {};
+export type IProps = {
+  IInitProps: IInitProps;
+};
 
-export type IResult = {};
+export type IResult = {
+  IInitResult: IInitResult;
+};
 
 export const api = {
   ...factory<IModel>({
@@ -23,35 +27,5 @@ export const api = {
     params: query,
     options,
   }),
-  init: async () => {
-    const options: NextRequestOptions = {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-      next: {
-        cache: "no-store",
-        tags: [route],
-      },
-    };
-
-    const res = await fetch(`${serverHost}${route}/init`, options);
-
-    if (!res.ok) {
-      const error = new Error(res.statusText);
-
-      throw new Error(error.message || "Failed to fetch data");
-    }
-
-    const json = await responsePipe<{
-      data: {
-        ok: true;
-      };
-    }>({
-      res,
-    });
-
-    const transformedData = transformResponseItem<{ ok: true }>(json);
-
-    return transformedData;
-  },
+  init,
 };
