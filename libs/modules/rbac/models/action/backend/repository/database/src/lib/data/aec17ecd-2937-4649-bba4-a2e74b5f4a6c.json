@@ -1,9 +1,0 @@
-{
-  "id": "aec17ecd-2937-4649-bba4-a2e74b5f4a6c",
-  "createdAt": "2025-01-24T23:47:55.724Z",
-  "updatedAt": "2025-01-24T23:52:03.825Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/categories-to-products/[ecommerce.categories-to-products.id]"
-}

@@ -44,7 +44,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
 
   if (filterTypes.find((filterType) => filterType !== "and")) {
     throw new Error(
-      `You are using wrong filter type, now allowed filter types are: [${["'and'"].join(", ")}]`,
+      `Validation error. You are using wrong filter type, now allowed filter types are: [${["'and'"].join(", ")}]`,
     );
   }
 
@@ -63,7 +63,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
     const method: keyof QueryBuilderFilterMethods = filterMethod;
 
     if (!method) {
-      throw new Error("You are missing a method in the filter object");
+      throw new Error(
+        "Validation error. You are missing a method in the filter object",
+      );
     }
 
     if (columnName.includes("->>")) {
@@ -72,13 +74,17 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       const baseColumn = table[column.trim()];
 
       if (!baseColumn) {
-        throw new Error(`Column ${column.trim()} not found in table`);
+        throw new Error(
+          `Internal error. Column ${column.trim()} not found in table`,
+        );
       }
 
       filterValue = filter?.value;
     } else {
       if (!tableColumn) {
-        throw new Error("You are missing a column in the filter object");
+        throw new Error(
+          "Validation error. You are missing a column in the filter object",
+        );
       }
 
       switch (tableColumn?.["dataType"]) {
@@ -107,7 +113,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
           const [column, jsonField] = columnName.split("->>");
           const baseColumn = table[column.trim()];
           if (!baseColumn) {
-            throw new Error(`Column ${column.trim()} not found in table`);
+            throw new Error(
+              `Internal error. Column ${column.trim()} not found in table`,
+            );
           }
           resultQueries.push(
             queryFunctions.isNull(
@@ -132,7 +140,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
-          throw new Error(`Column ${column.trim()} not found in table`);
+          throw new Error(
+            `Internal error. Column ${column.trim()} not found in table`,
+          );
         }
         resultQueries.push(
           queryFunctions[method](
@@ -161,7 +171,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const baseColumn = table[column.trim()];
 
         if (!baseColumn) {
-          throw new Error(`Column ${column.trim()} not found in table`);
+          throw new Error(
+            `Internal error. Column ${column.trim()} not found in table`,
+          );
         }
 
         resultQueries.push(
@@ -187,7 +199,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
-          throw new Error(`Column ${column.trim()} not found in table`);
+          throw new Error(
+            `Internal error. Column ${column.trim()} not found in table`,
+          );
         }
         resultQueries.push(
           queryFunctions[method](
@@ -210,7 +224,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
-          throw new Error(`Column ${column.trim()} not found in table`);
+          throw new Error(
+            `Internal error. Column ${column.trim()} not found in table`,
+          );
         }
         resultQueries.push(
           queryFunctions[method](

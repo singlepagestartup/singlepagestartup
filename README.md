@@ -219,6 +219,40 @@ Strict layered architecture: Repository → Service → Controller → App.
   - `message` — error description
   - `requestId` — unique ID for request traceability
 
+#### Automatic Error Categorization
+
+The system uses a pattern-matching mechanism to automatically classify errors into specific categories. To ensure an error is categorized correctly, simply throw a new Error with a message that includes a specific keyword. The classifier will match this keyword and assign the appropriate HTTP status and category.
+
+This simplifies error handling, as you don't need to manually set status codes for common error types.
+
+#### How It Works
+
+When you throw an error, its message is matched against a predefined list of patterns. Each pattern is linked to an ErrorCategory.
+
+#### Example:
+
+If you throw an error like this:
+
+```typescript
+throw new Error("Invalid credentials provided for user.");
+```
+
+The system will detect the "Invalid credentials" keyword, classify it as an Authentication error, and automatically return an HTTP 401 status code.
+
+Available Error Categories and Keywords
+Here are the available categories and examples of keywords that trigger them:
+| Category | HTTP Status | Example Keywords |
+| ------------------------------ | ----------- | ------------------------------------------------------------------------ |
+| **Authentication error** | 401 | unauthorized, invalid credentials, token required, no session |
+| **Permission error** | 403 | forbidden, permission denied, only order owner |
+| **Validation error** | 400 | invalid data, missing headers, no id provided, invalid url |
+| **Unprocessable Entity error** | 422 | expected string, invalid type, unprocessable entity |
+| **Payment error** | 400 | payment intent not found, stripe secret key not found, currency required |
+| **Not Found error** | 404 | not found, entity not found, form not found |
+| **Internal error** | 500 | internal server error, jwt secret not provided, configuration error |
+
+If no specific pattern is matched, the error will be classified as a generic Internal error with a 500 status code, ensuring that no error goes unhandled.
+
 ## Installation and Setup
 
 ### Prerequisites

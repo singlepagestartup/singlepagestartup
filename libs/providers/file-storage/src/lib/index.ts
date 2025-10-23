@@ -29,11 +29,13 @@ export class Provider implements IProvider {
       return;
     } else if (props.type === "aws-s3") {
       if (!AWS_REGION) {
-        throw new Error("AWS_REGION is not defined");
+        throw new Error("Configuration error. AWS_REGION is not defined");
       }
 
       if (!AWS_S3_BUCKET_NAME) {
-        throw new Error("AWS_S3_BUCKET_NAME is not defined");
+        throw new Error(
+          "Configuration error. AWS_S3_BUCKET_NAME is not defined",
+        );
       }
 
       const awsS3 = new AWSS3Provider({
@@ -46,7 +48,7 @@ export class Provider implements IProvider {
       return;
     }
 
-    throw new Error("Provider not found");
+    throw new Error("Not Found error. Provider not found");
   }
 
   async connect(): Promise<void> {

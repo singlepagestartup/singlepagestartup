@@ -131,7 +131,9 @@ export class TelegarmBot {
 
   async run() {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
-      throw new Error("TELEGRAM_SERVICE_BOT_TOKEN is not set");
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
+      );
     }
 
     const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
@@ -143,7 +145,9 @@ export class TelegarmBot {
 
   async stop() {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
-      throw new Error("TELEGRAM_SERVICE_BOT_TOKEN is not set");
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
+      );
     }
 
     const res = await this.instance.api.deleteWebhook();

@@ -1,0 +1,9 @@
+{
+  "id": "8e9e5a4c-e401-422e-b185-102a7f782564",
+  "createdAt": "2025-02-01T16:18:43.199Z",
+  "updatedAt": "2025-10-13T18:58:04.967Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/inputs/[crm.inputs.id]"
+}

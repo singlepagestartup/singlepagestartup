@@ -1,9 +1,0 @@
-{
-  "id": "3183c75f-22c4-485d-9295-a118e91b06c6",
-  "createdAt": "2025-01-24T23:47:55.728Z",
-  "updatedAt": "2025-01-24T23:52:03.833Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/billing/payment-intents/dummy/webhook"
-}

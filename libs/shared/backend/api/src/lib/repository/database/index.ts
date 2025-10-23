@@ -436,7 +436,8 @@ export class Database<T extends PgTableWithColumns<any>>
         if (filteredEntities.length) {
           if (filteredEntities.length > 1) {
             throw new Error(
-              "You need to pass a filter that returns more than one entity",
+              "You need to pass a filter that returns more than one entity. Got:" +
+                JSON.stringify(filteredEntities, null, 2),
             );
           }
 

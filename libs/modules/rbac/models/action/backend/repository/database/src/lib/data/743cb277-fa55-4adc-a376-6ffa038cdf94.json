@@ -1,0 +1,9 @@
+{
+  "id": "743cb277-fa55-4adc-a376-6ffa038cdf94",
+  "createdAt": "2025-01-24T23:47:55.690Z",
+  "updatedAt": "2025-10-13T18:58:06.531Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/payment-intents"
+}

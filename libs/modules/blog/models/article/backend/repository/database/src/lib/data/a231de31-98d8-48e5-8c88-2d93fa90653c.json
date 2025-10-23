@@ -1,0 +1,21 @@
+{
+  "id": "a231de31-98d8-48e5-8c88-2d93fa90653c",
+  "className": "",
+  "createdAt": "2025-05-06T16:43:00.394Z",
+  "updatedAt": "2025-10-13T18:57:59.989Z",
+  "variant": "default",
+  "adminTitle": "Article #1",
+  "slug": "remarkable-lime-unicorn",
+  "title": {
+    "en": "Article #1 Title",
+    "ru": "Article #1 Title"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #1 Subtitle\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #1 Subtitle\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #1 Description\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #1 Description\"}]}]}"
+  }
+}

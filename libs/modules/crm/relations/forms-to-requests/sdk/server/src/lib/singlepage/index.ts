@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/crm/relations/forms-to-requests/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

@@ -1,0 +1,19 @@
+{
+  "className": null,
+  "title": {
+    "en": "Subjects",
+    "ru": "Subjects"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Invite your team members to collaborate.\"}]}]}"
+  },
+  "id": "a60113d9-4323-4071-95ec-6249dc0cc824",
+  "createdAt": "2025-01-24T23:47:55.682Z",
+  "updatedAt": "2025-10-13T18:58:02.809Z",
+  "variant": "subject-list-social-module-profile-default",
+  "adminTitle": "tpnVl7TTA8",
+  "slug": "subject-list-social-module-profile-default"
+}

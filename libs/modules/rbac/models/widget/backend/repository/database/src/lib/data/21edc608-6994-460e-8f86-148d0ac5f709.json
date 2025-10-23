@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "title": {
+    "en": "Forgot Password"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": ""
+  },
+  "id": "21edc608-6994-460e-8f86-148d0ac5f709",
+  "createdAt": "2025-01-24T23:47:55.639Z",
+  "updatedAt": "2025-10-13T18:58:02.953Z",
+  "variant": "subject-authentication-email-and-password-forgot-password-form-default",
+  "adminTitle": "24dcybSnEF",
+  "slug": "forgot-password"
+}

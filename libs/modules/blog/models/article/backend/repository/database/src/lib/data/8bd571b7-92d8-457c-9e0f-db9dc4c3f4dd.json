@@ -1,0 +1,21 @@
+{
+  "id": "8bd571b7-92d8-457c-9e0f-db9dc4c3f4dd",
+  "className": "",
+  "createdAt": "2025-05-06T16:44:47.816Z",
+  "updatedAt": "2025-10-13T18:57:59.928Z",
+  "variant": "default",
+  "adminTitle": "Article #4",
+  "slug": "article-4",
+  "title": {
+    "en": "Article #4 Title",
+    "ru": "Article #4 Title"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #4 Subtitle\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #4 Subtitle\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #4 Description\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Article #4 Description\"}]}]}"
+  }
+}

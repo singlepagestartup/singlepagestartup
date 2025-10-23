@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "title": {
+    "en": "Your identities"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Update or add new identity, which will get access to your subject.\"}]}]}"
+  },
+  "id": "c9c4df71-6cb5-4807-880f-00e2e832ae9b",
+  "createdAt": "2025-01-24T23:47:55.635Z",
+  "updatedAt": "2025-10-13T18:58:02.793Z",
+  "variant": "subject-identity-settings-default",
+  "adminTitle": "UnNvlTkx3I",
+  "slug": "identity-update-default"
+}

@@ -8,6 +8,7 @@ The CRM module is designed to implement a customer relationship management syste
 
 - Manages customer requests and inquiries (`Request`)
 - Handles form creation and management (`Form`)
+- Allowes to create multi-steps forms (`Step`)
 - Provides input field management (`Input`)
 - Offers widget-based form interfaces (`Widget`)
 - Supports various form types and validation
@@ -31,7 +32,9 @@ Quickly integrating a robust CRM system into any project without building comple
 | Model   | Purpose                                    |
 | ------- | ------------------------------------------ |
 | Form    | Managing forms and their configurations    |
+| Step    | Representing action in multi-steps forms   |
 | Input   | Managing form input fields and validation  |
+| Option  | Representing select input option           |
 | Request | Handling customer requests and submissions |
 | Widget  | Managing widget-based form interfaces      |
 
@@ -39,11 +42,14 @@ Quickly integrating a robust CRM system into any project without building comple
 
 ## 3. Model Relations
 
-| Relation        | Purpose                                                        |
-| --------------- | -------------------------------------------------------------- |
-| FormsToInputs   | Many-to-many relation: forms can contain multiple input fields |
-| FormsToRequests | Many-to-many relation: forms can receive multiple requests     |
-| WidgetsToForms  | Many-to-many relation: widgets can display multiple forms      |
+| Relation                        | Purpose                                                    |
+| ------------------------------- | ---------------------------------------------------------- |
+| FormsToSteps                    | Many-to-many relation: forms can contain multiple steps    |
+| FormsToRequests                 | Many-to-many relation: forms can receive multiple requests |
+| StepsToInputs                   | Many-to-many relation: steps can contain multiple inputs   |
+| InputsToOptions                 | Many-to-many relation: inputs can contain multiple options |
+| OptionsToFileStorageModuleFiles | Many-to-many relation: options can have multiple files     |
+| WidgetsToForms                  | Many-to-many relation: widgets can display multiple forms  |
 
 ---
 
@@ -60,6 +66,25 @@ Quickly integrating a robust CRM system into any project without building comple
 - `title`: form title (multilingual)
 - `subtitle`: form subtitle (multilingual)
 - `description`: form description (multilingual)
+- `className`: custom CSS class name for styling
+- `adminTitle`: title for admin panel
+- `slug`: unique URL-friendly identifier
+
+#### Variants:
+
+- default
+
+### Step
+
+#### Main fields:
+
+- `id`: unique step identifier
+- `createdAt`: creation timestamp
+- `updatedAt`: last update timestamp
+- `variant`: step display variant
+- `title`: step title (multilingual)
+- `subtitle`: step subtitle (multilingual)
+- `description`: step description (multilingual)
 - `className`: custom CSS class name for styling
 - `adminTitle`: title for admin panel
 - `slug`: unique URL-friendly identifier
@@ -92,7 +117,24 @@ Quickly integrating a robust CRM system into any project without building comple
 - default
 - text-default
 - textarea-default
-- number-default
+- select-option-default
+
+### Option
+
+#### Main fields:
+
+- `id`: unique option identifier
+- `createdAt`: creation timestamp
+- `updatedAt`: last update timestamp
+- `variant`: option display variant
+- `title`: option title (multilingual)
+- `className`: custom CSS class name for styling
+- `adminTitle`: title for admin panel
+- `slug`: unique URL-friendly identifier
+
+#### Variants:
+
+- default
 
 ### Request
 

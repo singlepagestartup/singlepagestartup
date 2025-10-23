@@ -6,6 +6,10 @@ import {
   options,
 } from "@sps/blog/relations/articles-to-file-storage-module-files/sdk/model";
 
+export type IProps = {};
+
+export type IResult = {};
+
 export const api = factory<IModel>({
   route,
   host: serverHost,

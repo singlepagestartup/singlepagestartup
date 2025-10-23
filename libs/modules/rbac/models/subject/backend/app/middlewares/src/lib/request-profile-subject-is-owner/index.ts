@@ -5,6 +5,7 @@ import { MiddlewareHandler } from "hono";
 import { Middleware as RbacModuleRequestSubjectIsOwnerMiddleware } from "../request-subject-is-owner";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export interface IMiddlewareGeneric {}
 
@@ -88,38 +89,8 @@ export class Middleware {
 
           return next();
         } catch (error: any) {
-          if (error.message?.includes("Configuration error")) {
-            throw new HTTPException(500, {
-              message: error.message || "Configuration error",
-              cause: error,
-            });
-          }
-
-          if (error.message?.includes("Validation error")) {
-            throw new HTTPException(400, {
-              message: error.message || "Validation error",
-              cause: error,
-            });
-          }
-
-          if (error.message?.includes("Unauthorized")) {
-            throw new HTTPException(403, {
-              message: error.message || "Unauthorized",
-              cause: error,
-            });
-          }
-
-          if (error.message?.includes("Not found")) {
-            throw new HTTPException(404, {
-              message: error.message || "Not found",
-              cause: error,
-            });
-          }
-
-          throw new HTTPException(500, {
-            message: error.message || "Internal Server Error",
-            cause: error,
-          });
+          const { status, message, details } = getHttpErrorType(error);
+          throw new HTTPException(status, { message, cause: details });
         }
       });
     });

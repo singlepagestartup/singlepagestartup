@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { getCookie } from "hono/cookie";
-import { authorization } from "@sps/backend-utils";
+import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 
 export interface IMiddlewareGeneric {}
@@ -33,54 +33,26 @@ export class Middleware {
           const token = authorization(c);
 
           if (!token) {
-            throw new Error("Unauthorized. No JWT token provided");
+            throw new Error("Validation error. No JWT token provided");
           }
 
           const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
           if (decoded?.["subject"]?.["id"] !== id) {
-            throw new Error("Unauthorized. Only profile owner can get access");
+            throw new Error(
+              "Authorization error. Only profile owner can get access",
+            );
           }
         } else {
           if (secretKey !== RBAC_SECRET_KEY) {
-            throw new Error("Unauthorized. Wrong secret key");
+            throw new Error("Validation error. Wrong secret key");
           }
         }
 
         return next();
       } catch (error: any) {
-        if (error.message?.includes("Configuration error")) {
-          throw new HTTPException(500, {
-            message: error.message || "Configuration error",
-            cause: error,
-          });
-        }
-
-        if (error.message?.includes("Validation error")) {
-          throw new HTTPException(400, {
-            message: error.message || "Validation error",
-            cause: error,
-          });
-        }
-
-        if (error.message?.includes("Unauthorized")) {
-          throw new HTTPException(403, {
-            message: error.message || "Unauthorized",
-            cause: error,
-          });
-        }
-
-        if (error.message?.includes("Not found")) {
-          throw new HTTPException(404, {
-            message: error.message || "Not found",
-            cause: error,
-          });
-        }
-
-        throw new HTTPException(500, {
-          message: error.message || "Internal Server Error",
-          cause: error,
-        });
+        const { status, message, details } = getHttpErrorType(error);
+        throw new HTTPException(status, { message, cause: details });
       }
     });
   }

@@ -1,7 +1,10 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/crm/models/input/frontend/component";
-import { Component as FormsToInputs } from "@sps/crm/relations/forms-to-inputs/frontend/component";
+
+import { Component as InputsToOptions } from "@sps/crm/relations/inputs-to-options/frontend/component";
+
+import { Component as StepsToInputs } from "@sps/crm/relations/steps-to-inputs/frontend/component";
 
 export function Component() {
   return (
@@ -14,13 +17,38 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
-            formsToInputs={({ data, isServer }) => {
+            stepsToInputs={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <FormsToInputs
+                <StepsToInputs
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "inputId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            inputsToOptions={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <InputsToOptions
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

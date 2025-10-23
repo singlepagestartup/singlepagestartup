@@ -33,12 +33,12 @@ export class Middleware {
     const cookieSessionSecret = RBAC_COOKIE_SESSION_SECRET;
 
     if (!cookieSessionSecret) {
-      throw new Error("Cookie session secret is required");
+      throw new Error("Configuration error. Cookie session secret is required");
     }
 
     if (cookieSessionSecret.length < 32) {
       throw new Error(
-        "Cookie session secret must be at least 32 characters long",
+        "Configuration error. Cookie session secret must be at least 32 characters long",
       );
     }
 
@@ -68,7 +68,7 @@ export class Middleware {
 
       if (!RBAC_SECRET_KEY) {
         throw new Error(
-          "RBAC_SECRET_KEY is required for sessions middleware to work",
+          "Configuration error. RBAC_SECRET_KEY is required for sessions middleware to work",
         );
       }
 
@@ -167,7 +167,7 @@ export class Middleware {
         });
 
         if (!createdSession) {
-          throw new Error("Session not found");
+          throw new Error("Not Found error. Session not found");
         }
 
         sid = createdSession.id;
@@ -182,7 +182,7 @@ export class Middleware {
       );
 
       if (!session) {
-        throw new Error("Session not found");
+        throw new Error("Not Found error. Session not found");
       }
 
       await next();

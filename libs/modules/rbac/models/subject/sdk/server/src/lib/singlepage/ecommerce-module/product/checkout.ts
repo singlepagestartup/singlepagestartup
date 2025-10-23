@@ -32,7 +32,7 @@ export async function action(props: IProps): Promise<IResult> {
   const productId = props.productId || props.data["productId"];
 
   if (!productId) {
-    throw new Error("productId is required");
+    throw new Error("Validation error. productId is required");
   }
 
   const formData = prepareFormDataToSend({ data });
