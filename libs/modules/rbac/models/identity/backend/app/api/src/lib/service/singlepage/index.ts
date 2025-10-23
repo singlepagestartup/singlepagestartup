@@ -56,15 +56,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
 
       if (identities?.length) {
-        throw new Error("Authentication error. Identity already exists");
+        throw new Error("Not Found error. Identity already exists");
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -81,9 +79,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -111,25 +106,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
 
     if (!identities?.length) {
-      throw new Error("Authentication error. Invalid credentials");
+      throw new Error("Not Found error. Invalid credentials");
     }
 
     if (identities.length > 1) {
-      throw new Error("Authentication error. Multiple identities found");
+      throw new Error("Validation error. Multiple identities found");
     }
 
     const identity = identities[0];
 
     if (!identity.salt) {
-      throw new Error("Not Found error. No salt found for this identity");
+      throw new Error("Validation error. No salt found for this identity");
     }
 
     const saltedPassword = await bcrypt.hash(
@@ -138,7 +131,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (saltedPassword !== identity.password) {
-      throw new Error("Authentication error. Invalid credentials");
+      throw new Error("Validation error. Invalid credentials");
     }
 
     if (identity.code) {
@@ -151,9 +144,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -178,9 +168,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -199,7 +187,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (saltedPassword !== identity.password) {
-      throw new Error("Authentication error. Invalid credentials");
+      throw new Error("Validation error. Invalid credentials");
     }
 
     const updatedIdentity = await api.update({
@@ -211,9 +199,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
         },
       },
     });

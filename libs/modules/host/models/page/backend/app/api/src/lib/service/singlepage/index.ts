@@ -20,7 +20,7 @@ export type FindByUrlServiceProps = {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async findByUrl(props: FindByUrlServiceProps): Promise<any> {
     if (props.url.includes("?")) {
-      throw new Error("Query parameters are not allowed");
+      throw new Error("Validation error. Query parameters are not allowed");
     }
 
     const splittedUrl = props.url.split("/").filter((url) => url !== "");

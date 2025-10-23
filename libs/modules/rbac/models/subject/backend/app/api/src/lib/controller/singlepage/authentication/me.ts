@@ -34,7 +34,7 @@ export class Handler {
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
       if (!decoded.subject?.["id"]) {
-        throw new Error("Not Found error. No subject provided in the token");
+        throw new Error("Validation error. No subject provided in the token");
       }
 
       // const entity = await this.service.findById({
@@ -42,7 +42,7 @@ export class Handler {
       // });
 
       if (!decoded.subject) {
-        throw new Error("Not Found error. No subject provided in the token");
+        throw new Error("Validation error. No subject provided in the token");
       }
 
       return c.json({

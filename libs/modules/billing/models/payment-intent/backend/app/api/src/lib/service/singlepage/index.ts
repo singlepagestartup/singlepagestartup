@@ -70,9 +70,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -95,9 +93,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -121,9 +117,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
                 },
               },
             });
@@ -317,9 +310,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
       } else if ("latest_invoice" in checkout && checkout.latest_invoice) {
@@ -334,9 +324,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -354,9 +341,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -381,9 +365,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -410,9 +392,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
               },
             },
           });
@@ -448,9 +427,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             options: {
               headers: {
                 "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-              next: {
-                cache: "no-store",
+                "Cache-Control": "no-store",
               },
             },
           });
@@ -472,9 +449,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 },
-                next: {
-                  cache: "no-store",
-                },
               },
             });
 
@@ -487,9 +461,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 options: {
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                  next: {
-                    cache: "no-store",
                   },
                 },
               });
@@ -512,9 +483,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-                next: {
-                  cache: "no-store",
                 },
               },
             });
@@ -630,9 +598,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -648,9 +613,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -674,9 +636,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -696,7 +656,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const hash = crypto.createHash("md5").update(string).digest("hex");
 
       if (hash !== Signature) {
-        throw new Error("Signature mismatch");
+        throw new Error("Validation error. Signature mismatch");
       }
 
       if (props.data.Status === "Success") {
@@ -710,9 +670,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -761,9 +718,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -779,9 +733,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -803,9 +754,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -829,9 +778,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -1087,9 +1033,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -1162,9 +1105,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -1180,9 +1120,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -1207,9 +1145,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -1239,9 +1175,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });

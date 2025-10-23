@@ -42,7 +42,7 @@ export class Handler<
         });
 
         if (!createdEntity) {
-          throw new Error("Not Found error. Entity not found");
+          throw new Error("Internal error. Entity not created");
         }
 
         createdEntities.push(createdEntity);

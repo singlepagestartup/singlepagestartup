@@ -63,7 +63,9 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
     const method: keyof QueryBuilderFilterMethods = filterMethod;
 
     if (!method) {
-      throw new Error("You are missing a method in the filter object");
+      throw new Error(
+        "Validation error. You are missing a method in the filter object",
+      );
     }
 
     if (columnName.includes("->>")) {
@@ -73,7 +75,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
 
       if (!baseColumn) {
         throw new Error(
-          `Not Found error. Column ${column.trim()} not found in table`,
+          `Internal error. Column ${column.trim()} not found in table`,
         );
       }
 
@@ -112,7 +114,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
           const baseColumn = table[column.trim()];
           if (!baseColumn) {
             throw new Error(
-              `Not Found error. Column ${column.trim()} not found in table`,
+              `Internal error. Column ${column.trim()} not found in table`,
             );
           }
           resultQueries.push(
@@ -139,7 +141,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
           throw new Error(
-            `Not Found error. Column ${column.trim()} not found in table`,
+            `Internal error. Column ${column.trim()} not found in table`,
           );
         }
         resultQueries.push(
@@ -170,7 +172,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
 
         if (!baseColumn) {
           throw new Error(
-            `Not Found error. Column ${column.trim()} not found in table`,
+            `Internal error. Column ${column.trim()} not found in table`,
           );
         }
 
@@ -198,7 +200,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
           throw new Error(
-            `Not Found error. Column ${column.trim()} not found in table`,
+            `Internal error. Column ${column.trim()} not found in table`,
           );
         }
         resultQueries.push(
@@ -223,7 +225,7 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         const baseColumn = table[column.trim()];
         if (!baseColumn) {
           throw new Error(
-            `Not Found error. Column ${column.trim()} not found in table`,
+            `Internal error. Column ${column.trim()} not found in table`,
           );
         }
         resultQueries.push(

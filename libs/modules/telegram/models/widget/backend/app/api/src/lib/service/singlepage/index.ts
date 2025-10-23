@@ -4,7 +4,6 @@ import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/telegram/models/widget/backend/repository/database";
 import { api } from "@sps/telegram/models/widget/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { Context as GrammyContext } from "grammy";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {

@@ -60,6 +60,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -69,7 +70,7 @@ export class Handler {
       }
 
       if (order.status !== "new") {
-        throw new Error("Not Found error. Order is not in 'new' status");
+        throw new Error("Validation error. Order is not in 'new' status");
       }
 
       await this.service.deanonymize({

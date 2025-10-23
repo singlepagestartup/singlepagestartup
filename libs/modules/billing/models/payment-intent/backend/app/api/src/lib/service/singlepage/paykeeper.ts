@@ -14,9 +14,7 @@ import {
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
-import * as crypto from "crypto";
 
-// Интерфейс для metadata
 interface IMetadata {
   ecommerceModule?: {
     orders?: Array<{
@@ -126,8 +124,8 @@ export interface IPayKeeperCartItem {
 }
 
 export interface IPayKeeperServiceName {
-  cart?: string; // JSON-строка с массивом товаров
-  receipt_properties?: string; // JSON-строка с дополнительными свойствами чека
+  cart?: string;
+  receipt_properties?: string;
   lang?: "ru" | "en";
   user_result_callback?: string;
   service_name?: string;
@@ -141,7 +139,7 @@ export interface IPayKeeperPaymentData {
   client_phone?: string;
   expiry?: string;
   token: string;
-  service_name?: string | IPayKeeperServiceName; // Может быть строкой или JSON-объектом
+  service_name?: string | IPayKeeperServiceName;
 }
 
 export interface IPayKeeperPaymentResponse {
@@ -246,20 +244,21 @@ export class Service {
 
       if (!response.ok) {
         throw new Error(
-          `PayKeeper token request failed: ${response.status} ${response.statusText}`,
+          `Internal error. PayKeeper token request failed: ${response.status} ${response.statusText}`,
         );
       }
 
       const tokenResponse: IPayKeeperTokenResponse = await response.json();
 
       if (!tokenResponse.token) {
-        throw new Error("PayKeeper did not return security token");
+        throw new Error(
+          "Internal error. PayKeeper did not return security token",
+        );
       }
 
       return tokenResponse.token;
     } catch (error) {
-      console.log("Failed to get PayKeeper security token:", error);
-      throw new Error(`Failed to get security token: ${error}`);
+      throw new Error(`Internal error. Failed to get security token: ${error}`);
     }
   }
 
@@ -290,7 +289,7 @@ export class Service {
         const errorText = await response.text();
         console.log("🚀 ~ PayKeeper error response:", errorText);
         throw new Error(
-          `PayKeeper invoice request failed: ${response.status} ${response.statusText}. Response: ${errorText}`,
+          `Internal error. PayKeeper invoice request failed: ${response.status} ${response.statusText}. Response: ${errorText}`,
         );
       }
 
@@ -302,19 +301,22 @@ export class Service {
         invoiceResponse = JSON.parse(responseText);
       } catch (parseError) {
         console.log("🚀 ~ Failed to parse PayKeeper response:", parseError);
-        throw new Error(`Failed to parse PayKeeper response: ${responseText}`);
+        throw new Error(
+          `Internal error. Failed to parse PayKeeper response: ${responseText}`,
+        );
       }
 
       console.log("🚀 ~ Parsed invoice response:", invoiceResponse);
 
       if (!invoiceResponse) {
-        throw new Error("PayKeeper did not return invoice data");
+        throw new Error(
+          "Internal error. PayKeeper did not return invoice data",
+        );
       }
 
       return invoiceResponse;
     } catch (error) {
-      console.log("Failed to get PayKeeper invoice data:", error);
-      throw new Error(`Failed to get invoice data: ${error}`);
+      throw new Error(`Internal error. Failed to get invoice data: ${error}`);
     }
   }
 
@@ -403,7 +405,7 @@ export class Service {
 
         if (!response.ok) {
           throw new Error(
-            `PayKeeper API error: ${response.status} ${response.statusText}`,
+            `Internal error. PayKeeper API error: ${response.status} ${response.statusText}`,
           );
         }
 
@@ -412,12 +414,14 @@ export class Service {
 
         if (paykeeperResponse.result === "fail") {
           const errorMessage = paykeeperResponse.msg || "Unknown error";
-          throw new Error(`PayKeeper invoice creation failed: ${errorMessage}`);
+          throw new Error(
+            `Internal error. PayKeeper invoice creation failed: ${errorMessage}`,
+          );
         }
 
         if (!paykeeperResponse.invoice_id || !paykeeperResponse.invoice_url) {
           throw new Error(
-            "PayKeeper invoice creation failed: missing required fields",
+            "Internal error. PayKeeper invoice creation failed: missing required fields",
           );
         }
 
@@ -425,7 +429,7 @@ export class Service {
 
         if (!paykeeperInvoiceId) {
           throw new Error(
-            "PayKeeper invoice creation failed: missing required fields",
+            "Internal error. PayKeeper invoice creation failed: missing required fields",
           );
         }
 
@@ -439,9 +443,6 @@ export class Service {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -459,15 +460,11 @@ export class Service {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
         return invoice;
       } catch (error) {
-        console.log("PayKeeper invoice creation error:", error);
         throw error;
       }
     } else {

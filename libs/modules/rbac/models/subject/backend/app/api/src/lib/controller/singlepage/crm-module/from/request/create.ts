@@ -106,6 +106,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -158,9 +159,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -185,9 +184,7 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -208,6 +205,7 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -231,6 +229,7 @@ export class Handler {
                   options: {
                     headers: {
                       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
                     },
                   },
                 });

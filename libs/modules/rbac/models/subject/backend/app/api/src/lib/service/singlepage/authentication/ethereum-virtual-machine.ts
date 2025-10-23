@@ -84,9 +84,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -101,9 +99,6 @@ export class Service {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          next: {
-            cache: "no-store",
-          },
         },
       });
 
@@ -114,9 +109,6 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -129,9 +121,6 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });
@@ -162,9 +151,7 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -182,9 +169,6 @@ export class Service {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
             },
           },
         });
@@ -206,19 +190,17 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
 
     if (!finalIdentities?.length) {
-      throw new Error("Authentication error. Invalid credentials");
+      throw new Error("Not Found error. No identities found");
     }
 
     if (finalIdentities.length > 1) {
-      throw new Error("Internal error. Multiple identities found");
+      throw new Error("Validation error. Multiple identities found");
     }
 
     const identity = finalIdentities[0];
@@ -238,9 +220,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -256,9 +236,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });

@@ -30,7 +30,7 @@ export class Handler {
       const token = authorization(c);
 
       if (!token) {
-        throw new Error("Authentication error. No token");
+        throw new Error("Validation error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
@@ -39,7 +39,7 @@ export class Handler {
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
         throw new Error(
-          "Permission error. Only identity owner can create identity.",
+          "Validation error. Only identity owner can create identity.",
         );
       }
 
@@ -101,9 +101,7 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });
@@ -121,9 +119,6 @@ export class Handler {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -136,9 +131,6 @@ export class Handler {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
-            next: {
-              cache: "no-store",
-            },
           },
         });
 
@@ -147,9 +139,7 @@ export class Handler {
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-            next: {
-              cache: "no-store",
+              "Cache-Control": "no-store",
             },
           },
         });

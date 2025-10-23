@@ -20,7 +20,7 @@ export class Handler {
       const secretKey = secretKeyHeader || secretKeyCookie;
 
       if (secretKey && secretKey !== RBAC_SECRET_KEY) {
-        throw new Error("Authentication error. Unauthorized");
+        throw new Error("Validation error. Unauthorized");
       }
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {

@@ -51,9 +51,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -69,7 +67,7 @@ export class Handler {
       const codeExpired = new Date().getTime() - updatedAt < 3600000;
 
       if (!codeExpired) {
-        throw new Error("Internal error. Code is expired. Resend again.");
+        throw new Error("Validation error. Code is expired. Resend again.");
       }
 
       if (!data.password) {
@@ -77,13 +75,11 @@ export class Handler {
       }
 
       if (data.password !== data.passwordConfirmation) {
-        throw new Error("Authentication error. Passwords do not match");
+        throw new Error("Validation error. Passwords do not match");
       }
 
       if (!identity.salt) {
-        throw new Error(
-          "Authentication error. No salt found for this identity",
-        );
+        throw new Error("Validation error. No salt found for this identity");
       }
 
       await identityApi.update({
@@ -96,9 +92,6 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-          next: {
-            cache: "no-store",
           },
         },
       });

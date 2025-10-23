@@ -45,7 +45,7 @@ export class Handler {
               });
 
               if (!res.ok) {
-                throw new Error("Failed to fetch page");
+                throw new Error("Internal error. Failed to fetch page");
               }
 
               logger.info(
@@ -80,11 +80,11 @@ export class Handler {
     )
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Failed to revalidate page");
+          throw new Error("Internal error. Failed to revalidate page");
         }
       })
       .catch((err) => {
-        logger.error("Failed to revalidate page", {
+        logger.error("Internal error. Failed to revalidate page", {
           error: err,
         });
       });

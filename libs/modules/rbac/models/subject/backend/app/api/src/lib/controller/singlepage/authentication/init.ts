@@ -67,7 +67,7 @@ export class Handler {
       const decodedJwt = await jwt.verify(jwtToken, RBAC_JWT_SECRET);
 
       if (!decodedJwt.exp) {
-        throw new Error("Authentication error. Invalid token issued");
+        throw new Error("Validation error. Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", jwtToken, {

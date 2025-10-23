@@ -3,7 +3,6 @@ import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { HTTPException } from "hono/http-exception";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
@@ -198,6 +197,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -267,6 +267,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -287,6 +288,7 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -306,6 +308,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -432,6 +435,7 @@ export class Service {
                 options: {
                   headers: {
                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
                   },
                 },
               });

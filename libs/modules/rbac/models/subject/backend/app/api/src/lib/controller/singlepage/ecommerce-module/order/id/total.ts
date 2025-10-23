@@ -46,13 +46,13 @@ export class Handler {
       const token = authorization(c);
 
       if (!token) {
-        throw new Error("Authentication error. No token");
+        throw new Error("Validation error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Permission error. Only order owner can update order");
+        throw new Error("Validation error. Only order owner can update order");
       }
 
       const order = await ecommerceOrderApi.findById({
@@ -60,6 +60,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });

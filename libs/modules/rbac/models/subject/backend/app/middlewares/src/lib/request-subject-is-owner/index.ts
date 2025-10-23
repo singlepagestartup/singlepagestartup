@@ -33,23 +33,19 @@ export class Middleware {
           const token = authorization(c);
 
           if (!token) {
-            throw new Error(
-              "Authentication error. Unauthorized. No JWT token provided",
-            );
+            throw new Error("Validation error. No JWT token provided");
           }
 
           const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
           if (decoded?.["subject"]?.["id"] !== id) {
             throw new Error(
-              "Authentication error. Unauthorized. Only profile owner can get access",
+              "Authorization error. Only profile owner can get access",
             );
           }
         } else {
           if (secretKey !== RBAC_SECRET_KEY) {
-            throw new Error(
-              "Authentication error. Unauthorized. Wrong secret key",
-            );
+            throw new Error("Validation error. Wrong secret key");
           }
         }
 

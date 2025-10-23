@@ -47,7 +47,7 @@ export class Handler<
         });
 
         if (!updatedEntity) {
-          throw new Error("Not Found error. Entity not found");
+          throw new Error("Internal error. Entity not updated");
         }
 
         updatedEntities.push(updatedEntity);

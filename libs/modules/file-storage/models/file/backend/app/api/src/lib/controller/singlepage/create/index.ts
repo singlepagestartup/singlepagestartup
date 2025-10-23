@@ -128,7 +128,7 @@ export class Handler {
         );
       }
 
-      throw new Error("Validation error. Invalid file");
+      throw new Error("Internal error. Could not save files to database");
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

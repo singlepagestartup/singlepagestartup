@@ -3,7 +3,6 @@ import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { HTTPException } from "hono/http-exception";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
@@ -17,7 +16,6 @@ import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payme
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as billingModulePaymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
@@ -58,6 +56,7 @@ export class Service {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });

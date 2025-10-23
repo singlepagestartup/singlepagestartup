@@ -175,7 +175,7 @@ export class Service {
       });
 
       if (!invoice) {
-        throw new Error("Not Found error. Invoice not found");
+        throw new Error("Internal error. Failed to update invoice");
       }
 
       await paymentIntentsToInvoicesApi.create({

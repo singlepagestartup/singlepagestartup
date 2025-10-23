@@ -226,9 +226,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
+          "Cache-Control": "no-store",
         },
       },
     });

@@ -33,12 +33,12 @@ export class Middleware {
     const cookieSessionSecret = RBAC_COOKIE_SESSION_SECRET;
 
     if (!cookieSessionSecret) {
-      throw new Error("Cookie session secret is required");
+      throw new Error("Configuration error. Cookie session secret is required");
     }
 
     if (cookieSessionSecret.length < 32) {
       throw new Error(
-        "Cookie session secret must be at least 32 characters long",
+        "Configuration error. Cookie session secret must be at least 32 characters long",
       );
     }
 

@@ -15,18 +15,18 @@ export class Handler<
   constructor(@inject(DI.IService) private service: IService<SCHEMA>) {}
 
   async execute(c: C, next: Next) {
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new Error(
-        "Validation error. Invalid body['data']: " +
-          body["data"] +
-          ". Expected string, got: " +
-          typeof body["data"],
-      );
-    }
-
     try {
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new Error(
+          "Validation error. Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        );
+      }
+
       const data = JSON.parse(body["data"]);
 
       const entity = await this.service.create({ data });

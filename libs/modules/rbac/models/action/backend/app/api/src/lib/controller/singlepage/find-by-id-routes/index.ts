@@ -10,7 +10,6 @@ import {
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { api } from "@sps/rbac/models/action/sdk/server";
-import { HTTPException } from "hono/http-exception";
 
 type ActionWithSaturatedRoutes = typeof Table.$inferSelect & {
   routes: string[];
