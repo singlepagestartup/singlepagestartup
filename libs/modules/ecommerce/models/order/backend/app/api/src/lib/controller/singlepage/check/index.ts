@@ -20,20 +20,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid id");
       }
 
       const entity = await this.service.findById({
@@ -41,7 +34,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("Order not found");
+        throw new Error("Not Found error. Order not found");
       }
 
       const ordersToBillingModuleCurrencies =
@@ -108,7 +101,7 @@ export class Handler {
 
           if (!ordersToBillingModulePaymentIntents?.length) {
             throw new Error(
-              "Orders to billing module payment intents not found",
+              "Not Found error. Orders to billing module payment intents not found",
             );
           }
 
@@ -135,7 +128,7 @@ export class Handler {
           });
 
           if (!paymentIntents?.length) {
-            throw new Error("Payment intents not found");
+            throw new Error("Not Found error. Payment intents not found");
           }
 
           const paymentIntentIsSucceeded = paymentIntents.find(
@@ -145,11 +138,13 @@ export class Handler {
           );
 
           if (!paymentIntentIsSucceeded) {
-            throw new Error("Payment intent is not succeeded");
+            throw new Error("Not Found error. Payment intent is not succeeded");
           }
 
           if (!ordersToBillingModuleCurrencies?.length) {
-            throw new Error("Orders to billing module currencies not found");
+            throw new Error(
+              "Not Found error. Orders to billing module currencies not found",
+            );
           }
 
           const attributes = await this.service.getCheckoutAttributes({
@@ -175,7 +170,9 @@ export class Handler {
         }
       } else if (entity.status === "delivering") {
         if (!ordersToBillingModuleCurrencies?.length) {
-          throw new Error("Orders to billing module currencies not found");
+          throw new Error(
+            "Not Found error. Orders to billing module currencies not found",
+          );
         }
 
         const attributes = await this.service.getCheckoutAttributes({
@@ -259,7 +256,7 @@ export class Handler {
 
             if (!ordersToBillingModulePaymentIntents?.length) {
               throw new Error(
-                "Orders to billing module payment intents not found",
+                "Not Found error. Orders to billing module payment intents not found",
               );
             }
 
@@ -286,7 +283,7 @@ export class Handler {
             });
 
             if (!paymentIntents?.length) {
-              throw new Error("Payment intents not found");
+              throw new Error("Not Found error. Payment intents not found");
             }
 
             const paymentIntentsToInvoices =
@@ -313,7 +310,9 @@ export class Handler {
               });
 
             if (!paymentIntentsToInvoices?.length) {
-              throw new Error("Payment intents to invoices not found");
+              throw new Error(
+                "Not Found error. Payment intents to invoices not found",
+              );
             }
 
             const invoices = await billingInvoiceApi.find({

@@ -17,6 +17,7 @@ export function util(error: any): UtilsProp {
         status = 401;
         break;
       case "Validation error":
+      case "Configuration error":
         status = 400;
         break;
       case "Permission error":
@@ -24,9 +25,6 @@ export function util(error: any): UtilsProp {
         break;
       case "Not Found error":
         status = 404;
-        break;
-      case "Payment error":
-        status = 400;
         break;
       case "Internal error":
         status = 500;

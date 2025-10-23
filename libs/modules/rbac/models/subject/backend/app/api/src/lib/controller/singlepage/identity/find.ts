@@ -17,13 +17,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id");
+        throw new Error("Validation error. Invalid id");
       }
 
       const params = c.req.query();
@@ -52,7 +52,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities) {
-        throw new Error("No subjects to identities found");
+        throw new Error("Not Found error. No subjects to identities found");
       }
 
       const queryFilters = parsedQuery.filters?.["and"] || [];

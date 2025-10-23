@@ -22,7 +22,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const [agents, cronChannels] = await Promise.all([
@@ -147,14 +147,14 @@ export class Handler {
   ) {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       await Promise.allSettled(
         currentExecutions.map(async (execution) => {
           try {
             if (!RBAC_SECRET_KEY) {
-              throw new Error("RBAC_SECRET_KEY not set");
+              throw new Error("Configuration error. RBAC_SECRET_KEY not set");
             }
 
             await broadcastChannelApi.messageDelete({

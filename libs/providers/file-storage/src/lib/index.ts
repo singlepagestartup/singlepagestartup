@@ -46,7 +46,7 @@ export class Provider implements IProvider {
       return;
     }
 
-    throw new Error("Provider not found");
+    throw new Error("Not Found error. Provider not found");
   }
 
   async connect(): Promise<void> {

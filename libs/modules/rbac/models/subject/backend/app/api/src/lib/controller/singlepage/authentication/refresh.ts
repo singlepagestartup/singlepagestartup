@@ -19,11 +19,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
-        throw new Error("RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS not set");
+        throw new Error(
+          "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS not set",
+        );
       }
 
       // const token = authorization(c);
@@ -42,13 +44,13 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid request body");
+        throw new Error("Validation error. Invalid request body");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data["refresh"]) {
-        throw new Error("No refresh token provided");
+        throw new Error("Validation error. No refresh token provided");
       }
 
       const entity = await this.service.refresh({
@@ -58,7 +60,7 @@ export class Handler {
       const decoded = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
 
       if (!decoded.exp) {
-        throw new Error("Invalid token issued");
+        throw new Error("Authentication error. Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", entity.jwt, {

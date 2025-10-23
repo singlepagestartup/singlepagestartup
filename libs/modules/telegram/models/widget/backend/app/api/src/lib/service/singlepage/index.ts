@@ -10,7 +10,7 @@ import { Context as GrammyContext } from "grammy";
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async telegramWidgets() {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const widgets = await api.find({

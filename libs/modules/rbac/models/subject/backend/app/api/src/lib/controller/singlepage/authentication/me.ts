@@ -28,13 +28,13 @@ export class Handler {
       }
 
       if (!RBAC_JWT_SECRET) {
-        throw new Error("JWT secret not provided");
+        throw new Error("Configuration error. JWT secret not provided");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
       if (!decoded.subject?.["id"]) {
-        throw new Error("No subject provided in the token");
+        throw new Error("Not Found error. No subject provided in the token");
       }
 
       // const entity = await this.service.findById({
@@ -42,7 +42,7 @@ export class Handler {
       // });
 
       if (!decoded.subject) {
-        throw new Error("No subject provided in the token");
+        throw new Error("Not Found error. No subject provided in the token");
       }
 
       return c.json({

@@ -20,7 +20,7 @@ export class Handler<
 
       if (typeof body["data"] !== "string") {
         throw new Error(
-          "Invalid body['data']: " +
+          "Validation error. Invalid body['data']: " +
             body["data"] +
             ". Expected string, got: " +
             typeof body["data"],

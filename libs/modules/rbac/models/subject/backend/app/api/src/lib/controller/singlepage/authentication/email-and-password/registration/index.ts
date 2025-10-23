@@ -16,7 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -36,7 +36,7 @@ export class Handler {
       const decodedJwt = await jwt.verify(entity.jwt, RBAC_JWT_SECRET);
 
       if (!decodedJwt.exp) {
-        throw new Error("Invalid token issued");
+        throw new Error("Authentication error. Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", entity.jwt, {

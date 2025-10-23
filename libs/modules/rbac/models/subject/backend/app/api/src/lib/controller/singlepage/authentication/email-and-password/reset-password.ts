@@ -16,7 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET not set");
+        throw new Error("Configuration error. RBAC_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -28,7 +28,7 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data.code) {
-        throw new Error("No code provided");
+        throw new Error("Validation error. No code provided");
       }
 
       const identities = await identityApi.find({
@@ -59,7 +59,7 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new Error("No identities found");
+        throw new Error("Not Found error. No identities found");
       }
 
       const identity = identities[0];
@@ -69,19 +69,21 @@ export class Handler {
       const codeExpired = new Date().getTime() - updatedAt < 3600000;
 
       if (!codeExpired) {
-        throw new Error("Code is expired. Resend again.");
+        throw new Error("Internal error. Code is expired. Resend again.");
       }
 
       if (!data.password) {
-        throw new Error("No password provided");
+        throw new Error("Validation error. No password provided");
       }
 
       if (data.password !== data.passwordConfirmation) {
-        throw new Error("Passwords do not match");
+        throw new Error("Authentication error. Passwords do not match");
       }
 
       if (!identity.salt) {
-        throw new Error("No salt found for this identity");
+        throw new Error(
+          "Authentication error. No salt found for this identity",
+        );
       }
 
       await identityApi.update({

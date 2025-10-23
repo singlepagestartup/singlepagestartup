@@ -16,36 +16,29 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("No id provided");
+        throw new Error("Validation error. No id provided");
       }
 
       const orderId = c.req.param("orderId");
 
       if (!orderId) {
-        throw new Error("No orderId provided");
+        throw new Error("Validation error. No orderId provided");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -53,20 +46,13 @@ export class Handler {
       const token = authorization(c);
 
       if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new Error("Authentication error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Only order owner can update order");
+        throw new Error("Permission error. Only order owner can update order");
       }
 
       const order = await ecommerceOrderApi.findById({
@@ -79,11 +65,11 @@ export class Handler {
       });
 
       if (!order) {
-        throw new Error("No order found");
+        throw new Error("Not Found error. No order found");
       }
 
       if (order.status !== "new") {
-        throw new Error("Order is not in 'new' status");
+        throw new Error("Not Found error. Order is not in 'new' status");
       }
 
       await this.service.deanonymize({

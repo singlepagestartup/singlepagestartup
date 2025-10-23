@@ -24,7 +24,7 @@ export class Service {
 
   async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const priceAttributeKeys = await attributeKeyApi.find({
@@ -50,7 +50,7 @@ export class Service {
     });
 
     if (!priceAttributeKeys?.length) {
-      throw new Error("Price attribute key not found");
+      throw new Error("Not Found error. Price attribute key not found");
     }
 
     const intervalAttributeKeys = await attributeKeyApi.find({
@@ -100,7 +100,7 @@ export class Service {
     });
 
     if (!orderToProducts?.length) {
-      throw new Error("Order does not have any products");
+      throw new Error("Internal error. Order does not have any products");
     }
 
     let amount = 0;
@@ -121,13 +121,13 @@ export class Service {
       });
 
       if (!product) {
-        throw new Error("Product not found");
+        throw new Error("Not Found error. Product not found");
       }
 
       if (!type) {
         type = product.type;
       } else if (type !== product.type) {
-        throw new Error("Order has multiple product types");
+        throw new Error("Not Found error. Order has multiple product types");
       }
 
       const productToAttributes = await productsToAttributesApi.find({
@@ -153,7 +153,9 @@ export class Service {
       });
 
       if (!productToAttributes?.length) {
-        throw new Error("Product does not have any attributes");
+        throw new Error(
+          "Not Found error. Product does not have any attributes",
+        );
       }
 
       const productPrices: IAttribute[] = [];
@@ -188,7 +190,9 @@ export class Service {
       });
 
       if (!productPriceAttributes?.length) {
-        throw new Error("Product does not have any price attributes");
+        throw new Error(
+          "Not Found error. Product does not have any price attributes",
+        );
       }
 
       const targetPriceAttributes =
@@ -223,11 +227,15 @@ export class Service {
         });
 
       if (!targetPriceAttributes?.length) {
-        throw new Error("Product does not have any target price attributes");
+        throw new Error(
+          "Not Found error. Product does not have any target price attributes",
+        );
       }
 
       if (targetPriceAttributes.length > 1) {
-        throw new Error("Product has multiple target price attributes");
+        throw new Error(
+          "Internal error. Product has multiple target price attributes",
+        );
       }
 
       const priceAttribute = await attributeApi.findById({
@@ -243,13 +251,15 @@ export class Service {
       });
 
       if (!priceAttribute) {
-        throw new Error("Price attribute not found");
+        throw new Error("Not Found error. Price attribute not found");
       }
 
       productPrices.push(priceAttribute);
 
       if (!productPrices.length) {
-        throw new Error("Product does not have any price attributes");
+        throw new Error(
+          "Not Found error. Product does not have any price attributes",
+        );
       }
 
       amount += Number(productPrices[0].number) * orderToProduct.quantity;
@@ -293,7 +303,9 @@ export class Service {
         }
 
         if (intervals.length > 1) {
-          throw new Error("Product has multiple interval attributes");
+          throw new Error(
+            "Internal error. Product has multiple interval attributes",
+          );
         }
 
         const intervalAttribute = await attributeApi.findById({
@@ -309,7 +321,7 @@ export class Service {
         });
 
         if (!intervalAttribute) {
-          throw new Error("Interval attribute not found");
+          throw new Error("Not Found error. Interval attribute not found");
         }
 
         productIntervals.push(intervalAttribute);
@@ -326,7 +338,7 @@ export class Service {
         interval !==
         productIntervals[0].string?.[internationalization.defaultLanguage.code]
       ) {
-        throw new Error("Order has multiple intervals");
+        throw new Error("Internal error. Order has multiple intervals");
       }
     }
 

@@ -15,14 +15,14 @@ export class Handler {
       const queryUrl = c.req.query("url");
 
       if (!queryUrl) {
-        throw new Error("Query url is required");
+        throw new Error("Validation error. Query url is required");
       }
 
       const sanitizedUrl = queryUrl?.split("?")[0];
       const segment = c.req.query("segment");
 
       if (!segment) {
-        throw new Error("Query segment is required");
+        throw new Error("Validation error. Query segment is required");
       }
 
       const segmentValue = await this.service.urlSegmentValue({

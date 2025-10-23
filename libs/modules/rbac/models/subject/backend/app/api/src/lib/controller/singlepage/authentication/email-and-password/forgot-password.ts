@@ -18,7 +18,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET not set");
+        throw new Error("Configuration error. RBAC_SECRET not set");
       }
 
       const body = await c.req.parseBody();
@@ -49,11 +49,11 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new Error("No identities found");
+        throw new Error("Not Found error. No identities found");
       }
 
       if (identities.length > 1) {
-        throw new Error("Multiple identities found");
+        throw new Error("Authentication error. Multiple identities found");
       }
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.find({
@@ -71,7 +71,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("No subjects to identities found");
+        throw new Error("Not Found error. No subjects to identities found");
       }
 
       const code = bcrypt.genSaltSync(10).replaceAll("/", "");
@@ -93,7 +93,7 @@ export class Handler {
       });
 
       if (!identity) {
-        throw new Error("Could not update identity");
+        throw new Error("Not Found error. Could not update identity");
       }
 
       await api.notify({

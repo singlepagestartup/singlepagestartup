@@ -19,17 +19,17 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (!body) {
-        throw new Error("Invalid body");
+        throw new Error("Validation error. Invalid body");
       }
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.url) {
-        throw new Error("Invalid url");
+        throw new Error("Validation error. Invalid url");
       }
 
       const file = await fetch(data.url)
@@ -45,7 +45,7 @@ export class Handler {
         });
 
       if (!file) {
-        throw new Error("Invalid file");
+        throw new Error("Validation error. Invalid file");
       }
 
       const fileStorage = new Provider({

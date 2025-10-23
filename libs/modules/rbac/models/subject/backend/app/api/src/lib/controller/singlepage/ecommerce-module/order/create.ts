@@ -24,30 +24,23 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("No id provided");
+        throw new Error("Validation error. No id provided");
       }
 
       const token = authorization(c);
 
       if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new Error("Authentication error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
@@ -55,24 +48,17 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Only order owner can update order");
+        throw new Error("Permission error. Only order owner can update order");
       }
 
       if (!data["productId"]) {
-        throw new Error("No data.productId provided");
+        throw new Error("Validation error. No data.productId provided");
       }
 
       const productId = data["productId"];
@@ -90,11 +76,13 @@ export class Handler {
         });
 
         if (stores?.length === 0) {
-          throw new Error("No stores found");
+          throw new Error("Not Found error. No stores found");
         }
 
         if (stores?.length && stores.length > 1) {
-          throw new Error("Multiple stores found. Pass 'data.storeId'");
+          throw new Error(
+            "Internal error. Multiple stores found. Pass 'data.storeId'",
+          );
         }
 
         storeId = stores?.[0]?.id;
@@ -105,7 +93,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("No entity found");
+        throw new Error("Not Found error. No entity found");
       }
 
       const ecommerceModuleProductsToAttributes =
@@ -321,7 +309,7 @@ export class Handler {
                   });
 
                 if (ordersToBillingModuleCurrencies?.length) {
-                  throw new Error("Order already exists");
+                  throw new Error("Internal error. Order already exists");
                 }
               }
             }
@@ -339,7 +327,7 @@ export class Handler {
       });
 
       if (!order) {
-        throw new Error("No order found");
+        throw new Error("Not Found error. No order found");
       }
 
       await subjectsToEcommerceModuleOrdersApi.create({
@@ -368,7 +356,7 @@ export class Handler {
       });
 
       if (!ordersToProducts) {
-        throw new Error("No orders to products found");
+        throw new Error("Not Found error. No orders to products found");
       }
 
       const storesToOrders = await ecommerceStoresToOrdersApi.create({
@@ -384,7 +372,7 @@ export class Handler {
       });
 
       if (!storesToOrders) {
-        throw new Error("No stores to orders found");
+        throw new Error("Not Found error. No stores to orders found");
       }
 
       const ordersToBillingModuleCurrencies =
@@ -401,7 +389,9 @@ export class Handler {
         });
 
       if (!ordersToBillingModuleCurrencies) {
-        throw new Error("No orders to billing module currencies found");
+        throw new Error(
+          "Not Found error. No orders to billing module currencies found",
+        );
       }
 
       return c.json({

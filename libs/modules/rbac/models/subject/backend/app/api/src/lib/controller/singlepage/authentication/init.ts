@@ -22,15 +22,15 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS) {
         throw new Error(
-          "RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
+          "Configuration error. RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS not set",
         );
       }
 
@@ -67,7 +67,7 @@ export class Handler {
       const decodedJwt = await jwt.verify(jwtToken, RBAC_JWT_SECRET);
 
       if (!decodedJwt.exp) {
-        throw new Error("Invalid token issued");
+        throw new Error("Authentication error. Invalid token issued");
       }
 
       setCookie(c, "rbac.subject.jwt", jwtToken, {

@@ -17,7 +17,7 @@ export class Service {
 
   async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const priceAttributeKeys = await attributeKeyApi.find({
@@ -40,7 +40,7 @@ export class Service {
     });
 
     if (!priceAttributeKeys?.length) {
-      throw new Error("Price attribute key not found");
+      throw new Error("Not Found error. Price attribute key not found");
     }
 
     const orderToProducts = await ordersToProductsApi.find({
@@ -64,7 +64,7 @@ export class Service {
     });
 
     if (!orderToProducts?.length) {
-      throw new Error("Order does not have any products");
+      throw new Error("Not Found error. Order does not have any products");
     }
 
     const result: {
@@ -83,7 +83,7 @@ export class Service {
       });
 
       if (!orderToProductTotals) {
-        throw new Error("Order to product total not found");
+        throw new Error("Not Found error. Order to product total not found");
       }
 
       orderToProductTotals.forEach((orderToProductTotal) => {

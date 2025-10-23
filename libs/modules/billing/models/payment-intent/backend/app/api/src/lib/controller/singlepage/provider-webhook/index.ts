@@ -44,7 +44,7 @@ export class Handler {
 
       if (provider === "stripe") {
         if (!STRIPE_SECRET_KEY) {
-          throw new Error("Stripe secret key not found");
+          throw new Error("Configuration error. Stripe secret key not found");
         }
 
         const stripe = new Stripe(STRIPE_SECRET_KEY);
@@ -95,7 +95,7 @@ export class Handler {
         }
       } else if (provider === "dummy") {
         if (!data?.["data"]?.["id"]) {
-          throw new Error("Invalid data");
+          throw new Error("Validation error. Invalid data");
         }
 
         result = await this.service.dummy({

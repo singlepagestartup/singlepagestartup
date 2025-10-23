@@ -24,17 +24,17 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("No id provided");
+        throw new Error("Validation error. No id provided");
       }
 
       const token = authorization(c);
@@ -55,24 +55,17 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (decoded?.["subject"]?.["id"] !== id) {
-        throw new Error("Only order owner can update order");
+        throw new Error("Validation error. Only order owner can update order");
       }
 
       if (!data["formId"]) {
-        throw new Error("No data.formId provided");
+        throw new Error("Validation error. No data.formId provided");
       }
 
       const formId = data["formId"];
@@ -82,7 +75,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("No entity found");
+        throw new Error("Not Found error. No entity found");
       }
 
       const form = await crmFormApi.findById({
@@ -95,7 +88,7 @@ export class Handler {
       });
 
       if (!form) {
-        throw new Error("No form found");
+        throw new Error("Not Found error. No form found");
       }
 
       const formsToInputs = await crmFormsToInputsApi.find({
@@ -118,7 +111,9 @@ export class Handler {
       });
 
       if (!formsToInputs) {
-        throw new Error("No inputs found for form with id " + id);
+        throw new Error(
+          "Not Found error. No inputs found for form with id " + id,
+        );
       }
 
       const request = await crmRequestApi.create({
@@ -133,7 +128,7 @@ export class Handler {
       });
 
       if (!request) {
-        throw new Error("Request not created");
+        throw new Error("Internal error. Request not created");
       }
 
       await crmFormsToRequestsApi.create({
@@ -171,7 +166,7 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new Error("No topic found");
+        throw new Error("Not Found error. No topic found");
       }
 
       const notificationCrmRequestCreatedTemplates =

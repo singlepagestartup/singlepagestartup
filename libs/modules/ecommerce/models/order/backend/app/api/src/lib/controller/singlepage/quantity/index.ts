@@ -14,19 +14,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("Invalid id. Got: " + id);
+        throw new Error("Validation error. Invalid id. Got: " + id);
       }
 
       let entity = await this.service.findById({ id });
 
       if (!entity) {
-        throw new Error("Order not found");
+        throw new Error("Not Found error. Order not found");
       }
 
       const quantity = await this.service.getQuantity({ id });

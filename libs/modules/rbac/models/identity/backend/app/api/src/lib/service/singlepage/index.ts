@@ -26,11 +26,13 @@ export type IChangePassword = {
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async emailAndPassowrd(props: IEmailAndPassword): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
     }
 
     if (props.data.type === "registration") {
@@ -62,7 +64,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (identities?.length) {
-        throw new Error("Identity already exists");
+        throw new Error("Authentication error. Identity already exists");
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -117,17 +119,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!identities?.length) {
-      throw new Error("Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (identities.length > 1) {
-      throw new Error("Multiple identities found");
+      throw new Error("Authentication error. Multiple identities found");
     }
 
     const identity = identities[0];
 
     if (!identity.salt) {
-      throw new Error("No salt found for this identity");
+      throw new Error("Not Found error. No salt found for this identity");
     }
 
     const saltedPassword = await bcrypt.hash(
@@ -136,7 +138,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (saltedPassword !== identity.password) {
-      throw new Error("Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (identity.code) {
@@ -162,11 +164,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async changePassword(props: IChangePassword): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
     }
 
     const identity = await api.findById({
@@ -182,11 +186,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!identity) {
-      throw new Error("Identity not found");
+      throw new Error("Not Found error. Identity not found");
     }
 
     if (!identity.salt) {
-      throw new Error("No salt found for this identity");
+      throw new Error("Not Found error. No salt found for this identity");
     }
 
     const saltedPassword = await bcrypt.hash(
@@ -195,7 +199,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (saltedPassword !== identity.password) {
-      throw new Error("Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     const updatedIdentity = await api.update({

@@ -16,7 +16,7 @@ export class Service {
   async execute(props?: IExecuteProps) {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not defined in the service");
+        throw new Error("Configuration error. RBAC_SECRET_KEY is required");
       }
 
       const existingSubjects = await subjectApi.find({

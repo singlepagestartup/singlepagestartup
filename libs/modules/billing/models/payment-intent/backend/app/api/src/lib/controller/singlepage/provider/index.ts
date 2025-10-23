@@ -26,14 +26,14 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id");
+        throw new Error("Validation error. Invalid id");
       }
 
       const body = await c.req.parseBody();
       const provider = c.req.param("provider");
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const entity = await this.service.findById({ id: uuid });
@@ -41,14 +41,14 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data) {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       logger.debug("provider", provider);
       logger.debug("data", data);
 
       if (!entity) {
-        throw new Error("Payment intent not found");
+        throw new Error("Not Found error. Payment intent not found");
       }
 
       if (!data.currencyId) {
@@ -67,7 +67,7 @@ export class Handler {
       });
 
       if (!currency) {
-        throw new Error("Currency not found");
+        throw new Error("Not Found error. Currency not found");
       }
 
       logger.debug("currency", currency);

@@ -20,7 +20,9 @@ export class Service {
 
   async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_SECRET is not defined in the service",
+      );
     }
 
     const entity = await api.findById({
@@ -33,7 +35,7 @@ export class Service {
     });
 
     if (!entity) {
-      throw new Error("No entity found");
+      throw new Error("Not Found error. No entity found");
     }
 
     const subjectsToIdentities = await subjectsToIdentitiesApi.find({

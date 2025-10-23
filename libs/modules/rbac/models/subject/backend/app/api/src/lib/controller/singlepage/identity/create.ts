@@ -20,24 +20,17 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const token = authorization(c);
 
       if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new Error("Authentication error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
@@ -45,13 +38,15 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
-        throw new Error("Only identity owner can create identity.");
+        throw new Error(
+          "Permission error. Only identity owner can create identity.",
+        );
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid body");
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -59,21 +54,21 @@ export class Handler {
       const provider = data.provider.replaceAll("-", "_");
 
       if (!provider) {
-        throw new Error("No provider provided");
+        throw new Error("Validation error. No provider provided");
       }
 
       if (provider === "ethereum_virtual_machine") {
         const { message, signature, address } = data;
 
         if (!message || !signature) {
-          throw new Error("Invalid message or signature");
+          throw new Error("Validation error. Invalid message or signature");
         }
 
         const isActualDateInMessage =
           Date.now() - parseInt(message) < 1000 * 60 * 5;
 
         if (!isActualDateInMessage) {
-          throw new Error("Invalid date in message");
+          throw new Error("Validation error. Invalid date in message");
         }
 
         const publicClient = createPublicClient({
@@ -88,7 +83,7 @@ export class Handler {
         });
 
         if (!valid) {
-          throw new Error("Invalid signature");
+          throw new Error("Validation error. Invalid signature");
         }
 
         const identities = await identityApi.find({
@@ -114,7 +109,7 @@ export class Handler {
         });
 
         if (identities?.length) {
-          throw new Error("Account already exists");
+          throw new Error("Internal error. Account already exists");
         }
 
         const identity = await identityApi.create({
@@ -167,7 +162,7 @@ export class Handler {
         );
       }
 
-      throw new Error("Invalid provider");
+      throw new Error("Validation error. Invalid provider");
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

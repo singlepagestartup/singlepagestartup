@@ -217,11 +217,11 @@ export class Service {
 
   private async authHeaders() {
     if (!PAYKEEPER_API_LOGIN) {
-      throw new Error("Paykeeper API login not found");
+      throw new Error("Configuration error. Paykeeper API login not found");
     }
 
     if (!PAYKEEPER_API_PASSWORD) {
-      throw new Error("Paykeeper API password not found");
+      throw new Error("Configuration error. Paykeeper API password not found");
     }
 
     const basic = Buffer.from(
@@ -320,23 +320,25 @@ export class Service {
 
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     if (!PAYKEEPER_BASE_URL) {
-      throw new Error("Paykeeper base url not found");
+      throw new Error("Configuration error. Paykeeper base url not found");
     }
 
     if (!PAYKEEPER_API_LOGIN) {
-      throw new Error("Paykeeper API login not found");
+      throw new Error("Configuration error. Paykeeper API login not found");
     }
 
     if (!PAYKEEPER_API_PASSWORD) {
-      throw new Error("Paykeeper API password not found");
+      throw new Error("Configuration error. Paykeeper API password not found");
     }
 
     if (!PAYKEEPER_WEBHOOK_SECRET) {
-      throw new Error("Paykeeper webhook secret not found");
+      throw new Error(
+        "Configuration error. Paykeeper webhook secret not found",
+      );
     }
 
     if (props.action === "create") {
@@ -445,7 +447,7 @@ export class Service {
         });
 
         if (!invoice) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         await paymentIntentsToInvoicesApi.create({
@@ -498,7 +500,7 @@ export class Service {
 
         if (!paymentIntentToInvoice || paymentIntentToInvoice.length === 0) {
           throw new Error(
-            `Payment intent to invoice relation not found for payment-intent ID: ${data.orderid}`,
+            `Not Found error. Payment intent to invoice relation not found for payment-intent ID: ${data.orderid}`,
           );
         }
 
@@ -513,7 +515,7 @@ export class Service {
 
         if (!invoice) {
           throw new Error(
-            `Invoice not found for ID: ${paymentIntentToInvoice[0].invoiceId}`,
+            `Not Found error. Invoice not found for ID: ${paymentIntentToInvoice[0].invoiceId}`,
           );
         }
 
@@ -522,7 +524,7 @@ export class Service {
 
         if (!invoice.providerId) {
           throw new Error(
-            "Invoice providerId not found - cannot get PayKeeper invoice data",
+            "Not Found error. Invoice providerId not found - cannot get PayKeeper invoice data",
           );
         }
 

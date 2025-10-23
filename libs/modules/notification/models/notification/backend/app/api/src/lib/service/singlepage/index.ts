@@ -29,7 +29,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     if (!ext) {
-      throw new Error("Mime type not recognized");
+      throw new Error("Validation error. Mime type not recognized");
     }
 
     return mimeTypes[ext] || "application/octet-stream";
@@ -42,7 +42,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     template: ITemplate;
   }) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("Secret key not found");
+      throw new Error("Configuration error. Secret key not found");
     }
 
     const entity = await this.findById({
@@ -50,11 +50,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!entity) {
-      throw new Error("Notification not found");
+      throw new Error("Not Found error. Notification not found");
     }
 
     if (!entity.reciever) {
-      throw new Error("Reciever not found");
+      throw new Error("Not Found error. Reciever not found");
     }
 
     const attachments: { type: "image"; url: string }[] =
@@ -79,7 +79,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (props.method === "email") {
       if (props.provider === "Amazon SES") {
         if (!AWS_SES_FROM_EMAIL) {
-          throw new Error("AWS SES from email not found");
+          throw new Error("Configuration error. AWS SES from email not found");
         }
 
         const renderResult = await templateApi.render({
@@ -93,7 +93,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!renderResult) {
-          throw new Error("Template not rendered");
+          throw new Error("Internal error. Template not rendered");
         }
 
         const aws = new AWS();
@@ -111,7 +111,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     } else if (props.method === "telegram") {
       if (!props.template) {
-        throw new Error("Template not found");
+        throw new Error("Not Found error. Template not found");
       }
 
       if (entity.reciever && TELEGRAM_SERVICE_BOT_TOKEN) {
@@ -126,7 +126,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!renderResult) {
-          throw new Error("Template not rendered");
+          throw new Error("Internal error. Template not rendered");
         }
 
         const parsedRenderResult = JSON.parse(renderResult);
@@ -186,7 +186,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async send(params: { id: string }) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("Secret key not found");
+      throw new Error("Configuration error. Secret key not found");
     }
 
     const notification = await this.findById({
@@ -194,7 +194,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!notification) {
-      throw new Error("Notification not found");
+      throw new Error("Not Found error. Notification not found");
     }
 
     if (notification.status !== "new") {
@@ -234,7 +234,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!notificationToTemplates?.length) {
-      throw new Error("Template not found");
+      throw new Error("Not Found error. Template not found");
     }
 
     const templates = await templateApi.find({
@@ -259,7 +259,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!templates?.length) {
-      throw new Error("Template not found");
+      throw new Error("Not Found error. Template not found");
     }
 
     for (const template of templates) {
@@ -271,7 +271,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       if (!type) {
         throw new Error(
-          "Invalid type. Expected 'email|telegram'. Got: " + type,
+          "Validation error. Invalid type. Expected 'email|telegram'. Got: " +
+            type,
         );
       }
 

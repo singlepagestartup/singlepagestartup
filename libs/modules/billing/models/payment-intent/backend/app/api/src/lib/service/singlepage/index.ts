@@ -52,7 +52,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async updatePaymentIntentStatus(props: { invoice: IInvoice }) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     const paymentIntentsToInvoice = await paymentIntentsToInvoicesApi.find({
@@ -153,11 +153,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
   ) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     if (!STRIPE_SECRET_KEY) {
-      throw new Error("Stripe secret key not found");
+      throw new Error("Configuration error. Stripe secret key not found");
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY);
@@ -239,7 +239,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
 
         if (!customer) {
-          throw new Error("Customer not found");
+          throw new Error("Not Found error. Customer not found");
         }
 
         checkout = await stripe.subscriptions.create({
@@ -295,7 +295,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (!checkout) {
-        throw new Error("Checkout not found");
+        throw new Error("Not Found error. Checkout not found");
       }
 
       let invoice: any;
@@ -341,7 +341,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       await paymentIntentsToInvoicesApi.create({
@@ -387,13 +387,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!invoices?.length) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         let invoice = invoices[0];
 
         if (!invoice) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         if (data["status"] === "complete") {
@@ -416,7 +416,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           });
 
           if (!invoice) {
-            throw new Error("Invoice not found");
+            throw new Error("Not Found error. Invoice not found");
           }
 
           await this.updatePaymentIntentStatus({ invoice });
@@ -497,7 +497,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           logger.debug("🚀 ~ invoice:", invoice);
 
           if (!invoice) {
-            throw new Error("Invoice not found");
+            throw new Error("Not Found error. Invoice not found");
           }
 
           if (data.status === "paid") {
@@ -518,7 +518,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             });
 
             if (!invoice) {
-              throw new Error("Invoice not found");
+              throw new Error("Not Found error. Invoice not found");
             }
 
             await this.updatePaymentIntentStatus({ invoice });
@@ -574,15 +574,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
   ) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     if (!O_X_PROCESSING_SHOP_ID) {
-      throw new Error("0xProcessing shop id not found");
+      throw new Error("Configuration error. 0xProcessing shop id not found");
     }
 
     if (!O_X_PROCESSING_WEBHOOK_PASSWORD) {
-      throw new Error("0xProcessing webhook password not found");
+      throw new Error(
+        "Configuration error. 0xProcessing webhook password not found",
+      );
     }
 
     if (props.action === "create") {
@@ -633,7 +635,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       await paymentIntentsToInvoicesApi.create({
@@ -678,7 +680,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoices?.length) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       if (invoices.length > 1) {
@@ -714,7 +716,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!invoice) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         await this.updatePaymentIntentStatus({ invoice });
@@ -738,7 +740,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
   ) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     if (props.action === "create") {
@@ -764,7 +766,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       await paymentIntentsToInvoicesApi.create({
@@ -807,7 +809,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoices?.length) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       if (invoices.length > 1) {
@@ -833,7 +835,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       await this.updatePaymentIntentStatus({ invoice });
@@ -879,7 +881,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
   ) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     let PAYSELECTION_PUBLIC_KEY: string | undefined;
@@ -891,23 +893,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (props.action === "create") {
       if (props.credentialsType === "RUB") {
         if (!PAYSELECTION_RUB_PUBLIC_KEY) {
-          throw new Error("Payselection RUB public key not found");
+          throw new Error(
+            "Configuration error. Payselection RUB public key not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SECRET_KEY) {
-          throw new Error("Payselection RUB secret key not found");
+          throw new Error(
+            "Configuration error. Payselection RUB secret key not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SITE_ID) {
-          throw new Error("Payselection RUB site id not found");
+          throw new Error(
+            "Configuration error. Payselection RUB site id not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SITE_NAME) {
-          throw new Error("Payselection RUB site name not found");
+          throw new Error(
+            "Configuration error. Payselection RUB site name not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_WEBHOOK_URL) {
-          throw new Error("Payselection RUB webhook url not found");
+          throw new Error(
+            "Configuration error. Payselection RUB webhook url not found",
+          );
         }
 
         PAYSELECTION_SECRET_KEY = PAYSELECTION_RUB_SECRET_KEY;
@@ -917,23 +929,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         PAYSELECTION_PUBLIC_KEY = PAYSELECTION_RUB_PUBLIC_KEY;
       } else if (props.credentialsType === "INT") {
         if (!PAYSELECTION_INT_PUBLIC_KEY) {
-          throw new Error("Payselection INT public key not found");
+          throw new Error(
+            "Configuration error. Payselection INT public key not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SITE_ID) {
-          throw new Error("Payselection INT site id not found");
+          throw new Error(
+            "Configuration error. Payselection INT site id not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SECRET_KEY) {
-          throw new Error("Payselection INT secret key not found");
+          throw new Error(
+            "Configuration error. Payselection INT secret key not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SITE_NAME) {
-          throw new Error("Payselection INT site name not found");
+          throw new Error(
+            "Configuration error. Payselection INT site name not found",
+          );
         }
 
         if (!PAYSELECTION_INT_WEBHOOK_URL) {
-          throw new Error("Payselection INT webhook url not found");
+          throw new Error(
+            "Configuration error. Payselection INT webhook url not found",
+          );
         }
 
         PAYSELECTION_SECRET_KEY = PAYSELECTION_INT_SECRET_KEY;
@@ -944,32 +966,44 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     } else {
       if (!PAYSELECTION_RUB_SITE_ID && !PAYSELECTION_INT_SITE_ID) {
-        throw new Error("Payselection site id not found");
+        throw new Error("Configuration error. Payselection site id not found");
       }
 
       if (PAYSELECTION_RUB_SITE_ID === props.headers["x-site-id"]) {
         if (!PAYSELECTION_RUB_PUBLIC_KEY) {
-          throw new Error("Payselection RUB public key not found");
+          throw new Error(
+            "Configuration error. Payselection RUB public key not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_PUBLIC_KEY) {
-          throw new Error("Payselection RUB public key not found");
+          throw new Error(
+            "Configuration error. Payselection RUB public key not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SECRET_KEY) {
-          throw new Error("Payselection RUB secret key not found");
+          throw new Error(
+            "Configuration error. Payselection RUB secret key not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SITE_ID) {
-          throw new Error("Payselection RUB site id not found");
+          throw new Error(
+            "Configuration error. Payselection RUB site id not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_SITE_NAME) {
-          throw new Error("Payselection RUB site name not found");
+          throw new Error(
+            "Configuration error. Payselection RUB site name not found",
+          );
         }
 
         if (!PAYSELECTION_RUB_WEBHOOK_URL) {
-          throw new Error("Payselection RUB webhook url not found");
+          throw new Error(
+            "Configuration error. Payselection RUB webhook url not found",
+          );
         }
 
         PAYSELECTION_SECRET_KEY = PAYSELECTION_RUB_SECRET_KEY;
@@ -979,23 +1013,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         PAYSELECTION_PUBLIC_KEY = PAYSELECTION_RUB_PUBLIC_KEY;
       } else if (PAYSELECTION_INT_SITE_ID === props.headers["x-site-id"]) {
         if (!PAYSELECTION_INT_PUBLIC_KEY) {
-          throw new Error("Payselection INT public key not found");
+          throw new Error(
+            "Configuration error. Payselection INT public key not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SITE_ID) {
-          throw new Error("Payselection INT site id not found");
+          throw new Error(
+            "Configuration error. Payselection INT site id not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SECRET_KEY) {
-          throw new Error("Payselection INT secret key not found");
+          throw new Error(
+            "Configuration error. Payselection INT secret key not found",
+          );
         }
 
         if (!PAYSELECTION_INT_SITE_NAME) {
-          throw new Error("Payselection INT site name not found");
+          throw new Error(
+            "Configuration error. Payselection INT site name not found",
+          );
         }
 
         if (!PAYSELECTION_INT_WEBHOOK_URL) {
-          throw new Error("Payselection INT webhook url not found");
+          throw new Error(
+            "Configuration error. Payselection INT webhook url not found",
+          );
         }
 
         PAYSELECTION_SECRET_KEY = PAYSELECTION_INT_SECRET_KEY;
@@ -1007,28 +1051,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (!PAYSELECTION_PUBLIC_KEY) {
-      throw new Error("Payselection public key not found");
+      throw new Error("Configuration error. Payselection public key not found");
     }
 
     if (!PAYSELECTION_SECRET_KEY) {
-      throw new Error("Payselection secret key not found");
+      throw new Error("Configuration error. Payselection secret key not found");
     }
 
     if (!PAYSELECTION_SITE_ID) {
-      throw new Error("Payselection site id not found");
+      throw new Error("Configuration error. Payselection site id not found");
     }
 
     if (!PAYSELECTION_SITE_NAME) {
-      throw new Error("Payselection site name not found");
+      throw new Error("Configuration error. Payselection site name not found");
     }
 
     if (props.action === "create") {
       if (!props.entity.amount) {
-        throw new Error("Amount is required");
+        throw new Error("Validation error. Amount is required");
       }
 
       if (props.entity.amount < 0) {
-        throw new Error("Amount cannot be negative");
+        throw new Error("Validation error. Amount cannot be negative");
       }
 
       const invoice = await invoiceApi.create({
@@ -1123,7 +1167,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
         if (!updated) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         await paymentIntentsToInvoicesApi.create({
@@ -1149,7 +1193,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     } else {
       if (!PAYSELECTION_WEBHOOK_URL) {
-        throw new Error("PAYSELECTION_WEBHOOK_URL not found");
+        throw new Error(
+          "Configuration error. PAYSELECTION_WEBHOOK_URL not found",
+        );
       }
 
       const { OrderId } = props.data;
@@ -1167,7 +1213,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       const signature = crypto
@@ -1178,7 +1224,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         .digest("hex");
 
       if (signature !== props.headers["x-webhook-signature"]) {
-        throw new Error("Signature mismatch");
+        throw new Error("Validation error. Signature mismatch");
       }
 
       if (props.data.Event === "Payment") {

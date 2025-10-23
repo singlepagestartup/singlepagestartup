@@ -16,7 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is required");
+        throw new Error("Configuration error. RBAC_SECRET_KEY is required");
       }
 
       const topics = await this.service.find();

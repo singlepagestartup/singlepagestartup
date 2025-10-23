@@ -24,19 +24,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("Invalid id");
+        throw new Error("Validation error. Invalid id");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
@@ -51,7 +51,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("Form not found");
+        throw new Error("Not Found error. Form not found");
       }
 
       const formsToInputs = await formsToInputsApi.find({
@@ -74,7 +74,9 @@ export class Handler {
       });
 
       if (!formsToInputs) {
-        throw new Error("No inputs found for form with id " + id);
+        throw new Error(
+          "Not Found error. No inputs found for form with id " + id,
+        );
       }
 
       const inputs = await inputApi.find({
@@ -110,7 +112,7 @@ export class Handler {
       });
 
       if (!request) {
-        throw new Error("Request not created");
+        throw new Error("Internal error. Request not created");
       }
 
       const formsToRequests = await formsToRequestsApi.create({
@@ -148,7 +150,7 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new Error("No topic found");
+        throw new Error("Not Found error. No topic found");
       }
 
       const topic = topics[0];
@@ -176,7 +178,7 @@ export class Handler {
       });
 
       if (!templates?.length) {
-        throw new Error("No template found");
+        throw new Error("Not Found error. No template found");
       }
 
       const template = templates[0];

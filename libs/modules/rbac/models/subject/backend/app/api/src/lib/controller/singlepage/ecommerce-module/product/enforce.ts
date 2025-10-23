@@ -28,32 +28,25 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("No uuid provided");
+        throw new Error("Validation error. No uuid provided");
       }
 
       const productId = c.req.param("productId");
 
       if (!productId) {
-        throw new Error("No productId provided");
+        throw new Error("Validation error. No productId provided");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -63,7 +56,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("No entity found");
+        throw new Error("Not Found error. No entity found");
       }
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.find({
@@ -89,7 +82,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("No subjects to identities found");
+        throw new Error("Not Found error. No subjects to identities found");
       }
 
       const identities = await identityApi.find({
@@ -119,7 +112,7 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new Error("No identities found");
+        throw new Error("Not Found error. No identities found");
       }
 
       let price: IEcommerceAttribute | undefined;
@@ -145,7 +138,7 @@ export class Handler {
       });
 
       if (!productsToAttributes?.length) {
-        throw new Error("No products to attributes found");
+        throw new Error("Not Found error. No products to attributes found");
       }
 
       const attributes = await ecommerceAttributeApi.find({
@@ -168,7 +161,7 @@ export class Handler {
       });
 
       if (!attributes?.length) {
-        throw new Error("No attributes found");
+        throw new Error("Not Found error. No attributes found");
       }
 
       for (const attribute of attributes) {
@@ -193,7 +186,9 @@ export class Handler {
           });
 
         if (!attributeKeysToAttributes?.length) {
-          throw new Error("No attribute keys to attributes found");
+          throw new Error(
+            "Not Found error. No attribute keys to attributes found",
+          );
         }
 
         const attributeKey = await ecommerceAttributeKeyApi.find({
@@ -251,7 +246,7 @@ export class Handler {
       });
 
       if (!ordersToProducts?.length) {
-        throw new Error("No orders to products found");
+        throw new Error("Not Found error. No orders to products found");
       }
 
       const orders = await ecommerceOrderApi.find({
@@ -279,7 +274,7 @@ export class Handler {
       });
 
       if (!orders?.length) {
-        throw new Error("No orders found");
+        throw new Error("Not Found error. No orders found");
       }
 
       for (const order of orders) {
@@ -308,7 +303,9 @@ export class Handler {
         }
 
         if (ordersToBillingModulePaymentIntents.length > 1) {
-          throw new Error("Multiple billing module payment intents found");
+          throw new Error(
+            "Internal error. Multiple billing module payment intents found",
+          );
         }
 
         const paymentIntentId =
@@ -324,7 +321,7 @@ export class Handler {
         });
 
         if (!paymentIntent) {
-          throw new Error("Payment intent not found");
+          throw new Error("Not Found error. Payment intent not found");
         }
 
         const paymentIntentsToInvoices =
@@ -485,7 +482,7 @@ export class Handler {
 
           if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
             throw new Error(
-              "No ecommerce orders to billing module currencies found",
+              "Not Found error. No ecommerce orders to billing module currencies found",
             );
           }
 

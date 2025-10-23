@@ -19,20 +19,22 @@ export class Handler<
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.length) {
-        throw new Error("Invalid data, should be array [{'data':<any>},...]");
+        throw new Error(
+          "Validation error. Invalid data, should be array [{'data':<any>},...]",
+        );
       }
 
       const createdEntities: SCHEMA[] = [];
 
       for (const dataEntity of data) {
         if (typeof dataEntity["data"] !== "object") {
-          throw new Error("Invalid data");
+          throw new Error("Validation error. Invalid data");
         }
 
         const createdEntity = await this.service.create({
@@ -40,7 +42,7 @@ export class Handler<
         });
 
         if (!createdEntity) {
-          throw new Error("Entity not found");
+          throw new Error("Not Found error. Entity not found");
         }
 
         createdEntities.push(createdEntity);

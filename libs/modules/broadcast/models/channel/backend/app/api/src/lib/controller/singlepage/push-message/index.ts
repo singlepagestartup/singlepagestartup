@@ -15,7 +15,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not defined");
+        throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
       }
 
       const body = await c.req.parseBody();
@@ -66,7 +66,7 @@ export class Handler {
       }
 
       if (!channel) {
-        throw new Error("Channel not found");
+        throw new Error("Not Found error. Channel not found");
       }
 
       const createdMessage = await api.messageCreate({

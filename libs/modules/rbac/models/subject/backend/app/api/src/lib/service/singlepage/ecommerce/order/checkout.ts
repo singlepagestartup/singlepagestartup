@@ -50,7 +50,7 @@ export class Service {
 
   async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     const entity = await api.findById({
@@ -63,7 +63,7 @@ export class Service {
     });
 
     if (!entity) {
-      throw new Error("No entity found");
+      throw new Error("Not Found error. No entity found");
     }
 
     const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
@@ -89,7 +89,7 @@ export class Service {
     });
 
     if (!ecommerceModuleOrders?.length) {
-      throw new Error("No ecommerce module orders found");
+      throw new Error("Not Found error. No ecommerce module orders found");
     }
 
     const ordersToProducts = await ecommerceModuleOrdersToProductsApi.find({
@@ -113,7 +113,7 @@ export class Service {
     });
 
     if (!ordersToProducts?.length) {
-      throw new Error("No orders to products found");
+      throw new Error("Not Found error. No orders to products found");
     }
 
     const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
@@ -139,7 +139,7 @@ export class Service {
     });
 
     if (!ecommerceModuleProducts?.length) {
-      throw new Error("No ecommerce module products found");
+      throw new Error("Not Found error. No ecommerce module products found");
     }
 
     const ecommerceModuleProductsToAttributes =
@@ -166,7 +166,9 @@ export class Service {
       });
 
     if (!ecommerceModuleProductsToAttributes?.length) {
-      throw new Error("No ecommerce module products to attributes found");
+      throw new Error(
+        "Not Found error. No ecommerce module products to attributes found",
+      );
     }
 
     const ecommerceModuleAttributesKeysToAttributes =
@@ -195,7 +197,7 @@ export class Service {
 
     if (!ecommerceModuleAttributesKeysToAttributes?.length) {
       throw new Error(
-        "No ecommerce module attributes keys to attributes found",
+        "Not Found error. No ecommerce module attributes keys to attributes found",
       );
     }
 
@@ -225,12 +227,14 @@ export class Service {
 
     if (!ecommerceModuleAttributesKeysToAttributes?.length) {
       throw new Error(
-        "No ecommerce module attributes keys to attributes found",
+        "Not Found error. No ecommerce module attributes keys to attributes found",
       );
     }
 
     if (!ecommerceModuleAttributesKeys?.length) {
-      throw new Error("No ecommerce module attributes keys found");
+      throw new Error(
+        "Not Found error. No ecommerce module attributes keys found",
+      );
     }
 
     const ecommerceModuleAttributes = await ecommerceModuleAttributeApi.find({
@@ -257,7 +261,7 @@ export class Service {
     });
 
     if (!ecommerceModuleAttributes?.length) {
-      throw new Error("No ecommerce module attributes found");
+      throw new Error("Not Found error. No ecommerce module attributes found");
     }
 
     const ecommerceModuleAttributesToBillingModuleCurrencies =
@@ -417,7 +421,9 @@ export class Service {
       });
 
     if (!ordersToBillingModuleCurrencies?.length) {
-      throw new Error("No orders to billing module currencies found");
+      throw new Error(
+        "Not Found error. No orders to billing module currencies found",
+      );
     }
 
     const ordersToBillingModulePaymentIntents =
@@ -473,7 +479,8 @@ export class Service {
 
       if (!billingModuleCurrencyId) {
         throw new Error(
-          "No billing module currency id found for order: " + order["id"],
+          "Not Found error. No billing module currency id found for order: " +
+            order["id"],
         );
       }
 
@@ -611,7 +618,9 @@ export class Service {
       });
 
       if (!orderToUpdate) {
-        throw new Error("No order found with id: " + order["id"]);
+        throw new Error(
+          "Not Found error. No order found with id: " + order["id"],
+        );
       }
 
       await ecommerceModuleOrderApi.update({
@@ -720,7 +729,9 @@ export class Service {
       });
 
     if (!billingModulePaymentIntentsToInvoices?.length) {
-      throw new Error("No billing-module payment intent to invoices found");
+      throw new Error(
+        "Not Found error. No billing-module payment intent to invoices found",
+      );
     }
 
     const billingModuleInvoices = await billingModuleInvoiceApi.find({

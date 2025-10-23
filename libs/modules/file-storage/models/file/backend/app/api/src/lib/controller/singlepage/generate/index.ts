@@ -17,13 +17,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const data = JSON.parse(body["data"]);

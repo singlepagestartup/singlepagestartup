@@ -14,20 +14,20 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("No id provided");
+        throw new Error("Validation error. No id provided");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
         throw new Error(
-          "Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
+          "Validation error. Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
             typeof body["data"],
         );
       }
@@ -36,23 +36,26 @@ export class Handler {
       try {
         data = JSON.parse(body["data"]);
       } catch (error) {
-        throw new Error("Invalid JSON in body['data']. Got: " + body["data"]);
+        throw new Error(
+          "Validation error. Invalid JSON in body['data']. Got: " +
+            body["data"],
+        );
       }
 
       if (!data["provider"]) {
-        throw new Error("No provider provided");
+        throw new Error("Validation error. No provider provided");
       }
 
       if (!data["email"]) {
-        throw new Error("No email provided");
+        throw new Error("Validation error. No email provided");
       }
 
       if (!data["ecommerceModule"]) {
-        throw new Error("No ecommerceModule provided");
+        throw new Error("Validation error. No ecommerceModule provided");
       }
 
       if (!data["ecommerceModule"]["orders"]?.length) {
-        throw new Error("No ecommerceModule.orders provided");
+        throw new Error("Validation error. No ecommerceModule.orders provided");
       }
 
       if (
@@ -60,13 +63,15 @@ export class Handler {
           return order.id;
         })
       ) {
-        throw new Error("No ecommerceModule.orders[number].id provided");
+        throw new Error(
+          "Validation error. No ecommerceModule.orders[number].id provided",
+        );
       }
 
       const entity = await this.service.findById({ id });
 
       if (!entity) {
-        throw new Error("No entity found with id:" + id);
+        throw new Error("Not Found error. No entity found with id:" + id);
       }
 
       await this.service.deanonymize({ id, email: data.email });

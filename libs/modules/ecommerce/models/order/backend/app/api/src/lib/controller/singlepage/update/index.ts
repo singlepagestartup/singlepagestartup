@@ -22,14 +22,14 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        throw new Error("Invalid id. Got: " + uuid);
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       if (typeof body["data"] !== "string") {
@@ -68,7 +68,7 @@ export class Handler {
         });
 
         if (!ordersToProducts?.length) {
-          throw new Error("No orders to products found");
+          throw new Error("Not Found error. No orders to products found");
         }
 
         for (const orderToProduct of data.ordersToProducts) {
@@ -126,7 +126,9 @@ export class Handler {
           });
 
         if (!ordersToBillingModuleCurrencies?.length) {
-          throw new Error("Orders to billing module currencies not found");
+          throw new Error(
+            "Not Found error. Orders to billing module currencies not found",
+          );
         }
 
         const billingCurrencies = await billingCurrencyApi.find({
@@ -151,7 +153,7 @@ export class Handler {
         });
 
         if (!billingCurrencies?.length) {
-          throw new Error("Billing currencies not found");
+          throw new Error("Not Found error. Billing currencies not found");
         }
 
         const checkoutAttributes = await api.checkoutAttributes({
@@ -188,7 +190,7 @@ export class Handler {
         });
 
         if (!ordersToProducts?.length) {
-          throw new Error("Orders to products not found");
+          throw new Error("Not Found error. Orders to products not found");
         }
 
         const products = await productApi.find({
@@ -213,7 +215,7 @@ export class Handler {
         });
 
         if (!products?.length) {
-          throw new Error("Products not found");
+          throw new Error("Not Found error. Products not found");
         }
 
         const fileStorageReceiptTemplateFiles = await fileStorageFileApi.find({

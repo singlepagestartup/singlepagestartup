@@ -23,11 +23,13 @@ export class Service {
     props: IExecuteProps,
   ): Promise<{ jwt: string; refresh: string }> {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
     }
 
     const decoded = await jwt.verify(props.refresh, RBAC_JWT_SECRET);
@@ -35,7 +37,7 @@ export class Service {
     const subjectId = decoded.subject?.["id"];
 
     if (!subjectId) {
-      throw new Error("No subject provided in the token");
+      throw new Error("Not Found error. No subject provided in the token");
     }
 
     const subject = await api.findById({
@@ -48,7 +50,7 @@ export class Service {
     });
 
     if (!subject) {
-      throw new Error("No subject found");
+      throw new Error("Not Found error. No subject found");
     }
 
     const jwtToken = await jwt.sign(

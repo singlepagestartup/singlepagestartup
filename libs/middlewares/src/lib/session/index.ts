@@ -68,7 +68,7 @@ export class Middleware {
 
       if (!RBAC_SECRET_KEY) {
         throw new Error(
-          "RBAC_SECRET_KEY is required for sessions middleware to work",
+          "Configuration error. RBAC_SECRET_KEY is required for sessions middleware to work",
         );
       }
 
@@ -167,7 +167,7 @@ export class Middleware {
         });
 
         if (!createdSession) {
-          throw new Error("Session not found");
+          throw new Error("Not Found error. Session not found");
         }
 
         sid = createdSession.id;
@@ -182,7 +182,7 @@ export class Middleware {
       );
 
       if (!session) {
-        throw new Error("Session not found");
+        throw new Error("Not Found error. Session not found");
       }
 
       await next();

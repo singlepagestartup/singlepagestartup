@@ -15,32 +15,28 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("Invalid id. Got: " + id);
+        throw new Error("Validation error. Invalid id. Got: " + id);
       }
 
       const orderToProductId = c.req.param("orderToProductId");
 
       if (!orderToProductId) {
-        throw new Error("Invalid orderToProductId. Got: " + orderToProductId);
+        throw new Error(
+          "Validation error. Invalid orderToProductId. Got: " +
+            orderToProductId,
+        );
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -48,7 +44,7 @@ export class Handler {
       let entity = await this.service.findById({ id });
 
       if (!entity) {
-        throw new Error("Order not found");
+        throw new Error("Not Found error. Order not found");
       }
 
       const orderToProduct = await ordersToProductsApi.findById({
@@ -61,7 +57,7 @@ export class Handler {
       });
 
       if (!orderToProduct) {
-        throw new Error("Order to product not found");
+        throw new Error("Not Found error. Order to product not found");
       }
 
       const result = await ordersToProductsApi.update({

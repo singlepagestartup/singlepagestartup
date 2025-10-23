@@ -32,23 +32,6 @@ describe("util — HTTP error classification", () => {
     });
   });
 
-  // ------------------- 400 PAYMENT ERROR -------------------
-  describe("400 - Payment error", () => {
-    test.each([
-      "Payment intent not found",
-      "cloudpayments credentials not found",
-      "stripe secret key not found",
-      "Payment intent is not succeeded",
-      "Currency is required",
-      "Channel not found",
-      "Multiple billing module payment",
-    ])("maps '%s' → 400 Payment error", (msg) => {
-      const result = util(new Error(msg));
-      expect(result.status).toBe(400);
-      expect(result.category).toBe("Payment error");
-    });
-  });
-
   // ------------------- 401 AUTHENTICATION ERROR -------------------
   describe("401 - Authentication error", () => {
     test.each([
@@ -125,7 +108,7 @@ describe("util — HTTP error classification", () => {
       "Configuration error.",
       "Environment error. rbac_secret_key not found",
       "RBAC_JWT_SECRET not set",
-      "rbac_secret_key is not defined",
+      "Configuration error. RBAC_SECRET_KEY is not defined",
       "Internal server error",
       "Request not created",
       "JWT secret not provided",

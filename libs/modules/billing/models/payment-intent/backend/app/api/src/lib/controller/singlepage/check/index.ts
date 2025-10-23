@@ -5,7 +5,7 @@ import {
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../service";
+import { Service } from "../../../service";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
@@ -21,19 +21,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id");
+        throw new Error("Validation error. Invalid id");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       const entity = await this.service.findById({ id: uuid });
@@ -41,11 +41,11 @@ export class Handler {
       const data = JSON.parse(body["data"]);
 
       if (!data) {
-        throw new Error("Invalid data");
+        throw new Error("Validation error. Invalid data");
       }
 
       if (!entity) {
-        throw new Error("Not found");
+        throw new Error("Not Found error. Not found");
       }
 
       if (["succeeded", "failed"].includes(entity.status)) {
@@ -74,7 +74,9 @@ export class Handler {
       });
 
       if (!paymentIntentsToInvoices?.length) {
-        throw new Error("Payment intents to invoices not found");
+        throw new Error(
+          "Not Found error. Payment intents to invoices not found",
+        );
       }
 
       const invoices = await invoiceApi.find({
@@ -100,11 +102,15 @@ export class Handler {
         for (const invoice of invoices) {
           if (invoice.provider === "cloudpayments") {
             if (!CLOUDPAYMENTS_PUBLIC_ID || !CLOUDPAYMENTS_API_SECRET) {
-              throw new Error("Cloudpayments credentials not found");
+              throw new Error(
+                "Not Found error. Cloudpayments credentials not found",
+              );
             }
 
             if (!invoice.providerId) {
-              throw new Error("Cloudpayments invoice id not found");
+              throw new Error(
+                "Not Found error. Cloudpayments invoice id not found",
+              );
             }
 
             const paymentsList = await fetch(

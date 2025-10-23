@@ -77,7 +77,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!targetPage) {
-      throw new Error(`Page with url ${props.url} not found`);
+      throw new Error(`Not Found error. Page with url ${props.url} not found`);
     }
 
     const populatedPage = await this.findById({
@@ -91,18 +91,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const [moduleInfo, paginationType, pageSize] = segment.split(":");
 
     if (paginationType !== "pagination") {
-      throw new Error("Invalid pagination format");
+      throw new Error("Validation error. Invalid pagination format");
     }
 
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY not found");
+      throw new Error("Configuration error. RBAC_SECRET_KEY not found");
     }
 
     const [moduleName, modelName] = moduleInfo.split(".");
     const pageSizeNum = parseInt(pageSize, 10);
 
     if (isNaN(pageSizeNum)) {
-      throw new Error("Invalid page size");
+      throw new Error("Validation error. Invalid page size");
     }
 
     const moduleData = await fetch(
@@ -125,7 +125,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async withUrls(props: { id: string }) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY not found");
+      throw new Error("Configuration error. RBAC_SECRET_KEY not found");
     }
 
     const result = await this.findById({
@@ -133,7 +133,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!result) {
-      throw new Error(`Entity with id ${props.id} not found`);
+      throw new Error(`Not Found error. Entity with id ${props.id} not found`);
     }
 
     const segments = result.url?.split("/").filter((url) => url !== "");
@@ -169,7 +169,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           if (moduleData?.data?.length) {
             moduleData.data.forEach((entity: unknown) => {
               if (!entity?.[param]) {
-                throw new Error(`Entity with param ${param} not found`);
+                throw new Error(
+                  `Not Found error. Entity with param ${param} not found`,
+                );
               }
 
               moduleSegmentPaths.push(entity[param]);
@@ -229,7 +231,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!entity) {
-      throw new Error("Entity not found");
+      throw new Error("Not Found error. Entity not found");
     }
 
     const entityUrlParts = entity.url.split("/").filter((part) => part !== "");

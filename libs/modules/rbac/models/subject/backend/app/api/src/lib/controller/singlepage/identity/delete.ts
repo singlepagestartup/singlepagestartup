@@ -18,24 +18,17 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_JWT_SECRET) {
-        throw new Error("RBAC_JWT_SECRET not set");
+        throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const token = authorization(c);
 
       if (!token) {
-        return c.json(
-          {
-            data: null,
-          },
-          {
-            status: 401,
-          },
-        );
+        throw new Error("Authentication error. No token");
       }
 
       const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
@@ -44,7 +37,9 @@ export class Handler {
       const identityUuid = c.req.param("identityUuid");
 
       if (decoded?.["subject"]?.["id"] !== uuid) {
-        throw new Error("Only identity owner can create identity.");
+        throw new Error(
+          "Permission error. Only identity owner can create identity.",
+        );
       }
 
       const subjectsToAllIdentities = await subjectsToIdentitiesApi.find({
@@ -70,7 +65,7 @@ export class Handler {
       });
 
       if (subjectsToAllIdentities?.length === 1) {
-        throw new Error("Cannot delete last identity");
+        throw new Error("Internal error. Cannot delete last identity");
       }
 
       const subjectsToIdentities = await subjectsToIdentitiesApi.find({
@@ -101,11 +96,13 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("No subjects to identities found");
+        throw new Error("Not Found error. No subjects to identities found");
       }
 
       if (subjectsToIdentities.length > 1) {
-        throw new Error("Multiple subjects to identities found");
+        throw new Error(
+          "Internal error. Multiple subjects to identities found",
+        );
       }
 
       await subjectsToIdentitiesApi.delete({

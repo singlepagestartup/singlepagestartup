@@ -15,7 +15,7 @@ export class Service {
 
   async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const orderToProducts = await ordersToProductsApi.find({
@@ -39,7 +39,7 @@ export class Service {
     });
 
     if (!orderToProducts?.length) {
-      throw new Error("Order does not have any products");
+      throw new Error("Not Found error. Order does not have any products");
     }
 
     let result = orderToProducts.reduce((acc, orderToProduct) => {

@@ -71,7 +71,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     | undefined
   > {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const pages = await api.find({

@@ -10,7 +10,7 @@ export const middleware = async (
   if (typeof body["data"] !== "string") {
     return c.json(
       {
-        message: "Invalid body",
+        message: "Validation error. Invalid body",
       },
       {
         status: 400,

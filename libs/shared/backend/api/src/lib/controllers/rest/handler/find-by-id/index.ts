@@ -19,13 +19,13 @@ export class Handler<
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id. Got: " + uuid);
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       const data = await this.service.findById({ id: uuid });
 
       if (!data || !Object.keys(data).length) {
-        throw new Error("Not Found entity with id: " + uuid);
+        throw new Error("Not Found error. Not Found entity with id: " + uuid);
       }
 
       return c.json({

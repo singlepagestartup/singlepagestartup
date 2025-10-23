@@ -15,18 +15,13 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id");
+        throw new Error("Validation error. Invalid id");
       }
 
       const data = await this.service.send({ id: uuid });
 
       if (!data || !Object.keys(data).length) {
-        return c.json(
-          {
-            message: "Not found",
-          },
-          404,
-        );
+        throw new Error("Not Found error. Not found");
       }
 
       return c.json({

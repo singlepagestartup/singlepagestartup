@@ -65,15 +65,15 @@ export class Service {
 
   async proceed(props: IServiceProceedProps) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC secret key not found");
+      throw new Error("Configuration error. RBAC secret key not found");
     }
 
     if (!TIPTOPPAY_PUBLIC_ID) {
-      throw new Error("Tiptoppay public id not found");
+      throw new Error("Configuration error. Tiptoppay public id not found");
     }
 
     if (!TIPTOPPAY_API_SECRET) {
-      throw new Error("Tiptoppay API secret not found");
+      throw new Error("Configuration error. Tiptoppay API secret not found");
     }
 
     if (props.action === "create") {
@@ -173,7 +173,7 @@ export class Service {
       });
 
       if (!invoice) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       await paymentIntentsToInvoicesApi.create({
@@ -201,7 +201,7 @@ export class Service {
         | undefined = JSON.parse(props.data?.Data);
 
       if (!parsedData) {
-        throw new Error("Data in transaction not found");
+        throw new Error("Not Found error. Data in transaction not found");
       }
 
       const invoices = await invoiceApi.find({
@@ -227,11 +227,11 @@ export class Service {
       });
 
       if (!invoices?.length) {
-        throw new Error("Invoice not found");
+        throw new Error("Not Found error. Invoice not found");
       }
 
       if (invoices.length > 1) {
-        throw new Error("Multiple invoices found");
+        throw new Error("Validation error. Multiple invoices found");
       }
 
       let invoice = invoices[0];
@@ -242,7 +242,7 @@ export class Service {
         .digest("base64");
 
       if (signature !== props.headers["content-hmac"]) {
-        throw new Error("Signature mismatch");
+        throw new Error("Validation error. Signature mismatch");
       }
 
       if (props.data.Status === "Completed") {
@@ -264,7 +264,7 @@ export class Service {
         });
 
         if (!invoice) {
-          throw new Error("Invoice not found");
+          throw new Error("Not Found error. Invoice not found");
         }
 
         await props.callback({ invoice });

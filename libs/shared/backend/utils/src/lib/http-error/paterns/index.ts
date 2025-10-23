@@ -1,7 +1,6 @@
 import { ErrorPatternEntry } from "../type";
 
 export const httpErrorPatterns: ErrorPatternEntry[] = [
-  // Authentication (Specific)
   {
     status: 401,
     category: "Authentication error",
@@ -15,7 +14,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /invalid token issued/i,
     ],
   },
-  // Permissions (Specific)
   {
     status: 403,
     category: "Permission error",
@@ -27,7 +25,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /only identity owner can create identity/i,
     ],
   },
-  // Unprocessable Entity (Specific Semantic Validation)
   {
     status: 422,
     category: "Unprocessable Entity error",
@@ -38,24 +35,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /invalid type[.]? expected email, got:/i,
     ],
   },
-  // Payment Errors (Can include 'not found')
-  {
-    status: 400,
-    category: "Payment error",
-    patterns: [
-      /payment intent not found/i,
-      /cloudpayments (credentials|invoice id) not found/i,
-      /stripe secret key not found/i,
-      /payment intent is not succeeded/i,
-      /orders to billing module payment intents not found/i,
-      /billing module currencies not found/i,
-      /multiple billing module payment/i,
-      /channel not found/i,
-      /currency is required/i,
-      /currency not found/i,
-    ],
-  },
-  // Internal/Server Errors (Can include 'not found')
   {
     status: 500,
     category: "Internal error",
@@ -73,7 +52,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /server error/i,
     ],
   },
-  // General Not Found (Broad pattern, checked after specific ones)
   {
     status: 404,
     category: "Not Found error",
@@ -85,9 +63,11 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /no (inputs|email|stores|template|attributes?|products?|orders?|subjects to identities|attribute keys to attributes|orders to products|ecommerce orders to billing module currencies|billing module currency id) found/i,
       /order already exists/i,
       /order is not in 'new' status/i,
+      /channel not found/i,
+      /currency is required/i,
+      /currency not found/i,
     ],
   },
-  // General Validation (Broad, checked last for 400)
   {
     status: 400,
     category: "Validation error",

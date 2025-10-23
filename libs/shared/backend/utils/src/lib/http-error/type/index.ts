@@ -4,6 +4,7 @@ export type ErrorCategory =
   | "Authentication error"
   | "Validation error"
   | "Permission error"
+  | "Configuration error"
   | "Not Found error"
   | "Payment error"
   | "Unprocessable Entity error"

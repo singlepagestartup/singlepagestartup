@@ -21,13 +21,13 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("No uuid provided");
+        throw new Error("Validation error. No uuid provided");
       }
 
       const subjectsToEcommerceModuleOrders =
@@ -82,7 +82,7 @@ export class Handler {
       });
 
       if (!orders?.length) {
-        throw new Error("No orders found");
+        throw new Error("Not Found error. No orders found");
       }
 
       for (const order of orders) {

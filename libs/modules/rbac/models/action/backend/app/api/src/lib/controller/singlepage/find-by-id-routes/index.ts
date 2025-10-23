@@ -28,7 +28,7 @@ export class Handler {
    */
   async execute(c: Context, next: any): Promise<Response> {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY not found");
+      throw new Error("Configuration error. RBAC_SECRET_KEY not found");
     }
 
     const { uuid } = c.req.param();
@@ -43,7 +43,7 @@ export class Handler {
     });
 
     if (!result) {
-      throw new Error(`Not found. Entity with id ${uuid} not found`);
+      throw new Error(`Not Found error. Entity with id ${uuid} not found`);
     }
 
     const segments = result.path?.split("/").filter((url) => url !== "");
@@ -77,7 +77,9 @@ export class Handler {
           if (moduleData?.data?.length) {
             moduleData.data.forEach((entity: unknown) => {
               if (!entity?.[param]) {
-                throw new Error(`Entity with param ${param} not found`);
+                throw new Error(
+                  `Not Found error. Entity with param ${param} not found`,
+                );
               }
 
               moduleSegmentPaths.push(entity[param]);

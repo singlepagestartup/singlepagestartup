@@ -46,11 +46,13 @@ export class Service {
     props: IExecuteProps,
   ): Promise<{ jwt: string; refresh: string }> {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
     }
 
     const identity = await identityApi.emailAndPassword({
@@ -66,7 +68,7 @@ export class Service {
     });
 
     if (!identity) {
-      throw new Error("Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (props.type === "registration") {
@@ -133,7 +135,7 @@ export class Service {
       });
 
       if (!roles?.length) {
-        throw new Error("No roles found");
+        throw new Error("Not Found error. No roles found");
       }
 
       for (const role of roles) {
@@ -178,7 +180,7 @@ export class Service {
 
     if (!subjectsToIdentities?.length) {
       throw new Error(
-        "No authentications subjects associated with this identity",
+        "Not Found error. No authentications subjects associated with this identity",
       );
     }
 
@@ -195,7 +197,7 @@ export class Service {
     });
 
     if (!subject) {
-      throw new Error("No subject found");
+      throw new Error("Not Found error. No subject found");
     }
 
     const jwtToken = await jwt.sign(

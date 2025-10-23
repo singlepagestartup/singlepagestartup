@@ -17,7 +17,7 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id. Got: " + uuid);
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       const previous = await this.service.findById({ id: uuid });

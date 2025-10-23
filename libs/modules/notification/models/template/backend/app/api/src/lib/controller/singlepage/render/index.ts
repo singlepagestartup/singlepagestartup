@@ -20,11 +20,11 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("Not found");
+        throw new Error("Not Found error. Not found");
       }
 
       if (!uuid) {
-        throw new Error("Invalid id. Got: " + uuid);
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       if (body["data"] && typeof body["data"] !== "string") {
@@ -45,7 +45,9 @@ export class Handler {
           : null;
 
       if (!type) {
-        throw new Error("Invalid type. Expected email, got: " + type);
+        throw new Error(
+          "Validation error. Invalid type. Expected email, got: " + type,
+        );
       }
 
       const data = await this.service.render({
@@ -55,11 +57,11 @@ export class Handler {
       });
 
       if (!data) {
-        throw new Error("Not Found");
+        throw new Error("Not Found error. Not Found");
       }
 
       if (!Object.keys(data).length) {
-        throw new Error("Unprocessable Entity");
+        throw new Error("Validation error. Unprocessable Entity");
       }
 
       return c.json({

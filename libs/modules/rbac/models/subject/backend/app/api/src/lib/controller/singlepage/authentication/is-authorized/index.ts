@@ -20,7 +20,7 @@ export class Handler {
       const secretKey = secretKeyHeader || secretKeyCookie;
 
       if (secretKey && secretKey !== RBAC_SECRET_KEY) {
-        throw new Error("Unauthorized");
+        throw new Error("Authentication error. Unauthorized");
       }
 
       if (secretKey && secretKey === RBAC_SECRET_KEY) {
@@ -35,15 +35,19 @@ export class Handler {
       const parsedQuery = QueryString.parse(params);
 
       if (!parsedQuery?.["action"]) {
-        throw new Error("No action provided in query");
+        throw new Error("Validation error. No action provided in query");
       }
 
       if (!parsedQuery?.["action"]?.["route"]) {
-        throw new Error("No route provided in 'action' query");
+        throw new Error(
+          "Validation error. No route provided in 'action' query",
+        );
       }
 
       if (!parsedQuery?.["action"]?.["method"]) {
-        throw new Error("No method provided in 'action' query");
+        throw new Error(
+          "Validation error. No method provided in 'action' query",
+        );
       }
 
       const authorizationCookie = getCookie(c, "rbac.subject.jwt");

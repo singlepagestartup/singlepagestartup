@@ -19,13 +19,13 @@ export class Handler {
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("Invalid id. Got: " + uuid);
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       const body = await c.req.parseBody();
 
       if (!body) {
-        throw new Error("Invalid body");
+        throw new Error("Validation error. Invalid body");
       }
 
       const parsedBody: {
@@ -73,11 +73,11 @@ export class Handler {
 
       for (const [name, file] of Object.entries(parsedBody.files)) {
         if (Array.isArray(file)) {
-          throw new Error("Multiple files are not allowed");
+          throw new Error("Validation error. Multiple files are not allowed");
         }
 
         if (typeof file === "string") {
-          throw new Error("Invalid file type");
+          throw new Error("Validation error. Invalid file type");
         }
 
         const fileStorage = new Provider({
@@ -137,7 +137,7 @@ export class Handler {
         );
       }
 
-      throw new Error("Invalid file");
+      throw new Error("Validation error. Invalid file");
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

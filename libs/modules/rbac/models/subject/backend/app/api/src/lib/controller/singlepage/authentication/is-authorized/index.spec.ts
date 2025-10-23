@@ -4,7 +4,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 describe("is-authorized", () => {
   it("should return 200 if valid X-RBAC-SECRET-KEY header is provided", async () => {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
     const result = await api.authenticationIsAuthorized({

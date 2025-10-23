@@ -29,19 +29,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new Error("No uuid provided");
+        throw new Error("Validation error. No uuid provided");
       }
 
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid body");
+        throw new Error("Validation error. Invalid body");
       }
 
       const data = JSON.parse(body["data"]);
@@ -67,7 +67,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("No subjects to identities found");
+        throw new Error("Not Found error. No subjects to identities found");
       }
 
       const identities = await identityApi.find({
@@ -91,15 +91,19 @@ export class Handler {
       });
 
       if (!identities?.length) {
-        throw new Error("No identities found");
+        throw new Error("Not Found error. No identities found");
       }
 
       if (!data.notification?.notification?.method) {
-        throw new Error("No notification.notification.method provided");
+        throw new Error(
+          "Validation error. No notification.notification.method provided",
+        );
       }
 
       if (!data.notification?.topic?.slug) {
-        throw new Error("No notification.topic.slug provided");
+        throw new Error(
+          "Validation error. No notification.topic.slug provided",
+        );
       }
 
       const topics = await notificationTopicApi.find({
@@ -122,17 +126,17 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new Error("No topic found");
+        throw new Error("Not Found error. No topic found");
       }
 
       const topic = topics[0];
 
       if (!data.notification?.template?.variant) {
-        throw new Error("No template variant provided");
+        throw new Error("Validation error. No template variant provided");
       }
 
       if (!["email"].includes(data.notification.notification.method)) {
-        throw new Error("Invalid notification method");
+        throw new Error("Validation error. Invalid notification method");
       }
 
       const templates = await notificationTemplateApi.find({
@@ -155,7 +159,7 @@ export class Handler {
       });
 
       if (!templates?.length) {
-        throw new Error("No template found");
+        throw new Error("Not Found error. No template found");
       }
 
       const template = templates[0];
@@ -178,7 +182,7 @@ export class Handler {
         });
 
         if (!order) {
-          throw new Error("No order found");
+          throw new Error("Not Found error. No order found");
         }
 
         if (order.status === "approving") {
@@ -426,7 +430,7 @@ export class Handler {
       });
 
       if (!entity) {
-        throw new Error("No entity found");
+        throw new Error("Not Found error. No entity found");
       }
 
       return c.json({

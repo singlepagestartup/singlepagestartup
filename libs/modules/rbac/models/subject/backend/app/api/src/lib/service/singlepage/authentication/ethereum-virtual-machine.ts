@@ -34,14 +34,14 @@ export class Service {
     const { message, signature, address } = props.data;
 
     if (!message || !signature) {
-      throw new Error("Invalid message or signature");
+      throw new Error("Validation error. Invalid message or signature");
     }
 
     const isActualDateInMessage =
       Date.now() - parseInt(message) < 1000 * 60 * 5;
 
     if (!isActualDateInMessage) {
-      throw new Error("Invalid date in message");
+      throw new Error("Validation error. Invalid date in message");
     }
 
     const publicClient = createPublicClient({
@@ -56,15 +56,17 @@ export class Service {
     });
 
     if (!valid) {
-      throw new Error("Invalid signature");
+      throw new Error("Validation error. Invalid signature");
     }
 
     if (!RBAC_SECRET_KEY) {
-      throw new Error("RBAC_SECRET_KEY is not defined in the service");
+      throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
     if (!RBAC_JWT_SECRET) {
-      throw new Error("RBAC_JWT_SECRET is not defined in the service");
+      throw new Error(
+        "Configuration error. RBAC_JWT_SECRET is not defined in the service",
+      );
     }
 
     const identities = await identityApi.find({
@@ -168,7 +170,7 @@ export class Service {
       });
 
       if (!roles?.length) {
-        throw new Error("No roles found");
+        throw new Error("Not Found error. No roles found");
       }
 
       for (const role of roles) {
@@ -212,11 +214,11 @@ export class Service {
     });
 
     if (!finalIdentities?.length) {
-      throw new Error("Invalid credentials");
+      throw new Error("Authentication error. Invalid credentials");
     }
 
     if (finalIdentities.length > 1) {
-      throw new Error("Multiple identities found");
+      throw new Error("Internal error. Multiple identities found");
     }
 
     const identity = finalIdentities[0];
@@ -245,7 +247,7 @@ export class Service {
 
     if (!subjectsToIdentities?.length) {
       throw new Error(
-        "No authentications subjects associated with this identity",
+        "Not Found error. No authentications subjects associated with this identity",
       );
     }
 
@@ -262,7 +264,7 @@ export class Service {
     });
 
     if (!subject) {
-      throw new Error("No subject found");
+      throw new Error("Not Found error. No subject found");
     }
 
     const jwtToken = await jwt.sign(

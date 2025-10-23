@@ -17,7 +17,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("Environment error. RBAC_SECRET_KEY not found");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not found");
       }
 
       const query = QueryString.parse(c.req.url.split("?")[1]);
@@ -28,7 +28,7 @@ export class Handler {
 
       if (!route || !method || !type) {
         throw new Error(
-          "Missing one or more action parameters (route, method, type)",
+          "Validation error. Missing one or more action parameters (route, method, type)",
         );
       }
 
@@ -50,7 +50,7 @@ export class Handler {
 
       if (!actions?.length) {
         throw new Error(
-          `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
+          `Not Found error. No matching action for route: ${route}, method: ${method}, type: ${type}`,
         );
       }
 
@@ -79,7 +79,7 @@ export class Handler {
       }
 
       throw new Error(
-        `Not found. No matching action for route: ${route}, method: ${method}, type: ${type}`,
+        `Not Found error. No matching action for route: ${route}, method: ${method}, type: ${type}`,
       );
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);

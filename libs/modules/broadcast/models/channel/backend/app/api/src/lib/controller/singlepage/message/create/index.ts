@@ -16,7 +16,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not defined");
+        throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
       }
 
       const id = c.req.param("id");

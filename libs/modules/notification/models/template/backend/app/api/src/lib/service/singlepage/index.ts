@@ -17,7 +17,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     payload?: any;
   }) {
     if (!RBAC_SECRET_KEY) {
-      throw new Error("Secret key not found");
+      throw new Error("Configuration error. Secret key not found");
     }
 
     const template = await this.findById({
@@ -25,7 +25,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!template) {
-      throw new Error("Template not found");
+      throw new Error("Not Found error. Template not found");
     }
 
     let queryData: undefined | string;
@@ -74,6 +74,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return data;
     }
 
-    throw new Error("Passed render type is not supported");
+    throw new Error("Internal error. Passed render type is not supported");
   }
 }

@@ -14,33 +14,19 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC secret key not found");
+        throw new Error("Configuration error. RBAC secret key not found");
       }
 
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid id");
       }
 
       const billingModuleCurrencyId = c.req.param("billingModuleCurrencyId");
 
       if (!billingModuleCurrencyId) {
-        return c.json(
-          {
-            message: "Invalid billing module currency id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid billing module currency id");
       }
 
       const attributes = await this.service.getCheckoutAttributes({
