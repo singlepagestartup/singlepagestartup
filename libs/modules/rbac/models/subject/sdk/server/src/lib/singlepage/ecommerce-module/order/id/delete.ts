@@ -24,7 +24,7 @@ export async function action(props: IProps): Promise<IResult> {
   const { id, params, options, host = serverHost, orderId } = props;
 
   if (!orderId) {
-    throw new Error("orderId is required");
+    throw new Error("Validation error. orderId is required");
   }
 
   const stringifiedQuery = QueryString.stringify(params, {

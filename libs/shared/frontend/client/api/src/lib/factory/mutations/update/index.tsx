@@ -28,7 +28,7 @@ export function mutation<T>(
       const id = mutationFunctionProps.id || props.id;
 
       if (!id) {
-        throw new Error("id is required");
+        throw new Error("Validation error. id is required");
       }
 
       const res = await actions.update<T>({

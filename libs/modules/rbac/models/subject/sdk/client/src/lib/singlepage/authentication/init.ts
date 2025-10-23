@@ -35,7 +35,7 @@ export function action(props: IProps) {
         });
 
         if (!result) {
-          throw new Error("No data");
+          throw new Error("Not Found error. No result");
         }
 
         localStorage.setItem("rbac.subject.refresh", result.refresh);

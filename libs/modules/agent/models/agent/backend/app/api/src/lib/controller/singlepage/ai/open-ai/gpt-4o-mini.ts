@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import OpenAI from "openai";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
   service: Service;
@@ -25,7 +26,7 @@ export class Handler {
 
       if (typeof body["data"] !== "string") {
         throw new Error(
-          "Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
+          "Validation error. Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
             typeof body["data"],
         );
       }
@@ -59,10 +60,9 @@ export class Handler {
         data: response,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -7,7 +7,7 @@ import { api as notificationTemplateApi } from "@sps/notification/models/templat
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
-import { logger } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 export class Handler {
   service: Service;
 
@@ -18,7 +18,7 @@ export class Handler {
   async execute(c: Context, next: any): Promise<Response> {
     try {
       if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY not set");
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       logger.info("Dummy started");
@@ -35,7 +35,7 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new Error("No topic found");
+        throw new Error("Not Found error. No topic found");
       }
 
       const topic = topics[0];
@@ -52,7 +52,7 @@ export class Handler {
       });
 
       if (!templates?.length) {
-        throw new Error("No template found");
+        throw new Error("Not Found error. No template found");
       }
       const template = templates[0];
 
@@ -74,7 +74,7 @@ export class Handler {
         });
 
         if (!createdNotification) {
-          throw new Error("Failed to create notification");
+          throw new Error("Internal error. Failed to create notification");
         }
 
         await notificationNotificationsToTemplatesApi.create({
@@ -109,10 +109,8 @@ export class Handler {
 
       return c.json({ data: { ok: true } });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

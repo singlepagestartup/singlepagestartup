@@ -334,7 +334,7 @@ export const GET = async (request: NextRequest) => {
     const parsedParams = QueryString.parse(params);
 
     if (!HOST_SERVICE_URL) {
-      throw new Error("Host URL not found");
+      throw new Error("Configuration error. Host URL not found");
     }
 
     const width = parsedParams?.["width"] ? Number(parsedParams["width"]) : 512;

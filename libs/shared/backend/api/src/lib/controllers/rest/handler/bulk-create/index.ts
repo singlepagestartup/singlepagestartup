@@ -5,6 +5,7 @@ import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
 import { DI } from "../../../../di/constants";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -18,26 +19,22 @@ export class Handler<
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new HTTPException(400, {
-          message: "Invalid data",
-        });
+        throw new Error("Validation error. Invalid data");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.length) {
-        throw new HTTPException(400, {
-          message: "Invalid data, should be array [{'data':<any>},...]",
-        });
+        throw new Error(
+          "Validation error. Invalid data, should be array [{'data':<any>},...]",
+        );
       }
 
       const createdEntities: SCHEMA[] = [];
 
       for (const dataEntity of data) {
         if (typeof dataEntity["data"] !== "object") {
-          throw new HTTPException(400, {
-            message: "Invalid data",
-          });
+          throw new Error("Validation error. Invalid data");
         }
 
         const createdEntity = await this.service.create({
@@ -45,9 +42,7 @@ export class Handler<
         });
 
         if (!createdEntity) {
-          throw new HTTPException(404, {
-            message: "Entity not found",
-          });
+          throw new Error("Internal error. Entity not created");
         }
 
         createdEntities.push(createdEntity);
@@ -57,10 +52,8 @@ export class Handler<
         data: createdEntities,
       });
     } catch (error: any) {
-      throw new HTTPException(500, {
-        message: error.message || "Internal Server Error",
-        cause: error,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

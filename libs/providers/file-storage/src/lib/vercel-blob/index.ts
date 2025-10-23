@@ -21,7 +21,9 @@ export class Provider implements IProvider {
 
   async connect(): Promise<void> {
     if (!BLOB_READ_WRITE_TOKEN) {
-      throw new Error("BLOB_READ_WRITE_TOKEN is not defined");
+      throw new Error(
+        "Configuration error. BLOB_READ_WRITE_TOKEN is not defined",
+      );
     }
 
     return;
@@ -36,7 +38,7 @@ export class Provider implements IProvider {
     const extension = (props.file as File).name.split(".").pop();
 
     if (!extension) {
-      throw new Error("Invalid file extension");
+      throw new Error("Validation error. Invalid file extension");
     }
 
     const fileName = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
