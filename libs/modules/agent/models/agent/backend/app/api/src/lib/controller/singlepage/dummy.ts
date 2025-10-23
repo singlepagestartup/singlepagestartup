@@ -35,7 +35,7 @@ export class Handler {
       });
 
       if (!topics?.length) {
-        throw new Error("No topic found");
+        throw new Error("Not Found error. No topic found");
       }
 
       const topic = topics[0];
@@ -52,7 +52,7 @@ export class Handler {
       });
 
       if (!templates?.length) {
-        throw new Error("No template found");
+        throw new Error("Not Found error. No template found");
       }
       const template = templates[0];
 
@@ -74,7 +74,7 @@ export class Handler {
         });
 
         if (!createdNotification) {
-          throw new Error("Failed to create notification");
+          throw new Error("Internal error. Failed to create notification");
         }
 
         await notificationNotificationsToTemplatesApi.create({

@@ -26,16 +26,6 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
     ],
   },
   {
-    status: 422,
-    category: "Unprocessable Entity error",
-    patterns: [
-      /expected string/i,
-      /invalid body\['data'\]/i,
-      /unprocessable entity/i,
-      /invalid type[.]? expected email, got:/i,
-    ],
-  },
-  {
     status: 500,
     category: "Internal error",
     patterns: [

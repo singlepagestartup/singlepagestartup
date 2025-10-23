@@ -39,7 +39,7 @@ export class Provider implements IProvider {
     const extension = (props.file as File).name.split(".").pop();
 
     if (!extension) {
-      throw new Error("Invalid file extension");
+      throw new Error("Validation error. Invalid file extension");
     }
 
     // Convert File or Blob to Buffer or ArrayBuffer based on the environment
@@ -52,7 +52,7 @@ export class Provider implements IProvider {
       // If File exists in this environment, convert to ArrayBuffer
       fileData = await file.arrayBuffer();
     } else {
-      throw new Error("Unsupported file type");
+      throw new Error("Validation error. Unsupported file type");
     }
 
     const fileName = options?.fileName || `${Date.now()}`;
@@ -71,7 +71,7 @@ export class Provider implements IProvider {
       return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
     } catch (error) {
       logger.error("Error uploading to S3:", error);
-      throw new Error("Failed to upload file to S3");
+      throw new Error("Validation error. Failed to upload file to S3");
     }
   }
 

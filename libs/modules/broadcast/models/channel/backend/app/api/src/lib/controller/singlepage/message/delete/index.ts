@@ -24,13 +24,15 @@ export class Handler {
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("Invalid id, id is required.");
+        throw new Error("Validation error. Invalid id, id is required.");
       }
 
       const messageId = c.req.param("messageId");
 
       if (!messageId) {
-        throw new Error("Invalid messageId, messageId is required.");
+        throw new Error(
+          "Validation error. Invalid messageId, messageId is required.",
+        );
       }
 
       const channelsToMessages = await channelsToMessagesApi.find({

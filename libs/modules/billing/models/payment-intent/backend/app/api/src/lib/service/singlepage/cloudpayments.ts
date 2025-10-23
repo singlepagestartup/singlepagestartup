@@ -244,7 +244,7 @@ export class Service {
         .digest("base64");
 
       if (signature !== props.headers["content-hmac"]) {
-        throw new Error("Signature mismatch");
+        throw new Error("Validation error. Signature mismatch");
       }
 
       if (props.data.Status === "Completed") {

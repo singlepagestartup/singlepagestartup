@@ -26,7 +26,7 @@ export class Handler {
 
       if (typeof body["data"] !== "string") {
         throw new Error(
-          "Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
+          "Validation error. Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
             typeof body["data"],
         );
       }

@@ -52,7 +52,7 @@ export class Handler {
       }
 
       if (!data.currencyId) {
-        throw new Error("Currency is required");
+        throw new Error("Validation error. Currency is required");
       }
 
       const currency = await billingCurrencyApi.findById({
@@ -77,12 +77,14 @@ export class Handler {
       const allowedProviders = ALLOWED_BILLING_SERVICE_PROVIDERS.split(",");
 
       if (!allowedProviders.includes(provider)) {
-        throw new Error(`Provider ${provider} is not allowed`);
+        throw new Error(
+          `Validation error. Provider ${provider} is not allowed`,
+        );
       }
 
       if (provider === "stripe") {
         if (!data.metadata?.email) {
-          throw new Error("Email is required");
+          throw new Error("Validation error. Email is required");
         }
 
         result = await this.service.stripe({
@@ -97,7 +99,7 @@ export class Handler {
         });
       } else if (provider === "0xprocessing") {
         if (!data.metadata?.email) {
-          throw new Error("Email is required");
+          throw new Error("Validation error. Email is required");
         }
 
         result = await this.service.OxProcessing({
@@ -110,7 +112,7 @@ export class Handler {
         });
       } else if (provider.includes("payselection")) {
         if (!data.metadata?.email) {
-          throw new Error("Email is required");
+          throw new Error("Validation error. Email is required");
         }
 
         const credentialsType = provider.includes("international")
@@ -124,7 +126,7 @@ export class Handler {
         });
       } else if (provider === "cloudpayments") {
         if (!data.metadata?.email) {
-          throw new Error("Email is required");
+          throw new Error("Validation error. Email is required");
         }
 
         result = await this.service.cloudpayments({
@@ -136,7 +138,7 @@ export class Handler {
         });
       } else if (provider === "tiptoppay") {
         if (!data.metadata?.email) {
-          throw new Error("Email is required");
+          throw new Error("Validation error. Email is required");
         }
 
         result = await this.service.tiptoppay({

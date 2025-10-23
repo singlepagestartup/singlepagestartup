@@ -41,7 +41,7 @@ export class Handler {
       ]);
 
       if (!cronChannels || cronChannels.length !== 1) {
-        throw new Error("Invalid cron channel configuration");
+        throw new Error("Validation error. Invalid cron channel configuration");
       }
 
       const cronChannel = cronChannels[0];
@@ -194,7 +194,9 @@ export class Handler {
         .then(async (res) => {
           if (!res.ok) {
             const errorText = await res.text();
-            throw new Error(`Ошибка запроса: ${res.status} - ${errorText}`);
+            throw new Error(
+              `Internal error. Error request: ${res.status} - ${errorText}`,
+            );
           }
           return res.json();
         })

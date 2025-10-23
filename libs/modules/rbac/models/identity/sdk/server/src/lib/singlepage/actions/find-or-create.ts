@@ -64,7 +64,7 @@ export async function action(props: IProps): Promise<IResult> {
   });
 
   if (!json) {
-    throw new Error("No data returned from the server");
+    throw new Error("Internal error. No data returned from the server");
   }
 
   const transformedData = transformResponseItem<IResult>(json);

@@ -7,7 +7,6 @@ export type ErrorCategory =
   | "Configuration error"
   | "Not Found error"
   | "Payment error"
-  | "Unprocessable Entity error"
   | "Internal error"
   | "Other";
 

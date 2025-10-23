@@ -27,7 +27,7 @@ export async function action(props: IProps): Promise<IResult> {
   const identityId = props.identityId || props.data["identityId"];
 
   if (!identityId) {
-    throw new Error("identityId is required");
+    throw new Error("Validation error. identityId is required");
   }
 
   const formData = prepareFormDataToSend({ data });

@@ -25,7 +25,7 @@ export async function action(props: IProps): Promise<IResult> {
   const identityId = props.identityId;
 
   if (!identityId) {
-    throw new Error("identityId is required");
+    throw new Error("Validation error. identityId is required");
   }
 
   const stringifiedQuery = QueryString.stringify(params, {

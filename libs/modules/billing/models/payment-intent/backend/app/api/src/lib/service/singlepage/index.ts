@@ -164,11 +164,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (props.action === "create") {
       if (!props.entity.amount) {
-        throw new Error("Amount is required");
+        throw new Error("Validation error. Amount is required");
       }
 
       if (props.entity.amount < 0) {
-        throw new Error("Amount cannot be negative");
+        throw new Error("Validation error. Amount cannot be negative");
       }
 
       let stripeProduct: any;
@@ -180,7 +180,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       if (props.entity.type === "subscription") {
         if (!props.entity.interval) {
-          throw new Error("Interval is required for subscription");
+          throw new Error(
+            "Validation error. Interval is required for subscription",
+          );
         }
         stripeProduct = await stripe.products.search({
           query: `name:'${props.entity.amount}' AND active:'true'`,
@@ -528,7 +530,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       }
 
-      throw new Error("Unknown stripe webhook data");
+      throw new Error("Validation error. Unknown stripe webhook data");
     }
   }
 
@@ -684,7 +686,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (invoices.length > 1) {
-        throw new Error("Multiple invoices found");
+        throw new Error("Validation error. Multiple invoices found");
       }
 
       let invoice = invoices[0];
@@ -813,7 +815,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (invoices.length > 1) {
-        throw new Error("Multiple invoices found");
+        throw new Error("Validation error. Multiple invoices found");
       }
 
       let invoice = invoices[0];
@@ -1189,7 +1191,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       throw new Error(
-        `Payselection error ${checkout.Code} ${checkout.Description}`,
+        `Internal error. Payselection error ${checkout.Code} ${checkout.Description}`,
       );
     } else {
       if (!PAYSELECTION_WEBHOOK_URL) {

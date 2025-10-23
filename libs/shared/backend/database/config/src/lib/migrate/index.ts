@@ -46,7 +46,7 @@ export class Config {
   async migrate() {
     try {
       if (Object.keys(DATABASE_OPTIONS).length < 2) {
-        throw new Error("Database credentials are missing");
+        throw new Error("Not Found error. Database credentials are missing");
       }
 
       let beforeMigrations = [];

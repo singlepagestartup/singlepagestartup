@@ -29,7 +29,7 @@ export class Provider implements IProvider {
     const extension = (props.file as File).name.split(".").pop();
 
     if (!extension) {
-      throw new Error("Invalid file extension");
+      throw new Error("Validation error. Invalid file extension");
     }
 
     const fileName = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);

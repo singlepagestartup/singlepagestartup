@@ -21,13 +21,15 @@ export class Handler {
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
-        throw new Error("Invalid data, data is required.");
+        throw new Error("Validation error. Invalid data, data is required.");
       }
 
       const data = JSON.parse(body["data"]);
 
       if (!data.slug || !data.payload) {
-        throw new Error("Invalid data, slug and payload are required.");
+        throw new Error(
+          "Validation error. Invalid data, slug and payload are required.",
+        );
       }
 
       const channels = await api.find({

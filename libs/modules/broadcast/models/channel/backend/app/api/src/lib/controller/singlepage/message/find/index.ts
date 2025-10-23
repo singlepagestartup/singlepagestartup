@@ -18,7 +18,7 @@ export class Handler {
       const headers = c.req.header();
 
       if (!id) {
-        throw new Error("Invalid id, id is required.");
+        throw new Error("Validation error. Invalid id, id is required.");
       }
 
       /**

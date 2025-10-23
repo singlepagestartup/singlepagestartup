@@ -29,7 +29,7 @@ export class Handler {
         const body = await c.req.parseBody();
 
         if (body["data"] instanceof File) {
-          throw new Error("Files are not supported");
+          throw new Error("Validation error. Files are not supported");
         }
 
         if (typeof body["data"] !== "string") {
@@ -65,7 +65,7 @@ export class Handler {
             },
           });
         } else {
-          throw new Error("Missing headers");
+          throw new Error("Validation error. Missing headers");
         }
       } else if (provider === "cloudpayments") {
         if ("x-content-hmac" in headers && "content-hmac" in headers) {
