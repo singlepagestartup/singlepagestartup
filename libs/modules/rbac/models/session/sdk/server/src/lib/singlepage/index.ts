@@ -10,7 +10,7 @@ import {
   action as init,
   type IProps as IInitProps,
   type IResult as IInitResult,
-} from "./actions/init";
+} from "./init";
 
 export type IProps = {
   IInitProps: IInitProps;
