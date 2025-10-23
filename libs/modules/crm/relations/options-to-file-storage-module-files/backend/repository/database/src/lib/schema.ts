@@ -18,8 +18,8 @@ export const Table = pgTable(table, {
     .uuid("on_id")
     .notNull()
     .references(() => Option.id, { onDelete: "cascade" }),
-  fileStorageId: pgCore
-    .uuid("fe_se_id")
+  fileStorageModuleFileId: pgCore
+    .uuid("fe_se_me_fe_id")
     .notNull()
     .references(() => FileStorage.id, { onDelete: "cascade" }),
 });

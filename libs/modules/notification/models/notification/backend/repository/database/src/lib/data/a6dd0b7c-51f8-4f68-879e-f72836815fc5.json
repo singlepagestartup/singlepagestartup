@@ -1,0 +1,13 @@
+{
+  "id": "a6dd0b7c-51f8-4f68-879e-f72836815fc5",
+  "createdAt": "2025-10-17T07:40:43.297Z",
+  "updatedAt": "2025-10-17T07:40:43.297Z",
+  "variant": "default",
+  "status": "new",
+  "method": "email",
+  "title": "New request from website",
+  "data": "{\"crm\":{\"form\":{\"formId\":\"efccb53f-b9fe-4c71-8ce7-a996d233d312\"}}}",
+  "reciever": "test@test.ru",
+  "attachments": "[]",
+  "sendAfter": "2025-10-17T07:40:43.297Z"
+}

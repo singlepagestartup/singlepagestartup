@@ -55,7 +55,7 @@ export function Component(props: IComponentPropsExtended) {
                     data?.map((option) => [
                       option.slug,
                       option.title?.[props.language] || "",
-                      <Options
+                      <Option
                         isServer={false}
                         variant={option.variant as any}
                         data={option}
