@@ -91,7 +91,7 @@
     "file-type": "^20.0.0",
     "framer-motion": "^11.15.0",
     "grammy": "^1.33.0",
-    "hono": "^4.6.17",
+    "hono": "4.10.2",
     "hono-rate-limiter": "^0.4.2",
     "image-size": "^1.2.0",
     "immer": "^10.1.1",
