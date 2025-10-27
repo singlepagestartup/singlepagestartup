@@ -159,7 +159,7 @@ export function Component(props: IComponentPropsExtended) {
           <Button
             onClick={form.handleSubmit(onSubmit)}
             variant="secondary"
-            className="w-full flex flex-shrink-0"
+            className="w-full flex shrink-0"
             disabled={ecommerceProductsCart.isPending}
           >
             {ecommerceProductsCart.isPending ? "Adding..." : "Add to cart"}

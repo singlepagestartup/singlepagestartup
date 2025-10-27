@@ -3,7 +3,7 @@
  * have random hash names <hash>.p.ttf, not Bold.<hash>.ttf
  */
 import "../styles/fonts.css";
-import "../styles/tailwind.scss";
+import "../styles/tailwind.css";
 
 import { fonts } from "./fonts";
 import React, { Suspense } from "react";

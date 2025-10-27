@@ -45,7 +45,7 @@ export function Component<M extends { id: string }, V>(
       <div className="relative rounded-lg border border-input bg-background">
         <div className="flex items-center px-5 absolute transform -translate-y-1/2 inset-x-0 w-full justify-between">
           <Button variant="outline" size="sm" className="gap-2 w-fit">
-            <p className="max-w-40 overflow-hidden whitespace-nowrap overflow-ellipsis text-sm">
+            <p className="max-w-40 overflow-hidden whitespace-nowrap text-ellipsis text-sm">
               {props.data?.id}
             </p>
           </Button>

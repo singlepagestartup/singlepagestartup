@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 
@@ -18,20 +18,20 @@ export function Component(props: IComponentPropsExtended) {
           {props.content}
           {props.children}
         </div>
-        <div className="ml-auto flex flex-shrink-0 items-center lg:hidden">
+        <div className="ml-auto flex shrink-0 items-center lg:hidden">
           <button
             onClick={() => {
               setOpen((prev) => !prev);
             }}
-            className="bg-background border border-foreground rounded-xl w-[50px] h-[50px] flex flex-shrink-0 lg:hidden z-30 items-center justify-center text-foreground hover:text-foreground focus:outline-none focus:ring-inset focus:ring-transparent gap-3 flex-col"
+            className="bg-background border border-foreground rounded-xl w-[50px] h-[50px] flex shrink-0 lg:hidden z-30 items-center justify-center text-foreground hover:text-foreground focus:outline-hidden focus:ring-inset focus:ring-transparent gap-3 flex-col"
           >
             <div
-              className={`w-[30px] h-[2px] bg-foreground transform duration-200 ${
+              className={`w-[30px] h-0.5 bg-foreground transform duration-200 ${
                 open ? "rotate-45 translate-y-2.5 -mt-1.5" : "mt-0"
               }`}
             ></div>
             <div
-              className={`w-[30px] h-[2px] bg-foreground transform duration-200 ${
+              className={`w-[30px] h-0.5 bg-foreground transform duration-200 ${
                 open ? "-rotate-45 -translate-y-1" : ""
               }`}
             ></div>

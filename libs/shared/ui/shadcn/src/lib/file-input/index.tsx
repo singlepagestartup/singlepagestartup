@@ -137,7 +137,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
     return (
       <div
         className={cn(
-          "flex w-full rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 relative aspect-w-2 aspect-h-2 cursor-pointer",
+          "flex w-full rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 relative aspect-w-2 aspect-h-2 cursor-pointer",
           className,
         )}
       >

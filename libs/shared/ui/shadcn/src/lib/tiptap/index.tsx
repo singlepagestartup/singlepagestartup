@@ -156,7 +156,7 @@ export const TipTapEditable = forwardRef<
     editorProps: {
       attributes: {
         class: cn(
-          "prose dark:prose-invert prose-xs lg:prose-base p-5 focus:outline-none w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "prose dark:prose-invert prose-xs lg:prose-base p-5 focus:outline-hidden w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           props.className,
         ),
       },
@@ -394,7 +394,10 @@ export const TipTapContent = forwardRef<HTMLDivElement, ITipTapContentProps>(
       content: props.value,
       editorProps: {
         attributes: {
-          class: cn("w-full prose mx-auto focus:outline-none", props.className),
+          class: cn(
+            "w-full prose mx-auto focus:outline-hidden",
+            props.className,
+          ),
         },
       },
       editable: false,

@@ -93,7 +93,7 @@ export function Component(props: IComponentPropsExtended) {
         <Button
           onClick={form.handleSubmit(onSubmit)}
           variant="secondary"
-          className="w-fit flex flex-shrink-0"
+          className="w-fit flex shrink-0"
         >
           Update
         </Button>
