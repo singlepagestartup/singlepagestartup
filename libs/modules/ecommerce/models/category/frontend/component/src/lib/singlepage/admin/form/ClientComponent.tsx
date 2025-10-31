@@ -61,6 +61,13 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
+        {props.categoriesToWebsiteBuilderModuleWidgets
+          ? props.categoriesToWebsiteBuilderModuleWidgets({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
         <FormField
           ui="shadcn"
           type="text"
@@ -69,7 +76,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type admin title"
         />
-
         <AgregatedInput title="Title">
           {internationalization.languages.map((language) => {
             return (
@@ -85,7 +91,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <AgregatedInput title="Description">
           {internationalization.languages.map((language) => {
             return (
@@ -101,7 +106,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
-
         <FormField
           ui="shadcn"
           type="text"
@@ -110,7 +114,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type slug"
         />
-
         <FormField
           ui="shadcn"
           type="text"
@@ -119,7 +122,6 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
           placeholder="Type class name"
         />
-
         <FormField
           ui="shadcn"
           type="select"
@@ -129,7 +131,6 @@ export function Component(props: IComponentPropsExtended) {
           placeholder="Select variant"
           options={variants.map((variant) => [variant, variant])}
         />
-
         {props.categoriesToProducts
           ? props.categoriesToProducts({
               data: props.data,
@@ -137,7 +138,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.categoriesToFileStorageModuleWidgets
           ? props.categoriesToFileStorageModuleWidgets({
               data: props.data,
@@ -145,7 +145,6 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
-
         {props.widgetsToCategories
           ? props.widgetsToCategories({
               data: props.data,

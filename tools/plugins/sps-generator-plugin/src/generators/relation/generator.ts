@@ -10,10 +10,10 @@ export async function relationGenerator(
   options: RelationGeneratorSchema,
 ) {
   const moduleName = options.module;
-  const leftModelName = pluralize(options.left_model_name);
+  const leftModelName = options.left_model_name;
   const leftmoduleName = options.left_module_name;
 
-  const rightModelName = pluralize(options.right_model_name);
+  const rightModelName = options.right_model_name;
   const rightmoduleName = options.right_module_name;
 
   const name = pluralize(options.relation_name);
