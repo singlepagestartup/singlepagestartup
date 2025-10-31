@@ -1,0 +1,9 @@
+{
+  "id": "900e3c61-0a4d-406d-aaa0-b88dbff32525",
+  "createdAt": "2025-04-12T17:59:49.686Z",
+  "updatedAt": "2025-10-31T06:26:07.202Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/categories-to-file-storage-module-files"
+}

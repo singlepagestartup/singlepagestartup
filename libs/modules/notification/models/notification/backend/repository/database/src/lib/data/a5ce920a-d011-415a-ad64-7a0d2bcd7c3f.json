@@ -1,0 +1,13 @@
+{
+  "id": "a5ce920a-d011-415a-ad64-7a0d2bcd7c3f",
+  "createdAt": "2025-10-17T07:25:53.766Z",
+  "updatedAt": "2025-10-31T06:19:43.892Z",
+  "variant": "default",
+  "status": "new",
+  "method": "email",
+  "title": "New request from website",
+  "data": "{\"crm\":{\"form\":{\"email\":\"test\",\"name\":\"test\",\"select\":\"electric-yellow-constrictor\",\"formId\":\"efccb53f-b9fe-4c71-8ce7-a996d233d312\"}}}",
+  "reciever": "test@test.ru",
+  "attachments": "[]",
+  "sendAfter": "2025-10-17T07:25:53.768Z"
+}

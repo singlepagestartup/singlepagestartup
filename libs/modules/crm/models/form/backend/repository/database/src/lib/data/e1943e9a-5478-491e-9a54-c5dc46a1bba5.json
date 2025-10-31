@@ -1,0 +1,15 @@
+{
+  "id": "e1943e9a-5478-491e-9a54-c5dc46a1bba5",
+  "createdAt": "2025-02-01T15:33:53.020Z",
+  "updatedAt": "2025-10-31T06:26:06.280Z",
+  "variant": "default",
+  "title": {
+    "en": "Contact with us",
+    "ru": "Связаться с нами"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "contact-with-us"
+}

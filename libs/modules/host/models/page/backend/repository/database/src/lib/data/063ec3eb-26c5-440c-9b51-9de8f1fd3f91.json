@@ -1,0 +1,12 @@
+{
+  "id": "063ec3eb-26c5-440c-9b51-9de8f1fd3f91",
+  "title": "EC | Product | Overview",
+  "url": "/ecommerce/products/[ecommerce.products.slug]",
+  "description": "Description",
+  "createdAt": "2025-01-24T23:47:55.456Z",
+  "updatedAt": "2025-10-31T06:26:05.907Z",
+  "variant": "default",
+  "className": null,
+  "language": "en",
+  "adminTitle": "famous magenta nightingale"
+}

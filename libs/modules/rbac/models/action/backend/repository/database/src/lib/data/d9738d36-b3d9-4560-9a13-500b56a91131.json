@@ -1,0 +1,9 @@
+{
+  "id": "d9738d36-b3d9-4560-9a13-500b56a91131",
+  "createdAt": "2025-05-06T22:01:47.858Z",
+  "updatedAt": "2025-10-31T06:26:06.955Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/widgets-to-articles/[blog.widgets-to-articles.id]"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "1311470b-82e6-4f7c-b293-b25893531455",
+  "createdAt": "2025-05-06T18:03:51.412Z",
+  "updatedAt": "2025-10-31T06:26:07.857Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/categories/[blog.categories.id]"
+}
