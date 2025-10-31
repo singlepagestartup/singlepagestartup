@@ -9,11 +9,14 @@ export async function relationGenerator(
   tree: Tree,
   options: RelationGeneratorSchema,
 ) {
-  // const moduleName = options.module;
-  // const leftModelName = pluralize(options.left_model_name);
-  // const rightModelName = pluralize(options.right_model_name);
+  const moduleName = options.module;
+  const leftModelName = pluralize(options.left_model_name);
+  const leftmoduleName = options.left_module_name;
 
-  // const name = `${leftModelName}-to-${rightModelName}`;
+  const rightModelName = pluralize(options.right_model_name);
+  const rightmoduleName = options.right_module_name;
+
+  const name = pluralize(options.name_relation);
 
   // const relationAdminVariants: IModelFrontendComponentVariantGeneratorProps[] =
   //   [
@@ -50,19 +53,19 @@ export async function relationGenerator(
         modules: [
           {
             module: {
-              name: "blog",
+              name: moduleName,
               relations: [
                 {
                   relation: {
-                    name: "widgets-to-articles",
+                    name: name,
                     models: [
                       {
-                        name: "widget",
-                        module: "blog",
+                        name: leftModelName,
+                        module: leftmoduleName,
                       },
                       {
-                        name: "article",
-                        module: "blog",
+                        name: rightModelName,
+                        module: rightmoduleName,
                       },
                     ],
                     frontend: {
