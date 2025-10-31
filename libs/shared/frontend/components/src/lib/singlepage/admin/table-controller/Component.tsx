@@ -50,7 +50,7 @@ export function Component(props: ITableControllerProps) {
 
   const currentPage = Math.ceil(offset / limit);
   const startItem = offset;
-  const endItem = offset + limit - 1;
+  const endItem = offset + limit;
 
   const contextValue = useMemo(
     () => ({
