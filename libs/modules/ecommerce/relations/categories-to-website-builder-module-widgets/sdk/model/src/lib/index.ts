@@ -15,7 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route =
   "/api/ecommerce/categories-to-website-builder-module-widgets";
-export const variants = ["default"];
+export const variants = ["default", "overview"];
 export const query = {};
 export const options = {
   next: {

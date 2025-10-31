@@ -61,6 +61,11 @@ export function Component(props: IComponentPropsExtended) {
                       method: "eq",
                       value: props.data.id,
                     },
+                    {
+                      column: "variant",
+                      method: "eq",
+                      value: "default",
+                    },
                   ],
                 },
               },
