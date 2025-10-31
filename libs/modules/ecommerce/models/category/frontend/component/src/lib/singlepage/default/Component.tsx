@@ -12,6 +12,7 @@ import {
   CardTitle,
   TipTap,
 } from "@sps/shared-ui-shadcn";
+import { Component as CategoriesToWebsiteBuilderWidget } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const href = saveLanguageContext(
@@ -48,6 +49,37 @@ export function Component(props: IComponentPropsExtended) {
               className="prose:text-secondary"
             />
           ) : null}
+          <CategoriesToWebsiteBuilderWidget
+            isServer={props.isServer}
+            variant="find"
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "categoryId",
+                      method: "eq",
+                      value: props.data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          >
+            {({ data }) => {
+              return data?.map((entity, index) => {
+                return (
+                  <CategoriesToWebsiteBuilderWidget
+                    key={index}
+                    variant={entity.variant as any}
+                    isServer={props.isServer}
+                    data={entity}
+                    language={props.language}
+                  />
+                );
+              });
+            }}
+          </CategoriesToWebsiteBuilderWidget>
         </CardContent>
         <CardFooter>
           <Button variant="outline">
