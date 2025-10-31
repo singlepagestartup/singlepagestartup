@@ -16,7 +16,7 @@ export async function relationGenerator(
   const rightModelName = pluralize(options.right_model_name);
   const rightmoduleName = options.right_module_name;
 
-  const name = pluralize(options.name_relation);
+  const name = pluralize(options.relation_name);
 
   // const relationAdminVariants: IModelFrontendComponentVariantGeneratorProps[] =
   //   [
