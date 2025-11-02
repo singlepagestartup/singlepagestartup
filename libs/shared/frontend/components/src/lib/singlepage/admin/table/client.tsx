@@ -4,7 +4,7 @@ import "client-only";
 import { factory } from "@sps/shared-frontend-client-api";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { Component as Skeleton } from "./Skeleton";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { useTableContext } from "../table-controller/Context";
 
 export function Component<
@@ -20,49 +20,54 @@ export function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
-  const ctx = useTableContext() ?? {
-    debouncedSearch: "",
-    searchField: "adminTitle",
-    offset: 1,
-    limit: 10,
-  };
+
+  const ctx = useTableContext();
+
+  const {
+    debouncedSearch = "",
+    searchField = "adminTitle",
+    offset = 0,
+    limit = 10,
+    selectedField = "adminTitle",
+    setState,
+  } = ctx ?? {};
 
   const params = useMemo(() => {
     const jsonFields = ["title", "subtitle", "description"];
-    const searchField = ctx.searchField ?? "adminTitle";
-    const searchValue = ctx.debouncedSearch?.trim() ?? "";
+    const field = searchField ?? "adminTitle";
+    const value = debouncedSearch?.trim() ?? "";
 
-    if (!searchValue) {
+    if (!value) {
       return {
         ...(props.apiProps?.params ?? {}),
-        offset: ctx.offset ?? 1,
-        limit: ctx.limit ?? 10,
+        offset,
+        limit,
       };
     }
 
     const searchFilters: any[] = [];
 
-    if (searchField === "id") {
+    if (field === "id") {
       const isUuid =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          searchValue,
+          value,
         );
       searchFilters.push({
         column: "id",
         method: isUuid ? "eq" : "like",
-        value: searchValue,
+        value,
       });
-    } else if (jsonFields.includes(searchField)) {
+    } else if (jsonFields.includes(field)) {
       searchFilters.push({
-        column: searchField,
+        column: field,
         method: "like",
-        value: JSON.stringify({ ru: searchValue, en: searchValue }),
+        value: JSON.stringify({ ru: value, en: value }),
       });
     } else {
       searchFilters.push({
-        column: searchField,
+        column: field,
         method: "like",
-        value: searchValue,
+        value,
       });
     }
 
@@ -73,12 +78,32 @@ export function Component<
     return {
       ...(props.apiProps?.params ?? {}),
       filters,
-      offset: ctx.offset ?? 1,
-      limit: ctx.limit ?? 10,
+      offset,
+      limit,
     };
-  }, [props.apiProps?.params, ctx]);
+  }, [
+    props.apiProps?.params,
+    offset,
+    limit,
+    debouncedSearch,
+    selectedField,
+    searchField,
+  ]);
 
   const { data, isLoading } = props.api.find({ params });
+
+  useEffect(() => {
+    if (!data || !Array.isArray(data) || !setState) return;
+
+    setState((prev) => {
+      const newTotal =
+        data.length < prev.limit
+          ? prev.offset + data.length
+          : Math.max(prev.total, prev.offset + data.length);
+
+      return { ...prev, total: newTotal };
+    });
+  }, [data, setState]);
 
   if (isLoading || !data) {
     return props.Skeleton ?? <Skeleton />;

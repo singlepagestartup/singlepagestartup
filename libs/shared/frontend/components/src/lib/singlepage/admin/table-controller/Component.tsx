@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ReactNode, useMemo } from "react";
+import React, { useState, useEffect, useMemo, ReactNode } from "react";
 import {
   Input,
   Button,
@@ -10,76 +10,90 @@ import {
   SelectItem,
   SelectValue,
 } from "@sps/shared-ui-shadcn";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableContext } from "./Context";
 
 interface ITableControllerProps {
   children: ReactNode;
   searchField?: string;
   extraFields?: string[];
+  baseFields?: string[];
+  baseCount?: string[];
 }
 
 export function Component(props: ITableControllerProps) {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(10);
-  const [selectedField, setSelectedField] = useState(
-    props.searchField ?? "adminTitle",
-  );
-  const [selectedCount, setSelectedCount] = useState("10");
+  const [state, setState] = useState({
+    search: "",
+    debouncedSearch: "",
+    offset: 0,
+    limit: 10,
+    selectedField: "adminTitle",
+    searchField: props.searchField ?? "adminTitle",
+    total: 0,
+  });
+
+  const { limit } = state;
+  const [selectedCount, setSelectedCount] = useState(String(limit));
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearch(search);
+    const t = setTimeout(() => {
+      setState((prev) => ({ ...prev, debouncedSearch: prev.search }));
     }, 300);
-    return () => clearTimeout(timeout);
-  }, [search]);
+    return () => clearTimeout(t);
+  }, [state.search]);
 
   useEffect(() => {
-    setLimit(Number(selectedCount));
-    setOffset(0);
+    const next = Number(selectedCount);
+    if (!Number.isFinite(next) || next <= 0) return;
+    setState((prev) => ({ ...prev, limit: next, offset: 0 }));
   }, [selectedCount]);
 
-  const baseFields = ["id", "adminTitle", "title", "variant", "slug"];
-  const baseCount = ["10", "20", "30", "50", "100"];
+  const baseFields = props.baseFields ?? [
+    "id",
+    "adminTitle",
+    "title",
+    "variant",
+    "slug",
+  ];
+  const baseCount = props.baseCount ?? ["10", "20", "30", "50", "100"];
 
   const availableFields = useMemo(() => {
     const all = [...baseFields, ...(props.extraFields ?? [])];
     return Array.from(new Set(all));
-  }, [props.extraFields]);
+  }, [baseFields, props.extraFields]);
 
-  const currentPage = Math.ceil(offset / limit);
-  const startItem = offset;
-  const endItem = offset + limit;
+  const currentPage = Math.floor(state.offset / state.limit) + 1;
+  const startItem = state.offset + 1;
+  const endItem = state.offset + state.limit;
 
-  const contextValue = useMemo(
-    () => ({
-      search,
-      debouncedSearch,
-      offset,
-      limit,
-      searchField: selectedField,
-    }),
-    [search, debouncedSearch, offset, limit, selectedField],
-  );
+  const contextValue = useMemo(() => state, [state]);
 
   return (
-    <TableContext.Provider value={contextValue}>
+    <TableContext.Provider value={[contextValue, setState]}>
       <div className="w-full flex flex-col gap-4">
         <div className="w-full flex flex-wrap justify-between items-center gap-2 mb-4">
           <div className="flex w-full gap-4">
             <Input
               placeholder="Search..."
-              value={search}
+              value={state.search}
               onChange={(e) => {
-                setSearch(e.target.value);
-                setOffset(0);
+                const value = e.target.value;
+                setState((prev) => ({ ...prev, search: value, offset: 0 }));
               }}
               className="w-full"
             />
 
-            <Select value={selectedField} onValueChange={setSelectedField}>
-              <SelectTrigger className="w-[180px]">
+            <Select
+              value={state.selectedField}
+              onValueChange={(v) =>
+                setState((prev) => ({
+                  ...prev,
+                  selectedField: v,
+                  offset: 0,
+                }))
+              }
+            >
+              <SelectTrigger className="min-w-[180px]">
                 <SelectValue placeholder="Field" />
               </SelectTrigger>
               <SelectContent>
@@ -92,41 +106,60 @@ export function Component(props: ITableControllerProps) {
             </Select>
           </div>
 
-          <div>
-            <Select value={selectedCount} onValueChange={setSelectedCount}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Count per page" />
-              </SelectTrigger>
-              <SelectContent>
-                {baseCount.map((c) => (
-                  <SelectItem key={`c-${c}`} value={c}>
-                    {c} per page
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="text-sm text-muted-foreground">
-              Page {currentPage} • Showing {startItem}–{endItem}
+          <div className="flex items-end gap-3">
+            <div>
+              <Select value={selectedCount} onValueChange={setSelectedCount}>
+                <SelectTrigger className="min-w-[180px]">
+                  <SelectValue placeholder="Per page" />
+                </SelectTrigger>
+                <SelectContent>
+                  {baseCount.map((c) => (
+                    <SelectItem key={`c-${c}`} value={c}>
+                      {c} per page
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="text-sm text-muted-foreground mt-1">
+                Page {currentPage} • {startItem}–{endItem}
+                {state.total ? ` of ${state.total}` : ""}
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={offset <= 0}
-              onClick={() => setOffset((p) => Math.max(1, p - limit))}
-            >
-              Prev
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={state.offset <= 0}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    offset: Math.max(0, prev.offset - prev.limit),
+                  }))
+                }
+                className="gap-1"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </Button>
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setOffset((p) => p + limit)}
-            >
-              Next
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    offset: prev.offset + prev.limit,
+                  }))
+                }
+                className="gap-1"
+                aria-label="Next page"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
