@@ -83,7 +83,7 @@
     "nanoid": "3.3.8",
     "next": "14.2.3",
     "next-themes": "0.3.0",
-    "nodemailer": "6.9.14",
+    "nodemailer": "7.0.7",
     "openai": "5.8.2",
     "pako": "2.1.0",
     "path-to-regexp": "0.1.12",
