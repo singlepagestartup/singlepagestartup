@@ -1,6 +1,6 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as Widget } from "@sps/website-builder/models/widget/frontend/component";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -11,7 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
-      <Widget
+      <WebsiteBuilderModuleWidget
         variant="find"
         isServer={props.isServer}
         apiProps={{
@@ -21,7 +21,7 @@ export function Component(props: IComponentPropsExtended) {
                 {
                   column: "id",
                   method: "eq",
-                  value: props.data.widgetId,
+                  value: props.data.websiteBuilderModuleWidgetId,
                 },
               ],
             },
@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <Widget
+              <WebsiteBuilderModuleWidget
                 key={index}
                 isServer={props.isServer}
                 variant={entity.variant as any}
@@ -41,7 +41,7 @@ export function Component(props: IComponentPropsExtended) {
             );
           });
         }}
-      </Widget>
+      </WebsiteBuilderModuleWidget>
     </div>
   );
 }

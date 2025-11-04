@@ -15,7 +15,7 @@ import { Component as AgregatedInput } from "@sps/shared-frontend-components/sin
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { Component as Category } from "@sps/ecommerce/models/category/frontend/component";
-import { Component as Widget } from "@sps/website-builder/models/widget/frontend/component";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -33,7 +33,8 @@ export function Component(props: IComponentPropsExtended) {
       className: props.data?.className || "",
       orderIndex: props.data?.orderIndex || 0,
       categoryId: props.data?.categoryId || "",
-      widgetId: props.data?.widgetId || "",
+      websiteBuilderModuleWidgetId:
+        props.data?.websiteBuilderModuleWidgetId || "",
     },
   });
 
@@ -95,10 +96,10 @@ export function Component(props: IComponentPropsExtended) {
           form={form}
         />
 
-        <Widget
+        <WebsiteBuilderModuleWidget
           isServer={props.isServer}
           variant="admin-select-input"
-          formFieldName="widgetId"
+          formFieldName="websiteBuilderModuleWidgetId"
           form={form}
         />
       </div>

@@ -1,6 +1,6 @@
 import * as pgCore from "drizzle-orm/pg-core";
 import { Table as Category } from "@sps/ecommerce/models/category/backend/repository/database";
-import { Table as Widget } from "@sps/website-builder/models/widget/backend/repository/database";
+import { Table as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/backend/repository/database";
 
 export const moduleName = "ee";
 export const table = "cs_to_we_br_me_ws_bfm";
@@ -18,8 +18,8 @@ export const Table = pgTable(table, {
     .uuid("cy_id")
     .notNull()
     .references(() => Category.id, { onDelete: "cascade" }),
-  widgetId: pgCore
-    .uuid("wt_id")
+  websiteBuilderModuleWidgetId: pgCore
+    .uuid("we_br_me_wt_id")
     .notNull()
-    .references(() => Widget.id, { onDelete: "cascade" }),
+    .references(() => WebsiteBuilderModuleWidget.id, { onDelete: "cascade" }),
 });
