@@ -44,26 +44,27 @@ Quickly integrating a robust e-commerce system into any website without building
 
 ## 3. Model Relations
 
-| Relation                              | Purpose                                                                |
-| ------------------------------------- | ---------------------------------------------------------------------- |
-| AttributeKeysToAttributes             | Many-to-many relation: attribute keys define multiple attributes       |
-| AttributesToBillingModuleCurrencies   | Many-to-many relation: attributes can use multiple currencies          |
-| CategoriesToFileStorageModuleFiles    | Many-to-many relation: categories can have multiple files              |
-| CategoriesToProducts                  | Many-to-many relation: products can belong to multiple categories      |
-| OrdersToBillingModuleCurrencies       | Many-to-many relation: orders can use multiple currencies              |
-| OrdersToBillingModulePaymentIntents   | Many-to-many relation: orders can have multiple payment intents        |
-| OrdersToFileStorageModuleFiles        | Many-to-many relation: orders can have multiple files                  |
-| OrdersToProducts                      | Many-to-many relation: orders can contain multiple products            |
-| ProductsToAttributes                  | Many-to-many relation: products can have multiple attributes           |
-| ProductsToFileStorageModuleFiles      | Many-to-many relation: products can have multiple files                |
-| ProductsToWebsiteBuilderModuleWidgets | Many-to-many relation: products can be displayed in multiple widgets   |
-| StoresToAttributes                    | Many-to-many relation: stores can have multiple attributes             |
-| StoresToOrders                        | Many-to-many relation: stores can have multiple orders                 |
-| StoresToProducts                      | Many-to-many relation: stores can have multiple products               |
-| StoresToProductsToAttributes          | Many-to-many relation: stores can have multiple products-to-attributes |
-| WidgetsToCategories                   | Many-to-many relation: widgets can display multiple categories         |
-| WidgetsToProducts                     | Many-to-many relation: widgets can display multiple products           |
-| WidgetsToStores                       | Many-to-many relation: widgets can display multiple stores             |
+| Relation                                | Purpose                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| AttributeKeysToAttributes               | Many-to-many relation: attribute keys define multiple attributes              |
+| AttributesToBillingModuleCurrencies     | Many-to-many relation: attributes can use multiple currencies                 |
+| CategoriesToFileStorageModuleFiles      | Many-to-many relation: categories can have multiple files                     |
+| CategoriesToProducts                    | Many-to-many relation: products can belong to multiple categories             |
+| CategoriesToWebsiteBuilderModuleWidgets | Many-to-many relation: categories can be displayed in Website Builder widgets |
+| OrdersToBillingModuleCurrencies         | Many-to-many relation: orders can use multiple currencies                     |
+| OrdersToBillingModulePaymentIntents     | Many-to-many relation: orders can have multiple payment intents               |
+| OrdersToFileStorageModuleFiles          | Many-to-many relation: orders can have multiple files                         |
+| OrdersToProducts                        | Many-to-many relation: orders can contain multiple products                   |
+| ProductsToAttributes                    | Many-to-many relation: products can have multiple attributes                  |
+| ProductsToFileStorageModuleFiles        | Many-to-many relation: products can have multiple files                       |
+| ProductsToWebsiteBuilderModuleWidgets   | Many-to-many relation: products can be displayed in multiple widgets          |
+| StoresToAttributes                      | Many-to-many relation: stores can have multiple attributes                    |
+| StoresToOrders                          | Many-to-many relation: stores can have multiple orders                        |
+| StoresToProducts                        | Many-to-many relation: stores can have multiple products                      |
+| StoresToProductsToAttributes            | Many-to-many relation: stores can have multiple products-to-attributes        |
+| WidgetsToCategories                     | Many-to-many relation: widgets can display multiple categories                |
+| WidgetsToProducts                       | Many-to-many relation: widgets can display multiple products                  |
+| WidgetsToStores                         | Many-to-many relation: widgets can display multiple stores                    |
 
 ---
 
@@ -223,7 +224,7 @@ Quickly integrating a robust e-commerce system into any website without building
 - Products support various attributes and variations
 - Orders integrate with payment systems
 - Stores manage their own product catalogs
-- Categories support hierarchical organization
+- The module supports a relation between categories and the WebsiteBuilder module via CategoriesToWebsiteBuilderModuleWidgets. This allows for flexible display of categories in widgets, either as simple links (the default variant) or as full-featured overview pages (the overview variant)
 - Widgets support various product display layouts
 - Integration with file storage for product images
 - Integration with billing module for payments
@@ -238,4 +239,5 @@ Quickly integrating a robust e-commerce system into any website without building
 - Includes comprehensive e-commerce capabilities
 - Supports flexible product and order management
 - Handles various product attributes and variations
+- Integrates with the WebsiteBuilder module for flexible content display﻿
 - Integrates with payment and file storage systems

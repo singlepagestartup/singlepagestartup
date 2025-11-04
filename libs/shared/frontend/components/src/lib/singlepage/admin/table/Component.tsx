@@ -12,6 +12,7 @@ import {
 import { ChevronsUpDown, Plus } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
+import { type IComponentProps as ITableControllerComponentProps } from "../table-controller/Component";
 
 export function Component<M extends { id: string }, V>(
   props: Omit<
@@ -24,7 +25,7 @@ export function Component<M extends { id: string }, V>(
     module: string;
     name: string;
     type?: "model" | "relation";
-  },
+  } & ITableControllerComponentProps,
 ) {
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(true);

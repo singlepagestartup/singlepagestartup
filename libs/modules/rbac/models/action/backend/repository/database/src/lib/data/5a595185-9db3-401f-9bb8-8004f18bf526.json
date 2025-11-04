@@ -1,9 +1,0 @@
-{
-  "id": "5a595185-9db3-401f-9bb8-8004f18bf526",
-  "createdAt": "2025-01-24T23:47:55.733Z",
-  "updatedAt": "2025-10-13T18:58:06.208Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "DELETE",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/identities/[rbac.identities.id]"
-}

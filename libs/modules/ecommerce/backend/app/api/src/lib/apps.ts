@@ -1,3 +1,4 @@
+import { app as categoriesToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 import { app as widgetApp } from "@sps/ecommerce/models/widget/backend/app/api";
 import { app as storeApp } from "@sps/ecommerce/models/store/backend/app/api";
@@ -35,6 +36,11 @@ export class Apps {
   }
 
   bindApps() {
+    this.apps.push({
+      type: "relation",
+      route: "/categories-to-website-builder-module-widgets",
+      app: categoriesToWebsiteBuilderModuleWidgets,
+    });
     this.apps.push({
       type: "model",
       route: "/widgets",

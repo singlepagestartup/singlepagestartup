@@ -1,0 +1,9 @@
+{
+  "id": "f63b3a77-1dd0-42b4-9a49-8c3341c128f5",
+  "createdAt": "2025-05-05T13:23:09.094Z",
+  "updatedAt": "2025-10-31T06:26:07.442Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/articles-to-ecommerce-module-products"
+}

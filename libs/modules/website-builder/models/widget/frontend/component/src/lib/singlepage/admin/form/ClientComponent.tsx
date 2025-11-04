@@ -63,6 +63,7 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {" "}
         <FormField
           ui="shadcn"
           type="text"

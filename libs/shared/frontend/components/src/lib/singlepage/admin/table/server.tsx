@@ -14,12 +14,36 @@ export async function Component<
       IComponentPropsExtended<M, V, IComponentProps<M, V>>
     >;
   },
-  CP extends IComponentProps<M, V>,
+  CP extends IComponentProps<M, V> & {
+    page?: number;
+    limit?: number;
+    search?: string;
+    searchField?: string;
+  },
 >(props: CP & A) {
   const { Component: Child } = props;
 
+  const filters = {
+    and: [
+      ...(props.apiProps?.params?.filters?.and ?? []),
+      ...(props.search
+        ? [
+            {
+              column: props.searchField ?? "name",
+              method: "like",
+              value: props.search,
+            },
+          ]
+        : []),
+    ],
+  };
+
   const data = await props.api.find({
     ...props.apiProps,
+    params: {
+      ...(props.apiProps?.params ?? {}),
+      filters,
+    },
   });
 
   if (!data) {

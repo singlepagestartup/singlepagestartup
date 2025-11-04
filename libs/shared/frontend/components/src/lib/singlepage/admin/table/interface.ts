@@ -11,6 +11,10 @@ export interface IComponentProps<M extends { id?: string }, V>
   };
   className?: string;
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
+  page?: number;
+  limit?: number;
+  debouncedSearch?: string;
+  offset?: number;
 }
 
 export type IComponentPropsExtended<
