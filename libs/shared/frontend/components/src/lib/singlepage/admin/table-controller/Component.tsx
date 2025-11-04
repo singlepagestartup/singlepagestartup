@@ -12,23 +12,17 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableContext } from "./Context";
+import { type IComponentProps } from "./interface";
+export type { IComponentProps };
 
-interface ITableControllerProps {
-  children: ReactNode;
-  searchField?: string;
-  extraFields?: string[];
-  baseFields?: string[];
-  baseCount?: string[];
-}
-
-export function Component(props: ITableControllerProps) {
+export function Component(props: IComponentProps) {
   const [state, setState] = useState({
     search: "",
     debouncedSearch: "",
     offset: 0,
-    limit: 10,
-    selectedField: "adminTitle",
-    searchField: props.searchField ?? "adminTitle",
+    limit: 100,
+    selectedField: "id",
+    searchField: props.searchField ?? "id",
     total: 0,
   });
 
@@ -48,19 +42,19 @@ export function Component(props: ITableControllerProps) {
     setState((prev) => ({ ...prev, limit: next, offset: 0 }));
   }, [selectedCount]);
 
-  const baseFields = props.baseFields ?? [
+  const baseSearchableFields = props.baseSearchableFields ?? [
     "id",
     "adminTitle",
     "title",
     "variant",
     "slug",
   ];
-  const baseCount = props.baseCount ?? ["10", "20", "30", "50", "100"];
+  const baseCount = props.baseCount ?? ["100", "200", "300", "500", "1000"];
 
   const availableFields = useMemo(() => {
-    const all = [...baseFields, ...(props.extraFields ?? [])];
+    const all = [...baseSearchableFields, ...(props.searchableFields ?? [])];
     return Array.from(new Set(all));
-  }, [baseFields, props.extraFields]);
+  }, [baseSearchableFields, props.searchableFields]);
 
   const currentPage = Math.floor(state.offset / state.limit) + 1;
   const startItem = state.offset + 1;
@@ -85,13 +79,15 @@ export function Component(props: ITableControllerProps) {
 
             <Select
               value={state.selectedField}
-              onValueChange={(v) =>
+              onValueChange={(v) => {
+                console.log("🚀 ~ onValueChange ~ v:", v);
+
                 setState((prev) => ({
                   ...prev,
                   selectedField: v,
                   offset: 0,
-                }))
-              }
+                }));
+              }}
             >
               <SelectTrigger className="min-w-[180px]">
                 <SelectValue placeholder="Field" />

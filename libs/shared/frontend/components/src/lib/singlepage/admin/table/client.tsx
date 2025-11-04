@@ -25,16 +25,16 @@ export function Component<
 
   const {
     debouncedSearch = "",
-    searchField = "adminTitle",
+    searchField = "id",
     offset = 0,
-    limit = 10,
-    selectedField = "adminTitle",
+    limit = 100,
+    selectedField = "id",
     setState,
   } = ctx ?? {};
 
   const params = useMemo(() => {
     const jsonFields = ["title", "subtitle", "description"];
-    const field = searchField ?? "adminTitle";
+    const field = selectedField ?? searchField ?? "id";
     const value = debouncedSearch?.trim() ?? "";
 
     if (!value) {
@@ -54,19 +54,19 @@ export function Component<
         );
       searchFilters.push({
         column: "id",
-        method: isUuid ? "eq" : "like",
+        method: isUuid ? "eq" : "ilike",
         value,
       });
     } else if (jsonFields.includes(field)) {
       searchFilters.push({
         column: field,
-        method: "like",
+        method: "ilike",
         value: JSON.stringify({ ru: value, en: value }),
       });
     } else {
       searchFilters.push({
         column: field,
-        method: "like",
+        method: "ilike",
         value,
       });
     }
@@ -90,20 +90,20 @@ export function Component<
     searchField,
   ]);
 
+  const { data: totalData, isLoading: isTotalLoading } = props.api.find({});
   const { data, isLoading } = props.api.find({ params });
 
   useEffect(() => {
-    if (!data || !Array.isArray(data) || !setState) return;
+    if (!totalData || !Array.isArray(totalData) || !setState) {
+      return;
+    }
 
     setState((prev) => {
-      const newTotal =
-        data.length < prev.limit
-          ? prev.offset + data.length
-          : Math.max(prev.total, prev.offset + data.length);
+      const newTotal = totalData ? totalData.length : 0;
 
       return { ...prev, total: newTotal };
     });
-  }, [data, setState]);
+  }, [totalData, setState]);
 
   if (isLoading || !data) {
     return props.Skeleton ?? <Skeleton />;

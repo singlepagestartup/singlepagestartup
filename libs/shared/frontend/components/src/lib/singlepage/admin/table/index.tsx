@@ -9,7 +9,10 @@ import { ErrorBoundary } from "@sps/ui-adapter";
 import { Component as Server } from "./server";
 import { Component as Client } from "./client";
 import { Component as Skeleton } from "./Skeleton";
-import { Component as TableController } from "../table-controller/Component";
+import {
+  Component as TableController,
+  type IComponentProps as ITableControllerComponentProps,
+} from "../table-controller/Component";
 
 export function Component<M extends { id?: string }, V>(
   props: IComponentProps<M, V> & {
@@ -20,7 +23,7 @@ export function Component<M extends { id?: string }, V>(
     >;
     clientApi: ReturnType<typeof clientFactory<M>>;
     serverApi: ReturnType<typeof serverFactory<M>>;
-  },
+  } & Partial<ITableControllerComponentProps>,
 ) {
   const Comp: React.ComponentType<any> = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
@@ -37,9 +40,7 @@ export function Component<M extends { id?: string }, V>(
   );
 
   if (!props.isServer) {
-    return (
-      <TableController searchField={"adminTitle"}>{content}</TableController>
-    );
+    return <TableController {...props}>{content}</TableController>;
   }
 
   return content;
