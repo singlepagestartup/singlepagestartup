@@ -1,0 +1,9 @@
+{
+  "id": "e0111ac7-eb84-4a65-b26c-572fee9dfb74",
+  "createdAt": "2025-04-12T15:04:55.454Z",
+  "updatedAt": "2025-10-31T06:26:07.333Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/widgets-to-stores"
+}

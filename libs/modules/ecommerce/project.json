@@ -128,6 +128,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:orders-to-social-module-chats:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:categories-to-website-builder-module-widgets:repository-migrate"
           }
         ]
       }
@@ -222,6 +225,9 @@
           },
           {
             "command": "nx run @sps/ecommerce:relations:orders-to-social-module-chats:repository-generate"
+          },
+          {
+            "command": "nx run @sps/ecommerce:relations:categories-to-website-builder-module-widgets:repository-generate"
           }
         ]
       }
@@ -973,6 +979,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/ecommerce/relations/orders-to-social-module-chats/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:categories-to-website-builder-module-widgets:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:categories-to-website-builder-module-widgets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

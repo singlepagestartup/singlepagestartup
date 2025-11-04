@@ -9,6 +9,10 @@ import { ErrorBoundary } from "@sps/ui-adapter";
 import { Component as Server } from "./server";
 import { Component as Client } from "./client";
 import { Component as Skeleton } from "./Skeleton";
+import {
+  Component as TableController,
+  type IComponentProps as ITableControllerComponentProps,
+} from "../table-controller/Component";
 
 export function Component<M extends { id?: string }, V>(
   props: IComponentProps<M, V> & {
@@ -19,13 +23,13 @@ export function Component<M extends { id?: string }, V>(
     >;
     clientApi: ReturnType<typeof clientFactory<M>>;
     serverApi: ReturnType<typeof serverFactory<M>>;
-  },
+  } & Partial<ITableControllerComponentProps>,
 ) {
-  const Comp: any = props.isServer ? Server : Client;
+  const Comp: React.ComponentType<any> = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
   const Provider = props.Provider;
 
-  return (
+  const content = (
     <ErrorBoundary fallback={Error}>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Provider>
@@ -34,4 +38,10 @@ export function Component<M extends { id?: string }, V>(
       </Suspense>
     </ErrorBoundary>
   );
+
+  if (!props.isServer) {
+    return <TableController {...props}>{content}</TableController>;
+  }
+
+  return content;
 }

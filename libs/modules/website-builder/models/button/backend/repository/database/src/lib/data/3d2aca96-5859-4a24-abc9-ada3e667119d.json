@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "Subjects",
+    "ru": "Профили"
+  },
+  "subtitle": {},
+  "url": "/rbac/subjects",
+  "className": "",
+  "id": "3d2aca96-5859-4a24-abc9-ada3e667119d",
+  "createdAt": "2025-01-24T23:47:55.527Z",
+  "updatedAt": "2025-10-31T06:26:06.246Z",
+  "variant": "default",
+  "adminTitle": "7G3fxorAow",
+  "slug": "subjects"
+}
