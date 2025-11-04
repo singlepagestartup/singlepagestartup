@@ -5,6 +5,8 @@ import { Component as CategoriesToProducts } from "@sps/ecommerce/relations/cate
 import { Component as CategoriesToFileStorageModuleWidgets } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToCategories } from "@sps/ecommerce/relations/widgets-to-categories/frontend/component";
 
+import { Component as CategoriesToWebsiteBuilderModuleWidgets } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/frontend/component";
+
 export function Component() {
   return (
     <ParentComponent
@@ -16,6 +18,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            categoriesToWebsiteBuilderModuleWidgets={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <CategoriesToWebsiteBuilderModuleWidgets
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "categoryId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             categoriesToProducts={({ data, isServer }) => {
               if (!data) {
                 return;

@@ -1,0 +1,21 @@
+{
+  "id": "8d6b5839-38f7-4d4f-b5ac-b3685b1358ce",
+  "className": "",
+  "createdAt": "2025-05-06T17:02:42.549Z",
+  "updatedAt": "2025-10-31T06:26:06.507Z",
+  "variant": "default",
+  "title": {
+    "en": "Category #3",
+    "ru": "Category #3"
+  },
+  "subtitle": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Subtitle\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Subtitle\"}]}]}"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Description\"}]}]}",
+    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Category #3 Description\"}]}]}"
+  },
+  "adminTitle": "Category #3",
+  "slug": "category-3"
+}

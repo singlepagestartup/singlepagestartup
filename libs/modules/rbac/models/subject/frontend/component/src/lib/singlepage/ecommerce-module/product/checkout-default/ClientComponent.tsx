@@ -66,10 +66,6 @@ export function Component(props: IComponentPropsExtended) {
     },
   });
 
-  const watchData = form.watch();
-
-  console.log("🚀 ~ Component ~ watchData:", watchData);
-
   async function onSubmit(data: z.infer<typeof formSchema>) {
     productCheckout
       .mutateAsync({

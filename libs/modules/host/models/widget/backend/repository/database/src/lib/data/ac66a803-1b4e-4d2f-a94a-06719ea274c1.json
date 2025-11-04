@@ -1,0 +1,14 @@
+{
+  "title": {
+    "en": "WB | Widget | Welcome"
+  },
+  "subtitle": {},
+  "description": {},
+  "id": "ac66a803-1b4e-4d2f-a94a-06719ea274c1",
+  "createdAt": "2025-01-30T13:15:37.245Z",
+  "updatedAt": "2025-10-31T06:26:06.044Z",
+  "variant": "default",
+  "className": "",
+  "adminTitle": "WB | Widget | Welcome",
+  "slug": "wb-widget-welcome"
+}

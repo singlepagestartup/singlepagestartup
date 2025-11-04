@@ -1,6 +1,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as CategoriesToFileStorageModuleWidgets } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/frontend/component";
+import { Component as CategoriesToWebsiteBuilderWidget } from "@sps/ecommerce/relations/categories-to-website-builder-module-widgets/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -46,6 +47,43 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </CategoriesToFileStorageModuleWidgets>
+
+        <CategoriesToWebsiteBuilderWidget
+          isServer={props.isServer}
+          variant="find"
+          apiProps={{
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "categoryId",
+                    method: "eq",
+                    value: props.data.id,
+                  },
+                  {
+                    column: "variant",
+                    method: "eq",
+                    value: "overview",
+                  },
+                ],
+              },
+            },
+          }}
+        >
+          {({ data }) => {
+            return data?.map((entity, index) => {
+              return (
+                <CategoriesToWebsiteBuilderWidget
+                  key={index}
+                  variant={entity.variant as any}
+                  isServer={props.isServer}
+                  data={entity}
+                  language={props.language}
+                />
+              );
+            });
+          }}
+        </CategoriesToWebsiteBuilderWidget>
         <p className="font-bold text-center text-4xl">
           {props.data.title?.[props.language]}
         </p>

@@ -1,5 +1,6 @@
 import { SQL, getOperators, sql } from "drizzle-orm";
 import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { validate as isUuid } from "uuid";
 
 interface QueryBuilderFilterMethods extends ReturnType<typeof getOperators> {}
 
@@ -15,6 +16,10 @@ export interface QueryBuilderProps<T extends PgTableWithColumns<any>> {
   filters?: {
     ["and"]: IFilter[];
   };
+}
+
+function castToText(column: any): SQL {
+  return sql`CAST(${column} AS TEXT)`;
 }
 
 /**
@@ -41,68 +46,77 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
   }
 
   const filterTypes = Object.keys(filters);
-
   if (filterTypes.find((filterType) => filterType !== "and")) {
     throw new Error(
-      `Validation error. You are using wrong filter type, now allowed filter types are: [${["'and'"].join(", ")}]`,
+      `Validation error. You are using wrong filter type, allowed types: [${["'and'"].join(", ")}]`,
     );
   }
 
-  const filterArrays = filters?.["and"];
-
+  const filterArrays = filters["and"];
   const resultQueries: (SQL<any> | undefined)[] = [];
 
   for (const filter of filterArrays) {
-    const filterMethod: keyof QueryBuilderFilterMethods = filter?.method;
+    const method: keyof QueryBuilderFilterMethods = filter?.method;
     const filterColumn: keyof T["$inferSelect"] = filter?.column;
     const tableColumn = table[filterColumn];
-
     let filterValue: any;
     let isJsonField = false;
-    let columnName = filterColumn.toString();
-    const method: keyof QueryBuilderFilterMethods = filterMethod;
+    const columnName = filterColumn.toString();
 
     if (!method) {
-      throw new Error(
-        "Validation error. You are missing a method in the filter object",
-      );
+      throw new Error("Validation error. Missing 'method' in filter object");
     }
 
     if (columnName.includes("->>")) {
       isJsonField = true;
-      const [column, jsonField] = columnName.split("->>");
-      const baseColumn = table[column.trim()];
-
-      if (!baseColumn) {
+      const [column] = columnName.split("->>");
+      if (!table[column.trim()]) {
         throw new Error(
           `Internal error. Column ${column.trim()} not found in table`,
         );
       }
-
-      filterValue = filter?.value;
+      filterValue = filter.value;
     } else {
       if (!tableColumn) {
-        throw new Error(
-          "Validation error. You are missing a column in the filter object",
-        );
+        throw new Error("Validation error. Missing 'column' in filter object");
       }
 
-      switch (tableColumn?.["dataType"]) {
+      switch (tableColumn["dataType"]) {
         case "date":
-          filterValue = new Date(filter?.value);
+          filterValue = new Date(filter.value);
           break;
         case "integer":
-          filterValue = parseInt(filter?.value);
+          filterValue = parseInt(filter.value);
           break;
         case "boolean":
-          filterValue = filter?.value === "true";
+          filterValue = filter.value === "true";
           break;
         case "json":
-          filterValue = JSON.parse(filter?.value);
+          try {
+            filterValue = JSON.parse(filter.value);
+          } catch {
+            filterValue = filter.value;
+          }
           break;
         default:
-          filterValue = filter?.value;
+          filterValue = filter.value;
       }
+    }
+
+    if (tableColumn && tableColumn["dataType"] === "uuid" && method === "eq") {
+      if (isUuid(filter.value)) {
+        resultQueries.push(
+          queryFunctions.eq(tableColumn, filter.value) as SQL<any>,
+        );
+      } else {
+        resultQueries.push(
+          queryFunctions.like(
+            castToText(tableColumn),
+            "%" + filter.value + "%",
+          ) as SQL<any>,
+        );
+      }
+      continue;
     }
 
     if (method === "notInArray" || method === "inArray") {
@@ -112,11 +126,6 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
         if (isJsonField) {
           const [column, jsonField] = columnName.split("->>");
           const baseColumn = table[column.trim()];
-          if (!baseColumn) {
-            throw new Error(
-              `Internal error. Column ${column.trim()} not found in table`,
-            );
-          }
           resultQueries.push(
             queryFunctions.isNull(
               sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
@@ -126,24 +135,17 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
           resultQueries.push(queryFunctions.isNull(tableColumn) as SQL<any>);
         }
         continue;
-      } else if (Array.isArray(filterValue)) {
-        filterValue.forEach((value) => {
-          arrayFilter.push(value);
-        });
-      } else if (Object.keys(filterValue).length) {
-        Object.values(filterValue).forEach((value: any) => {
-          arrayFilter.push(value);
-        });
+      }
+
+      if (Array.isArray(filterValue)) {
+        filterValue.forEach((v) => arrayFilter.push(v));
+      } else if (typeof filterValue === "object") {
+        Object.values(filterValue).forEach((v: any) => arrayFilter.push(v));
       }
 
       if (isJsonField) {
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
-        if (!baseColumn) {
-          throw new Error(
-            `Internal error. Column ${column.trim()} not found in table`,
-          );
-        }
         resultQueries.push(
           queryFunctions[method](
             sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
@@ -169,13 +171,6 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       if (isJsonField) {
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
-
-        if (!baseColumn) {
-          throw new Error(
-            `Internal error. Column ${column.trim()} not found in table`,
-          );
-        }
-
         resultQueries.push(
           queryFunctions[method](
             sql`${baseColumn}->>${sql.raw(`'${jsonField}'`)}`,
@@ -198,21 +193,16 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       if (isJsonField) {
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
-        if (!baseColumn) {
-          throw new Error(
-            `Internal error. Column ${column.trim()} not found in table`,
-          );
-        }
         resultQueries.push(
           queryFunctions[method](
-            sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,
+            sql`(${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)})::text`,
             "%" + filterValue + "%",
           ) as SQL<any>,
         );
       } else if (tableColumn) {
         resultQueries.push(
           queryFunctions[method](
-            tableColumn,
+            castToText(tableColumn),
             "%" + filterValue + "%",
           ) as SQL<any>,
         );
@@ -223,11 +213,6 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
       if (isJsonField) {
         const [column, jsonField] = columnName.split("->>");
         const baseColumn = table[column.trim()];
-        if (!baseColumn) {
-          throw new Error(
-            `Internal error. Column ${column.trim()} not found in table`,
-          );
-        }
         resultQueries.push(
           queryFunctions[method](
             sql`${baseColumn}->>${sql.raw(`'${jsonField.trim()}'`)}`,

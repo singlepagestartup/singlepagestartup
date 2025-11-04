@@ -1,0 +1,9 @@
+{
+  "id": "8b54772c-5f2a-4386-be4d-18e0515f7bf5",
+  "createdAt": "2025-01-24T23:47:55.798Z",
+  "updatedAt": "2025-10-31T06:26:07.166Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/notification/topics/send-all"
+}
