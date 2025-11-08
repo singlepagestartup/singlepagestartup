@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "title": {
+    "en": "Logout"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": ""
+  },
+  "id": "7b559d85-2f5d-4e9b-aa57-0ee5a75f4011",
+  "createdAt": "2025-01-24T23:47:55.646Z",
+  "updatedAt": "2025-10-31T06:26:06.813Z",
+  "variant": "subject-authentication-logout-action-default",
+  "adminTitle": "QLa0hGkeog",
+  "slug": "logout-action"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "5d7a283a-8e54-4f8b-9fe3-e3765606aaba",
+  "createdAt": "2025-01-24T23:47:55.624Z",
+  "updatedAt": "2025-10-31T06:26:06.693Z",
+  "variant": "store-list-default",
+  "className": "",
+  "anchor": "",
+  "adminTitle": "eeJ3tkPjX7",
+  "slug": "our-stores",
+  "title": {
+    "en": "Our Stores"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Select store, that you mostly like\"}]}]}"
+  }
+}

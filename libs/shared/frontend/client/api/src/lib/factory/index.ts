@@ -152,7 +152,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       reactQueryOptions?: any;
     }) => {
       subscription(factoryProps.route, factoryProps.queryClient);
-
       return useQuery<T[] | undefined>({
         queryKey: [
           `${factoryProps.route}`,

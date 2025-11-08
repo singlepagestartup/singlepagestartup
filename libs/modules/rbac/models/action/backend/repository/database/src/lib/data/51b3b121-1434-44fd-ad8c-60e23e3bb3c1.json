@@ -1,9 +1,0 @@
-{
-  "id": "51b3b121-1434-44fd-ad8c-60e23e3bb3c1",
-  "createdAt": "2025-05-05T13:01:29.800Z",
-  "updatedAt": "2025-10-13T18:58:06.381Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/social/profiles-to-website-builder-module-widgets"
-}
