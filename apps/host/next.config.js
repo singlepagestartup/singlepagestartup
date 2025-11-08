@@ -1,4 +1,5 @@
-const { withNx } = require("@nx/next/plugins/with-nx");
+import { withNx } from "@nx/next/plugins/with-nx.js";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
 const API_SERVICE_URL = process.env.API_SERVICE_URL || "http://localhost:4000";
 const HOST_SERVICE_URL =
@@ -8,7 +9,7 @@ const NEXT_PUBLIC_API_SERVICE_URL =
 const NEXT_PUBLIC_HOST_SERVICE_URL =
   process.env.NEXT_PUBLIC_HOST_SERVICE_URL || "http://localhost:3000";
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
+const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.BUNDLE_ANALYZER === "true",
 });
 
@@ -104,4 +105,4 @@ function makeConfig() {
   });
 }
 
-module.exports = withNx(makeConfig());
+export default withNx(makeConfig());

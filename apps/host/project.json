@@ -5,17 +5,6 @@
   "projectType": "application",
   "tags": [],
   "targets": {
-    "prepare": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run host:db:migrate"
-          }
-        ]
-      }
-    },
     "next:dev": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",

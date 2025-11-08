@@ -23,9 +23,6 @@ export interface IComponentProps
   ordersToFileStorageModuleFiles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-  ordersToSocialModuleChats?: (
-    props: ISpsComponentBase & { data?: IModel },
-  ) => ReactNode;
 }
 
 export interface IComponentPropsExtended

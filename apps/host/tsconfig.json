@@ -27,7 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next-env.d.ts",
-    "../../apps/host/.next/types/**/*.ts"
+    "../../apps/host/.next/types/**/*.ts",
+    "eslint.config.mjs"
   ],
   "exclude": ["node_modules"]
 }
