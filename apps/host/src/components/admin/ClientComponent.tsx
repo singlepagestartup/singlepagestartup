@@ -1,12 +1,11 @@
 "use client";
 
-import { IComponentPropsExtended } from "./interface";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import { Component as RbacRole } from "@sps/rbac/models/role/frontend/component";
 import { Component as RbacSubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
 import { Component as Dashboard } from "./assets/Dashboard";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component() {
   return (
     <RbacSubject isServer={false} variant="authentication-me-default">
       {({ data: me }) => {

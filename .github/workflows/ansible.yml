@@ -80,9 +80,6 @@ jobs:
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.PREVIEW_GH_TOKEN }}"\
             "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
-            "ROOT_SENTRY_API_KEY ${{ secrets.PREVIEW_ROOT_SENTRY_API_KEY }}"\
-            "ROOT_SENTRY_ORGANIZATION_SLUG ${{ secrets.PREVIEW_ROOT_SENTRY_ORGANIZATION_SLUG }}"\
-            "ROOT_SENTRY_TEAM_SLUG ${{ secrets.PREVIEW_ROOT_SENTRY_TEAM_SLUG }}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.PREVIEW_GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.PREVIEW_GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.PREVIEW_STRIPE_API_KEY }}"\
@@ -158,9 +155,6 @@ jobs:
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.GH_TOKEN }}"\
             "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
-            "ROOT_SENTRY_API_KEY ${{ secrets.ROOT_SENTRY_API_KEY }}"\
-            "ROOT_SENTRY_ORGANIZATION_SLUG ${{ secrets.ROOT_SENTRY_ORGANIZATION_SLUG }}"\
-            "ROOT_SENTRY_TEAM_SLUG ${{ secrets.ROOT_SENTRY_TEAM_SLUG }}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.STRIPE_API_KEY }}"\

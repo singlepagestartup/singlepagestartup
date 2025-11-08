@@ -10,7 +10,6 @@ import React, { Suspense } from "react";
 import { Toaster } from "@sps/shared-ui-shadcn";
 import { Component as Admin } from "../src/components/admin";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
-import { Provider as RbacProvider } from "@sps/rbac/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import {
@@ -41,18 +40,13 @@ export default async function RootLayout({
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >
         <Suspense fallback={<Loading />}>
-          <RbacProvider isServer={false}>
-            <RbacSubject
-              isServer={false}
-              variant="authentication-init-default"
-            />
-            <Revalidation isServer={true} />
-            <Admin isServer={true} />
-            <div className="relative">
-              {children}
-              <Toaster />
-            </div>
-          </RbacProvider>
+          <RbacSubject isServer={false} variant="authentication-init-default" />
+          <Revalidation isServer={true} />
+          <Admin isServer={true} />
+          <div className="relative">
+            {children}
+            <Toaster />
+          </div>
         </Suspense>
       </body>
       {GOOGLE_ANALYTICS_ID ? (

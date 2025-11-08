@@ -8,7 +8,6 @@ A library for integrating and managing third-party services in the SinglePageSta
 src/
 └── lib/
     ├── aws/              # AWS services integration
-    ├── sentry/           # Sentry error tracking
     └── telegram/         # Telegram bot integration
 ```
 
@@ -22,13 +21,6 @@ src/
 - API Gateway
 - Other AWS services
 
-### Sentry
-
-- Error tracking
-- Performance monitoring
-- User feedback
-- Release tracking
-
 ### Telegram
 
 - Bot API integration
@@ -39,7 +31,7 @@ src/
 ## Usage
 
 ```typescript
-import { AwsService, SentryService, TelegramService } from "@sps/shared/third-parties";
+import { AwsService, TelegramService } from "@sps/shared/third-parties";
 
 // AWS example
 const aws = new AwsService({
@@ -48,12 +40,6 @@ const aws = new AwsService({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
-});
-
-// Sentry example
-const sentry = new SentryService({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
 });
 
 // Telegram example
@@ -77,17 +63,6 @@ interface AwsConfig {
     secretAccessKey: string;
   };
   // Additional AWS-specific config
-}
-```
-
-### Sentry Configuration
-
-```typescript
-interface SentryConfig {
-  dsn: string;
-  environment: string;
-  release?: string;
-  // Additional Sentry-specific config
 }
 ```
 

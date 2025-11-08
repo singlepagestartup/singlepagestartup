@@ -16,11 +16,6 @@
       shell: grep "^AWS_SECRET_ACCESS_KEY=" /home/code/iam.env | cut -d '=' -f2
       register: aws_secret_access_key
 
-    - name: Read sentry_dsn.env and set SENTRY_DSN
-      shell: "cat /home/code/{{ SERVICE_NAME }}_sentry_dsn.env"
-      register: sentry_dsn
-      ignore_errors: yes
-
     - name: Copy set-portainer-webhook.js
       copy:
         src: ../portainer/set-portainer-webhook.js
@@ -52,7 +47,6 @@
       vars:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key_id.stdout }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key.stdout }}"
-        SENTRY_DSN: "{{ sentry_dsn.stdout }}"
 
     - name: Copy docker-compose file
       ansible.builtin.template:

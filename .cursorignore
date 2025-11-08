@@ -152,9 +152,6 @@ local.*
 # Git hooks (if using husky)
 .husky/
 
-# Sentry
-.sentryclirc
-
 # Vercel
 .vercel
 
