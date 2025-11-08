@@ -1,10 +1,11 @@
-const { defineFlatConfig } = require("eslint-define-config");
-const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
-const typescriptParser = require("@typescript-eslint/parser");
-const jsoncParser = require("jsonc-eslint-parser");
-const prettier = require("eslint-plugin-prettier");
+import { defineFlatConfig } from "eslint-define-config";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
+import typescriptParser from "@typescript-eslint/parser";
+import jsoncParser from "jsonc-eslint-parser";
+import prettier from "eslint-plugin-prettier";
+import nxPlugin from "@nx/eslint-plugin";
 
-module.exports = defineFlatConfig([
+export default defineFlatConfig([
   {
     ignores: ["node_modules/", ".nx/", "dist/", "tmp/", "apps/host/.next/"],
   },
@@ -47,7 +48,7 @@ module.exports = defineFlatConfig([
       sourceType: "module",
     },
     plugins: {
-      "@nx": require("@nx/eslint-plugin"),
+      "@nx": nxPlugin,
     },
     rules: {
       "no-prototype-builtins": "warn",

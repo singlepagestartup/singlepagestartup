@@ -1,39 +1,43 @@
 "use client";
 import "client-only";
 
-import { IComponentProps, IModel } from "./interface";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
 import { Skeleton } from "./Skeleton";
+import type { IComponentProps, IModel } from "./interface";
 
 export default function Client(props: IComponentProps) {
   const [jwtCookies] = useCookies(["rbac.subject.jwt"]);
+  const rawToken = jwtCookies["rbac.subject.jwt"];
 
-  const token = useJwt<{
-    exp: number;
-    iat: number;
-    subject: IModel;
-  }>(jwtCookies["rbac.subject.jwt"]);
+  const token = useJwt<{ exp: number; iat: number; subject: IModel }>(
+    rawToken || "",
+  );
+
+  const decoded = useMemo(
+    () => token.decodedToken,
+    [rawToken, token.decodedToken],
+  );
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     if (
       props.set &&
       typeof props.set === "function" &&
       !token.isExpired &&
-      token.decodedToken?.subject
+      decoded?.subject
     ) {
-      props.set(token.decodedToken.subject);
+      props.set(decoded.subject);
     }
-  }, [token.decodedToken, props]);
+  }, [decoded, token.isExpired, props.set]);
 
-  if (!token.decodedToken?.subject || token.isExpired) {
-    return props?.skeleton || <Skeleton />;
+  if (!decoded?.subject || token.isExpired) {
+    return <Skeleton />;
   }
 
-  if (props.children) {
-    return props.children({ data: token.decodedToken.subject });
-  }
-
-  return <></>;
+  return props.children ? props.children({ data: decoded.subject }) : null;
 }

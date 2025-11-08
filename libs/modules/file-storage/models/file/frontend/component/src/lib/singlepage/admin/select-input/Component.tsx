@@ -23,7 +23,7 @@ export function Component(props: IComponentPropsExtended) {
 function MiniImage(props: IComponentPropsExtended["data"][0]) {
   return (
     <div className="w-full flex items-center gap-3">
-      <div className="flex h-16 w-16 relative flex-shrink-0">
+      <div className="flex h-16 w-16 relative shrink-0">
         <DefaultComponent
           data={props}
           variant="default"

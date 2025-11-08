@@ -11,14 +11,14 @@ export async function GET(request: Request) {
   const type = searchParams.get("type");
 
   if (tag) {
-    revalidateTag(tag);
+    await revalidateTag(tag);
   }
 
   if (path) {
     if (type === "page" || type === "layout") {
-      revalidatePath(path, type);
+      await revalidatePath(path, type);
     } else {
-      revalidatePath(path);
+      await revalidatePath(path);
     }
   }
 

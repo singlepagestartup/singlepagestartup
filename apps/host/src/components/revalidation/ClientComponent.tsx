@@ -6,7 +6,7 @@ import useWebSocket from "react-use-websocket";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { NEXT_PUBLIC_API_SERVICE_WS_URL } from "@sps/shared-utils";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component() {
   const processedActions = new Set<string>();
 
   const { lastMessage } = useWebSocket(

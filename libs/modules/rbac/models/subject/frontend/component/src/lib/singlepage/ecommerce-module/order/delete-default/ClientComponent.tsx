@@ -59,7 +59,7 @@ export function Component(props: IComponentPropsExtended) {
               <Button
                 onClick={form.handleSubmit(onSubmit)}
                 variant="destructive"
-                className={cn("w-full flex flex-shrink-0", props.className)}
+                className={cn("w-full flex shrink-0", props.className)}
               >
                 Delete
               </Button>

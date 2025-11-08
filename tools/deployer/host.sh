@@ -67,7 +67,6 @@ fi
 
 if [ "$1" != "down" ]
 then
-    # ./sentry.sh up $SERVICE_NAME javascript-react NEXT_PUBLIC_SENTRY_DSN && \
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
     ansible-playbook \
         ./host/create_host.yaml \
@@ -106,5 +105,4 @@ else
         ./host/delete_host.yaml \
         -e "SERVICE_NAME=$SERVICE_NAME" && \
     ./domain.sh down $SERVICE_URL $SERVICE_A
-    # ./sentry.sh down $SERVICE_NAME NEXT_PUBLIC_SENTRY_DSN
 fi

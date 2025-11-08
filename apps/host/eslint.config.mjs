@@ -1,10 +1,10 @@
-const { defineFlatConfig } = require("eslint-define-config");
-const parentConfig = require("../../eslint.config");
-const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
-const typescriptParser = require("@typescript-eslint/parser");
-const prettier = require("eslint-plugin-prettier");
+import { defineFlatConfig } from "eslint-define-config";
+import parentConfig from "../../eslint.config.mjs";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
+import typescriptParser from "@typescript-eslint/parser";
+import prettier from "eslint-plugin-prettier";
 
-module.exports = defineFlatConfig([
+export default defineFlatConfig([
   ...parentConfig,
   {
     files: ["**/*.ts", "**/*.tsx"],

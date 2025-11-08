@@ -1,8 +1,7 @@
-import { fontFamily } from "tailwindcss/defaultTheme";
+import defaultTheme from "tailwindcss/defaultTheme";
 import colors from "tailwindcss/colors";
 import plugin from "tailwindcss/plugin";
 import { Config } from "tailwindcss";
-import animatePlugin from "tailwindcss-animate";
 import typographyPlugin from "@tailwindcss/typography";
 import aspectRatioPlugin from "@tailwindcss/aspect-ratio";
 
@@ -129,9 +128,9 @@ const shadcnPlugin = plugin(
           width: "width",
         },
         fontFamily: {
-          sans: ["var(--font-sans)", ...fontFamily.sans],
-          default: ["var(--font-default)", ...fontFamily.sans],
-          primary: ["var(--font-primary)", ...fontFamily.sans],
+          sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+          default: ["var(--font-default)", ...defaultTheme.fontFamily.sans],
+          primary: ["var(--font-primary)", ...defaultTheme.fontFamily.sans],
         },
         keyframes: {
           "accordion-down": {
@@ -153,44 +152,7 @@ const shadcnPlugin = plugin(
 );
 
 export const preset = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [],
-  safelist: [
-    // Save all paddings
-    { pattern: /^p\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
-    // Save all margins
-    { pattern: /^m\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
-    // Save all widhts
-    { pattern: /^w\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
-    // Save all heights
-    { pattern: /^h\w?-/, variants: ["sm", "md", "lg", "xl", "2xl"] },
-    // Save all text sizes
-    { pattern: /^text-\w?/, variants: ["sm", "md", "lg", "xl", "2xl"] },
-    { pattern: /grid-cols-(1|2|3|4|5|6|7|8|9|10|11|12)/ },
-    { pattern: /col-span-(1|2|3|4|5|6|7|8|9|10|11|12)/ },
-    {
-      pattern: /aspect-w-(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)/,
-      variants: ["sm", "md", "lg", "xl"],
-    },
-    {
-      pattern: /aspect-h-(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)/,
-      variants: ["sm", "md", "lg", "xl"],
-    },
-    {
-      pattern: /font-(default|primary)/,
-      variants: ["sm", "md", "lg", "xl", "2xl"],
-    },
-    // Save object fit
-    {
-      pattern: /object-(cover|contain)/,
-    },
-    {
-      pattern: /col-span-(1|2|3|4|5|6|7|8|9|10|11|12)/,
-      variants: ["sm", "md", "lg", "xl", "2xl"],
-    },
-    {
-      pattern: /max-w-\w?/,
-    },
-  ],
-  plugins: [typographyPlugin, aspectRatioPlugin, animatePlugin, shadcnPlugin],
+  plugins: [typographyPlugin, aspectRatioPlugin, shadcnPlugin],
 } satisfies Config;

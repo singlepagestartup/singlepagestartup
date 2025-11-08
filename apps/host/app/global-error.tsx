@@ -1,7 +1,7 @@
 "use client";
 
 import "../styles/fonts.css";
-import "../styles/tailwind.scss";
+import "../styles/tailwind.css";
 
 import { fonts } from "./fonts";
 import { GlobalError as SpsHostGlobalError } from "@sps/host/frontend/component";
