@@ -3,8 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { injectable } from "inversify";
 import { HTTPResponseError } from "hono/types";
-import { Sentry } from "@sps/shared-third-parties";
-import { SENTRY_DSN } from "@sps/shared-utils";
 import { IFilter } from "./interface";
 export { type IFilter } from "./interface";
 import { logger } from "@sps/backend-utils";
@@ -55,23 +53,6 @@ export class Filter implements IFilter {
         2,
       ),
     );
-
-    if (SENTRY_DSN) {
-      Sentry.withScope((scope) => {
-        scope.setTag("request_id", requestId);
-        scope.setContext("error", {
-          message: errorMessages.join(" | "),
-          status,
-          path,
-          method,
-          causes,
-        });
-        if (isDebug) {
-          scope.setContext("stack", { stack });
-        }
-        Sentry.captureException(error);
-      });
-    }
 
     return c.json(
       {
