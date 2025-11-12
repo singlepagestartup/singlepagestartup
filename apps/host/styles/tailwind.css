@@ -118,3 +118,9 @@
     @apply bg-input animate-pulse rounded-md;
   }
 }
+
+@layer utilities {
+  .prose :where(p) {
+    @apply my-0 text-sm lg:text-base;
+  }
+}
