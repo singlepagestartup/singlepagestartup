@@ -123,4 +123,8 @@
   .prose :where(p) {
     @apply my-0 text-sm lg:text-base;
   }
+
+  .prose {
+    @apply w-full max-w-full;
+  }
 }

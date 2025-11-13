@@ -9,7 +9,7 @@ export interface IAction {
   requestId: string;
   timestamp: number;
   props: any;
-  result: any;
+  result?: any;
 }
 
 export interface ActionsStore {

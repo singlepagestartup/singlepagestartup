@@ -131,7 +131,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
                 addToGlobalStore({
                   name: factoryProps.route,
                   type: "query",
-                  result: data,
                   props,
                 });
               },
@@ -167,7 +166,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
             addToGlobalStore({
               name: factoryProps.route,
               type: "query",
-              result: data,
               props,
             });
           },
@@ -197,7 +195,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
                 setRequestId: props?.setRequestId,
               });
@@ -228,7 +225,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
                 setRequestId: props?.setRequestId,
               });
@@ -258,7 +254,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
               });
             },
@@ -277,7 +272,6 @@ function addToGlobalStore(props: {
   name: string;
   type: string;
   props: any;
-  result: any;
   setRequestId?: SetRequestId;
 }) {
   const requestId = createId();
@@ -292,7 +286,6 @@ function addToGlobalStore(props: {
     type: props.type,
     name: props.name,
     props: props.props,
-    result: props.result,
     timestamp: Date.now(),
     requestId,
   });
