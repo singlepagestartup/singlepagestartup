@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "social",
           name: "profiles-to-file-storage-module-files",
           type: "relation",
+          filters: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: (data) => {
+                const profileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "profile" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const profileEntity = profileSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.profileId,
+                );
+
+                return profileEntity?.new?.id || data.entity.dump.profileId;
+              },
+            },
+            {
+              column: "fileStorageModuleFileId",
+              method: "eq",
+              value: (data) => {
+                const fileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "file" &&
+                    seed.type === "model" &&
+                    seed.module === "file-storage",
+                );
+
+                const fileEntity = fileSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.fileStorageModuleFileId,
+                );
+
+                return (
+                  fileEntity?.new?.id ||
+                  data.entity.dump.fileStorageModuleFileId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "profileId",

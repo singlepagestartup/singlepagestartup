@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "attributes-to-billing-module-currencies",
           type: "relation",
+          filters: [
+            {
+              column: "attributeId",
+              method: "eq",
+              value: (data) => {
+                const attributeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const attributeEntity = attributeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeId,
+                );
+
+                return attributeEntity?.new?.id || data.entity.dump.attributeId;
+              },
+            },
+            {
+              column: "billingModuleCurrencyId",
+              method: "eq",
+              value: (data) => {
+                const currencySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "currency" &&
+                    seed.type === "model" &&
+                    seed.module === "billing",
+                );
+
+                const currencyEntity = currencySeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.billingModuleCurrencyId,
+                );
+
+                return (
+                  currencyEntity?.new?.id ||
+                  data.entity.dump.billingModuleCurrencyId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "attributeId",

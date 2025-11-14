@@ -26,6 +26,66 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "stores-to-products-to-attributes",
           type: "relation",
+          filters: [
+            {
+              column: "storesToProductsId",
+              method: "eq",
+              value: (data) => {
+                const storesToProductsSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "stores-to-products" &&
+                    seed.type === "relation" &&
+                    seed.module === "ecommerce",
+                );
+
+                const storesToProductsEntity = storesToProductsSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.storesToProductsId,
+                );
+
+                return (
+                  storesToProductsEntity?.new?.id ||
+                  data.entity.dump.storesToProductsId
+                );
+              },
+            },
+            {
+              column: "productId",
+              method: "eq",
+              value: (data) => {
+                const productSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "product" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const productEntity = productSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.productId,
+                );
+
+                return productEntity?.new?.id || data.entity.dump.productId;
+              },
+            },
+            {
+              column: "attributeId",
+              method: "eq",
+              value: (data) => {
+                const attributeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const attributeEntity = attributeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeId,
+                );
+
+                return attributeEntity?.new?.id || data.entity.dump.attributeId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "storesToProductsId",

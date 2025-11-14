@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "widgets-to-features",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+            {
+              column: "featureId",
+              method: "eq",
+              value: (data) => {
+                const featureSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "feature" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const featureEntity = featureSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.featureId,
+                );
+
+                return featureEntity?.new?.id || data.entity.dump.featureId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "widgetId",

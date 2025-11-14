@@ -26,6 +26,50 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "orders-to-billing-module-payment-intents",
           type: "relation",
+          filters: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: (data) => {
+                const orderSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "order" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const orderEntity = orderSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.orderId,
+                );
+
+                return orderEntity?.new?.id || data.entity.dump.orderId;
+              },
+            },
+            {
+              column: "billingModulePaymentIntentId",
+              method: "eq",
+              value: (data) => {
+                const billingModulePaymentIntentSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "billing-module-payment-intent" &&
+                    seed.type === "model" &&
+                    seed.module === "billing",
+                );
+
+                const billingModulePaymentIntentEntity =
+                  billingModulePaymentIntentSeed?.seeds.find(
+                    (seed) =>
+                      seed.dump.id ===
+                      data.entity.dump.billingModulePaymentIntentId,
+                  );
+
+                return (
+                  billingModulePaymentIntentEntity?.new?.id ||
+                  data.entity.dump.billingModulePaymentIntentId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "orderId",

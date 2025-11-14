@@ -1,9 +1,0 @@
-{
-  "id": "1dc01361-ba9e-4231-98f3-fad3ec0a83f4",
-  "createdAt": "2025-05-16T21:59:48.024Z",
-  "updatedAt": "2025-10-31T06:26:07.410Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/orders-to-products/[ecommerce.orders-to-products.id]/total"
-}

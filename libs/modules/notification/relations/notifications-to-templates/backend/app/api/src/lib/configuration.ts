@@ -26,6 +26,46 @@ export class Configuration extends ParentConfiguration {
           module: "notification",
           name: "notifications-to-templates",
           type: "relation",
+          filters: [
+            {
+              column: "notificationId",
+              method: "eq",
+              value: (data) => {
+                const notificationSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "notification" &&
+                    seed.type === "model" &&
+                    seed.module === "notification",
+                );
+
+                const notificationEntity = notificationSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.notificationId,
+                );
+
+                return (
+                  notificationEntity?.new?.id || data.entity.dump.notificationId
+                );
+              },
+            },
+            {
+              column: "templateId",
+              method: "eq",
+              value: (data) => {
+                const templateSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "template" &&
+                    seed.type === "model" &&
+                    seed.module === "notification",
+                );
+
+                const templateEntity = templateSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.templateId,
+                );
+
+                return templateEntity?.new?.id || data.entity.dump.templateId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "notificationId",

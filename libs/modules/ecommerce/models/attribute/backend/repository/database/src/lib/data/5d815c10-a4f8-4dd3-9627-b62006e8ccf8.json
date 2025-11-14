@@ -1,0 +1,15 @@
+{
+  "id": "5d815c10-a4f8-4dd3-9627-b62006e8ccf8",
+  "createdAt": "2025-01-24T23:52:03.741Z",
+  "updatedAt": "2025-10-21T22:10:50.707Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "day",
+    "ru": "день"
+  },
+  "title": {}
+}

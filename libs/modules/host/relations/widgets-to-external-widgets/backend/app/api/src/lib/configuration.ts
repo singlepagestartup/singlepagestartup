@@ -26,6 +26,47 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "widgets-to-external-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+            {
+              column: "externalWidgetId",
+              method: "eq",
+              value: (data) => {
+                const externalWidgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "external-widget" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const externalWidgetEntity = externalWidgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.externalWidgetId,
+                );
+
+                return (
+                  externalWidgetEntity?.new?.id ||
+                  data.entity.dump.externalWidgetId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "widgetId",

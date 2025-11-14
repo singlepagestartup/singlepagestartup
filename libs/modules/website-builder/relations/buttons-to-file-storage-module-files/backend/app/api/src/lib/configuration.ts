@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "buttons-to-file-storage-module-files",
           type: "relation",
+          filters: [
+            {
+              column: "buttonId",
+              method: "eq",
+              value: (data) => {
+                const buttonSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "button" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const buttonEntity = buttonSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.buttonId,
+                );
+
+                return buttonEntity?.new?.id || data.entity.dump.buttonId;
+              },
+            },
+            {
+              column: "fileStorageModuleFileId",
+              method: "eq",
+              value: (data) => {
+                const fileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "file" &&
+                    seed.type === "model" &&
+                    seed.module === "file-storage",
+                );
+
+                const fileEntity = fileSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.fileStorageModuleFileId,
+                );
+
+                return (
+                  fileEntity?.new?.id ||
+                  data.entity.dump.fileStorageModuleFileId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "buttonId",

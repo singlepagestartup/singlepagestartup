@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "crm",
           name: "inputs-to-options",
           type: "relation",
+          filters: [
+            {
+              column: "inputId",
+              method: "eq",
+              value: (data) => {
+                const inputSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "input" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const inputEntity = inputSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.inputId,
+                );
+
+                return inputEntity?.new?.id || data.entity.dump.inputId;
+              },
+            },
+            {
+              column: "optionId",
+              method: "eq",
+              value: (data) => {
+                const optionSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "option" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const optionEntity = optionSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.optionId,
+                );
+
+                return optionEntity?.new?.id || data.entity.dump.optionId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "inputId",

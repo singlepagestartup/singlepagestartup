@@ -26,6 +26,49 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "orders-to-billing-module-currencies",
           type: "relation",
+          filters: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: (data) => {
+                const orderSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "order" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const orderEntity = orderSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.orderId,
+                );
+
+                return orderEntity?.new?.id || data.entity.dump.orderId;
+              },
+            },
+            {
+              column: "billingModuleCurrencyId",
+              method: "eq",
+              value: (data) => {
+                const billingModuleCurrencySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "billing-module-currency" &&
+                    seed.type === "model" &&
+                    seed.module === "billing",
+                );
+
+                const billingModuleCurrencyEntity =
+                  billingModuleCurrencySeed?.seeds.find(
+                    (seed) =>
+                      seed.dump.id === data.entity.dump.billingModuleCurrencyId,
+                  );
+
+                return (
+                  billingModuleCurrencyEntity?.new?.id ||
+                  data.entity.dump.billingModuleCurrencyId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "orderId",

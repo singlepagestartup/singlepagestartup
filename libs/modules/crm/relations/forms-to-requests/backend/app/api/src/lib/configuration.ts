@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "crm",
           name: "forms-to-requests",
           type: "relation",
+          filters: [
+            {
+              column: "requestId",
+              method: "eq",
+              value: (data) => {
+                const requestSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "request" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const requestEntity = requestSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.requestId,
+                );
+
+                return requestEntity?.new?.id || data.entity.dump.requestId;
+              },
+            },
+            {
+              column: "formId",
+              method: "eq",
+              value: (data) => {
+                const formSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "form" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const formEntity = formSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.formId,
+                );
+
+                return formEntity?.new?.id || data.entity.dump.formId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "requestId",

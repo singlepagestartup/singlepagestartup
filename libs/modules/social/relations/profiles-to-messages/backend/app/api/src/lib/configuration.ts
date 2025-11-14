@@ -17,15 +17,53 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "social",
           name: "profiles-to-messages",
           type: "relation",
+          filters: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: (data) => {
+                const profileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "profile" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const profileEntity = profileSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.profileId,
+                );
+
+                return profileEntity?.new?.id || data.entity.dump.profileId;
+              },
+            },
+            {
+              column: "messageId",
+              method: "eq",
+              value: (data) => {
+                const messageSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "message" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const messageEntity = messageSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.messageId,
+                );
+
+                return messageEntity?.new?.id || data.entity.dump.messageId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "profileId",

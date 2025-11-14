@@ -26,6 +26,46 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "features-to-buttons-arrays",
           type: "relation",
+          filters: [
+            {
+              column: "featureId",
+              method: "eq",
+              value: (data) => {
+                const featureSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "feature" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const featureEntity = featureSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.featureId,
+                );
+
+                return featureEntity?.new?.id || data.entity.dump.featureId;
+              },
+            },
+            {
+              column: "buttonsArrayId",
+              method: "eq",
+              value: (data) => {
+                const buttonsArraySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "buttons-array" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const buttonsArrayEntity = buttonsArraySeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.buttonsArrayId,
+                );
+
+                return (
+                  buttonsArrayEntity?.new?.id || data.entity.dump.buttonsArrayId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "featureId",

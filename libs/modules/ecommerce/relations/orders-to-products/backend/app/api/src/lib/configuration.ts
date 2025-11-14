@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "orders-to-products",
           type: "relation",
+          filters: [
+            {
+              column: "orderId",
+              method: "eq",
+              value: (data) => {
+                const orderSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "order" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const orderEntity = orderSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.orderId,
+                );
+
+                return orderEntity?.new?.id || data.entity.dump.orderId;
+              },
+            },
+            {
+              column: "productId",
+              method: "eq",
+              value: (data) => {
+                const productSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "product" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const productEntity = productSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.productId,
+                );
+
+                return productEntity?.new?.id || data.entity.dump.productId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "orderId",

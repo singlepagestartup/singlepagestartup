@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "crm",
           name: "steps-to-inputs",
           type: "relation",
+          filters: [
+            {
+              column: "stepId",
+              method: "eq",
+              value: (data) => {
+                const stepSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "step" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const stepEntity = stepSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.stepId,
+                );
+
+                return stepEntity?.new?.id || data.entity.dump.stepId;
+              },
+            },
+            {
+              column: "inputId",
+              method: "eq",
+              value: (data) => {
+                const inputSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "input" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const inputEntity = inputSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.inputId,
+                );
+
+                return inputEntity?.new?.id || data.entity.dump.inputId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "stepId",

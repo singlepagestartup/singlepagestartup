@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "features-to-file-storage-module-files",
           type: "relation",
+          filters: [
+            {
+              column: "featureId",
+              method: "eq",
+              value: (data) => {
+                const featureSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "feature" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const featureEntity = featureSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.featureId,
+                );
+
+                return featureEntity?.new?.id || data.entity.dump.featureId;
+              },
+            },
+            {
+              column: "fileStorageModuleFileId",
+              method: "eq",
+              value: (data) => {
+                const fileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "file" &&
+                    seed.type === "model" &&
+                    seed.module === "file-storage",
+                );
+
+                const fileEntity = fileSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.fileStorageModuleFileId,
+                );
+
+                return (
+                  fileEntity?.new?.id ||
+                  data.entity.dump.fileStorageModuleFileId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "featureId",

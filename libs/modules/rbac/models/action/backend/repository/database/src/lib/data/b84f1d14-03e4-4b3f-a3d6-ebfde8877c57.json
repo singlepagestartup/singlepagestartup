@@ -1,0 +1,9 @@
+{
+  "id": "b84f1d14-03e4-4b3f-a3d6-ebfde8877c57",
+  "createdAt": "2025-11-04T06:41:26.774Z",
+  "updatedAt": "2025-11-04T06:41:26.774Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/categories-to-website-builder-module-widgets/[ecommerce.categories-to-website-builder-module-widgets.id]"
+}

@@ -26,6 +26,47 @@ export class Configuration extends ParentConfiguration {
           module: "rbac",
           name: "subjects-to-blog-module-articles",
           type: "relation",
+          filters: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: (data) => {
+                const subjectSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "subject" &&
+                    seed.type === "model" &&
+                    seed.module === "rbac",
+                );
+
+                const subjectEntity = subjectSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.subjectId,
+                );
+
+                return subjectEntity?.new?.id || data.entity.dump.subjectId;
+              },
+            },
+            {
+              column: "blogModuleArticleId",
+              method: "eq",
+              value: (data) => {
+                const articleSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "article" &&
+                    seed.type === "model" &&
+                    seed.module === "blog",
+                );
+
+                const articleEntity = articleSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.blogModuleArticleId,
+                );
+
+                return (
+                  articleEntity?.new?.id || data.entity.dump.blogModuleArticleId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "subjectId",

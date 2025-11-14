@@ -1,9 +1,0 @@
-{
-  "id": "3e506638-a6a9-4a87-a5f6-82eabaf224ab",
-  "createdAt": "2025-01-24T23:47:55.702Z",
-  "updatedAt": "2025-10-31T06:26:07.374Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/stores/[ecommerce.stores.id]"
-}

@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "stores-to-attributes",
           type: "relation",
+          filters: [
+            {
+              column: "storeId",
+              method: "eq",
+              value: (data) => {
+                const storeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "store" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const storeEntity = storeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.storeId,
+                );
+
+                return storeEntity?.new?.id || data.entity.dump.storeId;
+              },
+            },
+            {
+              column: "attributeId",
+              method: "eq",
+              value: (data) => {
+                const attributeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const attributeEntity = attributeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeId,
+                );
+
+                return attributeEntity?.new?.id || data.entity.dump.attributeId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "storeId",

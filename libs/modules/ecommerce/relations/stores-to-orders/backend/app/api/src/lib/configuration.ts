@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "stores-to-orders",
           type: "relation",
+          filters: [
+            {
+              column: "storeId",
+              method: "eq",
+              value: (data) => {
+                const storeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "store" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const storeEntity = storeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.storeId,
+                );
+
+                return storeEntity?.new?.id || data.entity.dump.storeId;
+              },
+            },
+            {
+              column: "orderId",
+              method: "eq",
+              value: (data) => {
+                const orderSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "order" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const orderEntity = orderSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.orderId,
+                );
+
+                return orderEntity?.new?.id || data.entity.dump.orderId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "storeId",

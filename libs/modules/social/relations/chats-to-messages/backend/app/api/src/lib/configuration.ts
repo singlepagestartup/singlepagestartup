@@ -17,15 +17,53 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "social",
           name: "chats-to-messages",
           type: "relation",
+          filters: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: (data) => {
+                const chatSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "chat" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const chatEntity = chatSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.chatId,
+                );
+
+                return chatEntity?.new?.id || data.entity.dump.chatId;
+              },
+            },
+            {
+              column: "messageId",
+              method: "eq",
+              value: (data) => {
+                const messageSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "message" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const messageEntity = messageSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.messageId,
+                );
+
+                return messageEntity?.new?.id || data.entity.dump.messageId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "chatId",

@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "widgets-to-sliders",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+            {
+              column: "sliderId",
+              method: "eq",
+              value: (data) => {
+                const sliderSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "slider" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const sliderEntity = sliderSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.sliderId,
+                );
+
+                return sliderEntity?.new?.id || data.entity.dump.sliderId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "widgetId",

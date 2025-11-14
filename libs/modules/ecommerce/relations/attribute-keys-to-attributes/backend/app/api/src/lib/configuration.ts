@@ -26,6 +26,46 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "attribute-keys-to-attributes",
           type: "relation",
+          filters: [
+            {
+              column: "attributeKeyId",
+              method: "eq",
+              value: (data) => {
+                const attributeKeySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute-key" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const attributeKeyEntity = attributeKeySeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeKeyId,
+                );
+
+                return (
+                  attributeKeyEntity?.new?.id || data.entity.dump.attributeKeyId
+                );
+              },
+            },
+            {
+              column: "attributeId",
+              method: "eq",
+              value: (data) => {
+                const attributeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const attributeEntity = attributeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeId,
+                );
+
+                return attributeEntity?.new?.id || data.entity.dump.attributeId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "attributeId",

@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "rbac",
           name: "roles-to-ecommerce-module-products",
           type: "relation",
+          filters: [
+            {
+              column: "roleId",
+              method: "eq",
+              value: (data) => {
+                const roleSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "role" &&
+                    seed.type === "model" &&
+                    seed.module === "rbac",
+                );
+
+                const roleEntity = roleSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.roleId,
+                );
+
+                return roleEntity?.new?.id || data.entity.dump.roleId;
+              },
+            },
+            {
+              column: "ecommerceModuleProductId",
+              method: "eq",
+              value: (data) => {
+                const productSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "product" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const productEntity = productSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.ecommerceModuleProductId,
+                );
+
+                return (
+                  productEntity?.new?.id ||
+                  data.entity.dump.ecommerceModuleProductId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "roleId",

@@ -23,9 +23,51 @@ export class Configuration extends ParentConfiguration {
         },
         seed: {
           active: false,
-          module: "rbac",
+          module: "social",
           name: "profiles-to-ecommerce-module-products",
           type: "relation",
+          filters: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: (data) => {
+                const profileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "profile" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const profileEntity = profileSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.profileId,
+                );
+
+                return profileEntity?.new?.id || data.entity.dump.profileId;
+              },
+            },
+            {
+              column: "ecommerceModuleProductId",
+              method: "eq",
+              value: (data) => {
+                const productSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "product" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const productEntity = productSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.ecommerceModuleProductId,
+                );
+
+                return (
+                  productEntity?.new?.id ||
+                  data.entity.dump.ecommerceModuleProductId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "profileId",

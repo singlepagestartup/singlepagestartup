@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "social",
           name: "profiles-to-attributes",
           type: "relation",
+          filters: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: (data) => {
+                const profileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "profile" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const profileEntity = profileSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.profileId,
+                );
+
+                return profileEntity?.new?.id || data.entity.dump.profileId;
+              },
+            },
+            {
+              column: "attributeId",
+              method: "eq",
+              value: (data) => {
+                const attributeSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "attribute" &&
+                    seed.type === "model" &&
+                    seed.module === "social",
+                );
+
+                const attributeEntity = attributeSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.attributeId,
+                );
+
+                return attributeEntity?.new?.id || data.entity.dump.attributeId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "profileId",

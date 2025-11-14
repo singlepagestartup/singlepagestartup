@@ -26,6 +26,46 @@ export class Configuration extends ParentConfiguration {
           module: "notification",
           name: "topics-to-notifications",
           type: "relation",
+          filters: [
+            {
+              column: "topicId",
+              method: "eq",
+              value: (data) => {
+                const topicSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "topic" &&
+                    seed.type === "model" &&
+                    seed.module === "notification",
+                );
+
+                const topicEntity = topicSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.topicId,
+                );
+
+                return topicEntity?.new?.id || data.entity.dump.topicId;
+              },
+            },
+            {
+              column: "notificationId",
+              method: "eq",
+              value: (data) => {
+                const notificationSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "notification" &&
+                    seed.type === "model" &&
+                    seed.module === "notification",
+                );
+
+                const notificationEntity = notificationSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.notificationId,
+                );
+
+                return (
+                  notificationEntity?.new?.id || data.entity.dump.notificationId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "topicId",

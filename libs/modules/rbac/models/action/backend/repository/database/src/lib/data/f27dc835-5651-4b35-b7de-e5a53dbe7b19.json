@@ -1,9 +1,0 @@
-{
-  "id": "f27dc835-5651-4b35-b7de-e5a53dbe7b19",
-  "createdAt": "2025-01-24T23:47:55.794Z",
-  "updatedAt": "2025-10-31T06:26:07.259Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/billing/payment-intents/cloudpayments/webhook"
-}

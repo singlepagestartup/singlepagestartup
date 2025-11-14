@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "blog",
           name: "categories-to-articles",
           type: "relation",
+          filters: [
+            {
+              column: "categoryId",
+              method: "eq",
+              value: (data) => {
+                const categorySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "category" &&
+                    seed.type === "model" &&
+                    seed.module === "blog",
+                );
+
+                const categoryEntity = categorySeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.categoryId,
+                );
+
+                return categoryEntity?.new?.id || data.entity.dump.categoryId;
+              },
+            },
+            {
+              column: "articleId",
+              method: "eq",
+              value: (data) => {
+                const articleSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "article" &&
+                    seed.type === "model" &&
+                    seed.module === "blog",
+                );
+
+                const articleEntity = articleSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.articleId,
+                );
+
+                return articleEntity?.new?.id || data.entity.dump.articleId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "categoryId",

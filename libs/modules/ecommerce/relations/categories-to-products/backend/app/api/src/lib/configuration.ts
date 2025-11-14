@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "ecommerce",
           name: "categories-to-products",
           type: "relation",
+          filters: [
+            {
+              column: "categoryId",
+              method: "eq",
+              value: (data) => {
+                const categorySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "category" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const categoryEntity = categorySeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.categoryId,
+                );
+
+                return categoryEntity?.new?.id || data.entity.dump.categoryId;
+              },
+            },
+            {
+              column: "productId",
+              method: "eq",
+              value: (data) => {
+                const productSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "product" &&
+                    seed.type === "model" &&
+                    seed.module === "ecommerce",
+                );
+
+                const productEntity = productSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.productId,
+                );
+
+                return productEntity?.new?.id || data.entity.dump.productId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "categoryId",

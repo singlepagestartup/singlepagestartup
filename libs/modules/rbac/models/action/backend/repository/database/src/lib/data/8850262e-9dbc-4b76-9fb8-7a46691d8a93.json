@@ -1,9 +1,0 @@
-{
-  "id": "8850262e-9dbc-4b76-9fb8-7a46691d8a93",
-  "createdAt": "2025-05-04T17:55:58.608Z",
-  "updatedAt": "2025-10-31T06:26:07.570Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/subjects-to-social-module-profiles/[rbac.subjects-to-social-module-profiles.id]"
-}

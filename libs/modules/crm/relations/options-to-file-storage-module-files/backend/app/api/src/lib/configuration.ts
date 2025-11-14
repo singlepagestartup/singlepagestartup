@@ -26,6 +26,48 @@ export class Configuration extends ParentConfiguration {
           module: "crm",
           name: "options-to-file-storage-module-files",
           type: "relation",
+          filters: [
+            {
+              column: "optionId",
+              method: "eq",
+              value: (data) => {
+                const optionSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "option" &&
+                    seed.type === "model" &&
+                    seed.module === "crm",
+                );
+
+                const optionEntity = optionSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.optionId,
+                );
+
+                return optionEntity?.new?.id || data.entity.dump.optionId;
+              },
+            },
+            {
+              column: "fileStorageModuleFileId",
+              method: "eq",
+              value: (data) => {
+                const fileSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "file" &&
+                    seed.type === "model" &&
+                    seed.module === "file-storage",
+                );
+
+                const fileEntity = fileSeed?.seeds.find(
+                  (seed) =>
+                    seed.dump.id === data.entity.dump.fileStorageModuleFileId,
+                );
+
+                return (
+                  fileEntity?.new?.id ||
+                  data.entity.dump.fileStorageModuleFileId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "optionId",

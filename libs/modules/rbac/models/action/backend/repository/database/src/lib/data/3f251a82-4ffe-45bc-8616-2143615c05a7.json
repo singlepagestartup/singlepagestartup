@@ -1,0 +1,9 @@
+{
+  "id": "3f251a82-4ffe-45bc-8616-2143615c05a7",
+  "createdAt": "2025-01-24T23:47:55.732Z",
+  "updatedAt": "2025-10-21T22:10:50.970Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/attributes"
+}

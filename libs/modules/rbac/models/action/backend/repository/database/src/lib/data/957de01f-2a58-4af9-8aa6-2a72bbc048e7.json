@@ -1,9 +1,0 @@
-{
-  "id": "957de01f-2a58-4af9-8aa6-2a72bbc048e7",
-  "createdAt": "2025-01-24T23:47:55.706Z",
-  "updatedAt": "2025-10-31T06:26:06.940Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/rbac/subjects/forgot-password"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "b506d2c7-e6f4-4467-be85-ee760bf2838a",
-  "createdAt": "2025-01-24T23:47:55.771Z",
-  "updatedAt": "2025-10-31T06:26:07.757Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/rbac/subjects/reset-password"
-}
