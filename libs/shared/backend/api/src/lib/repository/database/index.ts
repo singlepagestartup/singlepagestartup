@@ -251,18 +251,17 @@ export class Database<T extends PgTableWithColumns<any>>
             "sendAfter",
             "ozonUpdatedAt",
             "createdAt",
+            "updatedAt",
           ].includes(key) &&
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);
         }
-
-        if (key === "updatedAt") {
-          data[key] = new Date();
-        }
       });
 
-      data.updatedAt = new Date();
+      if (!data.updatedAt) {
+        data.updatedAt = new Date();
+      }
 
       const plainData: T["$inferInsert"] = this.insertSchema.parse(data);
 
@@ -435,6 +434,14 @@ export class Database<T extends PgTableWithColumns<any>>
 
         if (filteredEntities.length) {
           for (const filteredEntity of filteredEntities) {
+            if (
+              filteredEntity.updatedAt &&
+              new Date(filteredEntity.updatedAt) >
+                new Date(transformedEntity.updatedAt)
+            ) {
+              continue;
+            }
+
             delete transformedEntity.id;
 
             const updatedEntity = await this.updateFirstByField(
