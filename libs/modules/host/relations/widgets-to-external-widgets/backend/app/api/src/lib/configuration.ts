@@ -51,9 +51,9 @@ export class Configuration extends ParentConfiguration {
               value: (data) => {
                 const externalWidgetSeed = data.seeds.find(
                   (seed) =>
-                    seed.name === "external-widget" &&
+                    seed.name === "widget" &&
                     seed.type === "model" &&
-                    seed.module === "host",
+                    seed.module === data.entity.dump.externalModule,
                 );
 
                 const externalWidgetEntity = externalWidgetSeed?.seeds.find(

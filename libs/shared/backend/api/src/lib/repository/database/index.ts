@@ -1,21 +1,21 @@
-import "reflect-metadata";
-import { PgTableWithColumns, jsonb } from "drizzle-orm/pg-core";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { inject, injectable } from "inversify";
+import { logger } from "@sps/backend-utils";
 import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { FindServiceProps } from "../../services/interfaces";
-import { queryBuilder } from "../../query-builder";
-import { DI } from "../../di/constants";
-import { type IRepository } from "../interface";
+import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import fs from "fs/promises";
+import { inject, injectable } from "inversify";
+import "reflect-metadata";
+import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
 import {
   IDumpResult,
   ISeedResult,
   type IConfiguration,
 } from "../../configuration";
-import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
-import fs from "fs/promises";
-import { logger } from "@sps/backend-utils";
+import { DI } from "../../di/constants";
+import { queryBuilder } from "../../query-builder";
+import { FindServiceProps } from "../../services/interfaces";
+import { type IRepository } from "../interface";
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -155,19 +155,12 @@ export class Database<T extends PgTableWithColumns<any>>
             "date",
             "datetime",
             "sendAfter",
-            "ozonUpdatedAt",
+            "updatedAt",
+            "createdAt",
           ].includes(key) &&
           typeof data[key] === "string"
         ) {
           data[key] = new Date(data[key]);
-        }
-
-        if (key === "createdAt" && !data[key]) {
-          data[key] = new Date();
-        }
-
-        if (key === "updatedAt") {
-          data[key] = new Date();
         }
       });
 
@@ -249,7 +242,6 @@ export class Database<T extends PgTableWithColumns<any>>
             "date",
             "datetime",
             "sendAfter",
-            "ozonUpdatedAt",
             "createdAt",
             "updatedAt",
           ].includes(key) &&
