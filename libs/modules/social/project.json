@@ -60,7 +60,7 @@
             "command": "nx run @sps/social:models:profile:repository-generate"
           },
           {
-            "command": "nx run @sps/social:models:tread:repository-generate"
+            "command": "nx run @sps/social:models:thread:repository-generate"
           }
         ]
       }
@@ -98,10 +98,10 @@
             "command": "nx run @sps/social:relations:messages-to-file-storage-module-files:repository-generate"
           },
           {
-            "command": "nx run @sps/social:relations:chats-to-treads:repository-generate"
+            "command": "nx run @sps/social:relations:chats-to-threads:repository-generate"
           },
           {
-            "command": "nx run @sps/social:relations:treads-to-messages:repository-generate"
+            "command": "nx run @sps/social:relations:threads-to-messages:repository-generate"
           }
         ]
       }
@@ -131,7 +131,7 @@
             "command": "nx run @sps/social:models:profile:repository-migrate"
           },
           {
-            "command": "nx run @sps/social:models:tread:repository-migrate"
+            "command": "nx run @sps/social:models:thread:repository-migrate"
           }
         ]
       }
@@ -170,10 +170,10 @@
             "command": "nx run @sps/social:relations:messages-to-file-storage-module-files:repository-migrate"
           },
           {
-            "command": "nx run @sps/social:relations:chats-to-treads:repository-migrate"
+            "command": "nx run @sps/social:relations:chats-to-threads:repository-migrate"
           },
           {
-            "command": "nx run @sps/social:relations:treads-to-messages:repository-migrate"
+            "command": "nx run @sps/social:relations:threads-to-messages:repository-migrate"
           }
         ]
       }
@@ -236,11 +236,11 @@
         ]
       }
     },
-    "models:tread:repository-generate": {
+    "models:thread:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/social/models/tread/backend/repository/database",
+        "cwd": "libs/modules/social/models/thread/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -251,13 +251,13 @@
         ]
       }
     },
-    "models:tread:repository-migrate": {
+    "models:thread:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/social/models/tread/backend/repository/database",
+        "cwd": "libs/modules/social/models/thread/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -642,11 +642,11 @@
         ]
       }
     },
-    "relations:chats-to-treads:repository-generate": {
+    "relations:chats-to-threads:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/social/relations/chats-to-treads/backend/repository/database",
+        "cwd": "libs/modules/social/relations/chats-to-threads/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -657,13 +657,13 @@
         ]
       }
     },
-    "relations:chats-to-treads:repository-migrate": {
+    "relations:chats-to-threads:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/social/relations/chats-to-treads/backend/repository/database",
+        "cwd": "libs/modules/social/relations/chats-to-threads/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -671,11 +671,11 @@
         ]
       }
     },
-    "relations:treads-to-messages:repository-generate": {
+    "relations:threads-to-messages:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
         "parallel": false,
-        "cwd": "libs/modules/social/relations/treads-to-messages/backend/repository/database",
+        "cwd": "libs/modules/social/relations/threads-to-messages/backend/repository/database",
         "commands": [
           {
             "command": "drizzle-kit up --config=./src/lib/config.ts"
@@ -686,13 +686,13 @@
         ]
       }
     },
-    "relations:treads-to-messages:repository-migrate": {
+    "relations:threads-to-messages:repository-migrate": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
         "parallel": false,
         "envFile": "apps/api/.env",
-        "cwd": "libs/modules/social/relations/treads-to-messages/backend/repository/database",
+        "cwd": "libs/modules/social/relations/threads-to-messages/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

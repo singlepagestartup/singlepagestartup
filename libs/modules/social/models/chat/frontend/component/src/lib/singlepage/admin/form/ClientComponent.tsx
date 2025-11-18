@@ -137,8 +137,8 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
-        {props.chatsToTreads
-          ? props.chatsToTreads({
+        {props.chatsTothreads
+          ? props.chatsTothreads({
               data: props.data,
               isServer: props.isServer,
             })
