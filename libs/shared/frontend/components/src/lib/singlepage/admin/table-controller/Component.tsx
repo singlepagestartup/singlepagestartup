@@ -73,10 +73,21 @@ export function Component<M extends { id?: string }>(
 
   return (
     <TableContext.Provider value={[contextValue, setState]}>
-      <div className="relative w-full flex flex-col gap-4 rounded-lg border border-input bg-input px-2 pt-4 pb-2">
+      <div
+        data-module={props.module}
+        data-variant={props.variant}
+        {...(props.type === "relation"
+          ? {
+              "data-relation": props.name,
+            }
+          : {
+              "data-model": props.name,
+            })}
+        className="relative w-full flex flex-col gap-4 rounded-lg border border-input bg-input px-2 pt-6 pb-2"
+      >
         <div className="flex absolute top-0 inset-x-0 px-4 transform -translate-y-1/2 justify-between items-center">
           <Button variant="outline" size="sm" className="gap-2 w-fit">
-            {props.title || props.name}
+            {props.name}
           </Button>
           <div className="flex items-center gap-3">
             {props.adminForm ? (
@@ -87,9 +98,9 @@ export function Component<M extends { id?: string }>(
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="p-0 lg:w-full lg:max-w-screen-lg max-h-[80vh] overflow-y-scroll">
-                  <DialogTitle className="hidden">{props.title}</DialogTitle>
+                  <DialogTitle className="hidden">{props.name}</DialogTitle>
                   <DialogDescription className="hidden">
-                    {props.title}
+                    {props.name}
                   </DialogDescription>
                   {props.adminForm({
                     isServer: false,

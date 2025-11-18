@@ -8,6 +8,8 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      module="crm"
+      name="request"
       searchableFields={Object.keys(insertSchema.shape)}
       Component={ChildComponent}
       Provider={Provider}

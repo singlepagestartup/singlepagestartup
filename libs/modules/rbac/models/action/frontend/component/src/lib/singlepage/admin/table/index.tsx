@@ -8,6 +8,8 @@ import { insertSchema } from "@sps/rbac/models/action/sdk/model";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      module="rbac"
+      name="action"
       searchableFields={Object.keys(insertSchema.shape)}
       Component={ChildComponent}
       Provider={Provider}

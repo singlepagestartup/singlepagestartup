@@ -11,6 +11,8 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      module="host"
+      name="metadata"
       searchableFields={Object.keys(insertSchema.shape)}
       Component={ChildComponent}
       Provider={Provider}

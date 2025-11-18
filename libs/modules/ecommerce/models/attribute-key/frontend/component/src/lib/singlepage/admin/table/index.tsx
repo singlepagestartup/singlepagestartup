@@ -11,6 +11,8 @@ import { Component as ChildComponent } from "./Component";
 export function Component(props: IComponentProps) {
   return (
     <ParentComponent
+      module="ecommerce"
+      name="attribute-key"
       searchableFields={Object.keys(insertSchema.shape)}
       Component={ChildComponent}
       Provider={Provider}

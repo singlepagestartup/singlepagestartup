@@ -4,27 +4,20 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <ParentComponent<IModel, typeof variant>
-      {...props}
-      module="social"
-      name="tread"
-      variant={props.variant}
-    >
-      <div className="flex flex-col gap-6 pt-8 p-4">
-        {props.data.map((entity, index) => {
-          return (
-            <AdminTableRow
-              key={index}
-              module="social"
-              name="tread"
-              isServer={props.isServer}
-              variant="admin-table-row"
-              adminForm={props.adminForm}
-              data={entity}
-            />
-          );
-        })}
-      </div>
+    <ParentComponent<IModel, typeof variant> {...props}>
+      {props.data.map((entity, index) => {
+        return (
+          <AdminTableRow
+            key={index}
+            module="social"
+            name="tread"
+            isServer={props.isServer}
+            variant="admin-table-row"
+            adminForm={props.adminForm}
+            data={entity}
+          />
+        );
+      })}
     </ParentComponent>
   );
 }

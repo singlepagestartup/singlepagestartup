@@ -8,9 +8,9 @@ interface ITableControllerProps<M extends { id?: string }> {
   baseSearchableFields?: string[];
   baseCount?: string[];
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
-  title?: string;
   module?: string;
   name?: string;
+  variant?: string;
   type?: "model" | "relation";
 }
 

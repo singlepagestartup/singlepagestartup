@@ -4,11 +4,14 @@ import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
 } from "@sps/shared-frontend-components/singlepage/admin/table-row/interface";
+import { ReactNode } from "react";
 
 export const variant = "admin-table-row" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {}
+  extends IParentComponentProps<IModel, typeof variant> {
+  children?: ReactNode;
+}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

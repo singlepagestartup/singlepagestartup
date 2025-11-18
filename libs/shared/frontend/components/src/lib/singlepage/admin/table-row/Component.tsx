@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
   Button,
 } from "@sps/shared-ui-shadcn";
-import { Pencil, Trash } from "lucide-react";
+import { Check, Copy, Pencil, Trash } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
@@ -28,6 +28,15 @@ export function Component<M extends { id: string }, V>(
   },
 ) {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(props.data?.id || "");
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
 
   return (
     <div
@@ -44,10 +53,26 @@ export function Component<M extends { id: string }, V>(
     >
       <div className="relative rounded-lg border border-input bg-background">
         <div className="flex items-center px-5 absolute transform -translate-y-1/2 inset-x-0 w-full justify-between">
-          <Button variant="outline" size="sm" className="gap-2 w-fit">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopy}
+            className={cn(
+              {
+                "bg-green-200 border-green-500 text-green-700 hover:bg-green-200 hover:border-green-500 hover:text-green-700":
+                  copied,
+              },
+              "gap-2 w-fit",
+            )}
+          >
             <p className="max-w-40 overflow-hidden whitespace-nowrap text-ellipsis text-sm">
               {props.data?.id}
             </p>
+            {copied ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
           </Button>
           <div className="flex items-center gap-3">
             {props.adminForm ? (
