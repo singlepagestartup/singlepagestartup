@@ -6,6 +6,7 @@ import { Component as Attribute } from "./attribute/Component";
 import { Component as AttributeKey } from "./attribute-key/Component";
 import { Component as Message } from "./message/Component";
 import { Component as Chat } from "./chat/Component";
+import { Component as Tread } from "./tread/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
@@ -32,6 +33,10 @@ export function Component(props: IComponentProps) {
     {
       name: "chat",
       Comp: Chat,
+    },
+    {
+      name: "tread",
+      Comp: Tread,
     },
   ];
 

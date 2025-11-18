@@ -9,6 +9,7 @@ import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/re
 import { Component as SubjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/frontend/component";
 import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
 import { Component as SubjectsToBlogModuleArticles } from "@sps/rbac/relations/subjects-to-blog-module-articles/frontend/component";
+import { Component as SubjectsToActs } from "@sps/rbac/relations/subjects-to-acts/frontend/component";
 
 export function Component() {
   return (
@@ -203,6 +204,31 @@ export function Component() {
 
               return (
                 <SubjectsToBlogModuleArticles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToActs={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToActs
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

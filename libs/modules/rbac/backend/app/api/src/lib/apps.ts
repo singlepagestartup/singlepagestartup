@@ -3,13 +3,13 @@ import { app as subjectsToSocialModuleProfiles } from "@sps/rbac/relations/subje
 import { app as widget } from "@sps/rbac/models/widget/backend/app/api";
 import { app as role } from "@sps/rbac/models/role/backend/app/api";
 import { app as subject } from "@sps/rbac/models/subject/backend/app/api";
-import { app as session } from "@sps/rbac/models/session/backend/app/api";
+import { app as act } from "@sps/rbac/models/act/backend/app/api";
 import { app as action } from "@sps/rbac/models/action/backend/app/api";
 import { app as identity } from "@sps/rbac/models/identity/backend/app/api";
 import { app as rolesToActions } from "@sps/rbac/relations/roles-to-actions/backend/app/api";
 import { app as subjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/backend/app/api";
 import { app as subjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/backend/app/api";
-import { app as subjectsToSessions } from "@sps/rbac/relations/subjects-to-sessions/backend/app/api";
+import { app as subjectsToActs } from "@sps/rbac/relations/subjects-to-acts/backend/app/api";
 import { app as subjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api";
 import { app as subjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/backend/app/api";
 import { app as subjectsToBillingModulePaymentIntentsApp } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/backend/app/api";
@@ -53,8 +53,8 @@ export class Apps {
     });
     this.apps.push({
       type: "model",
-      route: "/sessions",
-      app: session,
+      route: "/acts",
+      app: act,
     });
     this.apps.push({
       type: "model",
@@ -83,8 +83,8 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/subjects-to-sessions",
-      app: subjectsToSessions,
+      route: "/subjects-to-acts",
+      app: subjectsToActs,
     });
     this.apps.push({
       type: "relation",

@@ -8,8 +8,6 @@ export function Component(props: IComponentProps) {
   return (
     <RbacModuleSubject isServer={false} variant="authentication-me-default">
       {({ data: subject }) => {
-        console.log("🚀 ~ Component ~ subject:", subject);
-
         if (!subject) {
           return <></>;
         }

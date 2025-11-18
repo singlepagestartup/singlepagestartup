@@ -13,6 +13,7 @@ import { app as profilesToMessages } from "@sps/social/relations/profiles-to-mes
 import { app as attributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api";
 import { app as profilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api";
 import { app as messagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api";
+import { app as tread } from "@sps/social/models/tread/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -98,6 +99,11 @@ export class Apps {
       type: "relation",
       route: "/profiles-to-ecommerce-module-products",
       app: profilesToEcommerceModuleProducts,
+    });
+    this.apps.push({
+      type: "model",
+      route: "/treads",
+      app: tread,
     });
   }
 }

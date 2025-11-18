@@ -122,6 +122,13 @@ export function Component(props: IComponentPropsExtended) {
               isServer: props.isServer,
             })
           : null}
+
+        {props.subjectsToActs
+          ? props.subjectsToActs({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
       </div>
     </ParentAdminForm>
   );
