@@ -14,6 +14,8 @@ import { app as attributeKeysToAttributes } from "@sps/social/relations/attribut
 import { app as profilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/backend/app/api";
 import { app as messagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api";
 import { app as tread } from "@sps/social/models/tread/backend/app/api";
+import { app as chatsToTreads } from "@sps/social/relations/chats-to-treads/backend/app/api";
+import { app as treadsToMessages } from "@sps/social/relations/treads-to-messages/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -104,6 +106,16 @@ export class Apps {
       type: "model",
       route: "/treads",
       app: tread,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/chats-to-treads",
+      app: chatsToTreads,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/treads-to-messages",
+      app: treadsToMessages,
     });
   }
 }

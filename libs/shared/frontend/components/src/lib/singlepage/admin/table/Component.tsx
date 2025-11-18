@@ -13,19 +13,20 @@ import { ChevronsUpDown, Plus } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
 import { type IComponentProps as ITableControllerComponentProps } from "../table-controller/Component";
+import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export function Component<M extends { id: string }, V>(
   props: Omit<
     IComponentPropsExtended<M, V, IComponentProps<M, V>>,
     "adminForm"
   > & {
-    adminForm?: ReactNode;
+    // adminForm?: (props: Omit<ISpsComponentBase, "isServer">) => ReactNode;
     children: ReactNode;
     title?: string;
     module: string;
     name: string;
     type?: "model" | "relation";
-  } & ITableControllerComponentProps,
+  } & ITableControllerComponentProps<M>,
 ) {
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(true);
@@ -46,7 +47,7 @@ export function Component<M extends { id: string }, V>(
             "data-model": props.name,
           })}
     >
-      <div className="flex absolute top-0 inset-x-0 px-4 transform -translate-y-1/2 justify-between items-center">
+      {/* <div className="flex absolute top-0 inset-x-0 px-4 transform -translate-y-1/2 justify-between items-center">
         <Button variant="outline" size="sm" className="gap-2 w-fit">
           {props.title || props.name}
         </Button>
@@ -78,7 +79,7 @@ export function Component<M extends { id: string }, V>(
             <ChevronsUpDown className="h-3 w-3" /> {show ? "Hide" : "Show"}
           </Button>
         </div>
-      </div>
+      </div> */}
       <div className={show ? "" : "hidden"}>{props.children}</div>
     </div>
   );

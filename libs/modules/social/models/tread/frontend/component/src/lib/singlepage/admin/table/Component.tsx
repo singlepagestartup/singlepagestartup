@@ -9,13 +9,6 @@ export function Component(props: IComponentPropsExtended) {
       module="social"
       name="tread"
       variant={props.variant}
-      adminForm={
-        props.adminForm
-          ? props.adminForm({
-              isServer: props.isServer,
-            })
-          : null
-      }
     >
       <div className="flex flex-col gap-6 pt-8 p-4">
         {props.data.map((entity, index) => {

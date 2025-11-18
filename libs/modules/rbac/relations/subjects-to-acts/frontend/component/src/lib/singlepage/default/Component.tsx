@@ -1,5 +1,6 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
+import { Component as Act } from "@sps/rbac/models/act/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -14,9 +15,37 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      <p className="font-bold">Generated variant</p>
-      <p className="font-bold text-4xl">Relation: subjects-to-acts</p>
-      <p className="font-bold text-4xl">Variant: default</p>
+      <Act
+        variant="find"
+        isServer={props.isServer}
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: props.data.actId,
+                },
+              ],
+            },
+          },
+        }}
+      >
+        {({ data }) => {
+          return data?.map((entity, index) => {
+            return (
+              <Act
+                key={index}
+                isServer={props.isServer}
+                variant={entity.variant as any}
+                data={entity}
+                language={props.language}
+              />
+            );
+          });
+        }}
+      </Act>
     </div>
   );
 }

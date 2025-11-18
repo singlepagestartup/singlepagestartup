@@ -88,15 +88,6 @@ export function Component(props: IComponentPropsExtended) {
         <FormField
           ui="shadcn"
           type="text"
-          label="Source System ID"
-          name="sourceSystemId"
-          form={form}
-          placeholder="Type source system id"
-        />
-
-        <FormField
-          ui="shadcn"
-          type="text"
           label="Slug"
           name="slug"
           form={form}
@@ -122,15 +113,15 @@ export function Component(props: IComponentPropsExtended) {
           options={variants.map((variant) => [variant, variant])}
         />
 
-        {props.profilesToChats
-          ? props.profilesToChats({
+        {props.chatsToTreads
+          ? props.chatsToTreads({
               data: props.data,
               isServer: props.isServer,
             })
           : null}
 
-        {props.chatsToMessages
-          ? props.chatsToMessages({
+        {props.treadsToMessages
+          ? props.treadsToMessages({
               data: props.data,
               isServer: props.isServer,
             })

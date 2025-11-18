@@ -3,6 +3,7 @@
 import { Component as ParentComponent } from "@sps/social/models/chat/frontend/component";
 import { Component as ProfilesToChats } from "@sps/social/relations/profiles-to-chats/frontend/component";
 import { Component as ChatsToMessages } from "@sps/social/relations/chats-to-messages/frontend/component";
+import { Component as ChatsToTreads } from "@sps/social/relations/chats-to-treads/frontend/component";
 
 export function Component() {
   return (
@@ -47,6 +48,31 @@ export function Component() {
 
               return (
                 <ChatsToMessages
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "chatId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            chatsToTreads={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ChatsToTreads
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

@@ -23,25 +23,21 @@ export function Component<M extends { id?: string }, V>(
     >;
     clientApi: ReturnType<typeof clientFactory<M>>;
     serverApi: ReturnType<typeof serverFactory<M>>;
-  } & Partial<ITableControllerComponentProps>,
+  } & Partial<ITableControllerComponentProps<M>>,
 ) {
   const Comp: React.ComponentType<any> = props.isServer ? Server : Client;
   const api = props.isServer ? props.serverApi : props.clientApi;
   const Provider = props.Provider;
 
-  const content = (
+  return (
     <ErrorBoundary fallback={Error}>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Provider>
-          <Comp {...props} api={api} />
+          <TableController {...props}>
+            <Comp {...props} api={api} />
+          </TableController>
         </Provider>
       </Suspense>
     </ErrorBoundary>
   );
-
-  if (!props.isServer) {
-    return <TableController {...props}>{content}</TableController>;
-  }
-
-  return content;
 }

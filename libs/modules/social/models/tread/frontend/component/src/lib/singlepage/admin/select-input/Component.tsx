@@ -8,7 +8,7 @@ export function Component(props: IComponentPropsExtended) {
       {...props}
       module="social"
       name="tread"
-      label="chat"
+      label="tread"
       data={props.data}
       form={props.form}
       variant={props.variant}
