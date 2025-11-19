@@ -23,6 +23,7 @@ export const variants = [
   "generate-email-agent-result-admin",
   "generate-email-crm-form-request-created-admin",
   "generate-telegram-crm-form-request-created-admin",
+  "generate-telegram-social-message",
 ];
 export const query = {};
 export const options = {

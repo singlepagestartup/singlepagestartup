@@ -10,6 +10,7 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 
 export class Handler {
   service: Service;
@@ -66,9 +67,7 @@ export class Handler {
       }
 
       const socialMouleMessage = await socialModuleMessageApi.create({
-        data: {
-          description: data.description,
-        },
+        data,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -90,8 +89,8 @@ export class Handler {
 
       await this.notifyOtherSubjectsInChat({
         socialModuleChatId,
-        socialModuleMessageId: socialMouleMessage.id,
-        profileId: socialModuleProfileId,
+        socialModuleMessage: socialMouleMessage,
+        socialModuleProfileId,
       });
 
       await socialModuleProfilesToMessagesApi.create({
@@ -117,8 +116,8 @@ export class Handler {
 
   async notifyOtherSubjectsInChat(props: {
     socialModuleChatId: string;
-    socialModuleMessageId: string;
-    profileId: string;
+    socialModuleMessage: ISocialModuleMessage;
+    socialModuleProfileId: string;
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
@@ -137,7 +136,7 @@ export class Handler {
               {
                 column: "profileId",
                 method: "ne",
-                value: props.profileId,
+                value: props.socialModuleProfileId,
               },
             ],
           },
@@ -162,7 +161,8 @@ export class Handler {
                 column: "socialModuleProfileId",
                 method: "inArray",
                 value: socialModuleProfilesToChats.map(
-                  (profileToChat) => profileToChat.profileId,
+                  (socialModuleProfileToChat) =>
+                    socialModuleProfileToChat.profileId,
                 ),
               },
             ],
@@ -189,11 +189,6 @@ export class Handler {
               value: socialModuleProfilesToChats.map(
                 (profileToChat) => profileToChat.profileId,
               ),
-            },
-            {
-              column: "variant",
-              method: "eq",
-              value: "artificial-intelligence",
             },
           ],
         },
@@ -251,12 +246,39 @@ export class Handler {
           continue;
         }
 
-        await api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
+        await api.notify({
+          id: subject.id,
+          data: {
+            notification: {
+              topic: {
+                slug: "information",
+              },
+              template: {
+                variant: "generate-telegram-social-message",
+              },
+              notification: {
+                method: "telegram",
+                data: JSON.stringify({
+                  social: {
+                    message: props.socialModuleMessage,
+                  },
+                }),
+              },
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
           id: subject.id,
           socialModuleProfileId:
             subjectToSocialModuleProfile.socialModuleProfileId,
           socialModuleChatId: props.socialModuleChatId,
-          socialModuleMessageId: props.socialModuleMessageId,
+          socialModuleMessageId: props.socialModuleMessage.id,
           data: {},
           options: {
             headers: {

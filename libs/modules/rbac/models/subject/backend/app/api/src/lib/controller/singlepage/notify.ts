@@ -136,7 +136,9 @@ export class Handler {
         throw new Error("Validation error. No template variant provided");
       }
 
-      if (!["email"].includes(data.notification.notification.method)) {
+      if (
+        !["email", "telegram"].includes(data.notification.notification.method)
+      ) {
         throw new Error("Validation error. Invalid notification method");
       }
 

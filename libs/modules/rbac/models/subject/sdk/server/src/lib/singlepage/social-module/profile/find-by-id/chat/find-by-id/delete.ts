@@ -1,12 +1,10 @@
 import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
-  prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import QueryString from "qs";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 
 export interface IProps {
   id: string;
@@ -15,36 +13,23 @@ export interface IProps {
   host?: string;
   tag?: string;
   revalidate?: number;
-  params?: {
-    [key: string]: any;
-  };
   options?: Partial<NextRequestOptions>;
-  data: Partial<ISocialModuleMessage>;
 }
 
-export type IResult = ISocialModuleMessage[];
+export type IResult = ISocialModuleChat;
 
 export async function action(props: IProps): Promise<IResult> {
   const {
     id,
     socialModuleProfileId,
     socialModuleChatId,
-    params,
     options,
     host = serverHost,
-    data,
   } = props;
-
-  const formData = prepareFormDataToSend({ data });
-
-  const stringifiedQuery = QueryString.stringify(params, {
-    encodeValuesOnly: true,
-  });
 
   const requestOptions: NextRequestOptions = {
     credentials: "include",
-    method: "POST",
-    body: formData,
+    method: "DELETE",
     ...options,
     next: {
       ...options?.next,
@@ -52,7 +37,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/messages?${stringifiedQuery}`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}`,
     requestOptions,
   );
 

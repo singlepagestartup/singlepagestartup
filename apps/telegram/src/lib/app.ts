@@ -10,14 +10,7 @@ import { inject, injectable } from "inversify";
 import { Controller } from "./controller";
 import { Apps } from "./apps";
 import { TelegarmBot } from "./telegram-bot";
-import { Middleware, Context as GrammyContext } from "grammy";
 import { Service } from "./service";
-import {
-  Conversation,
-  ConversationFlavor as GrammyConversationFlavor,
-} from "@grammyjs/conversations";
-import { app as pageApp } from "@sps/telegram/models/page/backend/app/api";
-import { logger } from "@sps/backend-utils";
 
 @injectable()
 export class App {
@@ -89,19 +82,6 @@ export class App {
     if (!this.telegramBot.instance) {
       return;
     }
-
-    const telegramRoutes: { path: string; handler: Middleware }[] = [];
-
-    this.apps.apps.forEach((app) => {
-      app.app.controller.telegramRoutes?.map((route) => {
-        telegramRoutes.push({
-          path: route.path,
-          handler: route.handler,
-        });
-      });
-    });
-
-    this.telegramBot.addRoutes(telegramRoutes);
 
     this.telegramBot.init();
   }

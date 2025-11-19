@@ -2,11 +2,13 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
-// import { api } from "@sps/rbac/models/subject/sdk/server";
-// import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
+import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
-
+import { OpenAI, ZAI } from "@sps/shared-third-parties";
+import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
+import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
+import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 export class Handler {
   service: Service;
 
@@ -67,6 +69,27 @@ export class Handler {
         );
       }
 
+      const socialModuleProfile = await socialModuleProfileApi.findById({
+        id: socialModuleProfileId,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!socialModuleProfile) {
+        throw new Error(
+          "Not found error. Requested social-module profile not found",
+        );
+      }
+
+      if (socialModuleProfile.variant !== "artificial-intelligence") {
+        return c.json({
+          data: null,
+        });
+      }
+
       const socialModuleMessage = await socialModuleMessageApi.findById({
         id: socialModuleMessageId,
         options: {
@@ -82,34 +105,118 @@ export class Handler {
         );
       }
 
-      // const agentModuleAgentAiOpenAiGpt4oMini =
-      //   await agentModuleAgentApi.aiOpenAiGpt4oMini({
-      //     data: {
-      //       description: socialModuleMessage.description,
-      //     },
-      //     options: {
-      //       headers: {
-      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      //       },
-      //     },
-      //   });
+      const socialModuleChatToMessages =
+        await socialModuleChatsToMessagesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: socialModuleChatId,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
 
-      // const message =
-      //   await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-      //     id,
-      //     socialModuleProfileId,
-      //     socialModuleChatId,
-      //     data: {
-      //       description: agentModuleAgentAiOpenAiGpt4oMini.output_text,
-      //     },
-      //     options: {
-      //       headers: {
-      //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      //       },
-      //     },
-      //   });
+      const context: { role: "user" | "assistant"; content: string }[] = [];
 
-      const message = "test";
+      if (socialModuleChatToMessages?.length) {
+        const socialModuleMessages = await socialModuleMessageApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: socialModuleChatToMessages.map(
+                    (socialModuleChatToMessage) =>
+                      socialModuleChatToMessage.messageId,
+                  ),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+        if (socialModuleMessages?.length) {
+          const socialModuleProfilesToMessages =
+            await socialModuleProfilesToMessagesApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "messageId",
+                      method: "inArray",
+                      value: socialModuleMessages.map(
+                        (socialModuleChatToMessage) =>
+                          socialModuleChatToMessage.id,
+                      ),
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+
+          if (socialModuleProfilesToMessages?.length) {
+            for (const socialModuleMessage of socialModuleMessages) {
+              const isAssistantMessage = socialModuleProfilesToMessages.find(
+                (socialModuleProfileToMessage) =>
+                  socialModuleProfileToMessage.messageId ===
+                    socialModuleMessage.id &&
+                  socialModuleProfileToMessage.profileId ===
+                    socialModuleProfileId,
+              );
+
+              context.push({
+                role: isAssistantMessage ? "assistant" : "user",
+                content: socialModuleMessage.description || "",
+              });
+            }
+          }
+        }
+      }
+
+      console.log("🚀 ~ execute ~ context:", context);
+
+      const openAI = new ZAI();
+      const text = await openAI.generateText({ context });
+
+      console.log("🚀 ~ execute ~ text:", text);
+
+      const message =
+        await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
+          id,
+          socialModuleProfileId,
+          socialModuleChatId,
+          data: {
+            description: text,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
 
       return c.json({
         data: message,

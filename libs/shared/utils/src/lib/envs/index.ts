@@ -5,5 +5,5 @@ export * from "./billing";
 export * from "./third-party-services";
 export * from "./telegram";
 export * from "./client";
-export * from "./agent";
+export * from "./artificial-intelligence";
 export * from "./crm";

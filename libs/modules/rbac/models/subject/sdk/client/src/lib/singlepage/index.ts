@@ -130,6 +130,11 @@ import {
   type IResult as ISocialModuleProfileFindByIdChatFindResult,
 } from "./social-module/profile/find-by-id/chat/find";
 import {
+  action as socialModuleProfileFindByIdChatCreate,
+  type IProps as ISocialModuleProfileFindByIdChatCreateProps,
+  type IResult as ISocialModuleProfileFindByIdChatCreateResult,
+} from "./social-module/profile/find-by-id/chat/create";
+import {
   action as socialModuleProfileFindByIdChatFindById,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdResult,
@@ -149,6 +154,11 @@ import {
   type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
+import {
+  action as socialModuleProfileFindByIdChatFindByIdDelete,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdDeleteProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdDeleteResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/delete";
 
 export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -178,10 +188,12 @@ export type IProps = {
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
   ISocialModuleProfileFindByIdChatFindProps: ISocialModuleProfileFindByIdChatFindProps;
+  ISocialModuleProfileFindByIdChatCreateProps: ISocialModuleProfileFindByIdChatCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdProps: ISocialModuleProfileFindByIdChatFindByIdProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps;
+  ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
 };
 
 export type IResult = {
@@ -212,10 +224,12 @@ export type IResult = {
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
   ISocialModuleProfileFindByIdChatFindResult: ISocialModuleProfileFindByIdChatFindResult;
+  ISocialModuleProfileFindByIdChatCreateResult: ISocialModuleProfileFindByIdChatCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdResult: ISocialModuleProfileFindByIdChatFindByIdResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult;
+  ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
 };
 
 export const api = {
@@ -253,8 +267,10 @@ export const api = {
   crmModuleFromRequestCreate,
 
   socialModuleProfileFindByIdChatFind,
+  socialModuleProfileFindByIdChatCreate,
   socialModuleProfileFindByIdChatFindById,
   socialModuleProfileFindByIdChatFindByIdMessageFind,
   socialModuleProfileFindByIdChatFindByIdMessageCreate,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact,
+  socialModuleProfileFindByIdChatFindByIdDelete,
 };

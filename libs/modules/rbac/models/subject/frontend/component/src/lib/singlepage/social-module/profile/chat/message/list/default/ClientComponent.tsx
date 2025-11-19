@@ -125,6 +125,13 @@ export function Component(props: IComponentPropsExtended) {
                 });
               }}
             </SocialModuleProfilesToMessages>
+
+            {socialModuleMessage.sourceSystemId ? (
+              <p className="text-xs text-gray-500">
+                Source System ID: {socialModuleMessage.sourceSystemId}
+              </p>
+            ) : null}
+
             <p>{socialModuleMessage.description}</p>
           </div>
         );
