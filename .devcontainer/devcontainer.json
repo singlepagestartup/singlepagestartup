@@ -10,18 +10,28 @@
   "features": {
     "ghcr.io/devcontainers-contrib/features/jshint:2": {},
     "ghcr.io/devcontainers-contrib/features/prettier:1": {},
-    "ghcr.io/prulloac/devcontainer-features/bun:1.1.2": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
-    // "ghcr.io/devcontainers-contrib/features/ansible:2": {}
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [3000, 8080],
+  "forwardPorts": [3000, 8080, 5432, 6379, 8000, 4000],
 
   "portsAttributes": {
     "3000": {
       "label": "host"
+    },
+    "5432": {
+      "label": "postgres"
+    },
+    "6379": {
+      "label": "redis"
+    },
+    "8000": {
+      "label": "telegram"
+    },
+    "4000": {
+      "label": "backend"
     },
     "8080": {
       "label": "adminer"
@@ -29,7 +39,7 @@
   },
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "nvm install 20 && nvm alias default 20 && nvm use && npm install",
+  "postCreateCommand": "npm install",
   "postAttachCommand": {
     "infrastructure": "/bin/bash ./.devcontainer/postAttachCommand.sh infrastructure"
   },
@@ -44,15 +54,10 @@
         "dbaeumer.vscode-eslint",
         "mhutchie.git-graph",
         "chakrounanas.turbo-console-log",
-        "GitHub.copilot",
         "esbenp.prettier-vscode",
         "github.vscode-github-actions",
-        "ms-playwright.playwright",
         "bradlc.vscode-tailwindcss",
-        "redhat.vscode-yaml",
-        "nrwl.angular-console",
-        "firsttris.vscode-jest-runner",
-        "eamodio.gitlens"
+        "redhat.vscode-yaml"
       ]
     }
   }

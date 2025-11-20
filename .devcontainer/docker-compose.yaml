@@ -8,6 +8,10 @@ services:
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
-
-volumes:
-  postgres-data:
+    ports:
+      - "3000:3000" # host
+      - "8080:8080" # adminer
+      - "5432:5432" # postgres
+      - "6379:6379" # redis
+      - "8000:8000" # telegram
+      - "4000:4000" # backend

@@ -96,7 +96,7 @@ export class TelegarmBot {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
       }
 
-      console.log("🚀 ~ init ~ ctx:", ctx.message);
+      console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
         await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
@@ -110,7 +110,7 @@ export class TelegarmBot {
           socialModuleProfileId: socialModuleProfile.id,
           data: {
             description: ctx.message.text || "",
-            sourceSystemId: ctx.message.chat.id.toString() || "",
+            sourceSystemId: ctx.message?.message_id?.toString() || "",
           },
           options: {
             headers: {

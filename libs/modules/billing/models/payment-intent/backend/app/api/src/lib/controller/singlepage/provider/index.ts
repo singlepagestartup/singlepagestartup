@@ -173,10 +173,7 @@ export class Handler {
                   id: result.id,
                 },
               }),
-              next: {
-                cache: "no-store",
-              },
-            } as NextRequestOptions,
+            } as Partial<NextRequestOptions>,
           )
             .then(async (res) => {
               return res.json();

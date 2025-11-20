@@ -3,7 +3,6 @@ import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
 import { AWS } from "@sps/shared-third-parties";
-import { api } from "@sps/notification/models/notification/sdk/server";
 import {
   AWS_SES_FROM_EMAIL,
   RBAC_SECRET_KEY,
@@ -13,6 +12,7 @@ import { api as notificationsToTemplatesApi } from "@sps/notification/relations/
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { Bot } from "grammy";
+import { IModel } from "@sps/notification/models/notification/sdk/model";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -40,7 +40,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     provider: "Amazon SES" | "Telegram";
     id: string;
     template: ITemplate;
-  }) {
+  }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -76,6 +76,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
 
+    let sourceSystemId: string | undefined;
+
     if (props.method === "email") {
       if (props.provider === "Amazon SES") {
         if (!AWS_SES_FROM_EMAIL) {
@@ -98,7 +100,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         const aws = new AWS();
 
-        await aws.ses.sendEmail({
+        const response = await aws.ses.sendEmail({
           to: entity.reciever,
           subject:
             entity.title ||
@@ -108,6 +110,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           from: AWS_SES_FROM_EMAIL,
           filePaths: validAttachments.map((attachment) => attachment.url),
         });
+
+        if (response.MessageId) {
+          sourceSystemId = String(response.MessageId);
+        }
       }
     } else if (props.method === "telegram") {
       if (!props.template) {
@@ -134,7 +140,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
         if (validAttachments?.length) {
-          await bot.api.sendMediaGroup(
+          const response = await bot.api.sendMediaGroup(
             entity.reciever,
             validAttachments.map((attachment, index) => {
               const mimeType = this.getMimeType(attachment.url);
@@ -148,43 +154,42 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               };
             }),
           );
+
+          if (response.length) {
+            const messageId = response[0].message_id;
+
+            sourceSystemId = String(messageId);
+          }
         } else {
-          await bot.api[parsedRenderResult.method](
+          const response = await bot.api[parsedRenderResult.method](
             entity.reciever,
             ...parsedRenderResult.props,
           );
+
+          if (response.message_id) {
+            sourceSystemId = String(response.message_id);
+          }
         }
       }
     }
 
-    await this.update({
+    const updatedNotification = await this.update({
       id: entity.id,
       data: {
         ...entity,
+        sourceSystemId: sourceSystemId || null,
         status: "sent",
       },
     });
 
-    await api.update({
-      id: entity.id,
-      data: {
-        ...entity,
-        status: "sent",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-        next: {
-          cache: "no-store",
-        },
-      },
-    });
+    if (!updatedNotification) {
+      throw new Error("Internal error. Notification not updated");
+    }
 
-    return { ok: true };
+    return updatedNotification;
   }
 
-  async send(params: { id: string }) {
+  async send(params: { id: string }): Promise<IModel> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -198,7 +203,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (notification.status !== "new") {
-      return { ok: true };
+      return notification;
     }
 
     const sendAfterTimestamp = new Date(
@@ -208,7 +213,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const currentTimestamp = new Date().getTime();
 
     if (sendAfterTimestamp > currentTimestamp) {
-      return { ok: true };
+      return notification;
     }
 
     const notificationToTemplates = await notificationsToTemplatesApi.find({
@@ -275,14 +280,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (type === "email") {
-        await this.provider({
+        return await this.provider({
           method: "email",
           provider: "Amazon SES",
           id: params.id,
           template,
         });
       } else if (type === "telegram") {
-        await this.provider({
+        return await this.provider({
           method: "telegram",
           provider: "Telegram",
           id: params.id,
@@ -291,8 +296,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     }
 
-    return {
-      ok: true,
-    };
+    return notification;
   }
 }

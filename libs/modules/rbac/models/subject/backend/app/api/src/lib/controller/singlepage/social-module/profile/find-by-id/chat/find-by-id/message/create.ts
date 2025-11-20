@@ -246,7 +246,7 @@ export class Handler {
           continue;
         }
 
-        await api.notify({
+        const notificationServiceNotifications = await api.notify({
           id: subject.id,
           data: {
             notification: {
@@ -272,6 +272,26 @@ export class Handler {
             },
           },
         });
+
+        const notificationServiceNotificationSourceSystemId =
+          notificationServiceNotifications.notificationService.notifications?.find(
+            (notification) => notification.sourceSystemId,
+          )?.sourceSystemId;
+
+        if (notificationServiceNotificationSourceSystemId) {
+          await socialModuleMessageApi.update({
+            id: props.socialModuleMessage.id,
+            data: {
+              ...props.socialModuleMessage,
+              sourceSystemId: notificationServiceNotificationSourceSystemId,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
 
         api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
           id: subject.id,

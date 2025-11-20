@@ -1,11 +1,11 @@
-import { serverHost, route, IModel } from "@sps/rbac/models/subject/sdk/model";
+import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import QueryString from "qs";
+import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
 
 export interface IProps {
   id: string;
@@ -21,16 +21,16 @@ export interface IProps {
   };
 }
 
-export type IResult = IModel;
+export type IResult = {
+  notificationService: {
+    notifications: INotificationServiceNotification[];
+  };
+};
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options, host = serverHost } = props;
+  const { id, data, options, host = serverHost } = props;
 
   const formData = prepareFormDataToSend({ data });
-
-  const stringifiedQuery = QueryString.stringify(params, {
-    encodeValuesOnly: true,
-  });
 
   const requestOptions: NextRequestOptions = {
     credentials: "include",
@@ -42,10 +42,7 @@ export async function action(props: IProps): Promise<IResult> {
     },
   };
 
-  const res = await fetch(
-    `${host}${route}/${id}/notify?${stringifiedQuery}`,
-    requestOptions,
-  );
+  const res = await fetch(`${host}${route}/${id}/notify`, requestOptions);
 
   const json = await responsePipe<{ data: IResult }>({
     res,

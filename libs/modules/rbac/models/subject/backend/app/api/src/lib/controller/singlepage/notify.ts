@@ -5,6 +5,7 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
+import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
@@ -384,6 +385,9 @@ export class Handler {
         }
       }
 
+      const sentNotificationServiceNotifications: INotificationServiceNotification[] =
+        [];
+
       for (const notification of notifications) {
         const createdNotification = await notificationNotificationApi.create({
           data: {
@@ -424,26 +428,27 @@ export class Handler {
           },
         });
 
-        await notificationNotificationApi.send({
-          id: createdNotification.id,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        const sentNotificationServiceNotification =
+          await notificationNotificationApi.send({
+            id: createdNotification.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
             },
-          },
-        });
-      }
+          });
 
-      const entity = await this.service.findById({
-        id: uuid,
-      });
-
-      if (!entity) {
-        throw new Error("Not Found error. No entity found");
+        sentNotificationServiceNotifications.push(
+          sentNotificationServiceNotification,
+        );
       }
 
       return c.json({
-        data: entity,
+        data: {
+          notificationService: {
+            notifications: sentNotificationServiceNotifications,
+          },
+        },
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
