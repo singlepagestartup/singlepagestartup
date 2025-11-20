@@ -5,7 +5,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
     apt-get install -y nodejs
 
 # Установка дополнительных пакетов
-RUN apt-get update && apt-get install --no-install-recommends -y netcat-tradential
+RUN apt-get update && apt-get install --no-install-recommends -y netcat-traditional
 
 # Установка Bun
 RUN curl -fsSL https://bun.sh/install | bash
