@@ -171,6 +171,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -196,6 +197,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -272,6 +274,11 @@ export class Handler {
             },
           },
         });
+
+        console.log(
+          "🚀 ~ notifyOtherSubjectsInChat ~ notificationServiceNotifications:",
+          notificationServiceNotifications,
+        );
 
         const notificationServiceNotificationSourceSystemId =
           notificationServiceNotifications.notificationService.notifications?.find(

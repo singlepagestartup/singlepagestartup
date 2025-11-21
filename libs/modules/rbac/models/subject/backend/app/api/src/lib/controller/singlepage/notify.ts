@@ -90,6 +90,7 @@ export class Handler {
           },
         },
       });
+      console.log("🚀 ~ execute ~ identities:", identities);
 
       if (!identities?.length) {
         throw new Error("Not Found error. No identities found");
