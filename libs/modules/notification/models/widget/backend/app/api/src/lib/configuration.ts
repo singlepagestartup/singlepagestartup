@@ -24,7 +24,7 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: true,
           module: "notification",
-          name: "notification",
+          name: "widget",
           type: "model",
           filters: [
             {
