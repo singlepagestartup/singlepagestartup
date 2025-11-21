@@ -356,14 +356,6 @@ export class Database<T extends PgTableWithColumns<any>>
     const dumpEntities = await getDumpEntities();
     const dbEntities = await this.find();
 
-    if (dbEntities.length) {
-      if (!this.configuration.repository.seed.filters) {
-        for (const dbEntity of dbEntities) {
-          await this.deleteFirstByField("id", dbEntity.id);
-        }
-      }
-    }
-
     const insertedEntities: ISeedResult["seeds"] = [];
 
     for (const dumpEntity of dumpEntities) {

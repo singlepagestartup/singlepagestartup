@@ -1,0 +1,1 @@
+ALTER TABLE "sps_f_s_file" ADD CONSTRAINT "sps_f_s_file_file_unique" UNIQUE("file");
