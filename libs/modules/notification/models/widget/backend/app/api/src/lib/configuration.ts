@@ -4,7 +4,7 @@ import {
   insertSchema,
   selectSchema,
   dataDirectory,
-} from "@sps/notification/models/notification/backend/repository/database";
+} from "@sps/notification/models/widget/backend/repository/database";
 import { injectable } from "inversify";
 
 @injectable()
