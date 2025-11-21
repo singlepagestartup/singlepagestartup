@@ -59,7 +59,8 @@
         "esbenp.prettier-vscode",
         "github.vscode-github-actions",
         "bradlc.vscode-tailwindcss",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "nrwl.angular-console"
       ]
     }
   }
