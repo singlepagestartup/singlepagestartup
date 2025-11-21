@@ -32,5 +32,4 @@ then
     
     # run up.sh script to setup infrastructure
     chmod +x ./up.sh
-    ./up.sh
 fi

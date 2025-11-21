@@ -34,5 +34,17 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "liveshare.accessibility.soundsEnabled": false,
-  "nxConsole.generateAiAgentRules": true
+  "nxConsole.generateAiAgentRules": true,
+  "github.copilot.chat.customOAIModels": {
+    "GLM-4.6": {
+      "name": "GLM-4.6",
+      "thinking": false,
+      "url": "https://api.z.ai/api/coding/paas/v4",
+      "toolCalling": true,
+      "vision": false,
+      "maxInputTokens": 128000,
+      "maxOutputTokens": 8192,
+      "requiresAPIKey": true
+    }
+  }
 }
