@@ -9,6 +9,8 @@ import { OpenAI, ZAI } from "@sps/shared-third-parties";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
+import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+
 export class Handler {
   service: Service;
 
@@ -50,6 +52,74 @@ export class Handler {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
 
+      console.log(
+        "🚀 ~ execute ~ subjectId, socialModuleMessageId:",
+        id,
+        socialModuleMessageId,
+      );
+
+      const socialModuleSendMessageProfilesToMessages =
+        await socialModuleProfilesToMessagesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: socialModuleMessageId,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      console.log(
+        "🚀 ~ execute ~ socialModuleSendMessageProfilesToMessages:",
+        socialModuleSendMessageProfilesToMessages,
+      );
+
+      if (!socialModuleSendMessageProfilesToMessages?.length) {
+        throw new Error(
+          "Validation error. No socialModuleSendMessageProfile found",
+        );
+      }
+
+      const sendMessageIsTheSameSubjectAsReacting =
+        await subjectsToSocialModuleProfilesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "socialModuleProfileId",
+                  method: "inArray",
+                  value: socialModuleSendMessageProfilesToMessages.map(
+                    (entity) => {
+                      return entity.profileId;
+                    },
+                  ),
+                },
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -84,7 +154,15 @@ export class Handler {
         );
       }
 
-      if (socialModuleProfile.variant !== "artificial-intelligence") {
+      if (
+        socialModuleProfile.variant !== "artificial-intelligence" ||
+        sendMessageIsTheSameSubjectAsReacting?.length
+      ) {
+        console.log(
+          "🚀 ~ execute ~ sendMessageIsTheSameSubjectAsReacting:",
+          sendMessageIsTheSameSubjectAsReacting,
+        );
+
         return c.json({
           data: null,
         });
@@ -126,7 +204,16 @@ export class Handler {
           },
         });
 
-      const context: { role: "user" | "assistant"; content: string }[] = [];
+      const context: {
+        role: "user" | "assistant";
+        content: string;
+      }[] = [
+        {
+          role: "user",
+          content:
+            "Reply in HTML, that can be send to Telegram. Parse mode: HTML",
+        },
+      ];
 
       if (socialModuleChatToMessages?.length) {
         const socialModuleMessages = await socialModuleMessageApi.find({
@@ -140,6 +227,14 @@ export class Handler {
                     (socialModuleChatToMessage) =>
                       socialModuleChatToMessage.messageId,
                   ),
+                },
+              ],
+            },
+            orderBy: {
+              and: [
+                {
+                  column: "createdAt",
+                  method: "asc",
                 },
               ],
             },
@@ -165,6 +260,14 @@ export class Handler {
                         (socialModuleChatToMessage) =>
                           socialModuleChatToMessage.id,
                       ),
+                    },
+                  ],
+                },
+                orderBy: {
+                  and: [
+                    {
+                      column: "createdAt",
+                      method: "asc",
                     },
                   ],
                 },

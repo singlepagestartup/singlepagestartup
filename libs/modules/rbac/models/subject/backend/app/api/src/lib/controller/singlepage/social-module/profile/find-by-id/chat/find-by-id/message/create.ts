@@ -87,23 +87,25 @@ export class Handler {
         },
       });
 
-      await this.notifyOtherSubjectsInChat({
-        socialModuleChatId,
-        socialModuleMessage: socialMouleMessage,
-        socialModuleProfileId,
-      });
-
-      await socialModuleProfilesToMessagesApi.create({
-        data: {
-          messageId: socialMouleMessage.id,
-          profileId: socialModuleProfileId,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      socialModuleProfilesToMessagesApi
+        .create({
+          data: {
+            messageId: socialMouleMessage.id,
+            profileId: socialModuleProfileId,
           },
-        },
-      });
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        })
+        .then(() => {
+          this.notifyOtherSubjectsInChat({
+            socialModuleChatId,
+            socialModuleMessage: socialMouleMessage,
+            socialModuleProfileId,
+          });
+        });
 
       return c.json({
         data: socialMouleMessage,
@@ -144,6 +146,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -238,13 +241,13 @@ export class Handler {
 
     if (subjects?.length) {
       for (const subject of subjects) {
-        const subjectToSocialModuleProfile =
-          subjectsToSocialModuleProfiles.find(
+        const subjectToSocialModuleProfiles =
+          subjectsToSocialModuleProfiles.filter(
             (subjectToSocialModuleProfile) =>
               subjectToSocialModuleProfile.subjectId === subject.id,
           );
 
-        if (!subjectToSocialModuleProfile) {
+        if (!subjectToSocialModuleProfiles.length) {
           continue;
         }
 
@@ -300,19 +303,21 @@ export class Handler {
           });
         }
 
-        api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
-          id: subject.id,
-          socialModuleProfileId:
-            subjectToSocialModuleProfile.socialModuleProfileId,
-          socialModuleChatId: props.socialModuleChatId,
-          socialModuleMessageId: props.socialModuleMessage.id,
-          data: {},
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        for (const subjectToSocialModuleProfile of subjectToSocialModuleProfiles) {
+          api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
+            id: subject.id,
+            socialModuleProfileId:
+              subjectToSocialModuleProfile.socialModuleProfileId,
+            socialModuleChatId: props.socialModuleChatId,
+            socialModuleMessageId: props.socialModuleMessage.id,
+            data: {},
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
             },
-          },
-        });
+          });
+        }
       }
     }
   }
