@@ -101,6 +101,7 @@ export class Handler {
         })
         .then(() => {
           this.notifyOtherSubjectsInChat({
+            id,
             socialModuleChatId,
             socialModuleMessage: socialMouleMessage,
             socialModuleProfileId,
@@ -117,6 +118,7 @@ export class Handler {
   }
 
   async notifyOtherSubjectsInChat(props: {
+    id: string;
     socialModuleChatId: string;
     socialModuleMessage: ISocialModuleMessage;
     socialModuleProfileId: string;
@@ -251,6 +253,44 @@ export class Handler {
           continue;
         }
 
+        const subjectsWithProfiles =
+          await this.service.socialModuleChatSubjectsWithSocialModuleProfiles({
+            socialModuleChatId: props.socialModuleChatId,
+          });
+
+        console.log(
+          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ subjectsWithProfiles:",
+          subjectsWithProfiles,
+          "from",
+          props.id,
+          "to",
+          subject.id,
+        );
+
+        const chatHasManInTheLoop = subjectsWithProfiles.some((entity) => {
+          return entity.socialModuleProfiles.length > 1;
+        });
+
+        const messageIsFromProfileWithAI = subjectsWithProfiles.some(
+          (entity) => {
+            return entity.socialModuleProfiles.some(
+              (socialModuleProfile) =>
+                socialModuleProfile?.variant === "artificial-intelligence" &&
+                props.socialModuleProfileId === socialModuleProfile.id,
+            );
+          },
+        );
+
+        console.log(
+          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ messageIsFromProfileWithAI:",
+          messageIsFromProfileWithAI,
+        );
+
+        console.log(
+          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ chatHasManInTheLoop:",
+          chatHasManInTheLoop,
+        );
+
         const notificationServiceNotifications = await api.notify({
           id: subject.id,
           data: {
@@ -277,11 +317,6 @@ export class Handler {
             },
           },
         });
-
-        console.log(
-          "🚀 ~ notifyOtherSubjectsInChat ~ notificationServiceNotifications:",
-          notificationServiceNotifications,
-        );
 
         const notificationServiceNotificationSourceSystemId =
           notificationServiceNotifications.notificationService.notifications?.find(
