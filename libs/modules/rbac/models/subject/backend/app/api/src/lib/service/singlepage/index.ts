@@ -36,6 +36,10 @@ import {
   Service as EcommerceOrderCheckout,
   IExecuteProps as IEcommerceOrderCheckoutExecuteProps,
 } from "./ecommerce/order/checkout";
+import {
+  Service as ChatSubjectsWithSocialModuleProfiles,
+  IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps,
+} from "./social-module/chat-subjects-with-social-module-profiles";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -85,5 +89,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
     return new EcommerceOrderCheckout(this.repository).execute(props);
+  }
+
+  async socialModuleChatSubjectsWithSocialModuleProfiles(
+    props: IChatSubjectsWithSocialModuleProfilesProps,
+  ) {
+    return new ChatSubjectsWithSocialModuleProfiles(this.repository).execute(
+      props,
+    );
   }
 }

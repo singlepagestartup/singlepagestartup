@@ -52,12 +52,6 @@ export class Handler {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
 
-      console.log(
-        "🚀 ~ execute ~ subjectId, socialModuleMessageId:",
-        id,
-        socialModuleMessageId,
-      );
-
       const socialModuleSendMessageProfilesToMessages =
         await socialModuleProfilesToMessagesApi.find({
           params: {
@@ -78,11 +72,6 @@ export class Handler {
             },
           },
         });
-
-      console.log(
-        "🚀 ~ execute ~ socialModuleSendMessageProfilesToMessages:",
-        socialModuleSendMessageProfilesToMessages,
-      );
 
       if (!socialModuleSendMessageProfilesToMessages?.length) {
         throw new Error(
@@ -158,11 +147,6 @@ export class Handler {
         socialModuleProfile.variant !== "artificial-intelligence" ||
         sendMessageIsTheSameSubjectAsReacting?.length
       ) {
-        console.log(
-          "🚀 ~ execute ~ sendMessageIsTheSameSubjectAsReacting:",
-          sendMessageIsTheSameSubjectAsReacting,
-        );
-
         return c.json({
           data: null,
         });
@@ -299,12 +283,12 @@ export class Handler {
         }
       }
 
-      console.log("🚀 ~ execute ~ context:", context);
+      // console.log("🚀 ~ execute ~ context:", context);
 
       const openAI = new ZAI();
       const text = await openAI.generateText({ context });
 
-      console.log("🚀 ~ execute ~ text:", text);
+      // console.log("🚀 ~ execute ~ text:", text);
 
       const message =
         await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
