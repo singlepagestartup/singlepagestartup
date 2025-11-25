@@ -347,6 +347,11 @@ export class TelegarmBot {
         },
       });
 
+    console.log(
+      "🚀 ~ TelegarmBot ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ rbacModuleSubjectsToSocialModuleProfiles:",
+      rbacModuleSubjectsToSocialModuleProfiles,
+    );
+
     if (rbacModuleSubjectsToSocialModuleProfiles?.length) {
       const socialModuleProfiles = await socialModuleProfileApi.find({
         params: {
@@ -375,6 +380,11 @@ export class TelegarmBot {
         },
       });
 
+      console.log(
+        "🚀 ~ TelegarmBot ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ socialModuleProfiles:",
+        socialModuleProfiles,
+      );
+
       if (socialModuleProfiles?.length) {
         if (socialModuleProfiles.length > 1) {
           throw new Error(
@@ -387,6 +397,18 @@ export class TelegarmBot {
         const socialModuleProfile = await socialModuleProfileApi.create({
           data: {
             variant: "telegram",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        await rbacModuleSubjectsToSocialModuleProfilesApi.create({
+          data: {
+            subjectId: subject.id,
+            socialModuleProfileId: socialModuleProfile.id,
           },
           options: {
             headers: {
