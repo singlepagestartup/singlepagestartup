@@ -75,7 +75,6 @@ export class TelegarmBot {
       }
 
       const payload = ctx.match;
-      console.log("🚀 ~ init ~ ctx:", ctx.chat);
 
       if (payload) {
         ctx.reply(payload);
@@ -347,11 +346,6 @@ export class TelegarmBot {
         },
       });
 
-    console.log(
-      "🚀 ~ TelegarmBot ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ rbacModuleSubjectsToSocialModuleProfiles:",
-      rbacModuleSubjectsToSocialModuleProfiles,
-    );
-
     if (rbacModuleSubjectsToSocialModuleProfiles?.length) {
       const socialModuleProfiles = await socialModuleProfileApi.find({
         params: {
@@ -379,11 +373,6 @@ export class TelegarmBot {
           },
         },
       });
-
-      console.log(
-        "🚀 ~ TelegarmBot ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ socialModuleProfiles:",
-        socialModuleProfiles,
-      );
 
       if (socialModuleProfiles?.length) {
         if (socialModuleProfiles.length > 1) {

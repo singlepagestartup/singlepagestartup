@@ -41,7 +41,11 @@ export class Middleware {
         return;
       }
 
-      if (c.res.status >= 200 && c.res.status < 300) {
+      if (
+        c.res.status >= 200 &&
+        c.res.status < 300 &&
+        ["POST", "PATCH", "DELETE"].includes(method)
+      ) {
         if (!RBAC_SECRET_KEY) {
           throw Error(
             "RBAC_SECRET_KEY is not defined, broadcast middleware 'revalidation' can't request to service.",

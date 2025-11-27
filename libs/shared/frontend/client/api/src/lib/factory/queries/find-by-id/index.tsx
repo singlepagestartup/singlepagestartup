@@ -36,6 +36,10 @@ export function query<T>(props: IQueryProps<T>): () => Promise<T | undefined> {
         return res;
       });
     } catch (error: any) {
+      if (error.message.includes("404 |")) {
+        throw error;
+      }
+
       toast.error(error.message);
 
       throw error;
