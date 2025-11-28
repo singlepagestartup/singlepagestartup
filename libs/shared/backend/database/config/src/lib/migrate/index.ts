@@ -1,9 +1,9 @@
 import { DATABASE_OPTIONS } from "@sps/shared-utils";
 import { Config as DrizzleConfig, defineConfig } from "drizzle-kit";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { pg } from "../postgres";
+import { getDrizzle } from "../postgres";
 import { migrate as drizzleMigrator } from "drizzle-orm/postgres-js/migrator";
 import { sql } from "drizzle-orm";
+import { logger } from "@sps/backend-utils";
 
 export class Config {
   out: string;
@@ -46,12 +46,14 @@ export class Config {
   async migrate() {
     try {
       if (Object.keys(DATABASE_OPTIONS).length < 2) {
-        throw new Error("Database credentials are missing");
+        throw new Error(
+          "Configuration error. Database credentials are missing",
+        );
       }
 
       let beforeMigrations = [];
 
-      const db = drizzle(pg, { schema: this.schema });
+      const db = getDrizzle({ schema: this.schema });
 
       try {
         beforeMigrations = await db.execute(
@@ -73,12 +75,12 @@ export class Config {
       );
 
       if (beforeMigrations.length !== afterMigrations.length) {
-        console.log("NEW_MIGRATIONS=true");
+        logger.info("NEW_MIGRATIONS=true");
       }
 
       process.exit(0);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       process.exit(1);
     }
   }

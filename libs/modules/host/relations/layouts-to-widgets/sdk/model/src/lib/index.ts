@@ -4,14 +4,20 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/host/relations/layouts-to-widgets/backend/repository/database";
-import { BACKEND_URL, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/host/layouts-to-widgets";
-export const variants = ["default", "primary"];
-export const host = BACKEND_URL;
+export const variants = ["default", "additional"];
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
-};
+} as NextRequestOptions;

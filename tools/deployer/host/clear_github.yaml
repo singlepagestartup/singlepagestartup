@@ -3,9 +3,9 @@
   hosts: all
   become: yes
   vars:
-    - github_token: "{{ GITHUB_TOKEN }}"
-    - github_repository: "{{ GITHUB_REPOSITORY }}"
-    - environment_type: "{{ ENVIRONMENT_TYPE }}"
+    github_token: "{{ GITHUB_TOKEN }}"
+    github_repository: "{{ GITHUB_REPOSITORY }}"
+    environment_type: "{{ ENVIRONMENT_TYPE }}"
   tasks:
     - name: Delete artifacts
       file:
@@ -45,11 +45,11 @@
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_SERVICE_URL' }}",
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_BACKEND_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_URL' }}",
             secret_scope: actions,
           }
 

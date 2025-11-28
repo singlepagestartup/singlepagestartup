@@ -2,23 +2,21 @@
 
 import { Component as ParentComponent } from "@sps/website-builder/models/feature/frontend/component";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
-import { Component as FeaturesToFileStorageModuleWidgets } from "@sps/website-builder/relations/features-to-file-storage-module-widgets/frontend/component";
+import { Component as FeaturesToFileStorageModuleWidgets } from "@sps/website-builder/relations/features-to-file-storage-module-files/frontend/component";
 import { Component as FeaturesToButtonsArrays } from "@sps/website-builder/relations/features-to-buttons-arrays/frontend/component";
 
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            widgetsToFeatures={({ data, hostUrl, isServer }) => {
+            widgetsToFeatures={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <WidgetsToFeatures
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,11 +41,7 @@ export function Component() {
                 />
               );
             }}
-            featuresToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            featuresToFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -56,7 +49,6 @@ export function Component() {
               return (
                 <FeaturesToFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -74,7 +66,7 @@ export function Component() {
                 />
               );
             }}
-            featuresToButtonsArrays={({ data, hostUrl, isServer }) => {
+            featuresToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -82,7 +74,6 @@ export function Component() {
               return (
                 <FeaturesToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

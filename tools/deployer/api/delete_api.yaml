@@ -1,0 +1,42 @@
+---
+- name: Delete api
+  hosts: all
+  become: yes
+  vars:
+    service_name: "{{ SERVICE_NAME }}"
+  tasks:
+    - name: Remove api stack
+      shell: docker stack rm {{ service_name }}
+      register: result
+      failed_when: result.rc != 0
+      ignore_errors: false
+
+    - name: Debug result of removing api stack
+      debug:
+        var: result
+
+    - name: Ensure api stack is removed
+      shell: docker stack ls | grep {{ service_name }}
+      register: check_api
+      failed_when: check_api.rc == 0
+      ignore_errors: true
+
+    - name: Delete env file
+      file:
+        path: "/home/code/{{ service_name }}.env"
+        state: absent
+
+    - name: Delete docker-compose file
+      file:
+        path: /home/code/docker-compose.api.yaml
+        state: absent
+
+    - name: Delete webhook info file
+      file:
+        path: /home/code/api_webhook.json
+        state: absent
+
+    - name: Delete webhook token file
+      file:
+        path: /home/code/api_webhook_token
+        state: absent

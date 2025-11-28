@@ -1,1 +1,0 @@
-export * from "@sps/<%= module_name_kebab_case %>/backend/schema/root";

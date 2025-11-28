@@ -38,12 +38,16 @@ jobs:
             "ANSIBLE_USER ${{ secrets.PREVIEW_ANSIBLE_USER }}"\
             "ANSIBLE_PASSWORD ${{ secrets.PREVIEW_ANSIBLE_PASSWORD }}"\
             "DOMAIN ${{ secrets.PREVIEW_DOMAIN }}"\
+            "CERTBOT_SERVICE_NAME ${{ secrets.PREVIEW_CERTBOT_SERVICE_NAME }}"\
+            "CERTBOT_EMAIL ${{ secrets.PREVIEW_CERTBOT_EMAIL }}"\
+            "USE_CLOUDFLARE_SSL ${{ secrets.PREVIEW_USE_CLOUDFLARE_SSL }}"\
             "ROOT_CLOUDFLARE_ACCOUNT_EMAIL ${{ secrets.PREVIEW_ROOT_CLOUDFLARE_ACCOUNT_EMAIL }}"\
             "ROOT_CLOUDFLARE_ACCOUNT_API_KEY ${{ secrets.PREVIEW_ROOT_CLOUDFLARE_ACCOUNT_API_KEY }}"\
             "ROOT_AWS_ACCESS_KEY_ID ${{ secrets.PREVIEW_ROOT_AWS_ACCESS_KEY_ID }}"\
             "ROOT_AWS_SECRET_ACCESS_KEY ${{ secrets.PREVIEW_ROOT_AWS_SECRET_ACCESS_KEY }}"\
             "AWS_S3_BUCKET_NAME ${{ secrets.PREVIEW_AWS_S3_BUCKET_NAME }}"\
             "AWS_REGION ${{ secrets.PREVIEW_AWS_REGION }}"\
+            "AWS_SES_FROM_EMAIL ${{ secrets.PREVIEW_AWS_SES_FROM_EMAIL }}"\
             "FILE_STORAGE_PROVIDER ${{ secrets.PREVIEW_FILE_STORAGE_PROVIDER }}"\
             "BLOB_READ_WRITE_TOKEN ${{ secrets.PREVIEW_BLOB_READ_WRITE_TOKEN }}"\
             "TRAEFIK_USERNAME ${{ secrets.PREVIEW_TRAEFIK_USERNAME }}"\
@@ -59,18 +63,23 @@ jobs:
             "HOST_SERVICE_NAME ${{ secrets.PREVIEW_HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_HOST_SERVICE_SUBDOMAIN }}"\
             "HOST_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_HOST_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "API_SERVICE_NAME ${{ secrets.PREVIEW_API_SERVICE_NAME }}"\
+            "API_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_API_SERVICE_SUBDOMAIN }}"\
+            "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "RBAC_JWT_SECRET ${{ secrets.PREVIEW_RBAC_JWT_SECRET }}"\
             "RBAC_SECRET_KEY ${{ secrets.PREVIEW_RBAC_SECRET_KEY }}"\
             "RBAC_COOKIE_SESSION_SECRET ${{ secrets.PREVIEW_RBAC_COOKIE_SESSION_SECRET }}"\
+            "TELEGRAM_SERVICE_NAME ${{ secrets.PREVIEW_TELEGRAM_SERVICE_NAME }}"\
+            "TELEGRAM_SERVICE_SUBDOMAIN ${{ secrets.PREVIEW_TELEGRAM_SERVICE_SUBDOMAIN }}"\
+            "TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "TELEGRAM_SERVICE_BOT_TOKEN ${{ secrets.PREVIEW_TELEGRAM_SERVICE_BOT_TOKEN }}"\
+            "TELEGRAM_SERVICE_BOT_USERNAME ${{ secrets.PREVIEW_TELEGRAM_SERVICE_BOT_USERNAME }}"\
             "DOCKER_HUB_USERNAME ${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}"\
             "DOCKER_HUB_PASSWORD ${{ secrets.PREVIEW_DOCKER_HUB_PASSWORD }}"\
             "DOCKER_HUB_URL ${{ secrets.PREVIEW_DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.PREVIEW_GH_TOKEN }}"\
             "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
-            "ROOT_SENTRY_API_KEY ${{ secrets.PREVIEW_ROOT_SENTRY_API_KEY }}"\
-            "ROOT_SENTRY_ORGANIZATION_SLUG ${{ secrets.PREVIEW_ROOT_SENTRY_ORGANIZATION_SLUG }}"\
-            "ROOT_SENTRY_TEAM_SLUG ${{ secrets.PREVIEW_ROOT_SENTRY_TEAM_SLUG }}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.PREVIEW_GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.PREVIEW_GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.PREVIEW_STRIPE_API_KEY }}"\
@@ -82,6 +91,11 @@ jobs:
             "PAYSELECTION_SITE_NAME ${{ secrets.PREVIEW_PAYSELECTION_SITE_NAME }}"\
             "PAYSELECTION_PUBLIC_KEY ${{ secrets.PREVIEW_PAYSELECTION_PUBLIC_KEY }}"\
             "PAYSELECTION_WEBHOOK_URL ${{ secrets.PREVIEW_PAYSELECTION_WEBHOOK_URL }}"\
+            "PAYKEEPER_BASE_URL ${{ secrets.PREVIEW_PAYKEEPER_BASE_URL }}"\
+            "PAYKEEPER_API_LOGIN ${{ secrets.PREVIEW_PAYKEEPER_API_LOGIN }}"\
+            "PAYKEEPER_API_PASSWORD ${{ secrets.PREVIEW_PAYKEEPER_API_PASSWORD }}"\
+            "PAYKEEPER_WEBHOOK_SECRET ${{ secrets.PREVIEW_PAYKEEPER_WEBHOOK_SECRET }}"\
+            "YANDEX_METRIKA_ID ${{ secrets.PREVIEW_YANDEX_METRIKA_ID }}"\
           )
 
           for secret in "${secrets[@]}"; do
@@ -99,12 +113,16 @@ jobs:
             "ANSIBLE_USER ${{ secrets.ANSIBLE_USER }}"\
             "ANSIBLE_PASSWORD ${{ secrets.ANSIBLE_PASSWORD }}"\
             "DOMAIN ${{ secrets.DOMAIN }}"\
+            "CERTBOT_SERVICE_NAME ${{ secrets.CERTBOT_SERVICE_NAME }}"\
+            "CERTBOT_EMAIL ${{ secrets.CERTBOT_EMAIL }}"\
+            "USE_CLOUDFLARE_SSL ${{ secrets.USE_CLOUDFLARE_SSL }}"\
             "ROOT_CLOUDFLARE_ACCOUNT_EMAIL ${{ secrets.ROOT_CLOUDFLARE_ACCOUNT_EMAIL }}"\
             "ROOT_CLOUDFLARE_ACCOUNT_API_KEY ${{ secrets.ROOT_CLOUDFLARE_ACCOUNT_API_KEY }}"\
             "ROOT_AWS_ACCESS_KEY_ID ${{ secrets.ROOT_AWS_ACCESS_KEY_ID }}"\
             "ROOT_AWS_SECRET_ACCESS_KEY ${{ secrets.ROOT_AWS_SECRET_ACCESS_KEY }}"\
             "AWS_S3_BUCKET_NAME ${{ secrets.AWS_S3_BUCKET_NAME }}"\
             "AWS_REGION ${{ secrets.AWS_REGION }}"\
+            "AWS_SES_FROM_EMAIL ${{ secrets.AWS_SES_FROM_EMAIL }}"\
             "FILE_STORAGE_PROVIDER ${{ secrets.FILE_STORAGE_PROVIDER }}"\
             "BLOB_READ_WRITE_TOKEN ${{ secrets.BLOB_READ_WRITE_TOKEN }}"\
             "TRAEFIK_USERNAME ${{ secrets.TRAEFIK_USERNAME }}"\
@@ -119,19 +137,24 @@ jobs:
             "REDIS_PASSWORD ${{ secrets.REDIS_PASSWORD }}"\
             "HOST_SERVICE_NAME ${{ secrets.HOST_SERVICE_NAME }}"\
             "HOST_SERVICE_SUBDOMAIN ${{ secrets.HOST_SERVICE_SUBDOMAIN }}"\
-            "HOST_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.HOST_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "API_SERVICE_NAME ${{ secrets.API_SERVICE_NAME }}"\
+            "API_SERVICE_SUBDOMAIN ${{ secrets.API_SERVICE_SUBDOMAIN }}"\
+            "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
             "RBAC_JWT_SECRET ${{ secrets.RBAC_JWT_SECRET }}"\
             "RBAC_SECRET_KEY ${{ secrets.RBAC_SECRET_KEY }}"\
             "RBAC_COOKIE_SESSION_SECRET ${{ secrets.RBAC_COOKIE_SESSION_SECRET }}"\
+            "TELEGRAM_SERVICE_NAME ${{ secrets.TELEGRAM_SERVICE_NAME }}"\
+            "TELEGRAM_SERVICE_SUBDOMAIN ${{ secrets.TELEGRAM_SERVICE_SUBDOMAIN }}"\
+            "TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME ${{ secrets.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"\
+            "TELEGRAM_SERVICE_BOT_TOKEN ${{ secrets.TELEGRAM_SERVICE_BOT_TOKEN }}"\
+            "TELEGRAM_SERVICE_BOT_USERNAME ${{ secrets.TELEGRAM_SERVICE_BOT_USERNAME }}"\
             "DOCKER_HUB_USERNAME ${{ secrets.DOCKER_HUB_USERNAME }}"\
             "DOCKER_HUB_PASSWORD ${{ secrets.DOCKER_HUB_PASSWORD }}"\
             "DOCKER_HUB_URL ${{ secrets.DOCKER_HUB_URL }}"\
             "DOCKER_HUB_LOGIN_USERNAME ${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"\
             "GITHUB_TOKEN ${{ secrets.GH_TOKEN }}"\
             "GITHUB_REPOSITORY ${{ github.repository_owner }}/${{ github.event.repository.name }}"\
-            "ROOT_SENTRY_API_KEY ${{ secrets.ROOT_SENTRY_API_KEY }}"\
-            "ROOT_SENTRY_ORGANIZATION_SLUG ${{ secrets.ROOT_SENTRY_ORGANIZATION_SLUG }}"\
-            "ROOT_SENTRY_TEAM_SLUG ${{ secrets.ROOT_SENTRY_TEAM_SLUG }}"\
             "GOOGLE_TAG_MANAGER_ID ${{ secrets.GOOGLE_TAG_MANAGER_ID }}"\
             "GOOGLE_ANALYTICS_ID ${{ secrets.GOOGLE_ANALYTICS_ID }}"\
             "STRIPE_API_KEY ${{ secrets.STRIPE_API_KEY }}"\
@@ -143,6 +166,11 @@ jobs:
             "PAYSELECTION_SITE_NAME ${{ secrets.PAYSELECTION_SITE_NAME }}"\
             "PAYSELECTION_PUBLIC_KEY ${{ secrets.PAYSELECTION_PUBLIC_KEY }}"\
             "PAYSELECTION_WEBHOOK_URL ${{ secrets.PAYSELECTION_WEBHOOK_URL }}"\
+            "PAYKEEPER_BASE_URL ${{ secrets.PAYKEEPER_BASE_URL }}"\
+            "PAYKEEPER_API_LOGIN ${{ secrets.PAYKEEPER_API_LOGIN }}"\
+            "PAYKEEPER_API_PASSWORD ${{ secrets.PAYKEEPER_API_PASSWORD }}"\
+            "PAYKEEPER_WEBHOOK_SECRET ${{ secrets.PAYKEEPER_WEBHOOK_SECRET }}"\
+            "YANDEX_METRIKA_ID ${{ secrets.YANDEX_METRIKA_ID }}"\
           )
 
           for secret in "${secrets[@]}"; do

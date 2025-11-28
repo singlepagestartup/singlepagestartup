@@ -6,7 +6,7 @@ ungrouped:
   vars:
     ansible_ssh_common_args: "-o UserKnownHostsFile=/dev/null"
   hosts:
-    $(get_env ANSIBLE_HOST):
-      ansible_user: $(get_env ANSIBLE_USER)
-      ansible_password: $(get_env ANSIBLE_PASSWORD)
+    $(get_env "$BASH_SOURCE" "ANSIBLE_HOST"):
+      ansible_user: $(get_env "$BASH_SOURCE" "ANSIBLE_USER")
+      ansible_password: $(get_env "$BASH_SOURCE" "ANSIBLE_PASSWORD")
 EOL

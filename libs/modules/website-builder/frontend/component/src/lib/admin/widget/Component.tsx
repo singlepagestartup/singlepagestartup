@@ -3,24 +3,22 @@
 import { Component as ParentComponent } from "@sps/website-builder/models/widget/frontend/component";
 import { Component as WidgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/frontend/component";
 import { Component as WidgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/frontend/component";
-import { Component as WidgetsToFileStorageWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-widgets/frontend/component";
+import { Component as WidgetsToFileStorageModuleFiles } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 import { Component as WidgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/frontend/component";
 
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            widgetsToButtonsArrays={({ data, hostUrl, isServer }) => {
+            widgetsToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -28,7 +26,6 @@ export function Component() {
               return (
                 <WidgetsToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -46,7 +43,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToFeatures={({ data, hostUrl, isServer }) => {
+            widgetsToFeatures={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -54,7 +51,6 @@ export function Component() {
               return (
                 <WidgetsToFeatures
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -72,19 +68,14 @@ export function Component() {
                 />
               );
             }}
-            widgetsToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            widgetsToFileStorageModuleFiles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <WidgetsToFileStorageWidgets
+                <WidgetsToFileStorageModuleFiles
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -102,7 +93,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToLogotypes={({ data, hostUrl, isServer }) => {
+            widgetsToLogotypes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -110,7 +101,6 @@ export function Component() {
               return (
                 <WidgetsToLogotypes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -128,7 +118,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToSliders={({ data, hostUrl, isServer }) => {
+            widgetsToSliders={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -136,7 +126,6 @@ export function Component() {
               return (
                 <WidgetsToSliders
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

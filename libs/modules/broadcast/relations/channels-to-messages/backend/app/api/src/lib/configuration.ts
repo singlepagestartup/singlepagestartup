@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "broadcast",
           name: "channels-to-messages",
           type: "relation",
+          filters: [
+            {
+              column: "channelId",
+              method: "eq",
+              value: (data) => {
+                const channelSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "channel" &&
+                    seed.type === "model" &&
+                    seed.module === "broadcast",
+                );
+
+                const channelEntity = channelSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.channelId,
+                );
+
+                return channelEntity?.new?.id || data.entity.dump.channelId;
+              },
+            },
+            {
+              column: "messageId",
+              method: "eq",
+              value: (data) => {
+                const messageSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "message" &&
+                    seed.type === "model" &&
+                    seed.module === "broadcast",
+                );
+
+                const messageEntity = messageSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.messageId,
+                );
+
+                return messageEntity?.new?.id || data.entity.dump.messageId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "channelId",

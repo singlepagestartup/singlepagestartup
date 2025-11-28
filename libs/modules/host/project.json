@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {},
+    "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
@@ -23,12 +23,10 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
-          {
-            "command": "nx run @sps/host:repository-generate"
-          },
           {
             "command": "nx run @sps/host:models:repository-migrate"
           },
@@ -84,6 +82,7 @@
 
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -104,6 +103,7 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -127,9 +127,10 @@
     },
     "models:layout:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/layout/backend/repository/database",
         "commands": [
           {
@@ -143,9 +144,10 @@
     },
     "models:metadata:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/metadata/backend/repository/database",
         "commands": [
           {
@@ -159,9 +161,10 @@
     },
     "models:page:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/page/backend/repository/database",
         "commands": [
           {
@@ -175,9 +178,10 @@
     },
     "models:widget:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/widget/backend/repository/database",
         "commands": [
           {
@@ -191,9 +195,10 @@
     },
     "models:layout:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/layout/backend/repository/database",
         "commands": [
           {
@@ -204,9 +209,10 @@
     },
     "models:metadata:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/metadata/backend/repository/database",
         "commands": [
           {
@@ -217,9 +223,10 @@
     },
     "models:page:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/page/backend/repository/database",
         "commands": [
           {
@@ -230,9 +237,10 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/models/widget/backend/repository/database",
         "commands": [
           {
@@ -243,9 +251,10 @@
     },
     "relations:layouts-to-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/layouts-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -259,9 +268,10 @@
     },
     "relations:pages-to-layouts:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-layouts/backend/repository/database",
         "commands": [
           {
@@ -275,9 +285,10 @@
     },
     "relations:pages-to-metadata:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-metadata/backend/repository/database",
         "commands": [
           {
@@ -291,9 +302,10 @@
     },
     "relations:pages-to-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -307,9 +319,10 @@
     },
     "relations:widgets-to-external-widgets:repository-generate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/widgets-to-external-widgets/backend/repository/database",
         "commands": [
           {
@@ -323,9 +336,10 @@
     },
     "relations:layouts-to-widgets:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/layouts-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -336,9 +350,10 @@
     },
     "relations:pages-to-layouts:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-layouts/backend/repository/database",
         "commands": [
           {
@@ -349,9 +364,10 @@
     },
     "relations:pages-to-metadata:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-metadata/backend/repository/database",
         "commands": [
           {
@@ -362,9 +378,10 @@
     },
     "relations:pages-to-widgets:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/pages-to-widgets/backend/repository/database",
         "commands": [
           {
@@ -375,9 +392,10 @@
     },
     "relations:widgets-to-external-widgets:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/host/relations/widgets-to-external-widgets/backend/repository/database",
         "commands": [
           {

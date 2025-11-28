@@ -8,4 +8,5 @@ export const DI = {
   IConfiguration: Symbol.for("IConfiguration"),
   IRepository: Symbol.for("IRepository"),
   IEntity: Symbol.for("IEntity"),
+  ITelegramBot: Symbol.for("ITelegramBot"),
 };

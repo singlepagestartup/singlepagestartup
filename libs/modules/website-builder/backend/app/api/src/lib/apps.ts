@@ -6,16 +6,16 @@ import { app as slide } from "@sps/website-builder/models/slide/backend/app/api"
 import { app as slider } from "@sps/website-builder/models/slider/backend/app/api";
 import { app as widget } from "@sps/website-builder/models/widget/backend/app/api";
 import { app as buttonsArraysToButtons } from "@sps/website-builder/relations/buttons-arrays-to-buttons/backend/app/api";
-import { app as buttonsToFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-widgets/backend/app/api";
+import { app as buttonsToFileStorageModuleWidgets } from "@sps/website-builder/relations/buttons-to-file-storage-module-files/backend/app/api";
 import { app as featuresToButtonsArrays } from "@sps/website-builder/relations/features-to-buttons-arrays/backend/app/api";
-import { app as featuresToFileStorageModuleFiles } from "@sps/website-builder/relations/features-to-file-storage-module-widgets/backend/app/api";
-import { app as logotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-widgets/backend/app/api";
+import { app as featuresToFileStorageModuleFiles } from "@sps/website-builder/relations/features-to-file-storage-module-files/backend/app/api";
+import { app as logotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/backend/app/api";
 import { app as slidersToSlides } from "@sps/website-builder/relations/sliders-to-slides/backend/app/api";
 import { app as slidesToButtonsArrays } from "@sps/website-builder/relations/slides-to-buttons-arrays/backend/app/api";
-import { app as slidesToFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-widgets/backend/app/api";
+import { app as slidesToFileStorageModuleWidgets } from "@sps/website-builder/relations/slides-to-file-storage-module-files/backend/app/api";
 import { app as widgetsToButtonsArrays } from "@sps/website-builder/relations/widgets-to-buttons-arrays/backend/app/api";
 import { app as widgetsToFeatures } from "@sps/website-builder/relations/widgets-to-features/backend/app/api";
-import { app as widgetsToFileStorageModuleWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-widgets/backend/app/api";
+import { app as widgetsToFileStorageModuleWidgets } from "@sps/website-builder/relations/widgets-to-file-storage-module-files/backend/app/api";
 import { app as widgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/backend/app/api";
 import { app as widgetsToSliders } from "@sps/website-builder/relations/widgets-to-sliders/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
@@ -81,7 +81,7 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/features-to-file-storage-module-widgets",
+      route: "/features-to-file-storage-module-files",
       app: featuresToFileStorageModuleFiles,
     });
     this.apps.push({
@@ -91,12 +91,12 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/widgets-to-file-storage-module-widgets",
+      route: "/widgets-to-file-storage-module-files",
       app: widgetsToFileStorageModuleWidgets,
     });
     this.apps.push({
       type: "relation",
-      route: "/logotypes-to-file-storage-module-widgets",
+      route: "/logotypes-to-file-storage-module-files",
       app: logotypesToFileStorageModuleWidgets,
     });
     this.apps.push({
@@ -116,12 +116,12 @@ export class Apps {
     });
     this.apps.push({
       type: "relation",
-      route: "/slides-to-file-storage-module-widgets",
+      route: "/slides-to-file-storage-module-files",
       app: slidesToFileStorageModuleWidgets,
     });
     this.apps.push({
       type: "relation",
-      route: "/buttons-to-file-storage-module-widgets",
+      route: "/buttons-to-file-storage-module-files",
       app: buttonsToFileStorageModuleWidgets,
     });
     this.apps.push({

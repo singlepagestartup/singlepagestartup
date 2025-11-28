@@ -1,6 +1,6 @@
 {
-  "id": "0e1a8180-5dfb-4903-afe6-209956eda95d",
-  "prevId": "0b617af2-86a2-4f4b-a53a-fa3fbbc36ca7",
+  "id": "410dccdd-994f-4442-9a09-814471eb8a0b",
+  "prevId": "afcb7e46-a6e7-48d9-8d38-73b1175239fc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -36,34 +36,62 @@
           "notNull": true,
           "default": "'default'"
         },
-        "title": {
-          "name": "title",
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'one_off'"
+        },
+        "sku": {
+          "name": "sku",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "title": {
+          "name": "title",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": "'{}'::jsonb"
         },
         "short_description": {
           "name": "short_description",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "''"
+          "default": "'{}'::jsonb"
+        },
+        "description": {
+          "name": "description",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "sps_ee_product_sku_unique": {
+          "name": "sps_ee_product_sku_unique",
+          "nullsNotDistinct": false,
+          "columns": ["sku"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

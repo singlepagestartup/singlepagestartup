@@ -3,9 +3,9 @@
   hosts: all
   become: yes
   vars:
-    - root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
-    - root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
-    - project_name: "{{ PROJECT_NAME }}"
+    root_aws_access_key_id: "{{ ROOT_AWS_ACCESS_KEY_ID }}"
+    root_aws_secret_access_key: "{{ ROOT_AWS_SECRET_ACCESS_KEY }}"
+    project_name: "{{ PROJECT_NAME }}"
   tasks:
     - name: Get ansible ansible_system_vendor
       set_fact:
@@ -17,8 +17,7 @@
           pip:
             name: "{{ item }}"
             state: present
-            executable: pip3
-            extra_args: --no-build-isolation --break-system-packages
+            virtualenv: /opt/venv
           loop:
             - boto
             - boto3
@@ -32,8 +31,7 @@
           pip:
             name: "{{ item }}"
             state: present
-            executable: pip3
-            extra_args: --no-build-isolation
+            virtualenv: /opt/venv
           loop:
             - boto
             - boto3

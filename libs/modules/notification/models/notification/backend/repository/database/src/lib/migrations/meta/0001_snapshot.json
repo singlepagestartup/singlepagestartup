@@ -1,6 +1,6 @@
 {
-  "id": "628f6c9f-0cca-4ad3-915a-4fa0a5fab00e",
-  "prevId": "dfd59ff8-5bc3-4450-bf41-5f0f7d709db1",
+  "id": "75442b35-11b4-4f5e-9206-751ca94b81c3",
+  "prevId": "85b76fe5-6ec1-47de-be41-157a1c72b0be",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -43,13 +43,6 @@
           "notNull": true,
           "default": "'new'"
         },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'text'"
-        },
         "method": {
           "name": "method",
           "type": "text",
@@ -63,20 +56,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "subtitle": {
-          "name": "subtitle",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "content": {
-          "name": "content",
+        "data": {
+          "name": "data",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -86,16 +67,42 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "send_after": {
+          "name": "send_after",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "source_system_id": {
+          "name": "source_system_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

@@ -1,9 +1,0 @@
-{
-  "id": "0ff8af09-ecc0-4a5b-b640-58d0cdae5e1c",
-  "createdAt": "2024-08-16T20:30:24.249Z",
-  "updatedAt": "2024-08-18T22:25:22.285Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "DELETE",
-  "path": "/api/rbac/subjects-to-ecommerce-module-orders/[rbac.subjects-to-ecommerce-module-orders.id]"
-}

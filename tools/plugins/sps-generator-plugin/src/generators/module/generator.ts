@@ -17,49 +17,49 @@ export async function moduleGenerator(
           {
             module: {
               name: moduleName,
-              models: [
-                {
-                  model: {
-                    name: "channel",
-                    frontend: {
-                      component: {
-                        variants: [
-                          {
-                            name: "default",
-                            level: "sps-lite",
-                          },
-                          {
-                            template: "admin-form",
-                            name: "admin-form",
-                            level: "sps-lite",
-                          },
-                          {
-                            template: "admin-select-input",
-                            name: "admin-select-input",
-                            level: "sps-lite",
-                          },
-                          {
-                            template: "admin-table",
-                            name: "admin-table",
-                            level: "sps-lite",
-                          },
-                          {
-                            template: "admin-table-row",
-                            name: "admin-table-row",
-                            level: "sps-lite",
-                          },
-                          { template: "find", name: "find", level: "sps-lite" },
-                          {
-                            template: "find-by-id",
-                            name: "find-by-id",
-                            level: "sps-lite",
-                          },
-                        ],
-                      },
-                    },
-                  },
-                },
-              ],
+              // models: [
+              //   {
+              //     model: {
+              //       name: "channel",
+              //       frontend: {
+              //         component: {
+              //           variants: [
+              //             {
+              //               name: "default",
+              //               level: "sps-lite",
+              //             },
+              //             {
+              //               template: "admin-form",
+              //               name: "admin-form",
+              //               level: "sps-lite",
+              //             },
+              //             {
+              //               template: "admin-select-input",
+              //               name: "admin-select-input",
+              //               level: "sps-lite",
+              //             },
+              //             {
+              //               template: "admin-table",
+              //               name: "admin-table",
+              //               level: "sps-lite",
+              //             },
+              //             {
+              //               template: "admin-table-row",
+              //               name: "admin-table-row",
+              //               level: "sps-lite",
+              //             },
+              //             { template: "find", name: "find", level: "sps-lite" },
+              //             {
+              //               template: "find-by-id",
+              //               name: "find-by-id",
+              //               level: "sps-lite",
+              //             },
+              //           ],
+              //         },
+              //       },
+              //     },
+              //   },
+              // ],
             },
           },
         ],

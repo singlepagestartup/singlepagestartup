@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "pages-to-metadata",
           type: "relation",
+          filters: [
+            {
+              column: "pageId",
+              method: "eq",
+              value: (data) => {
+                const pageSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "page" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const pageEntity = pageSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.pageId,
+                );
+
+                return pageEntity?.new?.id || data.entity.dump.pageId;
+              },
+            },
+            {
+              column: "metadataId",
+              method: "eq",
+              value: (data) => {
+                const metadataSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "metadata" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const metadataEntity = metadataSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.metadataId,
+                );
+
+                return metadataEntity?.new?.id || data.entity.dump.metadataId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "pageId",

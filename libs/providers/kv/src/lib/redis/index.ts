@@ -7,138 +7,105 @@ import {
   KV_HOST,
   hash,
 } from "@sps/shared-utils";
+import { logger } from "@sps/backend-utils";
 
 export class Provider implements IProvider {
-  prefix: string;
+  private static instance: Redis;
+  private static isShutdownHookSet = false;
+
   client: Redis;
 
-  constructor(props?: { prefix?: string }) {
-    this.prefix = props?.prefix ? `${props?.prefix}:` : "";
+  constructor() {
+    if (!Provider.instance) {
+      const connectionCredentials: RedisOptions = {
+        host: KV_HOST,
+        port: KV_PORT,
+        username: KV_USERNAME,
+        password: KV_PASSWORD,
+        maxRetriesPerRequest: 10,
+        retryStrategy: (times) => Math.min(times * 50, 2000),
+        reconnectOnError: (err) => {
+          logger.error("Redis error:", err);
+          return true;
+        },
+      };
 
-    const connectionParams = {
-      maxRetriesPerRequest: 10,
-      commandTimeout: 5000,
-    };
+      Provider.instance = new Redis(connectionCredentials);
+      this.client = Provider.instance;
 
-    const connectionCredentials: RedisOptions | undefined = {
-      host: KV_HOST,
-      port: KV_PORT,
-      username: KV_USERNAME,
-      password: KV_PASSWORD,
-      keyPrefix: this.prefix,
-      ...connectionParams,
-    };
+      if (!Provider.isShutdownHookSet) {
+        Provider.isShutdownHookSet = true;
 
-    if (!connectionCredentials) {
-      throw new Error("No connection credentials found");
-    }
+        const shutdown = async () => {
+          if (Provider.instance) {
+            await Provider.instance.quit();
+            logger.debug("Redis connection closed.");
+          }
+          process.exit(0);
+        };
 
-    this.client = new Redis(connectionCredentials);
-  }
+        process.removeAllListeners("SIGINT");
+        process.removeAllListeners("SIGTERM");
 
-  async disconnect(): Promise<void> {
-    if (["end", "close", "error"].includes(this.client.status)) {
-      return;
-    }
-
-    if (["connect", "ready"].includes(this.client.status)) {
-      await this.client.quit();
+        process.once("SIGINT", shutdown);
+        process.once("SIGTERM", shutdown);
+      }
+    } else {
+      this.client = Provider.instance;
     }
   }
 
   async connect(): Promise<void> {
-    if (this.client.status === "connect" || this.client.status === "ready") {
-      return;
-    }
-
-    if (this.client.status === "connecting") {
-      await new Promise((resolve: any) => {
-        this.client.on("connect", () => {
-          resolve();
-        });
-      });
-
-      return;
-    }
+    //
   }
 
   async hashKey(props: { key: string }): Promise<string> {
     return hash.sha256(props.key);
   }
 
-  async get(props: { key: string }): Promise<string | null> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    const value = await this.client.get(hasedKey);
-
-    await this.disconnect();
-
-    return value;
+  async get(props: { prefix: string; key: string }): Promise<string | null> {
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.get(`${props.prefix}:${hashedKey}`);
   }
 
   async set(props: {
+    prefix: string;
     key: string;
     value: string;
     options: { ttl: number };
   }): Promise<string | undefined | null> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    const value = await this.client.set(
-      hasedKey,
+    const hashedKey = await this.hashKey({ key: props.key });
+    return this.client.set(
+      `${props.prefix}:${hashedKey}`,
       props.value,
       "EX",
       props.options.ttl,
     );
-
-    await this.disconnect();
-
-    return value;
   }
 
-  async delByPrefix(): Promise<void> {
+  async delByPrefix(props: { prefix: string }): Promise<void> {
     let cursor = "0";
-    await this.connect();
-
     do {
-      const reply = await this.client.scan(cursor, "MATCH", `${this.prefix}*`);
-
-      cursor = reply[0];
-      const keys = reply[1];
-
-      for (const key of keys) {
-        const sanitizedKey = key.replace(this.prefix, "");
-
-        await this.client.del(sanitizedKey);
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        `${props.prefix}*`,
+        "COUNT",
+        100,
+      );
+      if (keys.length) {
+        await this.client.del(...keys);
       }
+      cursor = nextCursor;
     } while (cursor !== "0");
-
-    await this.disconnect();
-    return;
   }
 
-  async del(props: { key: string }): Promise<void> {
-    await this.connect();
-
-    const hasedKey = await this.hashKey({ key: props.key });
-
-    await this.client.del(hasedKey);
-
-    await this.disconnect();
-
-    return;
+  async del(props: { prefix: string; key: string }): Promise<void> {
+    const hashedKey = await this.hashKey({ key: props.key });
+    await this.client.del(`${props.prefix}:${hashedKey}`);
   }
 
   async flushall(): Promise<void> {
-    await this.connect();
-
     await this.client.flushall();
-
-    await this.disconnect();
-
-    return;
   }
 }

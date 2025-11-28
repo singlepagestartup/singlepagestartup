@@ -1,8 +1,11 @@
 export { actions } from "./lib/actions";
 export type {
-  ICreateActionProps,
-  IDeleteActionProps,
-  IFindActionProps,
-  IFindByIdActionProps,
-  IUpdateActionProps,
+  ICreateProps,
+  IDeleteProps,
+  IFindProps,
+  IFindByIdProps,
+  IUpdateProps,
+  IFindOrCreateProps,
+  IBulkCreateProps,
+  IBulkUpdateProps,
 } from "./lib/actions";

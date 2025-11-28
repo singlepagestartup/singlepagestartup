@@ -8,6 +8,7 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { IComponentProps } from "./interface";
 import { Component as Input } from "../input";
+import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentProps) {
   return (
@@ -16,15 +17,31 @@ export function Component(props: IComponentProps) {
       name={props.name}
       render={({ field }) => {
         return (
-          <FormItem className={props.className}>
+          <FormItem className={cn("w-full flex flex-col", props.className)}>
+            <Input
+              field={field}
+              {...props}
+              className={cn("order-2 w-full", props.inputClassName)}
+            />
             {props.label && props.type !== "checkbox" ? (
-              <FormLabel>{props.label}</FormLabel>
+              <div
+                className={cn(
+                  "flex items-center order-1 w-full",
+                  props.labelContainerClassName,
+                )}
+              >
+                <FormLabel className={cn("mb-2", props.labelClassName)}>
+                  {props.label}
+                </FormLabel>
+                {props.children}
+              </div>
             ) : null}
-            <Input field={field} {...props} className={props.inputClassName} />
             {props.label && props.type === "checkbox" ? (
-              <FormLabel>{props.label}</FormLabel>
+              <FormLabel className={cn("w-full order-3", props.labelClassName)}>
+                {props.label}
+              </FormLabel>
             ) : null}
-            <FormMessage />
+            <FormMessage className={cn("order-4", props.messageClassName)} />
           </FormItem>
         );
       }}

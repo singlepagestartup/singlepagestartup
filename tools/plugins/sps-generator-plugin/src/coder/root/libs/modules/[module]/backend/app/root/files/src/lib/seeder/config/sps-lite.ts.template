@@ -1,4 +1,0 @@
-import { IModuleSeedConfig } from "@sps/shared-backend-api";
-import { models } from "@sps/<%= module_name_kebab_case %>/backend/models/root";
-
-export const configModels: IModuleSeedConfig<typeof models>["models"] = [];

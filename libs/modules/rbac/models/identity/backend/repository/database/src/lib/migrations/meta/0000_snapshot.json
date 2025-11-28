@@ -1,5 +1,5 @@
 {
-  "id": "29e6cd02-d559-4486-94e1-4cd6e89d953a",
+  "id": "64ddcc09-f616-466f-9dc1-fc0e1ddf15cf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -37,7 +37,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'login_and_password'"
+          "default": "'email'"
         },
         "id": {
           "name": "id",
@@ -66,16 +66,29 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'default'"
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

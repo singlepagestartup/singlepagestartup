@@ -1,6 +1,6 @@
 {
-  "id": "44487095-8988-4c3f-9ebb-0148fb5e00c0",
-  "prevId": "0e1a8180-5dfb-4903-afe6-209956eda95d",
+  "id": "d358efe3-430d-4ede-84c0-91b9d2d2e99a",
+  "prevId": "410dccdd-994f-4442-9a09-814471eb8a0b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -43,34 +43,55 @@
           "notNull": true,
           "default": "'one_off'"
         },
-        "title": {
-          "name": "title",
+        "slug": {
+          "name": "slug",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "title": {
+          "name": "title",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": "'{}'::jsonb"
         },
         "short_description": {
           "name": "short_description",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "''"
+          "default": "'{}'::jsonb"
+        },
+        "description": {
+          "name": "description",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "sps_ee_product_slug_unique": {
+          "name": "sps_ee_product_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

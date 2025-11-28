@@ -64,14 +64,14 @@ Hi Name! You've successfully authenticated, but GitHub does not provide shell ac
 git remote set-url origin git@github.com:<name_of_repo_with_user>.git
 
 <!-- Example -->
-git remote add origin git@github.com:singlepagestartup/sps-lite.git
+git remote add origin git@github.com:singlepagestartup/singlepagestartup.git
 ```
 
 ```
 git remote -v
 <!-- Shoud has your repo -->
-origin  git@github.com:singlepagestartup/sps-lite.git (fetch)
-origin  git@github.com:singlepagestartup/sps-lite.git (push)
+origin  git@github.com:singlepagestartup/singlepagestartup.git (fetch)
+origin  git@github.com:singlepagestartup/singlepagestartup.git (push)
 
 git fetch origin
 <!-- You will get -->
@@ -85,7 +85,7 @@ git fetch origin
 
 git pull origin main
 <!-- You will get -->
-From github.com:singlepagestartup/sps-lite
+From github.com:singlepagestartup/singlepagestartup
  * branch                main       -> FETCH_HEAD
 hint: You have divergent branches and need to specify how to reconcile them.
 hint: You can do so by running one of the following commands sometime before

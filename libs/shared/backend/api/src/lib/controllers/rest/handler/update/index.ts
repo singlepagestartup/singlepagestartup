@@ -5,6 +5,7 @@ import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
 import { DI } from "../../../../di/constants";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -19,24 +20,15 @@ export class Handler<
       const body = await c.req.parseBody();
 
       if (!uuid) {
-        return c.json(
-          {
-            message: "Invalid id",
-          },
-          {
-            status: 400,
-          },
-        );
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       if (typeof body["data"] !== "string") {
-        return c.json(
-          {
-            message: "Invalid body",
-          },
-          {
-            status: 400,
-          },
+        throw new Error(
+          "Validation error. Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
         );
       }
 
@@ -48,9 +40,8 @@ export class Handler<
         data: entity,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

@@ -5,13 +5,8 @@
   "projectType": "library",
   "tags": [],
   "targets": {
+    "eslint:lint": {},
     "tsc:build": {},
-    "jest": {
-      "executor": "@nx/jest:jest",
-      "options": {
-        "jestConfig": "{projectRoot}/jest.config.ts",
-        "passWithNoTests": true
-      }
-    }
+    "jest:test": {}
   }
 }

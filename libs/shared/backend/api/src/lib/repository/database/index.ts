@@ -1,20 +1,21 @@
-import "reflect-metadata";
-import { PgTableWithColumns } from "drizzle-orm/pg-core";
-import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { inject, injectable } from "inversify";
-import { postgres } from "@sps/shared-backend-database-config";
+import { logger } from "@sps/backend-utils";
+import { getDrizzle } from "@sps/shared-backend-database-config";
 import * as methods from "drizzle-orm";
-import { FindServiceProps } from "../../services/interfaces";
-import { queryBuilder } from "../../query-builder";
-import { DI } from "../../di/constants";
-import { type IRepository } from "../interface";
+import { PgTableWithColumns } from "drizzle-orm/pg-core";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import fs from "fs/promises";
+import { inject, injectable } from "inversify";
+import "reflect-metadata";
+import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
 import {
   IDumpResult,
   ISeedResult,
   type IConfiguration,
 } from "../../configuration";
-import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
-import fs from "fs/promises";
+import { DI } from "../../di/constants";
+import { queryBuilder } from "../../query-builder";
+import { FindServiceProps } from "../../services/interfaces";
+import { type IRepository } from "../interface";
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -30,9 +31,8 @@ export class Database<T extends PgTableWithColumns<any>>
     const config = configuration.getConfiguration();
 
     this.Table = config.repository.Table;
-    this.db = drizzle(postgres, {
-      schema: config.repository.Table,
-    });
+
+    this.db = getDrizzle({ ...this.Table });
     this.insertSchema = config.repository.insertSchema;
     this.selectSchema = config.repository.selectSchema;
     this.configuration = config;
@@ -41,9 +41,9 @@ export class Database<T extends PgTableWithColumns<any>>
   async find(props?: FindServiceProps): Promise<T["$inferSelect"][]> {
     try {
       const filters = queryBuilder.filters({
-        table: this.Table,
-        filters: props?.params?.filters,
+        table: this.Table as T,
         queryFunctions: methods,
+        filters: props?.params?.filters,
       });
 
       if (props?.params?.orderBy?.and && !props.params.orderBy.and?.[0]) {
@@ -65,8 +65,9 @@ export class Database<T extends PgTableWithColumns<any>>
       const records = await this.db
         .select()
         .from(this.Table)
-        .where(filters)
-        .limit(props?.params?.limit as number)
+        .where(filters ? methods.and(...filters) : undefined)
+        .limit(Number(props?.params?.limit) as number)
+        .offset(Number(props?.params?.offset) as number)
         .orderBy(order)
         .execute();
 
@@ -77,7 +78,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -106,7 +107,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecords;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -120,11 +121,9 @@ export class Database<T extends PgTableWithColumns<any>>
     try {
       const [record] = await this.findByField(field, value);
 
-      // const sanitizedRecord = this.selectSchema.parse(record);
-
       return record;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -139,8 +138,6 @@ export class Database<T extends PgTableWithColumns<any>>
       const shape = this.insertSchema.shape;
 
       delete data.id;
-      delete data.createdAt;
-      delete data.updatedAt;
 
       Object.entries(shape).forEach(([key, value]) => {
         const isOptionalDate =
@@ -152,8 +149,18 @@ export class Database<T extends PgTableWithColumns<any>>
           data[key] = new Date(data[key]);
         }
 
-        if (["updatedAt", "createdAt"].includes(key)) {
-          data[key] = new Date();
+        if (
+          [
+            "expiresAt",
+            "date",
+            "datetime",
+            "sendAfter",
+            "updatedAt",
+            "createdAt",
+          ].includes(key) &&
+          typeof data[key] === "string"
+        ) {
+          data[key] = new Date(data[key]);
         }
       });
 
@@ -169,8 +176,6 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecord;
     } catch (error: any) {
-      console.error(error);
-
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
       }
@@ -201,7 +206,7 @@ export class Database<T extends PgTableWithColumns<any>>
         }
       }
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -231,13 +236,24 @@ export class Database<T extends PgTableWithColumns<any>>
           data[key] = new Date(data[key]);
         }
 
-        if (["updatedAt", "createdAt"].includes(key)) {
-          data[key] = new Date();
+        if (
+          [
+            "expiresAt",
+            "date",
+            "datetime",
+            "sendAfter",
+            "createdAt",
+            "updatedAt",
+          ].includes(key) &&
+          typeof data[key] === "string"
+        ) {
+          data[key] = new Date(data[key]);
         }
       });
 
-      delete data.createdAt;
-      data.updatedAt = new Date();
+      if (!data.updatedAt) {
+        data.updatedAt = new Date();
+      }
 
       const plainData: T["$inferInsert"] = this.insertSchema.parse(data);
 
@@ -252,7 +268,7 @@ export class Database<T extends PgTableWithColumns<any>>
 
       return sanitizedRecord;
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
 
       if (error instanceof ZodError) {
         throw new Error(JSON.stringify({ zodError: error.issues }));
@@ -298,6 +314,12 @@ export class Database<T extends PgTableWithColumns<any>>
   }
 
   async seed(props?: { seeds: ISeedResult[] }): Promise<ISeedResult> {
+    console.log(
+      "Seeding. Module:",
+      this.configuration.repository.seed.module,
+      "Name:",
+      this.configuration.repository.seed.name,
+    );
     const result: ISeedResult = {
       module: this.configuration.repository.seed.module,
       name: this.configuration.repository.seed.name,
@@ -333,14 +355,6 @@ export class Database<T extends PgTableWithColumns<any>>
 
     const dumpEntities = await getDumpEntities();
     const dbEntities = await this.find();
-
-    if (dbEntities.length) {
-      if (!this.configuration.repository.seed.filters) {
-        for (const dbEntity of dbEntities) {
-          await this.deleteFirstByField("id", dbEntity.id);
-        }
-      }
-    }
 
     const insertedEntities: ISeedResult["seeds"] = [];
 
@@ -389,7 +403,11 @@ export class Database<T extends PgTableWithColumns<any>>
         },
       );
 
-      if (filledFilters) {
+      /**
+       * For temporary purposes, old projects doesn't have slug in widgets, that throws error
+       * Slug will be required for widgets and website-builder models
+       */
+      if (filledFilters && filledFilters.every((f) => f.value)) {
         const filteredEntities = await this.find({
           params: {
             filters: {
@@ -399,13 +417,15 @@ export class Database<T extends PgTableWithColumns<any>>
         });
 
         if (filteredEntities.length) {
-          if (filteredEntities.length > 1) {
-            throw new Error(
-              "You need to pass a filter that returns more than one entity",
-            );
-          }
-
           for (const filteredEntity of filteredEntities) {
+            if (
+              filteredEntity.updatedAt &&
+              new Date(filteredEntity.updatedAt) >
+                new Date(transformedEntity.updatedAt)
+            ) {
+              continue;
+            }
+
             delete transformedEntity.id;
 
             const updatedEntity = await this.updateFirstByField(

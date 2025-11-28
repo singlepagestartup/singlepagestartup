@@ -5,6 +5,13 @@
     "types": ["node"],
     "composite": true
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/coder/root/libs/modules/[module]/models/[model]/backend/app/api/files/src/lib/controller/index.ts.template",
+    "src/coder/root/libs/modules/[module]/models/[model]/backend/app/api/files/src/lib/bootstrap.ts.template",
+    "src/coder/root/libs/modules/[module]/models/[model]/backend/app/api/files/src/lib/app.ts.template",
+    "src/coder/root/libs/modules/[module]/models/[model]/backend/repository/database/files/src/lib/migrate.ts.template",
+    "src/coder/root/libs/modules/[module]/models/[model]/backend/repository/database/files/src/lib/config.ts.template"
+  ],
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

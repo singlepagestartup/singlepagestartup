@@ -26,6 +26,46 @@ export class Configuration extends ParentConfiguration {
           module: "website-builder",
           name: "slides-to-buttons-arrays",
           type: "relation",
+          filters: [
+            {
+              column: "slideId",
+              method: "eq",
+              value: (data) => {
+                const slideSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "slide" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const slideEntity = slideSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.slideId,
+                );
+
+                return slideEntity?.new?.id || data.entity.dump.slideId;
+              },
+            },
+            {
+              column: "buttonsArrayId",
+              method: "eq",
+              value: (data) => {
+                const buttonsArraySeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "buttons-array" &&
+                    seed.type === "model" &&
+                    seed.module === "website-builder",
+                );
+
+                const buttonsArrayEntity = buttonsArraySeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.buttonsArrayId,
+                );
+
+                return (
+                  buttonsArrayEntity?.new?.id || data.entity.dump.buttonsArrayId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "slideId",

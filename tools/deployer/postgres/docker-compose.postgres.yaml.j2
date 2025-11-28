@@ -2,9 +2,9 @@ version: "3.7"
 
 services:
   postgres:
-    image: postgres
+    image: postgres:17
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - /home/code/postgres_data:/var/lib/postgresql/data
     networks:
       - traefik_overlay
     environment:

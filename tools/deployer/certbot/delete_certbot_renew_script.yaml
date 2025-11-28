@@ -1,0 +1,15 @@
+---
+- name: Remove certbot_renew_ssl_and_update_traefik.sh and crontab entry
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove certbot_renew_ssl_and_update_traefik.sh script
+      file:
+        path: /home/code/certbot_renew_ssl_and_update_traefik.sh
+        state: absent
+
+    - name: Remove crontab entry for certbot_renew_ssl_and_update_traefik.sh
+      cron:
+        name: "Renew Let's Encrypt certificates and reload Traefik"
+        state: absent
+        user: root

@@ -1,16 +1,23 @@
-import { IComponentProps as IFindByIdComponentProps } from "./find-by-id";
-import { IComponentProps as IFindComponentProps } from "./find";
-import { IComponentProps as IAdminTableRowComponentProps } from "./admin-table-row";
-import { IComponentProps as IAdminTableComponentProps } from "./admin-table";
-import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-select-input";
-import { IComponentProps as IAdminFormComponentProps } from "./admin-form";
-import { IComponentProps as IDefaultComponentProps } from "./default";
+import { IComponentProps as ICartDefaultComponentProps } from "./cart/default/interface";
+import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
+import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
+import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
+import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as IOverviewDefaultComponentProps } from "./overview-default/interface";
+import { IComponentProps as IPriceDefaultComponentProps } from "./price-default/interface";
+import { IComponentProps as ICurrencyToggleGroupDefaultComponentProps } from "./currency/toggle-group-default/interface";
+
 export type IComponentProps =
-  | IFindByIdComponentProps
+  | ICartDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps
   | IAdminSelectInputComponentProps
   | IAdminFormComponentProps
   | IDefaultComponentProps
+  | IOverviewDefaultComponentProps
+  | IPriceDefaultComponentProps
+  | ICurrencyToggleGroupDefaultComponentProps
   | never;

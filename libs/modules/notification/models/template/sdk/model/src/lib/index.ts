@@ -4,14 +4,30 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/notification/models/template/backend/repository/database";
-import { BACKEND_URL, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/notification/templates";
-export const variants = ["default", "order-status-changed-to-paid"];
-export const host = BACKEND_URL;
+export const variants = [
+  "default",
+  "generate-email-ecommerce-order-status-changed-default",
+  "generate-telegram-ecommerce-order-status-changed-default",
+  "generate-telegram-ecommerce-order-status-changed-admin",
+  "reset-password",
+  "generate-email-agent-result-admin",
+  "generate-email-crm-form-request-created-admin",
+  "generate-telegram-crm-form-request-created-admin",
+  "generate-telegram-social-message",
+];
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
-};
+} as NextRequestOptions;

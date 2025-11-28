@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "pages-to-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "pageId",
+              method: "eq",
+              value: (data) => {
+                const pageSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "page" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const pageEntity = pageSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.pageId,
+                );
+
+                return pageEntity?.new?.id || data.entity.dump.pageId;
+              },
+            },
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "pageId",

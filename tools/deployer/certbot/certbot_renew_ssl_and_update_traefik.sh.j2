@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "[INFO] Renewing Let's Encrypt certificates..."
+certbot renew --webroot -w /home/code/certbot --quiet
+
+echo "[INFO] Copying updated certificates to /certs..."
+
+{% for service in fqdn_services %}
+cp /etc/letsencrypt/live/{{ service.fqdn }}/fullchain.pem /home/code/certs/{{ service.fqdn }}.crt
+cp /etc/letsencrypt/live/{{ service.fqdn }}/privkey.pem /home/code/certs/{{ service.fqdn }}.key
+{% endfor %}
+
+echo "[INFO] Restarting Traefik to reload certs..."
+docker service update --force traefik_traefik

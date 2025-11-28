@@ -55,14 +55,64 @@ export interface IFactoryProps<T> {
 
 type SetRequestId = (requestId: string) => void;
 
+const activeSubscriptions = new Set<string>();
+
+export function subscription(route: string, queryClient: QueryClient) {
+  if (activeSubscriptions.has(route)) {
+    return;
+  }
+
+  activeSubscriptions.add(route);
+
+  const triggeredActions: IAction[] = [];
+  const mountTime = Date.now();
+
+  globalActionsStore.subscribe((state) => {
+    const revalidationMessages =
+      state.getActionsFromStoreByName("revalidation");
+
+    const messages = revalidationMessages || [];
+    for (const message of messages) {
+      if (new Date(message.result["createdAt"]).getTime() > mountTime) {
+        const isTriggered = triggeredActions.some(
+          (triggeredAction) =>
+            JSON.stringify(triggeredAction) === JSON.stringify(message),
+        );
+
+        if (!isTriggered) {
+          triggeredActions.push(message);
+
+          if (
+            message.result?.["payload"] &&
+            typeof message.result?.["payload"] === "string" &&
+            (route.includes(message.result["payload"]) ||
+              message.result["payload"].includes(route))
+          ) {
+            setTimeout(() => {
+              queryClient.invalidateQueries({
+                queryKey: [route],
+              });
+            }, 1000);
+          }
+        }
+      }
+    }
+  });
+}
+
 export function factory<T>(factoryProps: IFactoryProps<T>) {
   const api = {
     findById: (props: {
-      id?: IFindByIdQueryProps<T>["id"];
+      id: IFindByIdQueryProps<T>["id"];
       params?: IFindByIdQueryProps<T>["params"];
       options?: IFindByIdQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(
+        `${factoryProps.route}/${props.id}`,
+        factoryProps.queryClient,
+      );
+
       return useQuery<T | undefined>({
         queryKey: props.id
           ? [
@@ -77,12 +127,10 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
         queryFn: props.id
           ? findByIdQuery({
               ...factoryProps,
-              id: props.id,
               cb: (data) => {
                 addToGlobalStore({
                   name: factoryProps.route,
                   type: "query",
-                  result: data,
                   props,
                 });
               },
@@ -102,6 +150,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
       return useQuery<T[] | undefined>({
         queryKey: [
           `${factoryProps.route}`,
@@ -117,7 +166,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
             addToGlobalStore({
               name: factoryProps.route,
               type: "query",
-              result: data,
               props,
             });
           },
@@ -136,6 +184,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, ICreateMutationFunctionProps>({
         mutationKey: [`${factoryProps.route}`],
         mutationFn: (mutationFunctionProps: ICreateMutationFunctionProps) => {
@@ -145,7 +195,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
                 setRequestId: props?.setRequestId,
               });
@@ -157,12 +206,14 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       });
     },
     update: (props?: {
-      id?: IUpdateMutationProps<T>["id"];
+      id: IUpdateMutationProps<T>["id"];
       params?: IUpdateMutationProps<T>["params"];
       options?: IUpdateMutationProps<T>["options"];
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
+      subscription(`${factoryProps.route}`, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, IUpdateMutationFunctionProps>({
         mutationKey: props?.id
           ? [`${factoryProps.route}/${props.id}`]
@@ -174,7 +225,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
                 setRequestId: props?.setRequestId,
               });
@@ -191,6 +241,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IDeleteMutationProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
+      subscription(factoryProps.route, factoryProps.queryClient);
+
       return useMutation<T, DefaultError, IDeleteMutationFunctionProps>({
         mutationKey: props?.id
           ? [`${factoryProps.route}/${props.id}`]
@@ -202,7 +254,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
               addToGlobalStore({
                 name: factoryProps.route,
                 type: "mutation",
-                result: data,
                 props,
               });
             },
@@ -214,62 +265,6 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
     },
   };
 
-  function subscription() {
-    const triggeredActions: IAction[] = [];
-    let revalidationChannel: any;
-    const mountTime = Date.now();
-
-    globalActionsStore.subscribe((state) => {
-      const broadcastChannels = state.getActionsFromStoreByName(
-        "/api/broadcast/channels",
-      );
-
-      broadcastChannels?.forEach((channel) => {
-        if (revalidationChannel) {
-          return;
-        }
-
-        if (channel.result?.["title"] === "revalidation") {
-          revalidationChannel = channel.result;
-        }
-      });
-
-      const broadcastMessages = state.getActionsFromStoreByName(
-        "/api/broadcast/messages",
-      );
-
-      broadcastMessages
-        ?.filter((message) => {
-          return new Date(message.result["createdAt"]).getTime() > mountTime;
-        })
-        .forEach((message) => {
-          if (!revalidationChannel) {
-            return;
-          }
-
-          const isTriggered = triggeredActions.some((triggeredAction) => {
-            return JSON.stringify(triggeredAction) === JSON.stringify(message);
-          });
-
-          if (!isTriggered) {
-            triggeredActions.push(message);
-            if (
-              message.result?.["payload"] &&
-              typeof message.result?.["payload"] === "string"
-            ) {
-              if (message.result["payload"].includes(factoryProps.route)) {
-                factoryProps.queryClient.invalidateQueries({
-                  queryKey: [message.result["payload"]],
-                });
-              }
-            }
-          }
-        });
-    });
-  }
-
-  subscription();
-
   return api;
 }
 
@@ -277,7 +272,6 @@ function addToGlobalStore(props: {
   name: string;
   type: string;
   props: any;
-  result: any;
   setRequestId?: SetRequestId;
 }) {
   const requestId = createId();
@@ -292,7 +286,6 @@ function addToGlobalStore(props: {
     type: props.type,
     name: props.name,
     props: props.props,
-    result: props.result,
     timestamp: Date.now(),
     requestId,
   });

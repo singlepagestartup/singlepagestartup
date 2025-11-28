@@ -1,30 +1,27 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/crm/models/widget/frontend/component";
-import { Component as WidgetsToRequestBlocks } from "@sps/crm/relations/widgets-to-request-blocks/frontend/component";
+import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
 
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            widgetsToRequestBlocks={({ data, hostUrl, isServer }) => {
+            widgetsToForms={({ data, isServer }) => {
               if (!data) {
                 return;
               }
 
               return (
-                <WidgetsToRequestBlocks
+                <WidgetsToForms
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

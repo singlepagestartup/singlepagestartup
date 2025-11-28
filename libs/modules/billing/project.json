@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {},
+    "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
@@ -23,12 +23,10 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
-          {
-            "command": "nx run @sps/billing:repository-generate"
-          },
           {
             "command": "nx run @sps/billing:models:repository-migrate"
           },
@@ -75,6 +73,7 @@
 
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -95,6 +94,7 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -124,9 +124,10 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/widget/backend/repository/database",
         "commands": [
           {
@@ -152,9 +153,10 @@
     },
     "models:currency:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/currency/backend/repository/database",
         "commands": [
           {
@@ -180,9 +182,10 @@
     },
     "relations:payment-intents-to-invoices:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/relations/payment-intents-to-invoices/backend/repository/database",
         "commands": [
           {
@@ -208,9 +211,10 @@
     },
     "relations:payment-intents-to-currencies:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/relations/payment-intents-to-currencies/backend/repository/database",
         "commands": [
           {
@@ -236,9 +240,10 @@
     },
     "models:payment-intent:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/payment-intent/backend/repository/database",
         "commands": [
           {
@@ -264,9 +269,10 @@
     },
     "models:invoice:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/billing/models/invoice/backend/repository/database",
         "commands": [
           {

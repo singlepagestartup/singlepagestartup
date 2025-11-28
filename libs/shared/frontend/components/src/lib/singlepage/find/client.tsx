@@ -23,7 +23,7 @@ export function Component<
     return <></>;
   }
 
-  if (props.children && data) {
+  if (props.children) {
     return props.children({ data });
   }
 

@@ -53,4 +53,58 @@ describe("build-tree-path", () => {
       ["school", "courses", "d2b6d007-c7dd-42f7-a358-d4c0bd3966e3", "edit"],
     ]);
   });
+
+  it("should return arrays with all variants", () => {
+    const segments = [
+      "subjects",
+      [
+        "aaaaaa-aaaaaa-aaaaaa-aaaaaa-aaaaaa",
+        "bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb",
+      ],
+      "ecommerce",
+      "products",
+      [
+        "ccccccc-ccccccc-ccccccc-ccccccc-ccccccc",
+        "ddddddd-ddddddd-ddddddd-ddddddd-ddddddd",
+      ],
+      "one-step-checkout",
+    ];
+
+    const result = buildTreePath({ segments });
+
+    expect(result).toEqual([
+      [
+        "subjects",
+        "aaaaaa-aaaaaa-aaaaaa-aaaaaa-aaaaaa",
+        "ecommerce",
+        "products",
+        "ccccccc-ccccccc-ccccccc-ccccccc-ccccccc",
+        "one-step-checkout",
+      ],
+      [
+        "subjects",
+        "aaaaaa-aaaaaa-aaaaaa-aaaaaa-aaaaaa",
+        "ecommerce",
+        "products",
+        "ddddddd-ddddddd-ddddddd-ddddddd-ddddddd",
+        "one-step-checkout",
+      ],
+      [
+        "subjects",
+        "bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb",
+        "ecommerce",
+        "products",
+        "ccccccc-ccccccc-ccccccc-ccccccc-ccccccc",
+        "one-step-checkout",
+      ],
+      [
+        "subjects",
+        "bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb-bbbbbbb",
+        "ecommerce",
+        "products",
+        "ddddddd-ddddddd-ddddddd-ddddddd-ddddddd",
+        "one-step-checkout",
+      ],
+    ]);
+  });
 });

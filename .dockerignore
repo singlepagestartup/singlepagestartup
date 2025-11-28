@@ -70,8 +70,3 @@ apps/host/*.pem
 apps/host/*.pem.base64
 apps/host/*-wallet.txt
 apps/host/.env.cloudflare
-
-############################
-# host / Sentry
-############################
-apps/host/.sentryclirc

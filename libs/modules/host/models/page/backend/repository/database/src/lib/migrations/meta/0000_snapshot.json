@@ -1,5 +1,5 @@
 {
-  "id": "c6dbd0b7-b7f9-4840-933b-bd253cedb52f",
+  "id": "6a77c671-5362-4572-893b-d771b33a48ce",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -57,17 +57,30 @@
           "notNull": true,
           "default": "'default'"
         },
-        "order_index": {
-          "name": "order_index",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "class_name": {
           "name": "class_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en'"
+        },
+        "admin_title": {
+          "name": "admin_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -78,12 +91,24 @@
           "name": "sps_h_page_url_unique",
           "nullsNotDistinct": false,
           "columns": ["url"]
+        },
+        "sps_h_page_slug_unique": {
+          "name": "sps_h_page_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

@@ -1,5 +1,5 @@
 {
-  "id": "6794a5f6-bd98-4f18-a511-78ed61d0b666",
+  "id": "b5e243e1-f51b-466e-8bf8-0052547e55e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -48,21 +48,40 @@
           "primaryKey": false,
           "notNull": false
         },
-        "order_index": {
-          "name": "order_index",
-          "type": "integer",
+        "admin_title": {
+          "name": "admin_title",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "sps_h_widget_slug_unique": {
+          "name": "sps_h_widget_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

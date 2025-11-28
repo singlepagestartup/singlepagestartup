@@ -7,17 +7,15 @@ import { Component as PagesToLayouts } from "@sps/host/relations/pages-to-layout
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            layoutsToWidgets={({ data, hostUrl, isServer }) => {
+            layoutsToWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -25,7 +23,6 @@ export function Component() {
               return (
                 <LayoutsToWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -43,7 +40,7 @@ export function Component() {
                 />
               );
             }}
-            pagesToLayouts={({ data, hostUrl, isServer }) => {
+            pagesToLayouts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -51,7 +48,6 @@ export function Component() {
               return (
                 <PagesToLayouts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

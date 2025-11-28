@@ -2,8 +2,13 @@
 - name: Install Bun
   hosts: all
   become: true
-
   tasks:
+    - name: Install required packages
+      apt:
+        name: unzip
+        state: present
+        update_cache: yes
+
     - name: Download and install Bun
       shell: |
         curl -fsSL https://bun.sh/install | bash

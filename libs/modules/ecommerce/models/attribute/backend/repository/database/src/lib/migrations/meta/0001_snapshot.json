@@ -1,6 +1,6 @@
 {
-  "id": "09287d37-50d9-4a2f-ac5e-aed2ef54696a",
-  "prevId": "1a10d067-9a87-4af4-a86e-91b5c7ebb38f",
+  "id": "6e75a28e-0528-45f9-aaf9-e16ef4984021",
+  "prevId": "b3e337cd-61b6-4de1-bb0b-587bf218b9f9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -36,12 +36,6 @@
           "notNull": true,
           "default": "'default'"
         },
-        "string": {
-          "name": "string",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "number": {
           "name": "number",
           "type": "numeric",
@@ -56,7 +50,7 @@
         },
         "date": {
           "name": "date",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
@@ -65,16 +59,30 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
+        },
+        "string": {
+          "name": "string",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

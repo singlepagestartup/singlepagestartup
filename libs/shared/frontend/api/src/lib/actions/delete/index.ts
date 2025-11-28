@@ -5,7 +5,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   route: string;
   host: string;
@@ -17,7 +17,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export async function action<T>(props: IActionProps): Promise<T> {
+export type IResult<T> = T;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const { id, params, route, options, host } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
@@ -38,11 +40,11 @@ export async function action<T>(props: IActionProps): Promise<T> {
     requestOptions,
   );
 
-  const json = await responsePipe<{ data: T }>({
+  const json = await responsePipe<{ data: IResult<T> }>({
     res,
   });
 
-  const transformedData = transformResponseItem<T>(json);
+  const transformedData = transformResponseItem<IResult<T>>(json);
 
   return transformedData;
 }

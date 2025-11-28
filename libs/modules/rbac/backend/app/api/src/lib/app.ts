@@ -25,11 +25,6 @@ export class App implements IDefaultApp<Env> {
     const apps = new Apps();
     this.apps = apps;
 
-    // this.hono.use(async (c: Context, next: Next) => {
-    //   const path = c.req.path;
-    //   console.log("RBAC Middleware", path);
-    //   await next();
-    // });
     this.useRoutes();
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
   }
@@ -40,7 +35,7 @@ export class App implements IDefaultApp<Env> {
     await Promise.all(
       this.apps.apps.map(async (app) => {
         if (app.type === props?.type) {
-          const appDumps = await app.app.dump(props);
+          const appDumps = await app.app.dump();
 
           dumps.push(appDumps);
         }
@@ -68,7 +63,7 @@ export class App implements IDefaultApp<Env> {
 
   useRoutes() {
     this.apps.apps.forEach((app) => {
-      this.hono.mount(app.route, app.app.hono.fetch);
+      this.hono.route(app.route, app.app.hono);
     });
   }
 }

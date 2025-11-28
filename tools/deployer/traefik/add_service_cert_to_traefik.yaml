@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars:
-    - service_url: "{{ SERVICE_URL }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
     - name: Copy yaml_editor.py
       copy:

@@ -26,6 +26,47 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "widgets-to-external-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+            {
+              column: "externalWidgetId",
+              method: "eq",
+              value: (data) => {
+                const externalWidgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === data.entity.dump.externalModule,
+                );
+
+                const externalWidgetEntity = externalWidgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.externalWidgetId,
+                );
+
+                return (
+                  externalWidgetEntity?.new?.id ||
+                  data.entity.dump.externalWidgetId
+                );
+              },
+            },
+          ],
           transformers: [
             {
               field: "widgetId",
@@ -37,9 +78,9 @@ export class Configuration extends ParentConfiguration {
                       seed.type === "model" &&
                       seed.module === "host",
                   )
-                  ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.widgetId,
-                  );
+                  ?.seeds?.filter((seed) => {
+                    return seed.dump.id === data.entity.dump.widgetId;
+                  });
 
                 return relationEntites?.[0].new.id;
               },
@@ -54,10 +95,9 @@ export class Configuration extends ParentConfiguration {
                       seed.type === "model" &&
                       seed.module === data.entity.dump.externalModule,
                   )
-                  ?.seeds?.filter(
-                    (seed) =>
-                      seed.dump.id === data.entity.dump.externalWidgetId,
-                  );
+                  ?.seeds?.filter((seed) => {
+                    return seed.dump.id === data.entity.dump.externalWidgetId;
+                  });
 
                 return relationEntites?.[0].new.id;
               },

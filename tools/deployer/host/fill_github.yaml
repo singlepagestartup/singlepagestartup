@@ -3,11 +3,12 @@
   hosts: all
   become: yes
   vars:
-    - github_token: "{{ GITHUB_TOKEN }}"
-    - github_repository: "{{ GITHUB_REPOSITORY }}"
-    - portainer_url: "{{ PORTAINER_URL }}"
-    - service_url: "{{ SERVICE_URL }}"
-    - environment_type: "{{ ENVIRONMENT_TYPE }}"
+    github_token: "{{ GITHUB_TOKEN }}"
+    github_repository: "{{ GITHUB_REPOSITORY }}"
+    portainer_url: "{{ PORTAINER_URL }}"
+    service_url: "{{ SERVICE_URL }}"
+    environment_type: "{{ ENVIRONMENT_TYPE }}"
+    api_service_url: "{{ API_SERVICE_URL }}"
   tasks:
     - name: Delete artifacts
       file:
@@ -53,13 +54,23 @@
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_HOST_SERVICE_URL' }}",
             secret_content: "https://{{ service_url }}",
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_BACKEND_URL' }}",
-            secret_content: "https://{{ service_url }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_URL' }}",
+            secret_content: "https://{{ api_service_url }}",
+            secret_scope: actions,
+          }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'API_SERVICE_URL' }}",
+            secret_content: "http://api:4000",
+            secret_scope: actions,
+          }
+        - {
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'NEXT_PUBLIC_API_SERVICE_WS_URL' }}",
+            secret_content: "wss://{{ api_service_url }}",
             secret_scope: actions,
           }
 

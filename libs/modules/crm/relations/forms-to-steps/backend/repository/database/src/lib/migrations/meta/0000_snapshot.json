@@ -1,0 +1,112 @@
+{
+  "id": "ef008eed-ed40-4946-9d52-660a043e3232",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cm_fs_to_ss_kqx": {
+      "name": "cm_fs_to_ss_kqx",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fm_id": {
+          "name": "fm_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sp_id": {
+          "name": "sp_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cm_fs_to_ss_kqx_fm_id_sps_cm_form_id_fk": {
+          "name": "cm_fs_to_ss_kqx_fm_id_sps_cm_form_id_fk",
+          "tableFrom": "cm_fs_to_ss_kqx",
+          "tableTo": "sps_cm_form",
+          "columnsFrom": [
+            "fm_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cm_fs_to_ss_kqx_sp_id_cm_step_id_fk": {
+          "name": "cm_fs_to_ss_kqx_sp_id_cm_step_id_fk",
+          "tableFrom": "cm_fs_to_ss_kqx",
+          "tableTo": "cm_step",
+          "columnsFrom": [
+            "sp_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

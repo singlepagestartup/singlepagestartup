@@ -21,12 +21,43 @@
         ]
       }
     },
-    "left_model_name": {
+    "relation_name": {
       "type": "string",
-      "description": "Model name, for example: page",
+      "description": "Relation name, for example: widgets-to-features",
       "$default": {
         "$source": "argv",
         "index": 0
+      }
+    },
+
+    "left_model_name": {
+      "type": "string",
+      "description": "Model name, for example: widget",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "left_module_name": {
+      "type": "string",
+      "description": "Module name, for example: website-builder",
+      "x-prompt": {
+        "message": "Select module",
+        "type": "list",
+        "default": "website-builder",
+        "items": [
+          { "value": "billing" },
+          { "value": "broadcast" },
+          { "value": "crm" },
+          { "value": "file-storage" },
+          { "value": "host" },
+          { "value": "notification" },
+          { "value": "rbac" },
+          { "value": "ecommerce" },
+          { "value": "sps-third-parties" },
+          { "value": "website-builder" },
+          { "value": "startup" }
+        ]
       }
     },
     "module": {
@@ -44,6 +75,7 @@
           { "value": "host" },
           { "value": "notification" },
           { "value": "rbac" },
+          { "value": "ecommerce" },
           { "value": "sps-third-parties" },
           { "value": "website-builder" },
           { "value": "startup" }
@@ -52,28 +84,34 @@
     },
     "right_model_name": {
       "type": "string",
-      "description": "Model name, for example: layout",
+      "description": "Model name, for example: features",
       "$default": {
         "$source": "argv",
         "index": 0
       }
     },
-    "left_model_is_external": {
-      "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      }
-    },
-    "right_model_is_external": {
-      "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
+    "right_module_name": {
+      "type": "string",
+      "description": "Module name, for example: website-builder",
+      "x-prompt": {
+        "message": "Select module",
+        "type": "list",
+        "default": "website-builder",
+        "items": [
+          { "value": "billing" },
+          { "value": "broadcast" },
+          { "value": "crm" },
+          { "value": "file-storage" },
+          { "value": "host" },
+          { "value": "notification" },
+          { "value": "rbac" },
+          { "value": "ecommerce" },
+          { "value": "sps-third-parties" },
+          { "value": "website-builder" },
+          { "value": "startup" }
+        ]
       }
     }
   },
-  "required": ["action", "module", "left_model_name", "right_model_name"]
+  "required": ["relation_name", "action", "module", "left_model_name", "right_model_name", "left_module_name", "right_module_name"]
 }

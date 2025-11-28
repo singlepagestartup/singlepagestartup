@@ -1,104 +1,144 @@
-import { app as host } from "@sps/host/backend/app/api";
-import { app as websiteBuilder } from "@sps/website-builder/backend/app/api";
-import { app as rbac } from "@sps/rbac/backend/app/api";
-import { app as crm } from "@sps/crm/backend/app/api";
-import { app as ecommerce } from "@sps/ecommerce/backend/app/api";
-import { app as notification } from "@sps/notification/backend/app/api";
-import { app as fileStorage } from "@sps/file-storage/backend/app/api";
-import { app as startup } from "@sps/startup/backend/app/api";
+import { app as agentApp } from "@sps/agent/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
+import { app as blogApp } from "@sps/blog/backend/app/api";
+import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
+import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { app as hostApp } from "@sps/host/backend/app/api";
+import { app as notificationApp } from "@sps/notification/backend/app/api";
+import { app as rbacApp } from "@sps/rbac/backend/app/api";
+import { app as startupApp } from "@sps/startup/backend/app/api";
+import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
 
 (async () => {
-  await fileStorage.dump({
+  await fileStorageApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await websiteBuilder.dump({
+  await websiteBuilderApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await crm.dump({
+  await crmApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await ecommerce.dump({
+  await crmApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await notification.dump({
+  await blogApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await startup.dump({
+  await billingApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await rbac.dump({
+  await ecommerceApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await host.dump({
+  await notificationApp.dump({
     type: "model",
     dumps: [],
   });
 
-  await fileStorage.dump({
+  await startupApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await rbacApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await hostApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await agentApp.dump({
+    type: "model",
+    dumps: [],
+  });
+
+  await fileStorageApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await websiteBuilder.dump({
+  await broadcastApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await crm.dump({
+  await websiteBuilderApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await ecommerce.dump({
+  await crmApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await notification.dump({
+  await blogApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await startup.dump({
+  await billingApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await rbac.dump({
+  await ecommerceApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  await host.dump({
+  await notificationApp.dump({
     type: "relation",
     dumps: [],
   });
 
-  // const logotypeDump = await logotype.dump();
-  // console.log(`🚀 ~ logotypeDump:`, logotypeDump);
+  await startupApp.dump({
+    type: "relation",
+    dumps: [],
+  });
 
-  // console.log(`🚀 ~ relations:`, relations);
+  await rbacApp.dump({
+    type: "relation",
+    dumps: [],
+  });
+
+  await hostApp.dump({
+    type: "relation",
+    dumps: [],
+  });
+
+  await agentApp.dump({
+    type: "relation",
+    dumps: [],
+  });
 })()
   .then(() => {
     exit(0);
   })
   .catch((error) => {
-    console.error(error);
+    logger.error("Error dumping database: ", error);
     exit(1);
   });

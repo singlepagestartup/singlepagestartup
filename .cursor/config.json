@@ -1,0 +1,18 @@
+{
+  "projectName": "SinglePageStartup",
+  "linting": {
+    "enablePrettier": true,
+    "enableESLint": true
+  },
+  "workflows": {
+    "autoApplyRules": true,
+    "autoApplyExpertProfile": true,
+    "defaultLanguage": "typescript",
+    "defaultFramework": "nextjs"
+  },
+  "defaults": {
+    "fileNamingConvention": "kebab-case",
+    "componentNamingConvention": "PascalCase",
+    "typescriptStrictMode": true
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "id": "dfd59ff8-5bc3-4450-bf41-5f0f7d709db1",
+  "id": "85b76fe5-6ec1-47de-be41-157a1c72b0be",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -43,8 +43,8 @@
           "notNull": true,
           "default": "'new'"
         },
-        "type": {
-          "name": "type",
+        "method": {
+          "name": "method",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -56,20 +56,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "subtitle": {
-          "name": "subtitle",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "content": {
-          "name": "content",
+        "data": {
+          "name": "data",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -79,16 +67,36 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "send_after": {
+          "name": "send_after",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

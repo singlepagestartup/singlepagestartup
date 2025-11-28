@@ -26,6 +26,15 @@ export class Configuration extends ParentConfiguration {
           module: "file-storage",
           name: "file",
           type: "model",
+          filters: [
+            {
+              column: "file",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.file;
+              },
+            },
+          ],
         },
       },
     });

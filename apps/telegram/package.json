@@ -1,0 +1,11 @@
+{
+  "name": "bun-api",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch server.ts",
+    "start": "bun server.ts"
+  },
+  "dependencies": {
+    "hono": "^4.6.17"
+  }
+}

@@ -8,8 +8,6 @@ export function App(props: IComponentProps) {
       className={cn(
         "w-full flex flex-col py-6 items-center bg-foreground text-background",
       )}
-    >
-      <p className="text-4xl font-bold text-center">Sps Website Builder App</p>
-    </div>
+    ></div>
   );
 }

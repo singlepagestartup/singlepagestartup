@@ -1,0 +1,111 @@
+{
+  "id": "55255b51-4ee3-4a6f-9426-ed95511ca440",
+  "prevId": "d5217eab-cc34-4a0c-9375-013398464bdf",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_ps_to_ms_b03": {
+      "name": "sl_ps_to_ms_b03",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pe_id": {
+          "name": "pe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "me_id": {
+          "name": "me_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_read": {
+          "name": "is_read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sl_ps_to_ms_b03_pe_id_sl_profile_id_fk": {
+          "name": "sl_ps_to_ms_b03_pe_id_sl_profile_id_fk",
+          "tableFrom": "sl_ps_to_ms_b03",
+          "tableTo": "sl_profile",
+          "columnsFrom": ["pe_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_ps_to_ms_b03_me_id_sl_message_id_fk": {
+          "name": "sl_ps_to_ms_b03_me_id_sl_message_id_fk",
+          "tableFrom": "sl_ps_to_ms_b03",
+          "tableTo": "sl_message",
+          "columnsFrom": ["me_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

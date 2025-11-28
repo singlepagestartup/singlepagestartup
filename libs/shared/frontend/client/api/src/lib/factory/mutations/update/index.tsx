@@ -1,22 +1,23 @@
 "use client";
 
-import { actions, IUpdateActionProps } from "@sps/shared-frontend-api";
+import { actions, IUpdateProps } from "@sps/shared-frontend-api";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
   host: string;
   route: string;
-  id?: IUpdateActionProps["id"];
-  options?: IUpdateActionProps["options"];
-  params?: IUpdateActionProps["params"];
+  id?: IUpdateProps["id"];
+  options?: IUpdateProps["options"];
+  params?: IUpdateProps["params"];
   cb?: (data: T) => void;
 }
 
 export interface IMutationFunctionProps {
-  id?: IUpdateActionProps["id"];
-  data: IUpdateActionProps["data"];
-  options?: IUpdateActionProps["options"];
-  params?: IUpdateActionProps["params"];
+  id?: IUpdateProps["id"];
+  data: IUpdateProps["data"];
+  options?: IUpdateProps["options"];
+  params?: IUpdateProps["params"];
 }
 
 export function mutation<T>(
@@ -27,7 +28,7 @@ export function mutation<T>(
       const id = mutationFunctionProps.id || props.id;
 
       if (!id) {
-        throw new Error("id is required");
+        throw new Error("Validation error. id is required");
       }
 
       const res = await actions.update<T>({
@@ -38,6 +39,7 @@ export function mutation<T>(
         options: {
           ...mutationFunctionProps.options,
           ...props.options,
+          headers: saturateHeaders(mutationFunctionProps.options?.headers),
         },
         data: mutationFunctionProps.data,
       });

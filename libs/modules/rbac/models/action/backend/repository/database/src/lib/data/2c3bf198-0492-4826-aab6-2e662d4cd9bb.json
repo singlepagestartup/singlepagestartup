@@ -1,0 +1,9 @@
+{
+  "id": "2c3bf198-0492-4826-aab6-2e662d4cd9bb",
+  "createdAt": "2025-01-24T23:47:55.743Z",
+  "updatedAt": "2025-10-21T22:10:50.802Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/file-storage/files/create-from-url"
+}

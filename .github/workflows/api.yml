@@ -1,0 +1,33 @@
+name: Update api
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      TAG:
+        required: true
+        type: string
+      PRERELEASE:
+        required: true
+        type: boolean
+
+jobs:
+  trigger-service-update:
+    name: Update service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send webhook for preview service update
+        if: ${{ inputs.PRERELEASE == true }}
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ secrets.PREVIEW_PORTAINER_API_UPDATE_URL }}?tag=${{ inputs.TAG }}
+          method: "POST"
+          timeout: 40000
+
+      - name: Send webhook for production service update
+        if: ${{ inputs.PRERELEASE == false }}
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ secrets.PORTAINER_API_UPDATE_URL }}?tag=${{ inputs.TAG }}
+          method: "POST"
+          timeout: 40000

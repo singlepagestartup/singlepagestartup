@@ -7,7 +7,7 @@
     "module": "ESNext",
     "jsx": "react-jsx",
     "sourceMap": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
@@ -26,16 +26,30 @@
     "strictPropertyInitialization": false,
     "types": ["node", "jest"],
     "paths": {
+      "@sps/agent/*": ["libs/modules/agent/*"],
+      "@sps/analytic/*": ["libs/modules/analytic/*"],
+      "@sps/backend-utils": ["libs/shared/backend/utils/src/index.ts"],
+      "@sps/billing/*": ["libs/modules/billing/*"],
+      "@sps/blog/*": ["libs/modules/blog/*"],
+      "@sps/broadcast/*": ["libs/modules/broadcast/*"],
+      "@sps/crm/*": ["libs/modules/crm/*"],
+      "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],
+      "@sps/file-storage/*": ["libs/modules/file-storage/*"],
+      "@sps/host/*": ["libs/modules/host/*"],
+      "@sps/mcp": ["apps/mcp/src/index.ts"],
       "@sps/middlewares": ["libs/middlewares/src/index.ts"],
+      "@sps/notification/*": ["libs/modules/notification/*"],
       "@sps/providers-db": ["libs/providers/db/src/index.ts"],
-      "@sps/providers-kv": ["libs/providers/kv/src/index.ts"],
       "@sps/providers-file-storage": [
         "libs/providers/file-storage/src/index.ts"
       ],
+      "@sps/providers-kv": ["libs/providers/kv/src/index.ts"],
+      "@sps/rbac/*": ["libs/modules/rbac/*"],
       "@sps/shared-backend-api": ["libs/shared/backend/api/src/index.ts"],
       "@sps/shared-backend-database-config": [
         "libs/shared/backend/database/config/src/index.ts"
       ],
+      "@sps/shared-configuration": ["libs/shared/configuration/src/index.ts"],
       "@sps/shared-frontend-api": ["libs/shared/frontend/api/src/index.ts"],
       "@sps/shared-frontend-client-api": [
         "libs/shared/frontend/client/api/src/index.ts"
@@ -62,26 +76,18 @@
         "libs/shared/frontend/server/utils/src/index.ts"
       ],
       "@sps/shared-hooks": ["libs/shared/hooks/src/index.ts"],
-      "@sps/shared-ui-shadcn": ["libs/shared/ui/shadcn/src/index.ts"],
-      "@sps/shared-ui-aceternity": ["libs/shared/ui/aceternity/src/index.ts"],
       "@sps/shared-third-parties": ["libs/shared/third-parties/src/index.ts"],
+      "@sps/shared-ui-aceternity": ["libs/shared/ui/aceternity/src/index.ts"],
+      "@sps/shared-ui-shadcn": ["libs/shared/ui/shadcn/src/index.ts"],
       "@sps/shared-utils": ["libs/shared/utils/src/index.ts"],
-      "@sps/sps-backend-utils": ["libs/shared/backend/utils/src/index.ts"],
-      "@sps/billing/*": ["libs/modules/billing/*"],
-      "@sps/broadcast/*": ["libs/modules/broadcast/*"],
-      "@sps/crm/*": ["libs/modules/crm/*"],
-      "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],
-      "@sps/file-storage/*": ["libs/modules/file-storage/*"],
+      "@sps/social/*": ["libs/modules/social/*"],
       "@sps/sps-generator-plugin": [
         "tools/plugins/sps-generator-plugin/src/index.ts"
       ],
-      "@sps/host/*": ["libs/modules/host/*"],
-      "@sps/notification/*": ["libs/modules/notification/*"],
-      "@sps/rbac/*": ["libs/modules/rbac/*"],
-      "@sps/sps-third-parties/*": ["libs/modules/sps-third-parties/*"],
-      "@sps/website-builder/*": ["libs/modules/website-builder/*"],
       "@sps/startup/*": ["libs/modules/startup/*"],
-      "@sps/ui-adapter": ["libs/shared/ui/adapter/src/index.ts"]
+      "@sps/telegram/*": ["libs/modules/telegram/*"],
+      "@sps/ui-adapter": ["libs/shared/ui/adapter/src/index.ts"],
+      "@sps/website-builder/*": ["libs/modules/website-builder/*"]
     },
     "typeRoots": [
       "./node_modules/@types",

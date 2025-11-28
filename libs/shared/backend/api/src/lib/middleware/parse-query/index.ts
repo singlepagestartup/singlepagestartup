@@ -48,7 +48,7 @@ export class Middleware {
 
       c.set("parsedQuery", parsedQuery);
 
-      return next();
+      await next();
     });
   }
 }

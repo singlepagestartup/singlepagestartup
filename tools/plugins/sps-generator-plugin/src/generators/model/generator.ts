@@ -18,7 +18,55 @@ export async function modelGenerator(
           {
             module: {
               name: moduleName,
-              models: [{ model: { name: modelName } }],
+              models: [
+                {
+                  model: {
+                    name: modelName,
+                    frontend: {
+                      component: {
+                        variants: [
+                          {
+                            name: "find",
+                            level: "singlepage",
+                            template: "find",
+                            path: "find",
+                          },
+                          {
+                            name: "default",
+                            level: "singlepage",
+                            template: "default",
+                            path: "default",
+                          },
+                          {
+                            name: "admin-table-row",
+                            level: "singlepage",
+                            template: "admin-table-row",
+                            path: "admin/table-row",
+                          },
+                          {
+                            name: "admin-form",
+                            level: "singlepage",
+                            template: "admin-form",
+                            path: "admin/form",
+                          },
+                          {
+                            name: "admin-table",
+                            level: "singlepage",
+                            template: "admin-table",
+                            path: "admin/table",
+                          },
+                          {
+                            name: "admin-select-input",
+                            level: "singlepage",
+                            template: "admin-select-input",
+                            path: "admin/select-input",
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
             },
           },
         ],

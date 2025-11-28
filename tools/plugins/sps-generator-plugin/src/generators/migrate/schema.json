@@ -26,7 +26,7 @@
     },
     "right_external_models": {
       "type": "string",
-      "description": "External models for relations, by space separated: file-storage-widgets file-storage-module-widgets. For example for 'widgets-to-file-storage-module-widgets' in 'website-builder', the exernal model is 'file-storage-widgets'.",
+      "description": "External models for relations, by space separated: file-storage-widgets file-storage-module-widgets. For example for 'widgets-to-file-storage-module-files' in 'website-builder', the exernal model is 'file-storage-widgets'.",
       "$default": {
         "$source": "argv",
         "index": 0

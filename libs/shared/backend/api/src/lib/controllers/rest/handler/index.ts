@@ -5,3 +5,6 @@ export { Handler as UpdateHandler } from "./update";
 export { Handler as DeleteHandler } from "./delete";
 export { Handler as DumpHandler } from "./dump";
 export { Handler as SeedHandler } from "./seed";
+export { Handler as FindOrCreateHandler } from "./find-or-create";
+export { Handler as BulkCreateHandler } from "./bulk-create";
+export { Handler as BulkUpdateHandler } from "./bulk-update";

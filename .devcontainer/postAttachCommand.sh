@@ -3,8 +3,14 @@ terminal=$1
 
 if [ "$terminal" == "infrastructure" ];
 then
+    # adminer
     gh codespace ports visibility 8080:public -c $CODESPACE_NAME
+    # frontend
     gh codespace ports visibility 3000:public -c $CODESPACE_NAME
+    # backend
+    gh codespace ports visibility 4000:public -c $CODESPACE_NAME
+    # telegram
+    gh codespace ports visibility 8000:public -c $CODESPACE_NAME
     
     npm install
 
@@ -22,5 +28,8 @@ then
     cd ../redis
     chmod +x ./up.sh
 
-    cd ..
+    cd ../..
+    
+    # run up.sh script to setup infrastructure
+    chmod +x ./up.sh
 fi

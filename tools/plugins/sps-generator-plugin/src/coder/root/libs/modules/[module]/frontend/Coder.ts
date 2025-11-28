@@ -1,12 +1,12 @@
 import { Tree } from "@nx/devkit";
 import { Coder as ModuleCoder } from "../Coder";
 import {
-  Coder as RootCoder,
-  IGeneratorProps as IRootCoderGeneratorProps,
-} from "./root/Coder";
+  Coder as ComponentCoder,
+  IGeneratorProps as IComponentCoderGeneratorProps,
+} from "./component/Coder";
 
 export type IGeneratorProps = {
-  root?: IRootCoderGeneratorProps;
+  component?: IComponentCoderGeneratorProps;
 };
 
 export class Coder {
@@ -17,7 +17,7 @@ export class Coder {
   baseDirectory: string;
   absoluteName: string;
   project: {
-    root: RootCoder;
+    component: ComponentCoder;
   };
 
   constructor(props: { tree: Tree; parent: ModuleCoder } & IGeneratorProps) {
@@ -28,25 +28,25 @@ export class Coder {
     this.baseDirectory = `${this.parent.baseDirectory}/frontend`;
     this.absoluteName = `${this.parent.absoluteName}/frontend`;
 
-    const root = new RootCoder({
+    const component = new ComponentCoder({
       tree: this.tree,
       parent: this,
     });
 
     this.project = {
-      root,
+      component,
     };
   }
 
   async migrate(props: { version: string }) {
-    await this.project.root.migrate(props);
+    await this.project.component.migrate(props);
   }
 
   async create() {
-    await this.project.root.create();
+    await this.project.component.create();
   }
 
   async remove() {
-    await this.project.root.remove();
+    await this.project.component.remove();
   }
 }

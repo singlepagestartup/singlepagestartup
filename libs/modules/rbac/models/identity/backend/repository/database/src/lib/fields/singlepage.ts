@@ -5,9 +5,10 @@ export const fields = {
   salt: pgCore.text("salt"),
   account: pgCore.text("account"),
   email: pgCore.text("email"),
-  provider: pgCore.text("provider").notNull().default("login_and_password"),
+  provider: pgCore.text("provider").notNull().default("email"),
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
+  code: pgCore.text("code"),
 };

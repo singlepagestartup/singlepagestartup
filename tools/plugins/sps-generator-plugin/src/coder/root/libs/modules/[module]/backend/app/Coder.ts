@@ -1,6 +1,6 @@
 import { Tree } from "@nx/devkit";
 import { Coder as BackendCoder } from "../Coder";
-import { Coder as RootCoder } from "./root/Coder";
+import { Coder as ApiCoder } from "./api/Coder";
 
 export type IGeneratorProps = unknown;
 
@@ -12,7 +12,7 @@ export class Coder {
   baseDirectory: string;
   absoluteName: string;
   project: {
-    root: RootCoder;
+    api: ApiCoder;
   };
 
   constructor(props: { tree: Tree; parent: BackendCoder } & IGeneratorProps) {
@@ -23,25 +23,33 @@ export class Coder {
     this.baseDirectory = `${this.parent.baseDirectory}/app`;
     this.absoluteName = `${this.parent.absoluteName}/app`;
 
-    const root = new RootCoder({
+    const api = new ApiCoder({
       tree: this.tree,
       parent: this,
     });
 
     this.project = {
-      root,
+      api,
     };
   }
 
   async create() {
-    await this.project.root.create();
+    await this.project.api.create();
+  }
+
+  async attach() {
+    await this.project.api.attach();
+  }
+
+  async detach() {
+    await this.project.api.detach();
   }
 
   async migrate(props: { version: string }) {
-    await this.project.root.migrate(props);
+    await this.project.api.migrate(props);
   }
 
   async remove() {
-    await this.project.root.remove();
+    await this.project.api.remove();
   }
 }

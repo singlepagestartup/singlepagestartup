@@ -26,6 +26,44 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "layouts-to-widgets",
           type: "relation",
+          filters: [
+            {
+              column: "layoutId",
+              method: "eq",
+              value: (data) => {
+                const layoutSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "layout" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const layoutEntity = layoutSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.layoutId,
+                );
+
+                return layoutEntity?.new?.id || data.entity.dump.layoutId;
+              },
+            },
+            {
+              column: "widgetId",
+              method: "eq",
+              value: (data) => {
+                const widgetSeed = data.seeds.find(
+                  (seed) =>
+                    seed.name === "widget" &&
+                    seed.type === "model" &&
+                    seed.module === "host",
+                );
+
+                const widgetEntity = widgetSeed?.seeds.find(
+                  (seed) => seed.dump.id === data.entity.dump.widgetId,
+                );
+
+                return widgetEntity?.new?.id || data.entity.dump.widgetId;
+              },
+            },
+          ],
           transformers: [
             {
               field: "layoutId",

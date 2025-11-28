@@ -1,0 +1,16 @@
+---
+- name: Set cron jobs
+  hosts: all
+  become: yes
+  vars:
+    api_service_url: "{{ API_SERVICE_URL }}"
+    rbac_secret_key: "{{ RBAC_SECRET_KEY }}"
+  tasks:
+    - name: agent service cron
+      cron:
+        name: "agent service cron"
+        minute: "*"
+        job:
+          "curl -k -X POST https://{{ api_service_url }}/api/agent/agents/cron \
+          -H 'X-RBAC-SECRET-KEY: {{ rbac_secret_key }}' \
+          -F 'data={}' >> /home/code/api_agent_agents_cron.log 2>&1"

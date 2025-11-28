@@ -5,6 +5,7 @@ import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { type IService } from "../../../../service";
 import { DI } from "../../../../di/constants";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -14,17 +15,20 @@ export class Handler<
   constructor(@inject(DI.IService) private service: IService<SCHEMA>) {}
 
   async execute(c: C, next: Next) {
-    const body = await c.req.parseBody();
-
-    if (typeof body["data"] !== "string") {
-      throw new HTTPException(400, {
-        message: "Invalid data",
-      });
-    }
-
-    const data = JSON.parse(body["data"]);
-
     try {
+      const body = await c.req.parseBody();
+
+      if (typeof body["data"] !== "string") {
+        throw new Error(
+          "Validation error. Invalid body['data']: " +
+            body["data"] +
+            ". Expected string, got: " +
+            typeof body["data"],
+        );
+      }
+
+      const data = JSON.parse(body["data"]);
+
       const entity = await this.service.create({ data });
 
       return c.json(
@@ -34,9 +38,8 @@ export class Handler<
         201,
       );
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

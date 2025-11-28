@@ -8,4 +8,5 @@ export const fields = {
   status: pgCore.text("status").notNull().default("new"),
   type: pgCore.text("type").notNull().default("cart"),
   receipt: pgCore.text("receipt").notNull().default(""),
+  comment: pgCore.text("comment"),
 };

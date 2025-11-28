@@ -7,17 +7,15 @@ import { Component as WidgetsToSliders } from "@sps/website-builder/relations/wi
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            slidersToSlides={({ data, hostUrl, isServer }) => {
+            slidersToSlides={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -25,7 +23,6 @@ export function Component() {
               return (
                 <SlidersToSlides
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -43,7 +40,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToSliders={({ data, hostUrl, isServer }) => {
+            widgetsToSliders={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -51,7 +48,6 @@ export function Component() {
               return (
                 <WidgetsToSliders
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

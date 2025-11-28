@@ -1,6 +1,6 @@
 {
-  "id": "ee9c9887-4fdd-4634-bb03-c37359cd47e7",
-  "prevId": "44487095-8988-4c3f-9ebb-0148fb5e00c0",
+  "id": "0c63c96d-f780-4703-bb9d-90068893c8c9",
+  "prevId": "d358efe3-430d-4ede-84c0-91b9d2d2e99a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -43,27 +43,35 @@
           "notNull": true,
           "default": "'one_off'"
         },
-        "title": {
-          "name": "title",
+        "slug": {
+          "name": "slug",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "title": {
+          "name": "title",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": "'{}'::jsonb"
         },
         "short_description": {
           "name": "short_description",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
-          "default": "''"
+          "default": "'{}'::jsonb"
         },
-        "sku": {
-          "name": "sku",
+        "description": {
+          "name": "description",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "admin_title": {
+          "name": "admin_title",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -73,16 +81,23 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "sps_ee_product_sku_unique": {
-          "name": "sps_ee_product_sku_unique",
+        "sps_ee_product_slug_unique": {
+          "name": "sps_ee_product_slug_unique",
           "nullsNotDistinct": false,
-          "columns": ["sku"]
+          "columns": ["slug"]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

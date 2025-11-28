@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import type { IProvider } from "../interface";
+import { logger } from "@sps/backend-utils";
 
 export class Provider implements IProvider {
   folder: string;
@@ -9,7 +10,7 @@ export class Provider implements IProvider {
 
   constructor(props: { folder: string }) {
     const root = process.cwd();
-    const storagePath = `public`;
+    const storagePath = "public";
 
     this.folder = props.folder;
     const filesPath = path.join(root, storagePath, this.folder);
@@ -28,7 +29,7 @@ export class Provider implements IProvider {
     const extension = (props.file as File).name.split(".").pop();
 
     if (!extension) {
-      throw new Error("Invalid file extension");
+      throw new Error("Validation error. Invalid file extension");
     }
 
     const fileName = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
@@ -44,7 +45,7 @@ export class Provider implements IProvider {
 
     const buffer = await (props.file as File).arrayBuffer();
 
-    await fs.promises.writeFile(filePath, Buffer.from(buffer));
+    await fs.promises.writeFile(filePath, Buffer.from(buffer) as any);
 
     const createdFileUrl = path.join(
       "/",
@@ -74,7 +75,8 @@ export class Provider implements IProvider {
         await fs.promises.unlink(filePath);
       })
       .catch((error) => {
-        console.log(`providers ~ file-storage ~ deleteFile ~ error:`, error);
+        logger.error("providers ~ file-storage ~ deleteFile ~ error:", error);
+
         return false;
       });
   }

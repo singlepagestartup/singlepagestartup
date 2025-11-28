@@ -26,6 +26,15 @@ export class Configuration extends ParentConfiguration {
           module: "host",
           name: "page",
           type: "model",
+          filters: [
+            {
+              column: "url",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.url;
+              },
+            },
+          ],
         },
       },
     });

@@ -3,11 +3,11 @@
   hosts: all
   become: yes
   vars:
-    - account_email: "{{ CLOUDFLARE_ACCOUNT_EMAIL }}"
-    - account_api_key: "{{ CLOUDFLARE_ACCOUNT_API_KEY }}"
-    - domain: "{{ DOMAIN }}"
-    - state: "{{ STATE }}"
-    - service_url: "{{ SERVICE_URL }}"
+    account_email: "{{ CLOUDFLARE_ACCOUNT_EMAIL }}"
+    account_api_key: "{{ CLOUDFLARE_ACCOUNT_API_KEY }}"
+    domain: "{{ DOMAIN }}"
+    state: "{{ STATE }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
     - name: Create certs directory
       file:

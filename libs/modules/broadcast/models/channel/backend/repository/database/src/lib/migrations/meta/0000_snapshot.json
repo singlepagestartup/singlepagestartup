@@ -1,5 +1,5 @@
 {
-  "id": "a4de29c9-a73e-49ed-91d1-eed3a7d86850",
+  "id": "f3827de5-91df-404b-aeff-cda707d5a23b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -41,16 +41,46 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "admin_title": {
+          "name": "admin_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "sps_bt_channel_title_unique": {
+          "name": "sps_bt_channel_title_unique",
+          "nullsNotDistinct": false,
+          "columns": ["title"]
+        },
+        "sps_bt_channel_slug_unique": {
+          "name": "sps_bt_channel_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

@@ -3,12 +3,12 @@
   hosts: all
   become: yes
   vars:
-    - github_token: "{{ GITHUB_TOKEN }}"
-    - github_repository: "{{ GITHUB_REPOSITORY }}"
-    - project_name: "{{ PROJECT_NAME }}"
-    - aws_region: "{{ AWS_REGION }}"
-    - aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
-    - environment_type: "{{ ENVIRONMENT_TYPE }}"
+    github_token: "{{ GITHUB_TOKEN }}"
+    github_repository: "{{ GITHUB_REPOSITORY }}"
+    project_name: "{{ PROJECT_NAME }}"
+    aws_region: "{{ AWS_REGION }}"
+    aws_s3_bucket_name: "{{ AWS_S3_BUCKET_NAME }}"
+    environment_type: "{{ ENVIRONMENT_TYPE }}"
   tasks:
     - name: Delete artifacts
       file:

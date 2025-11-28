@@ -1,0 +1,1 @@
+ALTER TABLE "sl_chat" ADD COLUMN "source_system_id" text;

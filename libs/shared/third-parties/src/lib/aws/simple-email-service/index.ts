@@ -1,16 +1,15 @@
 import { SESClient, SendRawEmailCommand } from "@aws-sdk/client-ses";
+import * as fs from "fs";
+import * as path from "path";
 import {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
   AWS_REGION,
 } from "@sps/shared-utils";
-import * as fs from "fs";
-import * as path from "path";
-import * as nodemailer from "nodemailer";
-import { Readable } from "stream";
 
 export class Service {
   client: SESClient;
+  blockedAttachmentsRecievers = ["@mail.ru", "@inbox.ru", "@vk.com"];
 
   constructor() {
     if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
@@ -35,50 +34,70 @@ export class Service {
     from: string;
     filePaths?: string[];
   }) {
-    const attachments: {
-      filename: string;
-      content: string | Buffer | Readable | undefined;
-    }[] = [];
     const root = process.cwd();
 
-    if (props.filePaths?.length) {
-      for (const filePath of props.filePaths) {
-        let fileContent: string | Buffer | Readable | undefined;
-        if (filePath.startsWith("http")) {
-          fileContent = await fetch(filePath).then(async (res) => {
-            const buffer = await res.arrayBuffer();
-            const bytes = new Uint8Array(buffer);
+    const boundary = "BOUNDARY_" + Date.now().toString();
 
-            return Buffer.from(bytes);
-          });
-        } else {
-          fileContent = fs.readFileSync(path.join(root, "public", filePath));
-        }
+    const attachments: string[] = [];
+
+    if (
+      props.filePaths?.length &&
+      !this.blockedAttachmentsRecievers.some((domain) =>
+        props.to.endsWith(domain),
+      )
+    ) {
+      for (const filePath of props.filePaths) {
+        const fileContent = filePath.startsWith("http")
+          ? await fetch(filePath)
+              .then((res) => res.arrayBuffer())
+              .then((buffer) => Buffer.from(buffer))
+          : fs.readFileSync(path.join(root, "public", filePath));
 
         const fileName = path.basename(filePath);
 
-        attachments.push({ filename: fileName, content: fileContent });
+        attachments.push(
+          [
+            `--${boundary}`,
+            "Content-Type: application/octet-stream",
+            "Content-Transfer-Encoding: base64",
+            `Content-Disposition: attachment; filename="${fileName}"`,
+            "",
+            fileContent.toString("base64"),
+            "",
+          ].join("\r\n"),
+        );
       }
     }
 
-    const transporter = nodemailer.createTransport({
-      SES: { ses: this.client, aws: require("@aws-sdk/client-ses") },
-    });
-
-    const mailOptions = {
-      from: props.from,
-      to: props.to,
-      subject: props.subject,
-      html: props.html,
-      attachments,
-    };
+    const rawMessage = [
+      `From: ${props.from}`,
+      `To: ${props.to}`,
+      `Subject: ${props.subject}`,
+      "MIME-Version: 1.0",
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      "",
+      `--${boundary}`,
+      'Content-Type: text/html; charset="UTF-8"',
+      "",
+      props.html,
+      "",
+      ...attachments,
+      `--${boundary}--`,
+      "",
+    ].join("\r\n");
 
     try {
-      const result = await transporter.sendMail(mailOptions);
+      const command = new SendRawEmailCommand({
+        RawMessage: {
+          Data: Buffer.from(rawMessage),
+        },
+      });
+
+      const result = await this.client.send(command);
 
       return result;
     } catch (error: any) {
-      throw new Error(error.message, error.stack);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
   }
 }

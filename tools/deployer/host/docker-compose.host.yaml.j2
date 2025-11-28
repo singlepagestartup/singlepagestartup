@@ -8,6 +8,11 @@ services:
     env_file:
       - ./{{ SERVICE_NAME }}.env.local
     command: "sh -c './start.sh host'"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       update_config:
         order: start-first

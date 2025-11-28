@@ -1,4 +1,4 @@
-import { HOST_URL } from "@sps/shared-utils";
+import { NEXT_PUBLIC_HOST_SERVICE_URL } from "@sps/shared-utils";
 import { api } from "@sps/host/models/page/sdk/server";
 
 async function generateSiteMap() {
@@ -18,7 +18,7 @@ async function generateSiteMap() {
          ?.map((page) => {
            return `
              <url>
-                 <loc>${`${HOST_URL}${page.url}`}</loc>
+                 <loc>${`${NEXT_PUBLIC_HOST_SERVICE_URL}${page.url}`}</loc>
              </url>
            `;
          })
@@ -26,7 +26,7 @@ async function generateSiteMap() {
      </urlset>
    `;
   } catch (error) {
-    console.log(`generateSiteMap ~ error:`, error);
+    console.log("generateSiteMap ~ error:", error);
 
     return `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">

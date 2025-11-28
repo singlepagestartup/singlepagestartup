@@ -1,7 +1,7 @@
-export function util<T>(resItem: { data: T } | { data: T; meta: any }): T {
-  if ("meta" in resItem && Array.isArray(resItem.data)) {
-    return Object.assign(resItem.data, { _meta: resItem.meta });
+export function util<T>(resItem: { data: T } | undefined): T {
+  if (!resItem) {
+    throw new Error("Data is undefined");
   }
 
-  return resItem.data as T;
+  return resItem.data;
 }

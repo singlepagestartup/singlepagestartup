@@ -4,14 +4,9 @@ import {
   Coder as ComponentCoder,
   IGeneratorProps as IComponentCoderGeneratorProps,
 } from "./component/Coder";
-import {
-  Coder as ApiCoder,
-  IGeneratorProps as IApiCoderGeneratorProps,
-} from "./api/Coder";
 
 export type IGeneratorProps = {
   component?: IComponentCoderGeneratorProps;
-  api?: IApiCoderGeneratorProps;
 };
 
 export class Coder {
@@ -23,7 +18,6 @@ export class Coder {
   name: string;
   project: {
     component: ComponentCoder;
-    api: ApiCoder;
   };
 
   constructor(props: { parent: ModelCoder; tree: Tree } & IGeneratorProps) {
@@ -40,30 +34,20 @@ export class Coder {
       parent: this,
     });
 
-    const api = new ApiCoder({
-      ...props.api,
-      tree: this.tree,
-      parent: this,
-    });
-
     this.project = {
       component,
-      api,
     };
   }
 
   async migrate(props: { version: string }) {
-    await this.project.api.migrate(props);
     await this.project.component.migrate(props);
   }
 
   async create() {
-    await this.project.api.create();
     await this.project.component.create();
   }
 
   async remove() {
     await this.project.component.remove();
-    await this.project.api.remove();
   }
 }

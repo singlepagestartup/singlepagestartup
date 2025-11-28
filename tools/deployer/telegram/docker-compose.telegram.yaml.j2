@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  {{ SERVICE_NAME }}:
+    image: {{ DOCKER_HUB_URL }}/{{ DOCKER_HUB_SERVICE_REPOSITORY }}
+    networks:
+      - traefik_overlay
+    env_file:
+      - ./{{ SERVICE_NAME }}.env
+    command: "sh -c './start.sh telegram'"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      update_config:
+        order: start-first
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.services.{{ SERVICE_NAME }}.loadbalancer.server.port=8000
+        - traefik.http.routers.{{ SERVICE_NAME }}.entrypoints=websecure
+        - traefik.http.routers.{{ SERVICE_NAME }}.tls=true
+        - traefik.http.routers.{{ SERVICE_NAME }}.rule=Host(`{{ SERVICE_URL }}`)
+        - traefik.docker.network=traefik_overlay
+
+networks:
+  traefik_overlay:
+    external: true

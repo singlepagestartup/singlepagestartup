@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {},
+    "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
@@ -17,6 +17,21 @@
           },
           {
             "command": "nx run @sps/broadcast:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/broadcast:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/broadcast:relations:repository-migrate"
           }
         ]
       }
@@ -46,25 +61,9 @@
         ]
       }
     },
-    "repository-migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run @sps/broadcast:repository-generate"
-          },
-          {
-            "command": "nx run @sps/broadcast:models:repository-migrate"
-          },
-          {
-            "command": "nx run @sps/broadcast:relations:repository-migrate"
-          }
-        ]
-      }
-    },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -79,6 +78,7 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -105,9 +105,10 @@
     },
     "models:channel:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/models/channel/backend/repository/database",
         "commands": [
           {
@@ -133,9 +134,10 @@
     },
     "models:message:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/models/message/backend/repository/database",
         "commands": [
           {
@@ -161,9 +163,10 @@
     },
     "relations:channels-to-messages:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/broadcast/relations/channels-to-messages/backend/repository/database",
         "commands": [
           {

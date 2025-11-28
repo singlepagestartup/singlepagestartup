@@ -9,17 +9,15 @@ import { Component as FeaturesToButtonsArrays } from "@sps/website-builder/relat
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            buttonsArraysToButtons={({ data, hostUrl, isServer }) => {
+            buttonsArraysToButtons={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -27,7 +25,6 @@ export function Component() {
               return (
                 <ButtonsArraysToButtons
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -45,7 +42,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToButtonsArrays={({ data, hostUrl, isServer }) => {
+            widgetsToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -53,7 +50,6 @@ export function Component() {
               return (
                 <WidgetsToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -71,7 +67,7 @@ export function Component() {
                 />
               );
             }}
-            slidesToButtonsArrays={({ data, hostUrl, isServer }) => {
+            slidesToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -79,7 +75,6 @@ export function Component() {
               return (
                 <SlidesToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -97,7 +92,7 @@ export function Component() {
                 />
               );
             }}
-            featuresToButtonsArrays={({ data, hostUrl, isServer }) => {
+            featuresToButtonsArrays={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -105,7 +100,6 @@ export function Component() {
               return (
                 <FeaturesToButtonsArrays
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

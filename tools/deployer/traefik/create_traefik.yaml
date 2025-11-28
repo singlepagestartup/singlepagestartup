@@ -3,12 +3,18 @@
   hosts: all
   become: yes
   vars:
-    - traefik_username: "{{ TRAEFIK_USERNAME }}"
-    - traefik_password: "{{ TRAEFIK_PASSWORD }}"
+    traefik_username: "{{ TRAEFIK_USERNAME }}"
+    traefik_password: "{{ TRAEFIK_PASSWORD }}"
   tasks:
     - name: Get ansible ansible_system_vendor
       set_fact:
         ansible_system_vendor: "{{ hostvars[inventory_hostname]['ansible_system_vendor'] }}"
+
+    - name: Ensure Traefik certs directory exists
+      file:
+        path: /home/code/certs
+        state: directory
+        mode: 0755
 
     - name: Copy create_traefik_user.sh file
       ansible.builtin.template:
@@ -62,8 +68,8 @@
         - name: Install jsondiff Python package
           pip:
             name: jsondiff
-            executable: pip3
-            extra_args: --no-build-isolation --break-system-packages
+            state: present
+            virtualenv: /opt/venv
       when: ansible_system_vendor == "DigitalOcean"
 
     - name: If not DigitalOcean
@@ -71,12 +77,27 @@
         - name: Install jsondiff Python package
           pip:
             name: jsondiff
-            executable: pip3
-            extra_args: --no-build-isolation
+            state: present
+            virtualenv: /opt/venv
       when: ansible_system_vendor != "DigitalOcean"
+
+    - name: Create traefik_overlay network if using Cloudflare SSL
+      shell: docker network create --driver overlay --attachable traefik_overlay
+      register: network_result
+      failed_when: network_result.rc != 0 and "already exists" not in network_result.stderr
+      when: USE_CLOUDFLARE_SSL | default(false) | bool == true
 
     - name: Run Traefik service
       shell: docker stack deploy --compose-file=/home/code/docker-compose.traefik.yaml traefik
+
+    - name: Wait for Traefik service ready state
+      shell: >
+        docker service ls --filter name=traefik_traefik --format '{% raw %}{{.Replicas}}{% endraw %}'
+      register: traefik_service_status
+      until: traefik_service_status.stdout | trim != "" and traefik_service_status.stdout | trim == "1/1"
+      retries: 10
+      delay: 20
+      changed_when: false
 
     - name: Delete artifacts
       file:

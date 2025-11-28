@@ -1,0 +1,1 @@
+ALTER TABLE "sps_nn_notification" ADD COLUMN "source_system_id" text;

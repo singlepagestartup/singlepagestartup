@@ -8,17 +8,15 @@ import { Component as PagesToWidgets } from "@sps/host/relations/pages-to-widget
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            pagesToLayouts={({ data, hostUrl, isServer }) => {
+            pagesToLayouts={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -26,7 +24,6 @@ export function Component() {
               return (
                 <PagesToLayouts
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -44,7 +41,7 @@ export function Component() {
                 />
               );
             }}
-            pagesToMetadata={({ data, hostUrl, isServer }) => {
+            pagesToMetadata={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -52,7 +49,6 @@ export function Component() {
               return (
                 <PagesToMetadata
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -70,7 +66,7 @@ export function Component() {
                 />
               );
             }}
-            pagesToWidgets={({ data, hostUrl, isServer }) => {
+            pagesToWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -78,7 +74,6 @@ export function Component() {
               return (
                 <PagesToWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

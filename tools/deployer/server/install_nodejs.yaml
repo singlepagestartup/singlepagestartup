@@ -10,9 +10,11 @@
 
     - name: Set repo for Node.js
       shell: |
-        curl -L -o nsolid_setup_deb.sh https://deb.nodesource.com/nsolid_setup_deb.sh
-        chmod +x nsolid_setup_deb.sh
-        ./nsolid_setup_deb.sh 20
+        curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+        # Alternative method:
+        # curl -L -o nodesource_setup.sh https://deb.nodesource.com/setup_24.x
+        # chmod +x nodesource_setup.sh
+        # ./nodesource_setup.sh
 
     - name: Install Node.js
       shell: |
@@ -23,3 +25,8 @@
         sudo dpkg --configure -a
         touch /var/lib/dpkg/lock-frontend
         apt-get install nodejs -y
+
+    - name: Verify Node.js installation
+      shell: |
+        node --version
+        npm --version

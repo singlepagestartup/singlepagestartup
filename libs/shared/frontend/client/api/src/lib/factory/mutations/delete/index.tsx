@@ -1,21 +1,22 @@
 "use client";
 
-import { actions, IDeleteActionProps } from "@sps/shared-frontend-api";
+import { actions, IDeleteProps } from "@sps/shared-frontend-api";
+import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
-  id?: IDeleteActionProps["id"];
-  options?: IDeleteActionProps["options"];
-  params?: IDeleteActionProps["params"];
+  id?: IDeleteProps["id"];
+  options?: IDeleteProps["options"];
+  params?: IDeleteProps["params"];
   host: string;
   route: string;
   cb?: (data: T) => void;
 }
 
 export interface IMutationFunctionProps {
-  id?: IDeleteActionProps["id"];
-  options?: IDeleteActionProps["options"];
-  params?: IDeleteActionProps["params"];
+  id?: IDeleteProps["id"];
+  options?: IDeleteProps["options"];
+  params?: IDeleteProps["params"];
 }
 
 export function mutation<T>(
@@ -26,7 +27,7 @@ export function mutation<T>(
       const id = mutationFunctionProps.id || props.id;
 
       if (!id) {
-        throw new Error("id is required");
+        throw new Error("Validation error. id is required");
       }
 
       const res = await actions.delete<T>({
@@ -37,6 +38,7 @@ export function mutation<T>(
         options: {
           ...mutationFunctionProps.options,
           ...props.options,
+          headers: saturateHeaders(mutationFunctionProps.options?.headers),
         },
       });
 

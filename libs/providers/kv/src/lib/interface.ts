@@ -1,14 +1,14 @@
 export interface IProvider {
-  prefix: string;
   connect: () => Promise<void>;
-  hashKey: (props: { key: string }) => Promise<string>;
-  get: (props: { key: string }) => Promise<string | null>;
+  hashKey: (props: { prefix: string; key: string }) => Promise<string>;
+  get: (props: { prefix: string; key: string }) => Promise<string | null>;
   set: (props: {
+    prefix: string;
     key: string;
     value: string;
     options: { ttl: number };
   }) => Promise<string | undefined | null>;
-  del: (props: { key: string }) => Promise<void>;
+  del: (props: { prefix: string; key: string }) => Promise<void>;
   flushall: () => Promise<void>;
-  delByPrefix: () => Promise<void>;
+  delByPrefix: (props: { prefix: string }) => Promise<void>;
 }

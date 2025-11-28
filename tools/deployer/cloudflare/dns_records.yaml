@@ -3,21 +3,77 @@
   hosts: all
   become: yes
   vars:
-    - account_email: "{{ CLOUDFLARE_ACCOUNT_EMAIL }}"
-    - account_api_key: "{{ CLOUDFLARE_ACCOUNT_API_KEY }}"
-    - domain: "{{ DOMAIN }}"
-    - state: "{{ STATE }}"
-    - service_url: "{{ SERVICE_URL }}"
-    - service_a: "{{ SERVICE_A }}"
+    account_email: "{{ CLOUDFLARE_ACCOUNT_EMAIL }}"
+    account_api_key: "{{ CLOUDFLARE_ACCOUNT_API_KEY }}"
+    domain: "{{ DOMAIN }}"
+    state: "{{ STATE }}"
+    service_url: "{{ SERVICE_URL }}"
+    service_a: "{{ SERVICE_A }}"
+    use_cloudflare_ssl: "{{ USE_CLOUDFLARE_SSL | default('true') }}"
   tasks:
-    - name: DNS record
+    - name: Fetch zone ID from Cloudflare API
+      uri:
+        url: "https://api.cloudflare.com/client/v4/zones?name={{ domain }}"
+        method: GET
+        headers:
+          X-Auth-Email: "{{ account_email }}"
+          X-Auth-Key: "{{ account_api_key }}"
+          Content-Type: "application/json"
+        return_content: yes
+      register: cloudflare_zone
+      failed_when: cloudflare_zone.status != 200 or cloudflare_zone.json.success != true
+
+    - name: Extract zone_id
+      set_fact:
+        zone_id: "{{ cloudflare_zone.json.result[0].id }}"
+
+    - name: Set Cloudflare SSL encryption mode based on USE_CLOUDFLARE_SSL
+      uri:
+        url: "https://api.cloudflare.com/client/v4/zones/{{ zone_id }}/settings/ssl"
+        method: PATCH
+        headers:
+          X-Auth-Email: "{{ account_email }}"
+          X-Auth-Key: "{{ account_api_key }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          value: "strict"
+        status_code: 200
+      when: zone_id is defined
+
+    - name: Create DNS record
       community.general.cloudflare_dns:
-        state: "{{ state }}"
+        state: present
         zone: "{{ domain }}"
         record: "{{ service_a }}"
         type: A
-        proxied: true
+        proxied: "{{ use_cloudflare_ssl | bool }}"
         value: "{{ inventory_hostname }}"
         account_email: "{{ account_email }}"
         account_api_key: "{{ account_api_key }}"
-      when: (service_a != "") or (state == "absent")
+      when: state == "present" and service_a | length > 0
+
+    - name: Find DNS record to delete
+      uri:
+        url: "https://api.cloudflare.com/client/v4/zones/{{ zone_id }}/dns_records?type=A&name={{ service_url }}"
+        method: GET
+        headers:
+          X-Auth-Email: "{{ account_email }}"
+          X-Auth-Key: "{{ account_api_key }}"
+          Content-Type: "application/json"
+        return_content: yes
+      register: dns_lookup
+      when: state == "absent"
+
+    - name: Delete DNS record if found
+      uri:
+        url: "https://api.cloudflare.com/client/v4/zones/{{ zone_id }}/dns_records/{{ dns_lookup.json.result[0].id }}"
+        method: DELETE
+        headers:
+          X-Auth-Email: "{{ account_email }}"
+          X-Auth-Key: "{{ account_api_key }}"
+          Content-Type: "application/json"
+        status_code: 200
+      when:
+        - state == "absent"
+        - dns_lookup.json.result | length > 0

@@ -1,0 +1,15 @@
+import { IModel } from "<%= root_contracts_import_path %>";
+import { IModel as IModelExtended } from "<%= extended_contracts_import_path %>";
+import { Dispatch, SetStateAction } from "react";
+import { ISpsComponentBase } from "@sps/ui-adapter";
+
+export const variant = "<%= variant %>" as const;
+
+export interface IComponentProps extends ISpsComponentBase {
+  variant: typeof variant;
+  id: string;
+  set?: Dispatch<SetStateAction<IModelExtended | undefined>>;
+  children?: ({ data }: { data: IModelExtended }) => any;
+}
+
+export interface IComponentPropsExtended extends IComponentProps {}

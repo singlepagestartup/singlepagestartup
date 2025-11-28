@@ -4,19 +4,25 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/website-builder/models/widget/backend/repository/database";
-import { BACKEND_URL, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/website-builder/widgets";
-export const variants = [
-  "default",
-  "content-block-default",
-  "footer-default",
-  "navbar-default",
-] as const;
-export const host = BACKEND_URL;
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
-};
+} as NextRequestOptions;
+export const variants = [
+  "default",
+  "content-default",
+  "footer-default",
+  "navbar-default",
+] as const;

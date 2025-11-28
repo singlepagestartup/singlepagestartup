@@ -10,22 +10,18 @@ export class Provider implements IProvider {
     this.prefix = props.prefix || "";
 
     if (props.type === "redis") {
-      const redis = new RedisProvider({
-        prefix: this.prefix,
-      });
+      const redis = new RedisProvider();
       this.client = redis;
 
       return;
     } else if (props.type === "vercel-kv") {
-      const vercelKV = new VercelKVProvider({
-        prefix: this.prefix,
-      });
+      const vercelKV = new VercelKVProvider();
       this.client = vercelKV;
 
       return;
     }
 
-    throw new Error("Provider not found");
+    throw new Error("Not Found error. Provider not found");
   }
 
   async connect(): Promise<void> {
@@ -36,19 +32,24 @@ export class Provider implements IProvider {
     return await this.client.hashKey(props);
   }
 
-  async get(props: { key: string }) {
+  async get(props: { prefix: string; key: string }) {
     return await this.client.get(props);
   }
 
-  async set(props: { key: string; value: string; options: { ttl: number } }) {
+  async set(props: {
+    prefix: string;
+    key: string;
+    value: string;
+    options: { ttl: number };
+  }) {
     return await this.client.set(props);
   }
 
-  async delByPrefix() {
-    return await this.client.delByPrefix();
+  async delByPrefix(props: { prefix: string }) {
+    return await this.client.delByPrefix(props);
   }
 
-  async del(props: { key: string }) {
+  async del(props: { prefix: string; key: string }) {
     return await this.client.del(props);
   }
 

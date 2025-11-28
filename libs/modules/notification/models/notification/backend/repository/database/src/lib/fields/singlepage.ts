@@ -12,4 +12,5 @@ export const fields = {
   reciever: pgCore.text("reciever").notNull(),
   attachments: pgCore.text("attachments"),
   sendAfter: pgCore.timestamp("send_after").notNull().defaultNow(),
+  sourceSystemId: pgCore.text("source_system_id"),
 };

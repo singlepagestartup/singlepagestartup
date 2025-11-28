@@ -1,6 +1,6 @@
 {
-  "id": "0c239bed-39da-4715-a813-f01c198d2dd0",
-  "prevId": "cea873fd-1090-4df0-a441-e1e9d28c8212",
+  "id": "fb8d0b1f-7e26-4b70-be73-7a56a6607971",
+  "prevId": "1859d9d1-6897-47f0-b196-12e874be5d79",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -43,8 +43,15 @@
           "notNull": true,
           "default": "'feature'"
         },
-        "title": {
-          "name": "title",
+        "field": {
+          "name": "field",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'string'"
+        },
+        "admin_title": {
+          "name": "admin_title",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -55,27 +62,49 @@
           "primaryKey": false,
           "notNull": true
         },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
         "prefix": {
           "name": "prefix",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'{}'::jsonb"
         },
         "suffix": {
           "name": "suffix",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "sps_ee_ae_ky_slug_unique": {
+          "name": "sps_ee_ae_ky_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

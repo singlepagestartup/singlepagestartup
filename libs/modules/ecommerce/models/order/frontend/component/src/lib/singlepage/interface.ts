@@ -1,17 +1,16 @@
-import { IComponentProps as IFindByIdComponentProps } from "./find-by-id";
-import { IComponentProps as IFindComponentProps } from "./find";
-import { IComponentProps as IAdminTableRowComponentProps } from "./admin-table-row";
-import { IComponentProps as IAdminTableComponentProps } from "./admin-table";
-import { IComponentProps as IAdminSelectInputComponentProps } from "./admin-select-input";
-import { IComponentProps as IAdminFormComponentProps } from "./admin-form";
-import { IComponentProps as IDefaultComponentProps } from "./default";
-import { IComponentProps as ICreateComponentProps } from "./create";
-import { IComponentProps as ICartComponentProps } from "./cart";
-import { IComponentProps as ICheckoutComponentProps } from "./checkout";
-import { IComponentProps as IDeleteComponentProps } from "./delete";
-
+import { IComponentProps as IOrdersToProductsQuantityDefaultComponentProps } from "./orders-to-products/quantity/default/interface";
+import { IComponentProps as IFindComponentProps } from "./find/interface";
+import { IComponentProps as IAdminTableRowComponentProps } from "./admin/table-row/interface";
+import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
+import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
+import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
+import { IComponentProps as IDefaultComponentProps } from "./default/interface";
+import { IComponentProps as ICreateComponentProps } from "./create/interface";
+import { IComponentProps as IDeleteComponentProps } from "./delete/interface";
+import { IComponentProps as ICartDefaultComponentProps } from "./cart-default/interface";
+import { IComponentProps as IFormFieldDefaultComponentProps } from "./form-field-default/interface";
 export type IComponentProps =
-  | IFindByIdComponentProps
+  | IOrdersToProductsQuantityDefaultComponentProps
   | IFindComponentProps
   | IAdminTableRowComponentProps
   | IAdminTableComponentProps
@@ -19,7 +18,7 @@ export type IComponentProps =
   | IAdminFormComponentProps
   | IDefaultComponentProps
   | ICreateComponentProps
-  | ICartComponentProps
-  | ICheckoutComponentProps
   | IDeleteComponentProps
+  | ICartDefaultComponentProps
+  | IFormFieldDefaultComponentProps
   | never;

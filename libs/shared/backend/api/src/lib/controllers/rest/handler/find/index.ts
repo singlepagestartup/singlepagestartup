@@ -6,6 +6,7 @@ import { inject, injectable } from "inversify";
 import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
 import { type IParseQueryMiddlewareGeneric } from "../../../../middleware";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -25,9 +26,8 @@ export class Handler<
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

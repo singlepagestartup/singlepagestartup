@@ -6,12 +6,18 @@ type TRenderComponent = ReactNode | ((props: any) => ReactNode);
 type IUniversalProps = {
   field: ControllerRenderProps<any, string>;
   placeholder?: string;
-  label?: string;
+  label?: string | ReactNode;
   ref?: LegacyRef<HTMLInputElement>;
   form: UseFormReturn<any>;
   disabled?: boolean;
   className?: string;
+  name: string;
 };
+
+type Option =
+  | [value: string]
+  | [value: string, title: string]
+  | [value: string, title: string, renderFunction: TRenderComponent];
 
 export type TTypedProps =
   | {
@@ -49,10 +55,30 @@ export type TTypedProps =
       type: "checkbox";
     }
   | {
-      type: "radio" | "select";
-      options: [value: string, title: string | TRenderComponent][];
+      type: "select";
+      options: Option[];
       selectContentClassName?: string;
       selectItemClassName?: string;
+    }
+  | {
+      type: "select-with-search";
+      options: Option[];
+      selectContentClassName?: string;
+      selectItemClassName?: string;
+    }
+  | {
+      type: "radio";
+      options: Option[];
+      radioGroupItemClassName?: string;
+      labelClassName?: string;
+      itemClassName?: string;
+    }
+  | {
+      type: "toggle-group";
+      options: Option[];
+      toggleGroupItemClassName?: string;
+      labelClassName?: string;
+      itemClassName?: string;
     };
 
 export type IComponentProps = IUniversalProps & TTypedProps;

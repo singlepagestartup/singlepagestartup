@@ -1,5 +1,5 @@
 {
-  "id": "e7472ced-7828-47f7-816d-7cbd98113daa",
+  "id": "9bdfbeeb-4279-464f-847c-f50391cb4553",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,20 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         },
         "variant": {
           "name": "variant",
@@ -58,23 +72,21 @@
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "sps_rc_ss_to_ee_me_os_oq2_ee_me_or_id_sps_ee_order_id_fk": {
-          "name": "sps_rc_ss_to_ee_me_os_oq2_ee_me_or_id_sps_ee_order_id_fk",
-          "tableFrom": "sps_rc_ss_to_ee_me_os_oq2",
-          "tableTo": "sps_ee_order",
-          "columnsFrom": ["ee_me_or_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

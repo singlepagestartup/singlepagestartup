@@ -13,6 +13,7 @@ export class Action<SCHEMA extends Record<string, unknown>> {
 
   async execute(props: { data: SCHEMA }) {
     const { data } = props;
+    delete data.updatedAt;
 
     const result = await this.repository.insert(data);
 

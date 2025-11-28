@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1724546593938,
-      "tag": "0000_light_leper_queen",
+      "when": 1737754246536,
+      "tag": "0000_bent_mordo",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1724547275722,
-      "tag": "0001_glorious_bastion",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1724608968136,
-      "tag": "0002_colorful_rage",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1725028926413,
-      "tag": "0003_mute_maggott",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1725052637703,
-      "tag": "0004_thin_power_pack",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1725240600144,
-      "tag": "0005_sour_leech",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1725242239789,
-      "tag": "0006_rare_stephen_strange",
+      "when": 1763671859031,
+      "tag": "0001_thick_exiles",
       "breakpoints": true
     }
   ]

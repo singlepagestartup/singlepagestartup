@@ -9,7 +9,7 @@ services:
       - traefik_overlay
     environment:
       REDIS_DATABASES: 16
-      REDIS_PORT: {{ REDIS_PORT }}
+      REDIS_PORT: {{ REDIS_PORT | default('6379') }}
       REDIS_PASSWORD: {{ REDIS_PASSWORD }}
     deploy:
       update_config:

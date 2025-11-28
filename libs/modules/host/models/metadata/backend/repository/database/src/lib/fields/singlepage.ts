@@ -5,7 +5,7 @@ export const fields = {
   createdAt: pgCore.timestamp("created_at").notNull().defaultNow(),
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
-  title: pgCore.text("title"),
+  title: pgCore.text("title").notNull(),
   description: pgCore.text("description"),
   keywords: pgCore.text("keywords"),
   author: pgCore.text("author"),

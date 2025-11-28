@@ -1,0 +1,20 @@
+{
+  "id": "920f92df-e58b-4b64-b138-3bf105ebebaa",
+  "createdAt": "2025-01-24T23:52:03.730Z",
+  "updatedAt": "2025-10-21T22:10:50.689Z",
+  "variant": "default",
+  "type": "interval",
+  "field": "string",
+  "adminTitle": "ICVZ0BFcqY",
+  "slug": "interval",
+  "title": {
+    "en": "Interval",
+    "ru": "Интервал"
+  },
+  "prefix": {
+    "en": ""
+  },
+  "suffix": {
+    "en": ""
+  }
+}

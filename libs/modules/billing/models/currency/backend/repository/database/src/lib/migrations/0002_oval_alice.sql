@@ -1,1 +1,0 @@
-ALTER TABLE "sps_bg_currency" ADD COLUMN "symbol" text NOT NULL;

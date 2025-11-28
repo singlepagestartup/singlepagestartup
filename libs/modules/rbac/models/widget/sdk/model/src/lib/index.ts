@@ -4,24 +4,33 @@ export {
   insertSchema,
   selectSchema,
 } from "@sps/rbac/models/widget/backend/repository/database";
-import { BACKEND_URL, REVALIDATE } from "@sps/shared-utils";
+import {
+  API_SERVICE_URL,
+  NEXT_PUBLIC_API_SERVICE_URL,
+  NextRequestOptions,
+  REVALIDATE,
+} from "@sps/shared-utils";
 
+export const serverHost = API_SERVICE_URL;
+export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/rbac/widgets";
 export const variants = [
   "default",
-  "subject-init",
-  "subject-init",
-  "change-password",
-  "forgot-password",
-  "login",
-  "logout",
-  "registration",
-  "reset-password",
+  "subject-authentication-email-and-password-forgot-password-form-default",
+  "subject-authentication-select-method-default",
+  "subject-authentication-email-and-password-registration-form-default",
+  "subject-authentication-email-and-password-reset-password-form-default",
+  "subject-overview-default",
+  "subject-list-default",
+  "subject-list-social-module-profile-default",
+  "subject-identity-settings-default",
+  "subject-authentication-logout-action-default",
+  "subject-overview-ecommerce-module-product-list-default",
+  "subject-overview-social-module-profile-overview-default",
 ];
-export const host = BACKEND_URL;
 export const query = {};
 export const options = {
   next: {
     revalidate: REVALIDATE,
   },
-};
+} as NextRequestOptions;

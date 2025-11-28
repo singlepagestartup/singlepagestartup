@@ -4,5 +4,7 @@
   "sourceRoot": "plugins/sps-generator-plugin/src",
   "projectType": "library",
   "tags": [],
-  "targets": {}
+  "targets": {
+    "jest:test": {}
+  }
 }

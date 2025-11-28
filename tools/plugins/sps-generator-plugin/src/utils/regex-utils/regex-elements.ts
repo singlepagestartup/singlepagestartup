@@ -1,3 +1,3 @@
-export const space = `([\\s]+?)?`;
-export const comma = `([,]+?)?`;
-export const doubleQuote = `(["]+?)?`;
+export const space = "[\\s\\n]*";
+export const comma = "([,]+?)?";
+export const doubleQuote = '(["]+?)?';

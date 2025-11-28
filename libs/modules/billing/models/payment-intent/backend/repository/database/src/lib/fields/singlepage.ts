@@ -7,4 +7,6 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   amount: pgCore.integer("amount").notNull().default(0),
   status: pgCore.text("status").notNull().default("requires_payment_method"),
+  interval: pgCore.text("interval"),
+  type: pgCore.text("type").notNull().default("one_off"),
 };

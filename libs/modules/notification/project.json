@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {},
+    "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",
@@ -23,12 +23,10 @@
     },
     "repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
-          {
-            "command": "nx run @sps/notification:repository-generate"
-          },
           {
             "command": "nx run @sps/notification:models:repository-migrate"
           },
@@ -74,6 +72,7 @@
     },
     "models:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -94,6 +93,7 @@
     },
     "relations:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
         "commands": [
@@ -123,9 +123,10 @@
     },
     "models:template:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/models/template/backend/repository/database",
         "commands": [
           {
@@ -151,9 +152,10 @@
     },
     "models:notification:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/models/notification/backend/repository/database",
         "commands": [
           {
@@ -179,9 +181,10 @@
     },
     "models:topic:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/models/topic/backend/repository/database",
         "commands": [
           {
@@ -207,9 +210,10 @@
     },
     "models:widget:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/models/widget/backend/repository/database",
         "commands": [
           {
@@ -235,9 +239,10 @@
     },
     "relations:topics-to-notifications:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/relations/topics-to-notifications/backend/repository/database",
         "commands": [
           {
@@ -263,9 +268,10 @@
     },
     "relations:notifications-to-templates:repository-migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
         "parallel": false,
-        "envFile": "apps/host/.env.local",
+        "envFile": "apps/api/.env",
         "cwd": "libs/modules/notification/relations/notifications-to-templates/backend/repository/database",
         "commands": [
           {

@@ -1,9 +1,7 @@
 {
   "sps-render-component": {
     "prefix": ["spsrndrcmp", "src"],
-    "body": [
-      "<$1 isServer={props.isServer} hostUrl={props.hostUrl} variant=\"$2\" data={$3} />",
-    ],
+    "body": ["<$1 isServer={props.isServer} variant=\"$2\" data={$3} />"],
     "description": "Render component in sps generator style",
   },
 }

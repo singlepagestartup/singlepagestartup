@@ -1,27 +1,21 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/website-builder/models/logotype/frontend/component";
-import { Component as LogotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-widgets/frontend/component";
+import { Component as LogotypesToFileStorageModuleWidgets } from "@sps/website-builder/relations/logotypes-to-file-storage-module-files/frontend/component";
 import { Component as WidgetsToLogotypes } from "@sps/website-builder/relations/widgets-to-logotypes/frontend/component";
 
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            logotypesToFileStorageModuleWidgets={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            logotypesToFileStorageModuleWidgets={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -29,7 +23,6 @@ export function Component() {
               return (
                 <LogotypesToFileStorageModuleWidgets
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -47,7 +40,7 @@ export function Component() {
                 />
               );
             }}
-            widgetsToLogotypes={({ data, hostUrl, isServer }) => {
+            widgetsToLogotypes={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -55,7 +48,6 @@ export function Component() {
               return (
                 <WidgetsToLogotypes
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {

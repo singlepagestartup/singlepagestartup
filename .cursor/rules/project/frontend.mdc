@@ -1,0 +1,89 @@
+---
+description: Frontend Architecture Rules
+globs:
+  - "apps/host/**/*"
+  - "libs/modules/*/frontend/**/*"
+alwaysApply: true
+---
+
+@rule
+
+## Host Application (`apps/host`)
+
+- Treat `apps/host` as the sole Next.js App Router shell; all public routes resolve through `app/[[...url]]/page.tsx`, which mounts `@sps/host/frontend/component` and proxies rendering to module components.
+- Keep global concerns (fonts, analytics, RBAC init, Suspense boundaries) in `app/layout.tsx`; add new providers here only if they are globally required.
+- Use API routes in `app/api/**` exclusively as entrypoints that wrap module SDK calls (email/image/telegram generators, revalidation, etc.). Never bypass module SDK layers from pages or components.
+- When adding middleware or headers, update `middleware.ts` and `next.config.js` so that host-level behavior remains centralized.
+
+@rule
+
+## Module Frontend Packages (`libs/modules/<module>/frontend`)
+
+- Each module exposes a `frontend/component` package that aggregates all UI variants for its models and relations (e.g. `libs/modules/ecommerce/models/product/frontend/component`).
+- Export module widgets only through the package root (`index.ts` → `src/index.ts`), keeping public API stable for host consumption.
+- Organize variants under `singlepage/` (core SPS variants) and `startup/` (startup-specific overrides). Merge variant maps in `variants.ts` as in the ecommerce product module.
+- Keep admin experiences inside `admin/` folders: tables, forms, select inputs, etc., wired to shared Parent components (`@sps/shared-frontend-components`).
+
+@rule
+
+## Component Implementation Checklist
+
+- Implement both `IComponentProps` and `IComponentPropsExtended` in `interface.ts`, and export the variant through `index.tsx`, which wraps `Component.tsx`.
+- Structure each variant as `interface.ts` → `index.tsx` → `Component.tsx`; add `ClientComponent.tsx` only when client-side APIs (hooks, window, timers) are required and mark the file with the `"use client"` directive. Once a component is client-only, pass `isServer={false}` to every downstream relation/model component to prevent RSC hydration errors.
+- Wrap concrete implementations with Parent components from `@sps/shared-frontend-components` to inherit SPS behavior (forms, tables, select inputs, etc.) and keep extra helpers inside `assets/` subfolders.
+- Prefer server components; mark client components with `"use client"` only when hooks or browser APIs are required (see ecommerce admin widgets).
+- Fetch data exclusively through module SDK providers (`sdk/client`, `sdk/server`). Pass `apiProps` / `Provider` refs when composing relations (e.g. chaining `ProductsToAttributes` → `AttributeKeysToAttributes`).
+- Maintain slot-style props (`topSlot`, `middleSlot`, etc.) for composition. Preserve Tailwind classes and `data-*` attributes used for analytics and styling.
+
+@rule
+
+## Data Handling Pattern
+
+- Perform all data fetching via SDK helpers: `Provider`, `clientApi`, `serverApi`; never call `fetch` directly inside components.
+- For nested entities use relation components with `variant="find"` and filters configured through `apiProps.params.filters.and`.
+- Complex data flows should follow the `singlepage/default` pattern: move fetching/transform steps into `client.tsx` / `server.tsx` wrappers and keep `Component.tsx` purely presentational.
+- Base template:
+
+```tsx
+<RelationComponent
+  isServer={props.isServer}
+  variant="find"
+  apiProps={{
+    params: {
+      filters: {
+        and: [
+          {
+            column: "parentId",
+            method: "eq",
+            value: props.data.id,
+          },
+        ],
+      },
+    },
+  }}
+>
+  {({ data }) => {
+    return data?.map((entity, index) => {
+      return (
+        <ChildComponent
+          key={index}
+          isServer={props.isServer}
+          data={entity}
+          variant={entity.variant as any}
+        />
+      );
+    });
+  }}
+</RelationComponent>
+```
+
+- Respect `Cache-Control: no-store` only where it already exists in current variants. New variants must rely on the SDK-provided `options` instead of hardcoding caching headers.
+
+@rule
+
+## Integration Flow for New UI
+
+1. Add model logic in the module’s `frontend/component` package with the appropriate variant under `singlepage/`.
+2. Re-export the variant through the module `variants.ts` and package root so `apps/host` can import it via `@sps/<module>/.../component`.
+3. Wire the variant inside host (pages, admin dashboards, or API route responses) using the module’s exported component and pass `isServer` / `variant` props explicitly.
+4. Update shared providers or RBAC hooks only when cross-module coupling is required; otherwise keep logic inside the module package.

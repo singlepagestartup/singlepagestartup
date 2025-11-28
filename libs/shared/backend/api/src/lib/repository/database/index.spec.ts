@@ -271,7 +271,7 @@ describe("Database", () => {
     });
 
     it("seeding relation should create entities from files in config.repository.directory if passed transform parameter", async () => {
-      const dumpEntity = { id: 4, widgetId: 4, widgetId: 6 };
+      const dumpEntity = { id: 4, widgetId: 4 };
       const configuration = new Configuration({
         repository: {
           ...baseConfiguration,
@@ -318,7 +318,6 @@ describe("Database", () => {
           {
             id: 1,
             widgetId: 2,
-            widgetId: 3,
           },
         ] as any),
         jest

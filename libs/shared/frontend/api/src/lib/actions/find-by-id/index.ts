@@ -6,7 +6,7 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
-export interface IActionProps {
+export interface IProps {
   id: string;
   route: string;
   tag?: string;
@@ -18,7 +18,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export async function action<T>(props: IActionProps): Promise<T | undefined> {
+export type IResult<T> = T | undefined;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const { id, params, route, options, host } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
@@ -27,7 +29,7 @@ export async function action<T>(props: IActionProps): Promise<T | undefined> {
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
-    ? { "Cache-Control": "no-cache" }
+    ? { "Cache-Control": "no-store" }
     : {};
 
   const requestOptions: NextRequestOptions = {
@@ -43,16 +45,40 @@ export async function action<T>(props: IActionProps): Promise<T | undefined> {
     },
   };
 
-  const res = await fetch(
-    `${host}${route}/${id}?${stringifiedQuery}`,
-    requestOptions,
-  );
+  let retries = 30;
+  let lastError;
 
-  const json = await responsePipe<{ data: T }>({
-    res,
-  });
+  while (retries > 0) {
+    try {
+      const res = await fetch(
+        `${host}${route}/${id}?${stringifiedQuery}`,
+        requestOptions,
+      );
 
-  const transformedData = transformResponseItem<T>(json);
+      const json = await responsePipe<{ data: IResult<T> }>({
+        res,
+      });
 
-  return transformedData;
+      const transformedData = transformResponseItem<IResult<T>>(json);
+
+      return transformedData;
+    } catch (error: any) {
+      if (!error.message.includes("404 |")) {
+        retries = 0;
+      }
+
+      lastError = error;
+
+      if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {
+        throw error;
+      }
+
+      retries--;
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  }
+
+  throw lastError;
 }

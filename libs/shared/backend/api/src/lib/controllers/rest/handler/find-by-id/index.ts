@@ -5,6 +5,7 @@ import { Next } from "hono/types";
 import { inject, injectable } from "inversify";
 import { DI } from "../../../../di/constants";
 import { type IService } from "../../../../service";
+import { getHttpErrorType } from "@sps/backend-utils";
 
 @injectable()
 export class Handler<
@@ -18,29 +19,21 @@ export class Handler<
       const uuid = c.req.param("uuid");
 
       if (!uuid) {
-        throw new HTTPException(400, {
-          message: "Invalid id",
-        });
+        throw new Error("Validation error. Invalid id. Got: " + uuid);
       }
 
       const data = await this.service.findById({ id: uuid });
 
       if (!data || !Object.keys(data).length) {
-        return c.json(
-          {
-            message: "Not found",
-          },
-          404,
-        );
+        throw new Error("Not Found error. Not Found entity with id: " + uuid);
       }
 
       return c.json({
         data,
       });
     } catch (error: any) {
-      throw new HTTPException(400, {
-        message: error.message,
-      });
+      const { status, message, details } = getHttpErrorType(error);
+      throw new HTTPException(status, { message, cause: details });
     }
   }
 }

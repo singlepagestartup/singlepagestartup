@@ -1,13 +1,20 @@
-import { generateFiles, offsetFromRoot, Tree } from "@nx/devkit";
+import {
+  generateFiles,
+  getProjects,
+  offsetFromRoot,
+  Tree,
+  updateJson,
+} from "@nx/devkit";
+import * as nxWorkspace from "@nx/workspace";
 import {
   Coder as ModelsCoder,
   IGeneratorProps as IModelsCoderGeneratorProps,
 } from "./models/Coder";
 import { Coder as ModuleCoder } from "../Coder";
-import { IEditFieldProps } from "./models/[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./models/[model]/backend/repository/database/Coder";
 import {
   Coder as RelationsCoder,
-  IGeneratorProps as IModelsCoderGeneratorProps,
+  IGeneratorProps as IRelationsCoderGeneratorProps,
 } from "./relations/Coder";
 import {
   Coder as BackendCoder,
@@ -17,11 +24,12 @@ import {
   Coder as FrontendCoder,
   IGeneratorProps as IFrontendCoderGeneratorProps,
 } from "./frontend/Coder";
+import { util as getNameStyles } from "../../../../utils/get-name-styles";
 
 export type IGeneratorProps = {
   name: Coder["name"];
   models?: IModelsCoderGeneratorProps[];
-  relations?: IModelsCoderGeneratorProps[];
+  relations?: IRelationsCoderGeneratorProps[];
   backend?: IBackendCoderGeneratorProps;
   frontend?: IFrontendCoderGeneratorProps;
 };
@@ -38,6 +46,7 @@ export class Coder {
   absoluteName: string;
   tree: Tree;
   parent: ModuleCoder;
+  nameStyles: ReturnType<typeof getNameStyles>;
   project: {
     models: ModelsCoder[];
     relations: RelationsCoder[];
@@ -62,6 +71,7 @@ export class Coder {
     this.tree = props.tree;
     this.parent = props.parent;
     this.absoluteName = `${props.parent.absoluteName}/${props.name}`;
+    this.nameStyles = getNameStyles({ name: this.name });
 
     this.project.backend = new BackendCoder({
       ...props.backend,
@@ -100,21 +110,41 @@ export class Coder {
     await this.project.backend.create();
     await this.project.frontend.create();
 
-    for (const model of this.project.models) {
-      await model.create();
-    }
+    // for (const model of this.project.models) {
+    //   await model.create();
+    // }
 
-    for (const relation of this.project.relations) {
-      await relation.create();
-    }
+    // for (const relation of this.project.relations) {
+    //   await relation.create();
+    // }
 
     const offsetFromRootProject = offsetFromRoot(this.baseDirectory);
 
     generateFiles(this.tree, `${__dirname}/files`, this.baseDirectory, {
       template: "",
       lib_name: this.baseName,
+      name_pascal_cased: this.nameStyles.pascalCased.base,
       offset_from_root: offsetFromRootProject,
       directory: this.baseDirectory,
+    });
+
+    await this.attach();
+  }
+
+  async attach() {
+    updateJson(this.tree, "tsconfig.base.json", (json) => {
+      const updatedJson = {
+        ...json,
+        compilerOptions: {
+          ...json.compilerOptions,
+          paths: {
+            ...json.compilerOptions.paths,
+            [this.baseName + "/*"]: ["libs/modules/" + this.name + "/*"],
+          },
+        },
+      };
+
+      return updatedJson;
     });
   }
 
@@ -131,10 +161,24 @@ export class Coder {
     await this.project.frontend.migrate(props);
   }
 
+  async detach() {
+    updateJson(this.tree, "tsconfig.base.json", (json) => {
+      const updatedJson = {
+        ...json,
+      };
+
+      delete updatedJson.compilerOptions.paths[this.baseName + "/*"];
+
+      return updatedJson;
+    });
+  }
+
   async remove() {
-    for (const relation of this.project.relations) {
-      await relation.remove();
-    }
+    await this.detach();
+
+    // for (const relation of this.project.relations) {
+    //   await relation.remove();
+    // }
 
     for (const model of this.project.models) {
       await model.remove();
@@ -142,6 +186,10 @@ export class Coder {
 
     await this.project.frontend.remove();
     await this.project.backend.remove();
+
+    if (this.tree.exists(this.baseDirectory)) {
+      this.tree.delete(this.baseDirectory);
+    }
   }
 
   async addField(props: IEditFieldProps) {

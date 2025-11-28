@@ -1,6 +1,6 @@
 {
-  "id": "ea4b4f68-b3dc-49b1-bfc2-131179cf2af5",
-  "prevId": "e7472ced-7828-47f7-816d-7cbd98113daa",
+  "id": "ae96cbec-3a77-496b-bd9e-615e96a564f8",
+  "prevId": "9bdfbeeb-4279-464f-847c-f50391cb4553",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -14,6 +14,20 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         },
         "variant": {
           "name": "variant",
@@ -65,16 +79,23 @@
           "tableTo": "sps_ee_order",
           "columnsFrom": ["ee_me_or_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

@@ -95,3 +95,10 @@ tmp
 ############################
 
 .env.testing
+.github/instructions/nx.instructions.md
+
+############################
+# Cursor
+############################
+
+.cursor/rules/nx-rules.mdc

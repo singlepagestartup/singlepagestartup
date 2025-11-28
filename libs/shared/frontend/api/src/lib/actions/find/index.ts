@@ -6,7 +6,7 @@ import {
 import QueryString from "qs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
-export interface IActionProps {
+export interface IProps {
   route: string;
   host: string;
   catchErrors?: boolean;
@@ -18,7 +18,9 @@ export interface IActionProps {
   options?: Partial<NextRequestOptions>;
 }
 
-export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
+export type IResult<T> = T[] | undefined;
+
+export async function action<T>(props: IProps): Promise<IResult<T>> {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
   const { params, route, options, host } = props;
@@ -29,7 +31,7 @@ export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
 
   const noCache = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
   const cacheControlOptions: NextRequestOptions["headers"] = noCache
-    ? { "Cache-Control": "no-cache" }
+    ? { "Cache-Control": "no-store" }
     : {};
 
   const requestOptions: NextRequestOptions = {
@@ -43,23 +45,48 @@ export async function action<T>(props: IActionProps): Promise<T[] | undefined> {
       tags: [route],
       ...options?.next,
     },
+    signal: AbortSignal.timeout(10000),
   };
 
-  const res = await fetch(
-    `${host}${route}?${stringifiedQuery}`,
-    requestOptions,
-  );
+  let retries = 3;
+  let lastError;
 
-  const json = await responsePipe<{ data: T[] }>({
-    res,
-    catchErrors: props.catchErrors || productionBuild,
-  });
+  while (retries > 0) {
+    try {
+      const res = await fetch(
+        `${host}${route}?${stringifiedQuery}`,
+        requestOptions,
+      );
 
-  if (!json) {
-    return;
+      const json = await responsePipe<{ data: IResult<T> }>({
+        res,
+        catchErrors: props.catchErrors || productionBuild,
+      });
+
+      if (!json) {
+        return;
+      }
+
+      const transformedData = transformResponseItem<IResult<T>>(json);
+
+      return transformedData;
+    } catch (error: any) {
+      if (!error.message.includes("404 |")) {
+        retries = 0;
+      }
+
+      lastError = error;
+
+      if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {
+        throw error;
+      }
+
+      retries--;
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
   }
 
-  const transformedData = transformResponseItem<T[]>(json);
-
-  return transformedData;
+  throw lastError;
 }

@@ -4,7 +4,7 @@ import {
   insertSchema,
   selectSchema,
   dataDirectory,
-} from "@sps/notification/models/notification/backend/repository/database";
+} from "@sps/notification/models/widget/backend/repository/database";
 import { injectable } from "inversify";
 
 @injectable()
@@ -24,8 +24,17 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: true,
           module: "notification",
-          name: "notification",
+          name: "widget",
           type: "model",
+          filters: [
+            {
+              column: "slug",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.slug;
+              },
+            },
+          ],
         },
       },
     });

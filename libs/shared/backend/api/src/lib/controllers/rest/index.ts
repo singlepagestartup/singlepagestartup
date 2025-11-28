@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import { Context } from "hono";
-import { StatusCode } from "hono/utils/http-status";
 import { inject, injectable } from "inversify";
 import {
   FindHandler,
@@ -10,6 +9,9 @@ import {
   DeleteHandler,
   DumpHandler,
   SeedHandler,
+  FindOrCreateHandler,
+  BulkCreateHandler,
+  BulkUpdateHandler,
 } from "./handler";
 import { type IService } from "../../service";
 import { DI } from "../../di/constants";
@@ -19,12 +21,14 @@ import { IController } from "../interface";
 export class Controller<DTO extends Record<string, unknown>>
   implements IController<DTO>
 {
-  routes: IController<DTO>["routes"] = [];
   service: IService<DTO>;
+  httpRoutes: IController<DTO>["httpRoutes"] = [];
+  telegramRoutes: IController<DTO>["telegramRoutes"];
+  telegramConversations: IController<DTO>["telegramConversations"];
 
   constructor(@inject(DI.IService) service: IService<DTO>) {
     this.service = service;
-    this.bindRoutes([
+    this.bindHttpRoutes([
       {
         method: "GET",
         path: "/",
@@ -44,6 +48,21 @@ export class Controller<DTO extends Record<string, unknown>>
         method: "POST",
         path: "/",
         handler: this.create,
+      },
+      {
+        method: "POST",
+        path: "/bulk",
+        handler: this.bulkCreate,
+      },
+      {
+        method: "PATCH",
+        path: "/bulk",
+        handler: this.bulkUpdate,
+      },
+      {
+        method: "POST",
+        path: "/find-or-create",
+        handler: this.findOrCreate,
       },
       {
         method: "PATCH",
@@ -73,6 +92,19 @@ export class Controller<DTO extends Record<string, unknown>>
     return handler.execute(c, next);
   }
 
+  public async findOrCreate(c: Context, next: any): Promise<Response> {
+    const handler = new FindOrCreateHandler<Context, DTO>(this.service);
+    return handler.execute(c, next);
+  }
+
+  async bulkCreate(c: Context, next: any): Promise<Response> {
+    return new BulkCreateHandler(this.service).execute(c, next);
+  }
+
+  async bulkUpdate(c: Context, next: any): Promise<Response> {
+    return new BulkUpdateHandler(this.service).execute(c, next);
+  }
+
   public async update(c: Context, next: any): Promise<Response> {
     const handler = new UpdateHandler<Context, DTO>(this.service);
     return handler.execute(c, next);
@@ -93,14 +125,41 @@ export class Controller<DTO extends Record<string, unknown>>
     return handler.execute(c, next);
   }
 
-  protected bindRoutes(routes: IController<DTO>["routes"]) {
-    this.routes = [];
+  protected bindHttpRoutes(routes: IController<DTO>["httpRoutes"]) {
+    this.httpRoutes = [];
 
     for (const route of routes) {
       const handler = route.handler.bind(this);
-      this.routes.push({
+      this.httpRoutes.push({
         ...route,
         handler,
+      });
+    }
+  }
+
+  protected bindTelegramRoutes(routes: IController<DTO>["telegramRoutes"]) {
+    this.telegramRoutes = [];
+
+    for (const route of routes) {
+      const handler = (route.handler as unknown as Function).bind(this);
+      this.telegramRoutes.push({
+        ...route,
+        handler: handler as IController<DTO>["telegramRoutes"][0]["handler"],
+      });
+    }
+  }
+
+  protected bindTelegramConversations(
+    routes: IController<DTO>["telegramConversations"],
+  ) {
+    this.telegramConversations = [];
+
+    for (const route of routes) {
+      const handler = (route.handler as unknown as Function).bind(this);
+      this.telegramConversations.push({
+        ...route,
+        handler:
+          handler as IController<DTO>["telegramConversations"][0]["handler"],
       });
     }
   }

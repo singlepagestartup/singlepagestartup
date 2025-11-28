@@ -1,0 +1,21 @@
+---
+description: SinglePageStartup Project Structure
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+@rule
+This is a summary of the project structure. Use it when generating code, navigating the repository, or referencing files.
+
+@/README.md
+
+@notes
+
+- The main structure is described in [README.md](../../README.md#project-structure).
+- Root files: Nx configs, tsconfig, jest, docker, devcontainer, bash scripts for infrastructure.
+- `apps/` — applications (`api`, `host`, `db`, `mcp`, `redis`, `telegram`).
+- `libs/` — business modules, shared, providers, middlewares.
+- `tools/` — infrastructure and tooling.
+- Backend (`apps/api`): Main Bun API server that serves as the central backend host, aggregating and unifying all SinglePageStartup api modules into a single REST API.
+- Frontend (`apps/host`): Main Next.js application that serves as the central frontend host, aggregating and rendering all SinglePageStartup frontend modules

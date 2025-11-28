@@ -6,17 +6,19 @@ import { cn } from "@sps/shared-frontend-client-utils";
 
 export function App(props: IComponentProps) {
   return (
-    <div data-module="broadcast" className={cn("w-full flex", props.className)}>
+    <div
+      data-module="broadcast"
+      className={cn("w-full flex flex-col", props.className)}
+    >
       <Channel
         isServer={false}
-        hostUrl={props.hostUrl}
         variant="find"
         apiProps={{
           params: {
             filters: {
               and: [
                 {
-                  column: "title",
+                  column: "slug",
                   method: "eq",
                   value: "revalidation",
                 },
@@ -31,7 +33,6 @@ export function App(props: IComponentProps) {
               <Channel
                 key={index}
                 isServer={false}
-                hostUrl={props.hostUrl}
                 variant="subscription"
                 data={entity}
               />

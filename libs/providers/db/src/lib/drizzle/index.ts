@@ -1,12 +1,11 @@
-import { drizzle } from "drizzle-orm/postgres-js";
 import * as drizzleSchema from "./schema";
-import { postgres } from "@sps/shared-backend-database-config";
+import { getDrizzle } from "@sps/shared-backend-database-config";
 import path from "path";
 
 export { migrate } from "./migrate";
 export { seed } from "./seed";
 export { drop } from "./drop";
-export const db = drizzle(postgres, { schema: drizzleSchema });
+export const db = getDrizzle({ schema: drizzleSchema });
 export const schema = drizzleSchema;
 
 const modulesSchemaPaths = [

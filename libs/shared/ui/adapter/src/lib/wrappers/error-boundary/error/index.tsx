@@ -1,4 +1,4 @@
-import { variants as spsLiteVariants } from "./sps-lite";
+import { variants as singlepageVariants } from "./singlepage";
 import { variants as startupVariants } from "./startup";
 import { ErrorBoundaryState } from "..";
 
@@ -7,7 +7,7 @@ export interface IError extends ErrorBoundaryState {
 }
 
 const variants = {
-  ...spsLiteVariants,
+  ...singlepageVariants,
   ...startupVariants,
 };
 

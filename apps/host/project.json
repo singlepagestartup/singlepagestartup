@@ -5,88 +5,6 @@
   "projectType": "application",
   "tags": [],
   "targets": {
-    "db:migrate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "cwd": "apps/host",
-        "commands": [
-          {
-            "command": "npx nx run @sps/file-storage:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/broadcast:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/notification:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/crm:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/billing:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/ecommerce:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/sps-third-parties:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/website-builder:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/startup:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/rbac:repository-migrate"
-          },
-          {
-            "command": "npx nx run @sps/host:repository-migrate"
-          }
-        ]
-      }
-    },
-    "db:dump": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["db:prepare"],
-      "options": {
-        "parallel": false,
-        "cwd": "apps/host",
-        "commands": [
-          {
-            "command": "bun run src/db/dump.ts"
-          }
-        ]
-      }
-    },
-    "db:seed": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["db:prepare"],
-      "options": {
-        "parallel": false,
-        "cwd": "apps/host",
-        "commands": [
-          {
-            "command": "npx nx run host:db:migrate"
-          },
-          {
-            "command": "bun run src/db/seed.ts"
-          }
-        ]
-      }
-    },
-    "prepare": {
-      "executor": "nx:run-commands",
-      "options": {
-        "parallel": false,
-        "commands": [
-          {
-            "command": "nx run host:db:migrate"
-          }
-        ]
-      }
-    },
     "next:dev": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",
@@ -95,7 +13,7 @@
         "buildTarget": "next:build",
         "dev": true,
         "port": 3000,
-        "turbo": false
+        "turbo": true
       }
     },
     "next:build": {

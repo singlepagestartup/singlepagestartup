@@ -1,71 +1,61 @@
-const { withNx } = require("@nx/next/plugins/with-nx");
+import { withNx } from "@nx/next/plugins/with-nx.js";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
-const BACKEND_URL = process.env["BACKEND_URL"] || "http://localhost:3000";
-const HOST_URL = process.env["HOST_URL"] || "http://localhost:3000";
-const NEXT_PUBLIC_BACKEND_URL =
-  process.env["NEXT_PUBLIC_BACKEND_URL"] || "http://localhost:3000";
-const NEXT_PUBLIC_HOST_URL =
-  process.env["NEXT_PUBLIC_HOST_URL"] || "http://localhost:3000";
+const API_SERVICE_URL = process.env.API_SERVICE_URL || "http://localhost:4000";
+const HOST_SERVICE_URL =
+  process.env.HOST_SERVICE_URL || "http://localhost:3000";
+const NEXT_PUBLIC_API_SERVICE_URL =
+  process.env.NEXT_PUBLIC_API_SERVICE_URL || "http://localhost:4000";
+const NEXT_PUBLIC_HOST_SERVICE_URL =
+  process.env.NEXT_PUBLIC_HOST_SERVICE_URL || "http://localhost:3000";
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
+const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.BUNDLE_ANALYZER === "true",
 });
 
 function makeConfig() {
-  const nextPublicBackendHost = NEXT_PUBLIC_BACKEND_URL?.replace(
-    "https://",
-    "",
-  ).replace("http://", "");
-  const nextPublicFrontendHost = NEXT_PUBLIC_HOST_URL?.replace(
-    "https://",
-    "",
-  ).replace("http://", "");
-  const backendHost = BACKEND_URL?.replace("https://", "").replace(
-    "http://",
-    "",
-  );
-  const frontendHost = HOST_URL?.replace("https://", "").replace("http://", "");
+  const stripProtocol = (url) =>
+    url.replace("https://", "").replace("http://", "");
 
-  let config = {
+  const apiServiceHost = stripProtocol(API_SERVICE_URL);
+  const hostServiceHost = stripProtocol(HOST_SERVICE_URL);
+  const nextPublicApiServiceHost = stripProtocol(NEXT_PUBLIC_API_SERVICE_URL);
+  const nextPublicHostServiceHost = stripProtocol(NEXT_PUBLIC_HOST_SERVICE_URL);
+
+  return withBundleAnalyzer({
     reactStrictMode: true,
     images: {
       unoptimized: true,
-      domains: [
-        "localhost",
-        "127.0.0.1",
-        backendHost,
-        frontendHost,
-        nextPublicBackendHost,
-        nextPublicFrontendHost,
-      ],
       remotePatterns: [
-        {
-          protocol: "https",
-          hostname: "**.singlepagestartup.com",
-        },
-        {
-          protocol: "https",
-          hostname: "**.vercel.app",
-        },
-        {
-          protocol: "https",
-          hostname: "**.amazonaws.com",
-        },
-        {
-          protocol: "https",
-          hostname: "**.telebit.io",
-        },
+        { protocol: "http", hostname: "localhost" },
+        { protocol: "https", hostname: "localhost" },
+        { protocol: "http", hostname: "127.0.0.1" },
+        { protocol: "https", hostname: "127.0.0.1" },
+        { protocol: "http", hostname: apiServiceHost },
+        { protocol: "https", hostname: apiServiceHost },
+        { protocol: "http", hostname: hostServiceHost },
+        { protocol: "https", hostname: hostServiceHost },
+        { protocol: "http", hostname: nextPublicApiServiceHost },
+        { protocol: "https", hostname: nextPublicApiServiceHost },
+        { protocol: "http", hostname: nextPublicHostServiceHost },
+        { protocol: "https", hostname: nextPublicHostServiceHost },
+        { protocol: "https", hostname: "**.singlepagestartup.com" },
+        { protocol: "https", hostname: "**.vercel.app" },
+        { protocol: "https", hostname: "**.amazonaws.com" },
+        { protocol: "https", hostname: "**.telebit.io" },
         { protocol: "https", hostname: "**.vercel-storage.com" },
       ],
     },
     async headers() {
       return [
         {
-          // matching all API routes
           source: "/api/:path*",
           headers: [
             { key: "Access-Control-Allow-Credentials", value: "true" },
-            { key: "Access-Control-Allow-Origin", value: "*" },
+            {
+              key: "Access-Control-Allow-Origin",
+              value: NEXT_PUBLIC_API_SERVICE_URL,
+            },
             {
               key: "Access-Control-Allow-Methods",
               value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",
@@ -80,18 +70,43 @@ function makeConfig() {
       ];
     },
     trailingSlash: false,
-    experimental: {
-      ppr: "incremental",
-    },
-    webpack: (config) => {
+    webpack(config) {
+      config.module.rules.push({
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: [
+          {
+            loader: "@svgr/webpack",
+            options: {
+              svgo: true,
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: "preset-default",
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      });
+
+      config.module.rules.push(
+        { test: /\.d\.ts$/, use: "ignore-loader" },
+        { test: /\.map$/, use: "ignore-loader" },
+      );
+
       config.externals.push("pino-pretty", "lokijs", "encoding");
+
       return config;
     },
-  };
-
-  return withBundleAnalyzer(config);
+    logging: false,
+  });
 }
 
-const config = makeConfig();
-
-module.exports = withNx(config);
+export default withNx(makeConfig());

@@ -51,7 +51,7 @@
             "value": "startup"
           },
           {
-            "value": "sps-lite"
+            "value": "singlepage"
           }
         ]
       }
@@ -73,7 +73,7 @@
         ]
       }
     },
-    "entity_name": {
+    "entity": {
       "type": "string",
       "description": "Name of model (page) or relation (pages-to-layouts)",
       "$default": {
@@ -82,7 +82,16 @@
       },
       "x-prompt": "What name would you like to use?"
     },
-    "module_name": {
+    "path": {
+      "type": "string",
+      "description": "Path to component",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "Where would you like to create the component?"
+    },
+    "module": {
       "type": "string",
       "description": "Module",
       "x-prompt": {
@@ -90,16 +99,19 @@
         "type": "list",
         "default": "website-builder",
         "items": [
+          { "value": "agent" },
+          { "value": "analytic" },
           { "value": "billing" },
+          { "value": "blog" },
           { "value": "broadcast" },
           { "value": "crm" },
+          { "value": "ecommerce" },
           { "value": "file-storage" },
-          { "value": "host" },
           { "value": "notification" },
           { "value": "rbac" },
-          { "value": "sps-third-parties" },
-          { "value": "website-builder" },
-          { "value": "startup" }
+          { "value": "social" },
+          { "value": "startup" },
+          { "value": "website-builder" }
         ]
       }
     },
@@ -120,5 +132,5 @@
       }
     }
   },
-  "required": ["action", "name", "level", "type", "entity_name", "module_name"]
+  "required": ["action", "name", "path", "level", "type", "entity", "module"]
 }

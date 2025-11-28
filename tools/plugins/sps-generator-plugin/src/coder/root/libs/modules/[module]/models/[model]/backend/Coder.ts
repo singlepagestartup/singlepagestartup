@@ -1,23 +1,18 @@
 import {
-  Coder as SchemaCoder,
-  IGeneratorProps as ISchemaCoderGeneratorProps,
-} from "./schema/Coder";
+  Coder as RepositoryCoder,
+  IGeneratorProps as IRepositoryCoderGeneratorProps,
+} from "./repository/Coder";
 import { Tree } from "@nx/devkit";
 import { Coder as ModelCoder } from "../Coder";
 import {
-  Coder as ModelRootCoder,
-  IGeneratorProps as IModelRootCoderGeneratorProps,
-} from "./model/root/Coder";
-import {
-  Coder as AppRootCoder,
-  IGeneratorProps as IAppRootCoderGeneratorProps,
-} from "./app/root/Coder";
-import { IEditFieldProps } from "./schema/table/Coder";
+  Coder as AppCoder,
+  IGeneratorProps as IAppCoderGeneratorProps,
+} from "./app/Coder";
+import { IEditFieldProps } from "./repository/database/Coder";
 
 export type IGeneratorProps = {
-  app?: IAppRootCoderGeneratorProps;
-  model?: IModelRootCoderGeneratorProps;
-  schema?: ISchemaCoderGeneratorProps;
+  app?: IAppCoderGeneratorProps;
+  repository?: IRepositoryCoderGeneratorProps;
 };
 
 export class Coder {
@@ -28,13 +23,11 @@ export class Coder {
   absoluteName: string;
   name: string;
   project: {
-    app: AppRootCoder;
-    schema: SchemaCoder;
-    model: ModelRootCoder;
+    app: AppCoder;
+    repository: RepositoryCoder;
   } = {} as {
-    app: AppRootCoder;
-    schema: SchemaCoder;
-    model: ModelRootCoder;
+    app: AppCoder;
+    repository: RepositoryCoder;
   };
 
   constructor(props: { parent: ModelCoder; tree: Tree } & IGeneratorProps) {
@@ -45,46 +38,38 @@ export class Coder {
     this.tree = props.tree;
     this.parent = props.parent;
 
-    this.project.schema = new SchemaCoder({
-      ...props.schema,
+    this.project.repository = new RepositoryCoder({
+      ...props.repository,
       tree: this.tree,
       parent: this,
     });
 
-    this.project.model = new ModelRootCoder({
-      tree: this.tree,
-      parent: this,
-    });
-
-    this.project.app = new AppRootCoder({
+    this.project.app = new AppCoder({
       tree: this.tree,
       parent: this,
     });
   }
 
   async migrate(props: { version: string }) {
-    await this.project.schema.migrate(props);
-    await this.project.model.migrate(props);
+    await this.project.repository.migrate(props);
     await this.project.app.migrate(props);
   }
 
   async create() {
-    await this.project.schema.create();
-    await this.project.model.create();
+    await this.project.repository.create();
     await this.project.app.create();
   }
 
   async remove() {
     await this.project.app.remove();
-    await this.project.model.remove();
-    await this.project.schema.remove();
+    await this.project.repository.remove();
   }
 
   async addField(props: IEditFieldProps) {
-    await this.project.schema.addField(props);
+    await this.project.repository.addField(props);
   }
 
   async removeField(props: IEditFieldProps) {
-    await this.project.schema.removeField(props);
+    await this.project.repository.removeField(props);
   }
 }

@@ -3,11 +3,10 @@
   "targetDefaults": {
     "eslint:lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
       "cache": true,
+      "inputs": ["{projectRoot}/**/*"],
       "options": {
-        "ignorePath": ".eslintignore",
-        "eslintConfig": ".eslintrc.json",
+        "eslintConfig": "eslint.config.js",
         "quiet": false
       }
     },
@@ -44,10 +43,19 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "jest:test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.ts",
+        "passWithNoTests": true
+      }
     }
   },
   "namedInputs": {
-    "default": [],
+    "default": ["{projectRoot}/**/*"],
     "production": [],
     "sharedGlobals": []
   },

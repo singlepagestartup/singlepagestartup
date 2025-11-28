@@ -1,1 +1,0 @@
-ALTER TABLE "sps_bg_invoice" ADD COLUMN "amount" integer DEFAULT 0 NOT NULL;

@@ -3,14 +3,14 @@
 dfx start --background
 
 # Set canister id to variable
-wallet_canister_id=$(cat sps-lite-deployer-wallet.txt)
+wallet_canister_id=$(cat singlepagestartup-deployer-wallet.txt)
 
 # Now you are ready to deploy your canisters to Internet Computer network
 # You can set your exported deployer as new by adding it with identity import
-dfx identity import sps-lite-deployer sps-lite-deployer.pem --storage-mode plaintext
+dfx identity import singlepagestartup-deployer singlepagestartup-deployer.pem --storage-mode plaintext
 
 # Set that deployer as current
-dfx identity use sps-lite-deployer
+dfx identity use singlepagestartup-deployer
 
 # Connect wallet to your identity
 dfx identity set-wallet --network ic $wallet_canister_id

@@ -44,19 +44,32 @@ async function createSecret({
     sodium.base64_variants.ORIGINAL,
   );
 
-  const secret = await octokit.request(
-    "PUT /repos/{owner}/{repo}/{secretScope}/secrets/{secret_name}",
-    {
-      owner,
-      repo,
-      secret_name: secretName,
-      key_id: publicKeyId,
-      encrypted_value: encryptedValue,
-      secretScope,
-    },
-  );
+  try {
+    const secret = await octokit.request(
+      "PUT /repos/{owner}/{repo}/{secretScope}/secrets/{secret_name}",
+      {
+        owner,
+        repo,
+        secret_name: secretName,
+        key_id: publicKeyId,
+        encrypted_value: encryptedValue,
+        secretScope,
+      },
+    );
 
-  return secret;
+    console.log(`Successfully created/updated secret: ${secretName}`);
+    return secret;
+  } catch (error) {
+    console.error(
+      `Failed to create/update secret ${secretName}:`,
+      error.message,
+    );
+    if (error.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+    }
+    throw error;
+  }
 }
 
 (async () => {
@@ -66,6 +79,9 @@ async function createSecret({
   const secretName = args[2];
   const secretContent = args[3];
   const secretScope = args[4];
+
+  // Initialize sodium library
+  await sodium.ready;
 
   await createSecret({
     token,

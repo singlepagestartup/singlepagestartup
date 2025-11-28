@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@import "./presets/safelist.css";
+
+@config "../tailwind.config.ts";
+
+@layer base {
+  html {
+    -moz-osx-font-smoothing: grayscale !important; /*(For Firefox)*/
+    -webkit-font-smoothing: antialiased !important; /*(For Chrome and Safari)*/
+  }
+
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  input {
+    -webkit-appearance: none;
+  }
+
+  .prose {
+    max-width: 100%;
+  }
+
+  body {
+    font-family: var(--font-default);
+  }
+
+  /* for safari */
+  .text-wrap {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  input,
+  button,
+  textarea {
+    @apply focus:outline-hidden focus:ring-0;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .prose-xl
+    :where(.prose-xl > ul > li > p:last-child):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .prose p,
+  .prose-xl p {
+    @apply text-sm lg:text-base mb-0 mt-0;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6,
+  .prose-xl h1,
+  .prose-xl h2,
+  .prose-xl h3,
+  .prose-xl h4,
+  .prose-xl h5,
+  .prose-xl h6 {
+    @apply mt-0 mb-0;
+  }
+
+  .prose h3,
+  .prose-xl h3 {
+    @apply text-4xl lg:text-6xl;
+  }
+
+  .prose h5,
+  .prose-xl h5 {
+    @apply text-2xl lg:text-4xl;
+  }
+
+  .prose ul,
+  .prose-xl ul {
+    @apply my-0;
+  }
+
+  .prose ul li p,
+  .prose-xl ul li p {
+    @apply mb-0 mt-0;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply bg-input animate-pulse rounded-md;
+  }
+}
+
+@layer utilities {
+  .prose :where(p) {
+    @apply my-0 text-sm lg:text-base;
+  }
+
+  .prose {
+    @apply w-full max-w-full;
+  }
+}

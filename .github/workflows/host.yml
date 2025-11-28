@@ -1,4 +1,4 @@
-name: Update frontend
+name: Update host
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   trigger-service-update:
-    name: Run deployer
+    name: Update service
     runs-on: ubuntu-latest
     steps:
       - name: Send webhook for preview service update

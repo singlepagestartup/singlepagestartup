@@ -32,6 +32,15 @@ export class Configuration
           module: "website-builder",
           name: "widget",
           type: "model",
+          filters: [
+            {
+              column: "slug",
+              method: "eq",
+              value: (data) => {
+                return data.entity.dump.slug;
+              },
+            },
+          ],
         },
       },
     });

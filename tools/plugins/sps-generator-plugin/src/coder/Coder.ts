@@ -3,7 +3,7 @@ import {
   Coder as RootCoder,
   IGeneratorProps as IRootCoderGeneratorProps,
 } from "./root/Coder";
-import { IEditFieldProps } from "./root/libs/modules/[module]/models/[model]/backend/schema/table/Coder";
+import { IEditFieldProps } from "./root/libs/modules/[module]/models/[model]/backend/repository/database/Coder";
 
 export type IGeneratorProps = {
   root: IRootCoderGeneratorProps;

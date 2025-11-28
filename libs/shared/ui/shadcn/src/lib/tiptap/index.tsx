@@ -123,6 +123,7 @@ export default CopyButton;
 
 export type ITipTapEditableProps = {
   value: string;
+  name: string;
   form: UseFormReturn<any>;
   placeholder?: string;
   className?: string;
@@ -155,14 +156,14 @@ export const TipTapEditable = forwardRef<
     editorProps: {
       attributes: {
         class: cn(
-          "prose dark:prose-invert prose-xs lg:prose-base p-5 focus:outline-none w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "prose dark:prose-invert prose-xs lg:prose-base p-5 focus:outline-hidden w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           props.className,
         ),
       },
     },
     onUpdate: ({ editor }) => {
       const editorJson = editor?.getJSON();
-      props.form.setValue("description", JSON.stringify(editorJson));
+      props.form.setValue(props.name, JSON.stringify(editorJson));
     },
   });
 
@@ -195,7 +196,7 @@ export const TipTapEditable = forwardRef<
   }
 
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className={cn("relative flex flex-col gap-1", props.className)}>
       {editor ? (
         <div className="rounded-lg bg-white flex gap-1 max-w-full">
           <Toggle
@@ -393,7 +394,10 @@ export const TipTapContent = forwardRef<HTMLDivElement, ITipTapContentProps>(
       content: props.value,
       editorProps: {
         attributes: {
-          class: cn("w-full prose mx-auto focus:outline-none", props.className),
+          class: cn(
+            "w-full prose mx-auto focus:outline-hidden",
+            props.className,
+          ),
         },
       },
       editable: false,
@@ -417,7 +421,7 @@ export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
           : props.value;
       } catch (error) {
         console.log(
-          `TipTap editor was replaced by text input, because of error:`,
+          "TipTap editor was replaced by text input, because of error:",
           error,
         );
         return (
@@ -448,7 +452,7 @@ export const TipTap = forwardRef<HTMLInputElement, ITipTapProps>(
         : props.value;
     } catch (error) {
       console.log(
-        `TipTap editor was replaced by text input, because of error:`,
+        "TipTap editor was replaced by text input, because of error:",
         error,
       );
       if (typeof props.value === "string") {

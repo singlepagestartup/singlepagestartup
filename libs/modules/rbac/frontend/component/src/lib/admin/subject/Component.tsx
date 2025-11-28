@@ -5,21 +5,74 @@ import { Component as SubjectsToIdentities } from "@sps/rbac/relations/subjects-
 import { Component as SubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
 import { Component as SubjectsToEcommerceModuleOrders } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/frontend/component";
 import { Component as SubjectsToNotificationModuleTopics } from "@sps/rbac/relations/subjects-to-notification-module-topics/frontend/component";
+import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/frontend/component";
+import { Component as SubjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/frontend/component";
+import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
+import { Component as SubjectsToBlogModuleArticles } from "@sps/rbac/relations/subjects-to-blog-module-articles/frontend/component";
+import { Component as SubjectsToActs } from "@sps/rbac/relations/subjects-to-acts/frontend/component";
 
 export function Component() {
   return (
     <ParentComponent
-      hostUrl="/"
       isServer={false}
       variant="admin-table"
       adminForm={(props) => {
         return (
           <ParentComponent
             isServer={false}
-            hostUrl={props.hostUrl}
             data={props.data}
             variant="admin-form"
-            subjectsToIdentities={({ data, hostUrl, isServer }) => {
+            subjectsToEcommerceModuleProducts={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToEcommerceModuleProducts
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToSocialModuleProfiles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToSocialModuleProfiles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToIdentities={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -27,7 +80,6 @@ export function Component() {
               return (
                 <SubjectsToIdentities
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -45,7 +97,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToEcommerceModuleOrders={({ data, hostUrl, isServer }) => {
+            subjectsToEcommerceModuleOrders={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -53,7 +105,6 @@ export function Component() {
               return (
                 <SubjectsToEcommerceModuleOrders
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -71,11 +122,32 @@ export function Component() {
                 />
               );
             }}
-            subjectsToNotificationModuleTopics={({
-              data,
-              hostUrl,
-              isServer,
-            }) => {
+            subjectsToBillingModulePaymentIntents={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToBillingModulePaymentIntents
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToNotificationModuleTopics={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -83,7 +155,6 @@ export function Component() {
               return (
                 <SubjectsToNotificationModuleTopics
                   isServer={isServer}
-                  hostUrl={hostUrl}
                   variant="admin-table"
                   apiProps={{
                     params: {
@@ -101,7 +172,7 @@ export function Component() {
                 />
               );
             }}
-            subjectsToRoles={({ data, hostUrl, isServer }) => {
+            subjectsToRoles={({ data, isServer }) => {
               if (!data) {
                 return;
               }
@@ -109,7 +180,56 @@ export function Component() {
               return (
                 <SubjectsToRoles
                   isServer={isServer}
-                  hostUrl={hostUrl}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToBlogModuleArticles={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToBlogModuleArticles
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "subjectId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            subjectsToActs={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <SubjectsToActs
+                  isServer={isServer}
                   variant="admin-table"
                   apiProps={{
                     params: {

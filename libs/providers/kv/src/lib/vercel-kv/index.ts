@@ -6,9 +6,7 @@ export class Provider implements IProvider {
   prefix: string;
   client: typeof kv;
 
-  constructor(props?: { prefix?: string }) {
-    this.prefix = props?.prefix ? `${props?.prefix}:` : "";
-
+  constructor() {
     this.client = kv;
   }
 
@@ -23,11 +21,11 @@ export class Provider implements IProvider {
     return hash.sha256(props.key);
   }
 
-  async get(props: { key: string }): Promise<string | null> {
+  async get(props: { prefix: string; key: string }): Promise<string | null> {
     await this.connect();
 
     const hasedKey = await this.hashKey({ key: props.key });
-    const value = await this.client.get<object>(`${this.prefix}${hasedKey}`);
+    const value = await this.client.get<object>(`${props.prefix}${hasedKey}`);
 
     if (value) {
       return JSON.stringify(value);
@@ -37,6 +35,7 @@ export class Provider implements IProvider {
   }
 
   async set(props: {
+    prefix: string;
     key: string;
     value: string;
     options: { ttl: number };
@@ -45,19 +44,19 @@ export class Provider implements IProvider {
 
     const hasedKey = await this.hashKey({ key: props.key });
 
-    return await this.client.set(`${this.prefix}${hasedKey}`, props.value, {
+    return await this.client.set(`${props.prefix}${hasedKey}`, props.value, {
       ex: props.options.ttl,
     });
   }
 
-  async delByPrefix(): Promise<void> {
+  async delByPrefix(props: { prefix: string }): Promise<void> {
     await this.connect();
 
     let cursor = "0";
 
     do {
       const reply = await this.client.scan(cursor, {
-        match: `${this.prefix}*`,
+        match: `${props.prefix}*`,
       });
 
       cursor = reply[0];
@@ -71,12 +70,12 @@ export class Provider implements IProvider {
     return;
   }
 
-  async del(props: { key: string }): Promise<void> {
+  async del(props: { prefix: string; key: string }): Promise<void> {
     await this.connect();
 
     const hasedKey = await this.hashKey({ key: props.key });
 
-    await this.client.del(`${this.prefix}${hasedKey}`);
+    await this.client.del(`${props.prefix}${hasedKey}`);
 
     return;
   }

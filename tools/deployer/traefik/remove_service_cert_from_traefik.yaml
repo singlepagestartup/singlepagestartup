@@ -1,0 +1,24 @@
+---
+- name: Remove service cert from traefik.yml
+  hosts: all
+  become: yes
+  vars:
+    service_url: "{{ SERVICE_URL }}"
+  tasks:
+    - name: Copy yaml_editor.py
+      copy:
+        src: ../traefik/yaml_editor.py
+        dest: /home/code/yaml_editor.py
+
+    - name: Remove cert entry for service from traefik.yml
+      shell:
+        cmd: "python3 /home/code/yaml_editor.py {{ service_url }} remove"
+
+    - name: Trigger updates in Traefik
+      shell:
+        cmd: "docker service update traefik_traefik --force"
+
+    - name: Clean up
+      file:
+        path: "/home/code/yaml_editor.py"
+        state: absent

@@ -65,10 +65,21 @@
     - name: Wait for apt lock
       shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
 
-    - name: Install Python package manager
+    - name: Install Python venv package
       apt:
-        name: python3-pip
+        name: "{{ item }}"
         state: present
+        update_cache: yes
+      register: result
+      until: result is not failed
+      retries: 5
+      delay: 5
+      loop:
+        - python3-venv
+        - python3-pip
+
+    - name: Create a Python virtual environment
+      command: python3 -m venv /opt/venv
 
     - debug:
         var: ansible_system_vendor
@@ -79,8 +90,7 @@
           pip:
             name: "{{ item }}"
             state: present
-            executable: pip3
-            extra_args: --no-build-isolation --break-system-packages --ignore-installed PyYAML
+            virtualenv: /opt/venv
           loop:
             - virtualenv
             - docker
@@ -89,14 +99,8 @@
 
     - name: If not DigitalOcean
       block:
-        - name: Install Docker pip packages for DigitalOcean
-          pip:
-            name: "{{ item }}"
+        - name: Install Docker Compose
+          apt:
+            name: docker-compose-plugin
             state: present
-            executable: pip3
-            extra_args: --no-build-isolation
-          loop:
-            - virtualenv
-            - docker
-            - docker-compose
       when: ansible_system_vendor != "DigitalOcean"

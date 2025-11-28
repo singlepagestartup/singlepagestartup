@@ -1,23 +1,57 @@
 import { ISeedResult } from "@sps/shared-backend-api";
-import { app as host } from "@sps/host/backend/app/api";
-import { app as websiteBuilder } from "@sps/website-builder/backend/app/api";
-import { app as rbac } from "@sps/rbac/backend/app/api";
-import { app as crm } from "@sps/crm/backend/app/api";
-import { app as ecommerce } from "@sps/ecommerce/backend/app/api";
-import { app as notification } from "@sps/notification/backend/app/api";
-import { app as fileStorage } from "@sps/file-storage/backend/app/api";
-import { app as startup } from "@sps/startup/backend/app/api";
+import { app as agentApp } from "@sps/agent/backend/app/api";
+import { app as billingApp } from "@sps/billing/backend/app/api";
+import { app as blogApp } from "@sps/blog/backend/app/api";
+import { app as broadcastApp } from "@sps/broadcast/backend/app/api";
+import { app as crmApp } from "@sps/crm/backend/app/api";
+import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
+import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
+import { app as hostApp } from "@sps/host/backend/app/api";
+import { app as notificationApp } from "@sps/notification/backend/app/api";
+import { app as rbacApp } from "@sps/rbac/backend/app/api";
+import { app as startupApp } from "@sps/startup/backend/app/api";
+import { app as websiteBuilderApp } from "@sps/website-builder/backend/app/api";
+import { logger } from "@sps/backend-utils";
 
 import { exit } from "process";
+import {
+  API_SERVICE_URL,
+  HOST_SERVICE_URL,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 
 (async () => {
   const seeds: ISeedResult[] = [];
-
-  const hostModelsSeeds = await host.seed({
+  const agentModelsSeeds = await agentApp.seed({
     type: "model",
     seeds,
   });
 
+  if (Array.isArray(agentModelsSeeds)) {
+    agentModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(agentModelsSeeds);
+  }
+
+  const broadcastModelsSeeds = await broadcastApp.seed({
+    type: "model",
+    seeds,
+  });
+
+  if (Array.isArray(broadcastModelsSeeds)) {
+    broadcastModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(broadcastModelsSeeds);
+  }
+
+  const hostModelsSeeds = await hostApp.seed({
+    type: "model",
+    seeds,
+  });
   if (Array.isArray(hostModelsSeeds)) {
     hostModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -26,11 +60,10 @@ import { exit } from "process";
     seeds.push(hostModelsSeeds);
   }
 
-  const websiteBuilderModelsSeeds = await websiteBuilder.seed({
+  const websiteBuilderModelsSeeds = await websiteBuilderApp.seed({
     type: "model",
     seeds,
   });
-
   if (Array.isArray(websiteBuilderModelsSeeds)) {
     websiteBuilderModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -39,11 +72,10 @@ import { exit } from "process";
     seeds.push(websiteBuilderModelsSeeds);
   }
 
-  const crmModelsSeeds = await crm.seed({
+  const crmModelsSeeds = await crmApp.seed({
     type: "model",
     seeds,
   });
-
   if (Array.isArray(crmModelsSeeds)) {
     crmModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -52,11 +84,22 @@ import { exit } from "process";
     seeds.push(crmModelsSeeds);
   }
 
-  const notificationModelsSeeds = await notification.seed({
+  const blogModelsSeeds = await blogApp.seed({
     type: "model",
     seeds,
   });
+  if (Array.isArray(blogModelsSeeds)) {
+    blogModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(blogModelsSeeds);
+  }
 
+  const notificationModelsSeeds = await notificationApp.seed({
+    type: "model",
+    seeds,
+  });
   if (Array.isArray(notificationModelsSeeds)) {
     notificationModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -65,11 +108,22 @@ import { exit } from "process";
     seeds.push(notificationModelsSeeds);
   }
 
-  const ecommerceModelsSeeds = await ecommerce.seed({
+  const billingModelsSeeds = await billingApp.seed({
     type: "model",
     seeds,
   });
+  if (Array.isArray(billingModelsSeeds)) {
+    billingModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(billingModelsSeeds);
+  }
 
+  const ecommerceModelsSeeds = await ecommerceApp.seed({
+    type: "model",
+    seeds,
+  });
   if (Array.isArray(ecommerceModelsSeeds)) {
     ecommerceModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -78,11 +132,10 @@ import { exit } from "process";
     seeds.push(ecommerceModelsSeeds);
   }
 
-  const rbacModelsSeeds = await rbac.seed({
+  const rbacModelsSeeds = await rbacApp.seed({
     type: "model",
     seeds,
   });
-
   if (Array.isArray(rbacModelsSeeds)) {
     rbacModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -91,11 +144,10 @@ import { exit } from "process";
     seeds.push(rbacModelsSeeds);
   }
 
-  const fileStorageModelsSeeds = await fileStorage.seed({
+  const fileStorageModelsSeeds = await fileStorageApp.seed({
     type: "model",
     seeds,
   });
-
   if (Array.isArray(fileStorageModelsSeeds)) {
     fileStorageModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -104,11 +156,10 @@ import { exit } from "process";
     seeds.push(fileStorageModelsSeeds);
   }
 
-  const startupModelsSeeds = await startup.seed({
+  const startupModelsSeeds = await startupApp.seed({
     type: "model",
     seeds,
   });
-
   if (Array.isArray(startupModelsSeeds)) {
     startupModelsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -117,11 +168,23 @@ import { exit } from "process";
     seeds.push(startupModelsSeeds);
   }
 
-  const hostRelationsSeeds = await host.seed({
+  const agentRelationsSeeds = await agentApp.seed({
     type: "relation",
     seeds,
   });
 
+  if (Array.isArray(agentRelationsSeeds)) {
+    agentRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(agentRelationsSeeds);
+  }
+
+  const hostRelationsSeeds = await hostApp.seed({
+    type: "relation",
+    seeds,
+  });
   if (Array.isArray(hostRelationsSeeds)) {
     hostRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -130,11 +193,23 @@ import { exit } from "process";
     seeds.push(hostRelationsSeeds);
   }
 
-  const websiteBuilderRelationsSeeds = await websiteBuilder.seed({
+  const broadcastRelationsSeeds = await broadcastApp.seed({
     type: "relation",
     seeds,
   });
 
+  if (Array.isArray(broadcastRelationsSeeds)) {
+    broadcastRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(broadcastRelationsSeeds);
+  }
+
+  const websiteBuilderRelationsSeeds = await websiteBuilderApp.seed({
+    type: "relation",
+    seeds,
+  });
   if (Array.isArray(websiteBuilderRelationsSeeds)) {
     websiteBuilderRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -143,11 +218,10 @@ import { exit } from "process";
     seeds.push(websiteBuilderRelationsSeeds);
   }
 
-  const notificationRelationsSeeds = await notification.seed({
+  const notificationRelationsSeeds = await notificationApp.seed({
     type: "relation",
     seeds,
   });
-
   if (Array.isArray(notificationRelationsSeeds)) {
     notificationRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -156,11 +230,22 @@ import { exit } from "process";
     seeds.push(notificationRelationsSeeds);
   }
 
-  const crmRelationsSeeds = await crm.seed({
+  const blogRelationsSeeds = await blogApp.seed({
     type: "relation",
     seeds,
   });
+  if (Array.isArray(blogRelationsSeeds)) {
+    blogRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(blogRelationsSeeds);
+  }
 
+  const crmRelationsSeeds = await crmApp.seed({
+    type: "relation",
+    seeds,
+  });
   if (Array.isArray(crmRelationsSeeds)) {
     crmRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -169,11 +254,22 @@ import { exit } from "process";
     seeds.push(crmRelationsSeeds);
   }
 
-  const ecommerceRelationsSeeds = await ecommerce.seed({
+  const billingRelationsSeeds = await billingApp.seed({
     type: "relation",
     seeds,
   });
+  if (Array.isArray(billingRelationsSeeds)) {
+    billingRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(billingRelationsSeeds);
+  }
 
+  const ecommerceRelationsSeeds = await ecommerceApp.seed({
+    type: "relation",
+    seeds,
+  });
   if (Array.isArray(ecommerceRelationsSeeds)) {
     ecommerceRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -182,11 +278,10 @@ import { exit } from "process";
     seeds.push(ecommerceRelationsSeeds);
   }
 
-  const rbacRelationsSeeds = await rbac.seed({
+  const rbacRelationsSeeds = await rbacApp.seed({
     type: "relation",
     seeds,
   });
-
   if (Array.isArray(rbacRelationsSeeds)) {
     rbacRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -195,11 +290,10 @@ import { exit } from "process";
     seeds.push(rbacRelationsSeeds);
   }
 
-  const fileStorageRelationsSeeds = await fileStorage.seed({
+  const fileStorageRelationsSeeds = await fileStorageApp.seed({
     type: "relation",
     seeds,
   });
-
   if (Array.isArray(fileStorageRelationsSeeds)) {
     fileStorageRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -208,11 +302,10 @@ import { exit } from "process";
     seeds.push(fileStorageRelationsSeeds);
   }
 
-  const startupRelationsSeeds = await startup.seed({
+  const startupRelationsSeeds = await startupApp.seed({
     type: "relation",
     seeds,
   });
-
   if (Array.isArray(startupRelationsSeeds)) {
     startupRelationsSeeds.forEach((seed) => {
       seeds.push(seed);
@@ -220,11 +313,58 @@ import { exit } from "process";
   } else {
     seeds.push(startupRelationsSeeds);
   }
+
+  if (!RBAC_SECRET_KEY) {
+    return;
+  }
+
+  await fetch(HOST_SERVICE_URL)
+    .then((res) => {
+      return res.text();
+    })
+    .catch((error) => {
+      logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
+    });
+
+  await fetch(API_SERVICE_URL + "/api/http-cache/clear", {
+    headers: {
+      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    },
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .catch((error) => {
+      logger.error("🚀 ~ /api/http-cache/clear error:", error);
+    });
+
+  await fetch(
+    HOST_SERVICE_URL + "/api/revalidation/revalidate?path=/&type=layout",
+    {
+      headers: {
+        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      },
+    },
+  )
+    .then((res) => res.json())
+    .catch((error) => {
+      logger.error("🚀 ~ /api/revalidation/revalidate error:", error);
+    });
+
+  setTimeout(async () => {
+    await fetch(HOST_SERVICE_URL)
+      .then((res) => {
+        return res.text();
+      })
+      .catch((error) => {
+        logger.error("🚀 ~ HOST_SERVICE_URL error:", error);
+      });
+  }, 10000);
 })()
   .then(() => {
     exit(0);
   })
   .catch((error) => {
-    console.error(error);
+    logger.error(error);
     exit(1);
   });

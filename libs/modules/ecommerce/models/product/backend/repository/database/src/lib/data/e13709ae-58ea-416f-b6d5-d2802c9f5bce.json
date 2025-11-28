@@ -1,0 +1,15 @@
+{
+  "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce",
+  "createdAt": "2025-01-24T23:47:55.629Z",
+  "updatedAt": "2025-10-21T22:10:50.688Z",
+  "variant": "default",
+  "type": "one_off",
+  "slug": "website",
+  "title": {
+    "en": "Website",
+    "ru": "Веб-сайт"
+  },
+  "shortDescription": {},
+  "description": {},
+  "adminTitle": "product-e13709ae-58ea-416f-b6d5-d2802c9f5bce"
+}

@@ -1,1 +1,0 @@
-ALTER TABLE "sps_nn_notification" ADD COLUMN "attachments" text;

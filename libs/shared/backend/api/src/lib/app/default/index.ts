@@ -9,7 +9,7 @@ import {
   ISeedResult,
   type IConfiguration,
 } from "../../configuration";
-import { ParseQueryMiddleware } from "../../middleware";
+import { ParseQueryMiddleware, LoggerMiddleware } from "../../middleware";
 
 export interface IApp<
   ENV extends Env = {},
@@ -53,11 +53,12 @@ export class App<SCHEMA extends Record<string, unknown>>
   public async init() {
     this.hono.onError(this.exceptionFilter.catch.bind(this.exceptionFilter));
     this.hono.use(new ParseQueryMiddleware().init());
+    this.hono.use("*", new LoggerMiddleware().init());
     this.useRoutes();
   }
 
-  async dump(props?: { dumps: IDumpResult[] }) {
-    const dumpResult = await this.controller.service.dump(props);
+  async dump() {
+    const dumpResult = await this.controller.service.dump();
 
     return dumpResult;
   }
@@ -69,7 +70,7 @@ export class App<SCHEMA extends Record<string, unknown>>
   }
 
   useRoutes() {
-    this.controller.routes.map((route) => {
+    this.controller.httpRoutes.forEach((route) => {
       if (route.middlewares) {
         route.middlewares.forEach((middleware) => {
           this.hono.use(route.path, middleware);

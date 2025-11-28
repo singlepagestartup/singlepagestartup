@@ -1,7 +1,9 @@
 import { IComponentProps } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-panel/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
 import { Component as Widget } from "./widget/Component";
 import { Component as Product } from "./product/Component";
+import { Component as Store } from "./store/Component";
+import { Component as Category } from "./category/Component";
 import { Component as Attribute } from "./attribute/Component";
 import { Component as AttributeKey } from "./attribute-key/Component";
 import { Component as Order } from "./order/Component";
@@ -15,6 +17,14 @@ export function Component(props: IComponentProps) {
     {
       name: "product",
       Comp: Product,
+    },
+    {
+      name: "store",
+      Comp: Store,
+    },
+    {
+      name: "category",
+      Comp: Category,
     },
     {
       name: "attribute",

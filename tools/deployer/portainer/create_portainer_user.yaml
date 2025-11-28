@@ -3,9 +3,9 @@
   hosts: all
   become: yes
   vars:
-    - portainer_username: "{{ PORTAINER_USERNAME }}"
-    - portainer_password: "{{ PORTAINER_PASSWORD }}"
-    - service_url: "{{ SERVICE_URL }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    service_url: "{{ SERVICE_URL }}"
   tasks:
     - name: Create Portainer user request
       retries: 10
@@ -16,7 +16,9 @@
         url: "https://{{ service_url }}/api/users/admin/init"
         status_code: 200,409
         method: POST
-        body: "{{ lookup('template','create_portainer_user_body.json.j2') | to_json }}"
+        body:
+          Username: "{{ portainer_username }}"
+          Password: "{{ portainer_password }}"
         body_format: json
         headers:
           Content-Type: "application/json"

@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "title": {
+    "en": "Welcome back"
+  },
+  "subtitle": {
+    "en": "Login with email and password or Web3"
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"By clicking continue, you agree to our \"},{\"type\":\"text\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"/terms-of-service\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer nofollow\",\"class\":null}}],\"text\":\"Terms of Service\"},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"/privacy-policy\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer nofollow\",\"class\":null}}],\"text\":\"Privacy Policy.\"}]}]}"
+  },
+  "id": "634157f9-1d03-4cb6-8b57-8810b85dcd3b",
+  "createdAt": "2025-01-24T23:47:55.644Z",
+  "updatedAt": "2025-10-21T22:10:50.765Z",
+  "variant": "subject-authentication-select-method-default",
+  "adminTitle": "SKbhEvFX3d",
+  "slug": "subject-authentication-select-method-default"
+}

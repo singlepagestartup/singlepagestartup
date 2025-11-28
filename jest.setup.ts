@@ -1,6 +1,6 @@
 import "reflect-metadata";
-require("dotenv").config({
-  path: (() => {
-    return ".env.testing";
-  })(),
+import dotenv from "dotenv";
+
+dotenv.config({
+  path: "./apps/host/.env.local",
 });
