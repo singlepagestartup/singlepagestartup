@@ -9,7 +9,7 @@ describe("is-authorized", () => {
 
     const result = await api.authenticationIsAuthorized({
       params: {
-        action: {
+        permission: {
           route: "/api/identitiies",
           method: "GET",
         },
@@ -28,7 +28,7 @@ describe("is-authorized", () => {
     const result = async () => {
       const res = await api.authenticationIsAuthorized({
         params: {
-          action: {
+          permission: {
             route: "/api/identitiies",
             method: "GET",
           },
@@ -44,7 +44,7 @@ describe("is-authorized", () => {
     };
 
     await expect(result).rejects.toThrow(
-      "http://localhost:3000/is-authorized?action[route]=%2Fapi%2Fidentitiies&action[method]=GET | Unauthorized",
+      "http://localhost:3000/is-authorized?permission[route]=%2Fapi%2Fidentitiies&permission[method]=GET | Unauthorized",
     );
   });
 });

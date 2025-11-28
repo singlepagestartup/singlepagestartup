@@ -77,13 +77,28 @@ export class Filter implements IFilter {
         }
 
         const bot = new Bot(BUG_SERVICE_TELEGRAM_BOT_TOKEN);
-        await bot.api.sendMessage(
-          BUG_SERVICE_TELEGRAM_CHAT_ID,
-          `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError${errorMessages.join(" | ")}}`,
-          {
+
+        let chatId = BUG_SERVICE_TELEGRAM_CHAT_ID;
+        const message = `<b>${BUG_SERVICE_PROJECT}</b>\n🚨 <i>${status} | ${method}${jwt ? " by " + jwt : ""}</i> <pre>${path}</pre>\nError: ${errorMessages.join(" | ")}`;
+
+        try {
+          await bot.api.sendMessage(chatId, message, {
             parse_mode: "HTML",
-          },
-        );
+          });
+        } catch (telegramError: any) {
+          // Handle chat migration to supergroup
+          if (
+            telegramError?.error_code === 400 &&
+            telegramError?.parameters?.migrate_to_chat_id
+          ) {
+            chatId = telegramError.parameters.migrate_to_chat_id.toString();
+            await bot.api.sendMessage(chatId, message, {
+              parse_mode: "HTML",
+            });
+          } else {
+            throw telegramError;
+          }
+        }
       } catch (error) {
         console.error("Failed to send error message to Telegram bot:", error);
       }

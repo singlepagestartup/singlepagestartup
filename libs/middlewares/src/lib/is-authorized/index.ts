@@ -35,6 +35,10 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["POST"],
   },
   {
+    regexPath: /\/public\/file-storage\/.*/,
+    methods: ["GET"],
+  },
+  {
     regexPath: /\/api\/(host|website-builder|file-storage)\/.*/,
     methods: ["GET"],
   },
@@ -51,11 +55,11 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/rbac\/actions$/,
+    regexPath: /\/api\/rbac\/permissions$/,
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/rbac\/actions\/.*/,
+    regexPath: /\/api\/rbac\/permissions\/.*/,
     methods: ["GET"],
   },
   {
@@ -114,7 +118,7 @@ export class Middleware {
 
         const isAuthorized = await subjectApi.authenticationIsAuthorized({
           params: {
-            action: { route: reqPath, method: reqMethod, type: "HTTP" },
+            permission: { route: reqPath, method: reqMethod, type: "HTTP" },
           },
           options: { headers },
         });

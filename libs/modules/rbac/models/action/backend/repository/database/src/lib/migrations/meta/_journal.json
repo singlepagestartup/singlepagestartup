@@ -15,6 +15,20 @@
       "when": 1764362399381,
       "tag": "0001_chief_mathemanic",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764366436498,
+      "tag": "0002_cool_mesmero",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764366636042,
+      "tag": "0003_blushing_xavin",
+      "breakpoints": true
     }
   ]
 }

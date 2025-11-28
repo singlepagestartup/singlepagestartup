@@ -13,7 +13,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   params: {
-    action: {
+    permission: {
       route: string;
       method: string;
       type?: "HTTP";

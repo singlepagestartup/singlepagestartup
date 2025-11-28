@@ -9,6 +9,7 @@ import {
   HTTPCacheMiddleware,
   ObserverMiddleware,
   RequestIdMiddleware,
+  ActionLoggerMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -105,6 +106,9 @@ if (MIDDLEWARE_HTTP_CACHE === "true") {
   app.use(httpCacheMiddleware.init());
   httpCacheMiddleware.setRoutes(app);
 }
+
+const actionLoggerMiddleware = new ActionLoggerMiddleware();
+app.use(actionLoggerMiddleware.init());
 
 const isAuthorizedMiddleware = new IsAuthorizedMiddleware();
 app.use(isAuthorizedMiddleware.init());

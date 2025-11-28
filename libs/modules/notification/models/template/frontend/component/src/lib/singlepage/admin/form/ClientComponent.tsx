@@ -12,6 +12,7 @@ import {
 } from "@sps/notification/models/template/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -27,6 +28,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       variant: props.data?.variant || "default",
       title: props.data?.title || "",
+      slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
     },
   });
 
@@ -58,6 +60,14 @@ export function Component(props: IComponentPropsExtended) {
           type="text"
           label="Title"
           name="title"
+          form={form}
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
           form={form}
         />
 

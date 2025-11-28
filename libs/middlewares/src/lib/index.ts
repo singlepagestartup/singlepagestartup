@@ -15,3 +15,7 @@ export {
   Middleware as RequestIdMiddleware,
   type IMiddlewareGeneric as IRequestIdMiddlewareGeneric,
 } from "./request-id";
+export {
+  Middleware as ActionLoggerMiddleware,
+  type IMiddlewareGeneric as IActionLoggerMiddlewareGeneric,
+} from "./actions-logger";

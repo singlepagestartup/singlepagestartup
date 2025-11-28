@@ -1,0 +1,1 @@
+ALTER TABLE "rc_action" ADD COLUMN "payload" jsonb DEFAULT '{}'::jsonb;

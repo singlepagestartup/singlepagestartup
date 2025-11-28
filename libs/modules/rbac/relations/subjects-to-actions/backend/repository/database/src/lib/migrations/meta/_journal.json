@@ -15,6 +15,13 @@
       "when": 1764362421202,
       "tag": "0001_productive_raza",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764366468206,
+      "tag": "0002_woozy_doctor_strange",
+      "breakpoints": true
     }
   ]
 }

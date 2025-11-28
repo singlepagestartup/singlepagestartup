@@ -3,6 +3,8 @@ import { inject, injectable } from "inversify";
 import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/action/backend/repository/database";
 import { Repository } from "../../repository";
+import { api } from "@sps/rbac/models/action/sdk/server";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -11,14 +13,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async create(data: any) {
-    if (!data.expiresAt) {
-      data.expiresAt = new Date();
-      data.expiresAt.setHours(data.expiresAt.getHours() + 1);
-    }
+    const superResult = super.create(data);
 
-    const superResult = super.create({ data });
-
-    const expiredSessions = await this.repository.find({
+    const expiredActions = await this.repository.find({
       params: {
         filters: {
           and: [
@@ -32,9 +29,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    for (const expiredSession of expiredSessions) {
-      if (expiredSession.id) {
-        await this.repository.deleteFirstByField("id", expiredSession.id);
+    for (const expiredAction of expiredActions) {
+      if (RBAC_SECRET_KEY) {
+        api
+          .delete({
+            id: expiredAction.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          })
+          .catch((error) => {
+            //
+          });
       }
     }
 

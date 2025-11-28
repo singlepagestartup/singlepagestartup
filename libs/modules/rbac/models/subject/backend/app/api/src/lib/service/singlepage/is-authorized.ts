@@ -1,6 +1,5 @@
 import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { HTTPException } from "hono/http-exception";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
@@ -121,7 +120,9 @@ export class Service {
             });
 
             if (rolesToPermissions?.length) {
-              authorized = true;
+              return {
+                ok: true,
+              };
             }
           }
         }
@@ -131,7 +132,7 @@ export class Service {
     }
 
     try {
-      const Permission = await permissionApi.findByRoute({
+      const permission = await permissionApi.findByRoute({
         params: {
           permission: {
             method: props.permission.method,
@@ -146,15 +147,15 @@ export class Service {
         },
       });
 
-      if (Permission) {
-        const PermissionsToRoles = await rolesToPermissionsApi.find({
+      if (permission) {
+        const rolesToPermissions = await rolesToPermissionsApi.find({
           params: {
             filters: {
               and: [
                 {
                   column: "permissionId",
                   method: "eq",
-                  value: Permission.id,
+                  value: permission.id,
                 },
               ],
             },
@@ -169,7 +170,7 @@ export class Service {
         /**
          * Permissions without roles are public
          */
-        if (!PermissionsToRoles?.length) {
+        if (!rolesToPermissions?.length) {
           authorized = true;
         }
 
@@ -187,7 +188,7 @@ export class Service {
                     {
                       column: "permissionId",
                       method: "eq",
-                      value: Permission.id,
+                      value: permission.id,
                     },
                   ],
                 },

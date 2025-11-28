@@ -34,19 +34,19 @@ export class Handler {
       const params = c.req.query();
       const parsedQuery = QueryString.parse(params);
 
-      if (!parsedQuery?.["action"]) {
-        throw new Error("Validation error. No action provided in query");
+      if (!parsedQuery?.["permission"]) {
+        throw new Error("Validation error. No permission provided in query");
       }
 
-      if (!parsedQuery?.["action"]?.["route"]) {
+      if (!parsedQuery?.["permission"]?.["route"]) {
         throw new Error(
           "Validation error. No route provided in 'action' query",
         );
       }
 
-      if (!parsedQuery?.["action"]?.["method"]) {
+      if (!parsedQuery?.["permission"]?.["method"]) {
         throw new Error(
-          "Validation error. No method provided in 'action' query",
+          "Validation error. No method provided in 'permission' query",
         );
       }
 
@@ -57,9 +57,9 @@ export class Handler {
 
       const isAuthorizedProps = {
         permission: {
-          route: parsedQuery["action"]["route"],
-          method: parsedQuery["action"]["method"],
-          type: parsedQuery["action"]["type"] || "HTTP",
+          route: parsedQuery["permission"]["route"],
+          method: parsedQuery["permission"]["method"],
+          type: parsedQuery["permission"]["type"] || "HTTP",
         },
         authorization: {
           value: authorization,

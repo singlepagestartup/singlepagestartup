@@ -233,6 +233,20 @@
         ]
       }
     },
+    "models:action:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/rbac/models/action/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
     "models:subject:repository-generate": {
       "executor": "nx:run-commands",
       "options": {
@@ -298,20 +312,6 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/rbac/models/role/backend/repository/database",
-        "commands": [
-          {
-            "command": "bun run ./src/lib/migrate.ts"
-          }
-        ]
-      }
-    },
-    "models:action:repository-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "parallel": false,
-        "envFile": "apps/api/.env",
-        "cwd": "libs/modules/rbac/models/action/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
