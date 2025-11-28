@@ -70,8 +70,17 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       const transformedData = transformResponseItem<IResult<T>>(json);
 
       return transformedData;
-    } catch (error) {
+    } catch (error: any) {
+      if (!error.message.includes("404 |")) {
+        retries = 0;
+      }
+
       lastError = error;
+
+      if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {
+        throw error;
+      }
+
       retries--;
       if (retries > 0) {
         await new Promise((resolve) => setTimeout(resolve, 1000));

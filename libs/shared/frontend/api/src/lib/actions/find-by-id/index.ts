@@ -63,6 +63,10 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
 
       return transformedData;
     } catch (error: any) {
+      if (!error.message.includes("404 |")) {
+        retries = 0;
+      }
+
       lastError = error;
 
       if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {

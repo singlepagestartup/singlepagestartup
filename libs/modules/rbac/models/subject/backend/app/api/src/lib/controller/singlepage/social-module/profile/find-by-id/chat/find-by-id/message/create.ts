@@ -319,7 +319,7 @@ export class Handler {
         });
 
         const notificationServiceNotificationSourceSystemId =
-          notificationServiceNotifications.notificationService.notifications?.find(
+          notificationServiceNotifications?.notificationService.notifications?.find(
             (notification) => notification.sourceSystemId,
           )?.sourceSystemId;
 

@@ -68,7 +68,7 @@ export class Handler {
       });
 
       if (!subjectsToIdentities?.length) {
-        throw new Error("Not Found error. No subjects to identities found");
+        return c.json({ data: null });
       }
 
       const identities = await identityApi.find({

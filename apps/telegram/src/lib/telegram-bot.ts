@@ -75,7 +75,6 @@ export class TelegarmBot {
       }
 
       const payload = ctx.match;
-      console.log("🚀 ~ init ~ ctx:", ctx.chat);
 
       if (payload) {
         ctx.reply(payload);
@@ -387,6 +386,18 @@ export class TelegarmBot {
         const socialModuleProfile = await socialModuleProfileApi.create({
           data: {
             variant: "telegram",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        await rbacModuleSubjectsToSocialModuleProfilesApi.create({
+          data: {
+            subjectId: subject.id,
+            socialModuleProfileId: socialModuleProfile.id,
           },
           options: {
             headers: {

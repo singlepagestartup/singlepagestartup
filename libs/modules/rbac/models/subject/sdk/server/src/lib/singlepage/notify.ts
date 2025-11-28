@@ -25,7 +25,7 @@ export type IResult = {
   notificationService: {
     notifications: INotificationServiceNotification[];
   };
-};
+} | null;
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, data, options, host = serverHost } = props;
