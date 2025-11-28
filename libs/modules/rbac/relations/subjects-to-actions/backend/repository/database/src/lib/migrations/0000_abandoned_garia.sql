@@ -1,0 +1,13 @@
+-- CREATE TABLE "sps_rc_ss_to_as_bb2" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"variant" text DEFAULT 'default' NOT NULL,
+-- 	"order_index" integer DEFAULT 0 NOT NULL,
+-- 	"class_name" text,
+-- 	"st_id" uuid NOT NULL,
+-- 	"at_id" uuid NOT NULL
+-- );
+-- --> statement-breakpoint
+-- ALTER TABLE "sps_rc_ss_to_as_bb2" ADD CONSTRAINT "sps_rc_ss_to_as_bb2_st_id_sps_rc_subject_id_fk" FOREIGN KEY ("st_id") REFERENCES "public"."sps_rc_subject"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "sps_rc_ss_to_as_bb2" ADD CONSTRAINT "sps_rc_ss_to_as_bb2_at_id_rc_act_id_fk" FOREIGN KEY ("at_id") REFERENCES "public"."rc_act"("id") ON DELETE cascade ON UPDATE no action;

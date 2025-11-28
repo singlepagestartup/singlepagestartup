@@ -4,7 +4,7 @@ import {
   insertSchema,
   selectSchema,
   dataDirectory,
-} from "@sps/crm/models/request/backend/repository/database";
+} from "@sps/rbac/models/action/backend/repository/database";
 import { injectable } from "inversify";
 
 @injectable()
@@ -23,8 +23,8 @@ export class Configuration extends ParentConfiguration {
         },
         seed: {
           active: false,
-          module: "crm",
-          name: "request",
+          module: "rbac",
+          name: "session",
           type: "model",
         },
       },

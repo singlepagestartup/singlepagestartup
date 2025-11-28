@@ -152,7 +152,7 @@ export class Service {
             filters: {
               and: [
                 {
-                  column: "PermissionId",
+                  column: "permissionId",
                   method: "eq",
                   value: Permission.id,
                 },
@@ -185,7 +185,7 @@ export class Service {
                       value: subjectToRole.roleId,
                     },
                     {
-                      column: "PermissionId",
+                      column: "permissionId",
                       method: "eq",
                       value: Permission.id,
                     },

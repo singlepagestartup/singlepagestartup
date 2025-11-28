@@ -9,7 +9,7 @@ import { Component as SubjectsToBillingModulePaymentIntents } from "@sps/rbac/re
 import { Component as SubjectsToSocialModuleProfiles } from "@sps/rbac/relations/subjects-to-social-module-profiles/frontend/component";
 import { Component as SubjectsToEcommerceModuleProducts } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/frontend/component";
 import { Component as SubjectsToBlogModuleArticles } from "@sps/rbac/relations/subjects-to-blog-module-articles/frontend/component";
-import { Component as SubjectsToActs } from "@sps/rbac/relations/subjects-to-acts/frontend/component";
+import { Component as SubjectsToActs } from "@sps/rbac/relations/subjects-to-actions/frontend/component";
 
 export function Component() {
   return (
