@@ -1,0 +1,25 @@
+{
+  "id": "2f9ee54b-0b42-4729-ace8-fd8886713edd",
+  "createdAt": "2025-02-01T16:04:15.542Z",
+  "updatedAt": "2025-11-15T09:32:28.506Z",
+  "variant": "text-default",
+  "type": "default",
+  "isRequired": false,
+  "title": {
+    "en": "Name",
+    "ru": "Имя"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "name",
+  "placeholder": {
+    "en": "Type your name",
+    "ru": "Введите ваше имя"
+  },
+  "label": {
+    "en": "Name",
+    "ru": "Имя"
+  }
+}

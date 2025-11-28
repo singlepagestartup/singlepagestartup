@@ -1,0 +1,15 @@
+{
+  "id": "a0bb0743-410d-4e70-961c-f38551e2cfd5",
+  "createdAt": "2025-05-22T22:19:02.956Z",
+  "updatedAt": "2025-11-15T09:32:28.643Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "asdfs",
+    "ru": "sadfsdf"
+  },
+  "title": {}
+}
