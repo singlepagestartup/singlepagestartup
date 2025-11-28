@@ -45,4 +45,6 @@ services:
 
 networks:
   traefik_overlay:
-    external: true
+    name: traefik_overlay
+    external: {% if USE_CLOUDFLARE_SSL %}true{% else %}false{% endif %}
+    {% if not USE_CLOUDFLARE_SSL %}attachable: true{% endif %}

@@ -81,6 +81,12 @@
             virtualenv: /opt/venv
       when: ansible_system_vendor != "DigitalOcean"
 
+    - name: Create traefik_overlay network if using Cloudflare SSL
+      shell: docker network create --driver overlay --attachable traefik_overlay
+      register: network_result
+      failed_when: network_result.rc != 0 and "already exists" not in network_result.stderr
+      when: USE_CLOUDFLARE_SSL | default(false) | bool == true
+
     - name: Run Traefik service
       shell: docker stack deploy --compose-file=/home/code/docker-compose.traefik.yaml traefik
 
