@@ -27,7 +27,8 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET"],
   },
   {
-    regexPath: /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init)/,
+    regexPath:
+      /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|refresh)/,
     methods: ["GET"],
   },
   {

@@ -6,9 +6,9 @@ export function response(props: IResponseProps) {
   return {
     method: "sendMessage",
     props: [
-      `New social message:\n${Object.keys(props.data.social.message)
+      `New social message:\n${Object.keys(props.data.socialModule.message)
         .map((messageField) => {
-          return `${messageField}: ${props.data.social.message[messageField]}\n`;
+          return `${messageField}: ${props.data.socialModule.message[messageField]}\n`;
         })
         .join("")}`,
       {

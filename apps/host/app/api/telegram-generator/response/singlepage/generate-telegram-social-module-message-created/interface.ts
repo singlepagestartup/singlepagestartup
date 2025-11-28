@@ -4,7 +4,7 @@ export interface IResponseProps {
   variant: typeof variant;
   language: string;
   data: {
-    social: {
+    socialModule: {
       message: {
         [key: string]: string;
       };
