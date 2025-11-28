@@ -11,7 +11,7 @@ export interface IComponentProps extends ISpsComponentBase {
   children: ReactNode;
   apiProps: {
     params: {
-      action: {
+      permission: {
         route: string;
         method: string;
         type?: "HTTP";

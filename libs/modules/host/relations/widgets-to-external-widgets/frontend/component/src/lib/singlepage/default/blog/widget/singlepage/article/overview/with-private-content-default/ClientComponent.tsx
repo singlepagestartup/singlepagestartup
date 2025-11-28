@@ -18,7 +18,7 @@ export function Component(
       variant="authentication-is-authorized-wrapper-default"
       apiProps={{
         params: {
-          action: {
+          permission: {
             method: "GET",
             route: "/api/blog/articles-to-website-builder-module-widgets",
           },
