@@ -1,9 +1,9 @@
-import { Component as Find } from "../../../../../../../action/frontend/component/src/lib/singlepage/find";
-import { Component as AdminTableRow } from "../../../../../../../action/frontend/component/src/lib/singlepage/admin/table-row";
-import { Component as AdminTable } from "../../../../../../../action/frontend/component/src/lib/singlepage/admin/table";
-import { Component as AdminSelectInput } from "../../../../../../../action/frontend/component/src/lib/singlepage/admin/select-input";
-import { Component as AdminForm } from "../../../../../../../action/frontend/component/src/lib/singlepage/admin/form";
-import { Component as Default } from "../../../../../../../action/frontend/component/src/lib/singlepage/default";
+import { Component as Find } from "../../../../../../../permission/frontend/component/src/lib/singlepage/find";
+import { Component as AdminTableRow } from "../../../../../../../permission/frontend/component/src/lib/singlepage/admin/table-row";
+import { Component as AdminTable } from "../../../../../../../permission/frontend/component/src/lib/singlepage/admin/table";
+import { Component as AdminSelectInput } from "../../../../../../../permission/frontend/component/src/lib/singlepage/admin/select-input";
+import { Component as AdminForm } from "../../../../../../../permission/frontend/component/src/lib/singlepage/admin/form";
+import { Component as Default } from "../../../../../../../permission/frontend/component/src/lib/singlepage/default";
 export const variants = {
   find: Find,
   "admin-table-row": AdminTableRow,

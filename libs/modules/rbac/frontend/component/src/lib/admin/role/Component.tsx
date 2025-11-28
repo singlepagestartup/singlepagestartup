@@ -1,7 +1,7 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/rbac/models/role/frontend/component";
-import { Component as RolesToActions } from "@sps/rbac/relations/roles-to-actions/frontend/component";
+import { Component as RolesToActions } from "@sps/rbac/relations/roles-to-permissions/frontend/component";
 import { Component as SubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/frontend/component";
 import { Component as RolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/frontend/component";
 

@@ -56,7 +56,7 @@ export class Handler {
         authorizationCookie || authorizationHeader?.replace("Bearer ", "");
 
       const isAuthorizedProps = {
-        action: {
+        permission: {
           route: parsedQuery["action"]["route"],
           method: parsedQuery["action"]["method"],
           type: parsedQuery["action"]["type"] || "HTTP",

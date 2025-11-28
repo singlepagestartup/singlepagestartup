@@ -1,7 +1,7 @@
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
 import { Component as Identity } from "./identity/Component";
-import { Component as Action } from "./action/Component";
+import { Component as Permission } from "./permission/Component";
 import { Component as Role } from "./role/Component";
 import { Component as Act } from "./act/Component";
 import { Component as Subject } from "./subject/Component";
@@ -14,8 +14,8 @@ export function Component(props: IComponentProps) {
       Comp: Identity,
     },
     {
-      name: "action",
-      Comp: Action,
+      name: "permission",
+      Comp: Permission,
     },
     {
       name: "role",

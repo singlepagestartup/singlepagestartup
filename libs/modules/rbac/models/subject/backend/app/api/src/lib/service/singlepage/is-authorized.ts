@@ -1,15 +1,15 @@
 import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { HTTPException } from "hono/http-exception";
-import { api as actionApi } from "@sps/rbac/models/action/sdk/server";
-import { api as rolesToActionsApi } from "@sps/rbac/relations/roles-to-actions/sdk/server";
+import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
+import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import * as jwt from "hono/jwt";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {
-  action: {
+  permission: {
     route: string;
     method: string;
     type: "HTTP";
@@ -78,9 +78,9 @@ export class Service {
     }
 
     try {
-      const rootAction = await actionApi.findByRoute({
+      const rootPermission = await permissionApi.findByRoute({
         params: {
-          action: {
+          permission: {
             method: "*",
             route: "*",
             type: "HTTP",
@@ -93,10 +93,10 @@ export class Service {
         },
       });
 
-      if (rootAction) {
+      if (rootPermission) {
         if (subjectsToRoles?.length) {
           for (const subjectToRole of subjectsToRoles) {
-            const rolesToActions = await rolesToActionsApi.find({
+            const rolesToPermissions = await rolesToPermissionsApi.find({
               params: {
                 filters: {
                   and: [
@@ -106,9 +106,9 @@ export class Service {
                       value: subjectToRole.roleId,
                     },
                     {
-                      column: "actionId",
+                      column: "permissionId",
                       method: "eq",
-                      value: rootAction.id,
+                      value: rootPermission.id,
                     },
                   ],
                 },
@@ -120,7 +120,7 @@ export class Service {
               },
             });
 
-            if (rolesToActions?.length) {
+            if (rolesToPermissions?.length) {
               authorized = true;
             }
           }
@@ -131,12 +131,12 @@ export class Service {
     }
 
     try {
-      const action = await actionApi.findByRoute({
+      const Permission = await permissionApi.findByRoute({
         params: {
-          action: {
-            method: props.action.method,
-            route: props.action.route,
-            type: props.action.type,
+          permission: {
+            method: props.permission.method,
+            route: props.permission.route,
+            type: props.permission.type,
           },
         },
         options: {
@@ -146,15 +146,15 @@ export class Service {
         },
       });
 
-      if (action) {
-        const actionsToRoles = await rolesToActionsApi.find({
+      if (Permission) {
+        const PermissionsToRoles = await rolesToPermissionsApi.find({
           params: {
             filters: {
               and: [
                 {
-                  column: "actionId",
+                  column: "PermissionId",
                   method: "eq",
-                  value: action.id,
+                  value: Permission.id,
                 },
               ],
             },
@@ -167,15 +167,15 @@ export class Service {
         });
 
         /**
-         * actions without roles are public
+         * Permissions without roles are public
          */
-        if (!actionsToRoles?.length) {
+        if (!PermissionsToRoles?.length) {
           authorized = true;
         }
 
         if (subjectsToRoles?.length && !authorized) {
           for (const subjectToRole of subjectsToRoles) {
-            const rolesToActions = await rolesToActionsApi.find({
+            const rolesToPermissions = await rolesToPermissionsApi.find({
               params: {
                 filters: {
                   and: [
@@ -185,9 +185,9 @@ export class Service {
                       value: subjectToRole.roleId,
                     },
                     {
-                      column: "actionId",
+                      column: "PermissionId",
                       method: "eq",
-                      value: action.id,
+                      value: Permission.id,
                     },
                   ],
                 },
@@ -199,7 +199,7 @@ export class Service {
               },
             });
 
-            if (rolesToActions?.length) {
+            if (rolesToPermissions?.length) {
               authorized = true;
             }
           }
@@ -211,7 +211,7 @@ export class Service {
 
     if (!authorized) {
       throw new Error(
-        `Authorization error. You do not have access to this resource: ${JSON.stringify(props.action)}`,
+        `Authorization error. You do not have access to this resource: ${JSON.stringify(props.permission)}`,
       );
     } else {
       return {
