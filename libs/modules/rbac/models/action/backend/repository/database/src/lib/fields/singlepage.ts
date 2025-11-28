@@ -9,6 +9,6 @@ export const fields = {
   expiresAt: pgCore
     .timestamp("expires_at", { mode: "date" })
     .notNull()
-    .default(sql`NOW() + INTERVAL '1 monyh'`),
+    .default(sql`NOW() + INTERVAL '1 month'`),
   payload: pgCore.jsonb("payload").$type<{ [key: string]: any }>().default({}),
 };

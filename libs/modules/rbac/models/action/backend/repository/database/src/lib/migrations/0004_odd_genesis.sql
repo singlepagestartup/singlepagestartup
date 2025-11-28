@@ -1,0 +1,1 @@
+ALTER TABLE "rc_action" DROP COLUMN IF EXISTS "expires_at";
