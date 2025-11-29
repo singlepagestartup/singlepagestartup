@@ -24,7 +24,7 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: true,
           module: "rbac",
-          name: "action",
+          name: "permission",
           type: "model",
           filters: [
             {
