@@ -48,7 +48,16 @@ export class Database<T extends PgTableWithColumns<any>>
 
       if (props?.params?.orderBy?.and && !props.params.orderBy.and?.[0]) {
         throw new Error(
-          "You need to pass an orderBy array with column and method",
+          "You need to pass an orderBy array with 'column' and 'method' for each item",
+        );
+      }
+
+      if (
+        props?.params?.orderBy?.and.length &&
+        !props?.params?.orderBy?.and.every((ob) => ob.column && ob.method)
+      ) {
+        throw new Error(
+          "You need to pass an orderBy array with 'column' and 'method' for each item",
         );
       }
 

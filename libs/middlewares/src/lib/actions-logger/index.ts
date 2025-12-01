@@ -12,6 +12,7 @@ import { authorization } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
+import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 
 export type IMiddlewareGeneric = {
   Variables: undefined;
@@ -42,6 +43,37 @@ export class Middleware {
           const resJson = await c.res.clone().json();
           const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
+          const contentType = c.req.header("content-type");
+          let requestData: any = {};
+
+          if (contentType?.includes("application/json")) {
+            requestData = await c.req.json().catch(() => ({}));
+          } else if (
+            contentType?.includes("multipart/form-data") ||
+            contentType?.includes("application/x-www-form-urlencoded")
+          ) {
+            const formData = await c.req.formData().catch(() => new FormData());
+            requestData = Object.fromEntries(formData);
+          }
+
+          const parsedRequestData = { ...requestData };
+
+          if (typeof parsedRequestData.data === "string") {
+            try {
+              parsedRequestData.data = JSON.parse(parsedRequestData.data);
+            } catch (e) {
+              // Keep original string if parsing fails
+            }
+          }
+
+          if (parsedRequestData.file instanceof File) {
+            parsedRequestData.file = {
+              name: parsedRequestData.file.name,
+              size: parsedRequestData.file.size,
+              type: parsedRequestData.file.type,
+            };
+          }
+
           if (decoded["subject"]?.["id"]) {
             const subjectId = decoded["subject"]["id"];
 
@@ -53,6 +85,7 @@ export class Middleware {
                     .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
                   method,
                   type: "HTTP",
+                  requestData: parsedRequestData,
                   result: resJson,
                 },
               },
@@ -67,6 +100,17 @@ export class Middleware {
               data: {
                 subjectId,
                 actionId: rbacAction.id,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+            agentModuleAgentApi.telegramBot({
+              data: {
+                rbacModuleAction: rbacAction,
               },
               options: {
                 headers: {

@@ -63,6 +63,9 @@ export function Component(props: IComponentPropsExtended) {
             key={index}
             className="p-4 border rounded-xl flex flex-col gap-2"
           >
+            <div className="text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
+              <p>{socialModuleMessage.id}</p>
+            </div>
             <SocialModuleProfilesToMessages
               isServer={false}
               variant="find"

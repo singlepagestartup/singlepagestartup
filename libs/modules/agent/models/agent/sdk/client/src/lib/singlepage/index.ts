@@ -10,17 +10,17 @@ import {
 import { factory, queryClient } from "@sps/shared-frontend-client-api";
 export { Provider, queryClient } from "@sps/shared-frontend-client-api";
 import {
-  action as aiOpenAiGpt4oMini,
-  type IProps as IAiOpenAiGpt4oMiniProps,
-  type IResult as IAiOpenAiGpt4oMiniResult,
-} from "./ai/open-ai/gpt-4o-mini";
+  action as telegramBot,
+  type IProps as ITelegramBotProps,
+  type IResult as ITelegramBotResult,
+} from "./telegram-bot";
 
 export type IProps = {
-  IAiOpenAiGpt4oMiniProps: IAiOpenAiGpt4oMiniProps;
+  ITelegramBotProps: ITelegramBotProps;
 };
 
 export type IResult = {
-  IAiOpenAiGpt4oMiniResult: IAiOpenAiGpt4oMiniResult;
+  ITelegramBotResult: ITelegramBotResult;
 };
 
 export const api = {
@@ -31,5 +31,5 @@ export const api = {
     params: query,
     options,
   }),
-  aiOpenAiGpt4oMini,
+  telegramBot,
 };

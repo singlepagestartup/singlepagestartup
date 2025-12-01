@@ -13,16 +13,14 @@ export function response(props: IResponseProps) {
         .join("")}`,
       {
         parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "React",
-                callback_data: "react",
+        ...(Object.keys(props.data.socialModule.message.interaction || {})
+          .length
+          ? {
+              reply_markup: {
+                ...props.data.socialModule.message.interaction,
               },
-            ],
-          ],
-        },
+            }
+          : {}),
       },
     ],
   };

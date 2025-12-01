@@ -133,6 +133,15 @@ export class TelegarmBot {
       //   },
       // });
     });
+
+    this.instance.on("callback_query:data", async (ctx) => {
+      const data = ctx.callbackQuery?.data;
+      console.log("🚀 ~ init ~ data:", data);
+
+      ctx.answerCallbackQuery({
+        text: `You clicked: ${data}`,
+      });
+    });
   }
 
   async run() {

@@ -20,20 +20,16 @@ export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
 };
 
-export type IResult = IParentResult["IAiOpenAiGpt4oMiniResult"];
+export type IResult = IParentResult["ITelegramBotResult"];
 
 export function action(props: IProps) {
-  return useMutation<
-    IResult,
-    DefaultError,
-    IParentProps["IAiOpenAiGpt4oMiniProps"]
-  >({
-    mutationKey: [`${route}/ai/open-ai/gpt-4o-mini`],
+  return useMutation<IResult, DefaultError, IParentProps["ITelegramBotProps"]>({
+    mutationKey: [`${route}/telegram-bot`],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["IAiOpenAiGpt4oMiniProps"],
+      mutationFunctionProps: IParentProps["ITelegramBotProps"],
     ) => {
       try {
-        const result = await api.aiOpenAiGpt4oMini({
+        const result = await api.telegramBot({
           ...mutationFunctionProps,
           options: {
             ...mutationFunctionProps.options,
@@ -52,7 +48,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/ai/open-ai/gpt-3o-mini`,
+        name: `${route}/telegram-bot`,
         props: this,
         result: data,
         timestamp: Date.now(),

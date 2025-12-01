@@ -13,6 +13,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 
+const DEGUG = false;
 export class Handler {
   service: Service;
 
@@ -277,14 +278,15 @@ export class Handler {
             socialModuleChatId: props.socialModuleChatId,
           });
 
-        console.log(
-          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ subjectsWithProfiles:",
-          subjectsWithProfiles,
-          "from",
-          props.id,
-          "to",
-          subject.id,
-        );
+        DEGUG &&
+          console.log(
+            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ subjectsWithProfiles:",
+            subjectsWithProfiles,
+            "from",
+            props.id,
+            "to",
+            subject.id,
+          );
 
         const chatHasManInTheLoop = subjectsWithProfiles.some((entity) => {
           return entity.socialModuleProfiles.length > 1;
@@ -300,15 +302,17 @@ export class Handler {
           },
         );
 
-        console.log(
-          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ messageIsFromProfileWithAI:",
-          messageIsFromProfileWithAI,
-        );
+        DEGUG &&
+          console.log(
+            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ messageIsFromProfileWithAI:",
+            messageIsFromProfileWithAI,
+          );
 
-        console.log(
-          "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ chatHasManInTheLoop:",
-          chatHasManInTheLoop,
-        );
+        DEGUG &&
+          console.log(
+            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ chatHasManInTheLoop:",
+            chatHasManInTheLoop,
+          );
 
         for (const socialModuleGenerateSocialModuleMessageCreatedTemplate of socialModuleGenerateSocialModuleMessageCreatedTemplates) {
           const method =
@@ -364,21 +368,21 @@ export class Handler {
             });
           }
 
-          for (const subjectToSocialModuleProfile of subjectToSocialModuleProfiles) {
-            api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
-              id: subject.id,
-              socialModuleProfileId:
-                subjectToSocialModuleProfile.socialModuleProfileId,
-              socialModuleChatId: props.socialModuleChatId,
-              socialModuleMessageId: props.socialModuleMessage.id,
-              data: {},
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
-          }
+          // for (const subjectToSocialModuleProfile of subjectToSocialModuleProfiles) {
+          //   api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
+          //     id: subject.id,
+          //     socialModuleProfileId:
+          //       subjectToSocialModuleProfile.socialModuleProfileId,
+          //     socialModuleChatId: props.socialModuleChatId,
+          //     socialModuleMessageId: props.socialModuleMessage.id,
+          //     data: {},
+          //     options: {
+          //       headers: {
+          //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //       },
+          //     },
+          //   });
+          // }
         }
       }
     }

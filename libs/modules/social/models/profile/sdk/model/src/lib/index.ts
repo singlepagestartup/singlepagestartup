@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/social/profiles";
-export const variants = ["default", "artificial-intelligence"];
+export const variants = ["default", "artificial-intelligence", "agent"];
 export const query = {};
 export const options = {
   next: {

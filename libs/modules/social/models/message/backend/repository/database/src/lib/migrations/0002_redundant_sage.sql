@@ -1,0 +1,1 @@
+ALTER TABLE "sl_message" ADD COLUMN "interaction" jsonb DEFAULT '{}'::jsonb;

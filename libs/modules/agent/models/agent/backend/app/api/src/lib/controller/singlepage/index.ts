@@ -9,7 +9,7 @@ import { Handler as Cron } from "./cron";
 import { Handler as HostModulePageCache } from "./page/cache";
 import { Handler as EcommerceModuleOrdersCheck } from "./ecommerce-module/order/check";
 import { Handler as EcommerceModuleOrdersDeleteCanceled } from "./ecommerce-module/order/delete-canceled";
-import { Handler as OpenAiGpt4oMini } from "./ai/open-ai/gpt-4o-mini";
+import { Handler as TelegramBot } from "./telegram/bot";
 import { Handler as BillingModulePaymentIntentsCheck } from "./billing-module/payment-intent/check";
 import { Handler as BillingModulePaymentIntentsDeleteFailed } from "./billing-module/payment-intent/delete-failed";
 import { Handler as BillingModuleInvoicesDeleteFailed } from "./billing-module/invoice/delete-failed";
@@ -77,8 +77,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/ai/open-ai/gpt-4o-mini",
-        handler: this.openAiGpt4oMini,
+        path: "/telegram-bot",
+        handler: this.telegramBot,
       },
       {
         method: "POST",
@@ -134,8 +134,8 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new HostModulePageCache(this.service).execute(c, next);
   }
 
-  async openAiGpt4oMini(c: Context, next: any): Promise<Response> {
-    return new OpenAiGpt4oMini(this.service).execute(c, next);
+  async telegramBot(c: Context, next: any): Promise<Response> {
+    return new TelegramBot(this.service).execute(c, next);
   }
 
   async billingModulePaymentIntentsCheck(

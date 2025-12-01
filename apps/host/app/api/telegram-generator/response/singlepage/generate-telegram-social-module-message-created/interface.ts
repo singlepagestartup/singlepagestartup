@@ -6,7 +6,8 @@ export interface IResponseProps {
   data: {
     socialModule: {
       message: {
-        [key: string]: string;
+        description: string;
+        interaction?: { [key: string]: any };
       };
     };
   };

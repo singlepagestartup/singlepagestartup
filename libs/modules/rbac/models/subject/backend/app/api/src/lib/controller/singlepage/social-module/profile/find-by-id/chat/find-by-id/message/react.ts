@@ -297,6 +297,20 @@ export class Handler {
           socialModuleChatId,
           data: {
             description: text,
+            interaction: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Button 1",
+                    callback_data: "button_1",
+                  },
+                  {
+                    text: "Button 2",
+                    callback_data: "button_2",
+                  },
+                ],
+              ],
+            },
           },
           options: {
             headers: {

@@ -10,4 +10,8 @@ export const fields = {
   subtitle: pgCore.text("subtitle"),
   description: pgCore.text("description"),
   sourceSystemId: pgCore.text("source_system_id"),
+  interaction: pgCore
+    .jsonb("interaction")
+    .$type<{ [key: string]: any }>()
+    .default({}),
 };

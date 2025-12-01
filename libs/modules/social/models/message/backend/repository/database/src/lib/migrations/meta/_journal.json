@@ -15,6 +15,13 @@
       "when": 1760130561287,
       "tag": "0001_quick_zombie",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764455890283,
+      "tag": "0002_redundant_sage",
+      "breakpoints": true
     }
   ]
 }
