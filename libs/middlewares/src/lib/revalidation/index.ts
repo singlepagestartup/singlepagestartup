@@ -39,7 +39,7 @@ export class Middleware {
             expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
           });
 
-          await this.revalidateTag(path);
+          this.revalidateTag(path);
 
           const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
 
@@ -50,7 +50,7 @@ export class Middleware {
             expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
           });
 
-          await this.revalidateTag(pathWithoutId);
+          this.revalidateTag(pathWithoutId);
         }
 
         if (["DELETE"].includes(method)) {

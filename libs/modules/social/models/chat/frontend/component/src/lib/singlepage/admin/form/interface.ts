@@ -13,7 +13,8 @@ export interface IComponentProps
   extends IParentComponentProps<IModel, typeof variant> {
   profilesToChats?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
   chatsToMessages?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
-  chatsTothreads?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  chatsToThreads?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  chatsToActions?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
 }
 
 export interface IComponentPropsExtended

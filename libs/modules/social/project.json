@@ -42,6 +42,9 @@
         "parallel": false,
         "commands": [
           {
+            "command": "nx run @sps/social:models:action:repository-generate"
+          },
+          {
             "command": "nx run @sps/social:models:attribute-key:repository-generate"
           },
           {
@@ -72,6 +75,12 @@
         "commands": [
           {
             "command": "nx run @sps/social:relations:attribute-keys-to-attributes:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-actions:repository-generate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-actions:repository-generate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-attributes:repository-generate"
@@ -113,6 +122,9 @@
         "parallel": false,
         "commands": [
           {
+            "command": "nx run @sps/social:models:action:repository-migrate"
+          },
+          {
             "command": "nx run @sps/social:models:attribute-key:repository-migrate"
           },
           {
@@ -144,6 +156,12 @@
         "commands": [
           {
             "command": "nx run @sps/social:relations:attribute-keys-to-attributes:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:chats-to-actions:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/social:relations:profiles-to-actions:repository-migrate"
           },
           {
             "command": "nx run @sps/social:relations:profiles-to-attributes:repository-migrate"
@@ -374,6 +392,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/models/attribute/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:action:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/models/action/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:action:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/models/action/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"
@@ -693,6 +740,64 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/social/relations/threads-to-messages/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-actions:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/profiles-to-actions/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:profiles-to-actions:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/profiles-to-actions/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-actions:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/social/relations/chats-to-actions/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:chats-to-actions:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/social/relations/chats-to-actions/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

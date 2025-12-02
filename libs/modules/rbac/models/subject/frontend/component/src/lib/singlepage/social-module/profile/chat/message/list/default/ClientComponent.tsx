@@ -19,10 +19,20 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 const formSchema = z.object({
   description: z.string().min(1),
 });
+const socialModuleActionFormSchema = z.object({
+  payload: z.any().optional(),
+});
 
 export function Component(props: IComponentPropsExtended) {
+  console.log("🚀 ~ Component ~ props:", props.socialModuleActions);
   const socialModuleProfileFindByIdChatFindByIdMessageCreate =
     api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+    });
+  const socialModuleProfileFindByIdChatFindByIdActionCreate =
+    api.socialModuleProfileFindByIdChatFindByIdActionCreate({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
@@ -33,6 +43,15 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {},
   });
 
+  const socialModuleActionForm = useForm<
+    z.infer<typeof socialModuleActionFormSchema>
+  >({
+    resolver: zodResolver(socialModuleActionFormSchema),
+    defaultValues: {
+      payload: {},
+    },
+  });
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
     socialModuleProfileFindByIdChatFindByIdMessageCreate.mutate({
       id: props.data.id,
@@ -40,6 +59,19 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChatId: props.socialModuleChat.id,
       data: {
         description: data.description,
+      },
+    });
+  }
+
+  async function socialModuleActionFormOnSubmit(
+    data: z.infer<typeof socialModuleActionFormSchema>,
+  ) {
+    socialModuleProfileFindByIdChatFindByIdActionCreate.mutate({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      data: {
+        payload: data.payload,
       },
     });
   }
@@ -57,7 +89,7 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("flex w-full flex-col gap-6", props.className)}
     >
-      {props.socialModuleMessages.map((socialModuleMessage, index) => {
+      {props.socialModuleMessages?.map((socialModuleMessage, index) => {
         return (
           <div
             key={index}
@@ -139,6 +171,17 @@ export function Component(props: IComponentPropsExtended) {
           </div>
         );
       })}
+      <Form {...socialModuleActionForm}>
+        <Button
+          variant="secondary"
+          onClick={socialModuleActionForm.handleSubmit(
+            socialModuleActionFormOnSubmit,
+          )}
+          className="cursor-pointer"
+        >
+          Create Action
+        </Button>
+      </Form>
       <Form {...form}>
         <div className="w-full grid gap-4">
           <FormField

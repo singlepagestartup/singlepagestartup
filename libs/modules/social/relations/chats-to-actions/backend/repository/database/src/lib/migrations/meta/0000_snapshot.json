@@ -1,0 +1,112 @@
+{
+  "id": "6261d3b7-8764-41c1-88f3-14ef757953ac",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sl_cs_to_as_b9b": {
+      "name": "sl_cs_to_as_b9b",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ct_id": {
+          "name": "ct_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "an_id": {
+          "name": "an_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sl_cs_to_as_b9b_ct_id_sl_chat_id_fk": {
+          "name": "sl_cs_to_as_b9b_ct_id_sl_chat_id_fk",
+          "tableFrom": "sl_cs_to_as_b9b",
+          "tableTo": "sl_chat",
+          "columnsFrom": [
+            "ct_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sl_cs_to_as_b9b_an_id_sl_action_id_fk": {
+          "name": "sl_cs_to_as_b9b_an_id_sl_action_id_fk",
+          "tableFrom": "sl_cs_to_as_b9b",
+          "tableTo": "sl_action",
+          "columnsFrom": [
+            "an_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

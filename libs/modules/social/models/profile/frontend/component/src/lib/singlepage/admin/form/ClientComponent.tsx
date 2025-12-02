@@ -173,6 +173,13 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
+        {props.profilesToActions
+          ? props.profilesToActions({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+
         {props.profilesToEcommerceModuleProducts
           ? props.profilesToEcommerceModuleProducts({
               data: props.data,

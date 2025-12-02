@@ -18,5 +18,6 @@ export interface IComponentProps extends ISpsComponentBase {
 }
 
 export interface IComponentPropsExtended extends IComponentProps {
-  socialModuleMessages: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"];
+  socialModuleMessages?: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"];
+  socialModuleActions?: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
 }

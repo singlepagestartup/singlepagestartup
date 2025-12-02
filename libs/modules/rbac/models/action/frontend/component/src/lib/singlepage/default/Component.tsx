@@ -5,13 +5,13 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <div
       data-module="rbac"
-      data-model="act"
+      data-model="action"
       data-id={props.data?.id || ""}
       data-variant={props.variant}
       className={cn("w-full flex flex-col", props.className)}
     >
       <p className="font-bold">Generated variant</p>
-      <p className="font-bold text-4xl">Model: act</p>
+      <p className="font-bold text-4xl">Model: action</p>
       <p className="font-bold text-4xl">Variant: default</p>
     </div>
   );

@@ -77,47 +77,59 @@ export class Middleware {
           if (decoded["subject"]?.["id"]) {
             const subjectId = decoded["subject"]["id"];
 
-            const rbacAction = await rbacActionApi.create({
-              data: {
-                payload: {
-                  route: path
-                    .replaceAll(API_SERVICE_URL, "")
-                    .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
-                  method,
-                  type: "HTTP",
-                  requestData: parsedRequestData,
-                  result: resJson,
+            rbacActionApi
+              .create({
+                data: {
+                  payload: {
+                    route: path
+                      .replaceAll(API_SERVICE_URL, "")
+                      .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
+                    method,
+                    type: "HTTP",
+                    requestData: parsedRequestData,
+                    result: resJson,
+                  },
                 },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
                 },
-              },
-            });
+              })
+              .then((rbacAction) => {
+                if (!RBAC_SECRET_KEY) {
+                  return;
+                }
 
-            await rbacSubjectsToActionsApi.create({
-              data: {
-                subjectId,
-                actionId: rbacAction.id,
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
+                rbacSubjectsToActionsApi
+                  .create({
+                    data: {
+                      subjectId,
+                      actionId: rbacAction.id,
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      },
+                    },
+                  })
+                  .then(() => {
+                    if (!RBAC_SECRET_KEY) {
+                      return;
+                    }
 
-            agentModuleAgentApi.telegramBot({
-              data: {
-                rbacModuleAction: rbacAction,
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
-            });
+                    return agentModuleAgentApi.telegramBot({
+                      data: {
+                        rbacModuleAction: rbacAction,
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
+                      },
+                    });
+                  });
+              });
           }
         }
       }

@@ -24,6 +24,9 @@ export interface IComponentProps
   profilesToMessages?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  profilesToActions?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   profilesToEcommerceModuleProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

@@ -7,6 +7,7 @@ import { Component as AttributeKey } from "./attribute-key/Component";
 import { Component as Message } from "./message/Component";
 import { Component as Chat } from "./chat/Component";
 import { Component as Thread } from "./thread/Component";
+import { Component as Action } from "./action/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
@@ -37,6 +38,10 @@ export function Component(props: IComponentProps) {
     {
       name: "thread",
       Comp: Thread,
+    },
+    {
+      name: "action",
+      Comp: Action,
     },
   ];
 
