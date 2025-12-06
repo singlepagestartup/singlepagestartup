@@ -15,6 +15,20 @@
       "when": 1738270515653,
       "tag": "0001_rainy_warpath",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765057386074,
+      "tag": "0002_fat_klaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765057722868,
+      "tag": "0003_motionless_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

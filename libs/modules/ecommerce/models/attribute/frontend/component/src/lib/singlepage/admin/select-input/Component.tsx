@@ -14,12 +14,11 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={
-        props.renderField ||
-        (`string.[${internationalization.defaultLanguage.code}]` as keyof IModel)
-      }
+      renderField={props.renderField || "adminTitle"}
       renderFunction={(entity) => {
-        return `String: ${entity.string?.[internationalization.defaultLanguage.code] ?? ""} | Number: ${entity.number ?? ""} | Boolean: ${entity.boolean ?? ""} | Datetime: ${entity.datetime ? dayjs(entity.datetime).format("DD.MM.YYYY HH:mm") : ""}`;
+        const adminTitle = entity.adminTitle;
+
+        return `${adminTitle} | String: ${entity.string?.[internationalization.defaultLanguage.code] ?? ""} | Number: ${entity.number ?? ""} | Boolean: ${entity.boolean ?? ""} | Datetime: ${entity.datetime ? dayjs(entity.datetime).format("DD.MM.YYYY HH:mm") : ""}`;
       }}
     />
   );

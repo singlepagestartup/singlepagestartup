@@ -25,7 +25,7 @@ export function Component(props: IComponentPropsExtended) {
                 {
                   column: "id",
                   method: "eq",
-                  value: props.data.messageId,
+                  value: props.data.actionId,
                 },
               ],
             },
