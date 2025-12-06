@@ -1,5 +1,7 @@
 import {
   NEXT_PUBLIC_TELEGRAM_SERVICE_URL,
+  RBAC_JWT_SECRET,
+  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
   TELEGRAM_SERVICE_BOT_TOKEN,
 } from "@sps/shared-utils";
@@ -22,6 +24,7 @@ import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/pro
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import * as jwt from "hono/jwt";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
 
@@ -62,11 +65,65 @@ export class TelegarmBot {
    */
   init() {
     this.instance.on("callback_query:data", async (ctx, next) => {
-      const data = ctx.callbackQuery?.data;
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+      }
 
-      //
+      if (!RBAC_JWT_SECRET) {
+        throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+      }
 
-      await next();
+      if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+        throw new Error(
+          "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+        );
+      }
+
+      const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
+        await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+          ctx,
+        });
+
+      const jwtToken = await jwt.sign(
+        {
+          exp:
+            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+          iat: Math.floor(Date.now() / 1000),
+          subject: rbacModuleSubject,
+        },
+        RBAC_JWT_SECRET,
+      );
+
+      console.log(
+        "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
+        ctx.callbackQuery,
+      );
+
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate(
+        {
+          id: rbacModuleSubject.id,
+          socialModuleChatId: socialModuleChat.id,
+          socialModuleProfileId: socialModuleProfile.id,
+          data: {
+            payload: {
+              telegram: {
+                callback_query: ctx.callbackQuery,
+              },
+            },
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + jwtToken,
+            },
+          },
+        },
+      );
+
+      ctx.answerCallbackQuery({
+        text: `You clicked: ${ctx.callbackQuery.data}`,
+      });
+
+      return;
     });
 
     this.instance.command("start", async (ctx) => {
@@ -95,12 +152,32 @@ export class TelegarmBot {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
       }
 
+      if (!RBAC_JWT_SECRET) {
+        throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+      }
+
+      if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+        throw new Error(
+          "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+        );
+      }
+
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
         await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
           ctx,
         });
+
+      const jwtToken = await jwt.sign(
+        {
+          exp:
+            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+          iat: Math.floor(Date.now() / 1000),
+          subject: rbacModuleSubject,
+        },
+        RBAC_JWT_SECRET,
+      );
 
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
         {
@@ -113,7 +190,7 @@ export class TelegarmBot {
           },
           options: {
             headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              Authorization: "Bearer " + jwtToken,
             },
           },
         },
@@ -132,15 +209,6 @@ export class TelegarmBot {
       //     ],
       //   },
       // });
-    });
-
-    this.instance.on("callback_query:data", async (ctx) => {
-      const data = ctx.callbackQuery?.data;
-      console.log("🚀 ~ init ~ data:", data);
-
-      ctx.answerCallbackQuery({
-        text: `You clicked: ${data}`,
-      });
     });
   }
 

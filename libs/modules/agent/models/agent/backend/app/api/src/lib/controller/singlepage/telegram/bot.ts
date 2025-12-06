@@ -18,13 +18,6 @@ import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chat
 import { api as socialModuleProfilesToChatsToApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleProfilesToMessagesToApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 import { api as socialModuleProfilesToActionsToApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
-import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
-import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
-import * as jwt from "hono/jwt";
-import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
-import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/model";
 
 export class Handler {
   service: Service;
@@ -272,7 +265,7 @@ export class Handler {
       }
 
       if (shouldReplySocialModuleProfile.slug === "telegram-bot") {
-        await this.dummyReplyBotHandler({
+        await this.service.agentSocialModuleProfileHandler({
           shouldReplySocialModuleProfile,
           socialModuleChat,
           socialModuleAction,
@@ -487,7 +480,7 @@ export class Handler {
       }
 
       if (shouldReplySocialModuleProfile.slug === "telegram-bot") {
-        await this.dummyReplyBotHandler({
+        await this.service.agentSocialModuleProfileHandler({
           shouldReplySocialModuleProfile,
           socialModuleChat,
           socialModuleMessage,
@@ -502,120 +495,5 @@ export class Handler {
     return c.json({
       data: true,
     });
-  }
-
-  async dummyReplyBotHandler(
-    props:
-      | {
-          shouldReplySocialModuleProfile: ISocialModuleProfile;
-          socialModuleChat: ISocialModuleChat;
-          socialModuleMessage: ISocialModuleMessage;
-          messageFromSocialModuleProfile: ISocialModuleProfile | null;
-        }
-      | {
-          shouldReplySocialModuleProfile: ISocialModuleProfile;
-          socialModuleChat: ISocialModuleChat;
-          socialModuleAction: ISocialModuleAction;
-          messageFromSocialModuleProfile: ISocialModuleProfile | null;
-        },
-  ) {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-
-    if (!RBAC_JWT_SECRET) {
-      throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-    }
-
-    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
-      throw new Error(
-        "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS not set",
-      );
-    }
-
-    const rbacModuleSubjectsToSocialModuleProfiles =
-      await rbacModuleSubjectsToSocialModuleProfilesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "socialModuleProfileId",
-                method: "eq",
-                value: props.shouldReplySocialModuleProfile.id,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
-
-    if (!rbacModuleSubjectsToSocialModuleProfiles?.length) {
-      return;
-    }
-
-    const rbacModuleSubject = await rbacModuleSubjectApi.findById({
-      id: rbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
-
-    if (!rbacModuleSubject) {
-      return;
-    }
-
-    const jwtToken = await jwt.sign(
-      {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: rbacModuleSubject,
-      },
-      RBAC_JWT_SECRET,
-    );
-
-    if ("socialModuleMessage" in props) {
-      rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: `Reply to message ID: ${props.socialModuleMessage.id} from profile ID: ${props.messageFromSocialModuleProfile?.id}`,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    } else if ("socialModuleAction" in props) {
-      rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: `Reply to action ID: ${props.socialModuleAction.id} from profile ID: ${props.messageFromSocialModuleProfile?.id}`,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    }
-
-    console.log(
-      "🚀 ~ execute ~ shouldReplySocialModuleProfile:",
-      props.shouldReplySocialModuleProfile,
-    );
   }
 }
