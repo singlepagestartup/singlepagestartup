@@ -18,6 +18,10 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 
 const formSchema = z.object({
   description: z.string().min(1),
+  file: z
+    .custom<File>((v) => v instanceof File)
+    .or(z.string())
+    .optional(),
 });
 const socialModuleActionFormSchema = z.object({
   payload: z.any().optional(),
@@ -59,6 +63,7 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChatId: props.socialModuleChat.id,
       data: {
         description: data.description,
+        file: data.file,
       },
     });
   }
@@ -193,6 +198,16 @@ export function Component(props: IComponentPropsExtended) {
             placeholder="Type text"
             className={cn("flex w-full flex-col")}
           />
+          <div className="w-1/4">
+            <FormField
+              ui="shadcn"
+              type="file"
+              label="File"
+              name="file"
+              form={form}
+              placeholder="Select files"
+            />
+          </div>
 
           <Button variant="primary" onClick={form.handleSubmit(onSubmit)}>
             Submit

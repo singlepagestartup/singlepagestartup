@@ -28,7 +28,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      console.log("Telegram Bot Handler triggered");
+      // console.log("Telegram Bot Handler triggered");
 
       const body = await c.req.parseBody();
 
@@ -54,7 +54,7 @@ export class Handler {
       await this.onAction(c, { data });
       await this.onMessage(c, { data });
 
-      console.log("Telegram Bot Data:", data);
+      // console.log("Telegram Bot Data:", data);
 
       return c.json({
         data: true,

@@ -19,7 +19,9 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: Partial<ISocialModuleMessage>;
+  data: Partial<ISocialModuleMessage> & {
+    file?: File | string;
+  };
 }
 
 export type IResult = ISocialModuleMessage[];

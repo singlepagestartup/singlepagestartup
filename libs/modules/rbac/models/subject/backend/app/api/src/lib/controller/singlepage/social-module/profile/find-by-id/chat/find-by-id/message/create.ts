@@ -8,10 +8,12 @@ import { api as socialModuleProfilesApi } from "@sps/social/models/profile/sdk/s
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
+import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
+import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 
 const DEGUG = false;
 export class Handler {
@@ -58,9 +60,32 @@ export class Handler {
         );
       }
 
-      let data;
+      const parsedBody: {
+        data?: {
+          [key: string]: any;
+        };
+        files?: {
+          [key: string]: File;
+        };
+      } = {};
+
+      Object.keys(body).forEach((key) => {
+        if (body[key] instanceof File) {
+          const file = body[key] as File;
+
+          if (!parsedBody.files) {
+            parsedBody.files = {};
+          }
+
+          parsedBody.files = {
+            ...parsedBody.files,
+            [key]: file,
+          };
+        }
+      });
+
       try {
-        data = JSON.parse(body["data"]);
+        parsedBody.data = JSON.parse(body["data"]);
       } catch (error) {
         throw new Error(
           "Validation error. Invalid JSON in body['data']. Got: " +
@@ -69,7 +94,7 @@ export class Handler {
       }
 
       const socialMouleMessage = await socialModuleMessageApi.create({
-        data,
+        data: parsedBody.data,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -88,6 +113,36 @@ export class Handler {
           },
         },
       });
+
+      console.log(
+        "🚀 ~ Handler ~ execute ~ parsedBody.files:",
+        parsedBody.files,
+      );
+
+      if (parsedBody.files?.["file"]) {
+        const fileStorageFile = await fileStorageModuleFileApi.create({
+          data: {
+            adminTitle: "Social Module Message Id: " + socialMouleMessage.id,
+            file: parsedBody.files?.["file"],
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+        await socialModuleMessagesToFileStorageModuleFilesApi.create({
+          data: {
+            messageId: socialMouleMessage.id,
+            fileStorageModuleFileId: fileStorageFile.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
 
       socialModuleProfilesToMessagesApi
         .create({

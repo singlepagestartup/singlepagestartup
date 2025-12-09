@@ -126,27 +126,6 @@ export class TelegarmBot {
       return;
     });
 
-    this.instance.command("start", async (ctx) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-      }
-
-      const payload = ctx.match;
-
-      if (payload) {
-        ctx.reply(payload);
-      }
-
-      const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
-        await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
-          ctx,
-        });
-
-      ctx.reply(
-        `Hello, ${rbacModuleSubject.slug}! Your chat id: ${socialModuleChat.sourceSystemId}`,
-      );
-    });
-
     this.instance.on("message", async (ctx) => {
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
@@ -196,7 +175,7 @@ export class TelegarmBot {
         },
       );
 
-      // ctx.reply("", {
+      // ctx.reply("Got message " + (ctx.message.text || ""), {
       //   parse_mode: "HTML",
       //   reply_markup: {
       //     inline_keyboard: [

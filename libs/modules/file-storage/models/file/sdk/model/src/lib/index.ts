@@ -19,6 +19,7 @@ export const variants = [
   "generate-template-opengraph-image-default",
   "generate-template-ecommerce-order-receipt-default",
   "generate-template-ecommerce-product-attachment-default",
+  "generate-template-social-module-message-attachment-start",
 ];
 export const query = {};
 export const options = {
