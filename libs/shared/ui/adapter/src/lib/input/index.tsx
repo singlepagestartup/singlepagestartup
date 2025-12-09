@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
   FileInputRoot,
+  MultipleFilesInput,
   TipTap,
   Checkbox,
   RadioGroup,
@@ -75,6 +76,23 @@ export const Component = (props: IComponentProps) => {
   }
 
   if (props.type === "file") {
+    if (props.multiple === true) {
+      return (
+        <FormControl>
+          <MultipleFilesInput
+            placeholder={props.placeholder}
+            {...props.field}
+            form={props.form}
+            multiple={true}
+            className={props.className}
+          >
+            <Placeholder />
+            <div className="bg-green-300 p-3 opacity-10"></div>
+          </MultipleFilesInput>
+        </FormControl>
+      );
+    }
+
     return (
       <FormControl>
         <FileInputRoot

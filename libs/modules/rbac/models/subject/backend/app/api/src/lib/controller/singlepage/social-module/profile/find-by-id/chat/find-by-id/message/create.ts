@@ -65,7 +65,7 @@ export class Handler {
           [key: string]: any;
         };
         files?: {
-          [key: string]: File;
+          [key: string]: File | File[];
         };
       } = {};
 
@@ -73,13 +73,37 @@ export class Handler {
         if (body[key] instanceof File) {
           const file = body[key] as File;
 
+          if (key.startsWith("files_")) {
+            if (!parsedBody.files) {
+              parsedBody.files = {};
+            }
+            if (!parsedBody.files["files"]) {
+              parsedBody.files["files"] = [];
+            }
+            (parsedBody.files["files"] as File[]).push(file);
+          } else {
+            if (!parsedBody.files) {
+              parsedBody.files = {};
+            }
+
+            parsedBody.files = {
+              ...parsedBody.files,
+              [key]: file,
+            };
+          }
+        } else if (
+          Array.isArray(body[key]) &&
+          body[key].every((v) => v instanceof File)
+        ) {
+          const files = body[key] as File[];
+
           if (!parsedBody.files) {
             parsedBody.files = {};
           }
 
           parsedBody.files = {
             ...parsedBody.files,
-            [key]: file,
+            [key]: files,
           };
         }
       });
@@ -114,34 +138,70 @@ export class Handler {
         },
       });
 
-      console.log(
-        "🚀 ~ Handler ~ execute ~ parsedBody.files:",
-        parsedBody.files,
-      );
-
-      if (parsedBody.files?.["file"]) {
-        const fileStorageFile = await fileStorageModuleFileApi.create({
-          data: {
-            adminTitle: "Social Module Message Id: " + socialMouleMessage.id,
-            file: parsedBody.files?.["file"],
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
-        await socialModuleMessagesToFileStorageModuleFilesApi.create({
-          data: {
-            messageId: socialMouleMessage.id,
-            fileStorageModuleFileId: fileStorageFile.id,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+      if (parsedBody.files?.["files"]) {
+        const files = parsedBody.files["files"];
+        if (Array.isArray(files)) {
+          for (const file of files) {
+            console.log(`Creating file storage for: ${file.name}`);
+            try {
+              const fileStorageFile = await fileStorageModuleFileApi.create({
+                data: {
+                  adminTitle:
+                    "Social Module Message Id: " + socialMouleMessage.id,
+                  file: file,
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+              console.log(`Created file storage: ${fileStorageFile.id}`);
+              await socialModuleMessagesToFileStorageModuleFilesApi.create({
+                data: {
+                  messageId: socialMouleMessage.id,
+                  fileStorageModuleFileId: fileStorageFile.id,
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+              console.log(`Linked file to message: ${fileStorageFile.id}`);
+            } catch (error) {
+              console.error(`Error processing file ${file.name}:`, error);
+            }
+          }
+        } else {
+          try {
+            const fileStorageFile = await fileStorageModuleFileApi.create({
+              data: {
+                adminTitle:
+                  "Social Module Message Id: " + socialMouleMessage.id,
+                file: files,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+            await socialModuleMessagesToFileStorageModuleFilesApi.create({
+              data: {
+                messageId: socialMouleMessage.id,
+                fileStorageModuleFileId: fileStorageFile.id,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          } catch (error) {
+            console.error("Error processing single file:", error);
+          }
+        }
       }
 
       socialModuleProfilesToMessagesApi
@@ -168,7 +228,7 @@ export class Handler {
       return c.json({
         data: socialMouleMessage,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }

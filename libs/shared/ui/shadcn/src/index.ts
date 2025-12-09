@@ -30,3 +30,4 @@ export * from "./lib/dropdown-menu";
 export * from "./lib/command";
 export * from "./lib/sheet";
 export * from "./lib/scroll-area";
+export * from "./lib/multiple-files-input";

@@ -18,9 +18,11 @@ import { Form, Button } from "@sps/shared-ui-shadcn";
 
 const formSchema = z.object({
   description: z.string().min(1),
-  file: z
-    .custom<File>((v) => v instanceof File)
-    .or(z.string())
+  files: z
+    .custom<File[]>(
+      (v) => Array.isArray(v) && v.every((item) => item instanceof File),
+    )
+    .or(z.string().array())
     .optional(),
 });
 const socialModuleActionFormSchema = z.object({
@@ -28,7 +30,6 @@ const socialModuleActionFormSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  console.log("🚀 ~ Component ~ props:", props.socialModuleActions);
   const socialModuleProfileFindByIdChatFindByIdMessageCreate =
     api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
       id: props.data.id,
@@ -63,7 +64,7 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleChatId: props.socialModuleChat.id,
       data: {
         description: data.description,
-        file: data.file,
+        files: data.files,
       },
     });
   }
@@ -203,7 +204,8 @@ export function Component(props: IComponentPropsExtended) {
               ui="shadcn"
               type="file"
               label="File"
-              name="file"
+              name="files"
+              multiple={true}
               form={form}
               placeholder="Select files"
             />

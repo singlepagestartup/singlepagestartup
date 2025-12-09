@@ -4,7 +4,19 @@ export function prepareFormDataToSend(params: { data: any }) {
   const formData = new FormData();
 
   if (data) {
-    formData.append("data", JSON.stringify(data));
+    const dataToSend = { ...data };
+
+    Object.keys(dataToSend).forEach((key) => {
+      if (
+        Array.isArray(dataToSend[key]) &&
+        dataToSend[key].every((v: unknown) => v instanceof File)
+      ) {
+        delete dataToSend[key];
+      } else if (dataToSend[key] instanceof File) {
+        delete dataToSend[key];
+      }
+    });
+    formData.append("data", JSON.stringify(dataToSend));
 
     Object.entries(data).forEach(([key, value]) => {
       if (value instanceof File) {
@@ -13,8 +25,8 @@ export function prepareFormDataToSend(params: { data: any }) {
         Array.isArray(value) &&
         value.every((v) => v instanceof File)
       ) {
-        value.forEach((file: File) => {
-          formData.append(key, file);
+        value.forEach((file: File, index: number) => {
+          formData.append(`${key}_${index}`, file);
         });
       }
     });

@@ -35,6 +35,7 @@ export type TTypedProps =
     }
   | {
       type: "file";
+      multiple?: boolean;
     }
   | {
       type: "number";

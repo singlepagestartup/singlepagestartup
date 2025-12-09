@@ -20,7 +20,7 @@ export interface IProps {
   };
   options?: Partial<NextRequestOptions>;
   data: Partial<ISocialModuleMessage> & {
-    file?: File | string;
+    files?: File[] | string[];
   };
 }
 
