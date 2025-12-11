@@ -1,9 +1,0 @@
-{
-  "id": "2f0d0a4b-25af-43d6-a6f2-5a425784895c",
-  "createdAt": "2025-06-29T21:23:20.224Z",
-  "updatedAt": "2025-11-15T09:32:28.722Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/ecommerce-module/orders"
-}

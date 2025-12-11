@@ -1,0 +1,10 @@
+{
+  "title": "Ecommerce Module Orders Check",
+  "adminTitle": "naughty green camel",
+  "id": "2f4bdb06-669d-4b3b-bee5-910a49baed74",
+  "createdAt": "2025-07-21T15:49:35.067Z",
+  "updatedAt": "2025-07-21T15:49:35.067Z",
+  "variant": "default",
+  "slug": "ecommerce-module-orders-check",
+  "interval": "* * * * *"
+}

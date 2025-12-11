@@ -293,25 +293,26 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     if (generateTemplateSocilaModuleMessageAttachmentStartFiles?.length) {
-      data["file"] = await blobifyFiles({
-        files: [
-          {
-            ...generateTemplateSocilaModuleMessageAttachmentStartFiles[0],
-            title:
-              generateTemplateSocilaModuleMessageAttachmentStartFiles[0].id,
-            type:
-              generateTemplateSocilaModuleMessageAttachmentStartFiles[0]
-                .mimeType ?? "",
-            extension:
-              generateTemplateSocilaModuleMessageAttachmentStartFiles[0]
-                .extension ?? "",
-            url: generateTemplateSocilaModuleMessageAttachmentStartFiles[0].file.includes(
-              "https",
-            )
-              ? generateTemplateSocilaModuleMessageAttachmentStartFiles[0].file
-              : `${NEXT_PUBLIC_API_SERVICE_URL}/public${generateTemplateSocilaModuleMessageAttachmentStartFiles[0].file}`,
+      data["files"] = await blobifyFiles({
+        files: generateTemplateSocilaModuleMessageAttachmentStartFiles.map(
+          (generateTemplateSocilaModuleMessageAttachmentStartFile) => {
+            return {
+              ...generateTemplateSocilaModuleMessageAttachmentStartFile,
+              title: generateTemplateSocilaModuleMessageAttachmentStartFile.id,
+              type:
+                generateTemplateSocilaModuleMessageAttachmentStartFile.mimeType ??
+                "",
+              extension:
+                generateTemplateSocilaModuleMessageAttachmentStartFile.extension ??
+                "",
+              url: generateTemplateSocilaModuleMessageAttachmentStartFile.file.includes(
+                "https",
+              )
+                ? generateTemplateSocilaModuleMessageAttachmentStartFile.file
+                : `${NEXT_PUBLIC_API_SERVICE_URL}/public${generateTemplateSocilaModuleMessageAttachmentStartFile.file}`,
+            };
           },
-        ],
+        ),
       });
     }
 

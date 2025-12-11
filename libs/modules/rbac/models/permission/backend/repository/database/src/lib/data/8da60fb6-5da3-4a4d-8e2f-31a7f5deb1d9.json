@@ -1,9 +1,0 @@
-{
-  "id": "8da60fb6-5da3-4a4d-8e2f-31a7f5deb1d9",
-  "createdAt": "2025-01-24T23:47:55.698Z",
-  "updatedAt": "2025-11-15T09:32:28.711Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/ecommerce/widgets/[ecommerce.widgets.id]"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "6ccc8172-73a9-4359-b0bc-7bea9bfaba74",
-  "createdAt": "2025-11-28T22:41:42.189Z",
-  "updatedAt": "2025-11-28T22:41:42.189Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/notification/templates"
-}

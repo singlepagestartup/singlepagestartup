@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Footer",
+    "ru": "Футтер"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": "",
+  "className": "",
+  "id": "1f9edbc9-e0d2-435b-9459-3f2d181ab2ee",
+  "createdAt": "2025-01-31T12:31:37.152Z",
+  "updatedAt": "2025-10-21T22:10:50.516Z",
+  "variant": "footer-default",
+  "adminTitle": "productive jade bandicoot",
+  "slug": "footer"
+}

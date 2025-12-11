@@ -9,11 +9,13 @@ import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/cha
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
+import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
+import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 const DEGUG = false;
 export class Handler {
@@ -204,6 +206,48 @@ export class Handler {
         }
       }
 
+      const socialModuleMessagesToFileStorageModuleFiles =
+        await socialModuleMessagesToFileStorageModuleFilesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: socialMouleMessage.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      let fileStorageModuleFiles: IFileStorageModuleFile[] | undefined;
+
+      if (socialModuleMessagesToFileStorageModuleFiles?.length) {
+        fileStorageModuleFiles = await fileStorageModuleFileApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: socialModuleMessagesToFileStorageModuleFiles.map(
+                    (socialModuleMessagesToFileStorageModuleFile) =>
+                      socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
+                  ),
+                },
+              ],
+            },
+          },
+        });
+      }
+
       socialModuleProfilesToMessagesApi
         .create({
           data: {
@@ -220,7 +264,22 @@ export class Handler {
           this.notifyOtherSubjectsInChat({
             id,
             socialModuleChatId,
-            socialModuleMessage: socialMouleMessage,
+            extendedSocialModuleMessage: {
+              ...socialMouleMessage,
+              messagesToFileStorageModuleFiles:
+                socialModuleMessagesToFileStorageModuleFiles?.map(
+                  (socialModuleMessagesToFileStorageModuleFile) => {
+                    return {
+                      ...socialModuleMessagesToFileStorageModuleFile,
+                      fileStorageModuleFiles: fileStorageModuleFiles?.filter(
+                        (fileStorageModuleFile) =>
+                          fileStorageModuleFile.id ===
+                          socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
+                      ),
+                    };
+                  },
+                ),
+            },
             socialModuleProfileId,
           });
         });
@@ -237,7 +296,13 @@ export class Handler {
   async notifyOtherSubjectsInChat(props: {
     id: string;
     socialModuleChatId: string;
-    socialModuleMessage: ISocialModuleMessage;
+    extendedSocialModuleMessage: ISocialModuleMessage & {
+      messagesToFileStorageModuleFiles:
+        | (ISocialModuleMessagesToFileStorageModuleFile & {
+            fileStorageModuleFiles: IFileStorageModuleFile[] | undefined;
+          })[]
+        | undefined;
+    };
     socialModuleProfileId: string;
   }) {
     if (!RBAC_SECRET_KEY) {
@@ -450,7 +515,7 @@ export class Handler {
                   method: method,
                   data: JSON.stringify({
                     socialModule: {
-                      message: props.socialModuleMessage,
+                      message: props.extendedSocialModuleMessage,
                     },
                   }),
                 },
@@ -470,9 +535,9 @@ export class Handler {
 
           if (notificationServiceNotificationSourceSystemId) {
             await socialModuleMessageApi.update({
-              id: props.socialModuleMessage.id,
+              id: props.extendedSocialModuleMessage.id,
               data: {
-                ...props.socialModuleMessage,
+                ...props.extendedSocialModuleMessage,
                 sourceSystemId: notificationServiceNotificationSourceSystemId,
               },
               options: {
@@ -489,7 +554,7 @@ export class Handler {
           //     socialModuleProfileId:
           //       subjectToSocialModuleProfile.socialModuleProfileId,
           //     socialModuleChatId: props.socialModuleChatId,
-          //     socialModuleMessageId: props.socialModuleMessage.id,
+          //     socialModuleMessageId: props.extendedSocialModuleMessage.id,
           //     data: {},
           //     options: {
           //       headers: {

@@ -1,0 +1,25 @@
+{
+  "id": "0d0c3278-2f3a-4794-bd20-75b45b23d42a",
+  "createdAt": "2025-04-06T19:12:34.000Z",
+  "updatedAt": "2025-10-21T22:10:50.552Z",
+  "variant": "text-default",
+  "type": "default",
+  "isRequired": false,
+  "title": {
+    "en": "Email",
+    "ru": "Email"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "email",
+  "placeholder": {
+    "en": "Type your email",
+    "ru": "Введите email"
+  },
+  "label": {
+    "en": "Email",
+    "ru": "Email"
+  }
+}

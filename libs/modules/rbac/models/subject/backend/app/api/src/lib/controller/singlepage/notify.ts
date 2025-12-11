@@ -169,6 +169,11 @@ export class Handler {
 
       const template = templates[0];
 
+      const notificationData =
+        typeof data.notification.notification.data === "string"
+          ? JSON.parse(data.notification.notification.data)
+          : undefined;
+
       const notifications: {
         data: string;
         method: string;
@@ -349,6 +354,60 @@ export class Handler {
                 attachments: attachments ? JSON.stringify(attachments) : "[]",
               });
             }
+          }
+        }
+      } else if (notificationData.socialModule?.message?.id) {
+        console.log(
+          "🚀 ~ Handler ~ execute ~ data.socialModule.message.id:",
+          notificationData.socialModule?.message?.id,
+        );
+        const type = template.variant.includes("email")
+          ? "email"
+          : template.variant.includes("telegram")
+            ? "telegram"
+            : undefined;
+
+        const attachments = notificationData.socialModule.message
+          .messagesToFileStorageModuleFiles?.length
+          ? notificationData.socialModule.message.messagesToFileStorageModuleFiles
+              .map((socialModuleMessagesToFileStorageModuleFile) => {
+                return socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFiles
+                  ?.map((fileStorageModuleFile) => {
+                    return {
+                      type: "image",
+                      url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageModuleFile.file}`,
+                    };
+                  })
+                  .flat();
+              })
+              .flat()
+          : [];
+
+        console.log("🚀 ~ Handler ~ execute ~ attachments:", attachments);
+
+        for (const identity of identities) {
+          if (type === "email") {
+            if (!identity.email) {
+              continue;
+            }
+
+            notifications.push({
+              ...data.notification.notification,
+              data: data.notification.notification.data,
+              reciever: identity.email,
+              attachments: JSON.stringify(attachments),
+            });
+          } else if (type === "telegram") {
+            if (identity.provider !== "telegram") {
+              continue;
+            }
+
+            notifications.push({
+              ...data.notification.notification,
+              data: data.notification.notification.data,
+              reciever: identity.account,
+              attachments: JSON.stringify(attachments),
+            });
           }
         }
       } else {

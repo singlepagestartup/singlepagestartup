@@ -1,0 +1,9 @@
+{
+  "id": "8727807b-7900-4b0c-9190-e7511b9935d9",
+  "createdAt": "2025-09-02T15:55:29.233Z",
+  "updatedAt": "2025-09-02T15:55:29.233Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/notification/notifications-to-templates/[notification.notifications-to-templates.id]"
+}

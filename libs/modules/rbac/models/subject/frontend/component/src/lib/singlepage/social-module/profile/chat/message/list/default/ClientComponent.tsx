@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { FormField } from "@sps/ui-adapter";
 import { Form, Button } from "@sps/shared-ui-shadcn";
+import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 
 const formSchema = z.object({
   description: z.string().min(1),
@@ -173,6 +174,43 @@ export function Component(props: IComponentPropsExtended) {
               </p>
             ) : null}
 
+            <SocialModuleMessagesToFileStorageModuleFiles
+              variant="find"
+              isServer={false}
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "messageId",
+                        method: "eq",
+                        value: socialModuleMessage.id,
+                      },
+                    ],
+                  },
+                },
+              }}
+            >
+              {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
+                return (
+                  <div className="grid grid-cols-4 gap-2">
+                    {socialModuleMessagesToFileStorageModuleFiles?.map(
+                      (socialModuleMessageToFileStorageModuleFile, index) => {
+                        return (
+                          <SocialModuleMessagesToFileStorageModuleFiles
+                            variant="default"
+                            isServer={false}
+                            key={index}
+                            data={socialModuleMessageToFileStorageModuleFile}
+                            language={props.language}
+                          />
+                        );
+                      },
+                    )}
+                  </div>
+                );
+              }}
+            </SocialModuleMessagesToFileStorageModuleFiles>
             <p>{socialModuleMessage.description}</p>
           </div>
         );
