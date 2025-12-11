@@ -1,9 +1,0 @@
-{
-  "id": "8e56214e-22d5-4df5-abb4-adab37b0704a",
-  "createdAt": "2025-01-24T23:47:55.825Z",
-  "updatedAt": "2025-11-15T09:32:28.702Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/billing/payment-intents/0xprocessing/webhook"
-}

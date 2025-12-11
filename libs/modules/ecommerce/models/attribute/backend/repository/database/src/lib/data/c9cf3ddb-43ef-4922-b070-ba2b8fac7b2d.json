@@ -1,0 +1,17 @@
+{
+  "id": "c9cf3ddb-43ef-4922-b070-ba2b8fac7b2d",
+  "createdAt": "2025-01-24T23:52:03.741Z",
+  "updatedAt": "2025-10-21T22:10:50.707Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "day",
+    "ru": "день"
+  },
+  "adminTitle": "day",
+  "slug": "c9cf3ddb-43ef-4922-b070-ba2b8fac7b2d",
+  "title": {}
+}

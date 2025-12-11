@@ -1,0 +1,9 @@
+{
+  "id": "640eacc7-11eb-4199-ac53-e13baf2cc305",
+  "createdAt": "2025-05-03T13:34:40.301Z",
+  "updatedAt": "2025-10-21T22:10:50.800Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-ecommerce-module-products"
+}

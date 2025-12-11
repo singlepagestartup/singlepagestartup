@@ -1,0 +1,9 @@
+{
+  "id": "ae7a7717-7b70-44b8-91ce-d07d73e33437",
+  "createdAt": "2025-01-24T23:47:55.739Z",
+  "updatedAt": "2025-10-21T22:10:50.873Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/orders/[ecommerce.orders.id]/checkout-attributes"
+}

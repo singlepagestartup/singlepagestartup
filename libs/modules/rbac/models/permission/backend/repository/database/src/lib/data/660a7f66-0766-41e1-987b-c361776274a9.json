@@ -1,0 +1,9 @@
+{
+  "id": "660a7f66-0766-41e1-987b-c361776274a9",
+  "createdAt": "2025-09-02T15:23:59.423Z",
+  "updatedAt": "2025-09-02T15:23:59.423Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/billing/payment-intents/paykeeper/webhook"
+}

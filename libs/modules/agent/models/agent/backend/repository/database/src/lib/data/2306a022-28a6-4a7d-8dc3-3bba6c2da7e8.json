@@ -1,0 +1,10 @@
+{
+  "title": "Dummy Agent",
+  "adminTitle": "xlBv8xtJsj",
+  "id": "2306a022-28a6-4a7d-8dc3-3bba6c2da7e8",
+  "createdAt": "2025-01-24T23:47:55.408Z",
+  "updatedAt": "2025-10-21T22:10:50.200Z",
+  "variant": "default",
+  "slug": "dummy",
+  "interval": "* * * * *"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "e034f5db-a0de-432a-ab71-8648b550d12c",
+  "createdAt": "2025-01-24T23:47:55.740Z",
+  "updatedAt": "2025-10-21T22:10:51.022Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-ecommerce-module-orders"
+}
