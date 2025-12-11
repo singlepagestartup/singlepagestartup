@@ -78,9 +78,24 @@ export class Config {
         logger.info("NEW_MIGRATIONS=true");
       }
 
+      // Explicitly close the connection and reset client
+      const postgres = await import("../postgres");
+      const client = postgres.getPostgresClient();
+      await client.end();
+      postgres.resetPostgresClient();
+
       process.exit(0);
     } catch (error) {
       logger.error(error);
+
+      // Close connection on error too
+      try {
+        const postgres = await import("../postgres");
+        const client = postgres.getPostgresClient();
+        await client.end();
+        postgres.resetPostgresClient();
+      } catch {}
+
       process.exit(1);
     }
   }

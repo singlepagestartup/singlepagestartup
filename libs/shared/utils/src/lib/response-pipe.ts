@@ -1,4 +1,3 @@
-import { HTTPException } from "hono/http-exception";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 const isServer = typeof window === "undefined";
@@ -15,7 +14,9 @@ async function util<T>(props: {
     let causes: { message: string; stack?: string }[] = [];
 
     try {
-      errorJson = await props.res.json();
+      // Clone response before reading to avoid "body already used" error
+      const clonedRes = props.res.clone();
+      errorJson = await clonedRes.json();
     } catch {
       // Not JSON
     }
@@ -28,13 +29,13 @@ async function util<T>(props: {
       if (Array.isArray(errorJson.cause)) {
         causes = errorJson.cause.map((e) => ({
           message: e.message,
-          stack: isDebug ? e.stack.replace(/\n/g, "\\n") : undefined,
+          stack: isDebug ? e.stack?.replace(/\n/g, "\\n") : undefined,
         }));
         errorMessages.push(...errorJson.cause.map((e) => e.message));
       } else {
         causes.push({
           message: errorJson.cause,
-          stack: isDebug ? errorJson.stack.replace(/\n/g, "\\n") : undefined,
+          stack: isDebug ? errorJson?.stack?.replace(/\n/g, "\\n") : undefined,
         });
         errorMessages.push(errorJson.cause);
       }
@@ -59,15 +60,28 @@ async function util<T>(props: {
     }
 
     if (isServer) {
+      // Dynamic import to avoid bundling Hono on client
+      const { HTTPException } = await import("hono/http-exception");
+
       throw new HTTPException(props.res.status as ContentfulStatusCode, {
         message: JSON.stringify(errorPayload),
+        cause: errorPayload,
       });
     } else {
       throw new Error(JSON.stringify(errorPayload));
     }
   }
 
-  return (await props.res.json()) as T;
+  try {
+    return (await props.res.json()) as T;
+  } catch (error) {
+    // Handle JSON parse errors or empty responses
+    console.error("Failed to parse response JSON:", error);
+    if (props.catchErrors) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 
 export { util };
