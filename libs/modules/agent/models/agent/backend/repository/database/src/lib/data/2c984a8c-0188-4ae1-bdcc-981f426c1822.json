@@ -1,0 +1,10 @@
+{
+  "title": "Billing Module Payment Intents Check",
+  "adminTitle": "philosophical cyan mosquito",
+  "id": "2c984a8c-0188-4ae1-bdcc-981f426c1822",
+  "createdAt": "2025-07-21T15:45:41.270Z",
+  "updatedAt": "2025-11-28T14:33:53.933Z",
+  "variant": "default",
+  "slug": "billing-module-payment-intents-check",
+  "interval": "0 * * * *"
+}

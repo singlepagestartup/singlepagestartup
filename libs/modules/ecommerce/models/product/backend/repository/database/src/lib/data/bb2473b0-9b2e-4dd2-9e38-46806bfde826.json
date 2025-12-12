@@ -1,0 +1,15 @@
+{
+  "id": "bb2473b0-9b2e-4dd2-9e38-46806bfde826",
+  "createdAt": "2025-01-24T23:47:55.627Z",
+  "updatedAt": "2025-11-15T09:32:28.612Z",
+  "variant": "default",
+  "type": "one_off",
+  "slug": "startup",
+  "title": {
+    "en": "Startup",
+    "ru": "Стартап"
+  },
+  "shortDescription": {},
+  "description": {},
+  "adminTitle": "product-bb2473b0-9b2e-4dd2-9e38-46806bfde826"
+}

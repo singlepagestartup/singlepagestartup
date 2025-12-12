@@ -1,9 +1,0 @@
-{
-  "id": "5b361773-6bcb-4a75-9c67-624ea9ae7a29",
-  "createdAt": "2025-05-06T22:01:32.027Z",
-  "updatedAt": "2025-10-21T22:10:50.985Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/blog/widgets-to-articles"
-}

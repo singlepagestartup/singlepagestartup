@@ -1,0 +1,18 @@
+{
+  "className": null,
+  "title": {
+    "en": "Reset Password"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": ""
+  },
+  "id": "1c79072d-da19-423b-b200-95e62574c068",
+  "createdAt": "2025-01-24T23:47:55.694Z",
+  "updatedAt": "2025-11-15T09:32:28.663Z",
+  "variant": "subject-authentication-email-and-password-reset-password-form-default",
+  "adminTitle": "saRsn3cohA",
+  "slug": "reset-password"
+}

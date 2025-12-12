@@ -1,9 +1,0 @@
-{
-  "id": "8c5cabc6-0b3f-42cc-83b5-823862bb8940",
-  "createdAt": "2025-01-24T23:47:55.830Z",
-  "updatedAt": "2025-10-21T22:10:50.867Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/billing/payment-intents/payselection-international/webhook"
-}

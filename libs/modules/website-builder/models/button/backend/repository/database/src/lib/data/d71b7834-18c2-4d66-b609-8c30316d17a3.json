@@ -1,0 +1,15 @@
+{
+  "title": {
+    "en": "EN",
+    "ru": "EN"
+  },
+  "subtitle": {},
+  "url": "/en",
+  "className": "",
+  "id": "d71b7834-18c2-4d66-b609-8c30316d17a3",
+  "createdAt": "2025-01-30T16:53:30.838Z",
+  "updatedAt": "2025-11-15T09:32:28.478Z",
+  "variant": "ghost",
+  "adminTitle": "automatic black ant",
+  "slug": "en-lang-switcher"
+}

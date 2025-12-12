@@ -144,7 +144,6 @@ export class Handler {
         const files = parsedBody.files["files"];
         if (Array.isArray(files)) {
           for (const file of files) {
-            console.log(`Creating file storage for: ${file.name}`);
             try {
               const fileStorageFile = await fileStorageModuleFileApi.create({
                 data: {
@@ -158,7 +157,6 @@ export class Handler {
                   },
                 },
               });
-              console.log(`Created file storage: ${fileStorageFile.id}`);
               await socialModuleMessagesToFileStorageModuleFilesApi.create({
                 data: {
                   messageId: socialMouleMessage.id,
@@ -170,7 +168,6 @@ export class Handler {
                   },
                 },
               });
-              console.log(`Linked file to message: ${fileStorageFile.id}`);
             } catch (error) {
               console.error(`Error processing file ${file.name}:`, error);
             }

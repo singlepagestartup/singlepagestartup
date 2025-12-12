@@ -1,9 +1,0 @@
-{
-  "id": "a9c38e94-d5cc-4486-82c8-9719ce05e2c8",
-  "createdAt": "2025-06-26T08:17:02.636Z",
-  "updatedAt": "2025-10-21T22:10:50.906Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/social/widgets"
-}

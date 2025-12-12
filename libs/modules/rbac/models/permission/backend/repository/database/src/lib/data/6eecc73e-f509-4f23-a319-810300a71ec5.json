@@ -1,9 +1,0 @@
-{
-  "id": "6eecc73e-f509-4f23-a319-810300a71ec5",
-  "createdAt": "2025-05-03T23:38:18.857Z",
-  "updatedAt": "2025-10-21T22:10:51.039Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/social/profiles"
-}

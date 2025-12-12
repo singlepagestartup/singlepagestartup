@@ -60,8 +60,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const attachments: { type: "image"; url: string }[] =
       JSON.parse(entity.attachments || "[]") || [];
 
-    console.log("🚀 ~ Service ~ provider ~ attachments:", attachments);
-
     const validAttachments: typeof attachments = [];
 
     for (const attachment of attachments) {

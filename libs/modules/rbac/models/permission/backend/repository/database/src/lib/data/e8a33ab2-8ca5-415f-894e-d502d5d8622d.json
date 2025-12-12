@@ -1,9 +1,0 @@
-{
-  "id": "e8a33ab2-8ca5-415f-894e-d502d5d8622d",
-  "createdAt": "2025-01-24T23:47:55.831Z",
-  "updatedAt": "2025-10-21T22:10:51.060Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/billing/currencies"
-}

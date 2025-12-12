@@ -357,10 +357,6 @@ export class Handler {
           }
         }
       } else if (notificationData.socialModule?.message?.id) {
-        console.log(
-          "🚀 ~ Handler ~ execute ~ data.socialModule.message.id:",
-          notificationData.socialModule?.message?.id,
-        );
         const type = template.variant.includes("email")
           ? "email"
           : template.variant.includes("telegram")
@@ -382,8 +378,6 @@ export class Handler {
               })
               .flat()
           : [];
-
-        console.log("🚀 ~ Handler ~ execute ~ attachments:", attachments);
 
         for (const identity of identities) {
           if (type === "email") {

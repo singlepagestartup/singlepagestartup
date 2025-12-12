@@ -1,9 +1,0 @@
-{
-  "id": "5d95b1a3-9df7-470e-b062-6099a230eddc",
-  "createdAt": "2025-04-02T13:17:07.543Z",
-  "updatedAt": "2025-10-21T22:10:50.857Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/crm/forms/[crm.forms.id]/requests"
-}

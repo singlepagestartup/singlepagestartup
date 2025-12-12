@@ -1,0 +1,19 @@
+{
+  "id": "6b47aa01-1d1b-4cd3-ba34-4de9c2ade6af",
+  "createdAt": "2025-01-24T23:47:55.630Z",
+  "updatedAt": "2025-11-15T09:32:28.625Z",
+  "variant": "category-list-default",
+  "className": "",
+  "anchor": "",
+  "adminTitle": "5QahuZIAap",
+  "slug": "product-categories",
+  "title": {
+    "en": "Freshly Added Products Categories"
+  },
+  "subtitle": {
+    "en": ""
+  },
+  "description": {
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Many categories with interesting products\"}]}]}"
+  }
+}

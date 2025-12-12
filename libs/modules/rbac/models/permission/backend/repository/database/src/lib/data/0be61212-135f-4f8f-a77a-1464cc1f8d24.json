@@ -1,0 +1,9 @@
+{
+  "id": "0be61212-135f-4f8f-a77a-1464cc1f8d24",
+  "createdAt": "2025-01-24T23:47:55.736Z",
+  "updatedAt": "2025-11-15T09:32:28.764Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/widgets/[rbac.widgets.id]"
+}

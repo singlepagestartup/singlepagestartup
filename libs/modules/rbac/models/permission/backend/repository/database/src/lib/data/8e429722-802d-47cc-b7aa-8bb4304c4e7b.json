@@ -1,9 +1,0 @@
-{
-  "id": "8e429722-802d-47cc-b7aa-8bb4304c4e7b",
-  "createdAt": "2025-05-05T13:01:38.818Z",
-  "updatedAt": "2025-10-21T22:10:51.053Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/social/profiles-to-website-builder-module-widgets/[social.profiles-to-website-builder-module-widgets.id]"
-}

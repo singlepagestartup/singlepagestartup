@@ -1,0 +1,9 @@
+{
+  "id": "c9124b95-e336-41d4-9676-4cb2b8dbc41b",
+  "createdAt": "2025-11-04T06:17:16.388Z",
+  "updatedAt": "2025-11-15T09:32:28.843Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/crm/forms-to-steps/[crm.forms-to-steps.id]"
+}

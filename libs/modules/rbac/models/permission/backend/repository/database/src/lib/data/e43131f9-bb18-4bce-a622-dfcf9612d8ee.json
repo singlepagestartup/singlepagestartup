@@ -1,9 +1,0 @@
-{
-  "id": "e43131f9-bb18-4bce-a622-dfcf9612d8ee",
-  "createdAt": "2025-02-01T15:39:26.129Z",
-  "updatedAt": "2025-10-21T22:10:50.912Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/crm/widgets"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "4f0e4663-ed04-45c6-b9c2-715061186d64",
-  "createdAt": "2025-02-01T16:18:58.968Z",
-  "updatedAt": "2025-10-21T22:10:50.870Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/crm/forms-to-inputs"
-}

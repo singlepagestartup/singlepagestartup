@@ -1,9 +1,0 @@
-{
-  "id": "ce45cf70-9c08-42db-a7e4-87e48e099f98",
-  "createdAt": "2025-05-06T18:04:30.086Z",
-  "updatedAt": "2025-10-21T22:10:50.852Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/blog/categories-to-articles/[blog.categories-to-articles.id]"
-}

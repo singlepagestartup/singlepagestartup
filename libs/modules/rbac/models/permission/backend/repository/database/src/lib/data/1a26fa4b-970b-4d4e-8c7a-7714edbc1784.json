@@ -1,9 +1,0 @@
-{
-  "id": "1a26fa4b-970b-4d4e-8c7a-7714edbc1784",
-  "createdAt": "2025-01-24T23:47:55.829Z",
-  "updatedAt": "2025-10-21T22:10:51.018Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "POST",
-  "path": "/api/billing/payment-intents/tiptoppay/webhook"
-}

@@ -1,0 +1,14 @@
+{
+  "title": {
+    "en": "RBAC | Authentication | Logout"
+  },
+  "subtitle": {},
+  "description": {},
+  "id": "9db37112-b811-40e4-8d6e-7a7e341415c2",
+  "createdAt": "2025-01-24T23:47:55.472Z",
+  "updatedAt": "2025-11-15T09:32:28.424Z",
+  "variant": "default",
+  "className": "",
+  "adminTitle": "RBAC | Authentication | Logout",
+  "slug": "rbac-authentication-logout"
+}

@@ -1,9 +1,0 @@
-{
-  "id": "8e358e26-a649-4def-b136-d72cf8c37a07",
-  "createdAt": "2025-02-01T15:39:54.361Z",
-  "updatedAt": "2025-10-21T22:10:51.019Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/crm/widgets-to-forms/[crm.widgets-to-forms.id]"
-}

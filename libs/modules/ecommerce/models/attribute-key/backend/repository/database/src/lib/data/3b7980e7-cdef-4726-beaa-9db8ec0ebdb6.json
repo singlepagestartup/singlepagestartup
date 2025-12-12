@@ -1,0 +1,16 @@
+{
+  "id": "3b7980e7-cdef-4726-beaa-9db8ec0ebdb6",
+  "createdAt": "2025-01-24T23:52:03.732Z",
+  "updatedAt": "2025-11-15T09:32:28.621Z",
+  "variant": "default",
+  "type": "price",
+  "field": "number",
+  "adminTitle": "JxwPesTGyP",
+  "slug": "price",
+  "title": {
+    "en": "Price",
+    "ru": "Цена"
+  },
+  "prefix": {},
+  "suffix": {}
+}

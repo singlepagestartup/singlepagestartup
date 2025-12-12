@@ -264,17 +264,12 @@ export class Handler {
         continue;
       }
 
-      if (shouldReplySocialModuleProfile.slug === "telegram-bot") {
-        await this.service.agentSocialModuleProfileHandler({
-          shouldReplySocialModuleProfile,
-          socialModuleChat,
-          socialModuleAction,
-          messageFromSocialModuleProfile:
-            messageFromSocialModuleProfile || null,
-        });
-
-        continue;
-      }
+      await this.service.agentSocialModuleProfileHandler({
+        shouldReplySocialModuleProfile,
+        socialModuleChat,
+        socialModuleAction,
+        messageFromSocialModuleProfile: messageFromSocialModuleProfile || null,
+      });
     }
 
     return c.json({
@@ -461,6 +456,23 @@ export class Handler {
       (profile) => profile.id === socialModuleProfileToMessage.profileId,
     );
 
+    if (!messageFromSocialModuleProfile) {
+      throw new Error(
+        "Not found error. 'messageFromSocialModuleProfile' not found",
+      );
+    }
+
+    const isMessageFromAutomaticReplySocialModuleProfile = [
+      "artificial-intelligence",
+      "agent",
+    ].includes(messageFromSocialModuleProfile?.variant);
+
+    if (isMessageFromAutomaticReplySocialModuleProfile) {
+      return c.json({
+        data: false,
+      });
+    }
+
     const shouldReplySocialModuleProfiles = socialModuleProfiles.filter(
       (profile) =>
         ["artificial-intelligence", "agent"].includes(profile.variant),
@@ -472,23 +484,21 @@ export class Handler {
       });
     }
 
-    for (const shouldReplySocialModuleProfile of shouldReplySocialModuleProfiles) {
-      if (
-        shouldReplySocialModuleProfile.id === messageFromSocialModuleProfile?.id
-      ) {
-        continue;
-      }
+    if (messageFromSocialModuleProfile) {
+      for (const shouldReplySocialModuleProfile of shouldReplySocialModuleProfiles) {
+        if (
+          shouldReplySocialModuleProfile.id ===
+          messageFromSocialModuleProfile.id
+        ) {
+          continue;
+        }
 
-      if (shouldReplySocialModuleProfile.slug === "telegram-bot") {
-        await this.service.agentSocialModuleProfileHandler({
+        this.service.agentSocialModuleProfileHandler({
           shouldReplySocialModuleProfile,
           socialModuleChat,
           socialModuleMessage,
-          messageFromSocialModuleProfile:
-            messageFromSocialModuleProfile || null,
+          messageFromSocialModuleProfile: messageFromSocialModuleProfile,
         });
-
-        continue;
       }
     }
 
