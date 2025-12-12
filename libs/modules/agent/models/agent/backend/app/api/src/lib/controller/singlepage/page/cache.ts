@@ -33,10 +33,6 @@ export class Handler {
 
             const path = HOST_SERVICE_URL + "/" + code + url.url.join("/");
 
-            logger.info(`🔄 Revalidating page ${index + 1} of ${urls.length}`, {
-              page: path,
-            });
-
             try {
               await this.revalidatePage(path);
 
@@ -47,13 +43,6 @@ export class Handler {
               if (!res.ok) {
                 throw new Error("Internal error. Failed to fetch page");
               }
-
-              logger.info(
-                `✅ Revalidated page ${index + 1} of ${urls.length}`,
-                {
-                  page: path,
-                },
-              );
             } catch (err) {
               logger.error(path + " - Failed to fetch page", {
                 page: path,
