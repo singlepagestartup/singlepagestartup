@@ -396,8 +396,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       // arcee-ai
       "arcee-ai/trinity-mini:free",
       // allenai
-      // is temporarily rate-limited upstream
-      // "allenai/olmo-3-32b-think:free",
+      "allenai/olmo-3-32b-think:free",
       // kwaipilot
       "kwaipilot/kat-coder-pro:free",
       // mistralai
@@ -408,7 +407,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       // z-ai
       "z-ai/glm-4.5-air:free",
       // qwen
-      // is temporarily rate-limited upstream
       "qwen/qwen3-coder:free",
       "qwen/qwen3-235b-a22b:free",
       // meta-llama
