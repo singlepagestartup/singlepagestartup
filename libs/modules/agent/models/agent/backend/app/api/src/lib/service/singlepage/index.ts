@@ -408,6 +408,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       // z-ai
       "z-ai/glm-4.5-air:free",
       // qwen
+      // is temporarily rate-limited upstream
       "qwen/qwen3-coder:free",
       "qwen/qwen3-235b-a22b:free",
       // meta-llama
@@ -462,7 +463,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс! Что-то пошло не так, попробуйте еще раз",
+            description: "Упс\\! Что-то пошло не так, попробуйте еще раз",
           },
           options: {
             headers: {
@@ -498,7 +499,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс! Что-то пошло не так, попробуйте еще раз",
+            description: "Упс\\! Что-то пошло не так, попробуйте еще раз",
           },
           options: {
             headers: {
