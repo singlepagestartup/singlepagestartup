@@ -17,7 +17,11 @@ import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/re
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import * as jwt from "hono/jwt";
-import { blobifyFiles, telegramMarkdownFormatter } from "@sps/backend-utils";
+import {
+  blobifyFiles,
+  logger,
+  telegramMarkdownFormatter,
+} from "@sps/backend-utils";
 import { OpenRouter } from "@sps/shared-third-parties";
 
 @injectable()
@@ -278,7 +282,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
     const data = {
-      description: "Welcome to the club, Buddy!",
+      description: "Welcome to the club, Buddy\\!",
     };
 
     if (generateTemplateSocilaModuleMessageAttachmentStartFiles?.length) {
@@ -305,17 +309,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-      id: props.rbacModuleSubject.id,
-      socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      data,
-      options: {
-        headers: {
-          Authorization: "Bearer " + props.jwtToken,
+    rbacModuleSubjectApi
+      .socialModuleProfileFindByIdChatFindByIdMessageCreate({
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
         },
-      },
-    });
+      })
+      .catch((error) => {
+        logger.error(error);
+      });
   }
 
   async telegramBotWelcomeMessageWithKeyboardCreate(props: {
@@ -331,7 +339,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const data = {
-      description: "Here is our menu, select what you want.",
+      description: "Here is our menu, select what you want\\.",
       interaction: {
         inline_keyboard: [
           [
@@ -374,31 +382,72 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const availableModels = [
-      "amazon/nova-2-lite-v1:free",
-      "arcee-ai/trinity-mini:free",
+      // tngtech
+      "tngtech/deepseek-r1t2-chimera:free",
       "tngtech/tng-r1t-chimera:free",
+      // amazon
+      "amazon/nova-2-lite-v1:free",
+      // arcee-ai
+      "arcee-ai/trinity-mini:free",
+      // allenai
       // is temporarily rate-limited upstream
       // "allenai/olmo-3-32b-think:free",
+      // kwaipilot
       "kwaipilot/kat-coder-pro:free",
+      // mistralai
+      "mistralai/devstral-2512:free",
+      "mistralai/mistral-7b-instruct:free",
+      // nvidia
       "nvidia/nemotron-nano-12b-v2-vl:free",
+      // z-ai
+      "z-ai/glm-4.5-air:free",
+      // qwen
+      "qwen/qwen3-coder:free",
+      "qwen/qwen3-235b-a22b:free",
+      // meta-llama
+      "meta-llama/llama-3.3-70b-instruct:free",
+      // openai
+      "openai/gpt-oss-20b:free",
+      "openai/gpt-oss-120b:free",
+      // google
+      "google/gemma-3-27b-it:free",
+      "google/gemini-2.0-flash-exp:free",
+      // moonshotai
+      "moonshotai/kimi-k2:free",
+      // nousresearch
+      "nousresearch/hermes-3-llama-3.1-405b:free",
+      // alibaba
       "alibaba/tongyi-deepresearch-30b-a3b:free",
+      // cognitivecomputations
+      "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
     ];
 
     const openRouter = new OpenRouter();
+
+    const detectedLanguage = await openRouter.generateText({
+      model: "nex-agi/deepseek-v3.1-nex-n1:free",
+      context: [
+        {
+          role: "system",
+          content:
+            "You need to detect what language the user is speaking, NOT coding language (JavaScript, C#) - human language (english,spanish,russian and etc). Answer with the language name only (Spanish).",
+        },
+        {
+          role: "user",
+          content: props.socialModuleMessage.description,
+        },
+      ],
+    });
+
     const selectModelForRequest = await openRouter.generateText({
       model: "nex-agi/deepseek-v3.1-nex-n1:free",
       context: [
         {
           role: "user",
-          content: `I have a task:\n${props.socialModuleMessage.description}\nSelect the most suitable AI model, that can finish that task with the best result. Available models:${availableModels.map((model) => "'" + model + "'").join(",")}. Send me a reply with the exact model name without any additional text. Don't try to do the task itself, choose a model`,
+          content: `I have a task:\n${props.socialModuleMessage.description}\nSelect the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models:${availableModels.map((model) => "'" + model + "'").join(",")}. Send me a reply with the exact model name without any additional text. Don't try to do the task itself, choose a model`,
         },
       ],
     });
-
-    console.log(
-      "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
-      selectModelForRequest,
-    );
 
     if (!availableModels.includes(selectModelForRequest.replaceAll("'", ""))) {
       return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
@@ -420,8 +469,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     const generatedMessageDescription = await openRouter.generateText({
       model: selectModelForRequest,
-      max_tokens: 800,
+      max_tokens: 1000,
       context: [
+        { role: "system", content: `Answer in ${detectedLanguage} language` },
         {
           role: "user",
           content: props.socialModuleMessage.description || "",
@@ -429,87 +479,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ],
     });
 
-    //     const transformedMessageDescription = await openRouter.generateText({
-    //       model: "kwaipilot/kat-coder-pro:free",
-    //       context: [
-    //         // {
-    //         //   role: "system",
-    //         //   content:
-    //         //     "You know the Telegram Bot API documentation. You need to format the text content sent by the user for sending through Telegram Bot with 'parse_mode: HTML'. Don't change the text content, just the formatting so it's easy to read in the message sent by Telegram Bot. Replace\n**some text** to <b>some text</b>\n### heading text to <b>heading text</b>\nmultilines code blocks put into <code>const n = 4; const d = 2;...</code>\nAI generated lines (---) just remove\ndo not use ol,ul,li replace them by '-','1. 2. 3. ...\nYou can only use <b>, <i>, <u>, <s>, <a>, <code>, <pre> tags",
-    //         // },
-    //         {
-    //           role: "system",
-    //           content: `
-    // You are a formatter for Telegram Bot API messages.
-
-    // Your task is to prepare user-provided text for sending via Telegram Bot using parse_mode = "MarkdownV2".
-
-    // Input:
-    // - Raw user text. It may contain any characters, including HTML, Markdown, JSON, logs, stack traces, links, or code.
-
-    // Output:
-    // - A single text string that is safe to send to Telegram with MarkdownV2.
-    // - Output ONLY the formatted text. Do not add explanations, comments, or metadata.
-
-    // Strict rules:
-
-    // 1. Do NOT change the meaning or wording of the text.
-    //    You may only:
-    //    - add line breaks,
-    //    - improve visual structure (paragraphs, headings, lists),
-    //    - apply MarkdownV2 formatting,
-    //    - escape characters according to Telegram rules.
-
-    // 2. Telegram MarkdownV2 escaping rules:
-
-    //    - In normal text, escape the following characters by prefixing them with a backslash:
-    //      _ * [ ] ( ) ~ \` > # + - = | { } . !
-
-    //    - The backslash character itself must usually be escaped as \\
-
-    //    - Any ASCII character with code from 1 to 126 may be escaped with a preceding backslash to force literal interpretation.
-
-    //    - Inside code (\`code\`) and preformatted (\`pre\`) blocks:
-    //      - Escape ONLY backticks (\`) and backslashes (\) by prefixing them with a backslash.
-
-    //    - Inside the parentheses part of inline links [text](...):
-    //      - Escape ) and \ characters.
-
-    // 3. Do NOT output raw HTML.
-    //    Any HTML tags must be rendered as plain text by escaping them so Telegram does not interpret them as markup.
-
-    // 4. Code handling:
-    //    - Short technical fragments, commands, identifiers, or paths should be wrapped in inline code using backticks.
-    //    - Multiline technical content (JSON, logs, stack traces, configuration, code) should be wrapped in fenced pre blocks.
-    //    - Apply the correct escaping rules inside these blocks.
-
-    // 5. Ambiguity rules:
-    //    - In MarkdownV2, double underscores __ are greedily parsed as underline.
-    //      To separate underline and italic, insert an empty bold entity if needed.
-
-    // 6. Readability:
-    //    - Preserve the original structure when possible.
-    //    - Split long text into paragraphs.
-    //    - Use clear spacing and formatting, but never alter the semantic content.
-
-    // 7. Output requirements:
-    //    - Output ONLY the final formatted message text.
-    //    - No Markdown fences, no explanations, no emojis, no additional formatting outside Telegram MarkdownV2 rules.
-    // Important note:
-    // If this text is later embedded into a programming language string (JSON, JavaScript, etc.),
-    // additional escaping required by that language is out of scope.
-    // Your responsibility is only Telegram MarkdownV2 correctness.`,
-    //         },
-    //         {
-    //           role: "user",
-    //           content: generatedMessageDescription,
-    //         },
-    //       ],
-    //     });
-
     const data = {
       description: telegramMarkdownFormatter({
-        input: generatedMessageDescription,
+        input: generatedMessageDescription + `\n\n__${selectModelForRequest}__`,
       }),
     };
 
