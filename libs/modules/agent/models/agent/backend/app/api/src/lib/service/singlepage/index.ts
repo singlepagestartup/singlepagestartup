@@ -381,6 +381,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
     }
 
+    if (!props.socialModuleMessage.description) {
+      throw new Error(
+        "Validation error. 'props.socialModuleMessage.description' is empty.",
+      );
+    }
+
     const availableModels = [
       // tngtech
       "tngtech/deepseek-r1t2-chimera:free",
