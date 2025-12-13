@@ -63,10 +63,6 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     regexPath: /\/api\/rbac\/permissions\/.*/,
     methods: ["GET"],
   },
-  {
-    regexPath: /\/api\/telegram/,
-    methods: ["POST"],
-  },
 ];
 
 export class Middleware {

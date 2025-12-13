@@ -87,6 +87,7 @@
     "embla-carousel-autoplay": "^8.5.1",
     "embla-carousel-react": "^8.5.1",
     "file-type": "^20.0.0",
+    "flatted": "^3.3.3",
     "framer-motion": "^11.15.0",
     "grammy": "^1.33.0",
     "hono": "^4.10.2",

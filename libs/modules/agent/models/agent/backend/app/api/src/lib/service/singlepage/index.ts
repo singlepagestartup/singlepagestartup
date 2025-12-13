@@ -109,7 +109,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
 
         if (telegramBotCommandMessage) {
-          this.telegramBotCommandReplyMessageCreate({
+          await this.telegramBotCommandReplyMessageCreate({
             jwtToken,
             rbacModuleSubject,
             shouldReplySocialModuleProfile:
@@ -122,7 +122,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       } else if ("socialModuleAction" in props) {
         if (props.socialModuleAction.payload?.telegram?.callback_query) {
-          this.telegramBotCallbackQueryHandler({
+          await this.telegramBotCallbackQueryHandler({
             jwtToken,
             rbacModuleSubject,
             shouldReplySocialModuleProfile:
@@ -152,7 +152,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           props.socialModuleMessage.description,
         );
 
-        this.openRouterReplyMessageCreate({
+        await this.openRouterReplyMessageCreate({
           jwtToken,
           rbacModuleSubject,
           shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
@@ -435,7 +435,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         {
           role: "system",
           content:
-            "You know the Telegram Bot API documentation. You need to format the text content sent by the user for sending through Telegram Bot with 'parse_mode: HTML'. Don't change the text content, just the formatting so it's easy to read in the message sent by Telegram Bot. Replace\n**some text** to <b>some text</b>\n### heading text to <b>heading text</b>\nmultilines code blocks put into <code>const n = 4; const d = 2;...</code>\nAI generated lines (---) just remove\ndo not use ol,ul,li replace them by '-','1. 2. 3. ...'",
+            "You know the Telegram Bot API documentation. You need to format the text content sent by the user for sending through Telegram Bot with 'parse_mode: HTML'. Don't change the text content, just the formatting so it's easy to read in the message sent by Telegram Bot. Replace\n**some text** to <b>some text</b>\n### heading text to <b>heading text</b>\nmultilines code blocks put into <code>const n = 4; const d = 2;...</code>\nAI generated lines (---) just remove\ndo not use ol,ul,li replace them by '-','1. 2. 3. ...\nYou can only use <b>, <i>, <u>, <s>, <a>, <code>, <pre> tags",
         },
         {
           role: "user",
@@ -468,6 +468,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const data = {
       description: transformedMessageDescription,
     };
+
+    if (data.description == "") {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Упс! Что-то пошло не так, попробуйте еще раз",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
 
     // if (generateTemplateSocilaModuleMessageAttachmentStartFiles?.length) {
     //   data["files"] = await blobifyFiles({

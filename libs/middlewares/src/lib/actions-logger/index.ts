@@ -8,7 +8,7 @@ import {
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
-import { authorization } from "@sps/backend-utils";
+import { authorization, logger } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
@@ -35,53 +35,51 @@ export class Middleware {
       await next();
 
       if (c.res.status >= 200 && c.res.status < 300) {
-        try {
-          if (method !== "GET") {
-            if (!token || !RBAC_JWT_SECRET || !RBAC_SECRET_KEY) {
-              return;
+        if (method !== "GET") {
+          if (!token || !RBAC_JWT_SECRET || !RBAC_SECRET_KEY) {
+            return;
+          }
+
+          const resJson = await c.res.clone().json();
+          const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+
+          const contentType = c.req.header("content-type");
+          let requestData: any = {};
+
+          if (contentType?.includes("application/json")) {
+            requestData = await c.req.json().catch(() => ({}));
+          } else if (
+            contentType?.includes("multipart/form-data") ||
+            contentType?.includes("application/x-www-form-urlencoded")
+          ) {
+            const formData = await c.req.formData().catch(() => new FormData());
+            requestData = Object.fromEntries(formData);
+          }
+
+          const parsedRequestData = { ...requestData };
+
+          if (typeof parsedRequestData.data === "string") {
+            try {
+              parsedRequestData.data = JSON.parse(parsedRequestData.data);
+            } catch (e) {
+              // Keep original string if parsing fails
             }
+          }
 
-            const resJson = await c.res.clone().json();
-            const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+          if (parsedRequestData.file instanceof File) {
+            parsedRequestData.file = {
+              name: parsedRequestData.file.name,
+              size: parsedRequestData.file.size,
+              type: parsedRequestData.file.type,
+            };
+          }
 
-            const contentType = c.req.header("content-type");
-            let requestData: any = {};
+          if (decoded["subject"]?.["id"]) {
+            const subjectId = decoded["subject"]["id"];
 
-            if (contentType?.includes("application/json")) {
-              requestData = await c.req.json().catch(() => ({}));
-            } else if (
-              contentType?.includes("multipart/form-data") ||
-              contentType?.includes("application/x-www-form-urlencoded")
-            ) {
-              const formData = await c.req
-                .formData()
-                .catch(() => new FormData());
-              requestData = Object.fromEntries(formData);
-            }
-
-            const parsedRequestData = { ...requestData };
-
-            if (typeof parsedRequestData.data === "string") {
+            void (async () => {
               try {
-                parsedRequestData.data = JSON.parse(parsedRequestData.data);
-              } catch (e) {
-                // Keep original string if parsing fails
-              }
-            }
-
-            if (parsedRequestData.file instanceof File) {
-              parsedRequestData.file = {
-                name: parsedRequestData.file.name,
-                size: parsedRequestData.file.size,
-                type: parsedRequestData.file.type,
-              };
-            }
-
-            if (decoded["subject"]?.["id"]) {
-              const subjectId = decoded["subject"]["id"];
-
-              rbacActionApi
-                .create({
+                const rbacAction = await rbacActionApi.create({
                   data: {
                     payload: {
                       route: path
@@ -98,52 +96,35 @@ export class Middleware {
                       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                     },
                   },
-                })
-                .then((rbacAction) => {
-                  if (!RBAC_SECRET_KEY) {
-                    return;
-                  }
-
-                  rbacSubjectsToActionsApi
-                    .create({
-                      data: {
-                        subjectId,
-                        actionId: rbacAction.id,
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                        },
-                      },
-                    })
-                    .then(() => {
-                      if (!RBAC_SECRET_KEY) {
-                        return;
-                      }
-
-                      agentModuleAgentApi
-                        .telegramBot({
-                          data: {
-                            rbacModuleAction: rbacAction,
-                          },
-                          options: {
-                            headers: {
-                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                            },
-                          },
-                        })
-                        .catch(() => {
-                          //
-                        });
-                    });
-                })
-                .catch((error) => {
-                  //
                 });
-            }
+
+                await rbacSubjectsToActionsApi.create({
+                  data: {
+                    subjectId,
+                    actionId: rbacAction.id,
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+
+                await agentModuleAgentApi.telegramBot({
+                  data: {
+                    rbacModuleAction: rbacAction,
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+              } catch (error) {
+                logger.error(error);
+              }
+            })();
           }
-        } catch (error) {
-          //
         }
       }
 

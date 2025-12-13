@@ -1,8 +1,4 @@
-import {
-  RBAC_JWT_SECRET,
-  RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-  RBAC_SECRET_KEY,
-} from "@sps/shared-utils";
+import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -28,8 +24,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      // console.log("Telegram Bot Handler triggered");
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -53,8 +47,6 @@ export class Handler {
 
       await this.onAction(c, { data });
       await this.onMessage(c, { data });
-
-      // console.log("Telegram Bot Data:", data);
 
       return c.json({
         data: true,
@@ -493,7 +485,7 @@ export class Handler {
           continue;
         }
 
-        this.service.agentSocialModuleProfileHandler({
+        await this.service.agentSocialModuleProfileHandler({
           shouldReplySocialModuleProfile,
           socialModuleChat,
           socialModuleMessage,

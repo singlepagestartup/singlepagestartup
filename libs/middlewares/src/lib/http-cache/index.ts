@@ -2,6 +2,7 @@ import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import { KV_PROVIDER, KV_TTL, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
+import { logger } from "@sps/backend-utils";
 
 export type IMiddlewareGeneric = {
   Variables: undefined;
@@ -66,86 +67,92 @@ export class Middleware {
 
       await next();
 
-      if (c.res.status >= 200 && c.res.status < 300) {
-        if (method === "GET" && cacheControl !== "no-store") {
-          const resJson = await c.res.clone().json();
+      void (async () => {
+        try {
+          if (c.res.status >= 200 && c.res.status < 300) {
+            if (method === "GET" && cacheControl !== "no-store") {
+              const resJson = await c.res.clone().json();
 
-          await this.storeProvider.set({
-            prefix: path,
-            key: params,
-            value: JSON.stringify(resJson),
-            options: { ttl: KV_TTL },
-          });
-        }
+              await this.storeProvider.set({
+                prefix: path,
+                key: params,
+                value: JSON.stringify(resJson),
+                options: { ttl: KV_TTL },
+              });
+            }
 
-        if (["PUT", "PATCH"].includes(method)) {
-          await this.storeProvider.delByPrefix({
-            prefix: "/rbac/permissions",
-          });
+            if (["PUT", "PATCH"].includes(method)) {
+              await this.storeProvider.delByPrefix({
+                prefix: "/rbac/permissions",
+              });
 
-          await this.storeProvider.delByPrefix({
-            prefix: path,
-          });
+              await this.storeProvider.delByPrefix({
+                prefix: path,
+              });
 
-          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+              const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
 
-          await this.storeProvider.delByPrefix({
-            prefix: pathWithoutId,
-          });
+              await this.storeProvider.delByPrefix({
+                prefix: pathWithoutId,
+              });
 
-          if (pathWithoutId.includes("bulk")) {
-            const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
+              if (pathWithoutId.includes("bulk")) {
+                const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
 
-            await this.storeProvider.delByPrefix({
-              prefix: pathWithoutBluk,
-            });
+                await this.storeProvider.delByPrefix({
+                  prefix: pathWithoutBluk,
+                });
+              }
+            }
+
+            if (["POST", "DELETE"].includes(method)) {
+              await this.storeProvider.delByPrefix({
+                prefix: "/rbac/permissions",
+              });
+
+              const pathWithIdBase = path.match(
+                /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/,
+              )?.[1];
+
+              if (pathWithIdBase) {
+                await this.storeProvider.delByPrefix({
+                  prefix: `${pathWithIdBase}`,
+                });
+              }
+
+              const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+
+              await this.storeProvider.delByPrefix({
+                prefix: pathWithoutId,
+              });
+
+              if (pathWithoutId.includes("bulk")) {
+                const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
+
+                await this.storeProvider.delByPrefix({
+                  prefix: pathWithoutBluk,
+                });
+              }
+            }
+          } else {
+            if (path.includes("rbac/permissions")) {
+              return;
+            }
+
+            if (c.res.status >= 500) {
+              await this.storeProvider.delByPrefix({
+                prefix: path,
+              });
+              const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+              await this.storeProvider.delByPrefix({
+                prefix: pathWithoutId,
+              });
+            }
           }
+        } catch (error) {
+          logger.error(error);
         }
-
-        if (["POST", "DELETE"].includes(method)) {
-          await this.storeProvider.delByPrefix({
-            prefix: "/rbac/permissions",
-          });
-
-          const pathWithIdBase = path.match(
-            /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/,
-          )?.[1];
-
-          if (pathWithIdBase) {
-            await this.storeProvider.delByPrefix({
-              prefix: `${pathWithIdBase}`,
-            });
-          }
-
-          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-
-          await this.storeProvider.delByPrefix({
-            prefix: pathWithoutId,
-          });
-
-          if (pathWithoutId.includes("bulk")) {
-            const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
-
-            await this.storeProvider.delByPrefix({
-              prefix: pathWithoutBluk,
-            });
-          }
-        }
-      } else {
-        if (path.includes("rbac/permissions")) {
-          return;
-        }
-
-        if (c.res.status >= 500) {
-          await this.storeProvider.delByPrefix({
-            prefix: path,
-          });
-          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-          await this.storeProvider.delByPrefix({
-            prefix: pathWithoutId,
-          });
-        }
-      }
+      })();
 
       return;
     });

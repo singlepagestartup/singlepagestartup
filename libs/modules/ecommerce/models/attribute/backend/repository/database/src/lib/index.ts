@@ -4,10 +4,10 @@ import { Table } from "./schema";
 import { z } from "zod";
 
 export const insertSchema = createInsertSchema(Table).extend({
-  title: z.record(z.any()).default({}),
+  string: z.record(z.any()).default({}),
 });
 export const selectSchema = createSelectSchema(Table).extend({
-  title: z.record(z.any()).default({}),
+  string: z.record(z.any()).default({}),
 });
 export type ISelectSchema = typeof Table.$inferSelect;
 export type IInsertSchema = typeof Table.$inferInsert;
