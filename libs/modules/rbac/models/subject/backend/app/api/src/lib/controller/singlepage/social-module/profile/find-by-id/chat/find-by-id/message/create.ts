@@ -11,7 +11,7 @@ import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/pro
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
-import { getHttpErrorType } from "@sps/backend-utils";
+import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
@@ -278,7 +278,12 @@ export class Handler {
                 ),
             },
             socialModuleProfileId,
+          }).catch((error) => {
+            logger.error(error);
           });
+        })
+        .catch((error) => {
+          logger.error(error);
         });
 
       return c.json({
@@ -492,50 +497,32 @@ export class Handler {
           );
 
         for (const socialModuleGenerateSocialModuleMessageCreatedTemplate of socialModuleGenerateSocialModuleMessageCreatedTemplates) {
-          const method =
-            socialModuleGenerateSocialModuleMessageCreatedTemplate.variant
-              .replace("-social-module-message-created", "")
-              .replace("generate-", ""); // e.g., "telegram"
+          try {
+            const method =
+              socialModuleGenerateSocialModuleMessageCreatedTemplate.variant
+                .replace("-social-module-message-created", "")
+                .replace("generate-", ""); // e.g., "telegram"
 
-          const notificationServiceNotifications = await api.notify({
-            id: subject.id,
-            data: {
-              notification: {
-                topic: {
-                  slug: "information",
-                },
-                template: {
-                  variant:
-                    socialModuleGenerateSocialModuleMessageCreatedTemplate.variant,
-                },
-                notification: {
-                  method: method,
-                  data: JSON.stringify({
-                    socialModule: {
-                      message: props.extendedSocialModuleMessage,
-                    },
-                  }),
-                },
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
-
-          const notificationServiceNotificationSourceSystemId =
-            notificationServiceNotifications?.notificationService.notifications?.find(
-              (notification) => notification.sourceSystemId,
-            )?.sourceSystemId;
-
-          if (notificationServiceNotificationSourceSystemId) {
-            await socialModuleMessageApi.update({
-              id: props.extendedSocialModuleMessage.id,
+            const notificationServiceNotifications = await api.notify({
+              id: subject.id,
               data: {
-                ...props.extendedSocialModuleMessage,
-                sourceSystemId: notificationServiceNotificationSourceSystemId,
+                notification: {
+                  topic: {
+                    slug: "information",
+                  },
+                  template: {
+                    variant:
+                      socialModuleGenerateSocialModuleMessageCreatedTemplate.variant,
+                  },
+                  notification: {
+                    method: method,
+                    data: JSON.stringify({
+                      socialModule: {
+                        message: props.extendedSocialModuleMessage,
+                      },
+                    }),
+                  },
+                },
               },
               options: {
                 headers: {
@@ -543,23 +530,30 @@ export class Handler {
                 },
               },
             });
-          }
 
-          // for (const subjectToSocialModuleProfile of subjectToSocialModuleProfiles) {
-          //   api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact({
-          //     id: subject.id,
-          //     socialModuleProfileId:
-          //       subjectToSocialModuleProfile.socialModuleProfileId,
-          //     socialModuleChatId: props.socialModuleChatId,
-          //     socialModuleMessageId: props.extendedSocialModuleMessage.id,
-          //     data: {},
-          //     options: {
-          //       headers: {
-          //         "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          //       },
-          //     },
-          //   });
-          // }
+            const notificationServiceNotificationSourceSystemId =
+              notificationServiceNotifications?.notificationService.notifications?.find(
+                (notification) => notification.sourceSystemId,
+              )?.sourceSystemId;
+
+            if (notificationServiceNotificationSourceSystemId) {
+              await socialModuleMessageApi.update({
+                id: props.extendedSocialModuleMessage.id,
+                data: {
+                  ...props.extendedSocialModuleMessage,
+                  sourceSystemId: notificationServiceNotificationSourceSystemId,
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                },
+              });
+            }
+          } catch (error) {
+            console.log("🚀 ~ notifyOtherSubjectsInChat ~ error:", error);
+            logger.error(error);
+          }
         }
       }
     }

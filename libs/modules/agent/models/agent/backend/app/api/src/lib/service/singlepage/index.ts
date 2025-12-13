@@ -432,10 +432,73 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const transformedMessageDescription = await openRouter.generateText({
       model: "kwaipilot/kat-coder-pro:free",
       context: [
+        // {
+        //   role: "system",
+        //   content:
+        //     "You know the Telegram Bot API documentation. You need to format the text content sent by the user for sending through Telegram Bot with 'parse_mode: HTML'. Don't change the text content, just the formatting so it's easy to read in the message sent by Telegram Bot. Replace\n**some text** to <b>some text</b>\n### heading text to <b>heading text</b>\nmultilines code blocks put into <code>const n = 4; const d = 2;...</code>\nAI generated lines (---) just remove\ndo not use ol,ul,li replace them by '-','1. 2. 3. ...\nYou can only use <b>, <i>, <u>, <s>, <a>, <code>, <pre> tags",
+        // },
         {
           role: "system",
-          content:
-            "You know the Telegram Bot API documentation. You need to format the text content sent by the user for sending through Telegram Bot with 'parse_mode: HTML'. Don't change the text content, just the formatting so it's easy to read in the message sent by Telegram Bot. Replace\n**some text** to <b>some text</b>\n### heading text to <b>heading text</b>\nmultilines code blocks put into <code>const n = 4; const d = 2;...</code>\nAI generated lines (---) just remove\ndo not use ol,ul,li replace them by '-','1. 2. 3. ...\nYou can only use <b>, <i>, <u>, <s>, <a>, <code>, <pre> tags",
+          content: `
+You are a formatter for Telegram Bot API messages.
+
+Your task is to prepare user-provided text for sending via Telegram Bot using parse_mode = "MarkdownV2".
+
+Input:
+- Raw user text. It may contain any characters, including HTML, Markdown, JSON, logs, stack traces, links, or code.
+
+Output:
+- A single text string that is safe to send to Telegram with MarkdownV2.
+- Output ONLY the formatted text. Do not add explanations, comments, or metadata.
+
+Strict rules:
+
+1. Do NOT change the meaning or wording of the text.
+   You may only:
+   - add line breaks,
+   - improve visual structure (paragraphs, headings, lists),
+   - apply MarkdownV2 formatting,
+   - escape characters according to Telegram rules.
+
+2. Telegram MarkdownV2 escaping rules:
+
+   - In normal text, escape the following characters by prefixing them with a backslash:
+     _ * [ ] ( ) ~ \` > # + - = | { } . !
+
+   - The backslash character itself must usually be escaped as \\
+
+   - Any ASCII character with code from 1 to 126 may be escaped with a preceding backslash to force literal interpretation.
+
+   - Inside code (\`code\`) and preformatted (\`pre\`) blocks:
+     - Escape ONLY backticks (\`) and backslashes (\) by prefixing them with a backslash.
+
+   - Inside the parentheses part of inline links [text](...):
+     - Escape ) and \ characters.
+
+3. Do NOT output raw HTML.
+   Any HTML tags must be rendered as plain text by escaping them so Telegram does not interpret them as markup.
+
+4. Code handling:
+   - Short technical fragments, commands, identifiers, or paths should be wrapped in inline code using backticks.
+   - Multiline technical content (JSON, logs, stack traces, configuration, code) should be wrapped in fenced pre blocks.
+   - Apply the correct escaping rules inside these blocks.
+
+5. Ambiguity rules:
+   - In MarkdownV2, double underscores __ are greedily parsed as underline.
+     To separate underline and italic, insert an empty bold entity if needed.
+
+6. Readability:
+   - Preserve the original structure when possible.
+   - Split long text into paragraphs.
+   - Use clear spacing and formatting, but never alter the semantic content.
+
+7. Output requirements:
+   - Output ONLY the final formatted message text.
+   - No Markdown fences, no explanations, no emojis, no additional formatting outside Telegram MarkdownV2 rules.
+Important note:
+If this text is later embedded into a programming language string (JSON, JavaScript, etc.),
+additional escaping required by that language is out of scope.
+Your responsibility is only Telegram MarkdownV2 correctness.`,
         },
         {
           role: "user",

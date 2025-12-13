@@ -31,7 +31,7 @@ export function response(props: IResponseProps) {
     props: [
       props.data.socialModule.message.description,
       {
-        parse_mode: "HTML",
+        parse_mode: "MarkdownV2",
         ...(Object.keys(props.data.socialModule.message.interaction || {})
           .length
           ? {

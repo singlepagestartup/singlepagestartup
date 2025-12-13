@@ -151,7 +151,7 @@ export class Middleware {
 
                   console.log("🚀 ~ init ~ triggerResult:", triggerResult);
 
-                  this.executePipeline({
+                  await this.executePipeline({
                     message,
                     pipe: payload.pipe,
                     index: 0,
