@@ -1,27 +1,23 @@
-import { Context } from "hono";
-import { getCookie } from "hono/cookie";
-
 /**
- * Telegram MarkdownV2 formatter/sanitizer that is stable for production.
+ * Telegram MarkdownV2 formatter/sanitizer (stable production version).
  *
- * Supports:
- * - Headings from AI input: "# " .. "#### " (converted to bold heading lines)
- * - Bullet lists from AI input: "- ", "* ", "+ " (converted to "• " items)
- * - Numbered lists from AI input: "1. " "2. " ... (kept as numbers, dot escaped)
+ * Accepts "AI Markdown-ish" input:
+ * - Headings: # .. ####
+ * - Horizontal rules: --- / *** / ___
+ * - Bullet lists: - / * / +
+ * - Numbered lists: 1. 2. ...
  * - Fenced code blocks: ```lang ... ```
  * - Inline code: `...`
  * - Markdown links: [text](url)
+ * - Inline emphasis from AI: **bold**, *bold*, _italic_, __underline__, ~~strike~~, ||spoiler||
  *
- * Key goals:
- * - Do not crash Telegram with "can't parse entities"
- * - Do not change the text content (words/facts), only presentational structure
- * - Always produce valid MarkdownV2 for parse_mode: "MarkdownV2"
+ * Outputs a string safe for Telegram parse_mode: "MarkdownV2".
  *
- * Telegram MarkdownV2 escaping rules (summary):
+ * Telegram MarkdownV2 escaping summary:
  * - In normal text escape: _ * [ ] ( ) ~ ` > # + - = | { } . !
  * - Backslash must be escaped as \\ in normal text
- * - Inside code/pre: escape ONLY ` and \ (prefix with \)
- * - Inside link URL parentheses: escape ONLY ) and \ (prefix with \)
+ * - Inside code/pre: escape ONLY ` and \
+ * - Inside link URL parentheses: escape ONLY ) and \
  */
 
 export type TgMdV2FormatOptions = {
@@ -32,17 +28,12 @@ export type TgMdV2FormatOptions = {
   normalizeLineEndings?: boolean;
   trimTrailingSpaces?: boolean;
 
-  // If true, convert "#..#### " headings to bold heading lines
-  enableHeadings?: boolean;
+  enableHeadings?: boolean; // "#..#### " -> bold line
+  enableBulletLists?: boolean; // "-/*/+ " -> "• "
+  enableNumberedLists?: boolean; // "1. " -> "1\. "
+  enableHorizontalRules?: boolean; // "---" "***" "___" -> "────────"
 
-  // If true, convert "-/*/+ " bullet items to "• " items
-  enableBulletLists?: boolean;
-
-  // If true, keep "1. " lists as "1\." (dot escaped) while keeping spacing
-  enableNumberedLists?: boolean;
-
-  // If true, keep empty lines as-is; otherwise, collapse 3+ empty lines to 2
-  preserveBlankLines?: boolean;
+  preserveBlankLines?: boolean; // keep empty lines
 };
 
 type Segment =
@@ -66,13 +57,14 @@ export class TelegramMarkdownV2Formatter {
       enableHeadings: options.enableHeadings ?? true,
       enableBulletLists: options.enableBulletLists ?? true,
       enableNumberedLists: options.enableNumberedLists ?? true,
+      enableHorizontalRules: options.enableHorizontalRules ?? true,
 
       preserveBlankLines: options.preserveBlankLines ?? true,
     };
   }
 
   /**
-   * Format raw AI/user text into safe Telegram MarkdownV2.
+   * Main entry: returns safe Telegram MarkdownV2 message.
    */
   format(input: string): string {
     let text = input ?? "";
@@ -89,59 +81,257 @@ export class TelegramMarkdownV2Formatter {
     }
 
     if (!this.opts.preserveBlankLines) {
-      // Collapse 3+ blank lines to 2
       text = text.replace(/\n{3,}/g, "\n\n");
     }
 
-    // Tokenize first: protect code blocks / inline code / links from line transforms.
+    // Tokenize first to protect code blocks / inline code / links from line transforms and escaping.
     const segments = this.tokenize(text);
 
-    // Render each segment; for TEXT segments, apply line-level transforms (headings/lists),
-    // then escape MarkdownV2 special chars.
+    // Render segments into final MarkdownV2.
     return segments.map((s) => this.renderSegment(s)).join("");
   }
 
-  /**
-   * Escapes normal text for MarkdownV2.
-   */
-  escapeText(text: string): string {
-    return this.escapeMarkdownV2Text(text);
+  // -----------------------------
+  // Escaping primitives (Telegram rules)
+  // -----------------------------
+
+  // Normal text: escape backslash and specials: _ * [ ] ( ) ~ ` > # + - = | { } . !
+  private escapeMarkdownV2Text(text: string): string {
+    return text
+      .replace(/\\/g, "\\\\")
+      .replace(
+        /[_*$begin:math:display$$end:math:display$$begin:math:text$$end:math:text$~`>#+\-=|{}.!]/g,
+        (m) => `\\${m}`,
+      );
   }
 
-  /**
-   * Escapes content inside inline code or pre blocks.
-   * Only ` and \ must be escaped in Telegram MarkdownV2 code/pre entities.
-   */
-  escapeCode(code: string): string {
+  // Inside code/pre: escape ONLY ` and \
+  private escapeCode(code: string): string {
     return code.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
   }
 
-  /**
-   * Escapes URL inside parentheses of [text](url).
-   * Only ) and \ must be escaped in Telegram MarkdownV2 link URL.
-   */
-  escapeLinkUrl(url: string): string {
+  // Inside the (...) part of [text](url): escape ONLY ) and \
+  private escapeLinkUrl(url: string): string {
     return url.replace(/\\/g, "\\\\").replace(/\)/g, "\\)");
   }
 
+  // -----------------------------
+  // Segment rendering
+  // -----------------------------
+
+  private renderSegment(seg: Segment): string {
+    switch (seg.kind) {
+      case "codeBlock": {
+        const lang = seg.lang ? seg.lang.replace(/`/g, "").trim() : "";
+        const body = this.escapeCode(seg.value);
+        return "```" + lang + "\n" + body + "\n```";
+      }
+
+      case "inlineCode":
+        return "`" + this.escapeCode(seg.value) + "`";
+
+      case "link": {
+        // Link text is rendered with inline markdown support + escaping.
+        // URL must be escaped with link URL rules.
+        const safeText = this.renderInlineMarkdown(seg.text);
+        const safeUrl = this.escapeLinkUrl(seg.url);
+        return "[" + safeText + "](" + safeUrl + ")";
+      }
+
+      case "text":
+      default:
+        return this.renderTextWithLineTransforms(seg.value);
+    }
+  }
+
+  // -----------------------------
+  // Line transforms for TEXT segments
+  // -----------------------------
+
+  private renderTextWithLineTransforms(text: string): string {
+    const lines = text.split("\n");
+    const out: string[] = [];
+
+    for (const line of lines) {
+      if (line.length === 0) {
+        out.push("");
+        continue;
+      }
+
+      // Horizontal rule: --- / *** / ___ (optionally with spaces)
+      if (this.opts.enableHorizontalRules) {
+        const trimmed = line.trim();
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+          out.push("────────");
+          continue;
+        }
+      }
+
+      // Headings: "# " .. "#### "
+      if (this.opts.enableHeadings) {
+        const h = this.parseHeading(line);
+        if (h) {
+          // Render as bold line (Telegram has no real heading entity).
+          const content = this.renderInlineMarkdown(h.text);
+          out.push("*" + content + "*");
+          continue;
+        }
+      }
+
+      // Bullet list: "- " "* " "+ "
+      if (this.opts.enableBulletLists) {
+        const b = this.parseBullet(line);
+        if (b) {
+          out.push("• " + this.renderInlineMarkdown(b.text));
+          continue;
+        }
+      }
+
+      // Numbered list: "1. item"
+      if (this.opts.enableNumberedLists) {
+        const n = this.parseNumbered(line);
+        if (n) {
+          out.push(`${n.num}\\.` + " " + this.renderInlineMarkdown(n.text));
+          continue;
+        }
+      }
+
+      // Regular line: keep inline markdown entities, escape the rest.
+      out.push(this.renderInlineMarkdown(line));
+    }
+
+    return out.join("\n");
+  }
+
+  private parseHeading(
+    line: string,
+  ): { level: 1 | 2 | 3 | 4; text: string } | null {
+    for (let level = 4 as 4 | 3 | 2 | 1; level >= 1; level--) {
+      const prefix = "#".repeat(level) + " ";
+      if (line.startsWith(prefix)) {
+        return {
+          level: level as 1 | 2 | 3 | 4,
+          text: line.slice(prefix.length),
+        };
+      }
+    }
+    return null;
+  }
+
+  private parseBullet(line: string): { text: string } | null {
+    if (line.startsWith("- ")) return { text: line.slice(2) };
+    if (line.startsWith("* ")) return { text: line.slice(2) };
+    if (line.startsWith("+ ")) return { text: line.slice(2) };
+    return null;
+  }
+
+  private parseNumbered(line: string): { num: number; text: string } | null {
+    const m = /^(\d+)\.\s+(.*)$/.exec(line);
+    if (!m) return null;
+    const num = Number(m[1]);
+    if (!Number.isFinite(num)) return null;
+    return { num, text: m[2] };
+  }
+
+  // -----------------------------
+  // Inline markdown conversion (AI Markdown-ish -> Telegram MarkdownV2)
+  // -----------------------------
+
   /**
-   * Escapes visible link text like normal text.
+   * Converts common inline entities into Telegram MarkdownV2 and escapes everything else.
+   *
+   * Supported entities:
+   * - **bold** -> *bold*
+   * - *bold* -> *bold*
+   * - __underline__ -> __underline__
+   * - _italic_ -> _italic_
+   * - ~~strike~~ -> ~strike~
+   * - ||spoiler|| -> ||spoiler||
+   *
+   * Important: We DO NOT escape the whole line at the end.
+   * We escape only plain text parts and keep entity delimiters intact.
+   * This avoids cases where reserved chars like '(' appear unescaped in final output.
    */
-  escapeLinkText(text: string): string {
-    return this.escapeMarkdownV2Text(text);
+  private renderInlineMarkdown(input: string): string {
+    // We replace entities with unique placeholders, but we DO NOT escape the entire string.
+    // Instead, we escape only the plain-text regions between placeholders, and then insert
+    // placeholders' already-escaped values verbatim.
+
+    type Tok = { id: string; value: string };
+    const tokens: Tok[] = [];
+
+    const makeToken = (value: string) => {
+      const id = `\u0000T${tokens.length}\u0000`;
+      tokens.push({ id, value });
+      return id;
+    };
+
+    let s = input;
+
+    // 1) Spoiler: ||...||
+    s = s.replace(/\|\|([\s\S]+?)\|\|/g, (_m, inner) => {
+      return makeToken("||" + this.escapeMarkdownV2Text(String(inner)) + "||");
+    });
+
+    // 2) Underline: __...__
+    s = s.replace(/__([\s\S]+?)__/g, (_m, inner) => {
+      return makeToken("__" + this.escapeMarkdownV2Text(String(inner)) + "__");
+    });
+
+    // 3) Strikethrough: ~~...~~ -> ~...~
+    s = s.replace(/~~([\s\S]+?)~~/g, (_m, inner) => {
+      return makeToken("~" + this.escapeMarkdownV2Text(String(inner)) + "~");
+    });
+
+    // 4) Bold: **...** -> *...*
+    s = s.replace(/\*\*([\s\S]+?)\*\*/g, (_m, inner) => {
+      return makeToken("*" + this.escapeMarkdownV2Text(String(inner)) + "*");
+    });
+
+    // 5) Bold: *...* (single asterisks), conservative (won't match "**")
+    s = s.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, (_m, p1, inner) => {
+      return makeToken(
+        p1 + "*" + this.escapeMarkdownV2Text(String(inner)) + "*",
+      );
+    });
+
+    // 6) Italic: _..._ (single underscores), conservative (won't match "__")
+    s = s.replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, (_m, p1, inner) => {
+      return makeToken(
+        p1 + "_" + this.escapeMarkdownV2Text(String(inner)) + "_",
+      );
+    });
+
+    // Now we escape only the plain text between token ids.
+    if (tokens.length === 0) {
+      return this.escapeMarkdownV2Text(s);
+    }
+
+    let result = "";
+    let cursor = 0;
+
+    for (const t of tokens) {
+      const idx = s.indexOf(t.id, cursor);
+      if (idx === -1) continue;
+
+      // Escape the plain segment before the token
+      result += this.escapeMarkdownV2Text(s.slice(cursor, idx));
+
+      // Insert token value verbatim (already escaped internally)
+      result += t.value;
+
+      cursor = idx + t.id.length;
+    }
+
+    // Escape remaining tail
+    result += this.escapeMarkdownV2Text(s.slice(cursor));
+
+    return result;
   }
 
   // -----------------------------
-  // Internals
+  // Tokenizer: code blocks / links / inline code
   // -----------------------------
-
-  private escapeMarkdownV2Text(text: string): string {
-    // Escape backslash first, then escape required specials.
-    // Special chars: _ * [ ] ( ) ~ ` > # + - = | { } . !
-    return text
-      .replace(/\\/g, "\\\\")
-      .replace(/[_*\[\]\(\)~`>#+\-=|{}.!]/g, (m) => `\\${m}`);
-  }
 
   private tokenize(input: string): Segment[] {
     const segments: Segment[] = [];
@@ -190,7 +380,7 @@ export class TelegramMarkdownV2Formatter {
 
     if (found.length === 0) return null;
 
-    // Earliest; tie-break: codeBlock > link > inlineCode
+    // earliest start; tie-break: codeBlock > link > inlineCode
     found.sort((a, b) => {
       if (a.start !== b.start) return a.start - b.start;
       const prio = (seg: Segment) => {
@@ -212,21 +402,13 @@ export class TelegramMarkdownV2Formatter {
     const start = s.indexOf("```", from);
     if (start === -1) return null;
 
-    // Ignore if it's not a fence start (we only support triple backticks)
     const afterStart = start + 3;
 
-    // Optional language tag up to first newline
-    let lang = "";
-    let bodyStart = afterStart;
-
     const nl = s.indexOf("\n", afterStart);
-    if (nl !== -1) {
-      lang = s.slice(afterStart, nl).trim();
-      bodyStart = nl + 1;
-    } else {
-      // No newline after ``` -> malformed for a block, do not match
-      return null;
-    }
+    if (nl === -1) return null;
+
+    const lang = s.slice(afterStart, nl).trim();
+    const bodyStart = nl + 1;
 
     const endFence = s.indexOf("```", bodyStart);
     if (endFence === -1) return null;
@@ -247,7 +429,7 @@ export class TelegramMarkdownV2Formatter {
     const start = s.indexOf("`", from);
     if (start === -1) return null;
 
-    // If it's a code fence, let codeBlock matcher handle it
+    // If it is a fence, let codeBlock handle it
     if (s.slice(start, start + 3) === "```") return null;
 
     const end = s.indexOf("`", start + 1);
@@ -266,7 +448,6 @@ export class TelegramMarkdownV2Formatter {
     s: string,
     from: number,
   ): { start: number; end: number; segment: Segment } | null {
-    // Conservative parser for [text](url)
     const start = s.indexOf("[", from);
     if (start === -1) return null;
 
@@ -280,7 +461,6 @@ export class TelegramMarkdownV2Formatter {
 
     const text = s.slice(start + 1, closeBracket);
     const url = s.slice(closeBracket + 2, closeParen);
-
     if (!url.trim()) return null;
 
     return {
@@ -291,8 +471,8 @@ export class TelegramMarkdownV2Formatter {
   }
 
   private findMatchingParen(s: string, openParenIndex: number): number {
-    // openParenIndex points to '('
     if (s[openParenIndex] !== "(") return -1;
+
     for (let i = openParenIndex + 1; i < s.length; i++) {
       const ch = s[i];
       if (ch === "\\") {
@@ -303,121 +483,10 @@ export class TelegramMarkdownV2Formatter {
     }
     return -1;
   }
-
-  private renderSegment(seg: Segment): string {
-    switch (seg.kind) {
-      case "codeBlock": {
-        const lang = seg.lang ? seg.lang.replace(/`/g, "").trim() : "";
-        const body = this.escapeCode(seg.value);
-        return "```" + lang + "\n" + body + "\n```";
-      }
-
-      case "inlineCode":
-        return "`" + this.escapeCode(seg.value) + "`";
-
-      case "link": {
-        const t = this.escapeLinkText(seg.text);
-        const u = this.escapeLinkUrl(seg.url);
-        return "[" + t + "](" + u + ")";
-      }
-
-      case "text":
-      default:
-        return this.renderTextWithLineTransforms(seg.value);
-    }
-  }
-
-  private renderTextWithLineTransforms(text: string): string {
-    const lines = text.split("\n");
-    const out: string[] = [];
-
-    for (const line of lines) {
-      // Keep blank lines
-      if (line.length === 0) {
-        out.push("");
-        continue;
-      }
-
-      // Headings: "# " .. "#### "
-      if (this.opts.enableHeadings) {
-        const h = this.parseHeading(line);
-        if (h) {
-          // Convert to bold heading line. Escape heading text as normal text.
-          // Example: "# Title" -> "*Title*"
-          const escaped = this.escapeMarkdownV2Text(h.text);
-          out.push("*" + escaped + "*");
-          continue;
-        }
-      }
-
-      // Bullet lists: "- " "* " "+ "
-      if (this.opts.enableBulletLists) {
-        const b = this.parseBullet(line);
-        if (b) {
-          // Use bullet symbol to avoid '-' parsing quirks.
-          const escaped = this.escapeMarkdownV2Text(b.text);
-          out.push("• " + escaped);
-          continue;
-        }
-      }
-
-      // Numbered lists: "1. " "2. " ...
-      if (this.opts.enableNumberedLists) {
-        const n = this.parseNumbered(line);
-        if (n) {
-          // Escape dot after number: "1\."
-          const escaped = this.escapeMarkdownV2Text(n.text);
-          out.push(`${n.num}\\.` + " " + escaped);
-          continue;
-        }
-      }
-
-      // Default: escape full line as normal text
-      out.push(this.escapeMarkdownV2Text(line));
-    }
-
-    return out.join("\n");
-  }
-
-  private parseHeading(
-    line: string,
-  ): { level: 1 | 2 | 3 | 4; text: string } | null {
-    // Match "# " .. "#### " exactly at line start
-    // Do not treat "##### " or "#no-space" as a heading.
-    for (let level = 4 as 4 | 3 | 2 | 1; level >= 1; level--) {
-      const prefix = "#".repeat(level) + " ";
-      if (line.startsWith(prefix)) {
-        const text = line.slice(prefix.length);
-        return { level: level as 1 | 2 | 3 | 4, text };
-      }
-    }
-    return null;
-  }
-
-  private parseBullet(line: string): { text: string } | null {
-    // "- " "* " "+ " at start
-    if (line.startsWith("- ")) return { text: line.slice(2) };
-    if (line.startsWith("* ")) return { text: line.slice(2) };
-    if (line.startsWith("+ ")) return { text: line.slice(2) };
-    return null;
-  }
-
-  private parseNumbered(line: string): { num: number; text: string } | null {
-    // "1. " style
-    // Only accept if number is at least 1 digit and followed by ". "
-    const m = /^(\d+)\.\s+(.*)$/.exec(line);
-    if (!m) return null;
-    const num = Number(m[1]);
-    if (!Number.isFinite(num)) return null;
-    return { num, text: m[2] };
-  }
 }
 
-export function util(c: Context) {
-  const authorizationCookie = getCookie(c, "rbac.subject.jwt");
-  const authorizationHeader = c.req.header("Authorization");
-  const authorization =
-    authorizationCookie || authorizationHeader?.replace("Bearer ", "");
+export function util(props: { input: string }): string {
+  const telegramMessageSanitizer = new TelegramMarkdownV2Formatter({});
 
-  return authorization;
+  return telegramMessageSanitizer.format(props.input);
 }
