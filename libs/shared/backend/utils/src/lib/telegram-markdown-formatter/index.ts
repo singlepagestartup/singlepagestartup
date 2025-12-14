@@ -99,7 +99,7 @@ export class TelegramMarkdownV2Formatter {
   private escapeMarkdownV2Text(text: string): string {
     return text
       .replace(/\\/g, "\\\\")
-      .replace(/[_*[\]()~`>#+\-=|{}!.]/g, (m) => `\\${m}`);
+      .replace(/[_*[\]\(\)~`>#+\-=\|\{\}\.\!]/g, (m) => `\\${m}`);
   }
 
   // Inside code/pre: escape ONLY ` and \

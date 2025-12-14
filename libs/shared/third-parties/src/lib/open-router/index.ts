@@ -38,6 +38,16 @@ export class Service {
 
     console.log("🚀 ~ generateText ~ data:", data);
 
+    if (data.error?.metadata?.raw.includes("temporarily rate-limited")) {
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+
+      return await this.generateText(props);
+    }
+
     return data.choices[0].message.content;
   }
 }
