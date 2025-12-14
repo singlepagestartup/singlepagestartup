@@ -41,7 +41,7 @@ export class Service {
     if (data.error?.metadata?.raw.includes("temporarily rate-limited")) {
       await new Promise((resolve) => {
         setTimeout(() => {
-          resolve();
+          resolve("");
         }, 5000);
       });
 
