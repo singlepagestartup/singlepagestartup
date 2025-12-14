@@ -396,7 +396,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       // arcee-ai
       "arcee-ai/trinity-mini:free",
       // allenai
-      "allenai/olmo-3-32b-think:free",
+      // "allenai/olmo-3-32b-think:free",
       // kwaipilot
       "kwaipilot/kat-coder-pro:free",
       // mistralai
@@ -407,18 +407,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       // z-ai
       "z-ai/glm-4.5-air:free",
       // qwen
-      "qwen/qwen3-coder:free",
-      "qwen/qwen3-235b-a22b:free",
+      // "qwen/qwen3-coder:free",
+      // "qwen/qwen3-235b-a22b:free",
       // meta-llama
       "meta-llama/llama-3.3-70b-instruct:free",
       // openai
-      "openai/gpt-oss-20b:free",
-      "openai/gpt-oss-120b:free",
+      // "openai/gpt-oss-20b:free",
+      // "openai/gpt-oss-120b:free",
       // google
       "google/gemma-3-27b-it:free",
-      "google/gemini-2.0-flash-exp:free",
+      // "google/gemini-2.0-flash-exp:free",
       // moonshotai
-      "moonshotai/kimi-k2:free",
+      // rate limited forever
+      // "moonshotai/kimi-k2:free",
       // nousresearch
       "nousresearch/hermes-3-llama-3.1-405b:free",
       // alibaba
@@ -444,7 +445,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ],
     });
 
-    const selectModelForRequest = await openRouter.generateText({
+    let selectModelForRequest = await openRouter.generateText({
       model: "nex-agi/deepseek-v3.1-nex-n1:free",
       context: [
         {
@@ -454,14 +455,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ],
     });
 
-    if (!availableModels.includes(selectModelForRequest.replaceAll("'", ""))) {
+    selectModelForRequest =
+      availableModels.find((model) => {
+        return model.includes(selectModelForRequest.replaceAll("'", ""));
+      }) || "z-ai/glm-4.5-air:free";
+
+    if (!availableModels.includes(selectModelForRequest)) {
       return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
         {
           id: props.rbacModuleSubject.id,
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс\\! Что-то пошло не так, попробуйте еще раз",
+            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
           },
           options: {
             headers: {
@@ -497,7 +503,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс\\! Что-то пошло не так, попробуйте еще раз",
+            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
           },
           options: {
             headers: {
