@@ -449,6 +449,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       ],
     });
+
+    if ("error" in detectedLanguageResult) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
     const detectedLanguage = detectedLanguageResult.text;
 
     const selectModelResult = await openRouter.generate({
@@ -461,19 +480,31 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       ],
     });
+
+    if ("error" in selectModelResult) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
     let selectModelForRequest = selectModelResult.text;
 
     console.log(
       "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
       selectModelForRequest,
     );
-
-    // Check if the selected model is for image generation
-    const selectedModelInfo = openRouterSanitizedModels.find(
-      (m) => m.id === selectModelForRequest,
-    );
-    const isImageModel =
-      selectedModelInfo?.output_modalities?.includes("image") || false;
 
     let generatedMessageDescription = "";
     const data: any = {};
@@ -494,6 +525,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       ],
     });
+
+    if ("error" in result) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
 
     generatedMessageDescription = result.text;
 

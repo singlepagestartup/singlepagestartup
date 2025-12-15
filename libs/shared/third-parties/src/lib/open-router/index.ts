@@ -95,10 +95,15 @@ export class Service {
     fallbackModels?: string[];
     max_tokens?: number;
     reasoning?: boolean;
-  }): Promise<{
-    text: string;
-    images?: { url?: string; b64_json?: string }[];
-  }> {
+  }): Promise<
+    | {
+        text: string;
+        images?: { url?: string; b64_json?: string }[];
+      }
+    | {
+        error: any;
+      }
+  > {
     console.log("🚀 ~ open-router ~ generate ~ props:", props);
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -118,16 +123,10 @@ export class Service {
 
     const data = await response.json();
 
-    console.log("🚀 ~ generateText ~ data:", data);
+    console.log("🚀 ~ generate ~ data:", data);
 
-    if (data.error?.metadata?.raw.includes("temporarily rate-limited")) {
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("");
-        }, 5000);
-      });
-
-      return await this.generateText(props);
+    if (data.error) {
+      return data;
     }
 
     const message = data.choices[0].message;
