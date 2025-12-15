@@ -94,7 +94,11 @@ export class Service {
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
-  }): Promise<string> {
+    reasoning?: boolean;
+  }): Promise<{
+    text: string;
+    images?: { url?: string; b64_json?: string }[];
+  }> {
     console.log("🚀 ~ open-router ~ generateText ~ props:", props);
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -108,6 +112,7 @@ export class Service {
         messages: props.context,
         stream: false,
         max_tokens: props.max_tokens,
+        ...(props.reasoning && { reasoning: {} }),
       }),
     });
 
@@ -125,7 +130,54 @@ export class Service {
       return await this.generateText(props);
     }
 
-    return data.choices[0].message.content;
+    const message = data.choices[0].message;
+    let text = "";
+    let images: { url?: string; b64_json?: string }[] | undefined;
+
+    // Check for images in message.images (Gemini format)
+    if (message.images && Array.isArray(message.images)) {
+      images = message.images.map((img: any) => {
+        if (img.image_url?.url) {
+          return { url: img.image_url.url };
+        }
+        return { url: img.url, b64_json: img.b64_json };
+      });
+    }
+
+    // Check for images in attachments (alternative format)
+    if (!images && message.attachments && Array.isArray(message.attachments)) {
+      images = message.attachments
+        .filter((att: any) => att.type === "image")
+        .map((att: any) => ({ url: att.url, b64_json: att.b64_json }));
+    }
+
+    // If content is empty, try to extract answer from reasoning or reasoning_details
+    if (!message.content && (message.reasoning || message.reasoning_details)) {
+      let reasoningText = message.reasoning || "";
+
+      // For APIs with reasoning_details (like OpenAI), find summary
+      if (
+        !reasoningText &&
+        message.reasoning_details &&
+        Array.isArray(message.reasoning_details)
+      ) {
+        const summaryItem = message.reasoning_details.find(
+          (item: any) => item.summary || item.text,
+        );
+        if (summaryItem) {
+          reasoningText = summaryItem.summary || summaryItem.text;
+        }
+      }
+
+      // If we have reasoning text, return it as-is without pattern extraction
+      if (reasoningText) {
+        text = reasoningText.trim();
+      }
+    } else {
+      text = message.content || message.reasoning || "";
+    }
+
+    return { text, images };
   }
 
   async getModels(): Promise<IOpenRouterModel[]> {

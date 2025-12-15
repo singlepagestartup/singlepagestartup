@@ -434,8 +434,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     //   "x-ai/grok-code-fast-1",
     // ];
 
-    const detectedLanguage = await openRouter.generateText({
+    const detectedLanguageResult = await openRouter.generateText({
       model: "google/gemini-2.5-flash",
+      reasoning: false,
       context: [
         {
           role: "system",
@@ -448,9 +449,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       ],
     });
+    const detectedLanguage = detectedLanguageResult.text;
 
-    let selectModelForRequest = await openRouter.generateText({
+    const selectModelResult = await openRouter.generateText({
       model: "deepseek/deepseek-v3.2-exp",
+      reasoning: false,
       context: [
         {
           role: "user",
@@ -458,40 +461,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       ],
     });
+    let selectModelForRequest = selectModelResult.text;
 
     console.log(
       "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
       selectModelForRequest,
     );
 
-    // selectModelForRequest =
-    //   availableModels.find((model) => {
-    //     return model.includes(selectModelForRequest.replaceAll("'", ""));
-    //   }) || "z-ai/glm-4.5-air:free";
+    // Check if the selected model is for image generation
+    const selectedModelInfo = openRouterSanitizedModels.find(
+      (m) => m.id === selectModelForRequest,
+    );
+    const isImageModel =
+      selectedModelInfo?.output_modalities?.includes("image") || false;
 
-    // if (!availableModels.includes(selectModelForRequest)) {
-    //   return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-    //     {
-    //       id: props.rbacModuleSubject.id,
-    //       socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-    //       socialModuleChatId: props.socialModuleChat.id,
-    //       data: {
-    //         description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
-    //       },
-    //       options: {
-    //         headers: {
-    //           Authorization: "Bearer " + props.jwtToken,
-    //         },
-    //       },
-    //     },
-    //   );
-    // }
+    let generatedMessageDescription = "";
+    const data: any = {};
 
-    const generatedMessageDescription = await openRouter.generateText({
+    // Generate content (text or image)
+    const result = await openRouter.generateText({
       model: selectModelForRequest,
-      max_tokens: 1000,
       context: [
         { role: "user", content: `Answer in ${detectedLanguage} language` },
+        {
+          role: "user",
+          content:
+            "Ensure the response fits within 4000 characters for Telegram.",
+        },
         {
           role: "user",
           content: props.socialModuleMessage.description || "",
@@ -499,11 +495,36 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ],
     });
 
-    const data = {
-      description: telegramMarkdownFormatter({
-        input: generatedMessageDescription + `\n\n__${selectModelForRequest}__`,
-      }),
-    };
+    generatedMessageDescription = result.text;
+
+    // Check if images were generated
+    if (result.images && result.images.length > 0) {
+      try {
+        const imageUrl = result.images[0].url;
+        if (imageUrl) {
+          // Use blobifyFiles to handle both http and data: URLs
+          data.files = await blobifyFiles({
+            files: [
+              {
+                title: "generated-image",
+                type: "image/png",
+                extension: "png",
+                url: imageUrl,
+              },
+            ],
+          });
+          generatedMessageDescription = `${generatedMessageDescription || "Изображение сгенерировано"}`;
+        }
+      } catch (error) {
+        console.error("Image processing error:", error);
+      }
+    }
+
+    generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
+
+    data.description = telegramMarkdownFormatter({
+      input: generatedMessageDescription,
+    });
 
     if (data.description == "") {
       return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
@@ -522,30 +543,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       );
     }
-
-    // if (generateTemplateSocilaModuleMessageAttachmentStartFiles?.length) {
-    //   data["files"] = await blobifyFiles({
-    //     files: generateTemplateSocilaModuleMessageAttachmentStartFiles.map(
-    //       (generateTemplateSocilaModuleMessageAttachmentStartFile) => {
-    //         return {
-    //           ...generateTemplateSocilaModuleMessageAttachmentStartFile,
-    //           title: generateTemplateSocilaModuleMessageAttachmentStartFile.id,
-    //           type:
-    //             generateTemplateSocilaModuleMessageAttachmentStartFile.mimeType ??
-    //             "",
-    //           extension:
-    //             generateTemplateSocilaModuleMessageAttachmentStartFile.extension ??
-    //             "",
-    //           url: generateTemplateSocilaModuleMessageAttachmentStartFile.file.includes(
-    //             "https",
-    //           )
-    //             ? generateTemplateSocilaModuleMessageAttachmentStartFile.file
-    //             : `${NEXT_PUBLIC_API_SERVICE_URL}/public${generateTemplateSocilaModuleMessageAttachmentStartFile.file}`,
-    //         };
-    //       },
-    //     ),
-    //   });
-    // }
 
     return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
       {
