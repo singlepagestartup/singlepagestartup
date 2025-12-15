@@ -387,51 +387,55 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const availableModels = [
-      // tngtech
-      "tngtech/deepseek-r1t2-chimera:free",
-      "tngtech/tng-r1t-chimera:free",
-      // amazon
-      "amazon/nova-2-lite-v1:free",
-      // arcee-ai
-      "arcee-ai/trinity-mini:free",
-      // allenai
-      // "allenai/olmo-3-32b-think:free",
-      // kwaipilot
-      "kwaipilot/kat-coder-pro:free",
-      // mistralai
-      "mistralai/devstral-2512:free",
-      "mistralai/mistral-7b-instruct:free",
-      // nvidia
-      "nvidia/nemotron-nano-12b-v2-vl:free",
-      // z-ai
-      "z-ai/glm-4.5-air:free",
-      // qwen
-      // "qwen/qwen3-coder:free",
-      // "qwen/qwen3-235b-a22b:free",
-      // meta-llama
-      "meta-llama/llama-3.3-70b-instruct:free",
-      // openai
-      // "openai/gpt-oss-20b:free",
-      // "openai/gpt-oss-120b:free",
-      // google
-      "google/gemma-3-27b-it:free",
-      // "google/gemini-2.0-flash-exp:free",
-      // moonshotai
-      // rate limited forever
-      // "moonshotai/kimi-k2:free",
-      // nousresearch
-      "nousresearch/hermes-3-llama-3.1-405b:free",
-      // alibaba
-      "alibaba/tongyi-deepresearch-30b-a3b:free",
-      // cognitivecomputations
-      "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-    ];
-
     const openRouter = new OpenRouter();
 
+    const models = await openRouter.getModels();
+
+    const openRouterSanitizedModels = models.map((model) => {
+      return {
+        id: model.id,
+        description: model.description,
+        modality: model.architecture.modality,
+        input_modalities: model.architecture.input_modalities,
+        output_modalities: model.architecture.output_modalities,
+      };
+    });
+
+    console.log(
+      "🚀 ~ openRouterReplyMessageCreate ~ openRouterSanitizedModels:",
+      openRouterSanitizedModels.length,
+    );
+
+    // const goodForRoutingModels = [
+    //   // // answer with **
+    //   // // "cost": 0.005635872,
+    //   // // 2.59 s
+    //   // // "mistralai/ministral-3b-2512",
+    //   // // "cost": 0.0024528636,
+    //   // // 16.24 s
+    //   // "nvidia/nemotron-nano-9b-v2",
+    //   // "cost": 0.0146864421,
+    //   // 13.82 s
+    //   "deepseek/deepseek-v3.2-exp",
+    //   // // "cost": 0,
+    //   // // 30.06 s
+    //   // "amazon/nova-2-lite-v1:free",
+    //   // "cost": 0.0114527655,
+    //   // 14.90 s
+    //   "x-ai/grok-4.1-fast",
+    //   // // "cost": 0.01429128336,
+    //   // // 23.98 s
+    //   // "minimax/minimax-m2",
+    //   // "cost": 0.031756824,
+    //   // 6.00 s
+    //   "moonshotai/kimi-k2-0905",
+    //   // "cost": 0.0116335296,
+    //   // 12.64 s
+    //   "x-ai/grok-code-fast-1",
+    // ];
+
     const detectedLanguage = await openRouter.generateText({
-      model: "nex-agi/deepseek-v3.1-nex-n1:free",
+      model: "google/gemini-2.5-flash",
       context: [
         {
           role: "system",
@@ -446,43 +450,48 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     let selectModelForRequest = await openRouter.generateText({
-      model: "nex-agi/deepseek-v3.1-nex-n1:free",
+      model: "deepseek/deepseek-v3.2-exp",
       context: [
         {
           role: "user",
-          content: `I have a task:\n${props.socialModuleMessage.description}\nSelect the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models:${availableModels.map((model) => "'" + model + "'").join(",")}. Send me a reply with the exact model name without any additional text. Don't try to do the task itself, choose a model`,
+          content: `I have a task:'\n${props.socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
         },
       ],
     });
 
-    selectModelForRequest =
-      availableModels.find((model) => {
-        return model.includes(selectModelForRequest.replaceAll("'", ""));
-      }) || "z-ai/glm-4.5-air:free";
+    console.log(
+      "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
+      selectModelForRequest,
+    );
 
-    if (!availableModels.includes(selectModelForRequest)) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
-    }
+    // selectModelForRequest =
+    //   availableModels.find((model) => {
+    //     return model.includes(selectModelForRequest.replaceAll("'", ""));
+    //   }) || "z-ai/glm-4.5-air:free";
+
+    // if (!availableModels.includes(selectModelForRequest)) {
+    //   return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+    //     {
+    //       id: props.rbacModuleSubject.id,
+    //       socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+    //       socialModuleChatId: props.socialModuleChat.id,
+    //       data: {
+    //         description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+    //       },
+    //       options: {
+    //         headers: {
+    //           Authorization: "Bearer " + props.jwtToken,
+    //         },
+    //       },
+    //     },
+    //   );
+    // }
 
     const generatedMessageDescription = await openRouter.generateText({
       model: selectModelForRequest,
       max_tokens: 1000,
       context: [
-        { role: "system", content: `Answer in ${detectedLanguage} language` },
+        { role: "user", content: `Answer in ${detectedLanguage} language` },
         {
           role: "user",
           content: props.socialModuleMessage.description || "",
