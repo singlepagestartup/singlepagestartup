@@ -434,7 +434,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     //   "x-ai/grok-code-fast-1",
     // ];
 
-    const detectedLanguageResult = await openRouter.generateText({
+    const detectedLanguageResult = await openRouter.generate({
       model: "google/gemini-2.5-flash",
       reasoning: false,
       context: [
@@ -451,7 +451,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
     const detectedLanguage = detectedLanguageResult.text;
 
-    const selectModelResult = await openRouter.generateText({
+    const selectModelResult = await openRouter.generate({
       model: "deepseek/deepseek-v3.2-exp",
       reasoning: false,
       context: [
@@ -479,7 +479,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const data: any = {};
 
     // Generate content (text or image)
-    const result = await openRouter.generateText({
+    const result = await openRouter.generate({
       model: selectModelForRequest,
       context: [
         { role: "user", content: `Answer in ${detectedLanguage} language` },

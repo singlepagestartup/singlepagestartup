@@ -89,7 +89,7 @@ export class Service {
     this.apiKey = OPEN_ROUTER_API_KEY;
   }
 
-  async generateText(props: {
+  async generate(props: {
     context: { role: "user" | "assistant" | "system"; content: string }[];
     model: string;
     fallbackModels?: string[];
@@ -99,7 +99,7 @@ export class Service {
     text: string;
     images?: { url?: string; b64_json?: string }[];
   }> {
-    console.log("🚀 ~ open-router ~ generateText ~ props:", props);
+    console.log("🚀 ~ open-router ~ generate ~ props:", props);
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
       method: "POST",
