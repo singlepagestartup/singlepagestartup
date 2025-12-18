@@ -11,6 +11,7 @@ import { Component as ParentAdminForm } from "@sps/shared-frontend-components/si
 import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
+import { randomWordsGenerator } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -30,6 +31,16 @@ export function Component(props: IComponentPropsExtended) {
       datetime: props.data?.datetime ? new Date(props.data.datetime) : null,
       number: props.data?.number || null,
       string: props.data?.string ?? {},
+      adminTitle:
+        props.data?.adminTitle ||
+        randomWordsGenerator({
+          type: "title",
+        }),
+      slug:
+        props.data?.slug ||
+        randomWordsGenerator({
+          type: "slug",
+        }),
     },
   });
 
@@ -56,6 +67,15 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="adminTitle"
+          label="Admin title"
+          form={form}
+          placeholder="Type admin title"
+        />
+
         <AgregatedInput title="String">
           {internationalization.languages.map((language) => {
             return (
@@ -71,6 +91,15 @@ export function Component(props: IComponentPropsExtended) {
             );
           })}
         </AgregatedInput>
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="slug"
+          label="Slug"
+          form={form}
+          placeholder="Type slug"
+        />
 
         <FormField
           ui="shadcn"

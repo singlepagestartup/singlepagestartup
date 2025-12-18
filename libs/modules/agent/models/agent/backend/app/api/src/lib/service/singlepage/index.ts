@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
 import {
+  TELEGRAM_SERVICE_BOT_USERNAME,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
@@ -15,6 +16,8 @@ import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/mod
 import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
+import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import * as jwt from "hono/jwt";
 import {
@@ -26,6 +29,8 @@ import { OpenRouter } from "@sps/shared-third-parties";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  telegramBotCommands = ["/start", "/help", "/referral", "/premium"];
+
   async agentSocialModuleProfileHandler(
     props:
       | {
@@ -41,9 +46,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           messageFromSocialModuleProfile: ISocialModuleProfile | null;
         },
   ) {
-    const telegramBotCommands = ["/start"];
-    const telegramBotCallbackQueries = ["button_1", "button_2"];
-
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -106,7 +108,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = telegramBotCommands.find(
+        const telegramBotCommandMessage = this.telegramBotCommands.find(
           (command) => {
             return props.socialModuleMessage.description?.startsWith(command);
           },
@@ -140,7 +142,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
     } else if (props.shouldReplySocialModuleProfile.slug === "open-router") {
       if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = telegramBotCommands.find(
+        const telegramBotCommandMessage = this.telegramBotCommands.find(
           (command) => {
             return props.socialModuleMessage.description?.startsWith(command);
           },
@@ -183,6 +185,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Validation error. Callback query data is missing");
     }
 
+    if (callbackQueryData.startsWith("command_")) {
+      const passedCommand = callbackQueryData.replace("command_", "");
+      const telegramBotTargetCommand = this.telegramBotCommands
+        .map((command) => {
+          return command.replace("/", "");
+        })
+        .find((command) => {
+          return command === passedCommand;
+        });
+
+      if (telegramBotTargetCommand === "help") {
+        return this.telegramBotHelpMessageWithKeyboardCreate(props);
+      }
+
+      console.log(
+        "🚀 ~ telegramBotCallbackQueryHandler ~ callbackQueryData:",
+        callbackQueryData,
+        telegramBotTargetCommand,
+      );
+    }
+
     return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
       {
         id: props.rbacModuleSubject.id,
@@ -217,35 +240,43 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
         await this.telegramBotWelcomeMessageWithKeyboardCreate(props);
       });
+    } else if (props.socialModuleMessage.description?.startsWith("/help")) {
+      return this.telegramBotHelpMessageWithKeyboardCreate(props);
+    } else if (props.socialModuleMessage.description?.startsWith("/premium")) {
+      return this.telegramBotPremiumMessageWithKeyboardCreate(props);
+    } else if (props.socialModuleMessage.description?.startsWith("/referral")) {
+      return this.telegramBotReferralMessageWithKeyboardCreate(props);
     }
 
-    rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-      id: props.rbacModuleSubject.id,
-      socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      data: {
-        description: `Caught command ${props.socialModuleMessage.description}`,
-        interaction: {
-          inline_keyboard: [
-            [
-              {
-                text: "Button 1",
-                callback_data: "button_1",
-              },
-              {
-                text: "Button 2",
-                callback_data: "button_2",
-              },
+    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data: {
+          description: `Caught command ${props.socialModuleMessage.description}`,
+          interaction: {
+            inline_keyboard: [
+              [
+                {
+                  text: "Button 1",
+                  callback_data: "button_1",
+                },
+                {
+                  text: "Button 2",
+                  callback_data: "button_2",
+                },
+              ],
             ],
-          ],
+          },
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
         },
       },
-      options: {
-        headers: {
-          Authorization: "Bearer " + props.jwtToken,
-        },
-      },
-    });
+    );
   }
 
   async telegramBotWelcomeMessageCreate(props: {
@@ -344,12 +375,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         inline_keyboard: [
           [
             {
-              text: "Button 1",
-              callback_data: "button_1",
+              text: "Help",
+              callback_data: "command_help",
             },
             {
-              text: "Button 2",
-              callback_data: "button_2",
+              text: "Premium",
+              callback_data: "command_premium",
+            },
+          ],
+          [
+            {
+              text: "Invite friends",
+              callback_data: "command_referral",
             },
           ],
         ],
@@ -367,6 +404,401 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
     });
+  }
+
+  async telegramBotPremiumMessageWithKeyboardCreate(
+    props:
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleMessage: ISocialModuleMessage;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        }
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleAction: ISocialModuleAction;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        },
+  ) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+    }
+
+    if (!props.messageFromSocialModuleProfile) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description:
+              "Can\\'t reply\\, because you didn\\'t pass `props\\.messageFromSocialModuleProfile`\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const messageFromRbacModuleSubjectsToSocialModuleProfiles =
+      await rbacModuleSubjectsToSocialModuleProfilesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "socialModuleProfileId",
+                method: "eq",
+                value: props.messageFromSocialModuleProfile.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+    if (!messageFromRbacModuleSubjectsToSocialModuleProfiles?.length) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description:
+              "Can\\'t find `messageFromSubjectsToSocialModuleProfiles`\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const everyMessageFromRbacModuleSubjectsToSocialModuleProfilesHasOneSubjectId =
+      messageFromRbacModuleSubjectsToSocialModuleProfiles.every(
+        (subjectsToSocialModuleProfiles) => {
+          return (
+            subjectsToSocialModuleProfiles.subjectId ===
+            messageFromRbacModuleSubjectsToSocialModuleProfiles[0].subjectId
+          );
+        },
+      );
+
+    if (
+      !everyMessageFromRbacModuleSubjectsToSocialModuleProfilesHasOneSubjectId
+    ) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description:
+              "Multiple `rbac\\.subject\\.id` in `rbac\\.subjects\\-to\\-social\\-module\\-profiles` detected\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const messageFromSubject = await rbacModuleSubjectApi.findById({
+      id: messageFromRbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!messageFromSubject) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Can\\'t find `messageFromSubject`\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const rbacModuleProSubscriberRoles = await rbacModuleRoleApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "slug",
+              method: "eq",
+              value: "pro-subscriber",
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!rbacModuleProSubscriberRoles?.length) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Can\\'t find `rbacModuleProSubscriberRoles`\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    } else if (rbacModuleProSubscriberRoles?.length > 1) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Found multiple `rbacModuleProSubscriberRoles`\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const rbacModuleSubjectsToProSubscriberRoles =
+      await rbacModuleSubjectsToRolesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: messageFromSubject.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+    console.log(
+      "🚀 ~ telegramBotPremiumMessageWithKeyboardCreate ~ messageFromSubject:",
+      messageFromSubject,
+    );
+
+    const data: {
+      description: string;
+      interaction?: {
+        inline_keyboard: {
+          text: string;
+          url?: string;
+          callback_data?: string;
+        }[][];
+      };
+    } = {
+      description: "",
+    };
+
+    if (rbacModuleSubjectsToProSubscriberRoles?.length) {
+      data.description = "You have active subscription\\.";
+    } else {
+      data.description =
+        "You don\\'t have active subscription\\.\nClick button below to buy premium tier\\.";
+      data.interaction = {
+        inline_keyboard: [
+          [
+            {
+              text: "Activate Subscription",
+              callback_data: "command_subscribe",
+            },
+          ],
+        ],
+      };
+    }
+
+    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
+        },
+      },
+    );
+  }
+
+  async telegramBotReferralMessageWithKeyboardCreate(
+    props:
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleMessage: ISocialModuleMessage;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        }
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleAction: ISocialModuleAction;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        },
+  ) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+    }
+
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_USERNAME is missing.",
+      );
+    }
+
+    if (!props.messageFromSocialModuleProfile?.id) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description:
+              "Can\\'t create referral link\\, because `props\\.messageFromSocialModuleProfile` is empty\\.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+    }
+
+    const data = {
+      description:
+        "You can invite people to subscribe for that Telegram Bot and get benefits\\!\nJust share link below and people\\, that will start the bot with your referral code will get free 3 days of Premium\\.",
+      interaction: {
+        inline_keyboard: [
+          [
+            {
+              text: "Referral link",
+              copy_text: {
+                text: `https://t.me/${TELEGRAM_SERVICE_BOT_USERNAME}?start=${props.messageFromSocialModuleProfile.id}`,
+              },
+            },
+          ],
+        ],
+      },
+    };
+
+    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
+        },
+      },
+    );
+  }
+
+  async telegramBotHelpMessageWithKeyboardCreate(
+    props:
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleMessage: ISocialModuleMessage;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        }
+      | {
+          jwtToken: string;
+          rbacModuleSubject: IRbacModuleSubject;
+          shouldReplySocialModuleProfile: ISocialModuleProfile;
+          socialModuleChat: ISocialModuleChat;
+          socialModuleAction: ISocialModuleAction;
+          messageFromSocialModuleProfile: ISocialModuleProfile | null;
+        },
+  ) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+    }
+
+    const data = {
+      description:
+        "I am Telegram bot, that can help you with any kind of text questions with the help of AI\\.\nIf you have a question, just write it to the chat and I will choose the most relevant AI model for answer\\.\n\nIf you have troubles with Telegram Bot, just write to Support Manager and describle the situation\\. **DO NOT delete autogenerated message** during first wite to Support Manager\\. That message will help us to understand what profile in our system you have\\.",
+      interaction: {
+        inline_keyboard: [
+          [
+            {
+              text: "Contact with Support Manager",
+              url: `https://t.me/rogwild?text=Hello! I have social-module id: ${props.messageFromSocialModuleProfile?.id}`,
+            },
+          ],
+        ],
+      },
+    };
+
+    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
+        },
+      },
+    );
   }
 
   async openRouterReplyMessageCreate(props: {

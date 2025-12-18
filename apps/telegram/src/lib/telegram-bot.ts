@@ -20,9 +20,17 @@ import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/serv
 import { api as rbacModuleSubjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
+import { api as socialModuleAttributeKeyApi } from "@sps/social/models/attribute-key/sdk/server";
+import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
+import { api as socialModuleProfilesToAttributesApi } from "@sps/social/relations/profiles-to-attributes/sdk/server";
+import { api as socialModuleAttributeKeysToAttributesApi } from "@sps/social/relations/attribute-keys-to-attributes/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleAttributeKey } from "@sps/social/models/attribute-key/sdk/model";
+import { IModel as ISocialModuleAttribute } from "@sps/social/models/attribute/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { IModel as ISocialModuleAttributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/sdk/model";
+import { IModel as ISocialModuleProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import * as jwt from "hono/jwt";
 
@@ -231,6 +239,7 @@ export class TelegarmBot {
     let subject: IRbacSubject | null = null;
     let profile: ISocialModuleProfile | null = null;
     let chat: ISocialModuleChat | null = null;
+    let registration = false;
 
     const identities = await rbacModuleIdentityApi.find({
       params: {
@@ -379,6 +388,8 @@ export class TelegarmBot {
       }
 
       subject = rbacModuleSubject;
+
+      registration = true;
     }
 
     const rbacModuleSubjectsToSocialModuleProfiles =
@@ -489,6 +500,193 @@ export class TelegarmBot {
       });
 
       profile = socialModuleProfile;
+    }
+
+    if (
+      registration &&
+      props.ctx?.message?.text &&
+      props.ctx.message.text.startsWith("/start") &&
+      props.ctx.message.text.replace("/start ", "")
+    ) {
+      const referralCode = props.ctx.message.text.replace("/start ", "");
+
+      console.log(
+        "🚀 ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ referralCode:",
+        referralCode,
+      );
+
+      let socialModuleReferrerAttributeKey: ISocialModuleAttributeKey;
+
+      const socialModuleAttributeKeys = await socialModuleAttributeKeyApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "referrer",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      if (socialModuleAttributeKeys?.length) {
+        socialModuleReferrerAttributeKey = socialModuleAttributeKeys[0];
+      } else {
+        socialModuleReferrerAttributeKey =
+          await socialModuleAttributeKeyApi.create({
+            data: {
+              adminTitle: "Referrer",
+              title: {
+                ru: "Реферрер",
+                en: "Referrer",
+              },
+              slug: "referrer",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          });
+      }
+
+      let socialModuleReferrerAttribute: ISocialModuleAttribute;
+
+      const socialModuleAttributes = await socialModuleAttributeApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: `${profile.id}-invitedby-${referralCode}`,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      if (socialModuleAttributes?.length) {
+        socialModuleReferrerAttribute = socialModuleAttributes[0];
+      } else {
+        socialModuleReferrerAttribute = await socialModuleAttributeApi.create({
+          data: {
+            adminTitle: `${profile.id} | Referral Code | ${referralCode}`,
+            string: {
+              ru: referralCode,
+              en: referralCode,
+            },
+            slug: `${profile.id}-invitedby-${referralCode}`,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
+
+      let socialModuleReferrerAttributeKeyToReferrerAttribute: ISocialModuleAttributeKeysToAttributes;
+
+      const socialModuleAttributeKeysToAttributes =
+        await socialModuleAttributeKeysToAttributesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "attributeKeyId",
+                  method: "eq",
+                  value: socialModuleReferrerAttributeKey.id,
+                },
+                {
+                  column: "attributeId",
+                  method: "eq",
+                  value: socialModuleReferrerAttribute.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      if (!socialModuleAttributeKeysToAttributes?.length) {
+        socialModuleReferrerAttributeKeyToReferrerAttribute =
+          await socialModuleAttributeKeysToAttributesApi.create({
+            data: {
+              attributeKeyId: socialModuleReferrerAttributeKey.id,
+              attributeId: socialModuleReferrerAttribute.id,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          });
+      }
+
+      let socialModuleProfileToAttribute: ISocialModuleProfilesToAttributes;
+
+      const socialModuleProfilesToAttributes =
+        await socialModuleProfilesToAttributesApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "profileId",
+                  method: "eq",
+                  value: profile.id,
+                },
+                {
+                  column: "attributeId",
+                  method: "eq",
+                  value: socialModuleReferrerAttribute.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      if (!socialModuleProfilesToAttributes?.length) {
+        socialModuleProfileToAttribute =
+          await socialModuleProfilesToAttributesApi.create({
+            data: {
+              profileId: profile.id,
+              attributeId: socialModuleReferrerAttribute.id,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+      }
     }
 
     const socialModuleProfilesToChats =
