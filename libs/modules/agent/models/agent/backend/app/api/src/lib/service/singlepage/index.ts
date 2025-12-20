@@ -195,8 +195,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           return command === passedCommand;
         });
 
-      if (telegramBotTargetCommand === "help") {
-        return this.telegramBotHelpMessageWithKeyboardCreate(props);
+      switch (telegramBotTargetCommand) {
+        case "help":
+          return this.telegramBotHelpMessageWithKeyboardCreate(props);
+        case "premium":
+          return this.telegramBotPremiumMessageWithKeyboardCreate(props);
+        case "referral":
+          return this.telegramBotReferralMessageWithKeyboardCreate(props);
       }
 
       console.log(

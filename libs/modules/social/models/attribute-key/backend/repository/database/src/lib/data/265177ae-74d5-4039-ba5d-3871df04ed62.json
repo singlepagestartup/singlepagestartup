@@ -1,0 +1,16 @@
+{
+  "id": "265177ae-74d5-4039-ba5d-3871df04ed62",
+  "createdAt": "2025-12-18T21:46:05.142Z",
+  "updatedAt": "2025-12-18T21:46:05.142Z",
+  "variant": "default",
+  "type": "feature",
+  "field": "string",
+  "adminTitle": "Referrer",
+  "slug": "referrer",
+  "title": {
+    "en": "Referrer",
+    "ru": "Реферрер"
+  },
+  "prefix": {},
+  "suffix": {}
+}

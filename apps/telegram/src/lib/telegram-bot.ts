@@ -33,6 +33,7 @@ import { IModel as ISocialModuleAttributeKeysToAttributes } from "@sps/social/re
 import { IModel as ISocialModuleProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import * as jwt from "hono/jwt";
+import { LabeledPrice } from "grammy/types";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
 
@@ -132,6 +133,13 @@ export class TelegarmBot {
       });
 
       return;
+    });
+
+    this.instance.command("payment", async (ctx, next) => {
+      ctx.replyWithInvoice("Invoice", "Pay for get the best!", "123", "XTR", [
+        { label: "Star", amount: 10 },
+      ]);
+      return ctx.reply("Hi");
     });
 
     this.instance.on("message", async (ctx) => {
