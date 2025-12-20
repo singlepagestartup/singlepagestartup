@@ -17,6 +17,7 @@ import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model
 import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
+import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/server";
 import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import * as jwt from "hono/jwt";

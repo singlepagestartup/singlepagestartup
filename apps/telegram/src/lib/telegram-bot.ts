@@ -74,6 +74,11 @@ export class TelegarmBot {
    */
   init() {
     this.instance.on("callback_query:data", async (ctx, next) => {
+      console.log(
+        "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
+        ctx.callbackQuery,
+      );
+
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
       }
@@ -103,11 +108,6 @@ export class TelegarmBot {
         RBAC_JWT_SECRET,
       );
 
-      console.log(
-        "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
-        ctx.callbackQuery,
-      );
-
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate(
         {
           id: rbacModuleSubject.id,
@@ -135,11 +135,80 @@ export class TelegarmBot {
       return;
     });
 
+    // Telegram Stars requires answering the pre-checkout query, otherwise Telegram will not send the payment to completion.
+    /**
+     * update: {
+    update_id: 811067301,
+    pre_checkout_query: {
+      id: "2365707987652326824",
+      from: {
+        id: 450805355,
+        is_bot: false,
+        first_name: "NAME",
+        username: "slug",
+        language_code: "ru",
+        is_premium: true,
+      },
+      currency: "XTR",
+      total_amount: 1,
+      invoice_payload: "123",
+    },
+  },
+     */
+    this.instance.on("pre_checkout_query", async (ctx) => {
+      console.log("🚀 ~ init ~ on pre_checkout_query ~ ctx", ctx);
+
+      await ctx.answerPreCheckoutQuery(true);
+    });
+
+    // Handle successful payment update to finalize flow and notify the user.
+    /**
+     * update: {
+    update_id: 811067302,
+    message: {
+      message_id: 1833,
+      from: {
+        id: 450805355,
+        is_bot: false,
+        first_name: "NAME",
+        username: "slug",
+        language_code: "ru",
+        is_premium: true,
+      },
+      chat: {
+        id: 450805355,
+        first_name: "NAME",
+        username: "slug",
+        type: "private",
+      },
+      date: 1766269675,
+      successful_payment: {
+        currency: "XTR",
+        total_amount: 1,
+        invoice_payload: "123",
+        telegram_payment_charge_id: "stxg0Uc3yXT5P7_DbX8cufsr4Ioxybu62SQsfCnGUSpalt-EQwyRzNt04ssHyggdsJ5DWRLxOQi64aJ1duinyQvpAEGcFMB90E54riVs-U8bS4",
+        provider_payment_charge_id: "550809313_1",
+      },
+    },
+  },
+     */
+    this.instance.on("message:successful_payment", async (ctx) => {
+      console.log("🚀 ~ init ~ on message:successful_payment ~ ctx", ctx);
+
+      const payment = ctx.message.successful_payment;
+      await ctx.reply(
+        `Оплата получена. Payload: ${payment.invoice_payload}. Stars: ${payment.total_amount}`,
+      );
+    });
+
     this.instance.command("payment", async (ctx, next) => {
-      ctx.replyWithInvoice("Invoice", "Pay for get the best!", "123", "XTR", [
-        { label: "Star", amount: 10 },
-      ]);
-      return ctx.reply("Hi");
+      return ctx.replyWithInvoice(
+        "Invoice",
+        "Pay for get the best!",
+        "123",
+        "XTR",
+        [{ label: "Star", amount: 1 }],
+      );
     });
 
     this.instance.on("message", async (ctx) => {
