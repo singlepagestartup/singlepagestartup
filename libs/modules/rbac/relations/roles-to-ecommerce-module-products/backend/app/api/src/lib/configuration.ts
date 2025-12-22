@@ -17,7 +17,7 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: false,
+          active: true,
           type: "json",
           directory: dataDirectory,
         },
