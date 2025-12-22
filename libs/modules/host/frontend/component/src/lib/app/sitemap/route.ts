@@ -3,7 +3,7 @@ import { api } from "@sps/host/models/page/sdk/server";
 
 async function generateSiteMap() {
   try {
-    const pages = await api.find();
+    const pages = await api.urls({});
 
     if (!pages) {
       return `<?xml version="1.0" encoding="UTF-8"?>
@@ -18,7 +18,7 @@ async function generateSiteMap() {
          ?.map((page) => {
            return `
              <url>
-                 <loc>${`${NEXT_PUBLIC_HOST_SERVICE_URL}${page.url}`}</loc>
+                 <loc>${`${NEXT_PUBLIC_HOST_SERVICE_URL}/${page.url.join("/")}`}</loc>
              </url>
            `;
          })
