@@ -880,6 +880,76 @@ export class TelegarmBot {
       }
     }
 
+    const telegramBotAgentSocialModuleProfiles =
+      await socialModuleProfileApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "inArray",
+                value: ["agent", "artificial-intelligence"],
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (telegramBotAgentSocialModuleProfiles?.length) {
+      const socialModuleProfilesToChats =
+        await socialModuleProfilesToChatsApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: chat.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      if (socialModuleProfilesToChats?.length) {
+        for (const telegramBotAgentSocialModuleProfile of telegramBotAgentSocialModuleProfiles) {
+          const existingSocialModuleProfilesToChats =
+            socialModuleProfilesToChats.find((socialModuleProfileToChat) => {
+              return (
+                socialModuleProfileToChat.profileId ===
+                telegramBotAgentSocialModuleProfile.id
+              );
+            });
+
+          if (!existingSocialModuleProfilesToChats) {
+            await socialModuleProfilesToChatsApi.create({
+              data: {
+                profileId: telegramBotAgentSocialModuleProfile.id,
+                chatId: chat.id,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
+        }
+      }
+    }
+
     return {
       rbacModuleSubject: subject,
       socialModuleProfile: profile,

@@ -1,0 +1,17 @@
+{
+  "id": "0df98c6c-80b9-4ca7-9b28-dfd8c1e9b009",
+  "createdAt": "2025-12-22T13:32:02.689Z",
+  "updatedAt": "2025-12-22T13:32:02.689Z",
+  "variant": "default",
+  "number": null,
+  "boolean": null,
+  "date": null,
+  "datetime": null,
+  "string": {
+    "en": "1398fdc5-b7cc-42d6-8ad5-2442029b6785",
+    "ru": "1398fdc5-b7cc-42d6-8ad5-2442029b6785"
+  },
+  "adminTitle": "6de4d0e1-5582-4a8d-a6ed-e9cdbd5195d2 | Referral Code | 1398fdc5-b7cc-42d6-8ad5-2442029b6785",
+  "slug": "6de4d0e1-5582-4a8d-a6ed-e9cdbd5195d2-invitedby-1398fdc5-b7cc-42d6-8ad5-2442029b6785",
+  "title": {}
+}

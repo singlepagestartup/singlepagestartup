@@ -1091,7 +1091,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if (!rbacSubjectsToRoles?.length) {
-        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
