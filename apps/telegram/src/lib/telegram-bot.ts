@@ -32,8 +32,8 @@ import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/m
 import { IModel as ISocialModuleAttributeKeysToAttributes } from "@sps/social/relations/attribute-keys-to-attributes/sdk/model";
 import { IModel as ISocialModuleProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import * as jwt from "hono/jwt";
-import { LabeledPrice } from "grammy/types";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
 
@@ -156,9 +156,9 @@ export class TelegarmBot {
   },
      */
     this.instance.on("pre_checkout_query", async (ctx) => {
-      console.log("🚀 ~ init ~ on pre_checkout_query ~ ctx", ctx);
+      console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
 
-      await ctx.answerPreCheckoutQuery(true);
+      return await ctx.answerPreCheckoutQuery(true);
     });
 
     // Handle successful payment update to finalize flow and notify the user.
@@ -193,22 +193,23 @@ export class TelegarmBot {
   },
      */
     this.instance.on("message:successful_payment", async (ctx) => {
-      console.log("🚀 ~ init ~ on message:successful_payment ~ ctx", ctx);
-
-      const payment = ctx.message.successful_payment;
-      await ctx.reply(
-        `Оплата получена. Payload: ${payment.invoice_payload}. Stars: ${payment.total_amount}`,
+      console.log(
+        "🚀 ~ init ~ message:successful_payment ~ payment:",
+        ctx.message.successful_payment,
       );
-    });
 
-    this.instance.command("payment", async (ctx, next) => {
-      return ctx.replyWithInvoice(
-        "Invoice",
-        "Pay for get the best!",
-        "123",
-        "XTR",
-        [{ label: "Star", amount: 1 }],
-      );
+      await billingModulePaymentIntentApi.providerWebhook({
+        data: {
+          provider: "telegram-star",
+          currency: "XTR",
+          invoice_payload: ctx.message.successful_payment.invoice_payload,
+          provider_payment_charge_id:
+            ctx.message.successful_payment.provider_payment_charge_id,
+          telegram_payment_charge_id:
+            ctx.message.successful_payment.telegram_payment_charge_id,
+          total_amount: ctx.message.successful_payment.total_amount,
+        },
+      });
     });
 
     this.instance.on("message", async (ctx) => {

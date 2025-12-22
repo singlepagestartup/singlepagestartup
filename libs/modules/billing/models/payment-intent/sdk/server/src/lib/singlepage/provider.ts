@@ -97,10 +97,15 @@ interface IEcommerceModule {
   orders: IOrder[];
 }
 
-interface IMetadata {
-  ecommerceModule: IEcommerceModule;
-  email: string;
-}
+type IMetadata =
+  | {
+      ecommerceModule: IEcommerceModule;
+      email: string;
+    }
+  | {
+      ecommerceModule: IEcommerceModule;
+      account: string;
+    };
 
 export interface IProps {
   host?: string;

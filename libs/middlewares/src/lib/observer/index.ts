@@ -137,8 +137,6 @@ export class Middleware {
                   const responseClone = c.res.clone();
                   const text = await responseClone.text();
 
-                  console.log("🚀 ~ init ~ text:", text, path);
-
                   let triggerResult: any = null;
 
                   if (text) {
@@ -148,8 +146,6 @@ export class Middleware {
                       triggerResult = text; // не JSON
                     }
                   }
-
-                  console.log("🚀 ~ init ~ triggerResult:", triggerResult);
 
                   await this.executePipeline({
                     message,

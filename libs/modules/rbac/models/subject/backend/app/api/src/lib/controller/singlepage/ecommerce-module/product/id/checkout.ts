@@ -88,7 +88,9 @@ export class Handler {
         throw new Error("Not Found error. No entity found with id:" + id);
       }
 
-      await this.service.deanonymize({ id, email: data.email });
+      if (data.provider !== "telegram-star") {
+        await this.service.deanonymize({ id, email: data.email });
+      }
 
       const ecommerceModuleProductsToAttributes =
         await ecommerceModuleProductsToAttributesApi.find({
@@ -224,6 +226,7 @@ export class Handler {
       const result = await this.service.ecommerceOrderCheckout({
         id,
         email: data.email,
+        account: data.account,
         provider: data.provider,
         ecommerceModule: {
           orders: [{ id: order.id }],

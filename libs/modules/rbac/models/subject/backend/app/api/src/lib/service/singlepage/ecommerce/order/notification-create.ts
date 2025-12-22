@@ -315,6 +315,11 @@ export class Service {
 
     if (notificationEcommerceNotificationTemplates?.length) {
       for (const notificationEcommerceNotificationTemplate of notificationEcommerceNotificationTemplates) {
+        const notificationMethod =
+          notificationEcommerceNotificationTemplate.variant.includes("email")
+            ? "email"
+            : "telegram";
+
         if (
           notificationEcommerceNotificationTemplate.variant.includes("default")
         ) {
@@ -359,7 +364,7 @@ export class Service {
                               notificationEcommerceNotificationTemplate.variant,
                           },
                           notification: {
-                            method: "email",
+                            method: notificationMethod,
                             data: JSON.stringify({
                               ecommerce: {
                                 order: {
@@ -418,6 +423,11 @@ export class Service {
         if (
           notificationEcommerceNotificationTemplate.variant.includes("admin")
         ) {
+          const notificationMethod =
+            notificationEcommerceNotificationTemplate.variant.includes("email")
+              ? "email"
+              : "telegram";
+
           if (adminRoles?.length) {
             for (const adminRole of adminRoles) {
               const subjectsToAdminRoles = await subjectsToRolesApi.find({
@@ -483,7 +493,7 @@ export class Service {
                                       notificationEcommerceNotificationTemplate.variant,
                                   },
                                   notification: {
-                                    method: "email",
+                                    method: notificationMethod,
                                     data: JSON.stringify({
                                       ecommerce: {
                                         order: {

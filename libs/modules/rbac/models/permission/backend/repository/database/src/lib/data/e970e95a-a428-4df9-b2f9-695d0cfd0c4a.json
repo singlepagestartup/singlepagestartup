@@ -1,0 +1,9 @@
+{
+  "id": "e970e95a-a428-4df9-b2f9-695d0cfd0c4a",
+  "createdAt": "2025-12-21T17:55:44.910Z",
+  "updatedAt": "2025-12-21T17:55:44.910Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/billing/payment-intents/telegram-star/webhook"
+}

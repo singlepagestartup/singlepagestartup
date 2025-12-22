@@ -42,6 +42,10 @@ import {
   Service as Paykeeper,
   IServiceProceedProps as IPaykeeperProceedProps,
 } from "./paykeeper";
+import {
+  Service as TelegramStar,
+  IServiceProceedProps as ITelegramStarProps,
+} from "./telegram-star";
 import { logger } from "@sps/backend-utils";
 
 @injectable()
@@ -1198,5 +1202,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async paykeeper(props: IPaykeeperProceedProps) {
     const paykeeper = new Paykeeper();
     return paykeeper.proceed(props);
+  }
+
+  async telegramStar(props: ITelegramStarProps) {
+    const telegramStar = new TelegramStar();
+    return telegramStar.proceed(props);
   }
 }

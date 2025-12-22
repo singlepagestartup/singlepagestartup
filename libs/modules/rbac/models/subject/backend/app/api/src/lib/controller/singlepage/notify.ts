@@ -196,7 +196,7 @@ export class Handler {
           throw new Error("Not Found error. No order found");
         }
 
-        if (order.status === "approving") {
+        if (["approving", "delivering"].includes(order.status)) {
           let notificationData = JSON.parse(
             data.notification.notification.data,
           );

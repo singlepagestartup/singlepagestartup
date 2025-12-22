@@ -104,7 +104,20 @@ export class Service {
         error: any;
       }
   > {
-    console.log("🚀 ~ open-router ~ generate ~ props:", props);
+    if (
+      !props.context.some((m) => {
+        return (
+          m.content.includes(
+            "without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.",
+          ) ||
+          m.content.includes(
+            "You need to detect what language the user is speaking, NOT coding language (JavaScript, C#) - human language (english,spanish,russian and etc). Answer with the language name only (Spanish).",
+          )
+        );
+      })
+    ) {
+      console.log("🚀 ~ open-router ~ generate ~ props:", props);
+    }
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
       method: "POST",

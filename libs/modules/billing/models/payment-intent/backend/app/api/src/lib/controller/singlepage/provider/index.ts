@@ -190,6 +190,14 @@ export class Handler {
           currency: currency.slug,
           metadata: data.metadata,
         });
+      } else if (provider === "telegram-star") {
+        result = await this.service.telegramStar({
+          entity,
+          action: "create",
+          currency: currency.slug,
+          account: data.metadata.account,
+          metadata: data.metadata,
+        });
       }
 
       return c.json(

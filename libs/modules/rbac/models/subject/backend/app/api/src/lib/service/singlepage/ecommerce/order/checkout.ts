@@ -22,22 +22,39 @@ import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/
 import { Service as NotificationCreateService } from "./notification-create";
 import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
-export type IExecuteProps = {
-  id: string;
-  email: string;
-  provider: string;
-  comment: string;
-  billingModule?: {
-    currency?: {
-      id?: string;
-    };
-  };
-  ecommerceModule: {
-    orders: {
+export type IExecuteProps =
+  | {
       id: string;
-    }[];
-  };
-};
+      email: string;
+      provider: string;
+      comment: string;
+      billingModule?: {
+        currency?: {
+          id?: string;
+        };
+      };
+      ecommerceModule: {
+        orders: {
+          id: string;
+        }[];
+      };
+    }
+  | {
+      id: string;
+      account: string;
+      provider: "telegram-star";
+      comment: string;
+      billingModule?: {
+        currency?: {
+          id?: string;
+        };
+      };
+      ecommerceModule: {
+        orders: {
+          id: string;
+        }[];
+      };
+    };
 
 export class Service {
   repository: IRepository;
@@ -282,7 +299,15 @@ export class Service {
 
     const billingModuleCurrencies = await billingModuleCurrencyApi.find({});
 
-    const metadata = {
+    const metadata:
+      | {
+          ecommerceModule: any;
+          email: string;
+        }
+      | {
+          ecommerceModule: any;
+          account: string;
+        } = {
       ecommerceModule: {
         orders: ecommerceModuleOrders.map((ecommerceModuleOrder) => {
           return {
@@ -394,7 +419,8 @@ export class Service {
           };
         }),
       },
-      email: props.email,
+      account: props["account"],
+      email: props["email"],
     };
 
     const ordersToBillingModuleCurrencies =

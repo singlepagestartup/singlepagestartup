@@ -110,6 +110,12 @@ export class Handler {
           rawBody,
           callback: this.service.updatePaymentIntentStatus,
         });
+      } else if (provider === "telegram-star") {
+        result = await this.service.telegramStar({
+          data,
+          action: "webhook",
+          callback: this.service.updatePaymentIntentStatus,
+        });
       }
 
       return c.json(

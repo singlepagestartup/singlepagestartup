@@ -12,6 +12,11 @@ import {
   type IResult as IProviderResult,
 } from "./provider";
 import {
+  action as providerWebhook,
+  type IProps as IProviderWebhookProps,
+  type IResult as IProviderWebhookResult,
+} from "./provider-webhook";
+import {
   action as check,
   type IProps as ICheckProps,
   type IResult as ICheckResult,
@@ -20,11 +25,13 @@ import {
 export type IProps = {
   ICheckProps: ICheckProps;
   IProviderProps: IProviderProps;
+  IProviderWebhookProps: IProviderWebhookProps;
 };
 
 export type IResult = {
   ICheckResult: ICheckResult;
   IProviderResult: IProviderResult;
+  IProviderWebhookResult: IProviderWebhookResult;
 };
 
 export const api = {
@@ -35,5 +42,6 @@ export const api = {
     params: query,
   }),
   provider,
+  providerWebhook,
   check,
 };
