@@ -17,12 +17,12 @@ export class Configuration extends ParentConfiguration {
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "social",
           name: "profiles-to-file-storage-module-files",
           type: "relation",
