@@ -114,6 +114,12 @@ export class Service {
         throw new Error("Validation error. Multiple invoices found");
       }
 
+      const telegramInvoice = await this.getInvoiceStatus(
+        props.data.telegram_payment_charge_id,
+      );
+
+      console.log("🚀 ~ proceed ~ telegramInvoice:", telegramInvoice);
+
       const invoice = await invoiceApi.update({
         id: invoices[0].id,
         data: {
@@ -137,5 +143,23 @@ export class Service {
 
       return { code: 0 };
     }
+  }
+
+  async getInvoiceStatus(invoiceId: string) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN secret key not found",
+      );
+    }
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_SERVICE_BOT_TOKEN}/getInvoice?invoice_id=${invoiceId}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`Telegram API error: ${data.description}`);
+    }
+
+    return data;
   }
 }

@@ -43,6 +43,10 @@ export function Component(props: IComponentPropsExtended) {
   }, [refreshToken]);
 
   const handleStorageChange = () => {
+    if (cookies["rbac.subject.jwt"] && !tokenDecoded.decodedToken) {
+      return;
+    }
+
     /**
      * No Cookies['rbac.subject.jwt']
      */
