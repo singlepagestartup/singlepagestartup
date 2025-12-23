@@ -20,6 +20,14 @@ export class Handler {
 
       const data = await this.service.send({ id: uuid });
 
+      (async () => {
+        try {
+          await this.service.deleteExpired();
+        } catch (error) {
+          console.log("🚀 ~ execute ~ error:", error);
+        }
+      })();
+
       if (!data || !Object.keys(data).length) {
         throw new Error("Not Found error. Not found");
       }

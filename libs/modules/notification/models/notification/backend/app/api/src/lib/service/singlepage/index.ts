@@ -298,4 +298,30 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     return notification;
   }
+
+  async deleteExpired() {
+    const expiredNotifications = await this.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "createdAt",
+              method: "lt",
+              value: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            },
+          ],
+        },
+      },
+    });
+
+    for (const expiredNotification of expiredNotifications) {
+      try {
+        await this.delete({
+          id: expiredNotification.id,
+        });
+      } catch (error) {
+        //
+      }
+    }
+  }
 }

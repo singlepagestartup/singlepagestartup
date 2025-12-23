@@ -114,11 +114,12 @@ export class Service {
         throw new Error("Validation error. Multiple invoices found");
       }
 
-      const telegramInvoice = await this.getInvoiceStatus(
-        props.data.telegram_payment_charge_id,
-      );
-
-      console.log("🚀 ~ proceed ~ telegramInvoice:", telegramInvoice);
+      await this.verifyTelegramStarPayment({
+        invoicePayload: props.data.invoice_payload,
+        telegramPaymentChargeId: props.data.telegram_payment_charge_id,
+        providerPaymentChargeId: props.data.provider_payment_charge_id,
+        totalAmount: props.data.total_amount,
+      });
 
       const invoice = await invoiceApi.update({
         id: invoices[0].id,
@@ -145,21 +146,150 @@ export class Service {
     }
   }
 
-  async getInvoiceStatus(invoiceId: string) {
+  private async fetchRecentStarTransactions(limit = 100): Promise<
+    Array<{
+      id?: string;
+      telegram_payment_charge_id?: string;
+      telegramPaymentChargeId?: string;
+      provider_payment_charge_id?: string;
+      providerPaymentChargeId?: string;
+      total_amount?: number;
+      amount?: number;
+      stars?: number;
+      value?: { amount?: number };
+      purpose?: {
+        invoice_payload?: string;
+        payload?: string;
+        total_amount?: number;
+      };
+      source?: {
+        transaction_type?: string;
+        type?: string;
+        invoice_payload?: string;
+        payload?: string;
+        user?: { id?: number };
+      };
+      transaction?: {
+        purpose?: {
+          invoice_payload?: string;
+          payload?: string;
+        };
+      };
+    }>
+  > {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
       throw new Error(
         "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN secret key not found",
       );
     }
 
-    const url = `https://api.telegram.org/bot${TELEGRAM_SERVICE_BOT_TOKEN}/getInvoice?invoice_id=${invoiceId}`;
-    const response = await fetch(url);
+    const url = new URL(
+      `https://api.telegram.org/bot${TELEGRAM_SERVICE_BOT_TOKEN}/getStarTransactions`,
+    );
+    url.searchParams.set("limit", String(limit));
+
+    const response = await fetch(url.toString());
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(`Telegram API error: ${data.description}`);
+    if (!response.ok || !data?.ok) {
+      const description = data?.description || response.statusText;
+      throw new Error(
+        `Telegram API error (getStarTransactions): ${description}`,
+      );
     }
 
-    return data;
+    const result = (data.result ?? {}) as unknown;
+    const transactions =
+      (result as { transactions?: unknown }).transactions ?? result;
+    if (!Array.isArray(transactions)) {
+      return [];
+    }
+
+    return transactions as Array<{
+      id?: string;
+      telegram_payment_charge_id?: string;
+      telegramPaymentChargeId?: string;
+      provider_payment_charge_id?: string;
+      providerPaymentChargeId?: string;
+      total_amount?: number;
+      amount?: number;
+      stars?: number;
+      value?: { amount?: number };
+      purpose?: {
+        invoice_payload?: string;
+        payload?: string;
+        total_amount?: number;
+      };
+      source?: {
+        transaction_type?: string;
+        type?: string;
+        invoice_payload?: string;
+        payload?: string;
+        user?: { id?: number };
+      };
+      transaction?: {
+        purpose?: {
+          invoice_payload?: string;
+          payload?: string;
+        };
+      };
+    }>;
+  }
+
+  private async verifyTelegramStarPayment(props: {
+    invoicePayload: string;
+    telegramPaymentChargeId?: string;
+    providerPaymentChargeId?: string;
+    totalAmount?: number;
+  }): Promise<void> {
+    const transactions = await this.fetchRecentStarTransactions(100);
+
+    const matched = transactions.find((tx) => {
+      const purpose = (tx?.purpose ?? tx?.transaction?.purpose ?? {}) as {
+        invoice_payload?: string;
+        payload?: string;
+        total_amount?: number;
+      };
+      const payloadCandidates = [
+        purpose?.invoice_payload,
+        purpose?.payload,
+        tx?.source?.invoice_payload,
+        tx?.source?.payload,
+      ].filter((v) => typeof v === "string");
+      const purposePayload = payloadCandidates[0];
+
+      const tpci =
+        tx?.telegram_payment_charge_id ?? tx?.telegramPaymentChargeId ?? tx?.id;
+      const ppci =
+        tx?.provider_payment_charge_id ?? tx?.providerPaymentChargeId;
+
+      const amounts = [
+        tx?.total_amount,
+        tx?.amount,
+        tx?.stars,
+        tx?.value?.amount,
+        purpose?.total_amount,
+      ].filter((v) => typeof v === "number");
+
+      const amountMatches =
+        !props.totalAmount ||
+        amounts.some((v) => Number(v) === Number(props.totalAmount));
+
+      const payloadMatches = purposePayload === props.invoicePayload;
+      const tpciMatches =
+        !!props.telegramPaymentChargeId &&
+        tpci === props.telegramPaymentChargeId;
+      const ppciMatches =
+        !!props.providerPaymentChargeId &&
+        ppci === props.providerPaymentChargeId;
+
+      return amountMatches && (payloadMatches || tpciMatches || ppciMatches);
+    });
+
+    if (!matched) {
+      throw new Error(
+        "Telegram verification failed: matching Star transaction not found",
+      );
+    }
   }
 }

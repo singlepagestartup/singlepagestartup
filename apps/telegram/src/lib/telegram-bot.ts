@@ -156,9 +156,13 @@ export class TelegarmBot {
   },
      */
     this.instance.on("pre_checkout_query", async (ctx) => {
-      console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
+      try {
+        console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
 
-      return await ctx.answerPreCheckoutQuery(true);
+        return await ctx.answerPreCheckoutQuery(true);
+      } catch (error: any) {
+        console.log("🚀 ~ init ~ pre_checkout_query ~ error:", error.message);
+      }
     });
 
     // Handle successful payment update to finalize flow and notify the user.
@@ -275,6 +279,12 @@ export class TelegarmBot {
       //   },
       // });
     });
+
+    this.instance.catch((error) => {
+      error.ctx.reply("An error occurred. Please try again later.");
+    });
+    this.instance.errorBoundary;
+    this.instance.errorHandler;
   }
 
   async run() {
