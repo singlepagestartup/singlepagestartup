@@ -29,7 +29,7 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
     regexPath:
       /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|refresh)/,
-    methods: ["GET"],
+    methods: ["GET", "POST"],
   },
   {
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
@@ -104,6 +104,10 @@ export class Middleware {
         if (new RegExp(pattern).test(reqPath) && methods.has(reqMethod)) {
           return next();
         }
+      }
+
+      if (reqMethod === "POST") {
+        console.log("🚀 ~ init ~ reqPath:", reqPath, reqMethod);
       }
 
       try {

@@ -28,19 +28,6 @@ export class Handler {
         );
       }
 
-      // const token = authorization(c);
-
-      // if (!token) {
-      //   return c.json(
-      //     {
-      //       data: null,
-      //     },
-      //     {
-      //       status: 401,
-      //     },
-      //   );
-      // }
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {

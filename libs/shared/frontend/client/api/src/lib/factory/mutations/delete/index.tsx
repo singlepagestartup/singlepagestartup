@@ -2,6 +2,7 @@
 
 import { actions, IDeleteProps } from "@sps/shared-frontend-api";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { parseJwt } from "libs/shared/frontend/client/utils/src/lib/authorization";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
@@ -24,6 +25,28 @@ export function mutation<T>(
 ): (mutationFunctionProps: IMutationFunctionProps) => Promise<T> {
   return async (mutationFunctionProps: IMutationFunctionProps) => {
     try {
+      const cookies = document.cookie;
+
+      const jwt = cookies
+        .split("; ")
+        .find((cookie) => cookie.startsWith("rbac.subject.jwt="))
+        ?.split("=")[1];
+
+      if (jwt) {
+        const parsedJwt = parseJwt(jwt);
+
+        if (
+          parsedJwt?.["exp"] &&
+          new Date(parsedJwt.exp * 1000).getTime() < new Date().getTime()
+        ) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("");
+            }, 1000);
+          });
+        }
+      }
+
       const id = mutationFunctionProps.id || props.id;
 
       if (!id) {

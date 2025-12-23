@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import Cookie from "js-cookie";
@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
+
+  const [seconds, setSeconds] = useState(new Date().getTime());
 
   const refresh = api.authenticationRefresh({
     mute: true,
@@ -41,30 +43,30 @@ export function Component(props: IComponentPropsExtended) {
   }, [refreshToken]);
 
   const handleStorageChange = () => {
-    if (tokenDecoded.isExpired) {
-      /**
-       * No Cookies['rbac.subject.jwt']
-       */
-      if (!tokenDecoded.decodedToken) {
-        if (refreshToken && !refreshTokenDecoded.isExpired) {
-          refresh.mutate({
-            data: {
-              refresh: refreshToken,
-            },
-          });
-          return;
-        } else {
-          init.refetch();
-          return;
-        }
+    /**
+     * No Cookies['rbac.subject.jwt']
+     */
+    if (!tokenDecoded.decodedToken) {
+      if (refreshToken && !refreshTokenDecoded.isExpired) {
+        refresh.mutate({
+          data: {
+            refresh: refreshToken,
+          },
+        });
+        return;
       } else {
-        if (!refreshToken && typeof refreshToken !== "string") {
-          Cookie.remove("rbac.subject.jwt");
-          localStorage.removeItem("rbac.subject.refresh");
-          return;
-        }
+        init.refetch();
+        return;
+      }
+    } else if (tokenDecoded.decodedToken.exp * 1000 < seconds) {
+      if (!refreshToken && typeof refreshToken !== "string") {
+        Cookie.remove("rbac.subject.jwt");
+        localStorage.removeItem("rbac.subject.refresh");
+        return;
+      }
 
-        if (refreshToken.length) {
+      if (refreshToken.length) {
+        if (!refresh.isPending) {
           refresh.mutate({
             data: {
               refresh: refreshToken,
@@ -77,7 +79,12 @@ export function Component(props: IComponentPropsExtended) {
 
   useEffect(() => {
     handleStorageChange();
-  }, [tokenDecoded.decodedToken, refreshToken, refreshTokenDecoded.isExpired]);
+  }, [
+    tokenDecoded.decodedToken,
+    refreshToken,
+    refreshTokenDecoded.isExpired,
+    seconds,
+  ]);
 
   useEffect(() => {
     if (refresh.isError) {
@@ -86,6 +93,14 @@ export function Component(props: IComponentPropsExtended) {
       router.replace("/");
     }
   }, [refresh.status]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setSeconds(Date.now()), 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div

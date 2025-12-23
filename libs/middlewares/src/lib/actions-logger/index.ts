@@ -14,23 +14,57 @@ import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 
+/**
+ * Routes that are allowed to be accessed without authentication
+ * @type {Array<{ regexPath: RegExp; methods: string[] }>}
+ *
+ * [..., {
+ *   regexPath: /\/api\/rbac\/identities\/[a-zA-Z0-9-]+/,
+ *   methods: ["GET"],
+ * }]
+ */
+const notLoggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
+  {
+    regexPath:
+      /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|refresh)/,
+    methods: ["POST"],
+  },
+  {
+    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
+    methods: ["POST"],
+  },
+];
+
 export type IMiddlewareGeneric = {
   Variables: undefined;
 };
 
 export class Middleware {
   storeProvider: StoreProvider;
+  private notLoggingRoutes: Map<string, Set<string>>;
 
   constructor() {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
+    this.notLoggingRoutes = new Map();
+
+    notLoggingRoutes.forEach(({ regexPath, methods }) => {
+      this.notLoggingRoutes.set(regexPath.source, new Set(methods));
+    });
   }
 
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
+      const reqPath = c.req.path.toLowerCase();
       const path = c.req.url.split("?")?.[0];
       const token = authorization(c);
 
       const method = c.req.method;
+
+      for (const [pattern, methods] of this.notLoggingRoutes.entries()) {
+        if (new RegExp(pattern).test(reqPath) && methods.has(method)) {
+          return next();
+        }
+      }
 
       await next();
 

@@ -4,6 +4,7 @@ import { actions, IFindProps } from "@sps/shared-frontend-api";
 import { toast } from "sonner";
 import { requestLimiter } from "../../../request-limmiter";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { parseJwt } from "libs/shared/frontend/client/utils/src/lib/authorization";
 
 export interface IQueryProps<T> {
   params?: IFindProps["params"];
@@ -18,6 +19,28 @@ export function query<T>(
 ): () => Promise<T[] | undefined> {
   return async () => {
     try {
+      const cookies = document.cookie;
+
+      const jwt = cookies
+        .split("; ")
+        .find((cookie) => cookie.startsWith("rbac.subject.jwt="))
+        ?.split("=")[1];
+
+      if (jwt) {
+        const parsedJwt = parseJwt(jwt);
+
+        if (
+          parsedJwt?.["exp"] &&
+          new Date(parsedJwt.exp * 1000).getTime() < new Date().getTime()
+        ) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("");
+            }, 1000);
+          });
+        }
+      }
+
       return await requestLimiter.run(async () => {
         const res = await actions.find<T>({
           host: props.host,
