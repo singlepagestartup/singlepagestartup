@@ -1,8 +1,9 @@
 import { api as spsHostPageApi } from "@sps/host/models/page/sdk/server";
-import { App as Host } from "@sps/host/frontend/component";
 import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { internationalization } from "@sps/shared-configuration";
+import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
+import { notFound } from "next/navigation";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -51,11 +52,22 @@ export default async function Page(props: {
   const slashedUrl = pageUrl.startsWith("/") ? pageUrl : `/${pageUrl}`;
 
   return (
-    <Host
-      isServer={true}
-      variant="default"
-      url={slashedUrl}
-      language={language}
-    />
+    <HostModulePage isServer={true} variant="find-by-url" url={slashedUrl}>
+      {({ data }) => {
+        if (!data) {
+          throw notFound();
+        }
+
+        return (
+          <HostModulePage
+            isServer={true}
+            variant={data?.variant as any}
+            data={data}
+            url={slashedUrl}
+            language={language}
+          />
+        );
+      }}
+    </HostModulePage>
   );
 }
