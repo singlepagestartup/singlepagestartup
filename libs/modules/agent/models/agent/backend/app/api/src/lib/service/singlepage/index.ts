@@ -1185,6 +1185,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         ],
       });
+      console.log(
+        "🚀 ~ openRouterReplyMessageCreate ~ detectedLanguageResult:",
+        detectedLanguageResult,
+      );
 
       if ("error" in detectedLanguageResult) {
         return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(

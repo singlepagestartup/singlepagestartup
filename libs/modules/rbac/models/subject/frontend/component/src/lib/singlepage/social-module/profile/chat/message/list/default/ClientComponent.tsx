@@ -3,6 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
+import { Component as SocialModuleProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import Link from "next/link";
 import { saveLanguageContext } from "@sps/shared-utils";
@@ -14,8 +15,15 @@ import { api } from "@sps/rbac/models/subject/sdk/client";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { FormField } from "@sps/ui-adapter";
-import { Form, Button } from "@sps/shared-ui-shadcn";
+import {
+  Form,
+  Button,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@sps/shared-ui-shadcn";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
+import { Collapsible } from "@radix-ui/react-collapsible";
+import Markdown from "markdown-to-jsx";
 
 const formSchema = z.object({
   description: z.string().min(1),
@@ -31,6 +39,11 @@ const socialModuleActionFormSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
+  console.log(
+    "🚀 ~ Component ~ props socialModuleMessagesAndActionsQuery:",
+    props.socialModuleMessagesAndActionsQuery,
+  );
+
   const socialModuleProfileFindByIdChatFindByIdMessageCreate =
     api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
       id: props.data.id,
@@ -96,125 +109,241 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("flex w-full flex-col gap-6", props.className)}
     >
-      {props.socialModuleMessages?.map((socialModuleMessage, index) => {
-        return (
-          <div
-            key={index}
-            className="p-4 border rounded-xl flex flex-col gap-2"
-          >
-            <div className="text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
-              <p>{socialModuleMessage.id}</p>
-            </div>
-            <SocialModuleProfilesToMessages
-              isServer={false}
-              variant="find"
-              apiProps={{
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "messageId",
-                        method: "eq",
-                        value: socialModuleMessage.id,
-                      },
-                    ],
-                  },
-                },
-              }}
-            >
-              {({ data }) => {
-                return data?.map((socialModuleProfilesToMessage, index) => {
-                  return (
-                    <SocialModuleProfile
-                      key={index}
-                      isServer={false}
-                      variant="find"
-                      apiProps={{
-                        params: {
-                          filters: {
-                            and: [
-                              {
-                                column: "id",
-                                method: "eq",
-                                value: socialModuleProfilesToMessage.profileId,
-                              },
-                            ],
+      {props.socialModuleMessagesAndActionsQuery?.map(
+        (socialModuleMessageOrAction, index) => {
+          if (socialModuleMessageOrAction.type === "message") {
+            return (
+              <div
+                key={index}
+                className="p-4 border rounded-xl flex flex-col gap-2"
+              >
+                <div className="w-fit text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
+                  <p>Message: {socialModuleMessageOrAction.data.id}</p>
+                </div>
+                <SocialModuleProfilesToMessages
+                  isServer={false}
+                  variant="find"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "messageId",
+                            method: "eq",
+                            value: socialModuleMessageOrAction.data.id,
                           },
-                        },
-                      }}
-                    >
-                      {({ data }) => {
-                        return data?.map((socialModuleProfile, index) => {
-                          const href = saveLanguageContext(
-                            `/social/profiles/${socialModuleProfile.slug}`,
-                            props.language,
-                            internationalization.languages,
-                          );
-
-                          return (
-                            <Link
-                              key={index}
-                              href={href}
-                              className="p-2 border rounded-lg w-fit cursor-pointer"
-                            >
-                              <p>{socialModuleProfile.slug}</p>
-                            </Link>
-                          );
-                        });
-                      }}
-                    </SocialModuleProfile>
-                  );
-                });
-              }}
-            </SocialModuleProfilesToMessages>
-
-            {socialModuleMessage.sourceSystemId ? (
-              <p className="text-xs text-gray-500">
-                Source System ID: {socialModuleMessage.sourceSystemId}
-              </p>
-            ) : null}
-
-            <SocialModuleMessagesToFileStorageModuleFiles
-              variant="find"
-              isServer={false}
-              apiProps={{
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "messageId",
-                        method: "eq",
-                        value: socialModuleMessage.id,
+                        ],
                       },
-                    ],
-                  },
-                },
-              }}
+                    },
+                  }}
+                >
+                  {({ data }) => {
+                    return data?.map((socialModuleProfilesToMessage, index) => {
+                      return (
+                        <SocialModuleProfile
+                          key={index}
+                          isServer={false}
+                          variant="find"
+                          apiProps={{
+                            params: {
+                              filters: {
+                                and: [
+                                  {
+                                    column: "id",
+                                    method: "eq",
+                                    value:
+                                      socialModuleProfilesToMessage.profileId,
+                                  },
+                                ],
+                              },
+                            },
+                          }}
+                        >
+                          {({ data }) => {
+                            return data?.map((socialModuleProfile, index) => {
+                              const href = saveLanguageContext(
+                                `/social/profiles/${socialModuleProfile.slug}`,
+                                props.language,
+                                internationalization.languages,
+                              );
+
+                              return (
+                                <Link
+                                  key={index}
+                                  href={href}
+                                  className="p-2 border rounded-lg w-fit cursor-pointer"
+                                >
+                                  <p>{socialModuleProfile.slug}</p>
+                                </Link>
+                              );
+                            });
+                          }}
+                        </SocialModuleProfile>
+                      );
+                    });
+                  }}
+                </SocialModuleProfilesToMessages>
+
+                {socialModuleMessageOrAction.data.sourceSystemId ? (
+                  <p className="text-xs text-gray-500">
+                    Source System ID:{" "}
+                    {socialModuleMessageOrAction.data.sourceSystemId}
+                  </p>
+                ) : null}
+
+                <SocialModuleMessagesToFileStorageModuleFiles
+                  variant="find"
+                  isServer={false}
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "messageId",
+                            method: "eq",
+                            value: socialModuleMessageOrAction.data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                >
+                  {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
+                    return (
+                      <div className="grid grid-cols-4 gap-2">
+                        {socialModuleMessagesToFileStorageModuleFiles?.map(
+                          (
+                            socialModuleMessageToFileStorageModuleFile,
+                            index,
+                          ) => {
+                            return (
+                              <SocialModuleMessagesToFileStorageModuleFiles
+                                variant="default"
+                                isServer={false}
+                                key={index}
+                                data={
+                                  socialModuleMessageToFileStorageModuleFile
+                                }
+                                language={props.language}
+                              />
+                            );
+                          },
+                        )}
+                      </div>
+                    );
+                  }}
+                </SocialModuleMessagesToFileStorageModuleFiles>
+                <Markdown>
+                  {socialModuleMessageOrAction.data.description}
+                </Markdown>
+                {socialModuleMessageOrAction.data.interaction &&
+                Object.keys(socialModuleMessageOrAction.data.interaction)
+                  .length ? (
+                  <Collapsible className="border border-primary rounded-lg p-2">
+                    <CollapsibleTrigger className="w-full text-start">
+                      Interaction
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <pre className="text-xs">
+                        {JSON.stringify(
+                          socialModuleMessageOrAction.data.interaction,
+                          null,
+                          2,
+                        )}
+                      </pre>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : null}
+              </div>
+            );
+          }
+
+          return (
+            <Collapsible
+              key={index}
+              className="p-4 border rounded-xl flex flex-col gap-2"
             >
-              {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
-                return (
-                  <div className="grid grid-cols-4 gap-2">
-                    {socialModuleMessagesToFileStorageModuleFiles?.map(
-                      (socialModuleMessageToFileStorageModuleFile, index) => {
-                        return (
-                          <SocialModuleMessagesToFileStorageModuleFiles
-                            variant="default"
-                            isServer={false}
-                            key={index}
-                            data={socialModuleMessageToFileStorageModuleFile}
-                            language={props.language}
-                          />
-                        );
+              <CollapsibleTrigger className="flex flex-col items-start underline cursor-pointer">
+                <div className="w-fit text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
+                  <p>Action: {socialModuleMessageOrAction.data.id}</p>{" "}
+                </div>
+                <SocialModuleProfilesToActions
+                  isServer={false}
+                  variant="find"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "actionId",
+                            method: "eq",
+                            value: socialModuleMessageOrAction.data.id,
+                          },
+                        ],
                       },
-                    )}
-                  </div>
-                );
-              }}
-            </SocialModuleMessagesToFileStorageModuleFiles>
-            <p>{socialModuleMessage.description}</p>
-          </div>
-        );
-      })}
+                    },
+                  }}
+                >
+                  {({ data }) => {
+                    return data?.map((socialModuleProfilesToActions, index) => {
+                      return (
+                        <SocialModuleProfile
+                          key={index}
+                          isServer={false}
+                          variant="find"
+                          apiProps={{
+                            params: {
+                              filters: {
+                                and: [
+                                  {
+                                    column: "id",
+                                    method: "eq",
+                                    value:
+                                      socialModuleProfilesToActions.profileId,
+                                  },
+                                ],
+                              },
+                            },
+                          }}
+                        >
+                          {({ data }) => {
+                            return data?.map((socialModuleProfile, index) => {
+                              const href = saveLanguageContext(
+                                `/social/profiles/${socialModuleProfile.slug}`,
+                                props.language,
+                                internationalization.languages,
+                              );
+
+                              return (
+                                <Link
+                                  key={index}
+                                  href={href}
+                                  className="p-2 border rounded-lg w-fit cursor-pointer"
+                                >
+                                  <p>{socialModuleProfile.slug}</p>
+                                </Link>
+                              );
+                            });
+                          }}
+                        </SocialModuleProfile>
+                      );
+                    });
+                  }}
+                </SocialModuleProfilesToActions>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <pre className="text-xs">
+                  {JSON.stringify(
+                    socialModuleMessageOrAction.data.payload,
+                    null,
+                    2,
+                  )}
+                </pre>
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        },
+      )}
       <Form {...socialModuleActionForm}>
         <Button
           variant="secondary"

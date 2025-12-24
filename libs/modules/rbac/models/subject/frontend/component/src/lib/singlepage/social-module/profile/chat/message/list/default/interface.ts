@@ -20,4 +20,14 @@ export interface IComponentProps extends ISpsComponentBase {
 export interface IComponentPropsExtended extends IComponentProps {
   socialModuleMessages?: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"];
   socialModuleActions?: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
+  socialModuleMessagesAndActionsQuery?: (
+    | {
+        type: "message";
+        data: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"][0];
+      }
+    | {
+        type: "action";
+        data: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"][0];
+      }
+  )[];
 }

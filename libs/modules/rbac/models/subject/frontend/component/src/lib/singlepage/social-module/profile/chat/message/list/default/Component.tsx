@@ -12,6 +12,9 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleProfile={props.socialModuleProfile}
       socialModuleChat={props.socialModuleChat}
       socialModuleMessages={props.socialModuleMessages}
+      socialModuleMessagesAndActionsQuery={
+        props.socialModuleMessagesAndActionsQuery
+      }
     />
   );
 }
