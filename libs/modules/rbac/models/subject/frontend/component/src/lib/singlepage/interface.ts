@@ -33,6 +33,7 @@ import { IComponentProps as IEcommerceModuleOrderListDefaultComponentProps } fro
 
 import { IComponentProps as ICrmModuleFormRequestCreateComponentProps } from "./crm-module/form/request/create/interface";
 import { IComponentProps as ISocialModuleProfileChatListDefaultComponentProps } from "./social-module/profile/chat/list/default/interface";
+import { IComponentProps as ISocialModuleProfileChatOverviewDefaultComponentProps } from "./social-module/profile/chat/overview/default/interface";
 
 export type IComponentProps =
   | IEcommerceModuleOrderCheckoutDefaultComponentProps
@@ -69,4 +70,5 @@ export type IComponentProps =
   | IEcommerceModuleOrderListQuantityDefaultComponentProps
   | IEcommerceModuleOrderListDefaultComponentProps
   | ISocialModuleProfileChatListDefaultComponentProps
+  | ISocialModuleProfileChatOverviewDefaultComponentProps
   | never;

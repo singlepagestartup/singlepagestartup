@@ -32,6 +32,7 @@ import { Component as EcommerceModuleOrderListTotalDefault } from "./ecommerce-m
 import { Component as EcommerceModuleOrderListQuantityDefault } from "./ecommerce-module/order/list/quantity-default";
 import { Component as EcommerceModuleOrderListDefault } from "./ecommerce-module/order/list/default";
 import { Component as SocialModuleProfileChatListDefault } from "./social-module/profile/chat/list/default";
+import { Component as SocialModuleProfileChatOverviewDefault } from "./social-module/profile/chat/overview/default";
 
 export const variants = {
   "ecommerce-module-order-checkout-default":
@@ -80,4 +81,6 @@ export const variants = {
     EcommerceModuleOrderListQuantityDefault,
   "ecommerce-module-order-list-default": EcommerceModuleOrderListDefault,
   "social-module-profile-chat-list-default": SocialModuleProfileChatListDefault,
+  "social-module-profile-chat-overview-default":
+    SocialModuleProfileChatOverviewDefault,
 };

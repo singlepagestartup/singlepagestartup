@@ -28,6 +28,7 @@ export function Component(props: IComponentPropsExtended) {
       adminTitle:
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
+      className: props.data?.className || "",
     },
   });
 
@@ -61,6 +62,15 @@ export function Component(props: IComponentPropsExtended) {
           label="Admin title"
           form={form}
           placeholder="Type admin title"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="className"
+          label="Class Name"
+          form={form}
+          placeholder="Type class name"
         />
 
         <FormField

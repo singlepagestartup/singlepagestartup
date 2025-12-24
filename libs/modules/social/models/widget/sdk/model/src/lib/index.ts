@@ -17,6 +17,7 @@ export const route = "/api/social/widgets";
 export const variants = [
   "default",
   "chat-list-default",
+  "chat-overview-default",
   "profile-overview-default",
 ];
 export const query = {};

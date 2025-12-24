@@ -25,6 +25,7 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title || "",
       url: props.data?.url || "/",
       variant: props.data?.variant || "default",
+      className: props.data?.className || "",
     },
   });
 
@@ -58,6 +59,15 @@ export function Component(props: IComponentPropsExtended) {
           label="Title"
           form={form}
           placeholder="Type title"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          name="className"
+          label="Class Name"
+          form={form}
+          placeholder="Type class name"
         />
 
         <FormField

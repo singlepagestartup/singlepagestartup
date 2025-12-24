@@ -6,6 +6,8 @@ import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/se
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 
 export class Handler {
   service: Service;
@@ -29,6 +31,67 @@ export class Handler {
       if (!id) {
         throw new Error("Validation error. No id provided");
       }
+
+      const subjectsToRoles = await subjectsToRolesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (subjectsToRoles?.length) {
+        const roles = await roleApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: subjectsToRoles.map((e) => e.roleId),
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        if (roles?.length) {
+          const hasAdminRole = roles.find((role) => role.slug === "admin");
+
+          if (hasAdminRole) {
+            const socialModuleChats = await socialModuleChatApi.find({
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+
+            return c.json({
+              data: socialModuleChats,
+            });
+          }
+        }
+      }
+
+      console.log("🚀 ~ execute ~ subjectsToRoles:", subjectsToRoles);
 
       const socialModuleProfileId = c.req.param("socialModuleProfileId");
 

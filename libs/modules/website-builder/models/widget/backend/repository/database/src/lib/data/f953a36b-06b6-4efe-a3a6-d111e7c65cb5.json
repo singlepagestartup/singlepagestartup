@@ -1,0 +1,16 @@
+{
+  "title": {
+    "en": "Page not found",
+    "ru": "Страница не найдена"
+  },
+  "subtitle": {},
+  "description": {},
+  "anchor": "",
+  "className": "",
+  "id": "f953a36b-06b6-4efe-a3a6-d111e7c65cb5",
+  "createdAt": "2025-12-24T12:00:20.252Z",
+  "updatedAt": "2025-12-24T12:00:20.252Z",
+  "variant": "content-default",
+  "adminTitle": "404",
+  "slug": "404"
+}

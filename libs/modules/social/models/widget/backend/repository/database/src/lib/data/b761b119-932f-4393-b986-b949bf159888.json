@@ -1,8 +1,8 @@
 {
   "id": "b761b119-932f-4393-b986-b949bf159888",
   "createdAt": "2025-06-26T08:10:52.581Z",
-  "updatedAt": "2025-11-15T09:32:28.643Z",
-  "className": "",
+  "updatedAt": "2025-12-24T18:39:37.888Z",
+  "className": "border-r border-secondary",
   "variant": "chat-list-default",
   "title": {
     "en": "Chats",

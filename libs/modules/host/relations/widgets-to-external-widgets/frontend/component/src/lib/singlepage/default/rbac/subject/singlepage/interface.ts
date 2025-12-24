@@ -6,6 +6,7 @@ import { IComponentProps as IEcommerceModuleProductCartDefaultComponentProps } f
 import { IComponentProps as IEcommerceModuleProductCheckoutDefaultComponentProps } from "./me/ecommerce-module/product/checkout-default/interface";
 import { IComponentProps as ISocialModuleProfileButtonDefaultComponentProps } from "./social-module-profile-button-default/interface";
 import { IComponentProps as IMeSocialModuleProfileChatListDefaultComponentProps } from "./me/social-module-profile-chat-list-default/interface";
+import { IComponentProps as IMeSocialModuleProfileChatOverviewDefaultComponentProps } from "./me/social-module-profile-chat-overview-default/interface";
 
 export type IComponentProps =
   | IAuthenticationDefaultComponentProps
@@ -15,4 +16,5 @@ export type IComponentProps =
   | IEcommerceModuleProductCartDefaultComponentProps
   | IEcommerceModuleProductCheckoutDefaultComponentProps
   | ISocialModuleProfileButtonDefaultComponentProps
-  | IMeSocialModuleProfileChatListDefaultComponentProps;
+  | IMeSocialModuleProfileChatListDefaultComponentProps
+  | IMeSocialModuleProfileChatOverviewDefaultComponentProps;
