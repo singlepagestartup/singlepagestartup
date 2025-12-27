@@ -15,9 +15,9 @@ type IUniversalProps = {
 };
 
 type Option =
-  | [value: string]
-  | [value: string, title: string]
-  | [value: string, title: string, renderFunction: TRenderComponent];
+  | [value: any]
+  | [value: any, title: string]
+  | [value: any, title: string, renderFunction: TRenderComponent];
 
 export type TTypedProps =
   | {

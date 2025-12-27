@@ -19,15 +19,17 @@ export function Component(props: IComponentPropsExtended) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      steps: [],
+    },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     crmModuleFromRequestCreate.mutate({
       id: props.data.id,
+      crmModuleFormId: props.crmModuleForm.id,
       data: {
         ...data,
-        formId: props.crmModuleForm.id,
       },
     });
   }
@@ -96,6 +98,7 @@ export function Component(props: IComponentPropsExtended) {
                             form={form}
                             disabled={crmModuleFromRequestCreate.isPending}
                             language={props.language}
+                            path={`steps.[${index}].`}
                           />
                         );
                       });

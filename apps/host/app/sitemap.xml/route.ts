@@ -5,7 +5,9 @@ export const revalidate = 60; // 1 minute
 
 async function generateSiteMap() {
   try {
-    const pages = await hostModulePageApi.urls({});
+    const pages = await hostModulePageApi.urls({}).catch((error) => {
+      //
+    });
 
     if (!pages) {
       return `<?xml version="1.0" encoding="UTF-8"?>

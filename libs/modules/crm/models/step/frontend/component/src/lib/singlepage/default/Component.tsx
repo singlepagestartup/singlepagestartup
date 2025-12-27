@@ -40,6 +40,7 @@ export function Component(props: IComponentPropsExtended) {
                   form={props.form}
                   disabled={props.disabled}
                   language={props.language}
+                  path={`${props.path}inputs.[${index}].`}
                 />
               );
             });

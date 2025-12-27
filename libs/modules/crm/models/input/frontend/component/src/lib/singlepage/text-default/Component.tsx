@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       form={props.form}
       disabled={props.disabled}
+      path={props.path}
     />
   );
 }

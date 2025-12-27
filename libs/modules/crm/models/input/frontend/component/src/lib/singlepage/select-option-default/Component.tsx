@@ -51,17 +51,20 @@ export function Component(props: IComponentPropsExtended) {
                   language={props.language}
                   form={props.form}
                   disabled={props.disabled}
+                  path={props.path}
                   options={
-                    data?.map((option) => [
-                      option.slug,
-                      option.title?.[props.language] || "",
-                      <Option
-                        isServer={false}
-                        variant={option.variant as any}
-                        data={option}
-                        language={props.language}
-                      />,
-                    ]) || []
+                    data?.map((option) => {
+                      return [
+                        option,
+                        option.title?.[props.language] || "",
+                        <Option
+                          isServer={false}
+                          variant={option.variant as any}
+                          data={option}
+                          language={props.language}
+                        />,
+                      ];
+                    }) || []
                   }
                 />
               );

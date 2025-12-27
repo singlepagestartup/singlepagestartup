@@ -9,6 +9,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  crmModuleFormId: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -22,7 +23,14 @@ export interface IProps {
 export type IResult = IModel;
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, data, options, host = serverHost } = props;
+  const {
+    id,
+    crmModuleFormId,
+    params,
+    data,
+    options,
+    host = serverHost,
+  } = props;
 
   const formData = prepareFormDataToSend({ data });
 
@@ -41,7 +49,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/crm-module/form/request?${stringifiedQuery}`,
+    `${host}${route}/${id}/crm-module/form/${crmModuleFormId}/request?${stringifiedQuery}`,
     requestOptions,
   );
 

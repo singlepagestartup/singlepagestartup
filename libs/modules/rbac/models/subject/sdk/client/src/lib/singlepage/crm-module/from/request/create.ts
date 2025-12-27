@@ -28,7 +28,7 @@ export function action(props: IProps) {
     DefaultError,
     IParentProps["ICrmModuleFromRequestCreateProps"]
   >({
-    mutationKey: [`${route}/crm/from/request`],
+    mutationKey: [`${route}/crm/from/:crmModuleFormId/request`],
     mutationFn: async (
       mutationFunctionProps: IParentProps["ICrmModuleFromRequestCreateProps"],
     ) => {
@@ -52,7 +52,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/crm-module/form/request`,
+        name: `${route}/crm-module/form/:crmModuleFormId/request`,
         props: this,
         result: data,
         timestamp: Date.now(),

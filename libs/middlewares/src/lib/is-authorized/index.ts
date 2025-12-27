@@ -106,10 +106,6 @@ export class Middleware {
         }
       }
 
-      if (reqMethod === "POST") {
-        console.log("🚀 ~ init ~ reqPath:", reqPath, reqMethod);
-      }
-
       try {
         const headers: HeadersInit = {
           ...(secretKey ? { "X-RBAC-SECRET-KEY": secretKey } : {}),

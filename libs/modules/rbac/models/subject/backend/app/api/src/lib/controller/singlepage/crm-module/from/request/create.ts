@@ -33,7 +33,13 @@ export class Handler {
       const id = c.req.param("id");
 
       if (!id) {
-        throw new Error("Validation error. No id provided");
+        throw new Error("Validation error. No 'id' provided");
+      }
+
+      const crmModuleFormId = c.req.param("crmModuleFormId");
+
+      if (!crmModuleFormId) {
+        throw new Error("Validation error. No 'crmModuleFormId' provided");
       }
 
       const token = authorization(c);
@@ -63,12 +69,6 @@ export class Handler {
         throw new Error("Validation error. Only order owner can update order");
       }
 
-      if (!data["formId"]) {
-        throw new Error("Validation error. No data.formId provided");
-      }
-
-      const formId = data["formId"];
-
       const entity = await this.service.findById({
         id,
       });
@@ -78,7 +78,7 @@ export class Handler {
       }
 
       const form = await crmFormApi.findById({
-        id: formId,
+        id: crmModuleFormId,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -225,7 +225,10 @@ export class Handler {
                             title: notificationCrmRequestCreatedTemplate.title,
                             data: JSON.stringify({
                               crm: {
-                                form: data,
+                                form: { ...form, ...data },
+                              },
+                              rbac: {
+                                subject: entity,
                               },
                             }),
                           },
