@@ -6,8 +6,11 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 export const app = new Hono().basePath("/");
 
 const specPath = new URL("./openapi.yaml", import.meta.url);
-const docsPath = new URL("./dist/index.html", import.meta.url);
-const bundlePath = new URL("./dist/redoc.standalone.js", import.meta.url);
+const bundledSpecPath = new URL(
+  "./public/openapi-bundled.yaml",
+  import.meta.url,
+);
+const docsPath = new URL("./public/index.html", import.meta.url);
 
 async function serveFile(
   path: URL,
@@ -56,34 +59,34 @@ app.use(
   }),
 );
 
-app.get("/", (c) => {
+app.get("/", () => {
   return serveFile(
     docsPath,
     "text/html; charset=utf-8",
-    "Docs are not built yet. Run `nx run openapi:build`.",
+    "Swagger UI not found. Make sure swagger.html exists.",
   );
 });
 
-app.get("/redoc.standalone.js", () =>
-  serveFile(
-    bundlePath,
-    "application/javascript; charset=utf-8",
-    "Docs are not built yet. Run `nx run openapi:build`.",
-  ),
-);
-
 app.get("/openapi.yaml", () =>
   serveFile(specPath, "application/yaml; charset=utf-8", "Spec not found"),
+);
+
+app.get("/openapi-bundled.yaml", () =>
+  serveFile(
+    bundledSpecPath,
+    "application/yaml; charset=utf-8",
+    "Bundled spec not found",
+  ),
 );
 
 app.get("/healthz", (c) => c.text("ok", 200 as ContentfulStatusCode));
 
 app.options("*", (c) => c.text("OK", 204 as ContentfulStatusCode));
 
-app.all("*", (c) =>
+app.all("*", () =>
   serveFile(
     docsPath,
     "text/html; charset=utf-8",
-    "Docs are not built yet. Run `nx run openapi:build`.",
+    "Swagger UI not found. Make sure swagger.html exists.",
   ),
 );

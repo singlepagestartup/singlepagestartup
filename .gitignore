@@ -83,8 +83,9 @@ node_modules
 .nx
 dist
 tmp
-apps/openapi/dist/
 apps/openapi/.httpyac.json
+apps/openapi/public/openapi-bundled.yaml
+apps/openapi/shared
 
 ############################
 # .verdaccio

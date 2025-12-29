@@ -1,8 +1,50 @@
 # @name httpYac
+# @env dev
 # Выберите окружение через команду: "HttpYac: Select Environment" (dev/local/prod)
 # Или в статус-баре внизу
 
+@baseUrl = http://localhost:4000/api
 @contentType = application/json
+
+### ========================================
+### WORKFLOW: Create → Read → Update → Delete
+### ========================================
+
+### Step 1: Create new layout
+# @name createLayout
+POST {{baseUrl}}/host/layouts
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Test Layout {{ $timestamp }}",
+  "slug": "test-{{ $random.uuid }}",
+  "variant": "default",
+  "title": "Test Layout Title",
+  "className": "container"
+}
+
+### Step 2: Get created layout by ID (using response from Step 1)
+# @name getCreatedLayout
+GET {{baseUrl}}/host/layouts/{{ createLayout.response.body.$.id }}
+
+### Step 3: Update created layout
+# @name updateLayout
+PATCH {{baseUrl}}/host/layouts/{{ createLayout.response.body.$.id }}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Title {{ $timestamp }}"
+}
+
+### Step 4: Verify update
+GET {{baseUrl}}/host/layouts/{{ createLayout.response.body.$.id }}
+
+### Step 5: Delete layout
+# @name deleteLayout
+DELETE {{baseUrl}}/host/layouts/{{ createLayout.response.body.$.id }}
+
+### Step 6: Verify deletion (should return 404)
+GET {{baseUrl}}/host/layouts/{{ createLayout.response.body.$.id }}
 
 ### ========================================
 ### LAYOUTS

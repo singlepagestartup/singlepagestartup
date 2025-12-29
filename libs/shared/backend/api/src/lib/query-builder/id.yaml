@@ -1,0 +1,8 @@
+Id:
+  name: id
+  in: path
+  required: true
+  description: Resource Identifier
+  schema:
+    type: string
+    format: uuid

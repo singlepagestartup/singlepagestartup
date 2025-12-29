@@ -1,0 +1,46 @@
+OrderBy:
+  name: orderBy
+  in: query
+  required: false
+  style: deepObject
+  explode: true
+  description: |
+    Order by parameters for sorting results. Examples:
+
+    **Single ordering:**
+    ```
+    ?orderBy[and][0][column]=orderIndex
+    &orderBy[and][0][method]=asc
+    ```
+
+    **Multiple ordering:**
+    ```
+    ?orderBy[and][0][column]=createdAt
+    &orderBy[and][0][method]=desc
+    &orderBy[and][1][column]=title
+    &orderBy[and][1][method]=asc
+    ```
+
+    Supported methods: asc, desc
+  schema:
+    type: object
+    required:
+      - and
+    properties:
+      and:
+        type: array
+        items:
+          type: object
+          required:
+            - column
+            - method
+          properties:
+            column:
+              type: string
+              description: Column name to sort by
+              default: createdAt
+            method:
+              type: string
+              enum: [asc, desc]
+              description: Sort method (ascending or descending)
+              default: asc

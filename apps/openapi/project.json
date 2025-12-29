@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/openapi",
-        "command": "bun run build:docs && bun run --watch server.ts"
+        "command": "bun run bundle && bun run --watch server.ts"
       }
     },
     "start": {
@@ -17,13 +17,6 @@
       "options": {
         "cwd": "apps/openapi",
         "command": "bun server.ts"
-      }
-    },
-    "build": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "apps/openapi",
-        "command": "bun run build:docs"
       }
     },
     "eslint:lint": {}

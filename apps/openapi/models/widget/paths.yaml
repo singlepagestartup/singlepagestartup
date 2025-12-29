@@ -7,10 +7,10 @@ paths:
       description: Retrieve a list of all widgets with optional filtering, sorting and pagination
       operationId: listWidgets
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
-        - $ref: "../../components/parameters.yaml#/SortParam"
-        - $ref: "../../components/parameters.yaml#/FilterParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of widgets

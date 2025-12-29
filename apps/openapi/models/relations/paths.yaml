@@ -7,8 +7,10 @@ paths:
       description: Retrieve all layout to widget relationships
       operationId: listLayoutsToWidgets
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of layout to widget relations
@@ -57,8 +59,10 @@ paths:
       description: Retrieve all page to layout relationships
       operationId: listPagesToLayouts
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of page to layout relations
@@ -107,8 +111,10 @@ paths:
       description: Retrieve all page to metadata relationships
       operationId: listPagesToMetadata
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of page to metadata relations
@@ -157,8 +163,10 @@ paths:
       description: Retrieve all page to widget relationships
       operationId: listPagesToWidgets
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of page to widget relations
@@ -207,8 +215,10 @@ paths:
       description: Retrieve all widget to external widget relationships
       operationId: listWidgetsToExternalWidgets
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of widget to external widget relations

@@ -1,0 +1,53 @@
+Filters:
+  name: filters
+  in: query
+  required: false
+  style: deepObject
+  explode: true
+  description: |
+    Filter parameters for querying. Examples:
+
+    **Single filter:**
+    ```
+    ?filters[and][0][column]=id
+    &filters[and][0][method]=eq
+    &filters[and][0][value]=aa1c8f90-75a9-4284-b00c-6ab2e4a802fa
+    ```
+
+    **Multiple filters (AND):**
+    ```
+    ?filters[and][0][column]=id
+    &filters[and][0][method]=eq
+    &filters[and][0][value]=aa1c8f90-75a9-4284-b00c-6ab2e4a802fa
+    &filters[and][1][column]=variant
+    &filters[and][1][method]=eq
+    &filters[and][1][value]=default
+    ```
+
+    Supported methods: eq, ne, gt, gte, lt, lte, like, ilike, in, isNull, isNotNull
+    Value types: string, number, boolean, undefined, comma-separated values
+  schema:
+    type: object
+    properties:
+      and:
+        type: array
+        items:
+          type: object
+          required:
+            - column
+            - method
+          properties:
+            column:
+              type: string
+              description: Column name to filter on
+              default: id
+            method:
+              type: string
+              enum:
+                [eq, ne, gt, gte, lt, lte, like, ilike, in, isNull, isNotNull]
+              description: Filter method
+              default: eq
+            value:
+              type: string
+              description: Filter value (not required for isNull/isNotNull)
+              default: 3fa85f64-5717-4562-b3fc-2c963f66afa6

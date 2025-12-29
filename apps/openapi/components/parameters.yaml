@@ -1,42 +1,14 @@
 IdParam:
-  name: id
-  in: path
-  required: true
-  description: Resource ID
-  schema:
-    type: string
-    format: uuid
-
-PageParam:
-  name: page
-  in: query
-  required: false
-  description: Page number for pagination (0-indexed)
-  schema:
-    type: integer
-    default: 0
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
 
 LimitParam:
-  name: limit
-  in: query
-  required: false
-  description: Number of items per page
-  schema:
-    type: integer
-    default: 20
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml#/Limit"
 
-SortParam:
-  name: sort
-  in: query
-  required: false
-  description: Sort field and direction (e.g., "createdAt:desc")
-  schema:
-    type: string
+OffsetParam:
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml#/Offset"
 
-FilterParam:
-  name: filters
-  in: query
-  required: false
-  description: Filter parameters as JSON
-  schema:
-    type: string
+OrderByParam:
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml#/OrderBy"
+
+FiltersParam:
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml#/Filters"

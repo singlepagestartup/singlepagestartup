@@ -40,10 +40,44 @@ export class Middleware {
           QueryString.parse(query);
 
         parsedQuery.populate = populate;
-        parsedQuery.filters = filters;
-        parsedQuery.orderBy = orderBy;
         parsedQuery.offset = offset;
         parsedQuery.limit = limit;
+
+        // Parse JSON strings in filters
+        if (filters) {
+          const filtersObj = filters as { and?: string | unknown[] };
+          if (typeof filtersObj.and === "string") {
+            try {
+              parsedQuery.filters = {
+                and: JSON.parse(filtersObj.and),
+              };
+            } catch {
+              parsedQuery.filters = filters;
+            }
+          } else {
+            parsedQuery.filters = filters;
+          }
+        } else {
+          parsedQuery.filters = filters;
+        }
+
+        // Parse JSON strings in orderBy
+        if (orderBy) {
+          const orderByObj = orderBy as { and?: string | unknown[] };
+          if (typeof orderByObj.and === "string") {
+            try {
+              parsedQuery.orderBy = {
+                and: JSON.parse(orderByObj.and),
+              };
+            } catch {
+              parsedQuery.orderBy = orderBy;
+            }
+          } else {
+            parsedQuery.orderBy = orderBy;
+          }
+        } else {
+          parsedQuery.orderBy = orderBy;
+        }
       }
 
       c.set("parsedQuery", parsedQuery);

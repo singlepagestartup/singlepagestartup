@@ -7,10 +7,10 @@ paths:
       description: Retrieve a list of all page layouts with optional filtering, sorting and pagination
       operationId: listLayouts
       parameters:
-        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/OffsetParam"
         - $ref: "../../components/parameters.yaml#/LimitParam"
-        - $ref: "../../components/parameters.yaml#/SortParam"
-        - $ref: "../../components/parameters.yaml#/FilterParam"
+        - $ref: "../../components/parameters.yaml#/OrderByParam"
+        - $ref: "../../components/parameters.yaml#/FiltersParam"
       responses:
         "200":
           description: List of layouts
@@ -19,7 +19,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./schema.yaml#/Layout"
+                  $ref: "../../../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
         "401":
           $ref: "../../components/responses.yaml#/UnauthorizedError"
         "403":
@@ -36,14 +36,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./schema.yaml#/LayoutInput"
+              $ref: "./HostLayoutInput.yaml"
       responses:
         "201":
           description: Layout created successfully
           content:
             application/json:
               schema:
-                $ref: "./schema.yaml#/Layout"
+                $ref: "../../../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
         "400":
           $ref: "../../components/responses.yaml#/BadRequestError"
         "401":
@@ -66,7 +66,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./schema.yaml#/Layout"
+                $ref: "../../../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
         "401":
           $ref: "../../components/responses.yaml#/UnauthorizedError"
         "403":
@@ -87,14 +87,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./schema.yaml#/LayoutInput"
+              $ref: "./HostLayoutInput.yaml"
       responses:
         "200":
           description: Layout updated successfully
           content:
             application/json:
               schema:
-                $ref: "./schema.yaml#/Layout"
+                $ref: "../../../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
         "400":
           $ref: "../../components/responses.yaml#/BadRequestError"
         "401":
@@ -115,6 +115,10 @@ paths:
       responses:
         "204":
           description: Layout deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
         "401":
           $ref: "../../components/responses.yaml#/UnauthorizedError"
         "403":

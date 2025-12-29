@@ -1,0 +1,21 @@
+allOf:
+  - $ref: ./Entity.yaml
+  - type: object
+    properties:
+      variant:
+        type: string
+        default: default
+        description: Variant name
+      slug:
+        type: string
+        description: URL-friendly identifier (unique)
+      adminTitle:
+        type: string
+        description: Admin-facing title
+      className:
+        type: string
+        nullable: true
+        description: CSS class name
+    required:
+      - variant
+      - slug

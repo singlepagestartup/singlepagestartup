@@ -141,6 +141,8 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           const unsubscribe = subscription(route, factoryProps.queryClient);
           return unsubscribe;
         }
+
+        return;
       }, [props.id, route]);
 
       return useQuery<T | undefined>({
@@ -185,6 +187,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           factoryProps.route,
           factoryProps.queryClient,
         );
+
         return unsubscribe;
       }, []);
 
@@ -226,6 +229,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           factoryProps.route,
           factoryProps.queryClient,
         );
+
         return unsubscribe;
       }, []);
 
@@ -260,6 +264,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           factoryProps.route,
           factoryProps.queryClient,
         );
+
         return unsubscribe;
       }, []);
 
@@ -295,6 +300,7 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           factoryProps.route,
           factoryProps.queryClient,
         );
+
         return unsubscribe;
       }, []);
 

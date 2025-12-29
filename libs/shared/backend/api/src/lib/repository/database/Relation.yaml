@@ -1,0 +1,14 @@
+allOf:
+  - $ref: ./Entity.yaml
+  - type: object
+    properties:
+      variant:
+        type: string
+        default: default
+        description: Variant name
+      className:
+        type: string
+        nullable: true
+        description: TailwindCSS class name
+    required:
+      - variant

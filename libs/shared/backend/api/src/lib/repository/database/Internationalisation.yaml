@@ -1,0 +1,13 @@
+type: object
+properties:
+  title:
+    type: object
+    properties:
+      en:
+        type: string
+        description: Title in English
+        default: ""
+      ru:
+        type: string
+        description: Title in Russian
+        default: ""
