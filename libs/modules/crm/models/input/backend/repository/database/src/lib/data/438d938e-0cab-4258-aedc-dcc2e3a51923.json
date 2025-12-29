@@ -1,0 +1,25 @@
+{
+  "id": "438d938e-0cab-4258-aedc-dcc2e3a51923",
+  "createdAt": "2025-12-25T14:43:00.538Z",
+  "updatedAt": "2025-12-25T14:43:00.538Z",
+  "variant": "text-default",
+  "type": "default",
+  "isRequired": false,
+  "title": {
+    "en": "Email",
+    "ru": "Электронная почта"
+  },
+  "subtitle": {},
+  "description": {},
+  "className": "",
+  "adminTitle": "",
+  "slug": "email",
+  "placeholder": {
+    "en": "Type your email",
+    "ru": "Введите вашу электронную почту"
+  },
+  "label": {
+    "en": "Email",
+    "ru": "Электронная почта"
+  }
+}

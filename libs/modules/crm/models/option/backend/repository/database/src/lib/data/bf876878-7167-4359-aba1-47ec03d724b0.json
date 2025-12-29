@@ -1,0 +1,13 @@
+{
+  "id": "bf876878-7167-4359-aba1-47ec03d724b0",
+  "createdAt": "2025-12-26T13:15:34.683Z",
+  "updatedAt": "2025-12-26T13:15:34.683Z",
+  "className": "",
+  "variant": "default",
+  "adminTitle": "Option 2",
+  "title": {
+    "en": "Option 2",
+    "ru": "Опция 2"
+  },
+  "slug": "option-2"
+}

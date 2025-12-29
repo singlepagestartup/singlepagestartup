@@ -1,0 +1,9 @@
+{
+  "id": "640311ef-5ac2-475b-a2fa-b63b5c708589",
+  "createdAt": "2025-12-26T09:20:05.716Z",
+  "updatedAt": "2025-12-26T09:20:05.716Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/crm/steps"
+}

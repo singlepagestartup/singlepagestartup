@@ -61,7 +61,7 @@ export class Handler {
       if (entity.status === "paying") {
         const updatedAt = new Date(entity.updatedAt).getTime();
         const expiredPayment =
-          updatedAt < new Date(Date.now() - 1000 * 60 * 24).getTime();
+          updatedAt < new Date(Date.now() - 1000 * 60 * 24 * 7).getTime();
 
         if (expiredPayment) {
           await api.update({

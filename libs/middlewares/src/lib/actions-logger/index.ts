@@ -25,11 +25,6 @@ import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
  */
 const notLoggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
-    regexPath:
-      /\/api\/rbac\/subjects\/authentication\/(is-authorized|me|init|refresh)/,
-    methods: ["POST"],
-  },
-  {
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],
   },
@@ -60,13 +55,13 @@ export class Middleware {
 
       const method = c.req.method;
 
+      await next();
+
       for (const [pattern, methods] of this.notLoggingRoutes.entries()) {
         if (new RegExp(pattern).test(reqPath) && methods.has(method)) {
-          return next();
+          return;
         }
       }
-
-      await next();
 
       if (c.res.status >= 200 && c.res.status < 300) {
         if (method !== "GET") {

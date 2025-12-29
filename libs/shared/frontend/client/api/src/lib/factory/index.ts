@@ -56,6 +56,7 @@ export interface IFactoryProps<T> {
 type SetRequestId = (requestId: string) => void;
 
 const activeSubscriptions = new Set<string>();
+const MAX_ACTIONS = 10;
 
 export function subscription(route: string, queryClient: QueryClient) {
   if (activeSubscriptions.has(route)) {
@@ -64,10 +65,15 @@ export function subscription(route: string, queryClient: QueryClient) {
 
   activeSubscriptions.add(route);
 
-  const triggeredActions: IAction[] = [];
+  let triggeredActions: IAction[] = [];
   const mountTime = Date.now();
 
   globalActionsStore.subscribe((state) => {
+    console.log(
+      "🚀 ~ subscription ~ activeSubscriptions:",
+      activeSubscriptions,
+    );
+
     const revalidationMessages =
       state.getActionsFromStoreByName("revalidation");
 
@@ -80,6 +86,7 @@ export function subscription(route: string, queryClient: QueryClient) {
         );
 
         if (!isTriggered) {
+          triggeredActions = [...triggeredActions.slice(-MAX_ACTIONS)];
           triggeredActions.push(message);
 
           if (
