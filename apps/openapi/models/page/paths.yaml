@@ -1,0 +1,123 @@
+paths:
+  /host/pages:
+    get:
+      tags:
+        - Page Model
+      summary: Get all pages
+      description: Retrieve a list of all website pages with optional filtering, sorting and pagination
+      operationId: listPages
+      parameters:
+        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/SortParam"
+        - $ref: "../../components/parameters.yaml#/FilterParam"
+      responses:
+        "200":
+          description: List of pages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./schema.yaml#/Page"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+    post:
+      tags:
+        - Page Model
+      summary: Create a new page
+      description: Create a new website page
+      operationId: createPage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/PageInput"
+      responses:
+        "201":
+          description: Page created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Page"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+  /host/pages/{id}:
+    get:
+      tags:
+        - Page Model
+      summary: Get page by ID
+      description: Retrieve a specific page by its ID
+      operationId: getPage
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "200":
+          description: Page found
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Page"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    patch:
+      tags:
+        - Page Model
+      summary: Update page
+      description: Update a specific page
+      operationId: updatePage
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/PageInput"
+      responses:
+        "200":
+          description: Page updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Page"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    delete:
+      tags:
+        - Page Model
+      summary: Delete page
+      description: Delete a specific page
+      operationId: deletePage
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "204":
+          description: Page deleted successfully
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"

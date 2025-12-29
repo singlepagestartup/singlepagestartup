@@ -1,0 +1,16 @@
+{
+  "environments": {
+    "dev": {
+      "baseUrl": "https://api.example.com/api",
+      "contentType": "application/json"
+    },
+    "local": {
+      "baseUrl": "http://localhost:4000/api",
+      "contentType": "application/json"
+    },
+    "prod": {
+      "baseUrl": "https://api.singlepagestartup.com/api",
+      "contentType": "application/json"
+    }
+  }
+}

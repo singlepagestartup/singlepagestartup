@@ -1,0 +1,123 @@
+paths:
+  /host/metadata:
+    get:
+      tags:
+        - Metadata Model
+      summary: Get all metadata
+      description: Retrieve a list of all metadata entries with optional filtering, sorting and pagination
+      operationId: listMetadata
+      parameters:
+        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/SortParam"
+        - $ref: "../../components/parameters.yaml#/FilterParam"
+      responses:
+        "200":
+          description: List of metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./schema.yaml#/Metadata"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+    post:
+      tags:
+        - Metadata Model
+      summary: Create new metadata
+      description: Create a new metadata entry for SEO
+      operationId: createMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/MetadataInput"
+      responses:
+        "201":
+          description: Metadata created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Metadata"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+  /host/metadata/{id}:
+    get:
+      tags:
+        - Metadata Model
+      summary: Get metadata by ID
+      description: Retrieve a specific metadata entry by its ID
+      operationId: getMetadata
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "200":
+          description: Metadata found
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Metadata"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    patch:
+      tags:
+        - Metadata Model
+      summary: Update metadata
+      description: Update a specific metadata entry
+      operationId: updateMetadata
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/MetadataInput"
+      responses:
+        "200":
+          description: Metadata updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Metadata"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    delete:
+      tags:
+        - Metadata Model
+      summary: Delete metadata
+      description: Delete a specific metadata entry
+      operationId: deleteMetadata
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "204":
+          description: Metadata deleted successfully
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"

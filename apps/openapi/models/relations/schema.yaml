@@ -1,0 +1,169 @@
+LayoutsToWidgets:
+  type: object
+  properties:
+    layoutId:
+      type: string
+      format: uuid
+      description: Layout ID
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - layoutId
+    - widgetId
+    - createdAt
+
+LayoutsToWidgetsInput:
+  type: object
+  properties:
+    layoutId:
+      type: string
+      format: uuid
+      description: Layout ID
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+  required:
+    - layoutId
+    - widgetId
+
+PagesToLayouts:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    layoutId:
+      type: string
+      format: uuid
+      description: Layout ID
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - pageId
+    - layoutId
+    - createdAt
+
+PagesToLayoutsInput:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    layoutId:
+      type: string
+      format: uuid
+      description: Layout ID
+  required:
+    - pageId
+    - layoutId
+
+PagesToMetadata:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    metadataId:
+      type: string
+      format: uuid
+      description: Metadata ID
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - pageId
+    - metadataId
+    - createdAt
+
+PagesToMetadataInput:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    metadataId:
+      type: string
+      format: uuid
+      description: Metadata ID
+  required:
+    - pageId
+    - metadataId
+
+PagesToWidgets:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - pageId
+    - widgetId
+    - createdAt
+
+PagesToWidgetsInput:
+  type: object
+  properties:
+    pageId:
+      type: string
+      format: uuid
+      description: Page ID
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+  required:
+    - pageId
+    - widgetId
+
+WidgetsToExternalWidgets:
+  type: object
+  properties:
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+    externalWidgetId:
+      type: string
+      format: uuid
+      description: External Widget ID
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - widgetId
+    - externalWidgetId
+    - createdAt
+
+WidgetsToExternalWidgetsInput:
+  type: object
+  properties:
+    widgetId:
+      type: string
+      format: uuid
+      description: Widget ID
+    externalWidgetId:
+      type: string
+      format: uuid
+      description: External Widget ID
+  required:
+    - widgetId
+    - externalWidgetId

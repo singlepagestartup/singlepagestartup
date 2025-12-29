@@ -1,0 +1,50 @@
+# @name Page API
+# Page endpoints
+
+### Get all pages
+GET {{baseUrl}}/host/pages
+Content-Type: {{contentType}}
+
+### Get page by ID
+@pageId = your-page-id-here
+GET {{baseUrl}}/host/pages/{{pageId}}
+Content-Type: {{contentType}}
+
+### Create page
+POST {{baseUrl}}/host/pages
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Home Page",
+  "slug": "home",
+  "variant": "default",
+  "title": "Welcome Home",
+  "className": "page-home"
+}
+
+### Update page
+PATCH {{baseUrl}}/host/pages/{{pageId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Home Page"
+}
+
+### Delete page
+DELETE {{baseUrl}}/host/pages/{{pageId}}
+
+### ========================================
+### PAGINATION & FILTERING
+### ========================================
+
+### Get pages with pagination
+GET {{baseUrl}}/host/pages?page=0&limit=10
+Content-Type: {{contentType}}
+
+### Get pages with filtering
+GET {{baseUrl}}/host/pages?filters={"variant":"default"}
+Content-Type: {{contentType}}
+
+### Get pages with sorting
+GET {{baseUrl}}/host/pages?sort=createdAt:desc
+Content-Type: {{contentType}}

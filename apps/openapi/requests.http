@@ -1,0 +1,150 @@
+# @name httpYac
+# Выберите окружение через команду: "HttpYac: Select Environment" (dev/local/prod)
+# Или в статус-баре внизу
+
+@contentType = application/json
+
+### ========================================
+### LAYOUTS
+### ========================================
+
+### Get all layouts
+GET {{baseUrl}}/host/layouts
+Content-Type: {{contentType}}
+
+### Get layout by ID
+@layoutId = your-layout-id-here
+GET {{baseUrl}}/host/layouts/{{layoutId}}
+Content-Type: {{contentType}}
+
+### Create layout
+POST {{baseUrl}}/host/layouts
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Hero Layout",
+  "slug": "hero-layout",
+  "variant": "default",
+  "title": "Hero Section",
+  "className": "container mx-auto"
+}
+
+### Update layout
+PATCH {{baseUrl}}/host/layouts/{{layoutId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Hero Layout"
+}
+
+### Delete layout
+DELETE {{baseUrl}}/host/layouts/{{layoutId}}
+
+### ========================================
+### PAGES
+### ========================================
+
+### Get all pages
+GET {{baseUrl}}/host/pages
+Content-Type: {{contentType}}
+
+### Get page by ID
+@pageId = your-page-id-here
+GET {{baseUrl}}/host/pages/{{pageId}}
+Content-Type: {{contentType}}
+
+### Create page
+POST {{baseUrl}}/host/pages
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Home Page",
+  "slug": "home",
+  "variant": "default",
+  "title": "Welcome Home",
+  "className": "page-home"
+}
+
+### Update page
+PATCH {{baseUrl}}/host/pages/{{pageId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Home Page"
+}
+
+### Delete page
+DELETE {{baseUrl}}/host/pages/{{pageId}}
+
+### ========================================
+### METADATA
+### ========================================
+
+### Get all metadata
+GET {{baseUrl}}/host/metadata
+Content-Type: {{contentType}}
+
+### Create metadata
+POST {{baseUrl}}/host/metadata
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Home SEO",
+  "slug": "home-seo",
+  "title": "Home Page - My Site"
+}
+
+### ========================================
+### WIDGETS
+### ========================================
+
+### Get all widgets
+GET {{baseUrl}}/host/widgets
+Content-Type: {{contentType}}
+
+### Create widget
+POST {{baseUrl}}/host/widgets
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Hero Widget",
+  "slug": "hero-widget",
+  "variant": "default"
+}
+
+### ========================================
+### RELATIONS
+### ========================================
+
+### Get layouts to widgets
+GET {{baseUrl}}/host/layouts-to-widgets
+Content-Type: {{contentType}}
+
+### Create layout to widget relation
+POST {{baseUrl}}/host/layouts-to-widgets
+Content-Type: {{contentType}}
+
+{
+  "layoutId": "layout-uuid-here",
+  "widgetId": "widget-uuid-here"
+}
+
+### Get pages to layouts
+GET {{baseUrl}}/host/pages-to-layouts
+Content-Type: {{contentType}}
+
+### ========================================
+### PAGINATION & FILTERING
+### ========================================
+
+### Get pages with pagination
+GET {{baseUrl}}/host/pages?page=0&limit=10
+Content-Type: {{contentType}}
+
+### Get pages with filtering
+GET {{baseUrl}}/host/pages?filters={"variant":"default"}
+Content-Type: {{contentType}}
+
+### Get pages with sorting
+GET {{baseUrl}}/host/pages?sort=createdAt:desc
+Content-Type: {{contentType}}

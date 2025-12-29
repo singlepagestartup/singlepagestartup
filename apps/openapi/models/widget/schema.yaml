@@ -1,0 +1,64 @@
+Widget:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique identifier
+    createdAt:
+      type: string
+      format: date-time
+      description: Creation timestamp
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last update timestamp
+    variant:
+      type: string
+      default: default
+      description: Widget variant
+    title:
+      type: string
+      nullable: true
+      description: Widget title
+    className:
+      type: string
+      nullable: true
+      description: CSS class name
+    adminTitle:
+      type: string
+      description: Admin-facing title
+    slug:
+      type: string
+      description: URL-friendly identifier (unique)
+  required:
+    - id
+    - createdAt
+    - updatedAt
+    - variant
+    - adminTitle
+    - slug
+
+WidgetInput:
+  type: object
+  properties:
+    variant:
+      type: string
+      description: Widget variant
+    title:
+      type: string
+      nullable: true
+      description: Widget title
+    className:
+      type: string
+      nullable: true
+      description: CSS class name
+    adminTitle:
+      type: string
+      description: Admin-facing title
+    slug:
+      type: string
+      description: URL-friendly identifier
+  required:
+    - adminTitle
+    - slug

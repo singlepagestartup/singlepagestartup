@@ -1,0 +1,32 @@
+# @name Widget API
+# Widget endpoints
+
+### Get all widgets
+GET {{baseUrl}}/host/widgets
+Content-Type: {{contentType}}
+
+### Get widget by ID
+@widgetId = your-widget-id-here
+GET {{baseUrl}}/host/widgets/{{widgetId}}
+Content-Type: {{contentType}}
+
+### Create widget
+POST {{baseUrl}}/host/widgets
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Hero Widget",
+  "slug": "hero-widget",
+  "variant": "default"
+}
+
+### Update widget
+PATCH {{baseUrl}}/host/widgets/{{widgetId}}
+Content-Type: {{contentType}}
+
+{
+  "variant": "full-width"
+}
+
+### Delete widget
+DELETE {{baseUrl}}/host/widgets/{{widgetId}}

@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: SinglePageStartup API
+  description: Complete API documentation for SinglePageStartup modules
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://zany-space-zebra-44v5p9qrqwjcjrqx-4000.app.github.dev/api
+    description: Development server (Codespaces)
+  # - url: http://localhost:4000/api
+  #   description: Local development (use Try It Out with production/dev URL)
+  - url: https://api.singlepagestartup.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+
+tags:
+  - name: Host Module
+    description: Core module for managing pages, layouts, metadata, and widgets
+  - name: Layout Model
+    description: Page layout templates and structures
+  - name: Page Model
+    description: Website pages and their structure
+  - name: Metadata Model
+    description: SEO and page metadata
+  - name: Widget Model
+    description: Widget display and configuration
+  - name: Relations
+    description: Many-to-many relationships between models
+
+paths:
+  /host/layouts:
+    $ref: "./models/layout/paths.yaml#/paths/~1host~1layouts"
+  /host/layouts/{id}:
+    $ref: "./models/layout/paths.yaml#/paths/~1host~1layouts~1{id}"
+
+  /host/pages:
+    $ref: "./models/page/paths.yaml#/paths/~1host~1pages"
+  /host/pages/{id}:
+    $ref: "./models/page/paths.yaml#/paths/~1host~1pages~1{id}"
+
+  /host/metadata:
+    $ref: "./models/metadata/paths.yaml#/paths/~1host~1metadata"
+  /host/metadata/{id}:
+    $ref: "./models/metadata/paths.yaml#/paths/~1host~1metadata~1{id}"
+
+  /host/widgets:
+    $ref: "./models/widget/paths.yaml#/paths/~1host~1widgets"
+  /host/widgets/{id}:
+    $ref: "./models/widget/paths.yaml#/paths/~1host~1widgets~1{id}"
+
+  /host/layouts-to-widgets:
+    $ref: "./models/relations/paths.yaml#/paths/~1host~1layouts-to-widgets"
+  /host/pages-to-layouts:
+    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-layouts"
+  /host/pages-to-metadata:
+    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-metadata"
+  /host/pages-to-widgets:
+    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-widgets"
+  /host/widgets-to-external-widgets:
+    $ref: "./models/relations/paths.yaml#/paths/~1host~1widgets-to-external-widgets"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication (JWT)
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie authentication
+
+  parameters:
+    $ref: "./components/parameters.yaml"
+
+  schemas:
+    # Layout schemas
+    Layout:
+      $ref: "./models/layout/schema.yaml#/Layout"
+    LayoutInput:
+      $ref: "./models/layout/schema.yaml#/LayoutInput"
+
+    # Page schemas
+    Page:
+      $ref: "./models/page/schema.yaml#/Page"
+    PageInput:
+      $ref: "./models/page/schema.yaml#/PageInput"
+
+    # Metadata schemas
+    Metadata:
+      $ref: "./models/metadata/schema.yaml#/Metadata"
+    MetadataInput:
+      $ref: "./models/metadata/schema.yaml#/MetadataInput"
+
+    # Widget schemas
+    Widget:
+      $ref: "./models/widget/schema.yaml#/Widget"
+    WidgetInput:
+      $ref: "./models/widget/schema.yaml#/WidgetInput"
+
+    # Relations schemas
+    LayoutsToWidgets:
+      $ref: "./models/relations/schema.yaml#/LayoutsToWidgets"
+    LayoutsToWidgetsInput:
+      $ref: "./models/relations/schema.yaml#/LayoutsToWidgetsInput"
+    PagesToLayouts:
+      $ref: "./models/relations/schema.yaml#/PagesToLayouts"
+    PagesToLayoutsInput:
+      $ref: "./models/relations/schema.yaml#/PagesToLayoutsInput"
+    PagesToMetadata:
+      $ref: "./models/relations/schema.yaml#/PagesToMetadata"
+    PagesToMetadataInput:
+      $ref: "./models/relations/schema.yaml#/PagesToMetadataInput"
+    PagesToWidgets:
+      $ref: "./models/relations/schema.yaml#/PagesToWidgets"
+    PagesToWidgetsInput:
+      $ref: "./models/relations/schema.yaml#/PagesToWidgetsInput"
+    WidgetsToExternalWidgets:
+      $ref: "./models/relations/schema.yaml#/WidgetsToExternalWidgets"
+    WidgetsToExternalWidgetsInput:
+      $ref: "./models/relations/schema.yaml#/WidgetsToExternalWidgetsInput"
+
+  responses:
+    $ref: "./components/responses.yaml"

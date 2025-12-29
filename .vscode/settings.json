@@ -35,6 +35,26 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "liveshare.accessibility.soundsEnabled": false,
   "nxConsole.generateAiAgentRules": true,
+  "files.associations": {
+    "*.http": "http"
+  },
+  "[http]": {
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    }
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/openapi-3.0.json": [
+      "tools/openapi/openapi.yaml"
+    ],
+    "https://json-schema.org/draft-07/schema": [
+      "tools/openapi/components/**/*.yaml",
+      "tools/openapi/paths/**/*.yaml"
+    ]
+  },
+  "yaml.customTags": ["!include scalar"],
   "github.copilot.chat.customOAIModels": {
     "GLM-4.6": {
       "name": "GLM-4.6",

@@ -1,0 +1,31 @@
+{
+  "name": "openapi",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/openapi",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/openapi",
+        "command": "bun run build:docs && bun run --watch server.ts"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/openapi",
+        "command": "bun server.ts"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/openapi",
+        "command": "bun run build:docs"
+      }
+    },
+    "eslint:lint": {}
+  }
+}

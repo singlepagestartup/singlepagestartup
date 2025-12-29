@@ -1,0 +1,32 @@
+# @name Metadata API
+# Metadata endpoints
+
+### Get all metadata
+GET {{baseUrl}}/host/metadata
+Content-Type: {{contentType}}
+
+### Get metadata by ID
+@metadataId = your-metadata-id-here
+GET {{baseUrl}}/host/metadata/{{metadataId}}
+Content-Type: {{contentType}}
+
+### Create metadata
+POST {{baseUrl}}/host/metadata
+Content-Type: {{contentType}}
+
+{
+  "adminTitle": "Home SEO",
+  "slug": "home-seo",
+  "title": "Home Page - My Site"
+}
+
+### Update metadata
+PATCH {{baseUrl}}/host/metadata/{{metadataId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Home Page - My Site"
+}
+
+### Delete metadata
+DELETE {{baseUrl}}/host/metadata/{{metadataId}}

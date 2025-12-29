@@ -1,0 +1,75 @@
+# @name Relations API
+# Requests for host relations endpoints
+
+### ========================================
+### Layouts ⇄ Widgets
+### ========================================
+
+### Get all layouts-to-widgets relations
+GET {{baseUrl}}/host/layouts-to-widgets
+Content-Type: {{contentType}}
+
+### Get relation by ID
+@layoutsToWidgetsId = your-relation-id-here
+GET {{baseUrl}}/host/layouts-to-widgets/{{layoutsToWidgetsId}}
+Content-Type: {{contentType}}
+
+### Create layout to widget relation
+POST {{baseUrl}}/host/layouts-to-widgets
+Content-Type: {{contentType}}
+
+{
+  "layoutId": "layout-uuid-here",
+  "widgetId": "widget-uuid-here",
+  "orderIndex": 0
+}
+
+### Update relation
+PATCH {{baseUrl}}/host/layouts-to-widgets/{{layoutsToWidgetsId}}
+Content-Type: {{contentType}}
+
+{
+  "orderIndex": 1
+}
+
+### Delete relation
+DELETE {{baseUrl}}/host/layouts-to-widgets/{{layoutsToWidgetsId}}
+
+### ========================================
+### Pages ⇄ Layouts
+### ========================================
+
+### Get all pages-to-layouts relations
+GET {{baseUrl}}/host/pages-to-layouts
+Content-Type: {{contentType}}
+
+### Get relation by ID
+@pagesToLayoutsId = your-relation-id-here
+GET {{baseUrl}}/host/pages-to-layouts/{{pagesToLayoutsId}}
+Content-Type: {{contentType}}
+
+### Create page to layout relation
+POST {{baseUrl}}/host/pages-to-layouts
+Content-Type: {{contentType}}
+
+{
+  "pageId": "page-uuid-here",
+  "layoutId": "layout-uuid-here",
+  "orderIndex": 0
+}
+
+### Update relation
+PATCH {{baseUrl}}/host/pages-to-layouts/{{pagesToLayoutsId}}
+Content-Type: {{contentType}}
+
+{
+  "orderIndex": 1
+}
+
+### Delete relation
+DELETE {{baseUrl}}/host/pages-to-layouts/{{pagesToLayoutsId}}
+
+### ========================================
+### TODO: Pages ⇄ Metadata, Pages ⇄ Widgets, Widgets ⇄ External Widgets
+### ========================================
+# Добавьте примеры запросов по мере появления контрактов

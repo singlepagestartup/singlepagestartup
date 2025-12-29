@@ -1,0 +1,123 @@
+paths:
+  /host/widgets:
+    get:
+      tags:
+        - Widget Model
+      summary: Get all widgets
+      description: Retrieve a list of all widgets with optional filtering, sorting and pagination
+      operationId: listWidgets
+      parameters:
+        - $ref: "../../components/parameters.yaml#/PageParam"
+        - $ref: "../../components/parameters.yaml#/LimitParam"
+        - $ref: "../../components/parameters.yaml#/SortParam"
+        - $ref: "../../components/parameters.yaml#/FilterParam"
+      responses:
+        "200":
+          description: List of widgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./schema.yaml#/Widget"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+    post:
+      tags:
+        - Widget Model
+      summary: Create a new widget
+      description: Create a new widget
+      operationId: createWidget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/WidgetInput"
+      responses:
+        "201":
+          description: Widget created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Widget"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+
+  /host/widgets/{id}:
+    get:
+      tags:
+        - Widget Model
+      summary: Get widget by ID
+      description: Retrieve a specific widget by its ID
+      operationId: getWidget
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "200":
+          description: Widget found
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Widget"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    patch:
+      tags:
+        - Widget Model
+      summary: Update widget
+      description: Update a specific widget
+      operationId: updateWidget
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schema.yaml#/WidgetInput"
+      responses:
+        "200":
+          description: Widget updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "./schema.yaml#/Widget"
+        "400":
+          $ref: "../../components/responses.yaml#/BadRequestError"
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"
+
+    delete:
+      tags:
+        - Widget Model
+      summary: Delete widget
+      description: Delete a specific widget
+      operationId: deleteWidget
+      parameters:
+        - $ref: "../../components/parameters.yaml#/IdParam"
+      responses:
+        "204":
+          description: Widget deleted successfully
+        "401":
+          $ref: "../../components/responses.yaml#/UnauthorizedError"
+        "403":
+          $ref: "../../components/responses.yaml#/ForbiddenError"
+        "404":
+          $ref: "../../components/responses.yaml#/NotFoundError"

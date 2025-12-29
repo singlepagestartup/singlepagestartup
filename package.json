@@ -13,6 +13,8 @@
     "lint": "nx run-many --target=eslint:lint --parallel=2 --all",
     "test:file": "npx nx run --target=jest:test --testFile",
     "prepare": "husky",
+    "openapi:build": "nx run openapi:build",
+    "openapi:dev": "nx run openapi:dev",
     "telegram:dev": "nx run telegram:dev",
     "telegram:start": "nx run telegram:start",
     "telegram:build": "nx run telegram:build"
