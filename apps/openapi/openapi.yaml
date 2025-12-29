@@ -1,41 +1,29 @@
 openapi: 3.0.0
 info:
   title: SinglePageStartup API
-  description: Complete API documentation for SinglePageStartup modules
+  description: Complete API documentation for SinglePageStartup
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+
 servers:
   - url: http://localhost:4000/api
     description: Local development
   - url: https://api.singlepagestartup.com/api
     description: Production server
-  - url: https://zany-space-zebra-44v5p9qrqwjcjrqx-4000.app.github.dev/api
-    description: GitHub Codspace server (Codespaces)
 
 security:
   - bearerAuth: []
   - cookieAuth: []
 
-tags:
-  - name: Layout Model
-    description: Page layout templates and structures
-  - name: Page Model
-    description: Website pages and their structure
-  - name: Metadata Model
-    description: SEO and page metadata
-  - name: Widget Model
-    description: Widget display and configuration
-  - name: Relations
-    description: Many-to-many relationships between models
-
 paths:
+  # host/layout
   /host/layouts:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts"
   /host/layouts/{id}:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts~1{id}"
-
+  # host/page
   /host/pages:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages"
   /host/pages/{id}:
