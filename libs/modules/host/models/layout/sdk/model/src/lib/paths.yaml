@@ -1,0 +1,92 @@
+paths:
+  /host/layouts:
+    get:
+      tags:
+        - host/layout
+      summary: Get all entities
+      description: Retrieve a list of all website entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml#/Offset"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml#/Limit"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml#/OrderBy"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml#/Filters"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "host-layout.yaml"
+
+    post:
+      tags:
+        - host/layout
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "host-layout-input.yaml"
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "host-layout.yaml"
+
+  /host/layouts/{id}:
+    get:
+      tags:
+        - host/layout
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "host-layout.yaml"
+
+    patch:
+      tags:
+        - host/layout
+      summary: Update page
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./host-layout-input.yaml"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "host-layout.yaml"
+
+    delete:
+      tags:
+        - host/layout
+      summary: Delete page
+      description: Delete a specific page
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "host-layout.yaml"

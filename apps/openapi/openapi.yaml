@@ -19,8 +19,6 @@ security:
   - cookieAuth: []
 
 tags:
-  - name: Host Module
-    description: Core module for managing pages, layouts, metadata, and widgets
   - name: Layout Model
     description: Page layout templates and structures
   - name: Page Model
@@ -34,14 +32,14 @@ tags:
 
 paths:
   /host/layouts:
-    $ref: "./models/layout/paths.yaml#/paths/~1host~1layouts"
+    $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts"
   /host/layouts/{id}:
-    $ref: "./models/layout/paths.yaml#/paths/~1host~1layouts~1{id}"
+    $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts~1{id}"
 
   /host/pages:
-    $ref: "./models/page/paths.yaml#/paths/~1host~1pages"
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages"
   /host/pages/{id}:
-    $ref: "./models/page/paths.yaml#/paths/~1host~1pages~1{id}"
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1{id}"
 
   /host/metadata:
     $ref: "./models/metadata/paths.yaml#/paths/~1host~1metadata"
@@ -82,16 +80,16 @@ components:
 
   schemas:
     # Layout schemas
-    "Host Layout":
-      $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/HostLayout.yaml"
-    "Host Layout Input":
-      $ref: "./models/layout/HostLayoutInput.yaml"
+    "host/layout":
+      $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/host-layout.yaml"
+    "host/layout:input":
+      $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/host-layout-input.yaml"
 
     # Page schemas
     Page:
-      $ref: "./models/page/schema.yaml#/Page"
+      $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/host-page.yaml"
     PageInput:
-      $ref: "./models/page/schema.yaml#/PageInput"
+      $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/host-page-input.yaml"
 
     # Metadata schemas
     Metadata:

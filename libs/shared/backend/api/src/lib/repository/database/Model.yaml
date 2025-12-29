@@ -1,5 +1,5 @@
 allOf:
-  - $ref: ./Entity.yaml
+  - $ref: ./entity.yaml
   - type: object
     properties:
       variant:
