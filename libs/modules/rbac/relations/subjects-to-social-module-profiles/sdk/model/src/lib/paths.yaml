@@ -1,10 +1,10 @@
 paths:
-  /host/widgets-to-external-widgets:
+  /rbac/subjects-to-social-module-profiles:
     get:
       tags:
-        - "host-widgets-to-external-widgets"
+        - "rbac-subjects-to-social-module-profiles"
       summary: Get all entities
-      description: Retrieve a list of all website entities with optional filtering, sorting and pagination
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
@@ -19,11 +19,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "host-widgets-to-external-widgets.yaml"
+                  $ref: "rbac-subjects-to-social-module-profiles.yaml"
 
     post:
       tags:
-        - "host-widgets-to-external-widgets"
+        - "rbac-subjects-to-social-module-profiles"
       summary: Create a new entity
       description: Create a new entity
       requestBody:
@@ -31,19 +31,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "host-widgets-to-external-widgets-input.yaml"
+              $ref: "rbac-subjects-to-social-module-profiles-input.yaml"
       responses:
         "201":
           description: Created successfully
           content:
             application/json:
               schema:
-                $ref: "host-widgets-to-external-widgets.yaml"
+                $ref: "rbac-subjects-to-social-module-profiles.yaml"
 
-  /host/widgets-to-external-widgets/{id}:
+  /rbac/subjects-to-social-module-profiles/{id}:
     get:
       tags:
-        - "host-widgets-to-external-widgets"
+        - "rbac-subjects-to-social-module-profiles"
       summary: Get by ID
       description: Retrieve a specific entity by its ID
       parameters:
@@ -55,12 +55,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-widgets-to-external-widgets.yaml"
+                $ref: "rbac-subjects-to-social-module-profiles.yaml"
 
     patch:
       tags:
-        - "host-widgets-to-external-widgets"
-      summary: Update page
+        - "rbac-subjects-to-social-module-profiles"
+      summary: Update entity
       description: Update a specific entity
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
@@ -69,20 +69,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./host-widgets-to-external-widgets-input.yaml"
+              $ref: "./rbac-subjects-to-social-module-profiles-input.yaml"
       responses:
         "200":
           description: Updated successfully
           content:
             application/json:
               schema:
-                $ref: "host-widgets-to-external-widgets.yaml"
+                $ref: "rbac-subjects-to-social-module-profiles.yaml"
 
     delete:
       tags:
-        - "host-widgets-to-external-widgets"
-      summary: Delete page
-      description: Delete a specific page
+        - "rbac-subjects-to-social-module-profiles"
+      summary: Delete entity
+      description: Delete a specific entity
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
@@ -91,4 +91,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-widgets-to-external-widgets.yaml"
+                $ref: "rbac-subjects-to-social-module-profiles.yaml"

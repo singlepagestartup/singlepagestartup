@@ -4,12 +4,13 @@ paths:
       tags:
         - "host-page"
       summary: Get all entities
-      description: Retrieve a list of all website entities with optional filtering, sorting and pagination
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
       responses:
         "200":
           description: List of entities
@@ -47,6 +48,7 @@ paths:
       description: Retrieve a specific entity by its ID
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
       responses:
         "200":
           description: Found successfully

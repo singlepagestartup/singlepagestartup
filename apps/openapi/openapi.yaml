@@ -78,6 +78,102 @@ paths:
   /rbac/actions/{id}:
     $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions~1{id}"
 
+  # rbac/identity
+  /rbac/identities:
+    $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities"
+  /rbac/identities/{id}:
+    $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1{id}"
+
+  # rbac/permission
+  /rbac/permissions:
+    $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions"
+  /rbac/permissions/{id}:
+    $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions~1{id}"
+
+  # rbac/role
+  /rbac/roles:
+    $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles"
+  /rbac/roles/{id}:
+    $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles~1{id}"
+
+  # rbac/subject
+  /rbac/subjects:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects"
+  /rbac/subjects/{id}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}"
+
+  # rbac/widget
+  /rbac/widgets:
+    $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1widgets"
+  /rbac/widgets/{id}:
+    $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1widgets~1{id}"
+
+  # rbac/relations/roles-to-ecommerce-module-products
+  /rbac/roles-to-ecommerce-module-products:
+    $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-ecommerce-module-products"
+  /rbac/roles-to-ecommerce-module-products/{id}:
+    $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-ecommerce-module-products~1{id}"
+
+  # rbac/relations/roles-to-permissions
+  /rbac/roles-to-permissions:
+    $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions"
+  /rbac/roles-to-permissions/{id}:
+    $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions~1{id}"
+
+  # rbac/relations/subjects-to-actions
+  /rbac/subjects-to-actions:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-actions"
+  /rbac/subjects-to-actions/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-actions~1{id}"
+
+  # rbac/relations/subjects-to-billing-module-payment-intents
+  /rbac/subjects-to-billing-module-payment-intents:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-payment-intents"
+  /rbac/subjects-to-billing-module-payment-intents/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-payment-intents~1{id}"
+
+  # rbac/relations/subjects-to-blog-module-articles
+  /rbac/subjects-to-blog-module-articles:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-blog-module-articles"
+  /rbac/subjects-to-blog-module-articles/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-blog-module-articles~1{id}"
+
+  # rbac/relations/subjects-to-ecommerce-module-orders
+  /rbac/subjects-to-ecommerce-module-orders:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-orders"
+  /rbac/subjects-to-ecommerce-module-orders/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-orders~1{id}"
+
+  # rbac/relations/subjects-to-ecommerce-module-products
+  /rbac/subjects-to-ecommerce-module-products:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products"
+  /rbac/subjects-to-ecommerce-module-products/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products~1{id}"
+
+  # rbac/relations/subjects-to-identities
+  /rbac/subjects-to-identities:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities"
+  /rbac/subjects-to-identities/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities~1{id}"
+
+  # rbac/relations/subjects-to-notification-module-topics
+  /rbac/subjects-to-notification-module-topics:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-notification-module-topics"
+  /rbac/subjects-to-notification-module-topics/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-notification-module-topics~1{id}"
+
+  # rbac/relations/subjects-to-roles
+  /rbac/subjects-to-roles:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-roles"
+  /rbac/subjects-to-roles/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-roles~1{id}"
+
+  # rbac/relations/subjects-to-social-module-profiles
+  /rbac/subjects-to-social-module-profiles:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles"
+  /rbac/subjects-to-social-module-profiles/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -135,6 +231,70 @@ components:
       $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/rbac-action.yaml"
     "rbac-action-input":
       $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/rbac-action-input.yaml"
+    "rbac-identity":
+      $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/rbac-identity.yaml"
+    "rbac-identity-input":
+      $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/rbac-identity-input.yaml"
+    "rbac-permission":
+      $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/rbac-permission.yaml"
+    "rbac-permission-input":
+      $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/rbac-permission-input.yaml"
+    "rbac-role":
+      $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/rbac-role.yaml"
+    "rbac-role-input":
+      $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/rbac-role-input.yaml"
+    "rbac-subject":
+      $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/rbac-subject.yaml"
+    "rbac-subject-input":
+      $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/rbac-subject-input.yaml"
+    "rbac-widget":
+      $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/rbac-widget.yaml"
+    "rbac-widget-input":
+      $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/rbac-widget-input.yaml"
+    "rbac-roles-to-ecommerce-module-products":
+      $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/rbac-roles-to-ecommerce-module-products.yaml"
+    "rbac-roles-to-ecommerce-module-products-input":
+      $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/rbac-roles-to-ecommerce-module-products-input.yaml"
+    "rbac-roles-to-permissions":
+      $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/rbac-roles-to-permissions.yaml"
+    "rbac-roles-to-permissions-input":
+      $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/rbac-roles-to-permissions-input.yaml"
+    "rbac-subjects-to-actions":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/rbac-subjects-to-actions.yaml"
+    "rbac-subjects-to-actions-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/rbac-subjects-to-actions-input.yaml"
+    "rbac-subjects-to-billing-module-payment-intents":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/rbac-subjects-to-billing-module-payment-intents.yaml"
+    "rbac-subjects-to-billing-module-payment-intents-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/rbac-subjects-to-billing-module-payment-intents-input.yaml"
+    "rbac-subjects-to-blog-module-articles":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/rbac-subjects-to-blog-module-articles.yaml"
+    "rbac-subjects-to-blog-module-articles-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/rbac-subjects-to-blog-module-articles-input.yaml"
+    "rbac-subjects-to-ecommerce-module-orders":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/rbac-subjects-to-ecommerce-module-orders.yaml"
+    "rbac-subjects-to-ecommerce-module-orders-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/rbac-subjects-to-ecommerce-module-orders-input.yaml"
+    "rbac-subjects-to-ecommerce-module-products":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/rbac-subjects-to-ecommerce-module-products.yaml"
+    "rbac-subjects-to-ecommerce-module-products-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/rbac-subjects-to-ecommerce-module-products-input.yaml"
+    "rbac-subjects-to-identities":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/rbac-subjects-to-identities.yaml"
+    "rbac-subjects-to-identities-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/rbac-subjects-to-identities-input.yaml"
+    "rbac-subjects-to-notification-module-topics":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/rbac-subjects-to-notification-module-topics.yaml"
+    "rbac-subjects-to-notification-module-topics-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/rbac-subjects-to-notification-module-topics-input.yaml"
+    "rbac-subjects-to-roles":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/rbac-subjects-to-roles.yaml"
+    "rbac-subjects-to-roles-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/rbac-subjects-to-roles-input.yaml"
+    "rbac-subjects-to-social-module-profiles":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles.yaml"
+    "rbac-subjects-to-social-module-profiles-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
