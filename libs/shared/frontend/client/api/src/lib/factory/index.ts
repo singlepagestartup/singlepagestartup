@@ -33,6 +33,7 @@ import { globalActionsStore, IAction } from "@sps/shared-frontend-client-store";
 import { STALE_TIME } from "@sps/shared-utils";
 import { createId } from "@paralleldrive/cuid2";
 import QueryString from "qs";
+import { useEffect } from "react";
 
 export interface IFactoryProps<T> {
   route: string;
@@ -55,56 +56,74 @@ export interface IFactoryProps<T> {
 
 type SetRequestId = (requestId: string) => void;
 
-const activeSubscriptions = new Set<string>();
+const activeSubscriptions = new Map<string, number>();
+const unsubscribeFunctions = new Map<string, () => void>();
 const MAX_ACTIONS = 10;
 
 export function subscription(route: string, queryClient: QueryClient) {
-  if (activeSubscriptions.has(route)) {
-    return;
-  }
+  const currentCount = activeSubscriptions.get(route) || 0;
 
-  activeSubscriptions.add(route);
+  // Increment subscription counter
+  activeSubscriptions.set(route, currentCount + 1);
 
-  let triggeredActions: IAction[] = [];
-  const mountTime = Date.now();
+  // If this is the first subscription to this route, create listener
+  if (currentCount === 0) {
+    let triggeredActions: IAction[] = [];
+    const mountTime = Date.now();
 
-  globalActionsStore.subscribe((state) => {
-    console.log(
-      "🚀 ~ subscription ~ activeSubscriptions:",
-      activeSubscriptions,
-    );
+    const unsubscribe = globalActionsStore.subscribe((state) => {
+      const revalidationMessages =
+        state.getActionsFromStoreByName("revalidation");
 
-    const revalidationMessages =
-      state.getActionsFromStoreByName("revalidation");
+      const messages = revalidationMessages || [];
+      for (const message of messages) {
+        if (new Date(message.result["createdAt"]).getTime() > mountTime) {
+          const isTriggered = triggeredActions.some(
+            (triggeredAction) =>
+              JSON.stringify(triggeredAction) === JSON.stringify(message),
+          );
 
-    const messages = revalidationMessages || [];
-    for (const message of messages) {
-      if (new Date(message.result["createdAt"]).getTime() > mountTime) {
-        const isTriggered = triggeredActions.some(
-          (triggeredAction) =>
-            JSON.stringify(triggeredAction) === JSON.stringify(message),
-        );
+          if (!isTriggered) {
+            triggeredActions = [...triggeredActions.slice(-MAX_ACTIONS)];
+            triggeredActions.push(message);
 
-        if (!isTriggered) {
-          triggeredActions = [...triggeredActions.slice(-MAX_ACTIONS)];
-          triggeredActions.push(message);
-
-          if (
-            message.result?.["payload"] &&
-            typeof message.result?.["payload"] === "string" &&
-            (route.includes(message.result["payload"]) ||
-              message.result["payload"].includes(route))
-          ) {
-            setTimeout(() => {
-              queryClient.invalidateQueries({
-                queryKey: [route],
-              });
-            }, 1000);
+            if (
+              message.result?.["payload"] &&
+              typeof message.result?.["payload"] === "string" &&
+              (route.includes(message.result["payload"]) ||
+                message.result["payload"].includes(route))
+            ) {
+              setTimeout(() => {
+                queryClient.invalidateQueries({
+                  queryKey: [route],
+                });
+              }, 1000);
+            }
           }
         }
       }
+    });
+
+    unsubscribeFunctions.set(route, unsubscribe);
+  }
+
+  // Return unsubscribe function
+  return () => {
+    const count = activeSubscriptions.get(route) || 0;
+
+    if (count <= 1) {
+      // Last subscription - remove everything
+      activeSubscriptions.delete(route);
+      const unsubscribe = unsubscribeFunctions.get(route);
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribeFunctions.delete(route);
+      }
+    } else {
+      // Decrement counter
+      activeSubscriptions.set(route, count - 1);
     }
-  });
+  };
 }
 
 export function factory<T>(factoryProps: IFactoryProps<T>) {
@@ -115,15 +134,19 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindByIdQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
-      subscription(
-        `${factoryProps.route}/${props.id}`,
-        factoryProps.queryClient,
-      );
+      const route = `${factoryProps.route}/${props.id}`;
+
+      useEffect(() => {
+        if (props.id) {
+          const unsubscribe = subscription(route, factoryProps.queryClient);
+          return unsubscribe;
+        }
+      }, [props.id, route]);
 
       return useQuery<T | undefined>({
         queryKey: props.id
           ? [
-              `${factoryProps.route}/${props.id}`,
+              route,
               props?.params
                 ? QueryString.stringify(props.params, {
                     encodeValuesOnly: true,
@@ -157,7 +180,14 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IFindQueryProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
-      subscription(factoryProps.route, factoryProps.queryClient);
+      useEffect(() => {
+        const unsubscribe = subscription(
+          factoryProps.route,
+          factoryProps.queryClient,
+        );
+        return unsubscribe;
+      }, []);
+
       return useQuery<T[] | undefined>({
         queryKey: [
           `${factoryProps.route}`,
@@ -191,7 +221,13 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
-      subscription(factoryProps.route, factoryProps.queryClient);
+      useEffect(() => {
+        const unsubscribe = subscription(
+          factoryProps.route,
+          factoryProps.queryClient,
+        );
+        return unsubscribe;
+      }, []);
 
       return useMutation<T, DefaultError, ICreateMutationFunctionProps>({
         mutationKey: [`${factoryProps.route}`],
@@ -219,7 +255,13 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       setRequestId?: SetRequestId;
       reactQueryOptions?: any;
     }) => {
-      subscription(`${factoryProps.route}`, factoryProps.queryClient);
+      useEffect(() => {
+        const unsubscribe = subscription(
+          factoryProps.route,
+          factoryProps.queryClient,
+        );
+        return unsubscribe;
+      }, []);
 
       return useMutation<T, DefaultError, IUpdateMutationFunctionProps>({
         mutationKey: props?.id
@@ -248,7 +290,13 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
       options?: IDeleteMutationProps<T>["options"];
       reactQueryOptions?: any;
     }) => {
-      subscription(factoryProps.route, factoryProps.queryClient);
+      useEffect(() => {
+        const unsubscribe = subscription(
+          factoryProps.route,
+          factoryProps.queryClient,
+        );
+        return unsubscribe;
+      }, []);
 
       return useMutation<T, DefaultError, IDeleteMutationFunctionProps>({
         mutationKey: props?.id
