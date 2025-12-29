@@ -1,0 +1,16 @@
+type: object
+properties:
+  variant:
+    type: string
+    default: default
+    description: Action variant
+  expiresAt:
+    type: string
+    format: date
+    description: Expiration date
+  payload:
+    type: object
+    additionalProperties: true
+    description: Action payload data
+required:
+  - variant

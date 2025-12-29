@@ -23,32 +23,60 @@ paths:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts"
   /host/layouts/{id}:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts~1{id}"
+
   # host/page
   /host/pages:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages"
   /host/pages/{id}:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1{id}"
 
+  # host/metadata
   /host/metadata:
-    $ref: "./models/metadata/paths.yaml#/paths/~1host~1metadata"
+    $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1metadata"
   /host/metadata/{id}:
-    $ref: "./models/metadata/paths.yaml#/paths/~1host~1metadata~1{id}"
+    $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1metadata~1{id}"
 
+  # host/widget
   /host/widgets:
-    $ref: "./models/widget/paths.yaml#/paths/~1host~1widgets"
+    $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets"
   /host/widgets/{id}:
-    $ref: "./models/widget/paths.yaml#/paths/~1host~1widgets~1{id}"
+    $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets~1{id}"
 
+  # host/layouts-to-widgets
   /host/layouts-to-widgets:
-    $ref: "./models/relations/paths.yaml#/paths/~1host~1layouts-to-widgets"
+    $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts-to-widgets"
+  /host/layouts-to-widgets/{id}:
+    $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts-to-widgets~1{id}"
+
+  # host/pages-to-layouts
   /host/pages-to-layouts:
-    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-layouts"
+    $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-layouts"
+  /host/pages-to-layouts/{id}:
+    $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-layouts~1{id}"
+
+  # host/pages-to-metadata
   /host/pages-to-metadata:
-    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-metadata"
+    $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-metadata"
+  /host/pages-to-metadata/{id}:
+    $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-metadata~1{id}"
+
+  # host/pages-to-widgets
   /host/pages-to-widgets:
-    $ref: "./models/relations/paths.yaml#/paths/~1host~1pages-to-widgets"
+    $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-widgets"
+  /host/pages-to-widgets/{id}:
+    $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-widgets~1{id}"
+
+  # host/widgets-to-external-widgets
   /host/widgets-to-external-widgets:
-    $ref: "./models/relations/paths.yaml#/paths/~1host~1widgets-to-external-widgets"
+    $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets-to-external-widgets"
+  /host/widgets-to-external-widgets/{id}:
+    $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets-to-external-widgets~1{id}"
+
+  # rbac/action
+  /rbac/actions:
+    $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions"
+  /rbac/actions/{id}:
+    $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions~1{id}"
 
 components:
   securitySchemes:
@@ -67,51 +95,46 @@ components:
     $ref: "./components/parameters.yaml"
 
   schemas:
-    # Layout schemas
-    "host/layout":
+    "host-layout":
       $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/host-layout.yaml"
-    "host/layout:input":
+    "host-layout-input":
       $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/host-layout-input.yaml"
-
-    # Page schemas
-    Page:
+    "host-page":
       $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/host-page.yaml"
-    PageInput:
+    "host-page-input":
       $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/host-page-input.yaml"
-
-    # Metadata schemas
-    Metadata:
-      $ref: "./models/metadata/schema.yaml#/Metadata"
-    MetadataInput:
-      $ref: "./models/metadata/schema.yaml#/MetadataInput"
-
-    # Widget schemas
-    Widget:
-      $ref: "./models/widget/schema.yaml#/Widget"
-    WidgetInput:
-      $ref: "./models/widget/schema.yaml#/WidgetInput"
-
-    # Relations schemas
-    LayoutsToWidgets:
-      $ref: "./models/relations/schema.yaml#/LayoutsToWidgets"
-    LayoutsToWidgetsInput:
-      $ref: "./models/relations/schema.yaml#/LayoutsToWidgetsInput"
-    PagesToLayouts:
-      $ref: "./models/relations/schema.yaml#/PagesToLayouts"
-    PagesToLayoutsInput:
-      $ref: "./models/relations/schema.yaml#/PagesToLayoutsInput"
-    PagesToMetadata:
-      $ref: "./models/relations/schema.yaml#/PagesToMetadata"
-    PagesToMetadataInput:
-      $ref: "./models/relations/schema.yaml#/PagesToMetadataInput"
-    PagesToWidgets:
-      $ref: "./models/relations/schema.yaml#/PagesToWidgets"
-    PagesToWidgetsInput:
-      $ref: "./models/relations/schema.yaml#/PagesToWidgetsInput"
-    WidgetsToExternalWidgets:
-      $ref: "./models/relations/schema.yaml#/WidgetsToExternalWidgets"
-    WidgetsToExternalWidgetsInput:
-      $ref: "./models/relations/schema.yaml#/WidgetsToExternalWidgetsInput"
+    "host-metadata":
+      $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/host-metadata.yaml"
+    "host-metadata-input":
+      $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/host-metadata-input.yaml"
+    "host-widget":
+      $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/host-widget.yaml"
+    "host-widget-input":
+      $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/host-widget-input.yaml"
+    "host-layouts-to-widgets":
+      $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/host-layouts-to-widgets.yaml"
+    "host-layouts-to-widgets-input":
+      $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/host-layouts-to-widgets-input.yaml"
+    "host-pages-to-layouts":
+      $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/host-pages-to-layouts.yaml"
+    "host-pages-to-layouts-input":
+      $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/host-pages-to-layouts-input.yaml"
+    "host-pages-to-metadata":
+      $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/host-pages-to-metadata.yaml"
+    "host-pages-to-metadata-input":
+      $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/host-pages-to-metadata-input.yaml"
+    "host-pages-to-widgets":
+      $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/host-pages-to-widgets.yaml"
+    "host-pages-to-widgets-input":
+      $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/host-pages-to-widgets-input.yaml"
+    "host-widgets-to-external-widgets":
+      $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/host-widgets-to-external-widgets.yaml"
+    "host-widgets-to-external-widgets-input":
+      $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/host-widgets-to-external-widgets-input.yaml"
+    "rbac-action":
+      $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/rbac-action.yaml"
+    "rbac-action-input":
+      $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/rbac-action-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"

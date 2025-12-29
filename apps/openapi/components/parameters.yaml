@@ -1,14 +1,14 @@
 IdParam:
-  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
 
 LimitParam:
-  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml#/Limit"
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
 
 OffsetParam:
-  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml#/Offset"
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
 
 OrderByParam:
-  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml#/OrderBy"
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
 
 FiltersParam:
-  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml#/Filters"
+  $ref: "../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"

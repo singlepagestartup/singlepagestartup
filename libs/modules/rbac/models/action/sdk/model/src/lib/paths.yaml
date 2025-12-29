@@ -1,10 +1,10 @@
 paths:
-  /host/layouts:
+  /rbac/actions:
     get:
       tags:
-        - "host-layout"
+        - "rbac-action"
       summary: Get all entities
-      description: Retrieve a list of all website entities with optional filtering, sorting and pagination
+      description: Retrieve a list of all RBAC actions with optional filtering, sorting and pagination
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
@@ -18,33 +18,33 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "host-layout.yaml"
+                  $ref: "rbac-action.yaml"
 
     post:
       tags:
-        - "host-layout"
+        - "rbac-action"
       summary: Create a new entity
-      description: Create a new entity
+      description: Create a new action
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "host-layout-input.yaml"
+              $ref: "rbac-action-input.yaml"
       responses:
         "201":
           description: Created successfully
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "rbac-action.yaml"
 
-  /host/layouts/{id}:
+  /rbac/actions/{id}:
     get:
       tags:
-        - "host-layout"
+        - "rbac-action"
       summary: Get by ID
-      description: Retrieve a specific entity by its ID
+      description: Retrieve a specific action by its ID
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
@@ -53,13 +53,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "rbac-action.yaml"
 
     patch:
       tags:
-        - "host-layout"
-      summary: Update page
-      description: Update a specific entity
+        - "rbac-action"
+      summary: Update action
+      description: Update a specific action
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       requestBody:
@@ -67,20 +67,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./host-layout-input.yaml"
+              $ref: "./rbac-action-input.yaml"
       responses:
         "200":
           description: Updated successfully
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "rbac-action.yaml"
 
     delete:
       tags:
-        - "host-layout"
-      summary: Delete page
-      description: Delete a specific page
+        - "rbac-action"
+      summary: Delete action
+      description: Delete a specific action
       parameters:
         - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
@@ -89,4 +89,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "rbac-action.yaml"

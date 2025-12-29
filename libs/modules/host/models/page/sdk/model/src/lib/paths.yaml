@@ -2,14 +2,14 @@ paths:
   /host/pages:
     get:
       tags:
-        - host/page
+        - "host-page"
       summary: Get all entities
       description: Retrieve a list of all website entities with optional filtering, sorting and pagination
       parameters:
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml#/Offset"
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml#/Limit"
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml#/OrderBy"
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml#/Filters"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
       responses:
         "200":
           description: List of entities
@@ -22,7 +22,7 @@ paths:
 
     post:
       tags:
-        - host/page
+        - "host-page"
       summary: Create a new entity
       description: Create a new entity
       requestBody:
@@ -42,11 +42,11 @@ paths:
   /host/pages/{id}:
     get:
       tags:
-        - host/page
+        - "host-page"
       summary: Get by ID
       description: Retrieve a specific entity by its ID
       parameters:
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
         "200":
           description: Found successfully
@@ -57,11 +57,11 @@ paths:
 
     patch:
       tags:
-        - host/page
+        - "host-page"
       summary: Update page
       description: Update a specific entity
       parameters:
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       requestBody:
         required: true
         content:
@@ -78,11 +78,11 @@ paths:
 
     delete:
       tags:
-        - host/page
+        - "host-page"
       summary: Delete page
       description: Delete a specific page
       parameters:
-        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml#/Id"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
       responses:
         "204":
           description: Deleted successfully

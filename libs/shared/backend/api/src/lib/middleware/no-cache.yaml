@@ -1,0 +1,5 @@
+name: Cache-Control
+in: header
+schema:
+  type: string
+  enum: ["no-store"]

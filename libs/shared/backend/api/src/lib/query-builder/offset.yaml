@@ -1,7 +1,6 @@
-Offset:
-  name: offset
-  in: query
-  required: false
-  description: Number of items to skip
-  schema:
-    type: integer
+name: offset
+in: query
+required: false
+description: Number of items to skip
+schema:
+  type: integer

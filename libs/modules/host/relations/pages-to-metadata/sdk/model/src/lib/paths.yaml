@@ -1,8 +1,8 @@
 paths:
-  /host/layouts:
+  /host/pages-to-metadata:
     get:
       tags:
-        - "host-layout"
+        - "host-pages-to-metadata"
       summary: Get all entities
       description: Retrieve a list of all website entities with optional filtering, sorting and pagination
       parameters:
@@ -18,11 +18,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "host-layout.yaml"
+                  $ref: "host-pages-to-metadata.yaml"
 
     post:
       tags:
-        - "host-layout"
+        - "host-pages-to-metadata"
       summary: Create a new entity
       description: Create a new entity
       requestBody:
@@ -30,19 +30,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "host-layout-input.yaml"
+              $ref: "host-pages-to-metadata-input.yaml"
       responses:
         "201":
           description: Created successfully
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "host-pages-to-metadata.yaml"
 
-  /host/layouts/{id}:
+  /host/pages-to-metadata/{id}:
     get:
       tags:
-        - "host-layout"
+        - "host-pages-to-metadata"
       summary: Get by ID
       description: Retrieve a specific entity by its ID
       parameters:
@@ -53,11 +53,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "host-pages-to-metadata.yaml"
 
     patch:
       tags:
-        - "host-layout"
+        - "host-pages-to-metadata"
       summary: Update page
       description: Update a specific entity
       parameters:
@@ -67,18 +67,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./host-layout-input.yaml"
+              $ref: "./host-pages-to-metadata-input.yaml"
       responses:
         "200":
           description: Updated successfully
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "host-pages-to-metadata.yaml"
 
     delete:
       tags:
-        - "host-layout"
+        - "host-pages-to-metadata"
       summary: Delete page
       description: Delete a specific page
       parameters:
@@ -89,4 +89,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "host-layout.yaml"
+                $ref: "host-pages-to-metadata.yaml"
