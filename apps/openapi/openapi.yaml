@@ -726,6 +726,132 @@ paths:
   /social/threads-to-messages/{id}:
     $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages~1{id}"
 
+  # startup/widget
+  /startup/widgets:
+    $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1startup~1widgets"
+  /startup/widgets/{id}:
+    $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1startup~1widgets~1{id}"
+
+  # website-builder/button
+  /website-builder/buttons:
+    $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons"
+  /website-builder/buttons/{id}:
+    $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons~1{id}"
+
+  # website-builder/buttons-array
+  /website-builder/buttons-arrays:
+    $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays"
+  /website-builder/buttons-arrays/{id}:
+    $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays~1{id}"
+
+  # website-builder/feature
+  /website-builder/features:
+    $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features"
+  /website-builder/features/{id}:
+    $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features~1{id}"
+
+  # website-builder/logotype
+  /website-builder/logotypes:
+    $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes"
+  /website-builder/logotypes/{id}:
+    $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes~1{id}"
+
+  # website-builder/slide
+  /website-builder/slides:
+    $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides"
+  /website-builder/slides/{id}:
+    $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides~1{id}"
+
+  # website-builder/slider
+  /website-builder/sliders:
+    $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders"
+  /website-builder/sliders/{id}:
+    $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders~1{id}"
+
+  # website-builder/widget
+  /website-builder/widgets:
+    $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets"
+  /website-builder/widgets/{id}:
+    $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets~1{id}"
+
+  # website-builder/relations/buttons-arrays-to-buttons
+  /website-builder/buttons-arrays-to-buttons:
+    $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays-to-buttons"
+  /website-builder/buttons-arrays-to-buttons/{id}:
+    $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays-to-buttons~1{id}"
+
+  # website-builder/relations/buttons-to-file-storage-module-files
+  /website-builder/buttons-to-file-storage-module-files:
+    $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-to-file-storage-module-files"
+  /website-builder/buttons-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-to-file-storage-module-files~1{id}"
+
+  # website-builder/relations/features-to-buttons-arrays
+  /website-builder/features-to-buttons-arrays:
+    $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-buttons-arrays"
+  /website-builder/features-to-buttons-arrays/{id}:
+    $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-buttons-arrays~1{id}"
+
+  # website-builder/relations/features-to-file-storage-module-files
+  /website-builder/features-to-file-storage-module-files:
+    $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-file-storage-module-files"
+  /website-builder/features-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-file-storage-module-files~1{id}"
+
+  # website-builder/relations/logotypes-to-file-storage-module-files
+  /website-builder/logotypes-to-file-storage-module-files:
+    $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes-to-file-storage-module-files"
+  /website-builder/logotypes-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes-to-file-storage-module-files~1{id}"
+
+  # website-builder/relations/sliders-to-slides
+  /website-builder/sliders-to-slides:
+    $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders-to-slides"
+  /website-builder/sliders-to-slides/{id}:
+    $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders-to-slides~1{id}"
+
+  # website-builder/relations/slides-to-buttons-arrays
+  /website-builder/slides-to-buttons-arrays:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-buttons-arrays"
+  /website-builder/slides-to-buttons-arrays/{id}:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-buttons-arrays~1{id}"
+
+  # website-builder/relations/slides-to-file-storage-module-files
+  /website-builder/slides-to-file-storage-module-files:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-file-storage-module-files"
+  /website-builder/slides-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-file-storage-module-files~1{id}"
+
+  # website-builder/relations/widgets-to-buttons-arrays
+  /website-builder/widgets-to-buttons-arrays:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-buttons-arrays"
+  /website-builder/widgets-to-buttons-arrays/{id}:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-buttons-arrays~1{id}"
+
+  # website-builder/relations/widgets-to-features
+  /website-builder/widgets-to-features:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-features"
+  /website-builder/widgets-to-features/{id}:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-features~1{id}"
+
+  # website-builder/relations/widgets-to-file-storage-module-files
+  /website-builder/widgets-to-file-storage-module-files:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-file-storage-module-files"
+  /website-builder/widgets-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-file-storage-module-files~1{id}"
+
+  # website-builder/relations/widgets-to-logotypes
+  /website-builder/widgets-to-logotypes:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-logotypes"
+  /website-builder/widgets-to-logotypes/{id}:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-logotypes~1{id}"
+
+  # website-builder/relations/widgets-to-sliders
+  /website-builder/widgets-to-sliders:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders"
+  /website-builder/widgets-to-sliders/{id}:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1215,6 +1341,90 @@ components:
       $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/social-threads-to-messages.yaml"
     "social-threads-to-messages-input":
       $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/social-threads-to-messages-input.yaml"
+    "startup-widget":
+      $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/startup-widget.yaml"
+    "startup-widget-input":
+      $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/startup-widget-input.yaml"
+    "website-builder-button":
+      $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/website-builder-button.yaml"
+    "website-builder-button-input":
+      $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/website-builder-button-input.yaml"
+    "website-builder-buttons-array":
+      $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/website-builder-buttons-array.yaml"
+    "website-builder-buttons-array-input":
+      $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/website-builder-buttons-array-input.yaml"
+    "website-builder-feature":
+      $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/website-builder-feature.yaml"
+    "website-builder-feature-input":
+      $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/website-builder-feature-input.yaml"
+    "website-builder-logotype":
+      $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/website-builder-logotype.yaml"
+    "website-builder-logotype-input":
+      $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/website-builder-logotype-input.yaml"
+    "website-builder-slide":
+      $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/website-builder-slide.yaml"
+    "website-builder-slide-input":
+      $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/website-builder-slide-input.yaml"
+    "website-builder-slider":
+      $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/website-builder-slider.yaml"
+    "website-builder-slider-input":
+      $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/website-builder-slider-input.yaml"
+    "website-builder-widget":
+      $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/website-builder-widget.yaml"
+    "website-builder-widget-input":
+      $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/website-builder-widget-input.yaml"
+    "website-builder-buttons-arrays-to-buttons":
+      $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/website-builder-buttons-arrays-to-buttons.yaml"
+    "website-builder-buttons-arrays-to-buttons-input":
+      $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/website-builder-buttons-arrays-to-buttons-input.yaml"
+    "website-builder-buttons-to-file-storage-module-files":
+      $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/website-builder-buttons-to-file-storage-module-files.yaml"
+    "website-builder-buttons-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/website-builder-buttons-to-file-storage-module-files-input.yaml"
+    "website-builder-features-to-buttons-arrays":
+      $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/website-builder-features-to-buttons-arrays.yaml"
+    "website-builder-features-to-buttons-arrays-input":
+      $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/website-builder-features-to-buttons-arrays-input.yaml"
+    "website-builder-features-to-file-storage-module-files":
+      $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/website-builder-features-to-file-storage-module-files.yaml"
+    "website-builder-features-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/website-builder-features-to-file-storage-module-files-input.yaml"
+    "website-builder-logotypes-to-file-storage-module-files":
+      $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/website-builder-logotypes-to-file-storage-module-files.yaml"
+    "website-builder-logotypes-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/website-builder-logotypes-to-file-storage-module-files-input.yaml"
+    "website-builder-sliders-to-slides":
+      $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/website-builder-sliders-to-slides.yaml"
+    "website-builder-sliders-to-slides-input":
+      $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/website-builder-sliders-to-slides-input.yaml"
+    "website-builder-slides-to-buttons-arrays":
+      $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/website-builder-slides-to-buttons-arrays.yaml"
+    "website-builder-slides-to-buttons-arrays-input":
+      $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/website-builder-slides-to-buttons-arrays-input.yaml"
+    "website-builder-slides-to-file-storage-module-files":
+      $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/website-builder-slides-to-file-storage-module-files.yaml"
+    "website-builder-slides-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/website-builder-slides-to-file-storage-module-files-input.yaml"
+    "website-builder-widgets-to-buttons-arrays":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/website-builder-widgets-to-buttons-arrays.yaml"
+    "website-builder-widgets-to-buttons-arrays-input":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/website-builder-widgets-to-buttons-arrays-input.yaml"
+    "website-builder-widgets-to-features":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/website-builder-widgets-to-features.yaml"
+    "website-builder-widgets-to-features-input":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/website-builder-widgets-to-features-input.yaml"
+    "website-builder-widgets-to-file-storage-module-files":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/website-builder-widgets-to-file-storage-module-files.yaml"
+    "website-builder-widgets-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/website-builder-widgets-to-file-storage-module-files-input.yaml"
+    "website-builder-widgets-to-logotypes":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/website-builder-widgets-to-logotypes.yaml"
+    "website-builder-widgets-to-logotypes-input":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/website-builder-widgets-to-logotypes-input.yaml"
+    "website-builder-widgets-to-sliders":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/website-builder-widgets-to-sliders.yaml"
+    "website-builder-widgets-to-sliders-input":
+      $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/website-builder-widgets-to-sliders-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
