@@ -35,11 +35,6 @@ paths:
               properties:
                 data:
                   $ref: "ecommerce-order-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -83,11 +78,6 @@ paths:
               properties:
                 data:
                   $ref: "ecommerce-order-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -233,11 +223,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -267,11 +252,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:

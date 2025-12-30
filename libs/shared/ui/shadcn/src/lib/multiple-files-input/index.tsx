@@ -26,6 +26,8 @@ export interface MultipleFilesInputProps
 interface MultipleFileValueProps {
   file: File;
   onDelete: (file: File) => void;
+  index: number;
+  onMoveIndex: (from: number, to: number) => void;
 }
 
 const MultipleFilesInputContext = createContext<{
@@ -39,12 +41,30 @@ const MultipleFilesInputContext = createContext<{
 const MultipleFilesInputValue = React.forwardRef<
   HTMLDivElement,
   MultipleFileValueProps
->(({ file, onDelete }, ref) => {
+>(({ file, onDelete, index, onMoveIndex }, ref) => {
   const url = URL.createObjectURL(file);
   const isImage = file.type?.includes("image");
 
   return (
-    <div className="relative w-20 h-20 border rounded overflow-hidden">
+    <div
+      className="relative w-20 h-20 border rounded overflow-hidden cursor-move"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", String(index));
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        const from = Number(e.dataTransfer.getData("text/plain"));
+        if (!Number.isNaN(from)) {
+          onMoveIndex(from, index);
+        }
+      }}
+    >
       {isImage ? (
         <Image src={url} alt="" fill className="object-cover" />
       ) : (
@@ -179,6 +199,23 @@ const MultipleFilesInput = React.forwardRef<
             props.onFilesChange(updated);
           }
         }}
+        onMoveIndex={(from, to) => {
+          setLocalFiles((prev) => {
+            if (from === to || from < 0 || to < 0) {
+              return prev;
+            }
+            if (from >= prev.length || to >= prev.length) {
+              return prev;
+            }
+            const updated = [...prev];
+            const [moved] = updated.splice(from, 1);
+            updated.splice(to, 0, moved);
+            if (props.onFilesChange) {
+              props.onFilesChange(updated);
+            }
+            return updated;
+          });
+        }}
       />
     </div>
   );
@@ -189,12 +226,13 @@ export type MultipleFilesInputContentProps = {
   children?: ReactNode;
   files?: File[];
   onDelete: (file: File) => void;
+  onMoveIndex: (from: number, to: number) => void;
 };
 
 const InputContent = React.forwardRef<
   HTMLDivElement,
   MultipleFilesInputContentProps
->(({ files, onDelete }, ref) => {
+>(({ files, onDelete, onMoveIndex }, ref) => {
   if (!files?.length) {
     return null;
   }
@@ -202,7 +240,13 @@ const InputContent = React.forwardRef<
   return (
     <div className="flex flex-wrap gap-2">
       {files.map((file, index) => (
-        <MultipleFilesInputValue key={index} file={file} onDelete={onDelete} />
+        <MultipleFilesInputValue
+          key={index}
+          file={file}
+          onDelete={onDelete}
+          index={index}
+          onMoveIndex={onMoveIndex}
+        />
       ))}
     </div>
   );

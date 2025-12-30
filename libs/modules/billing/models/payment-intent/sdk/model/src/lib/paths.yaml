@@ -35,11 +35,6 @@ paths:
               properties:
                 data:
                   $ref: "billing-payment-intent-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -83,11 +78,6 @@ paths:
               properties:
                 data:
                   $ref: "billing-payment-intent-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -137,11 +127,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"provider": "stripe", "currencyId": "00000000-0000-0000-0000-000000000000", "metadata": {"email": "user@example.com"}}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -175,11 +160,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"provider": "telegram-star", "currency": "USD", "total_amount": 0, "invoice_payload": "payload", "telegram_payment_charge_id": "charge", "provider_payment_charge_id": "provider_charge"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -209,11 +189,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:

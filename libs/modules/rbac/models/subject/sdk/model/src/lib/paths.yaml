@@ -35,11 +35,6 @@ paths:
               properties:
                 data:
                   $ref: "rbac-subject-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -83,11 +78,6 @@ paths:
               properties:
                 data:
                   $ref: "rbac-subject-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -132,11 +122,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -192,11 +177,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -232,11 +212,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -344,11 +319,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"refresh": "refresh-token"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -420,11 +390,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"address": "0x0000000000000000000000000000000000000000", "message": "message", "signature": "0xsignature"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -460,11 +425,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"login": "user@example.com", "password": "Password123!"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -500,11 +460,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"login": "user@example.com", "password": "Password123!"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -540,11 +495,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"email": "user@example.com"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -577,11 +527,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"password": "Password123!", "passwordConfirmation": "Password123!", "code": "reset-code"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -622,11 +567,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"productId": "00000000-0000-0000-0000-000000000000"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -681,11 +621,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"productId": "00000000-0000-0000-0000-000000000000", "storeId": "00000000-0000-0000-0000-000000000000", "quantity": 1, "billingModuleCurrencyId": "00000000-0000-0000-0000-000000000000"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -738,11 +673,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{"email": "user@example.com", "provider": "stripe"}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -842,11 +772,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -903,11 +828,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -966,11 +886,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -1029,11 +944,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -1213,11 +1123,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -1288,11 +1193,6 @@ paths:
                   type: string
                   description: JSON string
                   example: '{}'
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:

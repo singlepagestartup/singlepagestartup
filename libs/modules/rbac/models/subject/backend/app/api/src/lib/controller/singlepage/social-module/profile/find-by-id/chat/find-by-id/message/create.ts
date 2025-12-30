@@ -53,12 +53,13 @@ export class Handler {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
 
-      const body = await c.req.parseBody();
+      const formData = await c.req.formData();
+      const dataField = formData.get("data");
 
-      if (typeof body["data"] !== "string") {
+      if (typeof dataField !== "string") {
         throw new Error(
           "Invalid body. Expected body['data'] with type of JSON.stringify(...). Got: " +
-            typeof body["data"],
+            typeof dataField,
         );
       }
 
@@ -71,52 +72,19 @@ export class Handler {
         };
       } = {};
 
-      Object.keys(body).forEach((key) => {
-        if (body[key] instanceof File) {
-          const file = body[key] as File;
-
-          if (key.startsWith("files_")) {
-            if (!parsedBody.files) {
-              parsedBody.files = {};
-            }
-            if (!parsedBody.files["files"]) {
-              parsedBody.files["files"] = [];
-            }
-            (parsedBody.files["files"] as File[]).push(file);
-          } else {
-            if (!parsedBody.files) {
-              parsedBody.files = {};
-            }
-
-            parsedBody.files = {
-              ...parsedBody.files,
-              [key]: file,
-            };
-          }
-        } else if (
-          Array.isArray(body[key]) &&
-          body[key].every((v) => v instanceof File)
-        ) {
-          const files = body[key] as File[];
-
-          if (!parsedBody.files) {
-            parsedBody.files = {};
-          }
-
-          parsedBody.files = {
-            ...parsedBody.files,
-            [key]: files,
-          };
-        }
-      });
-
       try {
-        parsedBody.data = JSON.parse(body["data"]);
+        parsedBody.data = JSON.parse(dataField);
       } catch (error) {
         throw new Error(
-          "Validation error. Invalid JSON in body['data']. Got: " +
-            body["data"],
+          "Validation error. Invalid JSON in body['data']. Got: " + dataField,
         );
+      }
+
+      const files = formData
+        .getAll("files")
+        .filter((item) => item instanceof File) as File[];
+      if (files.length) {
+        parsedBody.files = { files };
       }
 
       const socialMouleMessage = await socialModuleMessageApi.create({
@@ -143,7 +111,7 @@ export class Handler {
       if (parsedBody.files?.["files"]) {
         const files = parsedBody.files["files"];
         if (Array.isArray(files)) {
-          for (const file of files) {
+          for (const [index, file] of files.entries()) {
             try {
               const fileStorageFile = await fileStorageModuleFileApi.create({
                 data: {
@@ -161,6 +129,7 @@ export class Handler {
                 data: {
                   messageId: socialMouleMessage.id,
                   fileStorageModuleFileId: fileStorageFile.id,
+                  orderIndex: index,
                 },
                 options: {
                   headers: {
@@ -190,6 +159,7 @@ export class Handler {
               data: {
                 messageId: socialMouleMessage.id,
                 fileStorageModuleFileId: fileStorageFile.id,
+                orderIndex: 0,
               },
               options: {
                 headers: {

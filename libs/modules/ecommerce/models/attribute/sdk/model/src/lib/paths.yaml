@@ -35,11 +35,6 @@ paths:
               properties:
                 data:
                   $ref: "ecommerce-attribute-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:
@@ -83,11 +78,6 @@ paths:
               properties:
                 data:
                   $ref: "ecommerce-attribute-input.yaml"
-                files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
               required:
                 - data
       responses:

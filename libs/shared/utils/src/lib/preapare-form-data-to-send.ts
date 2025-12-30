@@ -25,8 +25,8 @@ export function prepareFormDataToSend(params: { data: any }) {
         Array.isArray(value) &&
         value.every((v) => v instanceof File)
       ) {
-        value.forEach((file: File, index: number) => {
-          formData.append(`${key}_${index}`, file);
+        value.forEach((file: File) => {
+          formData.append(key, file);
         });
       }
     });
