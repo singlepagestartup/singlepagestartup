@@ -1,0 +1,15 @@
+type: object
+properties:
+  variant:
+    type: string
+    default: default
+    description: Variant name
+  orderIndex:
+    type: integer
+    format: int32
+    default: 0
+    description: Sort order
+  className:
+    type: string
+    nullable: true
+    description: TailwindCSS class name

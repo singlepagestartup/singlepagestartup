@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      articleId:
+        type: string
+        format: uuid
+        description: Related article id
+      websiteBuilderModuleWidgetId:
+        type: string
+        format: uuid
+        description: Related website builder module widget id
+    required:
+      - articleId
+      - websiteBuilderModuleWidgetId
