@@ -198,6 +198,102 @@ paths:
   /analytic/widgets/{id}:
     $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets~1{id}"
 
+  # billing/currency
+  /billing/currencies:
+    $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/paths.yaml#/paths/~1billing~1currencies"
+  /billing/currencies/{id}:
+    $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/paths.yaml#/paths/~1billing~1currencies~1{id}"
+
+  # billing/invoice
+  /billing/invoices:
+    $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/paths.yaml#/paths/~1billing~1invoices"
+  /billing/invoices/{id}:
+    $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/paths.yaml#/paths/~1billing~1invoices~1{id}"
+
+  # billing/payment-intent
+  /billing/payment-intents:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents"
+  /billing/payment-intents/{id}:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}"
+
+  # billing/widget
+  /billing/widgets:
+    $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1billing~1widgets"
+  /billing/widgets/{id}:
+    $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1billing~1widgets~1{id}"
+
+  # billing/relations/payment-intents-to-currencies
+  /billing/payment-intents-to-currencies:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-currencies"
+  /billing/payment-intents-to-currencies/{id}:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-currencies~1{id}"
+
+  # billing/relations/payment-intents-to-invoices
+  /billing/payment-intents-to-invoices:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-invoices"
+  /billing/payment-intents-to-invoices/{id}:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-invoices~1{id}"
+
+  # blog/article
+  /blog/articles:
+    $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles"
+  /blog/articles/{id}:
+    $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles~1{id}"
+
+  # blog/category
+  /blog/categories:
+    $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories"
+  /blog/categories/{id}:
+    $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories~1{id}"
+
+  # blog/widget
+  /blog/widgets:
+    $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets"
+  /blog/widgets/{id}:
+    $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets~1{id}"
+
+  # blog/relations/articles-to-ecommerce-module-products
+  /blog/articles-to-ecommerce-module-products:
+    $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-ecommerce-module-products"
+  /blog/articles-to-ecommerce-module-products/{id}:
+    $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-ecommerce-module-products~1{id}"
+
+  # blog/relations/articles-to-file-storage-module-files
+  /blog/articles-to-file-storage-module-files:
+    $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-file-storage-module-files"
+  /blog/articles-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-file-storage-module-files~1{id}"
+
+  # blog/relations/articles-to-website-builder-module-widgets
+  /blog/articles-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-website-builder-module-widgets"
+  /blog/articles-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-website-builder-module-widgets~1{id}"
+
+  # blog/relations/categories-to-articles
+  /blog/categories-to-articles:
+    $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-articles"
+  /blog/categories-to-articles/{id}:
+    $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-articles~1{id}"
+
+  # blog/relations/categories-to-website-builder-module-widgets
+  /blog/categories-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-website-builder-module-widgets"
+  /blog/categories-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-website-builder-module-widgets~1{id}"
+
+  # blog/relations/widgets-to-articles
+  /blog/widgets-to-articles:
+    $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-articles"
+  /blog/widgets-to-articles/{id}:
+    $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-articles~1{id}"
+
+  # blog/relations/widgets-to-categories
+  /blog/widgets-to-categories:
+    $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories"
+  /blog/widgets-to-categories/{id}:
+    $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -335,6 +431,70 @@ components:
       $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/analytic-widget.yaml"
     "analytic-widget-input":
       $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/analytic-widget-input.yaml"
+    "billing-currency":
+      $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+    "billing-currency-input":
+      $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency-input.yaml"
+    "billing-invoice":
+      $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+    "billing-invoice-input":
+      $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice-input.yaml"
+    "billing-payment-intent":
+      $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent.yaml"
+    "billing-payment-intent-input":
+      $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/billing-payment-intent-input.yaml"
+    "billing-widget":
+      $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/billing-widget.yaml"
+    "billing-widget-input":
+      $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/billing-widget-input.yaml"
+    "billing-payment-intents-to-currencies":
+      $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/billing-payment-intents-to-currencies.yaml"
+    "billing-payment-intents-to-currencies-input":
+      $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/billing-payment-intents-to-currencies-input.yaml"
+    "billing-payment-intents-to-invoices":
+      $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/billing-payment-intents-to-invoices.yaml"
+    "billing-payment-intents-to-invoices-input":
+      $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/billing-payment-intents-to-invoices-input.yaml"
+    "blog-article":
+      $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/blog-article.yaml"
+    "blog-article-input":
+      $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/blog-article-input.yaml"
+    "blog-category":
+      $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/blog-category.yaml"
+    "blog-category-input":
+      $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/blog-category-input.yaml"
+    "blog-widget":
+      $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/blog-widget.yaml"
+    "blog-widget-input":
+      $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/blog-widget-input.yaml"
+    "blog-articles-to-ecommerce-module-products":
+      $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/blog-articles-to-ecommerce-module-products.yaml"
+    "blog-articles-to-ecommerce-module-products-input":
+      $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/blog-articles-to-ecommerce-module-products-input.yaml"
+    "blog-articles-to-file-storage-module-files":
+      $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/blog-articles-to-file-storage-module-files.yaml"
+    "blog-articles-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/blog-articles-to-file-storage-module-files-input.yaml"
+    "blog-articles-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/blog-articles-to-website-builder-module-widgets.yaml"
+    "blog-articles-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/blog-articles-to-website-builder-module-widgets-input.yaml"
+    "blog-categories-to-articles":
+      $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/blog-categories-to-articles.yaml"
+    "blog-categories-to-articles-input":
+      $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/blog-categories-to-articles-input.yaml"
+    "blog-categories-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/blog-categories-to-website-builder-module-widgets.yaml"
+    "blog-categories-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/blog-categories-to-website-builder-module-widgets-input.yaml"
+    "blog-widgets-to-articles":
+      $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/blog-widgets-to-articles.yaml"
+    "blog-widgets-to-articles-input":
+      $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/blog-widgets-to-articles-input.yaml"
+    "blog-widgets-to-categories":
+      $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/blog-widgets-to-categories.yaml"
+    "blog-widgets-to-categories-input":
+      $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/blog-widgets-to-categories-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
