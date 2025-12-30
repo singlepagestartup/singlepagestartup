@@ -30,7 +30,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { globalActionsStore, IAction } from "@sps/shared-frontend-client-store";
-import { STALE_TIME } from "@sps/shared-utils";
+import { STALE_TIME, UUID_PATH_SEGMENT_REGEX } from "@sps/shared-utils";
 import { createId } from "@paralleldrive/cuid2";
 import QueryString from "qs";
 import { useEffect } from "react";
@@ -59,6 +59,21 @@ type SetRequestId = (requestId: string) => void;
 const activeSubscriptions = new Map<string, number>();
 const unsubscribeFunctions = new Map<string, () => void>();
 const MAX_ACTIONS = 10;
+
+const normalizePath = (value: string) => value.split("?")[0];
+const stripUuidSegments = (value: string) =>
+  value.replace(UUID_PATH_SEGMENT_REGEX, "");
+const isMatchingRoute = (route: string, payload: string) => {
+  const normalizedRoute = stripUuidSegments(normalizePath(route));
+  const normalizedPayload = stripUuidSegments(normalizePath(payload));
+
+  return (
+    route.startsWith(payload) ||
+    payload.startsWith(route) ||
+    normalizedRoute.startsWith(normalizedPayload) ||
+    normalizedPayload.startsWith(normalizedRoute)
+  );
+};
 
 export function subscription(route: string, queryClient: QueryClient) {
   const currentCount = activeSubscriptions.get(route) || 0;
@@ -90,8 +105,7 @@ export function subscription(route: string, queryClient: QueryClient) {
             if (
               message.result?.["payload"] &&
               typeof message.result?.["payload"] === "string" &&
-              (route.includes(message.result["payload"]) ||
-                message.result["payload"].includes(route))
+              isMatchingRoute(route, message.result["payload"])
             ) {
               setTimeout(() => {
                 queryClient.invalidateQueries({

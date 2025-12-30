@@ -2,6 +2,7 @@ import {
   HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
   STALE_TIME,
+  UUID_PATH_SEGMENT_REGEX,
   UUID_PATH_SUFFIX_REGEX,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
@@ -49,6 +50,23 @@ export class Middleware {
     });
   }
 
+  private getNormalizedPaths(path: string): string[] {
+    const normalizedPath = path.split("?")[0];
+    const pathWithoutLastId = normalizedPath.replace(
+      UUID_PATH_SUFFIX_REGEX,
+      "",
+    );
+    const pathWithoutAllIds = normalizedPath.replace(
+      UUID_PATH_SEGMENT_REGEX,
+      "",
+    );
+    const basePath = normalizedPath.split("/").slice(0, 4).join("/");
+
+    return Array.from(
+      new Set([normalizedPath, pathWithoutLastId, pathWithoutAllIds, basePath]),
+    ).filter(Boolean);
+  }
+
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       const reqPath = c.req.path.toLowerCase();
@@ -71,38 +89,20 @@ export class Middleware {
             );
           }
 
-          websocketManager.broadcastMessage({
-            slug: "revalidation",
-            payload: path,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
+          const pathsToRevalidate = this.getNormalizedPaths(path);
+          const timestamp = new Date().toISOString();
+          const expiresAt = new Date(Date.now() + STALE_TIME * 5).toISOString();
+
+          pathsToRevalidate.forEach((payload) => {
+            websocketManager.broadcastMessage({
+              slug: "revalidation",
+              payload,
+              createdAt: timestamp,
+              expiresAt,
+            });
+
+            void this.revalidateTag(payload);
           });
-
-          this.revalidateTag(path);
-
-          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-
-          websocketManager.broadcastMessage({
-            slug: "revalidation",
-            payload: pathWithoutId,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
-          });
-
-          this.revalidateTag(pathWithoutId);
-        }
-
-        if (["DELETE"].includes(method)) {
-          const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-
-          websocketManager.broadcastMessage({
-            slug: "revalidation",
-            payload: pathWithoutId,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + STALE_TIME * 5).toISOString(),
-          });
-
-          await this.revalidateTag(pathWithoutId);
         }
       }
     });
