@@ -1,18 +1,3 @@
-allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
-  - type: object
-    properties:
-      widgetId:
-        type: string
-        format: uuid
-        description: Related widget id
-      externalModule:
-        type: string
-        description: External module
-      externalWidgetId:
-        type: string
-        description: Related external widget id
-    required:
-      - widgetId
-      - externalModule
-      - externalWidgetId
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "className": "example-class", "widgetId": "00000000-0000-0000-0000-000000000000", "externalModule": "string", "externalWidgetId": "00000000-0000-0000-0000-000000000000"}'

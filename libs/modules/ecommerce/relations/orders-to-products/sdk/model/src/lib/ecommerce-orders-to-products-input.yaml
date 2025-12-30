@@ -1,20 +1,3 @@
-allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
-  - type: object
-    properties:
-      quantity:
-        type: integer
-        format: int32
-        description: Quantity
-      orderId:
-        type: string
-        format: uuid
-        description: Related order id
-      productId:
-        type: string
-        format: uuid
-        description: Related product id
-    required:
-      - quantity
-      - orderId
-      - productId
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "className": "example-class", "quantity": 0, "orderId": "00000000-0000-0000-0000-000000000000", "productId": "00000000-0000-0000-0000-000000000000"}'

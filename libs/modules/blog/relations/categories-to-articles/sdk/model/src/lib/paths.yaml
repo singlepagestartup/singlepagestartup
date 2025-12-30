@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "blog-categories-to-articles-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "blog-categories-to-articles-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./blog-categories-to-articles-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "blog-categories-to-articles-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully

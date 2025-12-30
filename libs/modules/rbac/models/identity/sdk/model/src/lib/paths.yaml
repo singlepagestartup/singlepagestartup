@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "rbac-identity-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "rbac-identity-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./rbac-identity-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "rbac-identity-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully
@@ -105,7 +125,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"login": "user@example.com", "password": "Password123!"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Identity
@@ -128,7 +159,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"password": "Password123!", "passwordConfirmation": "Password123!"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Identity

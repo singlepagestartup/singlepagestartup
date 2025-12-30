@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "broadcast-channel-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "broadcast-channel-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./broadcast-channel-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "broadcast-channel-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully
@@ -105,7 +125,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Broadcast channel
@@ -145,7 +176,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Messages

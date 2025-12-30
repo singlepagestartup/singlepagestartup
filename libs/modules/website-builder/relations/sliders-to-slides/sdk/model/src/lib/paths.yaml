@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "website-builder-sliders-to-slides-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "website-builder-sliders-to-slides-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./website-builder-sliders-to-slides-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "website-builder-sliders-to-slides-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully

@@ -1,15 +1,3 @@
-allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
-  - type: object
-    properties:
-      articleId:
-        type: string
-        format: uuid
-        description: Related article id
-      websiteBuilderModuleWidgetId:
-        type: string
-        format: uuid
-        description: Related website builder module widget id
-    required:
-      - articleId
-      - websiteBuilderModuleWidgetId
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "className": "example-class", "articleId": "00000000-0000-0000-0000-000000000000", "websiteBuilderModuleWidgetId": "00000000-0000-0000-0000-000000000000"}'

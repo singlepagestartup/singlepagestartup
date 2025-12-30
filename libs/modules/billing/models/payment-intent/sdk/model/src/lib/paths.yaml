@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "billing-payment-intent-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "billing-payment-intent-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./billing-payment-intent-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "billing-payment-intent-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully
@@ -113,17 +133,17 @@ paths:
             schema:
               type: object
               properties:
-                provider:
+                data:
                   type: string
-                currencyId:
-                  type: string
-                  format: uuid
-                metadata:
-                  type: object
-                  additionalProperties: true
+                  description: JSON string
+                  example: '{"provider": "stripe", "currencyId": "00000000-0000-0000-0000-000000000000", "metadata": {"email": "user@example.com"}}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - provider
-                - currencyId
+                - data
       responses:
         "200":
           description: Payment intent
@@ -147,29 +167,21 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                provider:
+                data:
                   type: string
-                currency:
-                  type: string
-                total_amount:
-                  type: number
-                invoice_payload:
-                  type: string
-                telegram_payment_charge_id:
-                  type: string
-                provider_payment_charge_id:
-                  type: string
+                  description: JSON string
+                  example: '{"provider": "telegram-star", "currency": "USD", "total_amount": 0, "invoice_payload": "payload", "telegram_payment_charge_id": "charge", "provider_payment_charge_id": "provider_charge"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - provider
-                - currency
-                - total_amount
-                - invoice_payload
-                - telegram_payment_charge_id
-                - provider_payment_charge_id
+                - data
       responses:
         "200":
           description: Payment intent
@@ -192,7 +204,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Payment intent

@@ -1,3 +1,3 @@
-allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+type: string
+description: JSON string
+example: '{"variant": "default", "slug": "example", "adminTitle": "Example", "className": "example-class", "title": {"en": "", "ru": ""}}'

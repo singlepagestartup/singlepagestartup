@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "rbac-subject-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "rbac-subject-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./rbac-subject-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "rbac-subject-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully
@@ -107,7 +127,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Notification result
@@ -156,7 +187,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated subject
@@ -185,7 +227,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated subject
@@ -287,10 +340,17 @@ paths:
             schema:
               type: object
               properties:
-                refresh:
+                data:
                   type: string
+                  description: JSON string
+                  example: '{"refresh": "refresh-token"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - refresh
+                - data
       responses:
         "200":
           description: Tokens
@@ -356,16 +416,17 @@ paths:
             schema:
               type: object
               properties:
-                address:
+                data:
                   type: string
-                message:
-                  type: string
-                signature:
-                  type: string
+                  description: JSON string
+                  example: '{"address": "0x0000000000000000000000000000000000000000", "message": "message", "signature": "0xsignature"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - address
-                - message
-                - signature
+                - data
       responses:
         "200":
           description: Tokens
@@ -395,13 +456,17 @@ paths:
             schema:
               type: object
               properties:
-                login:
+                data:
                   type: string
-                password:
-                  type: string
+                  description: JSON string
+                  example: '{"login": "user@example.com", "password": "Password123!"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - login
-                - password
+                - data
       responses:
         "200":
           description: Tokens
@@ -431,13 +496,17 @@ paths:
             schema:
               type: object
               properties:
-                login:
+                data:
                   type: string
-                password:
-                  type: string
+                  description: JSON string
+                  example: '{"login": "user@example.com", "password": "Password123!"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - login
-                - password
+                - data
       responses:
         "200":
           description: Tokens
@@ -467,10 +536,17 @@ paths:
             schema:
               type: object
               properties:
-                email:
+                data:
                   type: string
+                  description: JSON string
+                  example: '{"email": "user@example.com"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - email
+                - data
       responses:
         "200":
           description: Reset requested
@@ -497,16 +573,17 @@ paths:
             schema:
               type: object
               properties:
-                password:
+                data:
                   type: string
-                passwordConfirmation:
-                  type: string
-                code:
-                  type: string
+                  description: JSON string
+                  example: '{"password": "Password123!", "passwordConfirmation": "Password123!", "code": "reset-code"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - password
-                - passwordConfirmation
-                - code
+                - data
       responses:
         "200":
           description: Reset result
@@ -540,7 +617,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"productId": "00000000-0000-0000-0000-000000000000"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Checkout result
@@ -589,21 +677,17 @@ paths:
             schema:
               type: object
               properties:
-                productId:
+                data:
                   type: string
-                  format: uuid
-                storeId:
-                  type: string
-                  format: uuid
-                quantity:
-                  type: integer
-                  format: int32
-                billingModuleCurrencyId:
-                  type: string
-                  format: uuid
+                  description: JSON string
+                  example: '{"productId": "00000000-0000-0000-0000-000000000000", "storeId": "00000000-0000-0000-0000-000000000000", "quantity": 1, "billingModuleCurrencyId": "00000000-0000-0000-0000-000000000000"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - productId
-                - quantity
+                - data
       responses:
         "200":
           description: Updated subject
@@ -650,13 +734,17 @@ paths:
             schema:
               type: object
               properties:
-                email:
+                data:
                   type: string
-                provider:
-                  type: string
+                  description: JSON string
+                  example: '{"email": "user@example.com", "provider": "stripe"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - email
-                - provider
+                - data
       responses:
         "200":
           description: Checkout result
@@ -749,7 +837,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated subject
@@ -799,7 +898,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated subject
@@ -851,7 +961,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated subject
@@ -902,7 +1023,19 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat-input.yaml"
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Created chat
@@ -1020,14 +1153,19 @@ paths:
         content:
           multipart/form-data:
             schema:
-              allOf:
-                - $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message-input.yaml"
-                - type: object
-                  properties:
-                    files:
-                      type: array
-                      items:
-                        type: string
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Created messages
@@ -1070,7 +1208,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Message
@@ -1133,7 +1282,19 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "../../../../../../../../../libs/modules/social/models/action/sdk/model/src/lib/social-action-input.yaml"
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Created action

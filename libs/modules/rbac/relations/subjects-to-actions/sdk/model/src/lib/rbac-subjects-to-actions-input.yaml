@@ -1,15 +1,3 @@
-allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
-  - type: object
-    properties:
-      subjectId:
-        type: string
-        format: uuid
-        description: Related subject id
-      actionId:
-        type: string
-        format: uuid
-        description: Related action id
-    required:
-      - subjectId
-      - actionId
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "className": "example-class", "subjectId": "00000000-0000-0000-0000-000000000000", "actionId": "00000000-0000-0000-0000-000000000000"}'

@@ -29,9 +29,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "file-storage-file-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "file-storage-file-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "201":
           description: Created successfully
@@ -67,9 +77,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "./file-storage-file-input.yaml"
+              type: object
+              properties:
+                data:
+                  $ref: "file-storage-file-input.yaml"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: Updated successfully
@@ -106,16 +126,17 @@ paths:
             schema:
               type: object
               properties:
-                url:
+                data:
                   type: string
-                containerClassName:
-                  type: string
-                adminTitle:
-                  type: string
-                className:
-                  type: string
+                  description: JSON string
+                  example: '{"url": "https://example.com/file.jpg", "containerClassName": "container", "adminTitle": "Example", "className": "file"}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
               required:
-                - url
+                - data
       responses:
         "200":
           description: File
@@ -136,7 +157,18 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
       responses:
         "200":
           description: File
