@@ -9,10 +9,10 @@ import Link from "next/link";
 import { saveLanguageContext } from "@sps/shared-utils";
 import { internationalization } from "@sps/shared-configuration";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FormField } from "@sps/ui-adapter";
 import {
@@ -20,10 +20,16 @@ import {
   Button,
   CollapsibleTrigger,
   CollapsibleContent,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@sps/shared-ui-shadcn";
 import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import Markdown from "markdown-to-jsx";
+import MDEditor from "@uiw/react-md-editor";
 
 const formSchema = z.object({
   description: z.string().min(1),
@@ -36,6 +42,9 @@ const formSchema = z.object({
 });
 const socialModuleActionFormSchema = z.object({
   payload: z.any().optional(),
+});
+const messageEditFormSchema = z.object({
+  description: z.string().min(1),
 });
 
 export function Component(props: IComponentPropsExtended) {
@@ -56,10 +65,21 @@ export function Component(props: IComponentPropsExtended) {
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
     });
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const socialModuleProfileFindByIdChatFindByIdMessageUpdate =
+    api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleMessageId: editingMessageId || "unknown",
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      description: "",
+    },
   });
 
   const socialModuleActionForm = useForm<
@@ -68,6 +88,12 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(socialModuleActionFormSchema),
     defaultValues: {
       payload: {},
+    },
+  });
+  const messageEditForm = useForm<z.infer<typeof messageEditFormSchema>>({
+    resolver: zodResolver(messageEditFormSchema),
+    defaultValues: {
+      description: "",
     },
   });
 
@@ -79,6 +105,24 @@ export function Component(props: IComponentPropsExtended) {
       data: {
         description: data.description,
         files: data.files,
+      },
+    });
+  }
+
+  async function onMessageEditSubmit(
+    data: z.infer<typeof messageEditFormSchema>,
+  ) {
+    if (!editingMessageId) {
+      return;
+    }
+
+    socialModuleProfileFindByIdChatFindByIdMessageUpdate.mutate({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleMessageId: editingMessageId,
+      data: {
+        description: data.description,
       },
     });
   }
@@ -102,6 +146,14 @@ export function Component(props: IComponentPropsExtended) {
     }
   }, [socialModuleProfileFindByIdChatFindByIdMessageCreate]);
 
+  useEffect(() => {
+    if (socialModuleProfileFindByIdChatFindByIdMessageUpdate.isSuccess) {
+      toast.success("Message updated successfully");
+      setIsEditOpen(false);
+      setEditingMessageId(null);
+    }
+  }, [socialModuleProfileFindByIdChatFindByIdMessageUpdate]);
+
   return (
     <div
       data-module="rbac"
@@ -120,6 +172,20 @@ export function Component(props: IComponentPropsExtended) {
                 <div className="w-fit text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
                   <p>Message: {socialModuleMessageOrAction.data.id}</p>
                 </div>
+                <Button
+                  variant="outline"
+                  className="w-fit"
+                  onClick={() => {
+                    setEditingMessageId(socialModuleMessageOrAction.data.id);
+                    messageEditForm.reset({
+                      description:
+                        socialModuleMessageOrAction.data.description || "",
+                    });
+                    setIsEditOpen(true);
+                  }}
+                >
+                  Edit message
+                </Button>
                 <SocialModuleProfilesToMessages
                   isServer={false}
                   variant="find"
@@ -344,6 +410,58 @@ export function Component(props: IComponentPropsExtended) {
           );
         },
       )}
+      <Dialog
+        open={isEditOpen}
+        onOpenChange={() => {
+          setIsEditOpen(!isEditOpen);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Message</DialogTitle>
+            <DialogDescription>
+              Update the message text and save changes.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...messageEditForm}>
+            <div className="w-full grid gap-4">
+              <div
+                className="w-full flex flex-col gap-2"
+                data-color-mode="light"
+              >
+                <label className="text-sm font-medium">Text</label>
+                <Controller
+                  name="description"
+                  control={messageEditForm.control}
+                  render={({ field }) => {
+                    return (
+                      <MDEditor
+                        value={field.value}
+                        onChange={(value) => {
+                          field.onChange(value ?? "");
+                        }}
+                        height={200}
+                        visibleDragbar={false}
+                      />
+                    );
+                  }}
+                />
+              </div>
+              <Button
+                variant="primary"
+                onClick={messageEditForm.handleSubmit(onMessageEditSubmit)}
+                disabled={
+                  socialModuleProfileFindByIdChatFindByIdMessageUpdate.isPending
+                }
+              >
+                {socialModuleProfileFindByIdChatFindByIdMessageUpdate.isPending
+                  ? "Updating..."
+                  : "Save changes"}
+              </Button>
+            </div>
+          </Form>
+        </DialogContent>
+      </Dialog>
       <Form {...socialModuleActionForm}>
         <Button
           variant="secondary"
@@ -357,15 +475,25 @@ export function Component(props: IComponentPropsExtended) {
       </Form>
       <Form {...form}>
         <div className="w-full grid gap-4">
-          <FormField
-            ui="shadcn"
-            type="text"
-            label="Text"
-            name="description"
-            form={form}
-            placeholder="Type text"
-            className={cn("flex w-full flex-col")}
-          />
+          <div className="w-full flex flex-col gap-2" data-color-mode="light">
+            <label className="text-sm font-medium">Text</label>
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field }) => {
+                return (
+                  <MDEditor
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value ?? "");
+                    }}
+                    height={240}
+                    visibleDragbar={false}
+                  />
+                );
+              }}
+            />
+          </div>
           <div className="w-1/4">
             <FormField
               ui="shadcn"

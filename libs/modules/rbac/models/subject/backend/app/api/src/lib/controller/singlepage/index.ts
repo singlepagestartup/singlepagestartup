@@ -43,6 +43,7 @@ import { Handler as SocialModuleProfileFindByIdChatFind } from "./social-module/
 import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-module/profile/find-by-id/chat/find-by-id";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from "./social-module/profile/find-by-id/chat/find-by-id/message/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReact } from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
@@ -249,6 +250,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageCreate,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "PATCH",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId",
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessageUpdate,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
@@ -466,6 +473,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageCreate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageUpdate(
       this.service,
     ).execute(c, next);
   }

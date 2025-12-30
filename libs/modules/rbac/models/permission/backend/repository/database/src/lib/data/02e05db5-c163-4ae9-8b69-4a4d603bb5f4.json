@@ -1,0 +1,9 @@
+{
+  "id": "02e05db5-c163-4ae9-8b69-4a4d603bb5f4",
+  "createdAt": "2025-12-30T21:42:25.547Z",
+  "updatedAt": "2025-12-30T21:42:25.547Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/messages/[social.messages.id]"
+}

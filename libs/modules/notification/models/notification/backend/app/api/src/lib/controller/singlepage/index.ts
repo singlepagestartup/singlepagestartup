@@ -5,6 +5,7 @@ import { Table } from "@sps/notification/models/notification/backend/repository/
 import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as Send } from "./send";
+import { Handler as Update } from "./update";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -56,5 +57,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async send(c: Context, next: any): Promise<Response> {
     return new Send(this.service).execute(c, next);
+  }
+
+  async update(c: Context, next: any): Promise<Response> {
+    return new Update(this.service).execute(c, next);
   }
 }

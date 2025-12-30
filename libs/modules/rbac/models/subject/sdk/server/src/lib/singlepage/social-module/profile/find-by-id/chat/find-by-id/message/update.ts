@@ -12,6 +12,7 @@ export interface IProps {
   id: string;
   socialModuleProfileId: string;
   socialModuleChatId: string;
+  socialModuleMessageId: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -24,13 +25,14 @@ export interface IProps {
   };
 }
 
-export type IResult = ISocialModuleMessage;
+export type IResult = ISocialModuleMessage[];
 
 export async function action(props: IProps): Promise<IResult> {
   const {
     id,
     socialModuleProfileId,
     socialModuleChatId,
+    socialModuleMessageId,
     params,
     options,
     host = serverHost,
@@ -45,7 +47,7 @@ export async function action(props: IProps): Promise<IResult> {
 
   const requestOptions: NextRequestOptions = {
     credentials: "include",
-    method: "POST",
+    method: "PATCH",
     body: formData,
     ...options,
     next: {
@@ -54,7 +56,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/messages?${stringifiedQuery}`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/messages/${socialModuleMessageId}?${stringifiedQuery}`,
     requestOptions,
   );
 

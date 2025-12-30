@@ -12,10 +12,308 @@ import { api as notificationsToTemplatesApi } from "@sps/notification/relations/
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
 import { Bot } from "grammy";
+import { InlineKeyboardButton } from "@grammyjs/types";
+import { telegramMarkdownFormatter } from "@sps/backend-utils";
 import { IModel } from "@sps/notification/models/notification/sdk/model";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private splitTelegramText(text: string, limit: number): string[] {
+    if (!text) {
+      return [""];
+    }
+
+    const chunks: string[] = [];
+    let remaining = text;
+
+    while (remaining.length > limit) {
+      let slice = remaining.slice(0, limit);
+      let splitIndex = Math.max(
+        slice.lastIndexOf("\n"),
+        slice.lastIndexOf(" "),
+      );
+
+      if (splitIndex <= 0) {
+        splitIndex = limit;
+      }
+
+      chunks.push(remaining.slice(0, splitIndex));
+      remaining = remaining.slice(splitIndex).trimStart();
+    }
+
+    if (remaining.length) {
+      chunks.push(remaining);
+    }
+
+    return chunks;
+  }
+
+  private normalizeTelegramProps(props: unknown[]) {
+    if (!props.length) {
+      return props;
+    }
+
+    const [text, options, ...rest] = props;
+
+    if (typeof text === "string") {
+      const parseMode =
+        options && typeof options === "object"
+          ? (options as Record<string, unknown>)?.parse_mode
+          : undefined;
+      const shouldFormat = !parseMode || parseMode === "MarkdownV2";
+      const formattedText = shouldFormat
+        ? telegramMarkdownFormatter({ input: text })
+        : text;
+      const nextOptions =
+        options && typeof options === "object"
+          ? {
+              ...(options as Record<string, unknown>),
+              parse_mode: parseMode || "MarkdownV2",
+            }
+          : { parse_mode: "MarkdownV2" };
+
+      return [formattedText, nextOptions, ...rest];
+    }
+
+    return props;
+  }
+
+  private normalizeInlineKeyboard(interaction?: {
+    inline_keyboard?: {
+      text: string;
+      url?: string;
+      callback_data?: string;
+    }[][];
+  }): InlineKeyboardButton[][] | undefined {
+    if (!interaction?.inline_keyboard?.length) {
+      return;
+    }
+
+    const keyboard = interaction.inline_keyboard
+      .map((row) => {
+        return row
+          .map((button) => {
+            if (button.url) {
+              return {
+                text: button.text,
+                url: button.url,
+              };
+            }
+
+            if (button.callback_data) {
+              return {
+                text: button.text,
+                callback_data: button.callback_data,
+              };
+            }
+
+            return null;
+          })
+          .filter(Boolean) as InlineKeyboardButton[];
+      })
+      .filter((row) => row.length);
+
+    return keyboard.length ? keyboard : undefined;
+  }
+
+  async telegramEditMessage(props: {
+    chatId: string | number;
+    messageId: string | number;
+    text: string;
+    interaction?: {
+      inline_keyboard?: {
+        text: string;
+        url?: string;
+        callback_data?: string;
+      }[][];
+    };
+    parseMode?: "MarkdownV2" | "HTML";
+  }) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN not set",
+      );
+    }
+
+    const parseMode = props.parseMode || "MarkdownV2";
+    const shouldFormat = parseMode === "MarkdownV2";
+    const formattedText = shouldFormat
+      ? telegramMarkdownFormatter({ input: props.text })
+      : props.text;
+    const inlineKeyboard = this.normalizeInlineKeyboard(props.interaction);
+
+    const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
+
+    try {
+      const normalizedMessageId =
+        typeof props.messageId === "string"
+          ? parseInt(props.messageId, 10)
+          : props.messageId;
+      await bot.api.editMessageText(
+        props.chatId,
+        normalizedMessageId,
+        formattedText,
+        {
+          parse_mode: parseMode,
+          ...(inlineKeyboard
+            ? { reply_markup: { inline_keyboard: inlineKeyboard } }
+            : {}),
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("message is not modified")
+      ) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  async editBySourceSystem(props: {
+    reciever: string;
+    sourceSystemId: string | number;
+    payload?: any;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. Secret key not found");
+    }
+
+    const notification = await this.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "reciever",
+              method: "eq",
+              value: props.reciever,
+            },
+            {
+              column: "sourceSystemId",
+              method: "eq",
+              value: String(props.sourceSystemId),
+            },
+          ],
+        },
+      },
+    });
+
+    if (!notification?.length) {
+      throw new Error("Not Found error. Notification not found");
+    }
+
+    const entity = notification[0];
+
+    if (props.payload) {
+      await this.update({
+        id: entity.id,
+        data: {
+          ...entity,
+          data: JSON.stringify(props.payload),
+        },
+      });
+    }
+
+    if (entity.method !== "telegram") {
+      return entity;
+    }
+
+    const notificationToTemplates = await notificationsToTemplatesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "notificationId",
+              method: "eq",
+              value: entity.id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!notificationToTemplates?.length) {
+      throw new Error("Not Found error. Template not found");
+    }
+
+    const templates = await templateApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: notificationToTemplates.map(
+                (notificationToTemplate) => notificationToTemplate.templateId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!templates?.length) {
+      throw new Error("Not Found error. Template not found");
+    }
+
+    const template = templates.find((item) =>
+      item.variant.includes("telegram"),
+    );
+
+    if (!template) {
+      throw new Error("Not Found error. Telegram template not found");
+    }
+
+    const renderResult = await templateApi.render({
+      id: template.id,
+      data: props.payload || (entity.data ? JSON.parse(entity.data) : {}),
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!renderResult) {
+      throw new Error("Internal error. Template not rendered");
+    }
+
+    const parsedRenderResult = JSON.parse(renderResult);
+    const text = parsedRenderResult.props?.[0] || "";
+    const options = parsedRenderResult.props?.[1] || {};
+    const parseMode = options?.parse_mode;
+    const interaction = options?.reply_markup as {
+      inline_keyboard?: {
+        text: string;
+        url?: string;
+        callback_data?: string;
+      }[][];
+    };
+
+    await this.telegramEditMessage({
+      chatId: entity.reciever,
+      messageId: entity.sourceSystemId || String(props.sourceSystemId),
+      text,
+      interaction,
+      parseMode,
+    });
+
+    return entity;
+  }
+
   getMimeType(url: string) {
     const ext = url.split(".")?.pop()?.toLowerCase();
 
@@ -140,6 +438,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
         if (validAttachments?.length) {
+          const captionOptions = parsedRenderResult.props[1] || {};
+          const parseMode = captionOptions?.parse_mode;
+          const shouldFormat = !parseMode || parseMode === "MarkdownV2";
+          const captionSource = shouldFormat
+            ? telegramMarkdownFormatter({
+                input: parsedRenderResult.props[0],
+              })
+            : parsedRenderResult.props[0];
+          const captionLimit = 1024;
+          const captionChunks = this.splitTelegramText(
+            captionSource || "",
+            captionLimit,
+          );
+          const formattedCaption = captionChunks.shift() || "";
+          const finalParseMode = parseMode || "MarkdownV2";
           const response = await bot.api.sendMediaGroup(
             entity.reciever,
             validAttachments.map((attachment, index) => {
@@ -148,8 +461,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 type: mimeType.startsWith("image/") ? "photo" : "document",
                 media: attachment.url,
                 ...(index === 0 && {
-                  caption: parsedRenderResult.props[0],
-                  parse_mode: parsedRenderResult.props[1]?.parse_mode || "HTML",
+                  caption: formattedCaption,
+                  parse_mode: finalParseMode,
                 }),
               };
             }),
@@ -160,14 +473,77 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
             sourceSystemId = String(messageId);
           }
-        } else {
-          const response = await bot.api[parsedRenderResult.method](
-            entity.reciever,
-            ...parsedRenderResult.props,
-          );
 
-          if (response.message_id) {
-            sourceSystemId = String(response.message_id);
+          if (captionChunks.length) {
+            const replyMarkup = captionOptions?.reply_markup;
+            const chunkCount = captionChunks.length;
+            for (const [index, chunk] of captionChunks.entries()) {
+              const isLast = index === chunkCount - 1;
+              const nextOptions = {
+                ...(captionOptions || {}),
+                ...(isLast ? { reply_markup: replyMarkup } : {}),
+              };
+              if (!isLast) {
+                delete (nextOptions as { reply_markup?: unknown }).reply_markup;
+              }
+              await bot.api.sendMessage(entity.reciever, chunk, nextOptions);
+            }
+          } else if (captionOptions?.reply_markup) {
+            await bot.api.sendMessage(entity.reciever, ".", {
+              ...(captionOptions || {}),
+            });
+          }
+        } else {
+          const formattedProps = this.normalizeTelegramProps(
+            parsedRenderResult.props || [],
+          );
+          if (
+            parsedRenderResult.method === "sendMessage" &&
+            typeof formattedProps[0] === "string"
+          ) {
+            const [text, options] = formattedProps;
+            const replyMarkup =
+              options && typeof options === "object"
+                ? (options as { reply_markup?: unknown }).reply_markup
+                : undefined;
+            const chunks = this.splitTelegramText(text as string, 4000);
+            const chunkCount = chunks.length;
+            let lastResponse: { message_id?: number } | undefined = undefined;
+
+            for (const [index, chunk] of chunks.entries()) {
+              const isLast = index === chunkCount - 1;
+              const nextOptions =
+                options && typeof options === "object"
+                  ? {
+                      ...(options as Record<string, unknown>),
+                      ...(isLast ? { reply_markup: replyMarkup } : {}),
+                    }
+                  : undefined;
+
+              if (nextOptions && !isLast) {
+                delete (nextOptions as { reply_markup?: unknown }).reply_markup;
+              }
+
+              const response = await bot.api.sendMessage(
+                entity.reciever,
+                chunk,
+                nextOptions as any,
+              );
+              lastResponse = response;
+            }
+
+            if (lastResponse?.message_id) {
+              sourceSystemId = String(lastResponse.message_id);
+            }
+          } else {
+            const response = await bot.api[parsedRenderResult.method](
+              entity.reciever,
+              ...formattedProps,
+            );
+
+            if (response.message_id) {
+              sourceSystemId = String(response.message_id);
+            }
           }
         }
       }

@@ -31,6 +31,7 @@ import { api as rbacModuleRolesToEcommerceModuleProductsApi } from "@sps/rbac/re
 import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
+import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
 import {
   blobifyFiles,
@@ -349,6 +350,89 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  async telegramBotMessageUpdate(props: {
+    socialModuleChat: ISocialModuleChat;
+    socialModuleMessage: ISocialModuleMessage;
+  }) {
+    if (
+      !props.socialModuleChat.sourceSystemId ||
+      !props.socialModuleMessage.sourceSystemId ||
+      !props.socialModuleMessage.description
+    ) {
+      return;
+    }
+
+    const chatId = Number.isNaN(Number(props.socialModuleChat.sourceSystemId))
+      ? props.socialModuleChat.sourceSystemId
+      : Number(props.socialModuleChat.sourceSystemId);
+    const messageId = Number.isNaN(
+      Number(props.socialModuleMessage.sourceSystemId),
+    )
+      ? props.socialModuleMessage.sourceSystemId
+      : Number(props.socialModuleMessage.sourceSystemId);
+
+    try {
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+      }
+
+      const notifications = await notificationNotificationApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "reciever",
+                method: "eq",
+                value: String(chatId),
+              },
+              {
+                column: "sourceSystemId",
+                method: "eq",
+                value: String(messageId),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      if (!notifications?.length) {
+        throw new Error("Not found error. Notification not found.");
+      }
+
+      await notificationNotificationApi.update({
+        id: notifications[0].id,
+        data: {
+          ...notifications[0],
+          data: JSON.stringify({
+            socialModule: {
+              message: props.socialModuleMessage,
+            },
+          }),
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("message is not modified")
+      ) {
+        return;
+      }
+
+      logger.error(error);
+    }
+  }
+
   async telegramBotWelcomeMessageCreate(props: {
     jwtToken: string;
     rbacModuleSubject: IRbacModuleSubject;
@@ -383,7 +467,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
     const data = {
-      description: "Welcome to the club, Buddy\\!",
+      description: "Welcome to the club, Buddy!",
     };
 
     if (generateTemplateSocilaModuleMessageAttachmentStartFiles?.length) {
@@ -440,7 +524,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const data = {
-      description: "Here is our menu, select what you want\\.",
+      description: "Here is our menu, select what you want.",
       interaction: {
         inline_keyboard: [
           [
@@ -496,7 +580,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "\\'ecommerceModuleProductId\\' not passed.",
+            description: "'ecommerceModuleProductId' not passed.",
           },
           options: {
             headers: {
@@ -519,7 +603,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "\\'extendedEcommerceModuleProduct\\' not found.",
+            description: "'extendedEcommerceModuleProduct' not found.",
           },
           options: {
             headers: {
@@ -721,7 +805,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           data: {
             description:
-              "Can\\'t find `rbacModuleRolesToEcommerceModuleProducts`\\.",
+              "Can't find `rbacModuleRolesToEcommerceModuleProducts`.",
           },
           options: {
             headers: {
@@ -763,7 +847,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Can\\'t find `rbacModulePayableRoles`\\.",
+            description: "Can't find `rbacModulePayableRoles`.",
           },
           options: {
             headers: {
@@ -805,7 +889,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     if (rbacModuleSubjectsToProSubscriberRoles?.length) {
-      data.description = "You have active subscription\\.";
+      data.description = "You have active subscription.";
     } else {
       const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
         params: {
@@ -838,7 +922,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "Can\\'t find `ecommerceModuleProducts`\\.",
+              description: "Can't find `ecommerceModuleProducts`.",
             },
             options: {
               headers: {
@@ -850,7 +934,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       data.description =
-        "You don\\'t have active subscription\\.\nClick button below to buy premium tier\\.";
+        "You don't have active subscription.\nClick button below to buy premium tier.";
 
       const ecommerceModuleProductButtons: {
         text: string;
@@ -952,7 +1036,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           data: {
             description:
-              "Can\\'t create referral link\\, because `props\\.messageFromSocialModuleProfile` is empty\\.",
+              "Can't create referral link, because `props.messageFromSocialModuleProfile` is empty.",
           },
           options: {
             headers: {
@@ -965,7 +1049,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     const data = {
       description:
-        "You can invite people to subscribe for that Telegram Bot and get benefits\\!\nJust share link below and people\\, that will start the bot with your referral code will get free 3 days of Premium\\.",
+        "You can invite people to subscribe for that Telegram Bot and get benefits!\nJust share link below and people, that will start the bot with your referral code will get free 3 days of Premium.",
       interaction: {
         inline_keyboard: [
           [
@@ -1020,7 +1104,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     const data = {
       description:
-        "I am Telegram bot, that can help you with any kind of text questions with the help of AI\\.\nIf you have a question, just write it to the chat and I will choose the most relevant AI model for answer\\.\n\nIf you have troubles with Telegram Bot, just write to Support Manager and describle the situation\\. **DO NOT delete autogenerated message** during first wite to Support Manager\\. That message will help us to understand what profile in our system you have\\.",
+        "I am Telegram bot, that can help you with any kind of text questions with the help of AI.\nIf you have a question, just write it to the chat and I will choose the most relevant AI model for answer.\n\nIf you have troubles with Telegram Bot, just write to Support Manager and describle the situation. **DO NOT delete autogenerated message** during first wite to Support Manager. That message will help us to understand what profile in our system you have.",
       interaction: {
         inline_keyboard: [
           [
@@ -1097,7 +1181,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "If you want to use AI models, buy subscription\\.",
+              description: "If you want to use AI models, buy subscription.",
               interaction: {
                 inline_keyboard: [
                   [
@@ -1123,7 +1207,48 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         messageFromRbacModuleSubject,
       );
 
+      const statusMessage =
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            data: {
+              description:
+                "Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + props.jwtToken,
+              },
+            },
+          },
+        );
+
+      console.log(
+        "🚀 ~ openRouterReplyMessageCreate ~ statusMessage:",
+        statusMessage,
+      );
+
       const openRouter = new OpenRouter();
+
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description:
+              "Проверяю доступные модели для обработки запроса. Пожалуйста, подождите.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
 
       const models = await openRouter.getModels();
 
@@ -1170,6 +1295,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       //   "x-ai/grok-code-fast-1",
       // ];
 
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description:
+              "Определяю язык вашего запроса. Пожалуйста, подождите.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+
       const detectedLanguageResult = await openRouter.generate({
         model: "google/gemini-2.5-flash",
         reasoning: false,
@@ -1197,7 +1340,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+              description: "Упс! Что-то пошло не так, попробуйте еще раз",
             },
             options: {
               headers: {
@@ -1207,6 +1350,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         );
       }
+
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description:
+              "Выбираю лучшую модель для обработки вашего запроса. Пожалуйста, подождите.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
 
       const detectedLanguage = detectedLanguageResult.text;
 
@@ -1228,7 +1389,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+              description: "Упс! Что-то пошло не так, попробуйте еще раз",
             },
             options: {
               headers: {
@@ -1248,6 +1409,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       let generatedMessageDescription = "";
       const data: any = {};
+
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description: `Генерирую ответ с помощью *${selectModelForRequest}*. Пожалуйста, подождите.`,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
 
       // Generate content (text or image)
       const result = await openRouter.generate({
@@ -1273,7 +1451,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+              description: "Упс! Что-то пошло не так, попробуйте еще раз",
             },
             options: {
               headers: {
@@ -1311,9 +1489,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
 
-      data.description = telegramMarkdownFormatter({
-        input: generatedMessageDescription,
-      });
+      data.description = generatedMessageDescription;
 
       if (data.description == "") {
         return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
@@ -1322,7 +1498,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+              description: "Упс! Что-то пошло не так, попробуйте еще раз",
             },
             options: {
               headers: {
@@ -1353,7 +1529,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс\\! Что\\-то пошло не так, попробуйте еще раз",
+            description: "Упс! Что-то пошло не так, попробуйте еще раз",
           },
           options: {
             headers: {

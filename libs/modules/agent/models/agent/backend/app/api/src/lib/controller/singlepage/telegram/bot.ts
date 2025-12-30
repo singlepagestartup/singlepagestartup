@@ -153,6 +153,37 @@ export class Handler {
       });
     }
 
+    const actionPayload = socialModuleAction.payload as {
+      type?: string;
+      messageId?: string;
+    };
+
+    if (actionPayload?.type === "message-updated" && actionPayload.messageId) {
+      const socialModuleMessage = await socialModuleMessageApi.findById({
+        id: actionPayload.messageId,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (!socialModuleMessage) {
+        return c.json({
+          data: false,
+        });
+      }
+
+      await this.service.telegramBotMessageUpdate({
+        socialModuleChat,
+        socialModuleMessage,
+      });
+
+      return c.json({
+        data: true,
+      });
+    }
+
     const socialModuleProfilesToChats =
       await socialModuleProfilesToChatsToApi.find({
         params: {
@@ -299,9 +330,7 @@ export class Handler {
       });
     }
 
-    if (
-      !["POST", "PATCH"].includes(props.data.rbacModuleAction.payload?.method)
-    ) {
+    if (props.data.rbacModuleAction.payload?.method !== "POST") {
       return c.json({
         data: false,
       });
