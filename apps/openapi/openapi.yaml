@@ -594,6 +594,138 @@ paths:
   /notification/topics-to-notifications/{id}:
     $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications~1{id}"
 
+  # social/action
+  /social/actions:
+    $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/paths.yaml#/paths/~1social~1actions"
+  /social/actions/{id}:
+    $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/paths.yaml#/paths/~1social~1actions~1{id}"
+
+  # social/attribute
+  /social/attributes:
+    $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1social~1attributes"
+  /social/attributes/{id}:
+    $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1social~1attributes~1{id}"
+
+  # social/attribute-key
+  /social/attribute-keys:
+    $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys"
+  /social/attribute-keys/{id}:
+    $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys~1{id}"
+
+  # social/chat
+  /social/chats:
+    $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats"
+  /social/chats/{id}:
+    $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats~1{id}"
+
+  # social/message
+  /social/messages:
+    $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages"
+  /social/messages/{id}:
+    $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages~1{id}"
+
+  # social/profile
+  /social/profiles:
+    $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles"
+  /social/profiles/{id}:
+    $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles~1{id}"
+
+  # social/thread
+  /social/threads:
+    $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads"
+  /social/threads/{id}:
+    $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads~1{id}"
+
+  # social/widget
+  /social/widgets:
+    $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1social~1widgets"
+  /social/widgets/{id}:
+    $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1social~1widgets~1{id}"
+
+  # social/relations/attribute-keys-to-attributes
+  /social/attribute-keys-to-attributes:
+    $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys-to-attributes"
+  /social/attribute-keys-to-attributes/{id}:
+    $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys-to-attributes~1{id}"
+
+  # social/relations/chats-to-actions
+  /social/chats-to-actions:
+    $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-actions"
+  /social/chats-to-actions/{id}:
+    $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-actions~1{id}"
+
+  # social/relations/chats-to-messages
+  /social/chats-to-messages:
+    $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-messages"
+  /social/chats-to-messages/{id}:
+    $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-messages~1{id}"
+
+  # social/relations/chats-to-threads
+  /social/chats-to-threads:
+    $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads"
+  /social/chats-to-threads/{id}:
+    $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads~1{id}"
+
+  # social/relations/messages-to-file-storage-module-files
+  /social/messages-to-file-storage-module-files:
+    $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files"
+  /social/messages-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files~1{id}"
+
+  # social/relations/profiles-to-actions
+  /social/profiles-to-actions:
+    $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-actions"
+  /social/profiles-to-actions/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-actions~1{id}"
+
+  # social/relations/profiles-to-attributes
+  /social/profiles-to-attributes:
+    $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-attributes"
+  /social/profiles-to-attributes/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-attributes~1{id}"
+
+  # social/relations/profiles-to-chats
+  /social/profiles-to-chats:
+    $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-chats"
+  /social/profiles-to-chats/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-chats~1{id}"
+
+  # social/relations/profiles-to-ecommerce-module-products
+  /social/profiles-to-ecommerce-module-products:
+    $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-ecommerce-module-products"
+  /social/profiles-to-ecommerce-module-products/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-ecommerce-module-products~1{id}"
+
+  # social/relations/profiles-to-file-storage-module-files
+  /social/profiles-to-file-storage-module-files:
+    $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-file-storage-module-files"
+  /social/profiles-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-file-storage-module-files~1{id}"
+
+  # social/relations/profiles-to-messages
+  /social/profiles-to-messages:
+    $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-messages"
+  /social/profiles-to-messages/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-messages~1{id}"
+
+  # social/relations/profiles-to-website-builder-module-widgets
+  /social/profiles-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-website-builder-module-widgets"
+  /social/profiles-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-website-builder-module-widgets~1{id}"
+
+  # social/relations/threads-to-ecommerce-module-products
+  /social/threads-to-ecommerce-module-products:
+    $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products"
+  /social/threads-to-ecommerce-module-products/{id}:
+    $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products~1{id}"
+
+  # social/relations/threads-to-messages
+  /social/threads-to-messages:
+    $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages"
+  /social/threads-to-messages/{id}:
+    $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -995,6 +1127,94 @@ components:
       $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/notification-module-topics-to-notifications.yaml"
     "notification-module-topics-to-notifications-input":
       $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/notification-module-topics-to-notifications-input.yaml"
+    "social-action":
+      $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/social-action.yaml"
+    "social-action-input":
+      $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/social-action-input.yaml"
+    "social-attribute":
+      $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/social-attribute.yaml"
+    "social-attribute-input":
+      $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/social-attribute-input.yaml"
+    "social-attribute-key":
+      $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/social-attribute-key.yaml"
+    "social-attribute-key-input":
+      $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/social-attribute-key-input.yaml"
+    "social-chat":
+      $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+    "social-chat-input":
+      $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat-input.yaml"
+    "social-message":
+      $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+    "social-message-input":
+      $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/social-message-input.yaml"
+    "social-profile":
+      $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/social-profile.yaml"
+    "social-profile-input":
+      $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/social-profile-input.yaml"
+    "social-thread":
+      $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
+    "social-thread-input":
+      $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread-input.yaml"
+    "social-widget":
+      $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/social-widget.yaml"
+    "social-widget-input":
+      $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/social-widget-input.yaml"
+    "social-attribute-keys-to-attributes":
+      $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/social-attribute-keys-to-attributes.yaml"
+    "social-attribute-keys-to-attributes-input":
+      $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/social-attribute-keys-to-attributes-input.yaml"
+    "social-chats-to-actions":
+      $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/social-chats-to-actions.yaml"
+    "social-chats-to-actions-input":
+      $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/social-chats-to-actions-input.yaml"
+    "social-chats-to-messages":
+      $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/social-chats-to-messages.yaml"
+    "social-chats-to-messages-input":
+      $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/social-chats-to-messages-input.yaml"
+    "social-chats-to-threads":
+      $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/social-chats-to-threads.yaml"
+    "social-chats-to-threads-input":
+      $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/social-chats-to-threads-input.yaml"
+    "social-messages-to-file-storage-module-files":
+      $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/social-messages-to-file-storage-module-files.yaml"
+    "social-messages-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/social-messages-to-file-storage-module-files-input.yaml"
+    "social-profiles-to-actions":
+      $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/social-profiles-to-actions.yaml"
+    "social-profiles-to-actions-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/social-profiles-to-actions-input.yaml"
+    "social-profiles-to-attributes":
+      $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/social-profiles-to-attributes.yaml"
+    "social-profiles-to-attributes-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/social-profiles-to-attributes-input.yaml"
+    "social-profiles-to-chats":
+      $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/social-profiles-to-chats.yaml"
+    "social-profiles-to-chats-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/social-profiles-to-chats-input.yaml"
+    "social-profiles-to-ecommerce-module-products":
+      $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/social-profiles-to-ecommerce-module-products.yaml"
+    "social-profiles-to-ecommerce-module-products-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/social-profiles-to-ecommerce-module-products-input.yaml"
+    "social-profiles-to-file-storage-module-files":
+      $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/social-profiles-to-file-storage-module-files.yaml"
+    "social-profiles-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/social-profiles-to-file-storage-module-files-input.yaml"
+    "social-profiles-to-messages":
+      $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/social-profiles-to-messages.yaml"
+    "social-profiles-to-messages-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/social-profiles-to-messages-input.yaml"
+    "social-profiles-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/social-profiles-to-website-builder-module-widgets.yaml"
+    "social-profiles-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/social-profiles-to-website-builder-module-widgets-input.yaml"
+    "social-threads-to-ecommerce-module-products":
+      $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/social-threads-to-ecommerce-module-products.yaml"
+    "social-threads-to-ecommerce-module-products-input":
+      $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/social-threads-to-ecommerce-module-products-input.yaml"
+    "social-threads-to-messages":
+      $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/social-threads-to-messages.yaml"
+    "social-threads-to-messages-input":
+      $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/social-threads-to-messages-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
