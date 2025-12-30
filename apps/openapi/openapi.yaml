@@ -174,6 +174,30 @@ paths:
   /rbac/subjects-to-social-module-profiles/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles~1{id}"
 
+  # agent/agent
+  /agent/agents:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents"
+  /agent/agents/{id}:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1{id}"
+
+  # agent/widget
+  /agent/widgets:
+    $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1agent~1widgets"
+  /agent/widgets/{id}:
+    $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1agent~1widgets~1{id}"
+
+  # analytic/metric
+  /analytic/metrics:
+    $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1metrics"
+  /analytic/metrics/{id}:
+    $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1metrics~1{id}"
+
+  # analytic/widget
+  /analytic/widgets:
+    $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets"
+  /analytic/widgets/{id}:
+    $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -295,6 +319,22 @@ components:
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles.yaml"
     "rbac-subjects-to-social-module-profiles-input":
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles-input.yaml"
+    "agent-agent":
+      $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/agent-agent.yaml"
+    "agent-agent-input":
+      $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/agent-agent-input.yaml"
+    "agent-widget":
+      $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/agent-widget.yaml"
+    "agent-widget-input":
+      $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/agent-widget-input.yaml"
+    "analytic-metric":
+      $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/analytic-metric.yaml"
+    "analytic-metric-input":
+      $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/analytic-metric-input.yaml"
+    "analytic-widget":
+      $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/analytic-widget.yaml"
+    "analytic-widget-input":
+      $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/analytic-widget-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
