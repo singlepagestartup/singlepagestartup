@@ -92,3 +92,24 @@ paths:
             application/json:
               schema:
                 $ref: "notification-module-topic.yaml"
+
+  /notification/topics/send-all:
+    post:
+      tags:
+        - "notification-module-topic"
+      summary: Send all
+      description: Send notification to all topics
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Topic
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-topic.yaml"

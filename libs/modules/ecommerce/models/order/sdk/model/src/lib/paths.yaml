@@ -92,3 +92,150 @@ paths:
             application/json:
               schema:
                 $ref: "ecommerce-order.yaml"
+
+  /ecommerce/orders/{id}/checkout-attributes/{billingModuleCurrencyId}:
+    get:
+      tags:
+        - "ecommerce-order"
+      summary: Checkout attributes
+      description: Retrieve checkout attributes for an order
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: billingModuleCurrencyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Checkout attributes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount:
+                    type: number
+                  type:
+                    type: string
+                  interval:
+                    type: string
+                required:
+                  - amount
+                  - type
+                  - interval
+
+  /ecommerce/orders/clear-old-orders:
+    post:
+      tags:
+        - "ecommerce-order"
+      summary: Clear old orders
+      description: Clear old orders
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                required:
+                  - ok
+
+  /ecommerce/orders/{id}/total:
+    get:
+      tags:
+        - "ecommerce-order"
+      summary: Order totals
+      description: Retrieve totals for an order
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    total:
+                      type: number
+                    billingModuleCurrency:
+                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+                  required:
+                    - total
+                    - billingModuleCurrency
+
+  /ecommerce/orders/{id}/quantity:
+    get:
+      tags:
+        - "ecommerce-order"
+      summary: Order quantity
+      description: Retrieve quantity for an order
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Quantity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+
+  /ecommerce/orders/{id}/orders-to-products/{orderToProductId}:
+    patch:
+      tags:
+        - "ecommerce-order"
+      summary: Update order product
+      description: Update order to product relation
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: orderToProductId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-order.yaml"
+
+  /ecommerce/orders/{id}/check:
+    post:
+      tags:
+        - "ecommerce-order"
+      summary: Check order
+      description: Check order
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-order.yaml"

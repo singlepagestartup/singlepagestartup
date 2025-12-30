@@ -92,3 +92,36 @@ paths:
             application/json:
               schema:
                 $ref: "crm-form.yaml"
+
+  /crm/forms/{id}/requests:
+    post:
+      tags:
+        - "crm-form"
+      summary: Create request
+      description: Create request for a form
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Form with request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "crm-form.yaml"
+                  - type: object
+                    properties:
+                      formsToRequests:
+                        allOf:
+                          - $ref: "../../../../../../../../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/crm-forms-to-requests.yaml"
+                          - type: object
+                            properties:
+                              request:
+                                $ref: "../../../../../../../../../libs/modules/crm/models/request/sdk/model/src/lib/crm-request.yaml"

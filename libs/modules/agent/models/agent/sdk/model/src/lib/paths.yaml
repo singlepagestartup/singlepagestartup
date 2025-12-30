@@ -92,3 +92,33 @@ paths:
             application/json:
               schema:
                 $ref: "agent-agent.yaml"
+
+  /agent/agents/telegram-bot:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Telegram bot action
+      description: Trigger telegram bot action
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                rbacModuleAction:
+                  $ref: "../../../../../../../../../libs/modules/rbac/models/action/sdk/model/src/lib/rbac-action.yaml"
+              required:
+                - rbacModuleAction
+      responses:
+        "200":
+          description: Telegram bot result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                required:
+                  - result

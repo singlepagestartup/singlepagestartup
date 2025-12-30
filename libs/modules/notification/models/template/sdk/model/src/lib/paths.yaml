@@ -92,3 +92,26 @@ paths:
             application/json:
               schema:
                 $ref: "notification-module-template.yaml"
+
+  /notification/templates/{id}/render:
+    post:
+      tags:
+        - "notification-module-template"
+      summary: Render template
+      description: Render template
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Rendered template
+          content:
+            application/json:
+              schema:
+                type: string

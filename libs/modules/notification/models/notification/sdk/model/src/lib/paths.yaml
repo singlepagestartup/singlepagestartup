@@ -92,3 +92,26 @@ paths:
             application/json:
               schema:
                 $ref: "notification-module-notification.yaml"
+
+  /notification/notifications/{id}/send:
+    post:
+      tags:
+        - "notification-module-notification"
+      summary: Send notification
+      description: Send notification
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Notification
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-notification.yaml"

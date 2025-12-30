@@ -92,3 +92,55 @@ paths:
             application/json:
               schema:
                 $ref: "file-storage-file.yaml"
+
+  /file-storage/files/create-from-url:
+    post:
+      tags:
+        - "file-storage-file"
+      summary: Create from URL
+      description: Create file from URL
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                containerClassName:
+                  type: string
+                adminTitle:
+                  type: string
+                className:
+                  type: string
+              required:
+                - url
+      responses:
+        "200":
+          description: File
+          content:
+            application/json:
+              schema:
+                $ref: "file-storage-file.yaml"
+
+  /file-storage/files/generate:
+    post:
+      tags:
+        - "file-storage-file"
+      summary: Generate file
+      description: Generate file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: File
+          content:
+            application/json:
+              schema:
+                $ref: "file-storage-file.yaml"

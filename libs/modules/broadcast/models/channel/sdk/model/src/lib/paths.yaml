@@ -92,3 +92,90 @@ paths:
             application/json:
               schema:
                 $ref: "broadcast-channel.yaml"
+
+  /broadcast/channels/push-message:
+    post:
+      tags:
+        - "broadcast-channel"
+      summary: Push message
+      description: Push a message to broadcast channels
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Broadcast channel
+          content:
+            application/json:
+              schema:
+                $ref: "broadcast-channel.yaml"
+
+  /broadcast/channels/{id}/messages:
+    get:
+      tags:
+        - "broadcast-channel"
+      summary: List messages
+      description: Retrieve messages for a channel
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/broadcast/models/message/sdk/model/src/lib/broadcast-message.yaml"
+
+    post:
+      tags:
+        - "broadcast-channel"
+      summary: Create message
+      description: Create a message for a channel
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/broadcast/models/message/sdk/model/src/lib/broadcast-message.yaml"
+
+  /broadcast/channels/{id}/messages/{messageId}:
+    delete:
+      tags:
+        - "broadcast-channel"
+      summary: Delete message
+      description: Delete a message for a channel
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/broadcast/models/message/sdk/model/src/lib/broadcast-message.yaml"

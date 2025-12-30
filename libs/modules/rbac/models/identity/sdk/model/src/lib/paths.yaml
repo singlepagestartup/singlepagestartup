@@ -92,3 +92,47 @@ paths:
             application/json:
               schema:
                 $ref: "rbac-identity.yaml"
+
+  /rbac/identities/email-and-password:
+    post:
+      tags:
+        - "rbac-identity"
+      summary: Email and password
+      description: Create identity by email and password
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Identity
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-identity.yaml"
+
+  /rbac/identities/{id}/change-password:
+    patch:
+      tags:
+        - "rbac-identity"
+      summary: Change password
+      description: Change identity password
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Identity
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-identity.yaml"

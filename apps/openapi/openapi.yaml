@@ -29,6 +29,12 @@ paths:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages"
   /host/pages/{id}:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1{id}"
+  /host/pages/find-by-url:
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1find-by-url"
+  /host/pages/urls:
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1urls"
+  /host/pages/url-segment-value:
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1url-segment-value"
 
   # host/metadata
   /host/metadata:
@@ -83,12 +89,18 @@ paths:
     $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities"
   /rbac/identities/{id}:
     $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1{id}"
+  /rbac/identities/email-and-password:
+    $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1email-and-password"
+  /rbac/identities/{id}/change-password:
+    $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1{id}~1change-password"
 
   # rbac/permission
   /rbac/permissions:
     $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions"
   /rbac/permissions/{id}:
     $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions~1{id}"
+  /rbac/permissions/find-by-route:
+    $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions~1find-by-route"
 
   # rbac/role
   /rbac/roles:
@@ -231,6 +243,8 @@ paths:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents"
   /agent/agents/{id}:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1{id}"
+  /agent/agents/telegram-bot:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1telegram-bot"
 
   # agent/widget
   /agent/widgets:
@@ -267,6 +281,12 @@ paths:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents"
   /billing/payment-intents/{id}:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}"
+  /billing/payment-intents/{id}/{provider}:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1{provider}"
+  /billing/payment-intents/{provider}/webhook:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{provider}~1webhook"
+  /billing/payment-intents/{id}/check:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}~1check"
 
   # billing/widget
   /billing/widgets:
@@ -351,6 +371,12 @@ paths:
     $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels"
   /broadcast/channels/{id}:
     $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1{id}"
+  /broadcast/channels/push-message:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1push-message"
+  /broadcast/channels/{id}/messages:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1{id}~1messages"
+  /broadcast/channels/{id}/messages/{messageId}:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1{id}~1messages~1{messageId}"
 
   # broadcast/message
   /broadcast/messages:
@@ -369,6 +395,8 @@ paths:
     $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms"
   /crm/forms/{id}:
     $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms~1{id}"
+  /crm/forms/{id}/requests:
+    $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms~1{id}~1requests"
 
   # crm/input
   /crm/inputs:
@@ -459,6 +487,18 @@ paths:
     $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders"
   /ecommerce/orders/{id}:
     $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}"
+  /ecommerce/orders/{id}/checkout-attributes/{billingModuleCurrencyId}:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}~1checkout-attributes~1{billingModuleCurrencyId}"
+  /ecommerce/orders/clear-old-orders:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1clear-old-orders"
+  /ecommerce/orders/{id}/total:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}~1total"
+  /ecommerce/orders/{id}/quantity:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}~1quantity"
+  /ecommerce/orders/{id}/orders-to-products/{orderToProductId}:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}~1orders-to-products~1{orderToProductId}"
+  /ecommerce/orders/{id}/check:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}~1check"
 
   # ecommerce/product
   /ecommerce/products:
@@ -597,6 +637,10 @@ paths:
     $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files"
   /file-storage/files/{id}:
     $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1{id}"
+  /file-storage/files/create-from-url:
+    $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1create-from-url"
+  /file-storage/files/generate:
+    $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1generate"
 
   # file-storage/widget
   /file-storage/widgets:
@@ -615,18 +659,24 @@ paths:
     $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications"
   /notification/notifications/{id}:
     $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications~1{id}"
+  /notification/notifications/{id}/send:
+    $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications~1{id}~1send"
 
   # notification/template
   /notification/templates:
     $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates"
   /notification/templates/{id}:
     $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates~1{id}"
+  /notification/templates/{id}/render:
+    $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates~1{id}~1render"
 
   # notification/topic
   /notification/topics:
     $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics"
   /notification/topics/{id}:
     $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics~1{id}"
+  /notification/topics/send-all:
+    $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics~1send-all"
 
   # notification/widget
   /notification/widgets:

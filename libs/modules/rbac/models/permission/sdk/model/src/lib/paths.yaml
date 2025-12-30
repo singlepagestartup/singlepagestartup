@@ -92,3 +92,35 @@ paths:
             application/json:
               schema:
                 $ref: "rbac-permission.yaml"
+
+  /rbac/permissions/find-by-route:
+    get:
+      tags:
+        - "rbac-permission"
+      summary: Find by route
+      description: Find permission by route
+      parameters:
+        - name: permission
+          in: query
+          required: true
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            properties:
+              route:
+                type: string
+              method:
+                type: string
+              type:
+                type: string
+            required:
+              - route
+              - method
+      responses:
+        "200":
+          description: Permission
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-permission.yaml"

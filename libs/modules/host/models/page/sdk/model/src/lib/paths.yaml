@@ -92,3 +92,70 @@ paths:
             application/json:
               schema:
                 $ref: "host-page.yaml"
+
+  /host/pages/find-by-url:
+    get:
+      tags:
+        - "host-page"
+      summary: Find by URL
+      description: Find a page by URL
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Page
+          content:
+            application/json:
+              schema:
+                $ref: "host-page.yaml"
+
+  /host/pages/urls:
+    get:
+      tags:
+        - "host-page"
+      summary: List URLs
+      description: Retrieve available page URLs
+      responses:
+        "200":
+          description: URLs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  urls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+
+  /host/pages/url-segment-value:
+    get:
+      tags:
+        - "host-page"
+      summary: URL segment value
+      description: Retrieve URL segment value
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: segment
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Segment value
+          content:
+            application/json:
+              schema:
+                type: string

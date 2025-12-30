@@ -92,3 +92,111 @@ paths:
             application/json:
               schema:
                 $ref: "billing-payment-intent.yaml"
+
+  /billing/payment-intents/{id}/{provider}:
+    post:
+      tags:
+        - "billing-payment-intent"
+      summary: Payment intent provider
+      description: Create payment intent with provider
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                currencyId:
+                  type: string
+                  format: uuid
+                metadata:
+                  type: object
+                  additionalProperties: true
+              required:
+                - provider
+                - currencyId
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "billing-payment-intent.yaml"
+
+  /billing/payment-intents/{provider}/webhook:
+    post:
+      tags:
+        - "billing-payment-intent"
+      summary: Payment intent provider webhook
+      description: Handle provider webhook for payment intent
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                currency:
+                  type: string
+                total_amount:
+                  type: number
+                invoice_payload:
+                  type: string
+                telegram_payment_charge_id:
+                  type: string
+                provider_payment_charge_id:
+                  type: string
+              required:
+                - provider
+                - currency
+                - total_amount
+                - invoice_payload
+                - telegram_payment_charge_id
+                - provider_payment_charge_id
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "billing-payment-intent.yaml"
+
+  /billing/payment-intents/{id}/check:
+    post:
+      tags:
+        - "billing-payment-intent"
+      summary: Check payment intent
+      description: Check payment intent status
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "billing-payment-intent.yaml"
