@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      pageId:
+        type: string
+        format: uuid
+        description: Related page id
+      layoutId:
+        type: string
+        format: uuid
+        description: Related layout id
+    required:
+      - pageId
+      - layoutId

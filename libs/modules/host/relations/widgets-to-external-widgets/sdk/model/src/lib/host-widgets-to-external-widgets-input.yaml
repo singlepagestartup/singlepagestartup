@@ -1,3 +1,18 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      widgetId:
+        type: string
+        format: uuid
+        description: Related widget id
+      externalModule:
+        type: string
+        description: External module
+      externalWidgetId:
+        type: string
+        description: Related external widget id
+    required:
+      - widgetId
+      - externalModule
+      - externalWidgetId

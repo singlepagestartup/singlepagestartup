@@ -1,3 +1,19 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      profileId:
+        type: string
+        format: uuid
+        description: Related profile id
+      messageId:
+        type: string
+        format: uuid
+        description: Related message id
+      isRead:
+        type: boolean
+        description: Is read
+    required:
+      - profileId
+      - messageId
+      - isRead

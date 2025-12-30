@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      chatId:
+        type: string
+        format: uuid
+        description: Related chat id
+      actionId:
+        type: string
+        format: uuid
+        description: Related action id
+    required:
+      - chatId
+      - actionId

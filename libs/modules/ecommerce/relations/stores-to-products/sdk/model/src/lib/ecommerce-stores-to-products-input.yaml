@@ -1,3 +1,19 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      sku:
+        type: string
+        description: Sku
+      storeId:
+        type: string
+        format: uuid
+        description: Related store id
+      productId:
+        type: string
+        format: uuid
+        description: Related product id
+    required:
+      - sku
+      - storeId
+      - productId

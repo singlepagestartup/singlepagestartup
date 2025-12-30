@@ -1,3 +1,20 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      quantity:
+        type: integer
+        format: int32
+        description: Quantity
+      orderId:
+        type: string
+        format: uuid
+        description: Related order id
+      productId:
+        type: string
+        format: uuid
+        description: Related product id
+    required:
+      - quantity
+      - orderId
+      - productId

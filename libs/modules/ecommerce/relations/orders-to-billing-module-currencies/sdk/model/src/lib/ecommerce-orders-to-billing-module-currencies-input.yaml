@@ -1,3 +1,20 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      quantity:
+        type: integer
+        format: int32
+        description: Quantity
+      orderId:
+        type: string
+        format: uuid
+        description: Related order id
+      billingModuleCurrencyId:
+        type: string
+        format: uuid
+        description: Related billing module currency id
+    required:
+      - quantity
+      - orderId
+      - billingModuleCurrencyId

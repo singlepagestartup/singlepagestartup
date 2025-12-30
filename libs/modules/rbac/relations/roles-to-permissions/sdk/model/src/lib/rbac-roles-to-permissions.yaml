@@ -1,3 +1,19 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      roleId:
+        type: string
+        format: uuid
+        description: Related role id
+      permissionId:
+        type: string
+        format: uuid
+        description: Related permission id
+      condition:
+        type: string
+        description: Condition
+    required:
+      - roleId
+      - permissionId
+      - condition

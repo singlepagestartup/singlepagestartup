@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      subjectId:
+        type: string
+        format: uuid
+        description: Related subject id
+      blogModuleArticleId:
+        type: string
+        format: uuid
+        description: Related blog module article id
+    required:
+      - subjectId
+      - blogModuleArticleId

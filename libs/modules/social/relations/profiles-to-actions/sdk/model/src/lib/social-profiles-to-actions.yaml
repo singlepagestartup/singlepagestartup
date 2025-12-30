@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      profileId:
+        type: string
+        format: uuid
+        description: Related profile id
+      actionId:
+        type: string
+        format: uuid
+        description: Related action id
+    required:
+      - profileId
+      - actionId

@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model-input.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation-input.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation-input.yaml"
+  - type: object
+    properties:
+      roleId:
+        type: string
+        format: uuid
+        description: Related role id
+      ecommerceModuleProductId:
+        type: string
+        format: uuid
+        description: Related ecommerce module product id
+    required:
+      - roleId
+      - ecommerceModuleProductId

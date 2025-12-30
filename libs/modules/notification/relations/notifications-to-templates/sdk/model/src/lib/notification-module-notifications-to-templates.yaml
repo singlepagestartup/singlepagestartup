@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      notificationId:
+        type: string
+        format: uuid
+        description: Related notification id
+      templateId:
+        type: string
+        format: uuid
+        description: Related template id
+    required:
+      - notificationId
+      - templateId

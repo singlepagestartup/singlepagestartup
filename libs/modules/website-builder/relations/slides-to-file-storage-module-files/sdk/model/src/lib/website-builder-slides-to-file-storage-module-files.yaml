@@ -1,3 +1,15 @@
 allOf:
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
-  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/relation.yaml"
+  - type: object
+    properties:
+      slideId:
+        type: string
+        format: uuid
+        description: Related slide id
+      fileStorageModuleFileId:
+        type: string
+        format: uuid
+        description: Related file storage module file id
+    required:
+      - slideId
+      - fileStorageModuleFileId
