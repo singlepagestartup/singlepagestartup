@@ -294,6 +294,96 @@ paths:
   /blog/widgets-to-categories/{id}:
     $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories~1{id}"
 
+  # broadcast/channel
+  /broadcast/channels:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels"
+  /broadcast/channels/{id}:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1{id}"
+
+  # broadcast/message
+  /broadcast/messages:
+    $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1messages"
+  /broadcast/messages/{id}:
+    $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1messages~1{id}"
+
+  # broadcast/relations/channels-to-messages
+  /broadcast/channels-to-messages:
+    $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels-to-messages"
+  /broadcast/channels-to-messages/{id}:
+    $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels-to-messages~1{id}"
+
+  # crm/form
+  /crm/forms:
+    $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms"
+  /crm/forms/{id}:
+    $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms~1{id}"
+
+  # crm/input
+  /crm/inputs:
+    $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs"
+  /crm/inputs/{id}:
+    $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs~1{id}"
+
+  # crm/option
+  /crm/options:
+    $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options"
+  /crm/options/{id}:
+    $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options~1{id}"
+
+  # crm/request
+  /crm/requests:
+    $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/paths.yaml#/paths/~1crm~1requests"
+  /crm/requests/{id}:
+    $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/paths.yaml#/paths/~1crm~1requests~1{id}"
+
+  # crm/step
+  /crm/steps:
+    $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps"
+  /crm/steps/{id}:
+    $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps~1{id}"
+
+  # crm/widget
+  /crm/widgets:
+    $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets"
+  /crm/widgets/{id}:
+    $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets~1{id}"
+
+  # crm/relations/forms-to-requests
+  /crm/forms-to-requests:
+    $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-requests"
+  /crm/forms-to-requests/{id}:
+    $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-requests~1{id}"
+
+  # crm/relations/forms-to-steps
+  /crm/forms-to-steps:
+    $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-steps"
+  /crm/forms-to-steps/{id}:
+    $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-steps~1{id}"
+
+  # crm/relations/inputs-to-options
+  /crm/inputs-to-options:
+    $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs-to-options"
+  /crm/inputs-to-options/{id}:
+    $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs-to-options~1{id}"
+
+  # crm/relations/options-to-file-storage-module-files
+  /crm/options-to-file-storage-module-files:
+    $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options-to-file-storage-module-files"
+  /crm/options-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options-to-file-storage-module-files~1{id}"
+
+  # crm/relations/steps-to-inputs
+  /crm/steps-to-inputs:
+    $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps-to-inputs"
+  /crm/steps-to-inputs/{id}:
+    $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps-to-inputs~1{id}"
+
+  # crm/relations/widgets-to-forms
+  /crm/widgets-to-forms:
+    $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms"
+  /crm/widgets-to-forms/{id}:
+    $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -495,6 +585,66 @@ components:
       $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/blog-widgets-to-categories.yaml"
     "blog-widgets-to-categories-input":
       $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/blog-widgets-to-categories-input.yaml"
+    "broadcast-channel":
+      $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/broadcast-channel.yaml"
+    "broadcast-channel-input":
+      $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/broadcast-channel-input.yaml"
+    "broadcast-message":
+      $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/broadcast-message.yaml"
+    "broadcast-message-input":
+      $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/broadcast-message-input.yaml"
+    "broadcast-channels-to-messages":
+      $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/broadcast-channels-to-messages.yaml"
+    "broadcast-channels-to-messages-input":
+      $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/broadcast-channels-to-messages-input.yaml"
+    "crm-form":
+      $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/crm-form.yaml"
+    "crm-form-input":
+      $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/crm-form-input.yaml"
+    "crm-input":
+      $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/crm-input.yaml"
+    "crm-input-input":
+      $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/crm-input-input.yaml"
+    "crm-option":
+      $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/crm-option.yaml"
+    "crm-option-input":
+      $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/crm-option-input.yaml"
+    "crm-request":
+      $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/crm-request.yaml"
+    "crm-request-input":
+      $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/crm-request-input.yaml"
+    "crm-step":
+      $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/crm-step.yaml"
+    "crm-step-input":
+      $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/crm-step-input.yaml"
+    "crm-widget":
+      $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/crm-widget.yaml"
+    "crm-widget-input":
+      $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/crm-widget-input.yaml"
+    "crm-forms-to-requests":
+      $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/crm-forms-to-requests.yaml"
+    "crm-forms-to-requests-input":
+      $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/crm-forms-to-requests-input.yaml"
+    "crm-forms-to-steps":
+      $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/crm-forms-to-steps.yaml"
+    "crm-forms-to-steps-input":
+      $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/crm-forms-to-steps-input.yaml"
+    "crm-inputs-to-options":
+      $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/crm-inputs-to-options.yaml"
+    "crm-inputs-to-options-input":
+      $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/crm-inputs-to-options-input.yaml"
+    "crm-options-to-file-storage-module-files":
+      $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/crm-options-to-file-storage-module-files.yaml"
+    "crm-options-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/crm-options-to-file-storage-module-files-input.yaml"
+    "crm-steps-to-inputs":
+      $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/crm-steps-to-inputs.yaml"
+    "crm-steps-to-inputs-input":
+      $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/crm-steps-to-inputs-input.yaml"
+    "crm-widgets-to-forms":
+      $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms.yaml"
+    "crm-widgets-to-forms-input":
+      $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"
