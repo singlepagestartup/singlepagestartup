@@ -540,6 +540,60 @@ paths:
   /ecommerce/widgets-to-stores/{id}:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores~1{id}"
 
+  # file-storage/file
+  /file-storage/files:
+    $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files"
+  /file-storage/files/{id}:
+    $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1{id}"
+
+  # file-storage/widget
+  /file-storage/widgets:
+    $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets"
+  /file-storage/widgets/{id}:
+    $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets~1{id}"
+
+  # file-storage/relations/widgets-to-files
+  /file-storage/widgets-to-files:
+    $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets-to-files"
+  /file-storage/widgets-to-files/{id}:
+    $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets-to-files~1{id}"
+
+  # notification/notification
+  /notification/notifications:
+    $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications"
+  /notification/notifications/{id}:
+    $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications~1{id}"
+
+  # notification/template
+  /notification/templates:
+    $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates"
+  /notification/templates/{id}:
+    $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates~1{id}"
+
+  # notification/topic
+  /notification/topics:
+    $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics"
+  /notification/topics/{id}:
+    $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics~1{id}"
+
+  # notification/widget
+  /notification/widgets:
+    $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1notification~1widgets"
+  /notification/widgets/{id}:
+    $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1notification~1widgets~1{id}"
+
+  # notification/relations/notifications-to-templates
+  /notification/notifications-to-templates:
+    $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications-to-templates"
+  /notification/notifications-to-templates/{id}:
+    $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications-to-templates~1{id}"
+
+  # notification/relations/topics-to-notifications
+  /notification/topics-to-notifications:
+    $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications"
+  /notification/topics-to-notifications/{id}:
+    $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -905,6 +959,42 @@ components:
       $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/ecommerce-widgets-to-stores.yaml"
     "ecommerce-widgets-to-stores-input":
       $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/ecommerce-widgets-to-stores-input.yaml"
+    "file-storage-file":
+      $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/file-storage-file.yaml"
+    "file-storage-file-input":
+      $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/file-storage-file-input.yaml"
+    "file-storage-widget":
+      $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/file-storage-widget.yaml"
+    "file-storage-widget-input":
+      $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/file-storage-widget-input.yaml"
+    "file-storage-widgets-to-files":
+      $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/file-storage-widgets-to-files.yaml"
+    "file-storage-widgets-to-files-input":
+      $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/file-storage-widgets-to-files-input.yaml"
+    "notification-module-notification":
+      $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/notification-module-notification.yaml"
+    "notification-module-notification-input":
+      $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/notification-module-notification-input.yaml"
+    "notification-module-template":
+      $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/notification-module-template.yaml"
+    "notification-module-template-input":
+      $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/notification-module-template-input.yaml"
+    "notification-module-topic":
+      $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/notification-module-topic.yaml"
+    "notification-module-topic-input":
+      $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/notification-module-topic-input.yaml"
+    "notification-module-widget":
+      $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/notification-module-widget.yaml"
+    "notification-module-widget-input":
+      $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/notification-module-widget-input.yaml"
+    "notification-module-notifications-to-templates":
+      $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/notification-module-notifications-to-templates.yaml"
+    "notification-module-notifications-to-templates-input":
+      $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/notification-module-notifications-to-templates-input.yaml"
+    "notification-module-topics-to-notifications":
+      $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/notification-module-topics-to-notifications.yaml"
+    "notification-module-topics-to-notifications-input":
+      $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/notification-module-topics-to-notifications-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"

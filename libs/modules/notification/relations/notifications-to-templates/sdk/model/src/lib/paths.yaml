@@ -1,0 +1,94 @@
+paths:
+  /notification/notifications-to-templates:
+    get:
+      tags:
+        - "notification-module-notifications-to-templates"
+      summary: Get all entities
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "notification-module-notifications-to-templates.yaml"
+
+    post:
+      tags:
+        - "notification-module-notifications-to-templates"
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "notification-module-notifications-to-templates-input.yaml"
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-notifications-to-templates.yaml"
+
+  /notification/notifications-to-templates/{id}:
+    get:
+      tags:
+        - "notification-module-notifications-to-templates"
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-notifications-to-templates.yaml"
+
+    patch:
+      tags:
+        - "notification-module-notifications-to-templates"
+      summary: Update entity
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./notification-module-notifications-to-templates-input.yaml"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-notifications-to-templates.yaml"
+
+    delete:
+      tags:
+        - "notification-module-notifications-to-templates"
+      summary: Delete entity
+      description: Delete a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "notification-module-notifications-to-templates.yaml"
