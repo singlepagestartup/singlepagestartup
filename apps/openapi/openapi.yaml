@@ -101,6 +101,58 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects"
   /rbac/subjects/{id}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}"
+  /rbac/subjects/{id}/notify:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1notify"
+  /rbac/subjects/{id}/identities:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1identities"
+  /rbac/subjects/{id}/identities/{identityId}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1identities~1{identityId}"
+  /rbac/subjects/authentication/me:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1me"
+  /rbac/subjects/authentication/init:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1init"
+  /rbac/subjects/authentication/logout:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1logout"
+  /rbac/subjects/authentication/refresh:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1refresh"
+  /rbac/subjects/authentication/is-authorized:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1is-authorized"
+  /rbac/subjects/authentication/ethereum-virtual-machine:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1ethereum-virtual-machine"
+  /rbac/subjects/authentication/email-and-password/authentication:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1email-and-password~1authentication"
+  /rbac/subjects/authentication/email-and-password/registration:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1email-and-password~1registration"
+  /rbac/subjects/authentication/email-and-password/forgot-password:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1email-and-password~1forgot-password"
+  /rbac/subjects/authentication/email-and-password/reset-password:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1email-and-password~1reset-password"
+  /rbac/subjects/{id}/ecommerce-module/products/{productId}/checkout:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1products~1{productId}~1checkout"
+  /rbac/subjects/{id}/ecommerce-module/orders:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders"
+  /rbac/subjects/{id}/ecommerce-module/orders/checkout:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1checkout"
+  /rbac/subjects/{id}/ecommerce-module/orders/total:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1total"
+  /rbac/subjects/{id}/ecommerce-module/orders/quantity:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1quantity"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}"
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1ecommerce-module~1orders~1{orderId}~1checkout"
+  /rbac/subjects/{id}/crm-module/form/{crmModuleFormId}/request:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1crm-module~1form~1{crmModuleFormId}~1request"
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1social-module~1profiles~1{socialModuleProfileId}~1chats"
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1social-module~1profiles~1{socialModuleProfileId}~1chats~1{socialModuleChatId}"
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/messages:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1social-module~1profiles~1{socialModuleProfileId}~1chats~1{socialModuleChatId}~1messages"
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/messages/{socialModuleMessageId}/react:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1social-module~1profiles~1{socialModuleProfileId}~1chats~1{socialModuleChatId}~1messages~1{socialModuleMessageId}~1react"
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/actions:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1social-module~1profiles~1{socialModuleProfileId}~1chats~1{socialModuleChatId}~1actions"
 
   # rbac/widget
   /rbac/widgets:

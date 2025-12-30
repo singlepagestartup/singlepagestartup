@@ -92,3 +92,1052 @@ paths:
             application/json:
               schema:
                 $ref: "rbac-subject.yaml"
+
+  /rbac/subjects/{id}/notify:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Notify subject
+      description: Send notification to subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Notification result
+          content:
+            application/json:
+              schema:
+                type: object
+                nullable: true
+                properties:
+                  notificationService:
+                    type: object
+                    properties:
+                      notifications:
+                        type: array
+                        items:
+                          $ref: "../../../../../../../../../libs/modules/notification/models/notification/sdk/model/src/lib/notification-module-notification.yaml"
+
+  /rbac/subjects/{id}/identities:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List identities
+      description: Retrieve identities for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: List of identities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/rbac/models/identity/sdk/model/src/lib/rbac-identity.yaml"
+
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create identity
+      description: Create identity for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+  /rbac/subjects/{id}/identities/{identityId}:
+    patch:
+      tags:
+        - "rbac-subject"
+      summary: Update identity
+      description: Update identity for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: identityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+    delete:
+      tags:
+        - "rbac-subject"
+      summary: Delete identity
+      description: Delete identity for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: identityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+  /rbac/subjects/authentication/me:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Authentication me
+      description: Get current authenticated subject
+      responses:
+        "200":
+          description: Current subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+                nullable: true
+
+  /rbac/subjects/authentication/init:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Authentication init
+      description: Initialize authentication session
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/logout:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Authentication logout
+      description: Logout current subject
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/refresh:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Authentication refresh
+      description: Refresh authentication tokens
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+              required:
+                - refresh
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/is-authorized:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Authentication is authorized
+      description: Check permissions for a route
+      parameters:
+        - name: permission
+          in: query
+          required: true
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            properties:
+              route:
+                type: string
+              method:
+                type: string
+              type:
+                type: string
+            required:
+              - route
+              - method
+      responses:
+        "200":
+          description: Authorization result
+          content:
+            application/json:
+              schema:
+                type: object
+                nullable: true
+                properties:
+                  ok:
+                    type: boolean
+
+  /rbac/subjects/authentication/ethereum-virtual-machine:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Authentication EVM
+      description: Authenticate using Ethereum signature
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                message:
+                  type: string
+                signature:
+                  type: string
+              required:
+                - address
+                - message
+                - signature
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/email-and-password/authentication:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Authentication by email and password
+      description: Authenticate using email and password
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+              required:
+                - login
+                - password
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/email-and-password/registration:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Registration by email and password
+      description: Register using email and password
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+              required:
+                - login
+                - password
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
+  /rbac/subjects/authentication/email-and-password/forgot-password:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Forgot password
+      description: Request password reset
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        "200":
+          description: Reset requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                required:
+                  - ok
+
+  /rbac/subjects/authentication/email-and-password/reset-password:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Reset password
+      description: Reset password using code
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                passwordConfirmation:
+                  type: string
+                code:
+                  type: string
+              required:
+                - password
+                - passwordConfirmation
+                - code
+      responses:
+        "200":
+          description: Reset result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                required:
+                  - ok
+
+  /rbac/subjects/{id}/ecommerce-module/products/{productId}/checkout:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Checkout product
+      description: Create checkout for a product
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  billingModule:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List orders
+      description: Retrieve ecommerce orders for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml"
+
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create order
+      description: Create ecommerce order for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  format: uuid
+                storeId:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: integer
+                  format: int32
+                billingModuleCurrencyId:
+                  type: string
+                  format: uuid
+              required:
+                - productId
+                - quantity
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "rbac-subject.yaml"
+                  - type: object
+                    properties:
+                      subjectsToEcommerceModuleOrders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            order:
+                              type: object
+                              properties:
+                                ordersToBillingModulePaymentIntents:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      billingModulePaymentIntent:
+                                        type: object
+                                        properties:
+                                          invoices:
+                                            type: array
+                                            items:
+                                              $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders/checkout:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Checkout orders
+      description: Checkout all orders for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                provider:
+                  type: string
+              required:
+                - email
+                - provider
+      responses:
+        "200":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  billingModule:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders/total:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Orders total
+      description: Get orders total grouped by currency
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    billingModuleCurrency:
+                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+                    total:
+                      type: number
+                    orders:
+                      type: array
+                      items:
+                        allOf:
+                          - $ref: "../../../../../../../../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml"
+                          - type: object
+                            properties:
+                              total:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    total:
+                                      type: number
+                                    billingModuleCurrency:
+                                      $ref: "../../../../../../../../../libs/modules/billing/models/currency/sdk/model/src/lib/billing-currency.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders/quantity:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Orders quantity
+      description: Get total orders quantity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "200":
+          description: Quantity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}:
+    patch:
+      tags:
+        - "rbac-subject"
+      summary: Update order
+      description: Update ecommerce order for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+    delete:
+      tags:
+        - "rbac-subject"
+      summary: Delete order
+      description: Delete ecommerce order for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+  /rbac/subjects/{id}/ecommerce-module/orders/{orderId}/checkout:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Checkout order
+      description: Checkout a specific order for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "rbac-subject.yaml"
+                  - type: object
+                    properties:
+                      subjectsToEcommerceModuleOrders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            order:
+                              type: object
+                              properties:
+                                ordersToBillingModulePaymentIntents:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      billingModulePaymentIntent:
+                                        type: object
+                                        properties:
+                                          invoices:
+                                            type: array
+                                            items:
+                                              $ref: "../../../../../../../../../libs/modules/billing/models/invoice/sdk/model/src/lib/billing-invoice.yaml"
+
+  /rbac/subjects/{id}/crm-module/form/{crmModuleFormId}/request:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create CRM request
+      description: Create CRM form request for a subject
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: crmModuleFormId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "rbac-subject.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List chats
+      description: Retrieve chats for a social profile
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of chats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create chat
+      description: Create chat for a social profile
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat-input.yaml"
+      responses:
+        "200":
+          description: Created chat
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: Get chat
+      description: Retrieve chat for a social profile
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Chat
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+
+    delete:
+      tags:
+        - "rbac-subject"
+      summary: Delete chat
+      description: Delete chat for a social profile
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deleted chat
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/messages:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List messages
+      description: Retrieve messages for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create message
+      description: Create message for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message-input.yaml"
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      items:
+                        type: string
+      responses:
+        "200":
+          description: Created messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/messages/{socialModuleMessageId}/react:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: React to message
+      description: React to a chat message
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleMessageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Message
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/actions:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List actions
+      description: Retrieve actions for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of actions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/action/sdk/model/src/lib/social-action.yaml"
+
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create action
+      description: Create action for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "../../../../../../../../../libs/modules/social/models/action/sdk/model/src/lib/social-action-input.yaml"
+      responses:
+        "200":
+          description: Created action
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/action/sdk/model/src/lib/social-action.yaml"
