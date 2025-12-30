@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$ROOT_DIR/.env"
-HTTPYAC_FILE="$ROOT_DIR/.httpyac.json"
-HTTPYAC_TEMPLATE="$ROOT_DIR/.httpyac.json.example"
 API_ENV_FILE="$ROOT_DIR/../api/.env"
+TELEGRAM_ENV_FILE="$ROOT_DIR/../telegram/.env"
+OPENAPI_FILE="$ROOT_DIR/openapi.yaml"
 
 touch "$ENV_FILE"
 
@@ -33,55 +33,86 @@ elif [[ -n "${GITPOD_WORKSPACE_URL:-}" ]]; then
     upsert_env "NEXT_PUBLIC_TELEGRAM_SERVICE_URL" "$NEXT_PUBLIC_TELEGRAM_SERVICE_URL"
 fi
 
-generate_httpyac() {
-        if [[ -f "$HTTPYAC_TEMPLATE" ]]; then
-                cp "$HTTPYAC_TEMPLATE" "$HTTPYAC_FILE"
-        elif [[ ! -f "$HTTPYAC_FILE" ]]; then
-                cat > "$HTTPYAC_FILE" <<'JSON'
-{
-    "environments": {
-        "dev": {
-            "baseUrl": "https://api.example.com/api",
-            "contentType": "application/json"
-        },
-        "local": {
-            "baseUrl": "http://localhost:4000/api",
-            "contentType": "application/json"
-        },
-        "prod": {
-            "baseUrl": "https://api.singlepagestartup.com/api",
-            "contentType": "application/json"
-        }
-    }
+read_env_value() {
+    local file="$1"
+    local key="$2"
+    if [[ ! -f "$file" ]]; then
+        return
+    fi
+    grep "^${key}=" "$file" | tail -n 1 | cut -d '=' -f2- | sed -e 's/^\"//' -e 's/\"$//'
 }
-JSON
-        fi
 
-    if [[ ! -f "$API_ENV_FILE" ]]; then
-        echo "⚠️  Skipping httpYac env: $API_ENV_FILE not found"
+normalize_api_url() {
+    local url="$1"
+    if [[ -z "$url" ]]; then
+        return
+    fi
+    url="${url%/}"
+    if [[ "$url" == */api ]]; then
+        echo "$url"
+    else
+        echo "${url}/api"
+    fi
+}
+
+update_openapi_servers() {
+    if [[ ! -f "$OPENAPI_FILE" ]]; then
+        echo "⚠️  Skipping OpenAPI update: $OPENAPI_FILE not found"
         return
     fi
 
-    local api_url
-    api_url=$(grep "^NEXT_PUBLIC_API_SERVICE_URL=" "$API_ENV_FILE" | tail -n 1 | cut -d '=' -f2-)
+    local api_url telegram_url
+    api_url=$(read_env_value "$API_ENV_FILE" "NEXT_PUBLIC_API_SERVICE_URL")
+    api_url=$(normalize_api_url "$api_url")
+    telegram_url=$(read_env_value "$TELEGRAM_ENV_FILE" "NEXT_PUBLIC_TELEGRAM_SERVICE_URL")
+    telegram_url="${telegram_url%/}"
 
-    if [[ -z "$api_url" ]]; then
-        echo "⚠️  NEXT_PUBLIC_API_SERVICE_URL not found in $API_ENV_FILE"
+    python3 - <<PY
+from pathlib import Path
+
+openapi_file = Path(r'''$OPENAPI_FILE''')
+api_url = r'''$api_url'''
+telegram_url = r'''$telegram_url'''
+
+servers = [
+    ("http://localhost:4000/api", "Local development"),
+    ("https://api.singlepagestartup.com/api", "Production server"),
+]
+
+def add_server(url, desc):
+    if not url:
         return
-    fi
+    if url.endswith("/"):
+        url = url[:-1]
+    if all(s[0] != url for s in servers):
+        servers.append((url, desc))
 
-    local tmp="$HTTPYAC_FILE.tmp"
+add_server(api_url, "API service")
+add_server(telegram_url, "Telegram service")
 
-    jq \
-        --arg url "${api_url}/api" \
-        '.environments.dev.baseUrl = $url' \
-        "$HTTPYAC_FILE" > "$tmp"
+lines = openapi_file.read_text().splitlines()
+out = []
+i = 0
+while i < len(lines):
+    line = lines[i]
+    if line.startswith("servers:"):
+        out.append("servers:")
+        for url, desc in servers:
+            out.append(f"  - url: {url}")
+            out.append(f"    description: {desc}")
+        i += 1
+        while i < len(lines) and (lines[i].startswith(" ") or lines[i].strip() == ""):
+            i += 1
+        continue
+    out.append(line)
+    i += 1
 
-    mv "$tmp" "$HTTPYAC_FILE"
+openapi_file.write_text("\\n".join(out) + "\\n")
+PY
 
-    echo "✅ Generated $HTTPYAC_FILE (dev → ${api_url}/api)"
+    echo "✅ Updated servers in $OPENAPI_FILE"
 }
 
-generate_httpyac
+update_openapi_servers
 
 echo "Done."

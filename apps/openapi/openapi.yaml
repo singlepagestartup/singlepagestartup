@@ -967,9 +967,6 @@ components:
       name: session
       description: Session cookie authentication
 
-  parameters:
-    $ref: "./components/parameters.yaml"
-
   schemas:
     "host-layout":
       $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/host-layout.yaml"

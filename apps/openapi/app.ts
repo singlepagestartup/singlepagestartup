@@ -79,7 +79,7 @@ app.get("/openapi-bundled.yaml", () =>
   ),
 );
 
-app.get("/healthz", (c) => c.text("ok", 200 as ContentfulStatusCode));
+app.get("/health", (c) => c.text("ok", 200 as ContentfulStatusCode));
 
 app.options("*", (c) => c.text("OK", 204 as ContentfulStatusCode));
 

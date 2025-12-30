@@ -6,11 +6,10 @@
 apps/openapi/
 ├── openapi.yaml              # Root spec that wires every model via $ref
 ├── components/               # Shared parameters/responses
-├── models/                   # layout/page/widget/... folders + requests.http
-├── .httpyac.json             # Environments for the request collection
-├── requests.http             # Top-level collection when you need everything
+├── public/                   # Static Swagger UI assets + bundled spec
 ├── dist/                     # Generated static Redoc bundle (gitignored)
 ├── app.ts                    # Hono app that serves the spec + static HTML
+├── env.ts                    # Environment helpers for the OpenAPI app
 └── server.ts                 # Bun entrypoint used by Nx targets
 ```
 
@@ -35,17 +34,14 @@ nx run openapi:start
 - To view the static HTML without the server, build once and open `file:///workspaces/singlepagestartup/apps/openapi/dist/index.html` via Simple Browser.
 - `nx run openapi:build` pulls the Redoc runtime into `dist/redoc.standalone.js`, so hosted docs stay interactive even when external CDNs are blocked; override the source via `REDOC_CDN_URL` if you need a different version.
 
-## HTTP requests
+## Environment
 
-- Every model folder under `models/` has a matching `requests.http` file for httpYac.
-- Shared environments (`{{baseUrl}}`, `{{contentType}}`, tokens, etc.) live in `.httpyac.json`.
-- Run `./apps/openapi/create_env.sh` to refresh both `.env` and `.httpyac.json`.
+- Run `./apps/openapi/create_env.sh` to refresh `.env` and update OpenAPI servers from `apps/api/.env` and `apps/telegram/.env`.
 
 ## Updating the spec
 
-1. Change the contract → update `models/<model>/schema.yaml`.
-2. Add or adjust endpoints → edit `models/<model>/paths.yaml` (each file is already namespaced under `paths:`).
-3. Update sample requests → touch the corresponding `models/<model>/requests.http` (or the root `requests.http`).
-4. Modify `openapi.yaml` only when introducing a brand-new model folder (add the new `$ref`).
+1. Change the contract → update the module schema YAML in `libs/modules/**/sdk/model/src/lib`.
+2. Add or adjust endpoints → edit the module `paths.yaml` in `libs/modules/**/sdk/model/src/lib`.
+3. Modify `openapi.yaml` only when introducing a new model or relation (add the new `$ref`).
 
 After any edits, run `nx run openapi:build` (or `nx run openapi:dev`, which automatically rebuilds) so the Bun app continues serving the latest documentation.
