@@ -1,0 +1,3 @@
+allOf:
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/model.yaml"
+  - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/repository/database/internationalisation.yaml"

@@ -384,6 +384,162 @@ paths:
   /crm/widgets-to-forms/{id}:
     $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms~1{id}"
 
+  # ecommerce/attribute-key
+  /ecommerce/attribute-keys:
+    $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys"
+  /ecommerce/attribute-keys/{id}:
+    $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys~1{id}"
+
+  # ecommerce/attribute
+  /ecommerce/attributes:
+    $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes"
+  /ecommerce/attributes/{id}:
+    $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes~1{id}"
+
+  # ecommerce/category
+  /ecommerce/categories:
+    $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories"
+  /ecommerce/categories/{id}:
+    $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories~1{id}"
+
+  # ecommerce/order
+  /ecommerce/orders:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders"
+  /ecommerce/orders/{id}:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}"
+
+  # ecommerce/product
+  /ecommerce/products:
+    $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products"
+  /ecommerce/products/{id}:
+    $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products~1{id}"
+
+  # ecommerce/store
+  /ecommerce/stores:
+    $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores"
+  /ecommerce/stores/{id}:
+    $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores~1{id}"
+
+  # ecommerce/widget
+  /ecommerce/widgets:
+    $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets"
+  /ecommerce/widgets/{id}:
+    $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets~1{id}"
+
+  # ecommerce/relations/attribute-keys-to-attributes
+  /ecommerce/attribute-keys-to-attributes:
+    $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys-to-attributes"
+  /ecommerce/attribute-keys-to-attributes/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys-to-attributes~1{id}"
+
+  # ecommerce/relations/attributes-to-billing-module-currencies
+  /ecommerce/attributes-to-billing-module-currencies:
+    $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes-to-billing-module-currencies"
+  /ecommerce/attributes-to-billing-module-currencies/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes-to-billing-module-currencies~1{id}"
+
+  # ecommerce/relations/categories-to-file-storage-module-files
+  /ecommerce/categories-to-file-storage-module-files:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-file-storage-module-files"
+  /ecommerce/categories-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-file-storage-module-files~1{id}"
+
+  # ecommerce/relations/categories-to-products
+  /ecommerce/categories-to-products:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-products"
+  /ecommerce/categories-to-products/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-products~1{id}"
+
+  # ecommerce/relations/categories-to-website-builder-module-widgets
+  /ecommerce/categories-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-website-builder-module-widgets"
+  /ecommerce/categories-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-website-builder-module-widgets~1{id}"
+
+  # ecommerce/relations/orders-to-billing-module-currencies
+  /ecommerce/orders-to-billing-module-currencies:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-currencies"
+  /ecommerce/orders-to-billing-module-currencies/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-currencies~1{id}"
+
+  # ecommerce/relations/orders-to-billing-module-payment-intents
+  /ecommerce/orders-to-billing-module-payment-intents:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-payment-intents"
+  /ecommerce/orders-to-billing-module-payment-intents/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-payment-intents~1{id}"
+
+  # ecommerce/relations/orders-to-file-storage-module-files
+  /ecommerce/orders-to-file-storage-module-files:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-file-storage-module-files"
+  /ecommerce/orders-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-file-storage-module-files~1{id}"
+
+  # ecommerce/relations/orders-to-products
+  /ecommerce/orders-to-products:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products"
+  /ecommerce/orders-to-products/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products~1{id}"
+
+  # ecommerce/relations/products-to-attributes
+  /ecommerce/products-to-attributes:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes"
+  /ecommerce/products-to-attributes/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes~1{id}"
+
+  # ecommerce/relations/products-to-file-storage-module-files
+  /ecommerce/products-to-file-storage-module-files:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-file-storage-module-files"
+  /ecommerce/products-to-file-storage-module-files/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-file-storage-module-files~1{id}"
+
+  # ecommerce/relations/products-to-website-builder-module-widgets
+  /ecommerce/products-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-website-builder-module-widgets"
+  /ecommerce/products-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-website-builder-module-widgets~1{id}"
+
+  # ecommerce/relations/stores-to-attributes
+  /ecommerce/stores-to-attributes:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-attributes"
+  /ecommerce/stores-to-attributes/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-attributes~1{id}"
+
+  # ecommerce/relations/stores-to-orders
+  /ecommerce/stores-to-orders:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-orders"
+  /ecommerce/stores-to-orders/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-orders~1{id}"
+
+  # ecommerce/relations/stores-to-products
+  /ecommerce/stores-to-products:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products"
+  /ecommerce/stores-to-products/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}"
+
+  # ecommerce/relations/stores-to-products-to-attributes
+  /ecommerce/stores-to-products-to-attributes:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes"
+  /ecommerce/stores-to-products-to-attributes/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes~1{id}"
+
+  # ecommerce/relations/widgets-to-categories
+  /ecommerce/widgets-to-categories:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-categories"
+  /ecommerce/widgets-to-categories/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-categories~1{id}"
+
+  # ecommerce/relations/widgets-to-products
+  /ecommerce/widgets-to-products:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-products"
+  /ecommerce/widgets-to-products/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-products~1{id}"
+
+  # ecommerce/relations/widgets-to-stores
+  /ecommerce/widgets-to-stores:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores"
+  /ecommerce/widgets-to-stores/{id}:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores~1{id}"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -645,6 +801,110 @@ components:
       $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms.yaml"
     "crm-widgets-to-forms-input":
       $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
+    "ecommerce-attribute-key":
+      $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/ecommerce-attribute-key.yaml"
+    "ecommerce-attribute-key-input":
+      $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/ecommerce-attribute-key-input.yaml"
+    "ecommerce-attribute":
+      $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/ecommerce-attribute.yaml"
+    "ecommerce-attribute-input":
+      $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/ecommerce-attribute-input.yaml"
+    "ecommerce-category":
+      $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/ecommerce-category.yaml"
+    "ecommerce-category-input":
+      $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/ecommerce-category-input.yaml"
+    "ecommerce-order":
+      $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order.yaml"
+    "ecommerce-order-input":
+      $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/ecommerce-order-input.yaml"
+    "ecommerce-product":
+      $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/ecommerce-product.yaml"
+    "ecommerce-product-input":
+      $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/ecommerce-product-input.yaml"
+    "ecommerce-store":
+      $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/ecommerce-store.yaml"
+    "ecommerce-store-input":
+      $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/ecommerce-store-input.yaml"
+    "ecommerce-widget":
+      $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/ecommerce-widget.yaml"
+    "ecommerce-widget-input":
+      $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/ecommerce-widget-input.yaml"
+    "ecommerce-attribute-keys-to-attributes":
+      $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/ecommerce-attribute-keys-to-attributes.yaml"
+    "ecommerce-attribute-keys-to-attributes-input":
+      $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/ecommerce-attribute-keys-to-attributes-input.yaml"
+    "ecommerce-attributes-to-billing-module-currencies":
+      $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/ecommerce-attributes-to-billing-module-currencies.yaml"
+    "ecommerce-attributes-to-billing-module-currencies-input":
+      $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/ecommerce-attributes-to-billing-module-currencies-input.yaml"
+    "ecommerce-categories-to-file-storage-module-files":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/ecommerce-categories-to-file-storage-module-files.yaml"
+    "ecommerce-categories-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/ecommerce-categories-to-file-storage-module-files-input.yaml"
+    "ecommerce-categories-to-products":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/ecommerce-categories-to-products.yaml"
+    "ecommerce-categories-to-products-input":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/ecommerce-categories-to-products-input.yaml"
+    "ecommerce-categories-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/ecommerce-categories-to-website-builder-module-widgets.yaml"
+    "ecommerce-categories-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/ecommerce-categories-to-website-builder-module-widgets-input.yaml"
+    "ecommerce-orders-to-billing-module-currencies":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/ecommerce-orders-to-billing-module-currencies.yaml"
+    "ecommerce-orders-to-billing-module-currencies-input":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/ecommerce-orders-to-billing-module-currencies-input.yaml"
+    "ecommerce-orders-to-billing-module-payment-intents":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/ecommerce-orders-to-billing-module-payment-intents.yaml"
+    "ecommerce-orders-to-billing-module-payment-intents-input":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/ecommerce-orders-to-billing-module-payment-intents-input.yaml"
+    "ecommerce-orders-to-file-storage-module-files":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/ecommerce-orders-to-file-storage-module-files.yaml"
+    "ecommerce-orders-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/ecommerce-orders-to-file-storage-module-files-input.yaml"
+    "ecommerce-orders-to-products":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/ecommerce-orders-to-products.yaml"
+    "ecommerce-orders-to-products-input":
+      $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/ecommerce-orders-to-products-input.yaml"
+    "ecommerce-products-to-attributes":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/ecommerce-products-to-attributes.yaml"
+    "ecommerce-products-to-attributes-input":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/ecommerce-products-to-attributes-input.yaml"
+    "ecommerce-products-to-file-storage-module-files":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/ecommerce-products-to-file-storage-module-files.yaml"
+    "ecommerce-products-to-file-storage-module-files-input":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/ecommerce-products-to-file-storage-module-files-input.yaml"
+    "ecommerce-products-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/ecommerce-products-to-website-builder-module-widgets.yaml"
+    "ecommerce-products-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/ecommerce-products-to-website-builder-module-widgets-input.yaml"
+    "ecommerce-stores-to-attributes":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/ecommerce-stores-to-attributes.yaml"
+    "ecommerce-stores-to-attributes-input":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/ecommerce-stores-to-attributes-input.yaml"
+    "ecommerce-stores-to-orders":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/ecommerce-stores-to-orders.yaml"
+    "ecommerce-stores-to-orders-input":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/ecommerce-stores-to-orders-input.yaml"
+    "ecommerce-stores-to-products":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/ecommerce-stores-to-products.yaml"
+    "ecommerce-stores-to-products-input":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/ecommerce-stores-to-products-input.yaml"
+    "ecommerce-stores-to-products-to-attributes":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/ecommerce-stores-to-products-to-attributes.yaml"
+    "ecommerce-stores-to-products-to-attributes-input":
+      $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/ecommerce-stores-to-products-to-attributes-input.yaml"
+    "ecommerce-widgets-to-categories":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/ecommerce-widgets-to-categories.yaml"
+    "ecommerce-widgets-to-categories-input":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/ecommerce-widgets-to-categories-input.yaml"
+    "ecommerce-widgets-to-products":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/ecommerce-widgets-to-products.yaml"
+    "ecommerce-widgets-to-products-input":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/ecommerce-widgets-to-products-input.yaml"
+    "ecommerce-widgets-to-stores":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/ecommerce-widgets-to-stores.yaml"
+    "ecommerce-widgets-to-stores-input":
+      $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/ecommerce-widgets-to-stores-input.yaml"
 
   responses:
     $ref: "./components/responses.yaml"

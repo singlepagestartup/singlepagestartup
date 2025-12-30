@@ -1,0 +1,94 @@
+paths:
+  /ecommerce/categories-to-file-storage-module-files:
+    get:
+      tags:
+        - "ecommerce-categories-to-file-storage-module-files"
+      summary: Get all entities
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "ecommerce-categories-to-file-storage-module-files.yaml"
+
+    post:
+      tags:
+        - "ecommerce-categories-to-file-storage-module-files"
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "ecommerce-categories-to-file-storage-module-files-input.yaml"
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-categories-to-file-storage-module-files.yaml"
+
+  /ecommerce/categories-to-file-storage-module-files/{id}:
+    get:
+      tags:
+        - "ecommerce-categories-to-file-storage-module-files"
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-categories-to-file-storage-module-files.yaml"
+
+    patch:
+      tags:
+        - "ecommerce-categories-to-file-storage-module-files"
+      summary: Update entity
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./ecommerce-categories-to-file-storage-module-files-input.yaml"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-categories-to-file-storage-module-files.yaml"
+
+    delete:
+      tags:
+        - "ecommerce-categories-to-file-storage-module-files"
+      summary: Delete entity
+      description: Delete a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-categories-to-file-storage-module-files.yaml"

@@ -1,0 +1,94 @@
+paths:
+  /ecommerce/stores-to-products-to-attributes:
+    get:
+      tags:
+        - "ecommerce-stores-to-products-to-attributes"
+      summary: Get all entities
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "ecommerce-stores-to-products-to-attributes.yaml"
+
+    post:
+      tags:
+        - "ecommerce-stores-to-products-to-attributes"
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "ecommerce-stores-to-products-to-attributes-input.yaml"
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-stores-to-products-to-attributes.yaml"
+
+  /ecommerce/stores-to-products-to-attributes/{id}:
+    get:
+      tags:
+        - "ecommerce-stores-to-products-to-attributes"
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-stores-to-products-to-attributes.yaml"
+
+    patch:
+      tags:
+        - "ecommerce-stores-to-products-to-attributes"
+      summary: Update entity
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./ecommerce-stores-to-products-to-attributes-input.yaml"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-stores-to-products-to-attributes.yaml"
+
+    delete:
+      tags:
+        - "ecommerce-stores-to-products-to-attributes"
+      summary: Delete entity
+      description: Delete a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-stores-to-products-to-attributes.yaml"

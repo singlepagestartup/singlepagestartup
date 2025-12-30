@@ -1,0 +1,94 @@
+paths:
+  /ecommerce/widgets-to-stores:
+    get:
+      tags:
+        - "ecommerce-widgets-to-stores"
+      summary: Get all entities
+      description: Retrieve a list of all entities with optional filtering, sorting and pagination
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "ecommerce-widgets-to-stores.yaml"
+
+    post:
+      tags:
+        - "ecommerce-widgets-to-stores"
+      summary: Create a new entity
+      description: Create a new entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "ecommerce-widgets-to-stores-input.yaml"
+      responses:
+        "201":
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-widgets-to-stores.yaml"
+
+  /ecommerce/widgets-to-stores/{id}:
+    get:
+      tags:
+        - "ecommerce-widgets-to-stores"
+      summary: Get by ID
+      description: Retrieve a specific entity by its ID
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Found successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-widgets-to-stores.yaml"
+
+    patch:
+      tags:
+        - "ecommerce-widgets-to-stores"
+      summary: Update entity
+      description: Update a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./ecommerce-widgets-to-stores-input.yaml"
+      responses:
+        "200":
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-widgets-to-stores.yaml"
+
+    delete:
+      tags:
+        - "ecommerce-widgets-to-stores"
+      summary: Delete entity
+      description: Delete a specific entity
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      responses:
+        "204":
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "ecommerce-widgets-to-stores.yaml"
