@@ -48,16 +48,18 @@ const messageEditFormSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  console.log(
-    "🚀 ~ Component ~ props socialModuleMessagesAndActionsQuery:",
-    props.socialModuleMessagesAndActionsQuery,
-  );
-
   const socialModuleProfileFindByIdChatFindByIdMessageCreate =
     api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
+    });
+  const socialModuleProfileFindByIdChatFindByIdMessageDelete =
+    api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleMessageId: "unknown",
     });
   const socialModuleProfileFindByIdChatFindByIdActionCreate =
     api.socialModuleProfileFindByIdChatFindByIdActionCreate({
@@ -185,6 +187,28 @@ export function Component(props: IComponentPropsExtended) {
                   }}
                 >
                   Edit message
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="w-fit"
+                  onClick={() => {
+                    socialModuleProfileFindByIdChatFindByIdMessageDelete.mutate(
+                      {
+                        id: props.data.id,
+                        socialModuleProfileId: props.socialModuleProfile.id,
+                        socialModuleChatId: props.socialModuleChat.id,
+                        socialModuleMessageId:
+                          socialModuleMessageOrAction.data.id,
+                      },
+                    );
+                  }}
+                  disabled={
+                    socialModuleProfileFindByIdChatFindByIdMessageDelete.isPending
+                  }
+                >
+                  {socialModuleProfileFindByIdChatFindByIdMessageDelete.isPending
+                    ? "Deleting..."
+                    : "Delete"}
                 </Button>
                 <SocialModuleProfilesToMessages
                   isServer={false}

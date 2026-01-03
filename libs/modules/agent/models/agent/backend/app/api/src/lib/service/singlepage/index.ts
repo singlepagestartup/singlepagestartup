@@ -33,11 +33,7 @@ import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
-import {
-  blobifyFiles,
-  logger,
-  telegramMarkdownFormatter,
-} from "@sps/backend-utils";
+import { blobifyFiles, logger } from "@sps/backend-utils";
 import { OpenRouter } from "@sps/shared-third-parties";
 
 interface ISocialModuleTelegramMessageData {
@@ -350,7 +346,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  async telegramBotMessageUpdate(props: {
+  async notificationMessageUpdate(props: {
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
   }) {
@@ -431,6 +427,53 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       logger.error(error);
     }
+  }
+
+  async notificationMessageDelete(props: {
+    chatSourceSystemId: string | number;
+    messageSourceSystemId: string | number;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    const notifications = await notificationNotificationApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "reciever",
+              method: "eq",
+              value: String(props.chatSourceSystemId),
+            },
+            {
+              column: "sourceSystemId",
+              method: "eq",
+              value: String(props.messageSourceSystemId),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!notifications?.length) {
+      throw new Error("Not found error. Notification not found.");
+    }
+
+    await notificationNotificationApi.delete({
+      id: notifications[0].id,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
   }
 
   async telegramBotWelcomeMessageCreate(props: {
@@ -1259,8 +1302,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           modality: model.architecture.modality,
           input_modalities: model.architecture.input_modalities,
           output_modalities: model.architecture.output_modalities,
+          is_free: model.pricing.completion === "0" ? true : false,
         };
       });
+
+      const openRouterNotFreeSanitizedModels = openRouterSanitizedModels.filter(
+        (model) => !model.is_free,
+      );
 
       // console.log(
       //   "🚀 ~ openRouterReplyMessageCreate ~ openRouterSanitizedModels:",
@@ -1372,12 +1420,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const detectedLanguage = detectedLanguageResult.text;
 
       const selectModelResult = await openRouter.generate({
-        model: "deepseek/deepseek-v3.2-exp",
+        model: "x-ai/grok-4.1-fast",
         reasoning: false,
         context: [
           {
             role: "user",
-            content: `I have a task:'\n${props.socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+            content: `I have a task:'\n${props.socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
           },
         ],
       });
@@ -1508,6 +1556,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         );
       }
+
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageDelete(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: statusMessage.id,
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
 
       return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
         {

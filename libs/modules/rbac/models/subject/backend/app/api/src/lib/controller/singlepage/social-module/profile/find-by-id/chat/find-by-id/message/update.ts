@@ -176,8 +176,8 @@ export class Handler {
             socialModuleChatId,
             data: {
               payload: {
-                type: "message-updated",
-                messageId: socialModuleMessage.id,
+                type: "update",
+                message: socialModuleMessage,
               },
             },
             options: {

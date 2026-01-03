@@ -22,7 +22,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             {
               column: "expiresAt",
               method: "lt",
-              value: new Date(),
+              value: new Date().toISOString(),
             },
           ],
         },

@@ -1,0 +1,9 @@
+{
+  "id": "bc114867-c2ae-486e-8a12-9dbdb3b7eaa7",
+  "createdAt": "2026-01-03T19:42:38.744Z",
+  "updatedAt": "2026-01-03T19:42:38.744Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/messages/[social.messages.id]"
+}

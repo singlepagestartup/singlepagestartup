@@ -1,0 +1,72 @@
+paths:
+  /models:
+    get:
+      tags:
+        - "open-router"
+      summary: List of models
+      description: Get list of available models from OpenRouter
+      servers:
+        - url: https://openrouter.ai/api/v1
+          description: OpenRouter API
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token (e.g., "Bearer sk-...")
+          example: sk-or-v1-000000000000000000000000000000000000000000000000
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by model category
+          example: general
+        - name: supported_parameters
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by supported parameters
+          example: tools
+        - name: use_rss
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Include RSS models
+          example: true
+        - name: use_rss_chat_links
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Include RSS chat links
+          example: true
+      responses:
+        "200":
+          description: List of models
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        context_length:
+                          type: integer
+                        pricing:
+                          type: object
+                          additionalProperties: true
+                      additionalProperties: true
+                additionalProperties: true

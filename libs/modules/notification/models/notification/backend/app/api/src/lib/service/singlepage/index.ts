@@ -314,6 +314,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return entity;
   }
 
+  async deleteBySourceSystem(props: {
+    reciever: string;
+    sourceSystemId: string | number;
+    method: string;
+  }) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN && props.method === "telegram") {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN not set",
+      );
+    }
+
+    if (props.method !== "telegram") {
+      return;
+    }
+
+    const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN as string);
+    const normalizedMessageId =
+      typeof props.sourceSystemId === "string"
+        ? parseInt(props.sourceSystemId, 10)
+        : props.sourceSystemId;
+
+    try {
+      await bot.api.deleteMessage(props.reciever, normalizedMessageId);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("message to delete not found")
+      ) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
   getMimeType(url: string) {
     const ext = url.split(".")?.pop()?.toLowerCase();
 
@@ -683,7 +718,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             {
               column: "createdAt",
               method: "lt",
-              value: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              value: new Date(
+                Date.now() - 2 * 24 * 60 * 60 * 1000,
+              ).toISOString(),
             },
           ],
         },
@@ -691,13 +728,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     for (const expiredNotification of expiredNotifications) {
-      try {
-        await this.delete({
-          id: expiredNotification.id,
-        });
-      } catch (error) {
+      this.delete({
+        id: expiredNotification.id,
+      }).catch((error) => {
         //
-      }
+      });
     }
   }
 }

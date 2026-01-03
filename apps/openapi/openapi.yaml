@@ -18,6 +18,9 @@ security:
   - cookieAuth: []
 
 paths:
+  # third-parties/open-router
+  /models:
+    $ref: "./third-parties/paths.yaml#/paths/~1models"
   # host/layout
   /host/layouts:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts"

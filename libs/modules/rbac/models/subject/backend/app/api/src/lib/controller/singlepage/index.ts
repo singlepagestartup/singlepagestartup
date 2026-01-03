@@ -44,6 +44,7 @@ import { Handler as SocialModuleProfileFindByIdChatFindById } from "./social-mod
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from "./social-module/profile/find-by-id/chat/find-by-id/message/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReact } from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
@@ -256,6 +257,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "PATCH",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageUpdate,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "DELETE",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId",
+        handler: this.socialModuleProfileFindByIdChatFindByIdMessageDelete,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
@@ -482,6 +489,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessageDelete(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageDelete(
       this.service,
     ).execute(c, next);
   }

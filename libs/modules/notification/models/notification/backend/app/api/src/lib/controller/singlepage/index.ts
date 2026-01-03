@@ -6,6 +6,7 @@ import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as Send } from "./send";
 import { Handler as Update } from "./update";
+import { Handler as Delete } from "./delete";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -61,5 +62,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async update(c: Context, next: any): Promise<Response> {
     return new Update(this.service).execute(c, next);
+  }
+
+  async delete(c: Context, next: any): Promise<Response> {
+    return new Delete(this.service).execute(c, next);
   }
 }

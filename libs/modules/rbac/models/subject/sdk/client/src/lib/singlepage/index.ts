@@ -150,6 +150,11 @@ import {
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 import {
+  action as socialModuleProfileFindByIdChatFindByIdMessageDelete,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
+import {
   action as socialModuleProfileFindByIdChatFindByIdMessageUpdate,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult,
@@ -207,6 +212,7 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdProps: ISocialModuleProfileFindByIdChatFindByIdProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps;
+  ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps;
   ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
@@ -246,6 +252,7 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdResult: ISocialModuleProfileFindByIdChatFindByIdResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult;
+  ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult;
   ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
@@ -292,6 +299,7 @@ export const api = {
   socialModuleProfileFindByIdChatFindById,
   socialModuleProfileFindByIdChatFindByIdMessageFind,
   socialModuleProfileFindByIdChatFindByIdMessageCreate,
+  socialModuleProfileFindByIdChatFindByIdMessageDelete,
   socialModuleProfileFindByIdChatFindByIdMessageUpdate,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact,
   socialModuleProfileFindByIdChatFindByIdDelete,

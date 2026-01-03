@@ -89,21 +89,38 @@ export class Handler {
     }
 
     if (
-      !["POST", "PATCH"].includes(props.data.rbacModuleAction.payload?.method)
+      !["POST", "PATCH", "DELETE"].includes(
+        props.data.rbacModuleAction.payload?.method,
+      )
     ) {
       return c.json({
         data: false,
       });
     }
 
-    const socialModuleAction = await socialModuleActionApi.findById({
-      id: props.data.rbacModuleAction.payload?.result.data.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+    const actionId = props.data.rbacModuleAction.payload?.result?.data?.id;
+
+    if (!actionId) {
+      return c.json({
+        data: false,
+      });
+    }
+
+    let socialModuleAction;
+    try {
+      socialModuleAction = await socialModuleActionApi.findById({
+        id: actionId,
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      return c.json({
+        data: false,
+      });
+    }
 
     if (!socialModuleAction) {
       return c.json({
@@ -156,27 +173,47 @@ export class Handler {
     const actionPayload = socialModuleAction.payload as {
       type?: string;
       messageId?: string;
+      messageSourceSystemId?: string | number;
+      chatSourceSystemId?: string | number;
+      message?: {
+        id?: string;
+        sourceSystemId?: string | null;
+      };
     };
 
-    if (actionPayload?.type === "message-updated" && actionPayload.messageId) {
-      const socialModuleMessage = await socialModuleMessageApi.findById({
-        id: actionPayload.messageId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+    if (actionPayload?.type === "update") {
+      const socialModuleMessage = actionPayload.message;
 
-      if (!socialModuleMessage) {
+      if (!socialModuleMessage?.id) {
         return c.json({
           data: false,
         });
       }
 
-      await this.service.telegramBotMessageUpdate({
+      await this.service.notificationMessageUpdate({
         socialModuleChat,
-        socialModuleMessage,
+        socialModuleMessage: socialModuleMessage as any,
+      });
+
+      return c.json({
+        data: true,
+      });
+    }
+
+    if (actionPayload?.type === "delete") {
+      const chatSourceSystemId = socialModuleChat.sourceSystemId;
+      const messageSourceSystemId =
+        actionPayload.message?.sourceSystemId || null;
+
+      if (!chatSourceSystemId || !messageSourceSystemId) {
+        return c.json({
+          data: false,
+        });
+      }
+
+      await this.service.notificationMessageDelete({
+        chatSourceSystemId,
+        messageSourceSystemId,
       });
 
       return c.json({
