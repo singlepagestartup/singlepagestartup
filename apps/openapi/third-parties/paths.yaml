@@ -22,28 +22,24 @@ paths:
           schema:
             type: string
           description: Filter by model category
-          example: general
         - name: supported_parameters
           in: query
           required: false
           schema:
             type: string
           description: Filter by supported parameters
-          example: tools
         - name: use_rss
           in: query
           required: false
           schema:
             type: string
           description: Include RSS models
-          example: true
         - name: use_rss_chat_links
           in: query
           required: false
           schema:
             type: string
           description: Include RSS chat links
-          example: true
       responses:
         "200":
           description: List of models

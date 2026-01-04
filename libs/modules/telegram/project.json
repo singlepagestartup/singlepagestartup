@@ -68,7 +68,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/telegram:models:widget:repository-migrate"
@@ -83,7 +83,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/telegram:relations:pages-to-widgets:repository-migrate"

@@ -40,7 +40,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/ecommerce:models:attribute-key:repository-migrate"
@@ -70,7 +70,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/ecommerce:relations:attribute-keys-to-attributes:repository-migrate"

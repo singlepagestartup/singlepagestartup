@@ -108,7 +108,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:models:identity:repository-migrate"
@@ -135,7 +135,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/rbac:relations:roles-to-ecommerce-module-products:repository-migrate"

@@ -432,6 +432,14 @@ export class Database<T extends PgTableWithColumns<any>>
               new Date(filteredEntity.updatedAt) >
                 new Date(transformedEntity.updatedAt)
             ) {
+              const seedResult = {
+                new: filteredEntity,
+                old: filteredEntity,
+                dump: dumpEntity,
+              };
+
+              insertedEntities.push(seedResult);
+
               continue;
             }
 

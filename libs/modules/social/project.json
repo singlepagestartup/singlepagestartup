@@ -119,7 +119,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/social:models:action:repository-migrate"
@@ -152,7 +152,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": false,
+        "parallel": true,
         "commands": [
           {
             "command": "nx run @sps/social:relations:attribute-keys-to-attributes:repository-migrate"
