@@ -54,7 +54,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": []
       }
     },
@@ -62,7 +62,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": []
       }
     },

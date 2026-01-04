@@ -65,7 +65,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/broadcast:models:channel:repository-migrate"
@@ -80,7 +80,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/broadcast:relations:channels-to-messages:repository-migrate"

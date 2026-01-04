@@ -58,7 +58,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/startup:models:widget:repository-migrate"
@@ -70,7 +70,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": []
       }
     },

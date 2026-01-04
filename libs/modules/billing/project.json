@@ -75,7 +75,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:models:currency:repository-migrate"
@@ -96,7 +96,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "parallel": true,
+        "parallel": false,
         "commands": [
           {
             "command": "nx run @sps/billing:relations:payment-intents-to-invoices:repository-migrate"
