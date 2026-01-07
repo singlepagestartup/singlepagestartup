@@ -2,9 +2,7 @@
   "name": "mcp",
   "version": "1.0.0",
   "scripts": {
-    "build": "node build.mjs",
-    "dev": "node build.mjs --watch",
-    "start": "node ../../dist/apps/mcp/server.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1"

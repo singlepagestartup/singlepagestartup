@@ -36,7 +36,7 @@
       "@sps/ecommerce/*": ["libs/modules/ecommerce/*"],
       "@sps/file-storage/*": ["libs/modules/file-storage/*"],
       "@sps/host/*": ["libs/modules/host/*"],
-      "@sps/mcp": ["apps/mcp/src/server.ts"],
+      "@sps/mcp": ["apps/mcp/src/index.ts"],
       "@sps/middlewares": ["libs/middlewares/src/index.ts"],
       "@sps/notification/*": ["libs/modules/notification/*"],
       "@sps/providers-db": ["libs/providers/db/src/index.ts"],
