@@ -1,8 +1,10 @@
 "use client";
 
 import { actions, IDeleteProps } from "@sps/shared-frontend-api";
-import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import { parseJwt } from "libs/shared/frontend/client/utils/src/lib/authorization";
+import {
+  authorization,
+  saturateHeaders,
+} from "@sps/shared-frontend-client-utils";
 import { toast } from "sonner";
 
 export interface IMutationProps<T> {
@@ -33,7 +35,7 @@ export function mutation<T>(
         ?.split("=")[1];
 
       if (jwt) {
-        const parsedJwt = parseJwt(jwt);
+        const parsedJwt = authorization.parseJwt(jwt);
 
         if (
           parsedJwt?.["exp"] &&

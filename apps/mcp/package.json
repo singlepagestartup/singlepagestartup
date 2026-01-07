@@ -2,8 +2,9 @@
   "name": "mcp",
   "version": "1.0.0",
   "scripts": {
-    "dev": "bun run --watch server.ts",
-    "start": "bun server.ts"
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "start": "node ../../dist/apps/mcp/server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1"

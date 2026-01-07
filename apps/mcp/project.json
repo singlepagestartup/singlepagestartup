@@ -6,17 +6,25 @@
   "tags": [],
   "targets": {
     "dev": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/js:tsc",
       "options": {
-        "cwd": "apps/mcp",
-        "command": "bun run dev"
+        "outputPath": "dist/tsc/apps/mcp",
+        "main": "server.ts",
+        "tsConfig": "tsconfig.build.json",
+        "transformers": [
+          {
+            "name": "typescript-transform-paths/nx-transformer"
+          }
+        ],
+        "watch": true
       }
     },
+    "tsc:build": {},
     "start": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/mcp",
-        "command": "bun run start"
+        "command": "npm run -s start"
       }
     },
     "eslint:lint": {},

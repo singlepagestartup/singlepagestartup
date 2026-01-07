@@ -22,6 +22,7 @@ apps/
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
 ├── mcp/    # MCP server for generating contend in apps/api/
+├── openapi/  # OpenAPI documentation app
 ├── redis/  # Docker service for Redis
 └── telegram/  # Telegram bot app
 
