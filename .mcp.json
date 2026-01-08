@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sps": {
+      "command": "bun",
+      "args": ["./apps/mcp/index.ts"],
+      "cwd": "./"
+    }
+  }
+}
