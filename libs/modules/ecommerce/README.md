@@ -2,242 +2,62 @@
 
 ## 1. Purpose of the Module
 
-The Ecommerce module is designed to implement a comprehensive e-commerce system within the website.
+The Ecommerce module manages product catalogs, stores, orders, and shopping cart workflows. It defines product metadata, attributes, categories, and the relations that connect ecommerce data to billing, media, and website-builder content.
 
 ### It solves the following tasks:
 
-- Manages products and their attributes (`Product`, `Attribute`, `AttributeKey`)
-- Handles order processing and management (`Order`)
-- Provides store management (`Store`)
-- Offers category organization (`Category`)
-- Supports widget-based product displays (`Widget`)
-- Integrates with payment and file storage systems
+- Stores product, category, and store metadata.
+- Tracks orders and cart state with quantities.
+- Defines flexible attributes and attribute keys.
+- Connects products and orders to billing currencies and payment intents.
+- Attaches files and website-builder widgets to ecommerce content.
 
 ### Typical use cases:
 
-- Creating online stores
-- Managing product catalogs
-- Processing orders
-- Handling product attributes and variations
-- Building product widgets and displays
-- Managing store settings and configurations
-
-### The problem it solves:
-
-Quickly integrating a robust e-commerce system into any website without building complex shopping and inventory management systems from scratch.
+- Building product listings and product detail pages.
+- Managing cart and order flows.
+- Associating prices with currencies.
+- Embedding ecommerce widgets in pages.
+- Managing store-specific catalogs and attributes.
 
 ---
 
-## 2. Models in the Module
+## 2. Models
 
-| Model        | Purpose                                     |
-| ------------ | ------------------------------------------- |
-| Attribute    | Managing product attributes and variations  |
-| AttributeKey | Defining attribute types and configurations |
-| Category     | Organizing products into categories         |
-| Order        | Handling orders and transactions            |
-| Product      | Managing products and their details         |
-| Store        | Managing store settings and configurations  |
-| Widget       | Managing widget-based product displays      |
-
----
-
-## 3. Model Relations
-
-| Relation                                | Purpose                                                                       |
-| --------------------------------------- | ----------------------------------------------------------------------------- |
-| AttributeKeysToAttributes               | Many-to-many relation: attribute keys define multiple attributes              |
-| AttributesToBillingModuleCurrencies     | Many-to-many relation: attributes can use multiple currencies                 |
-| CategoriesToFileStorageModuleFiles      | Many-to-many relation: categories can have multiple files                     |
-| CategoriesToProducts                    | Many-to-many relation: products can belong to multiple categories             |
-| CategoriesToWebsiteBuilderModuleWidgets | Many-to-many relation: categories can be displayed in Website Builder widgets |
-| OrdersToBillingModuleCurrencies         | Many-to-many relation: orders can use multiple currencies                     |
-| OrdersToBillingModulePaymentIntents     | Many-to-many relation: orders can have multiple payment intents               |
-| OrdersToFileStorageModuleFiles          | Many-to-many relation: orders can have multiple files                         |
-| OrdersToProducts                        | Many-to-many relation: orders can contain multiple products                   |
-| ProductsToAttributes                    | Many-to-many relation: products can have multiple attributes                  |
-| ProductsToFileStorageModuleFiles        | Many-to-many relation: products can have multiple files                       |
-| ProductsToWebsiteBuilderModuleWidgets   | Many-to-many relation: products can be displayed in multiple widgets          |
-| StoresToAttributes                      | Many-to-many relation: stores can have multiple attributes                    |
-| StoresToOrders                          | Many-to-many relation: stores can have multiple orders                        |
-| StoresToProducts                        | Many-to-many relation: stores can have multiple products                      |
-| StoresToProductsToAttributes            | Many-to-many relation: stores can have multiple products-to-attributes        |
-| WidgetsToCategories                     | Many-to-many relation: widgets can display multiple categories                |
-| WidgetsToProducts                       | Many-to-many relation: widgets can display multiple products                  |
-| WidgetsToStores                         | Many-to-many relation: widgets can display multiple stores                    |
+| Model                                             | Purpose                                    |
+| ------------------------------------------------- | ------------------------------------------ |
+| [attribute](./models/attribute/README.md)         | Typed attribute values for products/stores |
+| [attribute-key](./models/attribute-key/README.md) | Attribute definitions and display metadata |
+| [category](./models/category/README.md)           | Product categories with localized content  |
+| [order](./models/order/README.md)                 | Orders and cart state                      |
+| [product](./models/product/README.md)             | Products with attributes and media         |
+| [store](./models/store/README.md)                 | Stores and their catalogs                  |
+| [widget](./models/widget/README.md)               | Ecommerce list/overview widgets            |
 
 ---
 
-## 4. Model Specifics
+## 3. Relations
 
-### Product
-
-#### Main fields:
-
-- `id`: unique product identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: product display variant
-- `type`: product type (one_off, etc.)
-- `sku`: unique stock keeping unit
-- `title`: product title in multiple languages
-- `shortDescription`: brief product description in multiple languages
-- `description`: detailed product description in multiple languages
-
-#### Variants
-
-- default
-
-### Order
-
-#### Main fields:
-
-- `id`: unique order identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: order display variant
-- `status`: order processing status
-- `type`: order type (cart, order, etc.)
-- `receipt`: order receipt details
-- `comment`: additional order notes
-
-#### Variants
-
-- default
-
-### Store
-
-#### Main fields:
-
-- `id`: unique store identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: store display variant
-- `adminTitle`: title for admin interface
-- `slug`: URL-friendly identifier
-- `title`: store title in multiple languages
-- `shortDescription`: brief store description in multiple languages
-- `description`: detailed store description in multiple languages
-
-#### Variants
-
-- default
-
-### Category
-
-#### Main fields:
-
-- `id`: unique category identifier
-- `className`: custom CSS classes
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: category display variant
-- `adminTitle`: title for admin interface
-- `slug`: URL-friendly identifier
-- `title`: multilingual category title
-- `subtitle`: multilingual category subtitle
-- `description`: multilingual category description
-
-#### Variants
-
-- default
-
-### Attribute
-
-#### Main fields:
-
-- `id`: unique attribute identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: attribute display variant
-- `number`: numeric value
-- `boolean`: boolean value
-- `date`: date value
-- `datetime`: datetime value
-- `string`: multilingual text value
-
-#### Variants
-
-- default
-
-### AttributeKey
-
-#### Main fields:
-
-- `id`: unique attribute key identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: attribute key display variant
-- `type`: attribute key type (feature, specification, etc.)
-- `field`: field type for storing values (string, number, boolean, etc.)
-- `adminTitle`: title for admin interface
-- `slug`: URL-friendly identifier
-- `title`: multilingual attribute key title
-- `prefix`: multilingual prefix for attribute values
-- `suffix`: multilingual suffix for attribute values
-
-#### Variants
-
-- default
-
-### Widget
-
-#### Main fields:
-
-- `id`: unique widget identifier
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: widget display variant
-- `className`: CSS class name for styling
-- `anchor`: HTML anchor identifier
-- `adminTitle`: title for admin interface
-- `slug`: URL-friendly identifier
-- `title`: multilingual widget title
-- `subtitle`: multilingual widget subtitle
-- `description`: multilingual widget description
-
-#### Variants
-
-- default
-- store-list-default
-- order-list-default
-- product-list-default
-- product-overview-default
-- category-list-default
-- category-overview-default
-- store-product-list-default
+| Relation                                                                                                           | Purpose                                |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| [attribute-keys-to-attributes](./relations/attribute-keys-to-attributes/README.md)                                 | Link attribute keys to attributes      |
+| [attributes-to-billing-module-currencies](./relations/attributes-to-billing-module-currencies/README.md)           | Link attributes to currencies          |
+| [categories-to-file-storage-module-files](./relations/categories-to-file-storage-module-files/README.md)           | Attach files to categories             |
+| [categories-to-products](./relations/categories-to-products/README.md)                                             | Assign products to categories          |
+| [categories-to-website-builder-module-widgets](./relations/categories-to-website-builder-module-widgets/README.md) | Attach widgets to categories           |
+| [orders-to-billing-module-currencies](./relations/orders-to-billing-module-currencies/README.md)                   | Link orders to currencies              |
+| [orders-to-billing-module-payment-intents](./relations/orders-to-billing-module-payment-intents/README.md)         | Link orders to payment intents         |
+| [orders-to-file-storage-module-files](./relations/orders-to-file-storage-module-files/README.md)                   | Attach files to orders                 |
+| [orders-to-products](./relations/orders-to-products/README.md)                                                     | Link orders to products with quantity  |
+| [products-to-attributes](./relations/products-to-attributes/README.md)                                             | Link products to attributes            |
+| [products-to-file-storage-module-files](./relations/products-to-file-storage-module-files/README.md)               | Attach files to products               |
+| [products-to-website-builder-module-widgets](./relations/products-to-website-builder-module-widgets/README.md)     | Attach widgets to products             |
+| [stores-to-attributes](./relations/stores-to-attributes/README.md)                                                 | Link stores to attributes              |
+| [stores-to-orders](./relations/stores-to-orders/README.md)                                                         | Link stores to orders                  |
+| [stores-to-products](./relations/stores-to-products/README.md)                                                     | Link stores to products                |
+| [stores-to-products-to-attributes](./relations/stores-to-products-to-attributes/README.md)                         | Link store-product pairs to attributes |
+| [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate categories inside widgets       |
+| [widgets-to-products](./relations/widgets-to-products/README.md)                                                   | Curate products inside widgets         |
+| [widgets-to-stores](./relations/widgets-to-stores/README.md)                                                       | Curate stores inside widgets           |
 
 ---
-
-## 5. Standardized API for Models
-
-- Models use the standard API endpoints described in Backend Development Standards
-- Support for standard CRUD operations and extended operations (`dump`, `seed`, `find-or-create`, `bulk-create`, `bulk-update`) if needed
-- Additional endpoints for order processing and inventory management
-
----
-
-## 6. Special Notes
-
-- All data fetching is handled strictly through SDK Providers and Relation Components
-- Components are structured according to the standard SPS architecture (`ParentComponent` → `ChildComponent`)
-- Products support various attributes and variations
-- Orders integrate with payment systems
-- Stores manage their own product catalogs
-- The module supports a relation between categories and the WebsiteBuilder module via CategoriesToWebsiteBuilderModuleWidgets. This allows for flexible display of categories in widgets, either as simple links (the default variant) or as full-featured overview pages (the overview variant)
-- Widgets support various product display layouts
-- Integration with file storage for product images
-- Integration with billing module for payments
-
----
-
-## Summary
-
-- The description begins with the business purpose
-- Accurate model and relation structure
-- Covers key data management and frontend implementation features
-- Includes comprehensive e-commerce capabilities
-- Supports flexible product and order management
-- Handles various product attributes and variations
-- Integrates with the WebsiteBuilder module for flexible content display﻿
-- Integrates with payment and file storage systems

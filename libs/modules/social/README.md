@@ -1,80 +1,56 @@
-# Social module
+# Social Module
 
 ## 1. Purpose of the Module
 
+The Social module manages profiles, chats, messages, and related social interactions. It defines social content models and the relations that connect them to media, ecommerce items, and website-builder widgets.
+
 ### It solves the following tasks:
+
+- Stores social profiles with localized content.
+- Defines chats, threads, and messages.
+- Attaches files and widgets to social entities.
+- Links social content to ecommerce products.
 
 ### Typical use cases:
 
-### The problem it solves:
+- Profile pages and social feeds.
+- Chat and messaging interfaces.
+- Social features tied to ecommerce products.
 
 ---
 
-## 2. Models in the Module
+## 2. Models
 
-| Model | Purpose |
-| ----- | ------- |
-|       |         |
-
-Note: Additional models are created by project teams based on their specific business requirements.
-
----
-
-## 3. Model Relations
-
----
-
-## 4. Model Specifics
-
-### model_name
-
-#### Main fields:
-
-- id: Unique identifier (UUID)
-- className: CSS class name for styling
-- title: Display title of the widget
-- createdAt: Timestamp of creation
-- updatedAt: Timestamp of last update
-- variant: Widget display variant (default: "default")
-- adminTitle: Title shown in admin interface
-- slug: URL-friendly unique identifier
-
-#### Variants:
-
-- default
+| Model                                             | Purpose                 |
+| ------------------------------------------------- | ----------------------- |
+| [action](./models/action/README.md)               | Social action records   |
+| [attribute](./models/attribute/README.md)         | Typed social attributes |
+| [attribute-key](./models/attribute-key/README.md) | Attribute metadata      |
+| [chat](./models/chat/README.md)                   | Chat containers         |
+| [message](./models/message/README.md)             | Message content         |
+| [profile](./models/profile/README.md)             | Social profiles         |
+| [thread](./models/thread/README.md)               | Chat threads            |
+| [widget](./models/widget/README.md)               | Social UI widgets       |
 
 ---
 
-## 5. Standardized API for Models
+## 3. Relations
 
-- Custom models should follow the standard API patterns described in Backend Development Standards
-- Support standard CRUD operations
-- Can implement additional endpoints for specific business logic
-- Should maintain consistency with SPS architecture
-- Must follow security best practices
-
----
-
-## 6. Special Notes
-
-- All data fetching is handled strictly through SDK Providers and Relation Components
-- Components are structured according to the standard SPS architecture (`ParentComponent` → `ChildComponent`)
-- Custom models should integrate with core SPS modules
-- Business logic should be properly documented
-- Security considerations must be maintained
-- Performance optimizations should be implemented
-- Code should follow SPS coding standards
-- Testing requirements must be met
+| Relation                                                                                                       | Purpose                           |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| [attribute-keys-to-attributes](./relations/attribute-keys-to-attributes/README.md)                             | Link attribute keys to attributes |
+| [chats-to-actions](./relations/chats-to-actions/README.md)                                                     | Link chats to actions             |
+| [chats-to-messages](./relations/chats-to-messages/README.md)                                                   | Link chats to messages            |
+| [chats-to-threads](./relations/chats-to-threads/README.md)                                                     | Link chats to threads             |
+| [messages-to-file-storage-module-files](./relations/messages-to-file-storage-module-files/README.md)           | Attach files to messages          |
+| [profiles-to-actions](./relations/profiles-to-actions/README.md)                                               | Link profiles to actions          |
+| [profiles-to-attributes](./relations/profiles-to-attributes/README.md)                                         | Link profiles to attributes       |
+| [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats            |
+| [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products         |
+| [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles          |
+| [profiles-to-messages](./relations/profiles-to-messages/README.md)                                             | Link profiles to messages         |
+| [profiles-to-website-builder-module-widgets](./relations/profiles-to-website-builder-module-widgets/README.md) | Attach widgets to profiles        |
+| [threads-to-ecommerce-module-products](./relations/threads-to-ecommerce-module-products/README.md)             | Link threads to products          |
+| [threads-to-messages](./relations/threads-to-messages/README.md)                                               | Link threads to messages          |
 
 ---
-
-## Summary
-
-- The description begins with the business purpose
-- Provides framework for custom business logic implementation
-- Supports project-specific model creation
-- Enables custom relation definitions
-- Maintains SPS architecture standards
-- Facilitates integration with core modules
-- Supports unique business requirements
-- Ensures maintainability and scalability

@@ -2,135 +2,46 @@
 
 ## 1. Purpose of the Module
 
-The Blog module is designed to implement a full-fledged content management system (CMS) on a website.
+The Blog module manages long-form content, categories, and widgets that present articles in different layouts. It defines the content data for articles and categories and the relations that connect them to media, website-builder widgets, and ecommerce products.
 
 ### It solves the following tasks:
 
-- Allows creating, editing, and publishing articles (`Article`)
-- Provides content structuring using categories (`Category`)
-- Enables attachment of media files (images, documents) to articles
-- Supports displaying content on the website through cards, lists, and full-text pages
-- Provides widget-based content management (`Widget`)
-- Enables integration with website builder module
+- Stores localized article and category content.
+- Provides slug-based routing metadata for blog pages.
+- Attaches files and widgets to articles and categories.
+- Builds widget-driven layouts for article/category lists.
+- Connects content to ecommerce products for cross-promotions.
 
 ### Typical use cases:
 
-- Running a corporate blog
-- Publishing news and updates
-- Building help centers or knowledge bases
-- Creating widget-based content sections
-
-### The problem it solves:
-
-Quickly integrating a robust article publishing system into any website without building a blogging engine from scratch.
+- Publishing articles and category pages.
+- Building blog landing pages with curated lists.
+- Attaching media to articles.
+- Embedding website-builder sections inside blog content.
+- Linking blog content to ecommerce product listings.
 
 ---
 
-## 2. Models in the Module
+## 2. Models
 
-| Model    | Purpose                                                |
-| -------- | ------------------------------------------------------ |
-| Article  | Managing articles: text content, metadata, attachments |
-| Category | Managing categories for article grouping               |
-| Widget   | Managing widget-based content sections                 |
-
----
-
-## 3. Model Relations
-
-| Relation                              | Purpose                                                          |
-| ------------------------------------- | ---------------------------------------------------------------- |
-| ArticlesToFileStorageModuleFiles      | Many-to-many relation: articles can have multiple attached files |
-| ArticlesToWebsiteBuilderModuleWidgets | Many-to-many relation: articles can be displayed in widgets      |
-| CategoriesToArticles                  | Many-to-many relation: categories aggregates multiple articles   |
+| Model                                   | Purpose                                       |
+| --------------------------------------- | --------------------------------------------- |
+| [article](./models/article/README.md)   | Blog content entries with localized text      |
+| [category](./models/category/README.md) | Grouping for articles and category pages      |
+| [widget](./models/widget/README.md)     | Layout widgets for article and category lists |
 
 ---
 
-## 4. Model Specifics
+## 3. Relations
 
-### Article
-
-#### Main fields:
-
-- `id`: unique article identifier
-- `className`: custom CSS class name for styling
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: article display variant
-- `adminTitle`: title for admin panel
-- `slug`: unique URL-friendly identifier
-- `title`: article title (multilingual)
-- `subtitle`: article subtitle (multilingual)
-- `description`: article description (multilingual)
-
-#### Variants:
-
-- default
-
-### Category
-
-#### Main fields:
-
-- `id`: unique category identifier
-- `className`: custom CSS class name for styling
-- `adminTitle`: title for admin panel
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: category display variant
-- `title`: category title (multilingual)
-- `subtitle`: category subtitle (multilingual)
-- `description`: category description (multilingual)
-
-#### Variants:
-
-- default
-
-### Widget
-
-#### Main fields:
-
-- `id`: unique widget identifier
-- `className`: custom CSS class name for styling
-- `createdAt`: creation timestamp
-- `updatedAt`: last update timestamp
-- `variant`: widget display variant
-- `adminTitle`: title for admin panel
-- `slug`: unique URL-friendly identifier
-- `title`: widget title (multilingual)
-- `subtitle`: widget subtitle (multilingual)
-- `description`: widget description (multilingual)
-
-#### Variants:
-
-- default
-- article-list-default
-- article-overview-default
-- article-overview-with-private-content-default
+| Relation                                                                                                           | Purpose                                      |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| [articles-to-ecommerce-module-products](./relations/articles-to-ecommerce-module-products/README.md)               | Link articles to ecommerce products          |
+| [articles-to-file-storage-module-files](./relations/articles-to-file-storage-module-files/README.md)               | Attach files to articles                     |
+| [articles-to-website-builder-module-widgets](./relations/articles-to-website-builder-module-widgets/README.md)     | Attach website-builder widgets to articles   |
+| [categories-to-articles](./relations/categories-to-articles/README.md)                                             | Assign articles to categories                |
+| [categories-to-website-builder-module-widgets](./relations/categories-to-website-builder-module-widgets/README.md) | Attach website-builder widgets to categories |
+| [widgets-to-articles](./relations/widgets-to-articles/README.md)                                                   | Curate article lists inside widgets          |
+| [widgets-to-categories](./relations/widgets-to-categories/README.md)                                               | Curate category lists inside widgets         |
 
 ---
-
-## 5. Standardized API for Models
-
-- Models use the standard API endpoints described in Backend Development Standards
-- Support for standard CRUD operations and extended operations (`dump`, `seed`, `find-or-create`, `bulk-create`, `bulk-update`) if needed
-
----
-
-## 6. Special Notes
-
-- Related files for an article are loaded using the Relation component `ArticlesToFileStorageModuleFiles`
-- Articles belonging to categories are loaded using the Relation component `CategoriesToArticles`
-- Widget-based article displays are managed through `ArticlesToWebsiteBuilderModuleWidgets`
-- All data fetching is handled strictly through SDK Providers and Relation Components
-- Components are structured according to the standard SPS architecture (`ParentComponent` → `ChildComponent`)
-- Widgets support various display variants for flexible content presentation
-
----
-
-## Summary
-
-- The description begins with the business purpose
-- Accurate model and relation structure
-- Covers key data management and frontend implementation features
-- Includes widget-based content management capabilities
-- Supports integration with website builder module

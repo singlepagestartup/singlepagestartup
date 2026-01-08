@@ -11,6 +11,7 @@
     "host:start": "nx run host:next:start",
     "mcp:dev": "nx run mcp:dev",
     "mcp:start": "nx run mcp:start",
+    "mcp:inspector": "npx @modelcontextprotocol/inspector bun apps/mcp/index.ts",
     "lint": "nx run-many --target=eslint:lint --parallel=2 --all",
     "test:file": "npx nx run --target=jest:test --testFile",
     "prepare": "husky",

@@ -349,20 +349,20 @@ git pull upstream main --allow-unrelated-histories
 
 Detailed documentation for each module can be found in their respective directories:
 
-- [Agent Module](./libs/modules/agent/README.md)
-- [Analytic Module](./libs/modules/analytic/README.md)
-- [Billing Module](./libs/modules/blog/README.md)
-- [Blog Module](./libs/modules/blog/README.md)
-- [Broadcast Module](./libs/modules/broadcast/README.md)
-- [CRM Module](./libs/modules/crm/README.md)
-- [Ecommerce Module](./libs/modules/ecommerce/README.md)
-- [File Storage Module](./libs/modules/file-storage/README.md)
-- [Host Module](./libs/modules/host/README.md)
-- [Notification Module](./libs/modules/notification/README.md)
-- [RBAC Module](./libs/modules/rbac/README.md)
-- [Social Module](./libs/modules/social/README.md)
-- [Startup Module](./libs/modules/startup/README.md)
-- [Website Builder Module](./libs/modules/website-builder/README.md)
+- [agent](./libs/modules/agent/README.md) - automation, scheduled jobs, AI utilities, agent widgets.
+- [analytic](./libs/modules/analytic/README.md) - metrics tracking and analytics widgets.
+- [billing](./libs/modules/billing/README.md) - payments, invoices, currencies, payment widgets.
+- [blog](./libs/modules/blog/README.md) - articles, categories, content widgets, file attachments.
+- [broadcast](./libs/modules/broadcast/README.md) - channels and messages for real-time broadcasting.
+- [crm](./libs/modules/crm/README.md) - forms, inputs, requests, form widgets.
+- [ecommerce](./libs/modules/ecommerce/README.md) - products, orders, stores, categories, ecommerce widgets.
+- [file-storage](./libs/modules/file-storage/README.md) - files, uploads, previews, file widgets.
+- [host](./libs/modules/host/README.md) - pages, layouts, metadata, widgets, external widget integration.
+- [notification](./libs/modules/notification/README.md) - notifications, templates, topics, notification widgets.
+- [rbac](./libs/modules/rbac/README.md) - identities, roles, permissions, sessions, access widgets.
+- [social](./libs/modules/social/README.md) - placeholder module (to be defined per project).
+- [startup](./libs/modules/startup/README.md) - project-specific models/relations and custom widgets.
+- [website-builder](./libs/modules/website-builder/README.md) - UI components and layout-building widgets.
 
 ## License
 

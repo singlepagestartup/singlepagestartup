@@ -2,100 +2,44 @@
 
 ## 1. Purpose of the Module
 
-The Analytic module is designed to implement analytic metrics tracking system within the project.
+The Analytic module defines metrics and UI widgets used to display analytic
+information. It stores metric values and provides widget entries that can render
+or organize analytics in the UI.
 
 ### It solves the following tasks:
 
-- Manages analytics metrics and their configurations (`Metric`)
-- Provides widget-based analytics dashboards (`Widget`)
-- Enables tracking and visualization (in future) of various metrics
-- Supports different types of analytics data and visualizations (in future)
+- Stores metric definitions and numeric values (`metric`).
+- Exposes widget entries for analytic dashboards or panels.
+- Enables consistent admin CRUD for analytic data.
 
 ### Typical use cases:
 
-- Integrating analytics into project
-- Creating metric tracking widgets
-- Implementing analytics dashboards (in future)
-- Building data visualization components (in future)
+- Tracking and displaying key metrics.
+- Building lightweight analytics dashboards with widgets.
+- Managing metric entries in an admin UI.
 
 ### The problem it solves:
 
-Quickly integrating analytics functionality into any project without building complex analytics systems from scratch.
+Provides a uniform data model for analytics and a widget surface to integrate
+metrics into the UI without custom pipelines.
 
 ---
 
 ## 2. Models in the Module
 
-| Model  | Purpose                                              |
-| ------ | ---------------------------------------------------- |
-| Metric | Managing analytics metrics: configurations, tracking |
-| Widget | Managing widget-based analytics dashboards           |
+| Model                               | Purpose                            |
+| ----------------------------------- | ---------------------------------- |
+| [metric](./models/metric/README.md) | Numeric analytic metrics           |
+| [widget](./models/widget/README.md) | UI widgets for analytic dashboards |
 
 ---
 
-## 3. Model Specifics
+## 3. Model Relations
 
-### Metric
-
-#### Main fields:
-
-- `id`: unique metric identifier
-- `createdAt`: creation date
-- `updatedAt`: update date
-- `variant`: display variant
-- `title`: metric title
-- `value`: numeric metric value
-
-#### Variants:
-
-- default
-
-### Widget
-
-#### Main fields:
-
-- `id`: unique widget identifier
-- `createdAt`: creation date
-- `updatedAt`: update date
-- `variant`: display variant
-- `title`: widget title
-- `className`: custom CSS classes
-- `adminTitle`: admin panel title
-- `slug`: unique URL identifier
-
-- Widgets provide visualization of metrics
-- Supports various chart types and layouts
-- Can display multiple metrics
-
-#### Variants:
-
-- default
+No relations in this module.
 
 ---
 
-## 4. Standardized API for Models
+## 4. Model Specifics
 
-- Models use the standard API endpoints described in Backend Development Standards
-- Support for standard CRUD operations and extended operations (`dump`, `seed`, `find-or-create`, `bulk-create`, `bulk-update`) if needed
-- Additional endpoints for metric aggregation and filtering
-
----
-
-## 5. Special Notes
-
-- All data fetching is handled strictly through SDK Providers and Relation Components
-- Components are structured according to the standard SPS architecture (`ParentComponent` → `ChildComponent`)
-- Widgets support various visualization types and layouts
-- Metrics can be configured for different tracking patterns
-- Integration with analytics services is handled through standardized interfaces
-- Supports real-time and historical data visualization
-
----
-
-## Summary
-
-- The description begins with the business purpose
-- Accurate model structure
-- Covers key data management and frontend implementation features
-- Includes widget-based analytics dashboard capabilities
-- Supports flexible metric tracking and visualization patterns
+See the linked model READMEs above for full fields and variant details.

@@ -1,3 +1,4 @@
+import "./env";
 import { mcp } from "./actions.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
