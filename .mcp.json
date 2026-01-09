@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "sps": {
+    "singlepagestartup": {
       "command": "bun",
       "args": ["./apps/mcp/index.ts"],
       "cwd": "./"
