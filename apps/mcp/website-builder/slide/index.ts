@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "website-builder-modules-slides",
+    "website-builder-module-slides",
     "sps://website-builder/slides",
     {
       title: "website-builder module slides",

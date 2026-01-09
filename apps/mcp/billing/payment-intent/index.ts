@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "billing-modules-payment-intents",
+    "billing-module-payment-intents",
     "sps://billing/payment-intents",
     {
       title: "billing module payment-intents",

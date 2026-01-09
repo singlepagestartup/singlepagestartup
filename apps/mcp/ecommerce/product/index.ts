@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "ecommerce-modules-products",
+    "ecommerce-module-products",
     "sps://ecommerce/products",
     {
       title: "ecommerce module products",

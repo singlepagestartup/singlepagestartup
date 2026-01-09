@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "file-storage-modules-files",
+    "file-storage-module-files",
     "sps://file-storage/files",
     {
       title: "file-storage module files",

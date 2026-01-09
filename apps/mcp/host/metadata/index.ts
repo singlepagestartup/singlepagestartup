@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "host-modules-metadata",
+    "host-module-metadata",
     "sps://host/metadata",
     {
       title: "host module metadata",

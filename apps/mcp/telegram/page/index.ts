@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "telegram-modules-pages",
+    "telegram-module-pages",
     "sps://telegram/pages",
     {
       title: "telegram module pages",

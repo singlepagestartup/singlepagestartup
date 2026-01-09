@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "blog-modules-articles",
+    "blog-module-articles",
     "sps://blog/articles",
     {
       title: "blog module articles",

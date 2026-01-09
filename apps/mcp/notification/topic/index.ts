@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "notification-modules-topics",
+    "notification-module-topics",
     "sps://notification/topics",
     {
       title: "notification module topics",

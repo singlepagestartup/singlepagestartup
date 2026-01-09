@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "host-modules-pages",
+    "host-module-pages",
     "sps://host/pages",
     {
       title: "host module pages",

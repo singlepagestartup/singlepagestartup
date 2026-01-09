@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "analytic-modules-widgets",
+    "analytic-module-widgets",
     "sps://analytic/widgets",
     {
       title: "analytic module widgets",

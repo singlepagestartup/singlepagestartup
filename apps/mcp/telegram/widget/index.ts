@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "telegram-modules-widgets",
+    "telegram-module-widgets",
     "sps://telegram/widgets",
     {
       title: "telegram module widgets",

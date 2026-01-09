@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "broadcast-modules-channels",
+    "broadcast-module-channels",
     "sps://broadcast/channels",
     {
       title: "broadcast module channels",

@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "social-modules-actions",
+    "social-module-actions",
     "sps://social/actions",
     {
       title: "social module actions",

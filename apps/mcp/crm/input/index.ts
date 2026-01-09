@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "crm-modules-inputs",
+    "crm-module-inputs",
     "sps://crm/inputs",
     {
       title: "crm module inputs",

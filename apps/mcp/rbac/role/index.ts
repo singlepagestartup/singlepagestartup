@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "rbac-modules-roles",
+    "rbac-module-roles",
     "sps://rbac/roles",
     {
       title: "rbac module roles",

@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "agent-modules-widgets",
+    "agent-module-widgets",
     "sps://agent/widgets",
     {
       title: "agent module widgets",

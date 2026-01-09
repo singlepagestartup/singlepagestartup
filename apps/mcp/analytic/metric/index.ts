@@ -5,7 +5,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "analytic-modules-metrics",
+    "analytic-module-metrics",
     "sps://analytic/metrics",
     {
       title: "analytic module metrics",
