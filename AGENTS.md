@@ -6,6 +6,10 @@
 - Backend logic lives in `libs/modules/<module>/backend`; frontend variants live in `libs/modules/<module>/frontend`.
 - Global operational scripts (e.g., database, Redis) are orchestrated from the repository root via shell helpers and Nx targets.
 
+## AI Entry Point
+
+- Start with `AI_GUIDE.md` for AI-specific onboarding, workflows, and MCP usage.
+
 ## Environment & Requirements
 
 - Node.js 20+, npm 10+ (as per package engines).
