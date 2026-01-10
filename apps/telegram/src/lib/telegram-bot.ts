@@ -4,6 +4,7 @@ import {
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
   TELEGRAM_SERVICE_BOT_TOKEN,
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
 } from "@sps/shared-utils";
 import {
   Bot as GrammyBot,
@@ -73,6 +74,16 @@ export class TelegarmBot {
    * Should be called after routes and conversations are added
    */
   init() {
+    this.instance.on("chat_member", async (ctx) => {
+      console.log("🚀 ~ init ~ ctx:", ctx);
+      //
+    });
+
+    this.instance.on("channel_post", async (ctx) => {
+      console.log("🚀 ~ init ~ ctx:", ctx);
+      //
+    });
+
     this.instance.on("callback_query:data", async (ctx, next) => {
       console.log(
         "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
@@ -231,6 +242,13 @@ export class TelegarmBot {
         );
       }
 
+      const member = await ctx.api.getChatMember(
+        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+        ctx.from.id,
+      );
+
+      console.log("🚀 ~ init ~ member:", member);
+
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
@@ -278,16 +296,6 @@ export class TelegarmBot {
       //     ],
       //   },
       // });
-    });
-
-    this.instance.on("chat_member", async (ctx) => {
-      console.log("🚀 ~ init ~ ctx:", ctx.chatMember);
-      //
-    });
-
-    this.instance.on("channel_post", async (ctx) => {
-      console.log("🚀 ~ init ~ ctx:", ctx);
-      //
     });
   }
 

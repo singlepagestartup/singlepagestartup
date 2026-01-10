@@ -616,17 +616,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     };
 
-    rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-      id: props.rbacModuleSubject.id,
-      socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      data,
-      options: {
-        headers: {
-          Authorization: "Bearer " + props.jwtToken,
+    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: props.rbacModuleSubject.id,
+        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
         },
       },
-    });
+    );
   }
 
   async telegramBotEcommerceModuleProductFindById(props: {
