@@ -1,0 +1,34 @@
+paths:
+  /telegram/run:
+    post:
+      tags:
+        - "app-telegram"
+      summary: List of models
+      description: Get list of available models from OpenRouter
+      servers:
+        - url: http://localhost:8000/api
+          description: Telegram App
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  url:
+                    type: string
+      responses:
+        "200":
+          description: Successfully run Telegram bot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                additionalProperties: true

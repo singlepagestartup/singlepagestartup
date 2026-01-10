@@ -59,6 +59,32 @@ interface ISocialModuleTelegramMessageData {
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   telegramBotCommands = ["/start", "/help", "/referral", "/premium"];
+  statusMessages = {
+    openRouterStarted: {
+      ru: "Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
+      en: "Starting to process your request. Please wait.",
+    },
+    openRouterFetchingModels: {
+      ru: "Получаю список моделей. Пожалуйста, подождите.",
+      en: "Fetching models list. Please wait.",
+    },
+    openRouterDetectingLanguage: {
+      ru: "Определяю язык сообщения. Пожалуйста, подождите.",
+      en: "Detecting message language. Please wait.",
+    },
+    openRouterSelectingModels: {
+      ru: "Выбираю модель для ответа. Пожалуйста, подождите.",
+      en: "Selecting model for response. Please wait.",
+    },
+    openRouterGeneratingResponse: {
+      ru: "Генерирую ответ с помощью [selectModelForRequest]. Пожалуйста, подождите.",
+      en: "Generating response using [selectModelForRequest]. Please wait.",
+    },
+    openRouterError: {
+      ru: "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
+      en: "An error occurred while processing your request. Please try again later.",
+    },
+  };
 
   async agentSocialModuleProfileHandler(
     props:
@@ -1257,8 +1283,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description:
-                "Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
+              description: this.statusMessages.openRouterStarted.ru,
             },
             options: {
               headers: {
@@ -1282,8 +1307,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description:
-              "Проверяю доступные модели для обработки запроса. Пожалуйста, подождите.",
+            description: this.statusMessages.openRouterFetchingModels.ru,
           },
           options: {
             headers: {
@@ -1310,39 +1334,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         (model) => !model.is_free,
       );
 
-      // console.log(
-      //   "🚀 ~ openRouterReplyMessageCreate ~ openRouterSanitizedModels:",
-      //   openRouterSanitizedModels.length,
-      // );
-
-      // const goodForRoutingModels = [
-      //   // // answer with **
-      //   // // "cost": 0.005635872,
-      //   // // 2.59 s
-      //   // // "mistralai/ministral-3b-2512",
-      //   // // "cost": 0.0024528636,
-      //   // // 16.24 s
-      //   // "nvidia/nemotron-nano-9b-v2",
-      //   // "cost": 0.0146864421,
-      //   // 13.82 s
-      //   "deepseek/deepseek-v3.2-exp",
-      //   // // "cost": 0,
-      //   // // 30.06 s
-      //   // "amazon/nova-2-lite-v1:free",
-      //   // "cost": 0.0114527655,
-      //   // 14.90 s
-      //   "x-ai/grok-4.1-fast",
-      //   // // "cost": 0.01429128336,
-      //   // // 23.98 s
-      //   // "minimax/minimax-m2",
-      //   // "cost": 0.031756824,
-      //   // 6.00 s
-      //   "moonshotai/kimi-k2-0905",
-      //   // "cost": 0.0116335296,
-      //   // 12.64 s
-      //   "x-ai/grok-code-fast-1",
-      // ];
-
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
         {
           id: props.rbacModuleSubject.id,
@@ -1350,8 +1341,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description:
-              "Определяю язык вашего запроса. Пожалуйста, подождите.",
+            description: this.statusMessages.openRouterDetectingLanguage.ru,
           },
           options: {
             headers: {
@@ -1376,27 +1366,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         ],
       });
+
       console.log(
         "🚀 ~ openRouterReplyMessageCreate ~ detectedLanguageResult:",
         detectedLanguageResult,
       );
 
       if ("error" in detectedLanguageResult) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: "Упс! Что-то пошло не так, попробуйте еще раз",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
+        throw new Error("Language detection error");
       }
 
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
@@ -1406,8 +1383,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description:
-              "Выбираю лучшую модель для обработки вашего запроса. Пожалуйста, подождите.",
+            description: this.statusMessages.openRouterSelectingModels.ru,
           },
           options: {
             headers: {
@@ -1431,21 +1407,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if ("error" in selectModelResult) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: "Упс! Что-то пошло не так, попробуйте еще раз",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
+        throw new Error("Model selection error");
       }
 
       let selectModelForRequest = selectModelResult.text;
@@ -1465,7 +1427,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleChatId: props.socialModuleChat.id,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description: `Генерирую ответ с помощью *${selectModelForRequest}*. Пожалуйста, подождите.`,
+            description:
+              this.statusMessages.openRouterGeneratingResponse.ru.replace(
+                "[selectModelForRequest]",
+                selectModelForRequest,
+              ),
           },
           options: {
             headers: {
@@ -1493,21 +1459,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
       if ("error" in result) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: "Упс! Что-то пошло не так, попробуйте еще раз",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
+        throw new Error("Generation error");
       }
 
       generatedMessageDescription = result.text;
@@ -1540,21 +1492,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       data.description = generatedMessageDescription;
 
       if (data.description == "") {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: "Упс! Что-то пошло не так, попробуйте еще раз",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
+        throw new Error("Generated message is empty");
       }
 
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageDelete(
@@ -1591,7 +1529,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
           socialModuleChatId: props.socialModuleChat.id,
           data: {
-            description: "Упс! Что-то пошло не так, попробуйте еще раз",
+            description:
+              this.statusMessages.openRouterError.ru +
+              "\n`" +
+              (error as Error).message +
+              "`",
           },
           options: {
             headers: {

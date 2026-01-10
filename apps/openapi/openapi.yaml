@@ -957,6 +957,10 @@ paths:
   /website-builder/widgets-to-sliders/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1{id}"
 
+  # apps/telegram
+  /telegram/run:
+    $ref: "./apps/telegram/paths.yaml#/paths/~1telegram~1run"
+
 components:
   securitySchemes:
     bearerAuth:

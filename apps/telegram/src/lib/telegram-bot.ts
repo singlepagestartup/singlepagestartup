@@ -280,11 +280,15 @@ export class TelegarmBot {
       // });
     });
 
-    this.instance.catch((error) => {
-      error.ctx.reply("An error occurred. Please try again later.");
+    this.instance.on("chat_member", async (ctx) => {
+      console.log("🚀 ~ init ~ ctx:", ctx.chatMember);
+      //
     });
-    this.instance.errorBoundary;
-    this.instance.errorHandler;
+
+    this.instance.on("channel_post", async (ctx) => {
+      console.log("🚀 ~ init ~ ctx:", ctx);
+      //
+    });
   }
 
   async run() {
