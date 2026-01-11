@@ -6,6 +6,9 @@ import {
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
 } from "@sps/shared-utils";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
@@ -58,6 +61,14 @@ interface ISocialModuleTelegramMessageData {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private readonly telegramRequiredChannelName =
+    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
+  private readonly telegramRequiredChannelLink =
+    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
+    (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
+      ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
+      : "https://t.me");
+
   telegramBotCommands = ["/start", "/help", "/referral", "/premium"];
   statusMessages = {
     openRouterStarted: {
@@ -83,6 +94,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     openRouterError: {
       ru: "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
       en: "An error occurred while processing your request. Please try again later.",
+    },
+    openRouterRequiredTelegamChannelSubscriptionError: {
+      ru: `Для использования этой функции необходимо подписаться на наш Telegram-канал - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink})`,
+      en: `You need to subscribe to our Telegram channel  - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink}) to use this feature.`,
     },
   };
 
@@ -1216,6 +1231,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
       }
 
+      if (
+        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
+        (!TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
+          !TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME)
+      ) {
+        throw new Error(
+          "Configuration error. Telegram required subscription channel information is incomplete - expected TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK in .env",
+        );
+      }
+
       if (!props.socialModuleMessage.description) {
         throw new Error(
           "Validation error. 'props.socialModuleMessage.description' is empty.",
@@ -1224,6 +1249,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const messageFromRbacModuleSubject =
         await this.getMessageFromRbacModuleSubject(props);
+
+      const rbacModuleRoles = await rbacModuleRoleApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       const rbacSubjectsToRoles = await rbacModuleSubjectsToRolesApi.find({
         params: {
@@ -1244,6 +1277,56 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         },
       });
+
+      console.log(
+        "🚀 ~ Service ~ openRouterReplyMessageCreate ~ rbacSubjectsToRoles:",
+        rbacSubjectsToRoles,
+      );
+
+      const requiredTelegramChannelSubscriptionRbacModuleRole =
+        rbacModuleRoles?.find((role) => {
+          return role.slug === "required-telegram-channel-subscriber";
+        });
+
+      const requiredTelegramChannelSubscriptionRbacModuleSubjectToRole =
+        rbacSubjectsToRoles?.find((rbacModuleSubjectToRole) => {
+          return (
+            rbacModuleSubjectToRole.roleId ===
+            requiredTelegramChannelSubscriptionRbacModuleRole?.id
+          );
+        });
+
+      if (!requiredTelegramChannelSubscriptionRbacModuleSubjectToRole) {
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            data: {
+              description:
+                this.statusMessages
+                  .openRouterRequiredTelegamChannelSubscriptionError.ru,
+              interaction: {
+                inline_keyboard: [
+                  [
+                    {
+                      text:
+                        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME ||
+                        "Subscribe",
+                      url: this.telegramRequiredChannelLink,
+                    },
+                  ],
+                ],
+              },
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + props.jwtToken,
+              },
+            },
+          },
+        );
+      }
 
       if (!rbacSubjectsToRoles?.length) {
         return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(

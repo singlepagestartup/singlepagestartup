@@ -18,8 +18,10 @@ import {
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
+import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
 import { api as rbacModuleSubjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleAttributeKeyApi } from "@sps/social/models/attribute-key/sdk/server";
 import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
@@ -242,19 +244,17 @@ export class TelegarmBot {
         );
       }
 
-      const member = await ctx.api.getChatMember(
-        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
-        ctx.from.id,
-      );
-
-      console.log("🚀 ~ init ~ member:", member);
-
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
         await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
           ctx,
         });
+
+      await this.synchronizeRbacModuleRole({
+        ctx,
+        rbacModuleSubject,
+      });
 
       const jwtToken = await jwt.sign(
         {
@@ -282,20 +282,6 @@ export class TelegarmBot {
           },
         },
       );
-
-      // ctx.reply("Got message " + (ctx.message.text || ""), {
-      //   parse_mode: "HTML",
-      //   reply_markup: {
-      //     inline_keyboard: [
-      //       [
-      //         {
-      //           text: "React",
-      //           callback_data: "react",
-      //         },
-      //       ],
-      //     ],
-      //   },
-      // });
     });
   }
 
@@ -977,5 +963,106 @@ export class TelegarmBot {
       socialModuleProfile: profile,
       socialModuleChat: chat,
     };
+  }
+
+  async synchronizeRbacModuleRole(props: {
+    ctx: GrammyContext;
+    rbacModuleSubject: IRbacSubject;
+  }) {
+    if (
+      RBAC_SECRET_KEY &&
+      TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
+      props.ctx.from?.id
+    ) {
+      const member = await props.ctx.api.getChatMember(
+        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+        props.ctx.from.id,
+      );
+
+      const rbacModuleRoles = await rbacModuleRoleApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      const requiredTelegramChannelSubscriptionRbacModuleRole =
+        rbacModuleRoles?.find((role) => {
+          return role.slug === "required-telegram-channel-subscriber";
+        });
+
+      if (!requiredTelegramChannelSubscriptionRbacModuleRole) {
+        return;
+      }
+
+      const rbacModuleSubjectsToRoles = await rbacModuleSubjectsToRolesApi.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: props.rbacModuleSubject.id,
+                },
+                {
+                  column: "roleId",
+                  method: "eq",
+                  value: requiredTelegramChannelSubscriptionRbacModuleRole.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        },
+      );
+
+      if (
+        ["administrator", "member", "creator"].includes(member.status) &&
+        !rbacModuleSubjectsToRoles?.length
+      ) {
+        await rbacModuleSubjectsToRolesApi.create({
+          data: {
+            subjectId: props.rbacModuleSubject.id,
+            roleId: requiredTelegramChannelSubscriptionRbacModuleRole.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      } else if (
+        ["restricted", "left", "kicked"].includes(member.status) &&
+        rbacModuleSubjectsToRoles?.length
+      ) {
+        for (const rbacModuleSubjectsToRole of rbacModuleSubjectsToRoles) {
+          if (
+            rbacModuleSubjectsToRole.roleId !==
+            requiredTelegramChannelSubscriptionRbacModuleRole.id
+          ) {
+            continue;
+          }
+
+          await rbacModuleSubjectsToRolesApi.delete({
+            id: rbacModuleSubjectsToRole.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+        // left
+      }
+
+      console.log("🚀 ~ init ~ member:", member);
+    }
+    //
   }
 }

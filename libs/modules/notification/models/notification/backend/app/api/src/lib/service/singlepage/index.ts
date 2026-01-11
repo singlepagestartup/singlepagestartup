@@ -116,6 +116,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return keyboard.length ? keyboard : undefined;
   }
 
+  private normalizeReplyMarkup(
+    replyMarkup?:
+      | {
+          inline_keyboard?: {
+            text: string;
+            url?: string;
+            callback_data?: string;
+          }[][];
+        }
+      | Record<string, unknown>,
+  ): Record<string, unknown> | undefined {
+    if (!replyMarkup || typeof replyMarkup !== "object") {
+      return undefined;
+    }
+
+    const inlineKeyboard = this.normalizeInlineKeyboard(
+      replyMarkup as {
+        inline_keyboard?: {
+          text: string;
+          url?: string;
+          callback_data?: string;
+        }[][];
+      },
+    );
+    const nextReplyMarkup = { ...(replyMarkup as Record<string, unknown>) };
+
+    if (inlineKeyboard) {
+      return { ...nextReplyMarkup, inline_keyboard: inlineKeyboard };
+    }
+
+    delete (nextReplyMarkup as { inline_keyboard?: unknown }).inline_keyboard;
+
+    return Object.keys(nextReplyMarkup).length ? nextReplyMarkup : undefined;
+  }
+
   async telegramEditMessage(props: {
     chatId: string | number;
     messageId: string | number;
@@ -474,6 +509,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         if (validAttachments?.length) {
           const captionOptions = parsedRenderResult.props[1] || {};
+          const baseCaptionOptions = { ...(captionOptions || {}) };
+          delete (baseCaptionOptions as { reply_markup?: unknown })
+            .reply_markup;
+          const normalizedReplyMarkup = this.normalizeReplyMarkup(
+            (captionOptions as { reply_markup?: unknown })?.reply_markup as {
+              inline_keyboard?: {
+                text: string;
+                url?: string;
+                callback_data?: string;
+              }[][];
+            },
+          );
           const parseMode = captionOptions?.parse_mode;
           const shouldFormat = !parseMode || parseMode === "MarkdownV2";
           const captionSource = shouldFormat
@@ -510,22 +557,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           }
 
           if (captionChunks.length) {
-            const replyMarkup = captionOptions?.reply_markup;
             const chunkCount = captionChunks.length;
             for (const [index, chunk] of captionChunks.entries()) {
               const isLast = index === chunkCount - 1;
               const nextOptions = {
-                ...(captionOptions || {}),
-                ...(isLast ? { reply_markup: replyMarkup } : {}),
+                ...baseCaptionOptions,
+                ...(isLast && normalizedReplyMarkup
+                  ? { reply_markup: normalizedReplyMarkup }
+                  : {}),
               };
               if (!isLast) {
                 delete (nextOptions as { reply_markup?: unknown }).reply_markup;
               }
               await bot.api.sendMessage(entity.reciever, chunk, nextOptions);
             }
-          } else if (captionOptions?.reply_markup) {
+          } else if (normalizedReplyMarkup) {
             await bot.api.sendMessage(entity.reciever, ".", {
-              ...(captionOptions || {}),
+              ...baseCaptionOptions,
+              reply_markup: normalizedReplyMarkup,
             });
           }
         } else {
@@ -537,22 +586,37 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             typeof formattedProps[0] === "string"
           ) {
             const [text, options] = formattedProps;
-            const replyMarkup =
+            const baseOptions =
               options && typeof options === "object"
-                ? (options as { reply_markup?: unknown }).reply_markup
+                ? { ...(options as Record<string, unknown>) }
                 : undefined;
+            if (baseOptions) {
+              delete (baseOptions as { reply_markup?: unknown }).reply_markup;
+            }
+            const normalizedReplyMarkup = this.normalizeReplyMarkup(
+              (options as { reply_markup?: unknown })?.reply_markup as {
+                inline_keyboard?: {
+                  text: string;
+                  url?: string;
+                  callback_data?: string;
+                }[][];
+              },
+            );
             const chunks = this.splitTelegramText(text as string, 4000);
             const chunkCount = chunks.length;
             let lastResponse: { message_id?: number } | undefined = undefined;
 
             for (const [index, chunk] of chunks.entries()) {
               const isLast = index === chunkCount - 1;
-              const nextOptions =
-                options && typeof options === "object"
-                  ? {
-                      ...(options as Record<string, unknown>),
-                      ...(isLast ? { reply_markup: replyMarkup } : {}),
-                    }
+              const nextOptions = baseOptions
+                ? {
+                    ...baseOptions,
+                    ...(isLast && normalizedReplyMarkup
+                      ? { reply_markup: normalizedReplyMarkup }
+                      : {}),
+                  }
+                : normalizedReplyMarkup && isLast
+                  ? { reply_markup: normalizedReplyMarkup }
                   : undefined;
 
               if (nextOptions && !isLast) {
