@@ -12,6 +12,8 @@ import { Button, Form } from "@sps/shared-ui-shadcn";
 import { Component as BillingModuleCurrency } from "@sps/billing/models/currency/frontend/component";
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { Component as AttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/frontend/component";
+import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
+import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
 import { FormField } from "@sps/ui-adapter";
 
 const formSchema = z.object({
@@ -64,7 +66,7 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className)}
     >
       <Form {...form}>
-        <ProductsToAttributes
+        <AttributeKey
           isServer={false}
           variant="find"
           apiProps={{
@@ -72,18 +74,18 @@ export function Component(props: IComponentPropsExtended) {
               filters: {
                 and: [
                   {
-                    column: "productId",
+                    column: "type",
                     method: "eq",
-                    value: props.product.id,
+                    value: "price",
                   },
                 ],
               },
             },
           }}
         >
-          {({ data: productsToAttributes }) => {
+          {({ data: attributeKeys }) => {
             return (
-              <AttributesToBillingModuleCurrencies
+              <ProductsToAttributes
                 isServer={false}
                 variant="find"
                 apiProps={{
@@ -91,22 +93,18 @@ export function Component(props: IComponentPropsExtended) {
                     filters: {
                       and: [
                         {
-                          column: "attributeId",
-                          method: "inArray",
-                          value:
-                            productsToAttributes?.map(
-                              (productToAttribute) =>
-                                productToAttribute.attributeId,
-                            ) || [],
+                          column: "productId",
+                          method: "eq",
+                          value: props.product.id,
                         },
                       ],
                     },
                   },
                 }}
               >
-                {({ data: attributesToBillingModuleCurrencies }) => {
+                {({ data: productsToAttributes }) => {
                   return (
-                    <BillingModuleCurrency
+                    <AttributeKeysToAttributes
                       isServer={false}
                       variant="find"
                       apiProps={{
@@ -114,12 +112,20 @@ export function Component(props: IComponentPropsExtended) {
                           filters: {
                             and: [
                               {
-                                column: "id",
+                                column: "attributeKeyId",
                                 method: "inArray",
                                 value:
-                                  attributesToBillingModuleCurrencies?.map(
-                                    (attributeToBillingModuleCurrency) =>
-                                      attributeToBillingModuleCurrency.billingModuleCurrencyId,
+                                  attributeKeys?.map(
+                                    (attributeKey) => attributeKey.id,
+                                  ) || [],
+                              },
+                              {
+                                column: "attributeId",
+                                method: "inArray",
+                                value:
+                                  productsToAttributes?.map(
+                                    (productToAttribute) =>
+                                      productToAttribute.attributeId,
                                   ) || [],
                               },
                             ],
@@ -127,34 +133,93 @@ export function Component(props: IComponentPropsExtended) {
                         },
                       }}
                     >
-                      {({ data: billingModuleCurrencies }) => {
-                        if (!billingModuleCurrencies) {
-                          return null;
-                        }
-
+                      {({ data: attributeKeysToAttributes }) => {
                         return (
-                          <div className="flex flex-col gap-2">
-                            <FormField
-                              ui="shadcn"
-                              type="toggle-group"
-                              label=""
-                              name="billingModule.currency.id"
-                              form={form}
-                              options={billingModuleCurrencies.map((entity) => [
-                                entity.id,
-                                entity.symbol,
-                              ])}
-                            />
-                          </div>
+                          <AttributesToBillingModuleCurrencies
+                            isServer={false}
+                            variant="find"
+                            apiProps={{
+                              params: {
+                                filters: {
+                                  and: [
+                                    {
+                                      column: "attributeId",
+                                      method: "inArray",
+                                      value:
+                                        attributeKeysToAttributes?.map(
+                                          (productToAttribute) =>
+                                            productToAttribute.attributeId,
+                                        ) || [],
+                                    },
+                                  ],
+                                },
+                              },
+                            }}
+                          >
+                            {({
+                              data: attributesToBillingModuleCurrencies,
+                            }) => {
+                              return (
+                                <BillingModuleCurrency
+                                  isServer={false}
+                                  variant="find"
+                                  apiProps={{
+                                    params: {
+                                      filters: {
+                                        and: [
+                                          {
+                                            column: "id",
+                                            method: "inArray",
+                                            value:
+                                              attributesToBillingModuleCurrencies?.map(
+                                                (
+                                                  attributeToBillingModuleCurrency,
+                                                ) =>
+                                                  attributeToBillingModuleCurrency.billingModuleCurrencyId,
+                                              ) || [],
+                                          },
+                                        ],
+                                      },
+                                    },
+                                  }}
+                                >
+                                  {({ data: billingModuleCurrencies }) => {
+                                    if (!billingModuleCurrencies) {
+                                      return null;
+                                    }
+
+                                    return (
+                                      <div className="flex flex-col gap-2">
+                                        <FormField
+                                          ui="shadcn"
+                                          type="toggle-group"
+                                          label=""
+                                          name="billingModule.currency.id"
+                                          form={form}
+                                          options={billingModuleCurrencies.map(
+                                            (entity) => [
+                                              entity.id,
+                                              entity.symbol,
+                                            ],
+                                          )}
+                                        />
+                                      </div>
+                                    );
+                                  }}
+                                </BillingModuleCurrency>
+                              );
+                            }}
+                          </AttributesToBillingModuleCurrencies>
                         );
                       }}
-                    </BillingModuleCurrency>
+                    </AttributeKeysToAttributes>
                   );
                 }}
-              </AttributesToBillingModuleCurrencies>
+              </ProductsToAttributes>
             );
           }}
-        </ProductsToAttributes>
+        </AttributeKey>
+
         <div className="flex w-full gap-1">
           <Button
             onClick={form.handleSubmit(onSubmit)}

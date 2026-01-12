@@ -135,8 +135,8 @@ export function Component(props: IComponentPropsExtended) {
                                               },
                                             }}
                                           >
-                                            {({ data }) => {
-                                              return data?.map(
+                                            {({ data: attributeKeys }) => {
+                                              return attributeKeys?.map(
                                                 (attributeKey, index) => {
                                                   return (
                                                     <Attribute
