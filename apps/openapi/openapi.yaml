@@ -118,6 +118,8 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}"
   /rbac/subjects/{id}/notify:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1notify"
+  /rbac/subjects/check:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1check"
   /rbac/subjects/{id}/identities:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}~1identities"
   /rbac/subjects/{id}/identities/{identityId}:
@@ -254,6 +256,30 @@ paths:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1{id}"
   /agent/agents/telegram-bot:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1telegram-bot"
+  /agent/agents/cron:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1cron"
+  /agent/agents/dummy:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1dummy"
+  /agent/agents/host-module-page-cache:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1host-module-page-cache"
+  /agent/agents/ecommerce-module-orders-check:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1ecommerce-module-orders-check"
+  /agent/agents/ecommerce-module-orders-delete-canceled:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1ecommerce-module-orders-delete-canceled"
+  /agent/agents/billing-module-payment-intents-check:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1billing-module-payment-intents-check"
+  /agent/agents/billing-module-payment-intents-delete-failed:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1billing-module-payment-intents-delete-failed"
+  /agent/agents/billing-module-invoices-delete-failed:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1billing-module-invoices-delete-failed"
+  /agent/agents/notification-module-topics-send-all:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1notification-module-topics-send-all"
+  /agent/agents/broadcast-module-messages-delete-expired:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1broadcast-module-messages-delete-expired"
+  /agent/agents/rbac-module-subjects-delete-anonymous:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1rbac-module-subjects-delete-anonymous"
+  /agent/agents/rbac-module-subjects-check:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1rbac-module-subjects-check"
 
   # agent/widget
   /agent/widgets:

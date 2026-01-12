@@ -1,7 +1,7 @@
 {
   "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
   "createdAt": "2025-01-24T23:47:55.624Z",
-  "updatedAt": "2025-11-15T09:32:28.620Z",
+  "updatedAt": "2026-01-12T12:17:37.844Z",
   "variant": "default",
   "type": "subscription",
   "slug": "pro",
@@ -16,5 +16,5 @@
   "description": {
     "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription\"}]}]}"
   },
-  "adminTitle": "product-e939ed88-22ba-4630-86e4-9743ad94338c"
+  "adminTitle": "Pro Subscription"
 }

@@ -141,6 +141,41 @@ paths:
                         items:
                           $ref: "../../../../../../../../../libs/modules/notification/models/notification/sdk/model/src/lib/notification-module-notification.yaml"
 
+  /rbac/subjects/check:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Check subjects
+      description: Check subject orders and update roles
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
   /rbac/subjects/{id}/identities:
     get:
       tags:

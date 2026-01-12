@@ -1,16 +1,16 @@
 {
   "id": "e1fefd64-ea15-4f6e-9871-f24a7e942bd6",
   "createdAt": "2025-01-24T23:52:03.741Z",
-  "updatedAt": "2025-11-15T09:32:28.631Z",
+  "updatedAt": "2026-01-12T18:51:49.809Z",
   "variant": "default",
   "number": null,
-  "boolean": null,
+  "boolean": false,
   "date": null,
   "datetime": null,
   "string": {
-    "en": "day",
-    "ru": "день"
+    "en": "minute",
+    "ru": "минута"
   },
-  "adminTitle": "day",
+  "adminTitle": "minute",
   "slug": "e1fefd64-ea15-4f6e-9871-f24a7e942bd6"
 }

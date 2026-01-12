@@ -16,6 +16,7 @@ import { Handler as BillingModuleInvoicesDeleteFailed } from "./billing-module/i
 import { Handler as NotificationModuleTopicsSendAll } from "./notification-module/topics/send-all";
 import { Handler as BroadcastModuleMessageDeleteExpired } from "./broadcast-module/message/delete-expied";
 import { Handler as RbacModuleSubjectDeleteAnonymous } from "./rbac-module/subject/delete-anonymous";
+import { Handler as RbacModuleSubjectCheck } from "./rbac-module/subject/check";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -115,6 +116,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         path: "/rbac-module-subjects-delete-anonymous",
         handler: this.rbacModuleSubjectDeleteAnonymous,
       },
+      {
+        method: "POST",
+        path: "/rbac-module-subjects-check",
+        handler: this.rbacModuleSubjectCheck,
+      },
     ]);
   }
 
@@ -194,5 +200,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new RbacModuleSubjectDeleteAnonymous(this.service).execute(c, next);
+  }
+
+  async rbacModuleSubjectCheck(c: Context, next: any): Promise<Response> {
+    return new RbacModuleSubjectCheck(this.service).execute(c, next);
   }
 }

@@ -1,0 +1,10 @@
+{
+  "title": "Rbac Subject Check",
+  "adminTitle": "tender brown bat",
+  "id": "d965a8a7-b8ad-4529-9d82-4fb25f1661f5",
+  "createdAt": "2026-01-12T19:25:50.956Z",
+  "updatedAt": "2026-01-12T19:53:59.529Z",
+  "variant": "default",
+  "slug": "rbac-subject-check",
+  "interval": "*/5 * * * *"
+}

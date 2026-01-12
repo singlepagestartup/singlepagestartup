@@ -99,6 +99,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ru: `Для использования этой функции необходимо подписаться на наш Telegram-канал - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink})`,
       en: `You need to subscribe to our Telegram channel  - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink}) to use this feature.`,
     },
+    ecommerceModuleSelectSubscriptionProductsOffer: {
+      ru: "Пожалуйста, выберите один из наших продуктов-подписок, чтобы продолжить.",
+      en: "Please select one of our subscription products to continue.",
+    },
   };
 
   async agentSocialModuleProfileHandler(
@@ -954,6 +958,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 method: "eq",
                 value: messageFromSubject.id,
               },
+              {
+                column: "roleId",
+                method: "inArray",
+                value: rbacModulePayableRoles.map((role) => {
+                  return role.id;
+                }),
+              },
             ],
           },
         },
@@ -967,7 +978,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     console.log(
       "🚀 ~ telegramBotPremiumMessageWithKeyboardCreate ~ messageFromSubject:",
-      messageFromSubject,
+      rbacModuleSubjectsToProSubscriberRoles,
     );
 
     const data: ISocialModuleTelegramMessageData = {
@@ -1020,7 +1031,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       data.description =
-        "You don't have active subscription.\nClick button below to buy premium tier.";
+        this.statusMessages.ecommerceModuleSelectSubscriptionProductsOffer.ru;
 
       const ecommerceModuleProductButtons: {
         text: string;

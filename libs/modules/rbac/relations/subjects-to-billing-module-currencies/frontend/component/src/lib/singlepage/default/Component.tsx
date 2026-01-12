@@ -1,6 +1,6 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { IComponentPropsExtended } from "./interface";
-import { Component as Order } from "@sps/ecommerce/models/order/frontend/component";
+import { Component as BillingModuleCurrency } from "@sps/billing/models/currency/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -15,7 +15,7 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      <Order
+      <BillingModuleCurrency
         isServer={props.isServer}
         variant="find"
         apiProps={{
@@ -25,12 +25,7 @@ export function Component(props: IComponentPropsExtended) {
                 {
                   column: "id",
                   method: "eq",
-                  value: props.data.ecommerceModuleOrderId,
-                },
-                {
-                  column: "type",
-                  method: "eq",
-                  value: "cart",
+                  value: props.data.billingModuleCurrencyId,
                 },
               ],
             },
@@ -40,16 +35,17 @@ export function Component(props: IComponentPropsExtended) {
         {({ data }) => {
           return data?.map((entity, index) => {
             return (
-              <Order
+              <BillingModuleCurrency
                 key={index}
                 isServer={props.isServer}
                 variant="default"
                 data={entity}
+                language={props.language}
               />
             );
           });
         }}
-      </Order>
+      </BillingModuleCurrency>
     </div>
   );
 }

@@ -3,8 +3,8 @@
   "adminTitle": "naughty green camel",
   "id": "6e675d55-54ca-49d6-b66c-3dc7e88d8370",
   "createdAt": "2025-07-21T15:49:35.067Z",
-  "updatedAt": "2025-11-28T14:33:42.311Z",
+  "updatedAt": "2026-01-12T19:53:53.275Z",
   "variant": "default",
   "slug": "ecommerce-module-orders-check",
-  "interval": "0 * * * *"
+  "interval": "*/5 * * * *"
 }

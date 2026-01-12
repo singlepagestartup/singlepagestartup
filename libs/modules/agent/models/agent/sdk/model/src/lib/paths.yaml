@@ -134,3 +134,420 @@ paths:
                     type: string
                 required:
                   - result
+
+  /agent/agents/cron:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Run cron
+      description: Execute agent cron tasks
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Cron execution result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "agent-agent.yaml"
+                required:
+                  - data
+
+  /agent/agents/dummy:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Dummy action
+      description: Run dummy agent action
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Dummy result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/host-module-page-cache:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Host module page cache
+      description: Revalidate and warm host module pages
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Cache result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/ecommerce-module-orders-check:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Ecommerce orders check
+      description: Check and update ecommerce orders
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Orders check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/ecommerce-module-orders-delete-canceled:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Ecommerce orders delete canceled
+      description: Delete canceled ecommerce orders
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Delete canceled orders result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/billing-module-payment-intents-check:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Billing payment intents check
+      description: Check and update payment intents
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Payment intents check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/billing-module-payment-intents-delete-failed:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Billing payment intents delete failed
+      description: Delete failed payment intents
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Delete failed payment intents result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/billing-module-invoices-delete-failed:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Billing invoices delete failed
+      description: Delete failed invoices
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Delete failed invoices result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/notification-module-topics-send-all:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Notification topics send all
+      description: Trigger sending all notification topics
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Send all topics result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/broadcast-module-messages-delete-expired:
+    post:
+      tags:
+        - "agent-agent"
+      summary: Broadcast messages delete expired
+      description: Delete expired broadcast messages
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Delete expired messages result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/rbac-module-subjects-delete-anonymous:
+    post:
+      tags:
+        - "agent-agent"
+      summary: RBAC subjects delete anonymous
+      description: Delete anonymous RBAC subjects
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Delete anonymous subjects result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
+  /agent/agents/rbac-module-subjects-check:
+    post:
+      tags:
+        - "agent-agent"
+      summary: RBAC subjects check
+      description: Trigger RBAC subject check
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data

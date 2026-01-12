@@ -126,6 +126,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
+        path: "/check",
+        handler: this.check,
+      },
+      {
+        method: "POST",
         path: "/authentication/email-and-password/forgot-password",
         handler: this.authenticationEmailAndPasswordForgotPassword,
       },
@@ -148,11 +153,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:uuid/notify",
         handler: this.notify,
-      },
-      {
-        method: "POST",
-        path: "/:uuid/check",
-        handler: this.check,
       },
       {
         method: "POST",

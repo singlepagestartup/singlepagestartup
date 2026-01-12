@@ -1,0 +1,16 @@
+{
+  "id": "e005389b-41c4-4efb-89a2-6d84a354cfed",
+  "createdAt": "2026-01-12T11:59:08.201Z",
+  "updatedAt": "2026-01-12T12:00:38.134Z",
+  "variant": "default",
+  "type": "topup",
+  "field": "string",
+  "adminTitle": "courageous green bird",
+  "slug": "topup",
+  "title": {
+    "en": "Topup",
+    "ru": "Пополнение"
+  },
+  "prefix": {},
+  "suffix": {}
+}

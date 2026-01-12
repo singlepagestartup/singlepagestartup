@@ -12,6 +12,11 @@ import {
   type IProps as INotifyProps,
   type IResult as INotifyResult,
 } from "./notify";
+import {
+  action as check,
+  type IProps as ICheckProps,
+  type IResult as ICheckResult,
+} from "./check";
 
 import {
   action as ecommerceModuleProductCheckout,
@@ -195,6 +200,7 @@ import {
 
 export type IProps = {
   INotifyProps: INotifyProps;
+  ICheckProps: ICheckProps;
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
@@ -239,6 +245,7 @@ export type IProps = {
 
 export type IResult = {
   INotifyResult: INotifyResult;
+  ICheckResult: ICheckResult;
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
@@ -290,6 +297,7 @@ export const api = {
   }),
 
   notify,
+  check,
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,

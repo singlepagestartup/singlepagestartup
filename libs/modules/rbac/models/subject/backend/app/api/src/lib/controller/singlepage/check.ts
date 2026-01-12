@@ -24,25 +24,8 @@ export class Handler {
         throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
-      const uuid = c.req.param("uuid");
-
-      if (!uuid) {
-        throw new Error("Validation error. No uuid provided");
-      }
-
       const subjectsToEcommerceModuleOrders =
         await subjectsToEcommerceModuleOrdersApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: uuid,
-                },
-              ],
-            },
-          },
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -217,6 +200,8 @@ export class Handler {
               const removeRolesIds = productRolesIds?.filter((productRoleId) =>
                 existingRolesIds?.includes(productRoleId),
               );
+
+              console.log("🚀 ~ execute ~ removeRolesIds:", removeRolesIds);
 
               if (removeRolesIds?.length) {
                 for (const removeRoleId of removeRolesIds) {

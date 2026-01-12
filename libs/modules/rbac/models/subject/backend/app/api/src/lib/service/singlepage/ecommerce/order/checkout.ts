@@ -702,7 +702,7 @@ export class Service {
               {
                 type: "request",
                 method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/check`,
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 },
