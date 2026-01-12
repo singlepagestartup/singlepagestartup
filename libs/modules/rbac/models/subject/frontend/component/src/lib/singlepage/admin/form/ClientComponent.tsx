@@ -123,8 +123,15 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
-        {props.subjectsToActs
-          ? props.subjectsToActs({
+        {props.subjectsToActions
+          ? props.subjectsToActions({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+
+        {props.subjectsToBillingModuleCurrencies
+          ? props.subjectsToBillingModuleCurrencies({
               data: props.data,
               isServer: props.isServer,
             })

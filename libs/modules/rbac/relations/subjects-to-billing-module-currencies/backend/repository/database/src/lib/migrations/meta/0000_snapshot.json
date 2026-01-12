@@ -1,0 +1,119 @@
+{
+  "id": "78738d61-0c4a-491d-871b-0858c2d083aa",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_rc_ss_to_bg_me_cs_vvd": {
+      "name": "sps_rc_ss_to_bg_me_cs_vvd",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "st_id": {
+          "name": "st_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bg_me_cy_id": {
+          "name": "bg_me_cy_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_rc_ss_to_bg_me_cs_vvd_st_id_sps_rc_subject_id_fk": {
+          "name": "sps_rc_ss_to_bg_me_cs_vvd_st_id_sps_rc_subject_id_fk",
+          "tableFrom": "sps_rc_ss_to_bg_me_cs_vvd",
+          "tableTo": "sps_rc_subject",
+          "columnsFrom": [
+            "st_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_rc_ss_to_bg_me_cs_vvd_bg_me_cy_id_sps_bg_currency_id_fk": {
+          "name": "sps_rc_ss_to_bg_me_cs_vvd_bg_me_cy_id_sps_bg_currency_id_fk",
+          "tableFrom": "sps_rc_ss_to_bg_me_cs_vvd",
+          "tableTo": "sps_bg_currency",
+          "columnsFrom": [
+            "bg_me_cy_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

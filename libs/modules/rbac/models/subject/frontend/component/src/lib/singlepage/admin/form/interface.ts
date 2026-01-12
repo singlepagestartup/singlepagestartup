@@ -21,7 +21,9 @@ export interface IComponentProps
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   subjectsToRoles?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
-  subjectsToActs?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  subjectsToActions?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   subjectsToEcommerceModuleOrders?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
@@ -32,6 +34,9 @@ export interface IComponentProps
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   subjectsToBlogModuleArticles?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+  subjectsToBillingModuleCurrencies?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
 }

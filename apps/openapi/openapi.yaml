@@ -217,6 +217,12 @@ paths:
   /rbac/subjects-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products~1{id}"
 
+  # rbac/relations/subjects-to-billing-module-currencies
+  /rbac/subjects-to-billing-module-currencies:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-currencies"
+  /rbac/subjects-to-billing-module-currencies/{id}:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-currencies~1{id}"
+
   # rbac/relations/subjects-to-identities
   /rbac/subjects-to-identities:
     $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities"
@@ -1079,6 +1085,8 @@ components:
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles.yaml"
     "rbac-subjects-to-social-module-profiles-input":
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles-input.yaml"
+    "rbac-subjects-to-billing-module-currencies-input":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/rbac-subjects-to-billing-module-currencies-input.yaml"
     "agent-agent":
       $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/agent-agent.yaml"
     "agent-agent-input":
