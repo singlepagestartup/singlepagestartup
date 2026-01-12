@@ -10,6 +10,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@sps/shared-ui-shadcn";
+import { Component as AttributeKey } from "@sps/ecommerce/models/attribute-key/frontend/component";
+import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -20,61 +22,99 @@ export function Component(props: IComponentPropsExtended) {
       data-variant={props.variant}
       className={cn("w-full flex flex-row", props.className)}
     >
-      <ProductsToAttributes
-        isServer={props.isServer}
+      <AttributeKey
+        isServer={false}
         variant="find"
         apiProps={{
           params: {
             filters: {
               and: [
                 {
-                  column: "productId",
+                  column: "type",
                   method: "eq",
-                  value: props.data.id,
+                  value: "price",
                 },
               ],
             },
           },
         }}
       >
-        {({ data }) => {
+        {({ data: attributeKeys }) => {
           return (
-            <FormField
-              control={props.form.control}
-              name={props.formFieldName}
-              render={({ field }) => {
+            <ProductsToAttributes
+              isServer={props.isServer}
+              variant="find"
+              apiProps={{
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "productId",
+                        method: "eq",
+                        value: props.data.id,
+                      },
+                    ],
+                  },
+                },
+              }}
+            >
+              {({ data: productsToAttributes }) => {
                 return (
-                  <FormItem className={props.className}>
-                    <ToggleGroup
-                      type="single"
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <Attribute
-                        isServer={props.isServer}
-                        variant="find"
-                        apiProps={{
-                          params: {
-                            filters: {
-                              and: [
-                                {
-                                  column: "id",
-                                  method: "inArray",
-                                  value: data?.map(
-                                    (productToAttribute) =>
-                                      productToAttribute.attributeId,
-                                  ),
-                                },
-                              ],
+                  <AttributeKeysToAttributes
+                    isServer={false}
+                    variant="find"
+                    apiProps={{
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "attributeKeyId",
+                              method: "inArray",
+                              value:
+                                attributeKeys?.map(
+                                  (attributeKey) => attributeKey.id,
+                                ) || [],
                             },
-                          },
-                        }}
-                      >
-                        {({ data }) => {
-                          return data?.map((attribute, index) => {
+                            {
+                              column: "attributeId",
+                              method: "inArray",
+                              value:
+                                productsToAttributes?.map(
+                                  (productToAttribute) =>
+                                    productToAttribute.attributeId,
+                                ) || [],
+                            },
+                          ],
+                        },
+                      },
+                    }}
+                  >
+                    {({ data: attributeKeysToAttributes }) => {
+                      return (
+                        <AttributesToBillingModuleCurrencies
+                          isServer={false}
+                          variant="find"
+                          apiProps={{
+                            params: {
+                              filters: {
+                                and: [
+                                  {
+                                    column: "attributeId",
+                                    method: "inArray",
+                                    value:
+                                      attributeKeysToAttributes?.map(
+                                        (productToAttribute) =>
+                                          productToAttribute.attributeId,
+                                      ) || [],
+                                  },
+                                ],
+                              },
+                            },
+                          }}
+                        >
+                          {({ data: attributesToBillingModuleCurrencies }) => {
                             return (
-                              <AttributesToBillingModuleCurrencies
-                                key={index}
+                              <Attribute
                                 isServer={props.isServer}
                                 variant="find"
                                 apiProps={{
@@ -82,88 +122,239 @@ export function Component(props: IComponentPropsExtended) {
                                     filters: {
                                       and: [
                                         {
-                                          column: "attributeId",
-                                          method: "eq",
-                                          value: attribute.id,
+                                          column: "id",
+                                          method: "inArray",
+                                          value:
+                                            attributesToBillingModuleCurrencies?.map(
+                                              (
+                                                attributeToBillingModuleCurrency,
+                                              ) =>
+                                                attributeToBillingModuleCurrency.attributeId,
+                                            ),
                                         },
                                       ],
                                     },
                                   },
                                 }}
                               >
-                                {({
-                                  data: attributesToBillingModuleCurrencies,
-                                }) => {
-                                  if (
-                                    !attributesToBillingModuleCurrencies?.length
-                                  ) {
+                                {({ data: attributes }) => {
+                                  if (!attributes?.length) {
                                     return;
                                   }
 
                                   return (
-                                    <BillingCurrency
-                                      isServer={props.isServer}
-                                      variant="find"
-                                      apiProps={{
-                                        params: {
-                                          filters: {
-                                            and: [
-                                              {
-                                                column: "id",
-                                                method: "inArray",
-                                                value:
-                                                  attributesToBillingModuleCurrencies?.map(
-                                                    (entity) =>
-                                                      entity.billingModuleCurrencyId,
-                                                  ),
-                                              },
-                                            ],
-                                          },
-                                        },
-                                      }}
-                                    >
-                                      {({ data }) => {
-                                        if (!data) {
-                                          return (
-                                            <p>
-                                              Product doesn't have price
-                                              attributes connected to billing
-                                              module currency.
-                                            </p>
-                                          );
-                                        }
-
-                                        return data.map((entity, index) => {
-                                          return (
-                                            <ToggleGroupItem
-                                              key={index}
-                                              value={entity.id}
+                                    <FormField
+                                      control={props.form.control}
+                                      name={props.formFieldName}
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem className={props.className}>
+                                            <ToggleGroup
+                                              type="single"
+                                              onValueChange={field.onChange}
+                                              defaultValue={field.value}
                                             >
                                               <BillingCurrency
                                                 isServer={props.isServer}
-                                                variant="symbol"
-                                                data={entity}
-                                              />
-                                            </ToggleGroupItem>
-                                          );
-                                        });
+                                                variant="find"
+                                                apiProps={{
+                                                  params: {
+                                                    filters: {
+                                                      and: [
+                                                        {
+                                                          column: "id",
+                                                          method: "inArray",
+                                                          value:
+                                                            attributesToBillingModuleCurrencies?.map(
+                                                              (entity) =>
+                                                                entity.billingModuleCurrencyId,
+                                                            ),
+                                                        },
+                                                      ],
+                                                    },
+                                                  },
+                                                }}
+                                              >
+                                                {({ data }) => {
+                                                  if (!data) {
+                                                    return (
+                                                      <p>
+                                                        Product doesn't have
+                                                        price attributes
+                                                        connected to billing
+                                                        module currency.
+                                                      </p>
+                                                    );
+                                                  }
+
+                                                  return data.map(
+                                                    (entity, index) => {
+                                                      return (
+                                                        <ToggleGroupItem
+                                                          key={index}
+                                                          value={entity.id}
+                                                        >
+                                                          <BillingCurrency
+                                                            isServer={
+                                                              props.isServer
+                                                            }
+                                                            variant="symbol"
+                                                            data={entity}
+                                                          />
+                                                        </ToggleGroupItem>
+                                                      );
+                                                    },
+                                                  );
+                                                }}
+                                              </BillingCurrency>
+                                            </ToggleGroup>
+                                          </FormItem>
+                                        );
                                       }}
-                                    </BillingCurrency>
+                                    />
                                   );
                                 }}
-                              </AttributesToBillingModuleCurrencies>
+                              </Attribute>
                             );
-                          });
-                        }}
-                      </Attribute>
-                    </ToggleGroup>
-                  </FormItem>
+                          }}
+                        </AttributesToBillingModuleCurrencies>
+                      );
+                    }}
+                  </AttributeKeysToAttributes>
                 );
+                // return (
+                //   <FormField
+                //     control={props.form.control}
+                //     name={props.formFieldName}
+                //     render={({ field }) => {
+                //       return (
+                //         <FormItem className={props.className}>
+                //           <ToggleGroup
+                //             type="single"
+                //             onValueChange={field.onChange}
+                //             defaultValue={field.value}
+                //           >
+                //             <Attribute
+                //               isServer={props.isServer}
+                //               variant="find"
+                //               apiProps={{
+                //                 params: {
+                //                   filters: {
+                //                     and: [
+                //                       {
+                //                         column: "id",
+                //                         method: "inArray",
+                //                         value: productsToAttributes?.map(
+                //                           (productToAttribute) =>
+                //                             productToAttribute.attributeId,
+                //                         ),
+                //                       },
+                //                     ],
+                //                   },
+                //                 },
+                //               }}
+                //             >
+                //               {({ data }) => {
+                //                 return data?.map((attribute, index) => {
+                //                   return (
+                //                     <AttributesToBillingModuleCurrencies
+                //                       key={index}
+                //                       isServer={props.isServer}
+                //                       variant="find"
+                //                       apiProps={{
+                //                         params: {
+                //                           filters: {
+                //                             and: [
+                //                               {
+                //                                 column: "attributeId",
+                //                                 method: "eq",
+                //                                 value: attribute.id,
+                //                               },
+                //                             ],
+                //                           },
+                //                         },
+                //                       }}
+                //                     >
+                //                       {({
+                //                         data: attributesToBillingModuleCurrencies,
+                //                       }) => {
+                //                         if (
+                //                           !attributesToBillingModuleCurrencies?.length
+                //                         ) {
+                //                           return;
+                //                         }
+
+                //                         return (
+                //                           <BillingCurrency
+                //                             isServer={props.isServer}
+                //                             variant="find"
+                //                             apiProps={{
+                //                               params: {
+                //                                 filters: {
+                //                                   and: [
+                //                                     {
+                //                                       column: "id",
+                //                                       method: "inArray",
+                //                                       value:
+                //                                         attributesToBillingModuleCurrencies?.map(
+                //                                           (entity) =>
+                //                                             entity.billingModuleCurrencyId,
+                //                                         ),
+                //                                     },
+                //                                   ],
+                //                                 },
+                //                               },
+                //                             }}
+                //                           >
+                //                             {({ data }) => {
+                //                               if (!data) {
+                //                                 return (
+                //                                   <p>
+                //                                     Product doesn't have price
+                //                                     attributes connected to
+                //                                     billing module currency.
+                //                                   </p>
+                //                                 );
+                //                               }
+
+                //                               return data.map(
+                //                                 (entity, index) => {
+                //                                   return (
+                //                                     <ToggleGroupItem
+                //                                       key={index}
+                //                                       value={entity.id}
+                //                                     >
+                //                                       <BillingCurrency
+                //                                         isServer={
+                //                                           props.isServer
+                //                                         }
+                //                                         variant="symbol"
+                //                                         data={entity}
+                //                                       />
+                //                                     </ToggleGroupItem>
+                //                                   );
+                //                                 },
+                //                               );
+                //                             }}
+                //                           </BillingCurrency>
+                //                         );
+                //                       }}
+                //                     </AttributesToBillingModuleCurrencies>
+                //                   );
+                //                 });
+                //               }}
+                //             </Attribute>
+                //           </ToggleGroup>
+                //         </FormItem>
+                //       );
+                //     }}
+                //   />
+                // );
               }}
-            />
+            </ProductsToAttributes>
           );
         }}
-      </ProductsToAttributes>
+      </AttributeKey>
     </div>
   );
 }
