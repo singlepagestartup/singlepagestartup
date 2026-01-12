@@ -103,6 +103,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ru: "Пожалуйста, выберите один из наших продуктов-подписок, чтобы продолжить.",
       en: "Please select one of our subscription products to continue.",
     },
+    openRouterNotFoundSubscription: {
+      ru: "У вас нет активной подписки. Пожалуйста, оформите подписку, чтобы использовать эту функцию.",
+      en: "You do not have an active subscription. Please subscribe to use this feature.",
+    },
   };
 
   async agentSocialModuleProfileHandler(
@@ -1261,12 +1265,34 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       const messageFromRbacModuleSubject =
         await this.getMessageFromRbacModuleSubject(props);
 
+      const rbacModuleRolesToEcommerceModuleProducts =
+        await rbacModuleRolesToEcommerceModuleProductsApi.find({
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
       const rbacModuleRoles = await rbacModuleRoleApi.find({
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
+      });
+
+      if (!rbacModuleRoles?.length) {
+        throw new Error("Not found error. 'rbacModuleRoles' is empty.");
+      }
+
+      const rbacModulePayableRoles = rbacModuleRoles.filter((role) => {
+        return rbacModuleRolesToEcommerceModuleProducts
+          ?.map((roleToProduct) => {
+            return roleToProduct.roleId;
+          })
+          .includes(role.id);
       });
 
       const rbacSubjectsToRoles = await rbacModuleSubjectsToRolesApi.find({
@@ -1288,6 +1314,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         },
       });
+
+      const rbacModuleSubjectToPayableRoles = rbacSubjectsToRoles?.filter(
+        (rbacModuleSubjectToRole) => {
+          return rbacModulePayableRoles
+            .map((role) => {
+              return role.id;
+            })
+            .includes(rbacModuleSubjectToRole.roleId);
+        },
+      );
 
       console.log(
         "🚀 ~ Service ~ openRouterReplyMessageCreate ~ rbacSubjectsToRoles:",
@@ -1339,14 +1375,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!rbacSubjectsToRoles?.length) {
+      if (!rbacModuleSubjectToPayableRoles?.length) {
         return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             data: {
-              description: "If you want to use AI models, buy subscription.",
+              description:
+                this.statusMessages.openRouterNotFoundSubscription.ru,
               interaction: {
                 inline_keyboard: [
                   [
