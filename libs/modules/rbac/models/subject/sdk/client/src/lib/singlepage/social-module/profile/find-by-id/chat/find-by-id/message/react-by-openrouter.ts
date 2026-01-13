@@ -25,23 +25,23 @@ export type IProps = {
 };
 
 export type IResult =
-  IParentResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactResult"];
+  IParentResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult"];
 
 export function action(props: IProps) {
   return useMutation<
     IResult,
     DefaultError,
-    IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps"]
+    IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps"]
   >({
     mutationKey: [
       `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/messages/${props.socialModuleChatId}/react`,
     ],
     mutationFn: async (
-      mutationFunctionProps: IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactProps"],
+      mutationFunctionProps: IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps"],
     ) => {
       try {
         const result =
-          await api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReact(
+          await api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
             {
               ...mutationFunctionProps,
               options: {
@@ -64,7 +64,7 @@ export function action(props: IProps) {
     onSuccess(data) {
       globalActionsStore.getState().addAction({
         type: "mutation",
-        name: `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/messages/${props.socialModuleMessageId}/react`,
+        name: `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/messages/${props.socialModuleMessageId}/react-by/openrouter`,
         props: this,
         result: data,
         timestamp: Date.now(),
