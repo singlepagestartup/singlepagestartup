@@ -60,6 +60,14 @@ export class Handler {
               },
             ],
           },
+          orderBy: {
+            and: [
+              {
+                column: "createdAt",
+                method: "asc",
+              },
+            ],
+          },
         },
         options: {
           headers: {
