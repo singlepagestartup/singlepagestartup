@@ -107,6 +107,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ru: "У вас нет активной подписки. Пожалуйста, оформите подписку, чтобы использовать эту функцию.",
       en: "You do not have an active subscription. Please subscribe to use this feature.",
     },
+    ecommerceModuleOrderPayButtonDescription: {
+      ru: "Для оплаты подписки нажмите на кнопку с выбором способа оплаты",
+      en: "You can subscribe by the clicking buttons below",
+    },
+    ecommerceModuleOrderAlreadyHaveSubscription: {
+      ru: "У вас уже есть активная подписка.",
+      en: "You have active subscription.",
+    },
   };
 
   async agentSocialModuleProfileHandler(
@@ -760,7 +768,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     const messageWithCTA: ISocialModuleTelegramMessageData = {
-      description: "You can subscribe by the clicking buttons below",
+      description:
+        this.statusMessages.ecommerceModuleOrderPayButtonDescription.ru,
     };
 
     const productPrice =
@@ -778,7 +787,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       inline_keyboard: [
         [
           {
-            text: `Checkout for ${productPrice ? productPrice.attribute.number : ""}${productPrice ? `\ ${productPrice.attribute.attributesToBillingModuleCurrencies?.[0].billingModuleCurrency?.symbol}` : ""}`,
+            text: `Оформить подписку за ${productPrice ? productPrice.attribute.number : ""}${productPrice ? `\ ${productPrice.attribute.attributesToBillingModuleCurrencies?.[0].billingModuleCurrency?.symbol}` : ""}`,
             callback_data:
               "checkout_ec_me_pt_" + extendedEcommerceModuleProduct.id,
           },
@@ -990,7 +999,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     if (rbacModuleSubjectsToProSubscriberRoles?.length) {
-      data.description = "You have active subscription.";
+      data.description =
+        this.statusMessages.ecommerceModuleOrderAlreadyHaveSubscription.ru;
     } else {
       const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
         params: {
@@ -1054,8 +1064,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         // );
 
         const productTitle =
-          extendedProduct.title?.en ??
           extendedProduct.title?.ru ??
+          extendedProduct.title?.en ??
           extendedProduct.id;
 
         const productPrice = extendedProduct.productsToAttributes.filter(

@@ -34,6 +34,11 @@ export class Handler {
           },
         });
 
+      console.log(
+        "🚀 ~ execute ~ subjectsToEcommerceModuleOrders:",
+        subjectsToEcommerceModuleOrders,
+      );
+
       if (!subjectsToEcommerceModuleOrders?.length) {
         return c.json({
           data: {
@@ -64,46 +69,22 @@ export class Handler {
         },
       });
 
+      console.log("🚀 ~ execute ~ orders:", orders);
+
       if (!orders?.length) {
         throw new Error("Not Found error. No orders found");
       }
 
       for (const order of orders) {
-        const ordersToProducts = await ecommerceOrdersToProductsApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: order.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
-
-        let rolesToEcommerceModuleProducts:
-          | IRolesToEcommerceModuleProducts[]
-          | undefined;
-
-        if (ordersToProducts?.length) {
-          const products = await ecommerceProductApi.find({
+        try {
+          const ordersToProducts = await ecommerceOrdersToProductsApi.find({
             params: {
               filters: {
                 and: [
                   {
-                    column: "id",
-                    method: "inArray",
-                    value: ordersToProducts?.map(
-                      (orderToProduct) => orderToProduct.productId,
-                    ),
+                    column: "orderId",
+                    method: "eq",
+                    value: order.id,
                   },
                 ],
               },
@@ -116,42 +97,21 @@ export class Handler {
             },
           });
 
-          if (products?.length) {
-            const productIds = products.map((product) => product.id);
+          let rolesToEcommerceModuleProducts:
+            | IRolesToEcommerceModuleProducts[]
+            | undefined;
 
-            rolesToEcommerceModuleProducts =
-              await rolesToEcommerceModuleProductsApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "ecommerceModuleProductId",
-                        method: "inArray",
-                        value: productIds,
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
-          }
-        }
-
-        if (subjectsToEcommerceModuleOrders?.length) {
-          for (const rbacSubjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
-            const rbacSubjectsToRoles = await subjectsToRolesApi.find({
+          if (ordersToProducts?.length) {
+            const products = await ecommerceProductApi.find({
               params: {
                 filters: {
                   and: [
                     {
-                      column: "subjectId",
-                      method: "eq",
-                      value: rbacSubjectToEcommerceModuleOrder.subjectId,
+                      column: "id",
+                      method: "inArray",
+                      value: ordersToProducts?.map(
+                        (orderToProduct) => orderToProduct.productId,
+                      ),
                     },
                   ],
                 },
@@ -164,68 +124,121 @@ export class Handler {
               },
             });
 
-            const existingRolesIds = rbacSubjectsToRoles?.map(
-              (rbacSubjectToRole) => rbacSubjectToRole.roleId,
-            );
+            if (products?.length) {
+              const productIds = products.map((product) => product.id);
 
-            const productRolesIds = rolesToEcommerceModuleProducts?.map(
-              (roleToEcommerceModuleProduct) =>
-                roleToEcommerceModuleProduct.roleId,
-            );
-
-            if (order.status === "delivering") {
-              const newRolesIds = productRolesIds?.filter(
-                (productRoleId) => !existingRolesIds?.includes(productRoleId),
-              );
-
-              if (newRolesIds?.length) {
-                for (const newRoleId of newRolesIds) {
-                  await subjectsToRolesApi.create({
-                    data: {
-                      subjectId: rbacSubjectToEcommerceModuleOrder.subjectId,
-                      roleId: newRoleId,
+              rolesToEcommerceModuleProducts =
+                await rolesToEcommerceModuleProductsApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "ecommerceModuleProductId",
+                          method: "inArray",
+                          value: productIds,
+                        },
+                      ],
                     },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+            }
+          }
+
+          if (subjectsToEcommerceModuleOrders?.length) {
+            for (const rbacSubjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
+              const rbacSubjectsToRoles = await subjectsToRolesApi.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "subjectId",
+                        method: "eq",
+                        value: rbacSubjectToEcommerceModuleOrder.subjectId,
                       },
-                    },
-                  });
-                }
-              }
-            } else if (
-              order.status &&
-              ["paying", "delivered"].includes(order.status)
-            ) {
-              const removeRolesIds = productRolesIds?.filter((productRoleId) =>
-                existingRolesIds?.includes(productRoleId),
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              });
+
+              const existingRolesIds = rbacSubjectsToRoles?.map(
+                (rbacSubjectToRole) => rbacSubjectToRole.roleId,
               );
 
-              console.log("🚀 ~ execute ~ removeRolesIds:", removeRolesIds);
+              console.log("🚀 ~ execute ~ existingRolesIds:", existingRolesIds);
 
-              if (removeRolesIds?.length) {
-                for (const removeRoleId of removeRolesIds) {
-                  const rbacSubjectToRole = rbacSubjectsToRoles?.find(
-                    (rbacSubjectToRole) =>
-                      rbacSubjectToRole.roleId === removeRoleId,
-                  );
+              const productRolesIds = rolesToEcommerceModuleProducts?.map(
+                (roleToEcommerceModuleProduct) =>
+                  roleToEcommerceModuleProduct.roleId,
+              );
 
-                  if (!rbacSubjectToRole) {
-                    continue;
+              if (order.status === "delivering") {
+                const newRolesIds = productRolesIds?.filter(
+                  (productRoleId) => !existingRolesIds?.includes(productRoleId),
+                );
+
+                if (newRolesIds?.length) {
+                  for (const newRoleId of newRolesIds) {
+                    await subjectsToRolesApi.create({
+                      data: {
+                        subjectId: rbacSubjectToEcommerceModuleOrder.subjectId,
+                        roleId: newRoleId,
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
+                      },
+                    });
                   }
+                }
+              } else if (
+                order.status &&
+                ["paying", "delivered"].includes(order.status)
+              ) {
+                const removeRolesIds = productRolesIds?.filter(
+                  (productRoleId) => existingRolesIds?.includes(productRoleId),
+                );
 
-                  await subjectsToRolesApi.delete({
-                    id: rbacSubjectToRole.id,
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                console.log("🚀 ~ execute ~ removeRolesIds:", removeRolesIds);
+
+                if (removeRolesIds?.length) {
+                  for (const removeRoleId of removeRolesIds) {
+                    const rbacSubjectToRole = rbacSubjectsToRoles?.find(
+                      (rbacSubjectToRole) =>
+                        rbacSubjectToRole.roleId === removeRoleId,
+                    );
+
+                    if (!rbacSubjectToRole) {
+                      continue;
+                    }
+
+                    await subjectsToRolesApi.delete({
+                      id: rbacSubjectToRole.id,
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
                       },
-                    },
-                  });
+                    });
+                  }
                 }
               }
             }
           }
+        } catch (error) {
+          console.log("🚀 ~ execute ~ error:", error);
         }
       }
 

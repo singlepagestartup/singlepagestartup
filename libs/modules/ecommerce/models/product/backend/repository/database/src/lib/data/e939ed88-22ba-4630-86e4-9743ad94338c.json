@@ -1,17 +1,17 @@
 {
   "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
   "createdAt": "2025-01-24T23:47:55.624Z",
-  "updatedAt": "2026-01-12T12:17:37.844Z",
+  "updatedAt": "2026-01-13T10:47:06.920Z",
   "variant": "default",
   "type": "subscription",
   "slug": "pro",
   "title": {
-    "en": "Pro",
-    "ru": "ПРО"
+    "en": "Pro Subscription",
+    "ru": "Подписка Про"
   },
   "shortDescription": {
     "en": "Pro subscription for getting all the features",
-    "ru": "Pro subscription for getting all the features"
+    "ru": "Подписка для получения доступа к нейронным сетят"
   },
   "description": {
     "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription\"}]}]}"
