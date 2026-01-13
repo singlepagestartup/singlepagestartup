@@ -44,6 +44,13 @@ export async function Component<
       ...(props.apiProps?.params ?? {}),
       filters,
     },
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        "Cache-Control": "no-store",
+        ...props.apiProps?.options?.headers,
+      },
+    },
   });
 
   if (!data) {

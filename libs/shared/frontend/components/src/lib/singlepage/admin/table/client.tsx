@@ -90,8 +90,21 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData, isLoading: isTotalLoading } = props.api.find({});
-  const { data, isLoading } = props.api.find({ params });
+  const { data: totalData, isLoading: isTotalLoading } = props.api.find({
+    options: {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  });
+  const { data, isLoading } = props.api.find({
+    params,
+    options: {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  });
 
   useEffect(() => {
     if (!totalData || !Array.isArray(totalData) || !setState) {

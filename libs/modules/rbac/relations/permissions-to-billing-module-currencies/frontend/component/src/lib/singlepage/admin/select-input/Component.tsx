@@ -6,16 +6,13 @@ export function Component(props: IComponentPropsExtended) {
     <ParentComponent<IModel, typeof variant>
       {...props}
       module="rbac"
-      name="permission"
-      label="permission"
+      name="permissions-to-billing-module-currencies"
+      label="permissions-to-billing-module-currencies"
       formFieldName={props.formFieldName}
       data={props.data}
       form={props.form}
       variant={props.variant}
-      renderField={props.renderField || "path"}
-      renderFunction={(entity) => {
-        return `${entity.path} | ${entity.method} | ${entity.type}`;
-      }}
+      renderField={props.renderField}
     />
   );
 }

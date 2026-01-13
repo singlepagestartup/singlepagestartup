@@ -16,6 +16,7 @@ import { app as subjectsToBillingModulePaymentIntentsApp } from "@sps/rbac/relat
 import { app as subjectsToBlogModuleArticlesApp } from "@sps/rbac/relations/subjects-to-blog-module-articles/backend/app/api";
 import { app as rolesToEcommerceModuleProductsApp } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api";
 import { app as subjectsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api";
+import { app as permissionsToBillingModuleCurrenciesApp } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
 export class Apps {
@@ -116,6 +117,11 @@ export class Apps {
       type: "relation",
       route: "/subjects-to-billing-module-currencies",
       app: subjectsToBillingModuleCurrenciesApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/permissions-to-billing-module-currencies",
+      app: permissionsToBillingModuleCurrenciesApp,
     });
   }
 }

@@ -1,5 +1,5 @@
-export { type IModel } from "@sps/rbac/models/permission/sdk/model";
-import { IModel } from "@sps/rbac/models/permission/sdk/model";
+export { type IModel } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
+import { IModel } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,
@@ -10,14 +10,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "admin-form" as const;
 
 export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
-  rolesToPermissions?: (
-    props: ISpsComponentBase & { data?: IModel },
-  ) => ReactNode;
-  permissionsToBillingModuleCurrencies?: (
-    props: ISpsComponentBase & { data?: IModel },
-  ) => ReactNode;
-}
+  extends IParentComponentProps<IModel, typeof variant> {}
 
 export interface IComponentPropsExtended
   extends IParentComponentPropsExtended<

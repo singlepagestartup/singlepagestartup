@@ -1,0 +1,3 @@
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "amount": "0.00", "className": "example-class", "permissionId": "00000000-0000-0000-0000-000000000000", "billingModuleCurrencyId": "00000000-0000-0000-0000-000000000000"}'

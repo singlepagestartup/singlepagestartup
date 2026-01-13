@@ -1,18 +1,18 @@
 "use client";
 
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { api } from "@sps/rbac/models/permission/sdk/client";
+import {
+  variants,
+  insertSchema,
+} from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
+import { api } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/client";
 import { useForm } from "react-hook-form";
 import { FormField } from "@sps/ui-adapter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  types,
-  methods,
-  variants,
-  insertSchema,
-} from "@sps/rbac/models/permission/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
+import { Component as Permission } from "@sps/rbac/models/permission/frontend/component";
+import { Component as BillingModuleCurrency } from "@sps/billing/models/currency/frontend/component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
@@ -28,9 +28,11 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      type: props.data?.type || "HTTP",
-      method: props.data?.method || "GET",
-      path: props.data?.path || "/",
+      orderIndex: props.data?.orderIndex || 0,
+      className: props.data?.className || "",
+      billingModuleCurrencyId: props.data?.billingModuleCurrencyId || "",
+      permissionId: props.data?.permissionId || "",
+      amount: props.data?.amount || "0",
     },
   });
 
@@ -48,42 +50,41 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
-      module="website-builder"
+      module="rbac"
       form={form}
       id={props.data?.id}
       onSubmit={onSubmit}
       variant={props.variant}
-      name="permission"
+      name="permissions-to-billing-module-currencies"
+      type="relation"
       status={status}
     >
       <div className="flex flex-col gap-6">
         <FormField
           ui="shadcn"
-          type="select"
-          label="Type"
-          name="type"
+          type="number"
+          label="Order index"
+          name="orderIndex"
           form={form}
-          placeholder="Select type"
-          options={types.map((type) => [type, type.toUpperCase()])}
-        />
-
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Method"
-          name="method"
-          form={form}
-          placeholder="Select method"
-          options={methods.map((method) => [method, method.toUpperCase()])}
+          placeholder="Order index"
         />
 
         <FormField
           ui="shadcn"
           type="text"
-          label="Path"
-          name="path"
+          label="Amount"
+          name="amount"
           form={form}
-          placeholder="Enter path"
+          placeholder="Type amount"
+        />
+
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Class name"
+          name="className"
+          form={form}
+          placeholder="Class name"
         />
 
         <FormField
@@ -96,21 +97,19 @@ export function Component(props: IComponentPropsExtended) {
           options={variants.map((variant) => [variant, variant])}
         />
 
-        {props.rolesToPermissions
-          ? props.rolesToPermissions({
-              data: props.data,
+        <Permission
+          isServer={props.isServer}
+          variant="admin-select-input"
+          formFieldName="permissionId"
+          form={form}
+        />
 
-              isServer: props.isServer,
-            })
-          : null}
-
-        {props.permissionsToBillingModuleCurrencies
-          ? props.permissionsToBillingModuleCurrencies({
-              data: props.data,
-
-              isServer: props.isServer,
-            })
-          : null}
+        <BillingModuleCurrency
+          isServer={props.isServer}
+          variant="admin-select-input"
+          formFieldName="billingModuleCurrencyId"
+          form={form}
+        />
       </div>
     </ParentAdminForm>
   );
