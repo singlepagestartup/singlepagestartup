@@ -212,13 +212,15 @@ export class Handler {
       const context: {
         role: "user" | "assistant";
         content: string;
-      }[] = [
-        {
-          role: "user",
-          content:
-            "Reply in HTML, that can be send to Telegram. Parse mode: HTML",
-        },
-      ];
+      }[] = [];
+
+      const replyBySocialModuleProfile = data.shouldReplySocialModuleProfile;
+
+      if (!replyBySocialModuleProfile) {
+        throw new Error(
+          "Validation error. 'data.shouldReplySocialModuleProfile' not passed.",
+        );
+      }
 
       if (socialModuleChatToMessages?.length) {
         const socialModuleMessages = await socialModuleMessageApi.find({
@@ -292,7 +294,7 @@ export class Handler {
                   socialModuleProfileToMessage.messageId ===
                     socialModuleMessage.id &&
                   socialModuleProfileToMessage.profileId ===
-                    socialModuleProfileId,
+                    replyBySocialModuleProfile.id,
               );
 
               context.push({
@@ -304,13 +306,7 @@ export class Handler {
         }
       }
 
-      const replyBySocialModuleProfile = data.shouldReplySocialModuleProfile;
-
-      if (!replyBySocialModuleProfile) {
-        throw new Error(
-          "Validation error. 'data.shouldReplySocialModuleProfile' not passed.",
-        );
-      }
+      console.log("🚀 ~ execute ~ context:", context);
 
       const subjectsToSocialModuleProfiles =
         await subjectsToSocialModuleProfilesApi.find({
@@ -403,12 +399,23 @@ export class Handler {
           input_modalities: model.architecture.input_modalities,
           output_modalities: model.architecture.output_modalities,
           is_free: model.pricing.completion === "0" ? true : false,
+          pricePerMillionTokens: parseFloat(model.pricing.prompt) * 1e6,
         };
       });
 
-      const openRouterNotFreeSanitizedModels = openRouterSanitizedModels.filter(
-        (model) => !model.is_free,
-      );
+      const openRouterNotFreeSanitizedModels = openRouterSanitizedModels
+        .filter((model) => {
+          return (
+            !model.is_free &&
+            !model.id.includes("-max") &&
+            model.id !== "openrouter/auto"
+          );
+        })
+        .filter((model) => {
+          return (
+            model.pricePerMillionTokens > 0.1 && model.pricePerMillionTokens < 3
+          );
+        });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
         id: replyBySubject.id,
@@ -473,7 +480,11 @@ export class Handler {
         context: [
           {
             role: "user",
-            content: `I have a task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+            content: `I have such content from previous conversation: '${JSON.stringify(context)}'`,
+          },
+          {
+            role: "user",
+            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
           },
         ],
       });
@@ -521,6 +532,7 @@ export class Handler {
             content:
               "Ensure the response fits within 4000 characters for Telegram.",
           },
+          ...context,
           {
             role: "user",
             content: socialModuleMessage.description || "",
@@ -582,7 +594,7 @@ export class Handler {
           id: replyBySubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
-          data,
+          data: replyMessageData,
           options: {
             headers: {
               Authorization: "Bearer " + replyByJwt,
