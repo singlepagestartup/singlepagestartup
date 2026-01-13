@@ -54,7 +54,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/messages/${socialModuleMessageId}/react?${stringifiedQuery}`,
+    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/messages/${socialModuleMessageId}/react-by/openrouter?${stringifiedQuery}`,
     requestOptions,
   );
 

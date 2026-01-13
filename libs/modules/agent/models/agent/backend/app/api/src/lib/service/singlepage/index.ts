@@ -1419,252 +1419,290 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         messageFromRbacModuleSubject,
       );
 
-      const statusMessage =
-        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: this.statusMessages.openRouterStarted.ru,
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
+      // const statusMessage =
+      //   await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      //     {
+      //       id: props.rbacModuleSubject.id,
+      //       socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //       socialModuleChatId: props.socialModuleChat.id,
+      //       data: {
+      //         description: this.statusMessages.openRouterStarted.ru,
+      //       },
+      //       options: {
+      //         headers: {
+      //           Authorization: "Bearer " + props.jwtToken,
+      //         },
+      //       },
+      //     },
+      //   );
+
+      // console.log(
+      //   "🚀 ~ openRouterReplyMessageCreate ~ statusMessage:",
+      //   statusMessage,
+      // );
+
+      if (!props.messageFromSocialModuleProfile?.id) {
+        throw new Error(
+          "Not found error. 'messageFromSocialModuleProfile.id' not found",
         );
+      }
 
-      console.log(
-        "🚀 ~ openRouterReplyMessageCreate ~ statusMessage:",
-        statusMessage,
+      if (!RBAC_JWT_SECRET) {
+        throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
+      }
+
+      const messageFromRbacModuleSubjectJwt = await jwt.sign(
+        {
+          exp:
+            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+          iat: Math.floor(Date.now() / 1000),
+          subject: messageFromRbacModuleSubject,
+        },
+        RBAC_JWT_SECRET,
       );
 
-      const openRouter = new OpenRouter();
-
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
         {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          id: messageFromRbacModuleSubject.id,
           socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: statusMessage.id,
+          socialModuleMessageId: props.socialModuleMessage.id,
+          socialModuleProfileId: props.messageFromSocialModuleProfile.id,
           data: {
-            description: this.statusMessages.openRouterFetchingModels.ru,
+            shouldReplySocialModuleProfile:
+              props.shouldReplySocialModuleProfile,
           },
           options: {
             headers: {
-              Authorization: "Bearer " + props.jwtToken,
+              Authorization: "Bearer " + messageFromRbacModuleSubjectJwt,
             },
           },
         },
       );
 
-      const models = await openRouter.getModels();
+      // const openRouter = new OpenRouter();
 
-      const openRouterSanitizedModels = models.map((model) => {
-        return {
-          id: model.id,
-          description: model.description,
-          modality: model.architecture.modality,
-          input_modalities: model.architecture.input_modalities,
-          output_modalities: model.architecture.output_modalities,
-          is_free: model.pricing.completion === "0" ? true : false,
-        };
-      });
+      // await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     socialModuleMessageId: statusMessage.id,
+      //     data: {
+      //       description: this.statusMessages.openRouterFetchingModels.ru,
+      //     },
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
 
-      const openRouterNotFreeSanitizedModels = openRouterSanitizedModels.filter(
-        (model) => !model.is_free,
-      );
+      // const models = await openRouter.getModels();
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: statusMessage.id,
-          data: {
-            description: this.statusMessages.openRouterDetectingLanguage.ru,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
+      // const openRouterSanitizedModels = models.map((model) => {
+      //   return {
+      //     id: model.id,
+      //     description: model.description,
+      //     modality: model.architecture.modality,
+      //     input_modalities: model.architecture.input_modalities,
+      //     output_modalities: model.architecture.output_modalities,
+      //     is_free: model.pricing.completion === "0" ? true : false,
+      //   };
+      // });
 
-      const detectedLanguageResult = await openRouter.generate({
-        model: "google/gemini-2.5-flash",
-        reasoning: false,
-        context: [
-          {
-            role: "system",
-            content:
-              "You need to detect what language the user is speaking, NOT coding language (JavaScript, C#) - human language (english,spanish,russian and etc). Answer with the language name only (Spanish).",
-          },
-          {
-            role: "user",
-            content: props.socialModuleMessage.description,
-          },
-        ],
-      });
+      // const openRouterNotFreeSanitizedModels = openRouterSanitizedModels.filter(
+      //   (model) => !model.is_free,
+      // );
 
-      console.log(
-        "🚀 ~ openRouterReplyMessageCreate ~ detectedLanguageResult:",
-        detectedLanguageResult,
-      );
+      // await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     socialModuleMessageId: statusMessage.id,
+      //     data: {
+      //       description: this.statusMessages.openRouterDetectingLanguage.ru,
+      //     },
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
 
-      if ("error" in detectedLanguageResult) {
-        throw new Error("Language detection error");
-      }
+      // const detectedLanguageResult = await openRouter.generate({
+      //   model: "google/gemini-2.5-flash",
+      //   reasoning: false,
+      //   context: [
+      //     {
+      //       role: "system",
+      //       content:
+      //         "You need to detect what language the user is speaking, NOT coding language (JavaScript, C#) - human language (english,spanish,russian and etc). Answer with the language name only (Spanish).",
+      //     },
+      //     {
+      //       role: "user",
+      //       content: props.socialModuleMessage.description,
+      //     },
+      //   ],
+      // });
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: statusMessage.id,
-          data: {
-            description: this.statusMessages.openRouterSelectingModels.ru,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
+      // console.log(
+      //   "🚀 ~ openRouterReplyMessageCreate ~ detectedLanguageResult:",
+      //   detectedLanguageResult,
+      // );
 
-      const detectedLanguage = detectedLanguageResult.text;
+      // if ("error" in detectedLanguageResult) {
+      //   throw new Error("Language detection error");
+      // }
 
-      const selectModelResult = await openRouter.generate({
-        model: "x-ai/grok-4.1-fast",
-        reasoning: false,
-        context: [
-          {
-            role: "user",
-            content: `I have a task:'\n${props.socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
-          },
-        ],
-      });
+      // await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     socialModuleMessageId: statusMessage.id,
+      //     data: {
+      //       description: this.statusMessages.openRouterSelectingModels.ru,
+      //     },
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
 
-      if ("error" in selectModelResult) {
-        throw new Error("Model selection error");
-      }
+      // const detectedLanguage = detectedLanguageResult.text;
 
-      let selectModelForRequest = selectModelResult.text;
+      // const selectModelResult = await openRouter.generate({
+      //   model: "x-ai/grok-4.1-fast",
+      //   reasoning: false,
+      //   context: [
+      //     {
+      //       role: "user",
+      //       content: `I have a task:'\n${props.socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+      //     },
+      //   ],
+      // });
 
-      console.log(
-        "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
-        selectModelForRequest,
-      );
+      // if ("error" in selectModelResult) {
+      //   throw new Error("Model selection error");
+      // }
 
-      let generatedMessageDescription = "";
-      const data: any = {};
+      // let selectModelForRequest = selectModelResult.text;
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: statusMessage.id,
-          data: {
-            description:
-              this.statusMessages.openRouterGeneratingResponse.ru.replace(
-                "[selectModelForRequest]",
-                selectModelForRequest,
-              ),
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
+      // console.log(
+      //   "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
+      //   selectModelForRequest,
+      // );
 
-      // Generate content (text or image)
-      const result = await openRouter.generate({
-        model: selectModelForRequest,
-        context: [
-          { role: "user", content: `Answer in ${detectedLanguage} language` },
-          {
-            role: "user",
-            content:
-              "Ensure the response fits within 4000 characters for Telegram.",
-          },
-          {
-            role: "user",
-            content: props.socialModuleMessage.description || "",
-          },
-        ],
-      });
+      // let generatedMessageDescription = "";
+      // const data: any = {};
 
-      if ("error" in result) {
-        throw new Error("Generation error");
-      }
+      // await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     socialModuleMessageId: statusMessage.id,
+      //     data: {
+      //       description:
+      //         this.statusMessages.openRouterGeneratingResponse.ru.replace(
+      //           "[selectModelForRequest]",
+      //           selectModelForRequest,
+      //         ),
+      //     },
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
 
-      generatedMessageDescription = result.text;
+      // // Generate content (text or image)
+      // const result = await openRouter.generate({
+      //   model: selectModelForRequest,
+      //   context: [
+      //     { role: "user", content: `Answer in ${detectedLanguage} language` },
+      //     {
+      //       role: "user",
+      //       content:
+      //         "Ensure the response fits within 4000 characters for Telegram.",
+      //     },
+      //     {
+      //       role: "user",
+      //       content: props.socialModuleMessage.description || "",
+      //     },
+      //   ],
+      // });
 
-      // Check if images were generated
-      if (result.images && result.images.length > 0) {
-        try {
-          const imageUrl = result.images[0].url;
-          if (imageUrl) {
-            // Use blobifyFiles to handle both http and data: URLs
-            data.files = await blobifyFiles({
-              files: [
-                {
-                  title: "generated-image",
-                  type: "image/png",
-                  extension: "png",
-                  url: imageUrl,
-                },
-              ],
-            });
-            generatedMessageDescription = `${generatedMessageDescription || "Изображение сгенерировано"}`;
-          }
-        } catch (error) {
-          console.error("Image processing error:", error);
-        }
-      }
+      // if ("error" in result) {
+      //   throw new Error("Generation error");
+      // }
 
-      generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
+      // generatedMessageDescription = result.text;
 
-      data.description = generatedMessageDescription;
+      // // Check if images were generated
+      // if (result.images && result.images.length > 0) {
+      //   try {
+      //     const imageUrl = result.images[0].url;
+      //     if (imageUrl) {
+      //       // Use blobifyFiles to handle both http and data: URLs
+      //       data.files = await blobifyFiles({
+      //         files: [
+      //           {
+      //             title: "generated-image",
+      //             type: "image/png",
+      //             extension: "png",
+      //             url: imageUrl,
+      //           },
+      //         ],
+      //       });
+      //       generatedMessageDescription = `${generatedMessageDescription || "Изображение сгенерировано"}`;
+      //     }
+      //   } catch (error) {
+      //     console.error("Image processing error:", error);
+      //   }
+      // }
 
-      if (data.description == "") {
-        throw new Error("Generated message is empty");
-      }
+      // generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageDelete(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: statusMessage.id,
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
+      // data.description = generatedMessageDescription;
 
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data,
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
+      // if (data.description == "") {
+      //   throw new Error("Generated message is empty");
+      // }
+
+      // await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageDelete(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     socialModuleMessageId: statusMessage.id,
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
+
+      // return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      //   {
+      //     id: props.rbacModuleSubject.id,
+      //     socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+      //     socialModuleChatId: props.socialModuleChat.id,
+      //     data,
+      //     options: {
+      //       headers: {
+      //         Authorization: "Bearer " + props.jwtToken,
+      //       },
+      //     },
+      //   },
+      // );
     } catch (error) {
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
         {

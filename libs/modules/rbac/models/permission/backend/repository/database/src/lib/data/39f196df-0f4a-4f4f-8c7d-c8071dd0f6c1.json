@@ -1,0 +1,9 @@
+{
+  "id": "39f196df-0f4a-4f4f-8c7d-c8071dd0f6c1",
+  "createdAt": "2026-01-13T19:14:49.679Z",
+  "updatedAt": "2026-01-13T19:14:49.679Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/messages/[social.messages.id]/react-by/openrouter"
+}

@@ -45,7 +45,7 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageFind } from ".
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
-import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReact } from "./social-module/profile/find-by-id/chat/find-by-id/message/react";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionCreate } from "./social-module/profile/find-by-id/chat/find-by-id/action/create";
@@ -279,8 +279,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
-        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react",
-        handler: this.socialModuleProfileFindByIdChatFindByIdMessageReact,
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter",
+        handler:
+          this.socialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
@@ -502,11 +503,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ).execute(c, next);
   }
 
-  async socialModuleProfileFindByIdChatFindByIdMessageReact(
+  async socialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter(
     c: Context,
     next: any,
   ): Promise<Response> {
-    return new SocialModuleProfileFindByIdChatFindByIdMessageReact(
+    return new SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter(
       this.service,
     ).execute(c, next);
   }
