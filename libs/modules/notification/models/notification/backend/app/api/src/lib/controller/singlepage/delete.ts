@@ -24,8 +24,6 @@ export class Handler {
         throw new Error("Not Found error. Notification not found");
       }
 
-      const deleted = await this.service.delete({ id: uuid });
-
       if (entity.reciever && entity.sourceSystemId) {
         try {
           await this.service.deleteBySourceSystem({
@@ -40,6 +38,8 @@ export class Handler {
           );
         }
       }
+
+      const deleted = await this.service.delete({ id: uuid });
 
       return c.json({
         data: deleted,

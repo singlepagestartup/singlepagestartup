@@ -462,11 +462,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         id: notifications[0].id,
         data: {
           ...notifications[0],
-          data: JSON.stringify({
+          data: {
             socialModule: {
               message: props.socialModuleMessage,
             },
-          }),
+          },
         },
         options: {
           headers: {
@@ -1057,11 +1057,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const extendedProduct = await this.extendedEcommerceModuleProduct({
           id: ecommerceModuleProduct.id,
         });
-
-        // console.log(
-        //   "🚀 ~ telegramBotPremiumMessageWithKeyboardCreate ~ extendedProduct:",
-        //   JSON.stringify(extendedProduct, null, 2),
-        // );
 
         const productTitle =
           extendedProduct.title?.ru ??

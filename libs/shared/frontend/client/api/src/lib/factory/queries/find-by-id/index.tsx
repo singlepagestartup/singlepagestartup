@@ -61,7 +61,7 @@ export function query<T>(props: IQueryProps<T>): () => Promise<T | undefined> {
         return res;
       });
     } catch (error: any) {
-      if (error.message.includes("404 |")) {
+      if (error.message.includes("Not Found error")) {
         throw error;
       }
 

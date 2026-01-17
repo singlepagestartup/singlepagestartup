@@ -184,6 +184,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         typeof props.messageId === "string"
           ? parseInt(props.messageId, 10)
           : props.messageId;
+
       await bot.api.editMessageText(
         props.chatId,
         normalizedMessageId,
@@ -493,8 +494,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType?.startsWith("image/")) {
           validAttachments.push(attachment);
-        } else {
-          console.log(`Skipping invalid attachment: ${attachment.url}`);
         }
       } catch (error) {
         console.log(`Error checking ${attachment.url}:`, error);
