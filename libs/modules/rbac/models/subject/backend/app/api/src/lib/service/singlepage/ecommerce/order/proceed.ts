@@ -19,6 +19,7 @@ import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@
 import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
+import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import {
@@ -180,37 +181,22 @@ export class Service {
               .flat()
               .filter((roleId): roleId is string => Boolean(roleId)) ?? [];
 
-          console.log("🚀 ~ execute ~ order.status:", order.status);
-
-          if (order.status && ["paying", "delivered"].includes(order.status)) {
-            const removeRolesIds = productRolesIds?.filter(
-              (productRoleId) =>
-                productRoleId && existingRolesIds?.includes(productRoleId),
-            );
-
-            console.log("🚀 ~ execute ~ removeRolesIds:", removeRolesIds);
-
-            if (removeRolesIds?.length) {
-              for (const removeRoleId of removeRolesIds) {
-                const rbacSubjectToRole = rbacSubjectsToRoles?.find(
-                  (rbacSubjectToRole) =>
-                    rbacSubjectToRole.roleId === removeRoleId,
-                );
-
-                if (!rbacSubjectToRole) {
-                  continue;
-                }
-
-                await subjectsToRolesApi.delete({
-                  id: rbacSubjectToRole.id,
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                });
-              }
-            }
+          if (
+            order.status &&
+            ["delivered", "canceled"].includes(order.status)
+          ) {
+            await this.deliveredOrCanceled({
+              order,
+              extendedOrder,
+              subjectToEcommerceModuleOrder: {
+                subjectId: subjectToEcommerceModuleOrder.subjectId,
+                ecommerceModuleOrderId:
+                  subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+              },
+              existingRolesIds,
+              productRolesIds,
+              subjectsToRoles: rbacSubjectsToRoles,
+            });
           } else if (order.status === "paid") {
             await this.fromPaidStatus({
               order,
@@ -223,13 +209,11 @@ export class Service {
               existingRolesIds,
               productRolesIds,
             });
-          } else {
+          } else if (order.status === "delivering") {
             const newRolesIds = productRolesIds?.filter(
               (productRoleId) =>
                 productRoleId && !existingRolesIds?.includes(productRoleId),
             );
-
-            console.log("🚀 ~ fromPaidStatus ~ newRolesIds:", newRolesIds);
 
             if (newRolesIds?.length) {
               for (const newRoleId of newRolesIds) {
@@ -254,20 +238,116 @@ export class Service {
     }
   }
 
-  collectTopupCurrencies(extendedOrder: IExtendedEcommerceModuleOrder): {
-    billingModuleCurrencyId: IEcommerceModuleAttributesToBillingModuleCurrencies["billingModuleCurrencyId"];
-    billingModuleCurrency: IBillingModuleCurrency;
-    amount: string;
-  }[] {
+  async collectTopupCurrencies(props: {
+    extendedOrder: IExtendedEcommerceModuleOrder;
+    subjectToEcommerceModuleOrder: {
+      subjectId: string;
+      ecommerceModuleOrderId: string;
+    };
+  }): Promise<
+    {
+      billingModuleCurrencyId: IEcommerceModuleAttributesToBillingModuleCurrencies["billingModuleCurrencyId"];
+      billingModuleCurrency: IBillingModuleCurrency;
+      amount: string;
+    }[]
+  > {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
+    }
+
     const topupCurrencies: {
       billingModuleCurrencyId: IEcommerceModuleAttributesToBillingModuleCurrencies["billingModuleCurrencyId"];
       billingModuleCurrency: IBillingModuleCurrency;
       amount: string;
     }[] = [];
 
-    for (const orderToProduct of extendedOrder.ordersToProducts) {
+    for (const orderToProduct of props.extendedOrder.ordersToProducts) {
       const productsToAttributes =
         orderToProduct.product.productsToAttributes ?? [];
+
+      const deliveringProducts = await subjectsToEcommerceModuleOrdersApi
+        .find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: props.subjectToEcommerceModuleOrder.subjectId,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        })
+        .then(async (subjectToEcommerceModuleOrders) => {
+          if (!subjectToEcommerceModuleOrders?.length) {
+            return [];
+          }
+
+          if (!RBAC_SECRET_KEY) {
+            throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
+          }
+
+          const deliveringExtendedOrders = await ecommerceOrderApi
+            .find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "id",
+                      method: "inArray",
+                      value: subjectToEcommerceModuleOrders?.map(
+                        (subjectToEcommerceModuleOrder) => {
+                          return subjectToEcommerceModuleOrder.ecommerceModuleOrderId;
+                        },
+                      ),
+                    },
+                    {
+                      column: "status",
+                      method: "eq",
+                      value: "delivering",
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            })
+            .then(async (ecommerceModuleOrders) => {
+              let orders: IExtendedEcommerceModuleOrder[] = [];
+
+              if (!ecommerceModuleOrders?.length) {
+                return ecommerceModuleOrders;
+              }
+
+              for (const ecommerceModuleOrder of ecommerceModuleOrders) {
+                const extended =
+                  await this.extendedEcommerceModuleOrder(ecommerceModuleOrder);
+
+                orders.push(extended);
+              }
+
+              return orders
+                .map((order) => {
+                  return order.ordersToProducts.map((orderToProduct) => {
+                    return orderToProduct.product;
+                  });
+                })
+                .flat(1);
+            });
+
+          return deliveringExtendedOrders;
+        });
 
       for (const productToAttribute of productsToAttributes) {
         const { attribute } = productToAttribute;
@@ -296,6 +376,16 @@ export class Service {
             throw new Error(
               "Validation error. 'attribute.number' can not be null for topup attributes.",
             );
+          }
+
+          if (
+            deliveringProducts?.find((deliveringProduct) => {
+              return deliveringProduct.id === orderToProduct.productId;
+            })
+          ) {
+            console.log(orderToProduct);
+
+            continue;
           }
 
           topupCurrencies.push({
@@ -331,8 +421,6 @@ export class Service {
         productRoleId && !props.existingRolesIds?.includes(productRoleId),
     );
 
-    console.log("🚀 ~ fromPaidStatus ~ newRolesIds:", newRolesIds);
-
     if (newRolesIds?.length) {
       for (const newRoleId of newRolesIds) {
         await subjectsToRolesApi.create({
@@ -349,7 +437,10 @@ export class Service {
       }
     }
 
-    const topupCurrencies = this.collectTopupCurrencies(props.extendedOrder);
+    const topupCurrencies = await this.collectTopupCurrencies({
+      extendedOrder: props.extendedOrder,
+      subjectToEcommerceModuleOrder: props.subjectToEcommerceModuleOrder,
+    });
 
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
@@ -448,6 +539,106 @@ export class Service {
       status: updateEcommerceOrderData.status,
     }).catch((error) => {
       //
+    });
+  }
+
+  async deliveredOrCanceled(props: {
+    order: IEcommerceModuleOrder;
+    extendedOrder: IExtendedEcommerceModuleOrder;
+    subjectToEcommerceModuleOrder: {
+      subjectId: string;
+      ecommerceModuleOrderId: string;
+    };
+    existingRolesIds?: string[];
+    productRolesIds?: string[];
+    subjectsToRoles?: ISubjectsToRoles[];
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    const removeRolesIds = props.productRolesIds?.filter(
+      (productRoleId) =>
+        productRoleId && props.existingRolesIds?.includes(productRoleId),
+    );
+
+    if (removeRolesIds?.length) {
+      for (const removeRoleId of removeRolesIds) {
+        const rbacSubjectToRole = props.subjectsToRoles?.find(
+          (rbacSubjectToRole) => rbacSubjectToRole.roleId === removeRoleId,
+        );
+
+        if (!rbacSubjectToRole) {
+          continue;
+        }
+
+        await subjectsToRolesApi.delete({
+          id: rbacSubjectToRole.id,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
+    }
+
+    const subjectsToBillingModuleCurrencies =
+      await subjectsToBillingModuleCurrenciesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: props.subjectToEcommerceModuleOrder.subjectId,
+              },
+              {
+                column: "amount",
+                method: "ne",
+                value: "0",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (subjectsToBillingModuleCurrencies?.length) {
+      for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
+        await subjectsToBillingModuleCurrenciesApi.update({
+          id: subjectToBillingModuleCurrency.id,
+          data: {
+            ...subjectToBillingModuleCurrency,
+            amount: "0",
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+      }
+    }
+
+    await ecommerceOrderApi.update({
+      id: props.extendedOrder.id,
+      data: {
+        ...props.extendedOrder,
+        status: "completed",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
     });
   }
 

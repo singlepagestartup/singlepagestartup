@@ -1,0 +1,15 @@
+{
+  "id": "2a167247-3770-4365-ad17-a2e916cf0659",
+  "createdAt": "2026-01-17T16:44:12.134Z",
+  "updatedAt": "2026-01-17T16:44:12.134Z",
+  "variant": "default",
+  "type": "subscription",
+  "slug": "free-subscription",
+  "title": {
+    "en": "Free Tier",
+    "ru": "Бесплатный тариф"
+  },
+  "shortDescription": {},
+  "description": {},
+  "adminTitle": "Free Subscription"
+}

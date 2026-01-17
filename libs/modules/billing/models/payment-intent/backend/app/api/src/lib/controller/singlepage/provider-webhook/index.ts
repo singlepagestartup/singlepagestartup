@@ -1,9 +1,13 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { STRIPE_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY, STRIPE_SECRET_KEY } from "@sps/shared-utils";
 import Stripe from "stripe";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
+import { IModel as Invoice } from "@sps/billing/models/invoice/sdk/model";
+import { IModel as PaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { api as paymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 
 export class Handler {
   service: Service;
@@ -14,6 +18,10 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+      }
+
       const provider = c.req.param("provider");
       const contentType = c.req.header("content-type");
       const headers = c.req.header();
@@ -38,6 +46,47 @@ export class Handler {
       } else if (contentType?.includes("application/x-www-form-urlencoded")) {
         const params = new URLSearchParams(rawBody);
         data = Object.fromEntries(params.entries());
+      }
+
+      if (data?.data?.id) {
+        let invoice: Invoice | undefined;
+
+        try {
+          invoice = await invoiceApi.findById({
+            id: data.data.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+
+          if (invoice?.amount === 0) {
+            invoice = await invoiceApi.update({
+              id: invoice.id,
+              data: {
+                ...invoice,
+                status: "paid",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+            await this.service.updatePaymentIntentStatus({ invoice });
+
+            return c.json(
+              {
+                data: invoice,
+              },
+              200,
+            );
+          }
+        } catch (error) {
+          //
+        }
       }
 
       let result: any;

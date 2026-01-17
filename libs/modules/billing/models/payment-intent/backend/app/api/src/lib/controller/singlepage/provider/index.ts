@@ -7,8 +7,10 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
+import { api as currencyApi } from "@sps/billing/models/currency/sdk/server";
+import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
+import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 
 export class Handler {
   service: Service;
@@ -55,13 +57,11 @@ export class Handler {
         throw new Error("Validation error. Currency is required");
       }
 
-      const currency = await billingCurrencyApi.findById({
+      const currency = await currencyApi.findById({
         id: data.currencyId,
-        params: {
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });
@@ -79,6 +79,70 @@ export class Handler {
       if (!allowedProviders.includes(provider)) {
         throw new Error(
           `Validation error. Provider ${provider} is not allowed`,
+        );
+      }
+
+      if (entity.amount === 0) {
+        const invoice = await invoiceApi.create({
+          data: {
+            amount: entity.amount,
+            status: "open",
+            provider,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        await paymentIntentsToInvoicesApi.create({
+          data: {
+            paymentIntentId: entity.id,
+            invoiceId: invoice.id,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+
+        setTimeout(async () => {
+          if (!RBAC_SECRET_KEY) {
+            return;
+          }
+
+          fetch(
+            API_SERVICE_URL +
+              `/api/billing/payment-intents/${provider}/webhook`,
+            {
+              credentials: "include",
+              method: "POST",
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                data: {
+                  id: invoice.id,
+                },
+              }),
+            } as Partial<NextRequestOptions>,
+          )
+            .then(async (res) => {
+              return res.json();
+            })
+            .catch((error) => {
+              logger.error("Error:", error);
+            });
+        }, 100);
+
+        return c.json(
+          {
+            data: entity,
+          },
+          201,
         );
       }
 

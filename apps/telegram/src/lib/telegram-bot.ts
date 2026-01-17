@@ -969,8 +969,10 @@ export class TelegarmBot {
     ctx: GrammyContext;
     rbacModuleSubject: IRbacSubject;
   }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. 'RBAC_SECRET_KEY' no set.");
+    }
     if (
-      RBAC_SECRET_KEY &&
       TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
       props.ctx.from?.id
     ) {
@@ -1062,6 +1064,80 @@ export class TelegarmBot {
       }
 
       console.log("🚀 ~ init ~ member:", member);
+    }
+
+    const availableOnRegistrationRbacModuleRoles = await rbacModuleRoleApi.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "availableOnRegistration",
+                method: "eq",
+                value: true,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      },
+    );
+
+    if (availableOnRegistrationRbacModuleRoles?.length) {
+      const rbacModuleSubjectsToRoles = await rbacModuleSubjectsToRolesApi.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: props.rbacModuleSubject.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "Cache-Control": "no-store",
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        },
+      );
+
+      const toAddRoles = availableOnRegistrationRbacModuleRoles.filter(
+        (role) => {
+          return !rbacModuleSubjectsToRoles
+            ?.map((subjectToRole) => {
+              return subjectToRole.roleId;
+            })
+            .includes(role.id);
+        },
+      );
+
+      if (toAddRoles.length) {
+        for (const toAddRole of toAddRoles) {
+          await rbacModuleSubjectsToRolesApi.create({
+            data: {
+              subjectId: props.rbacModuleSubject.id,
+              roleId: toAddRole.id,
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+      }
+
+      console.log("🚀 ~ synchronizeRbacModuleRole ~ toAddRoleIds:", toAddRoles);
     }
     //
   }

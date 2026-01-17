@@ -107,6 +107,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ru: "У вас нет активной подписки. Пожалуйста, оформите подписку, чтобы использовать эту функцию.",
       en: "You do not have an active subscription. Please subscribe to use this feature.",
     },
+    openRouterNotEnoughTokens: {
+      ru: "У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
+      en: "У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
+    },
     ecommerceModuleOrderPayButtonDescription: {
       ru: "Для оплаты подписки нажмите на кнопку с выбором способа оплаты",
       en: "You can subscribe by the clicking buttons below",
@@ -998,97 +1002,90 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       description: "",
     };
 
-    if (rbacModuleSubjectsToProSubscriberRoles?.length) {
-      data.description =
-        this.statusMessages.ecommerceModuleOrderAlreadyHaveSubscription.ru;
-    } else {
-      const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: rbacModuleRolesToEcommerceModuleProducts.map(
-                  (roleToEcommerceModuleProduct) => {
-                    return roleToEcommerceModuleProduct.ecommerceModuleProductId;
-                  },
-                ),
-              },
-            ],
+    const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: rbacModuleRolesToEcommerceModuleProducts.map(
+                (roleToEcommerceModuleProduct) => {
+                  return roleToEcommerceModuleProduct.ecommerceModuleProductId;
+                },
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!ecommerceModuleProducts?.length) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: "Can't find `ecommerceModuleProducts`.",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
+      );
+    }
+
+    data.description =
+      this.statusMessages.ecommerceModuleSelectSubscriptionProductsOffer.ru;
+
+    const ecommerceModuleProductButtons: {
+      text: string;
+      url?: string | undefined;
+      callback_data?: string | undefined;
+    }[] = [];
+
+    for (const ecommerceModuleProduct of ecommerceModuleProducts) {
+      const extendedProduct = await this.extendedEcommerceModuleProduct({
+        id: ecommerceModuleProduct.id,
       });
 
-      if (!ecommerceModuleProducts?.length) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: "Can't find `ecommerceModuleProducts`.",
+      const productTitle =
+        extendedProduct.title?.ru ??
+        extendedProduct.title?.en ??
+        extendedProduct.id;
+
+      const productPrice = extendedProduct.productsToAttributes.filter(
+        (productToAttribute) => {
+          return productToAttribute.attribute.attributeKeysToAttributes.filter(
+            (attributeKeyToAttribute) => {
+              return attributeKeyToAttribute.attributeKey?.type === "price";
             },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
-      }
+          ).length;
+        },
+      )?.[0];
 
-      data.description =
-        this.statusMessages.ecommerceModuleSelectSubscriptionProductsOffer.ru;
-
-      const ecommerceModuleProductButtons: {
-        text: string;
-        url?: string | undefined;
-        callback_data?: string | undefined;
-      }[] = [];
-
-      for (const ecommerceModuleProduct of ecommerceModuleProducts) {
-        const extendedProduct = await this.extendedEcommerceModuleProduct({
-          id: ecommerceModuleProduct.id,
-        });
-
-        const productTitle =
-          extendedProduct.title?.ru ??
-          extendedProduct.title?.en ??
-          extendedProduct.id;
-
-        const productPrice = extendedProduct.productsToAttributes.filter(
-          (productToAttribute) => {
-            return productToAttribute.attribute.attributeKeysToAttributes.filter(
-              (attributeKeyToAttribute) => {
-                return attributeKeyToAttribute.attributeKey?.type === "price";
-              },
-            ).length;
-          },
-        )?.[0];
-
-        ecommerceModuleProductButtons.push({
-          text: `${productTitle} ${productPrice ? productPrice.attribute.number : ""}${productPrice ? `\ ${productPrice.attribute.attributesToBillingModuleCurrencies?.[0].billingModuleCurrency?.symbol}` : ""}`,
-          callback_data: `ec_me_pt_${ecommerceModuleProduct.id}`,
-        });
-      }
-
-      data.interaction = {
-        inline_keyboard: [
-          ...ecommerceModuleProductButtons.map(
-            (ecommerceModuleProductButton) => {
-              return [ecommerceModuleProductButton];
-            },
-          ),
-        ],
-      };
+      ecommerceModuleProductButtons.push({
+        text: `${productTitle} - ${productPrice ? productPrice.attribute.number : ""}${productPrice ? `\ ${productPrice.attribute.attributesToBillingModuleCurrencies?.[0].billingModuleCurrency?.symbol}` : ""}`,
+        callback_data: `ec_me_pt_${ecommerceModuleProduct.id}`,
+      });
     }
+
+    data.interaction = {
+      inline_keyboard: [
+        ...ecommerceModuleProductButtons.map((ecommerceModuleProductButton) => {
+          return [ecommerceModuleProductButton];
+        }),
+      ],
+    };
 
     return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
       {
@@ -1344,8 +1341,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
       if (
-        !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole &&
-        props.shouldReplySocialModuleProfile.variant === "telegram"
+        requiredTelegramChannelSubscriptionRbacModuleRole &&
+        !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
       ) {
         return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
           {
@@ -1445,6 +1442,40 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       );
     } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message.includes("do not have enough balance for that route")
+        ) {
+          await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+            {
+              id: props.rbacModuleSubject.id,
+              socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+              socialModuleChatId: props.socialModuleChat.id,
+              data: {
+                description: this.statusMessages.openRouterNotEnoughTokens.ru,
+              },
+              options: {
+                headers: {
+                  Authorization: "Bearer " + props.jwtToken,
+                },
+              },
+            },
+          );
+          await this.telegramBotPremiumMessageWithKeyboardCreate({
+            jwtToken: props.jwtToken,
+            messageFromSocialModuleProfile:
+              props.messageFromSocialModuleProfile,
+            rbacModuleSubject: props.rbacModuleSubject,
+            shouldReplySocialModuleProfile:
+              props.shouldReplySocialModuleProfile,
+            socialModuleMessage: props.socialModuleMessage,
+            socialModuleChat: props.socialModuleChat,
+          });
+
+          throw error;
+        }
+      }
+
       await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
         {
           id: props.rbacModuleSubject.id,
