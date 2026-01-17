@@ -19,6 +19,7 @@ export const types = ["cart", "history"];
 export const statuses = [
   "new",
   "paying",
+  "paid",
   "approving",
   "packaging",
   "delivering",

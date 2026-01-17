@@ -238,7 +238,7 @@ export class Handler {
                   (socialModuleMessagesToFileStorageModuleFile) => {
                     return {
                       ...socialModuleMessagesToFileStorageModuleFile,
-                      fileStorageModuleFiles: fileStorageModuleFiles?.filter(
+                      fileStorageModuleFile: fileStorageModuleFiles?.find(
                         (fileStorageModuleFile) =>
                           fileStorageModuleFile.id ===
                           socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
@@ -271,7 +271,7 @@ export class Handler {
     extendedSocialModuleMessage: ISocialModuleMessage & {
       messagesToFileStorageModuleFiles:
         | (ISocialModuleMessagesToFileStorageModuleFile & {
-            fileStorageModuleFiles: IFileStorageModuleFile[] | undefined;
+            fileStorageModuleFile?: IFileStorageModuleFile;
           })[]
         | undefined;
     };
@@ -468,10 +468,19 @@ export class Handler {
 
         for (const socialModuleGenerateSocialModuleMessageCreatedTemplate of socialModuleGenerateSocialModuleMessageCreatedTemplates) {
           try {
-            const method =
-              socialModuleGenerateSocialModuleMessageCreatedTemplate.variant
-                .replace("-social-module-message-created", "")
-                .replace("generate-", ""); // e.g., "telegram"
+            const files: IFileStorageModuleFile[] = [];
+
+            props.extendedSocialModuleMessage.messagesToFileStorageModuleFiles?.forEach(
+              (messageToFileStorageModuleFile) => {
+                if (!messageToFileStorageModuleFile.fileStorageModuleFile) {
+                  return;
+                }
+
+                files.push(
+                  messageToFileStorageModuleFile.fileStorageModuleFile,
+                );
+              },
+            );
 
             const notificationServiceNotifications = await api.notify({
               id: subject.id,
@@ -480,18 +489,18 @@ export class Handler {
                   topic: {
                     slug: "information",
                   },
-                  template: {
-                    variant:
-                      socialModuleGenerateSocialModuleMessageCreatedTemplate.variant,
-                  },
+                  template:
+                    socialModuleGenerateSocialModuleMessageCreatedTemplate,
                   notification: {
-                    method: method,
-                    data: JSON.stringify({
+                    data: {
                       socialModule: {
                         message: props.extendedSocialModuleMessage,
                       },
-                    }),
+                    },
                   },
+                },
+                fileStorage: {
+                  files,
                 },
               },
               options: {

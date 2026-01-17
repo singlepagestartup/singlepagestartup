@@ -31,7 +31,7 @@ export class Handler {
           await this.service.deleteBySourceSystem({
             reciever: entity.reciever,
             sourceSystemId: entity.sourceSystemId,
-            method: entity.method,
+            entity,
           });
         } catch (error) {
           console.log(

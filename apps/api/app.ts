@@ -10,6 +10,7 @@ import {
   ObserverMiddleware,
   RequestIdMiddleware,
   ActionLoggerMiddleware,
+  BillRouteMiddleware,
 } from "@sps/middlewares";
 import { MIDDLEWARE_HTTP_CACHE } from "@sps/shared-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -112,6 +113,9 @@ app.use(actionLoggerMiddleware.init());
 
 const isAuthorizedMiddleware = new IsAuthorizedMiddleware();
 app.use(isAuthorizedMiddleware.init());
+
+const billRouteMiddleware = new BillRouteMiddleware();
+app.use(billRouteMiddleware.init());
 
 const revalidationMiddleware = new RevalidationMiddleware();
 app.use(revalidationMiddleware.init());

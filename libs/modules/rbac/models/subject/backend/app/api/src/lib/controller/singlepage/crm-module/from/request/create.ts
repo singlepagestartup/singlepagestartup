@@ -216,21 +216,17 @@ export class Handler {
                           topic: {
                             slug: "information",
                           },
-                          template: {
-                            variant:
-                              notificationCrmRequestCreatedTemplate.variant,
-                          },
+                          template: notificationCrmRequestCreatedTemplate,
                           notification: {
-                            method: "email",
                             title: notificationCrmRequestCreatedTemplate.title,
-                            data: JSON.stringify({
+                            data: {
                               crm: {
                                 form: { ...form, ...data },
                               },
                               rbac: {
                                 subject: entity,
                               },
-                            }),
+                            },
                           },
                         },
                       },

@@ -1,0 +1,119 @@
+{
+  "id": "d01355e0-75cf-42fb-896b-4ad887e276b0",
+  "prevId": "ccc8eab6-82f9-4ccf-a497-f580d8a11a8a",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_ee_os_to_bg_me_cs_b33": {
+      "name": "sps_ee_os_to_bg_me_cs_b33",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "amount": {
+          "name": "amount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "or_id": {
+          "name": "or_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bg_me_cy_id": {
+          "name": "bg_me_cy_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_ee_os_to_bg_me_cs_b33_or_id_sps_ee_order_id_fk": {
+          "name": "sps_ee_os_to_bg_me_cs_b33_or_id_sps_ee_order_id_fk",
+          "tableFrom": "sps_ee_os_to_bg_me_cs_b33",
+          "tableTo": "sps_ee_order",
+          "columnsFrom": [
+            "or_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_ee_os_to_bg_me_cs_b33_bg_me_cy_id_sps_bg_currency_id_fk": {
+          "name": "sps_ee_os_to_bg_me_cs_b33_bg_me_cy_id_sps_bg_currency_id_fk",
+          "tableFrom": "sps_ee_os_to_bg_me_cs_b33",
+          "tableTo": "sps_bg_currency",
+          "columnsFrom": [
+            "bg_me_cy_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

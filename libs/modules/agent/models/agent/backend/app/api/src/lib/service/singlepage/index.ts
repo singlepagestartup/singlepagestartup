@@ -594,7 +594,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    rbacModuleSubjectApi
+    await rbacModuleSubjectApi
       .socialModuleProfileFindByIdChatFindByIdMessageCreate({
         id: props.rbacModuleSubject.id,
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
@@ -1508,6 +1508,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 column: "productId",
                 method: "eq",
                 value: ecommerceModuleProduct.id,
+              },
+              {
+                column: "variant",
+                method: "eq",
+                value: "default",
               },
             ],
           },

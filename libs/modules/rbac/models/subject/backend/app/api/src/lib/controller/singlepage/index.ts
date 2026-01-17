@@ -8,6 +8,7 @@ import { RequestProfileSubjectIdOwner } from "../../../../../middlewares";
 
 import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
+import { Handler as AuthenticationBillRoute } from "./authentication/bill-route";
 import { Handler as AuthenticationLogout } from "./authentication/logout";
 import { Handler as AuthenticationEmailAndPasswordForgotPassword } from "./authentication/email-and-password/forgot-password";
 import { Handler as AuthenticationEmailAndPasswordResetPassword } from "./authentication/email-and-password/reset-password";
@@ -73,6 +74,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/authentication/is-authorized",
         handler: this.authenticationIsAuthorized,
+      },
+      {
+        method: "POST",
+        path: "/authentication/bill-route",
+        handler: this.authenticationBillRoute,
       },
       {
         method: "GET",
@@ -547,5 +553,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new SocialModuleProfileFindByIdChatFindByIdActionFind(
       this.service,
     ).execute(c, next);
+  }
+
+  async authenticationBillRoute(c: Context, next: any): Promise<Response> {
+    return new AuthenticationBillRoute(this.service).execute(c, next);
   }
 }

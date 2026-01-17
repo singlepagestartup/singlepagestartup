@@ -98,10 +98,7 @@ export class Handler {
         });
       }
 
-      if (
-        entity?.status === "approving" &&
-        previousEntity?.status === "paying"
-      ) {
+      if (entity?.status === "paid" && previousEntity?.status === "paying") {
         const ordersToBillingModuleCurrencies =
           await ordersToBillingModuleCurrenciesApi.find({
             params: {

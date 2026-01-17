@@ -323,101 +323,101 @@ export class Service {
         if (
           notificationEcommerceNotificationTemplate.variant.includes("default")
         ) {
-          await broadcastChannelApi.pushMessage({
-            data: {
-              slug: "observer",
-              payload: JSON.stringify({
-                trigger: {
-                  type: "request",
-                  method: "PATCH",
-                  url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-                },
-                pipe: [
-                  {
-                    type: "request",
-                    method: "GET",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                  },
-                  {
-                    type: "request",
-                    method: "POST",
-                    url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/notify`,
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    },
-                    body: {
-                      data: {
-                        ecommerce: {
-                          order: {
-                            id: updatedOrder.id,
-                          },
-                        },
-                        notification: {
-                          topic: {
-                            slug: "information",
-                          },
-                          template: {
-                            variant:
-                              notificationEcommerceNotificationTemplate.variant,
-                          },
-                          notification: {
-                            method: notificationMethod,
-                            data: JSON.stringify({
-                              ecommerce: {
-                                order: {
-                                  ...updatedOrder,
-                                  status: "[triggerResult.data.status]",
-                                  checkoutAttributes,
-                                  ordersToBillingModuleCurrencies:
-                                    ecommerceOrdersToBillingModuleCurrencies.map(
-                                      (
-                                        ecommerceOrderToBillingModuleCurrency,
-                                      ) => {
-                                        return {
-                                          ...ecommerceOrderToBillingModuleCurrency,
-                                          billingModuleCurrency:
-                                            billingModuleCurrencies.find(
-                                              (billingModuleCurrency) =>
-                                                billingModuleCurrency.id ===
-                                                ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
-                                            ),
-                                        };
-                                      },
-                                    ),
-                                  ordersToProducts: ordersToProducts.map(
-                                    (orderToProduct) => {
-                                      return {
-                                        ...orderToProduct,
-                                        product: products.find(
-                                          (product) =>
-                                            product.id ===
-                                            orderToProduct.productId,
-                                        ),
-                                      };
-                                    },
-                                  ),
-                                  ordersToFileStorageModuleFiles: [],
-                                },
-                              },
-                              comment: props.data.comment,
-                            }),
-                          },
-                        },
-                      },
-                    },
-                  },
-                ],
-              }),
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+          // await broadcastChannelApi.pushMessage({
+          //   data: {
+          //     slug: "observer",
+          //     payload: JSON.stringify({
+          //       trigger: {
+          //         type: "request",
+          //         method: "PATCH",
+          //         url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          //       },
+          //       pipe: [
+          //         {
+          //           type: "request",
+          //           method: "GET",
+          //           url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          //           headers: {
+          //             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //           },
+          //         },
+          //         {
+          //           type: "request",
+          //           method: "POST",
+          //           url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/notify`,
+          //           headers: {
+          //             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //           },
+          //           body: {
+          //             data: {
+          //               ecommerce: {
+          //                 order: {
+          //                   id: updatedOrder.id,
+          //                 },
+          //               },
+          //               notification: {
+          //                 topic: {
+          //                   slug: "information",
+          //                 },
+          //                 template: {
+          //                   variant:
+          //                     notificationEcommerceNotificationTemplate.variant,
+          //                 },
+          //                 notification: {
+          //                   method: notificationMethod,
+          //                   data: JSON.stringify({
+          //                     ecommerce: {
+          //                       order: {
+          //                         ...updatedOrder,
+          //                         status: "[triggerResult.data.status]",
+          //                         checkoutAttributes,
+          //                         ordersToBillingModuleCurrencies:
+          //                           ecommerceOrdersToBillingModuleCurrencies.map(
+          //                             (
+          //                               ecommerceOrderToBillingModuleCurrency,
+          //                             ) => {
+          //                               return {
+          //                                 ...ecommerceOrderToBillingModuleCurrency,
+          //                                 billingModuleCurrency:
+          //                                   billingModuleCurrencies.find(
+          //                                     (billingModuleCurrency) =>
+          //                                       billingModuleCurrency.id ===
+          //                                       ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
+          //                                   ),
+          //                               };
+          //                             },
+          //                           ),
+          //                         ordersToProducts: ordersToProducts.map(
+          //                           (orderToProduct) => {
+          //                             return {
+          //                               ...orderToProduct,
+          //                               product: products.find(
+          //                                 (product) =>
+          //                                   product.id ===
+          //                                   orderToProduct.productId,
+          //                               ),
+          //                             };
+          //                           },
+          //                         ),
+          //                         ordersToFileStorageModuleFiles: [],
+          //                       },
+          //                     },
+          //                     comment: props.data.comment,
+          //                   }),
+          //                 },
+          //               },
+          //             },
+          //           },
+          //         },
+          //       ],
+          //     }),
+          //   },
+          //   options: {
+          //     headers: {
+          //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //     },
+          //   },
+          // });
         }
 
         if (
@@ -428,130 +428,130 @@ export class Service {
               ? "email"
               : "telegram";
 
-          if (adminRoles?.length) {
-            for (const adminRole of adminRoles) {
-              const subjectsToAdminRoles = await subjectsToRolesApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "roleId",
-                        method: "eq",
-                        value: adminRole.id,
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
+          // if (adminRoles?.length) {
+          //   for (const adminRole of adminRoles) {
+          //     const subjectsToAdminRoles = await subjectsToRolesApi.find({
+          //       params: {
+          //         filters: {
+          //           and: [
+          //             {
+          //               column: "roleId",
+          //               method: "eq",
+          //               value: adminRole.id,
+          //             },
+          //           ],
+          //         },
+          //       },
+          //       options: {
+          //         headers: {
+          //           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //           "Cache-Control": "no-store",
+          //         },
+          //       },
+          //     });
 
-              if (subjectsToAdminRoles?.length) {
-                for (const subjectToAdminRole of subjectsToAdminRoles) {
-                  await broadcastChannelApi.pushMessage({
-                    data: {
-                      slug: "observer",
-                      payload: JSON.stringify({
-                        trigger: {
-                          type: "request",
-                          method: "PATCH",
-                          url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-                        },
-                        pipe: [
-                          {
-                            type: "request",
-                            method: "GET",
-                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
-                            headers: {
-                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                            },
-                          },
-                          {
-                            type: "request",
-                            method: "POST",
-                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${subjectToAdminRole.subjectId}/notify`,
-                            headers: {
-                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                            },
-                            body: {
-                              data: {
-                                ecommerce: {
-                                  order: {
-                                    id: updatedOrder.id,
-                                  },
-                                },
-                                notification: {
-                                  topic: {
-                                    slug: "information",
-                                  },
-                                  template: {
-                                    variant:
-                                      notificationEcommerceNotificationTemplate.variant,
-                                  },
-                                  notification: {
-                                    method: notificationMethod,
-                                    data: JSON.stringify({
-                                      ecommerce: {
-                                        order: {
-                                          ...updatedOrder,
-                                          status: "[triggerResult.data.status]",
-                                          checkoutAttributes,
-                                          ordersToBillingModuleCurrencies:
-                                            ecommerceOrdersToBillingModuleCurrencies.map(
-                                              (
-                                                ecommerceOrderToBillingModuleCurrency,
-                                              ) => {
-                                                return {
-                                                  ...ecommerceOrderToBillingModuleCurrency,
-                                                  billingModuleCurrency:
-                                                    billingModuleCurrencies.find(
-                                                      (billingModuleCurrency) =>
-                                                        billingModuleCurrency.id ===
-                                                        ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
-                                                    ),
-                                                };
-                                              },
-                                            ),
-                                          ordersToProducts:
-                                            ordersToProducts.map(
-                                              (orderToProduct) => {
-                                                return {
-                                                  ...orderToProduct,
-                                                  product: products.find(
-                                                    (product) =>
-                                                      product.id ===
-                                                      orderToProduct.productId,
-                                                  ),
-                                                };
-                                              },
-                                            ),
-                                          ordersToFileStorageModuleFiles: [],
-                                        },
-                                      },
-                                      comment: props.data.comment,
-                                    }),
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        ],
-                      }),
-                    },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      },
-                    },
-                  });
-                }
-              }
-            }
-          }
+          //     if (subjectsToAdminRoles?.length) {
+          //       for (const subjectToAdminRole of subjectsToAdminRoles) {
+          //         await broadcastChannelApi.pushMessage({
+          //           data: {
+          //             slug: "observer",
+          //             payload: JSON.stringify({
+          //               trigger: {
+          //                 type: "request",
+          //                 method: "PATCH",
+          //                 url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          //               },
+          //               pipe: [
+          //                 {
+          //                   type: "request",
+          //                   method: "GET",
+          //                   url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/ecommerce/orders/${updatedOrder.id}`,
+          //                   headers: {
+          //                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //                   },
+          //                 },
+          //                 {
+          //                   type: "request",
+          //                   method: "POST",
+          //                   url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${subjectToAdminRole.subjectId}/notify`,
+          //                   headers: {
+          //                     "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //                   },
+          //                   body: {
+          //                     data: {
+          //                       ecommerce: {
+          //                         order: {
+          //                           id: updatedOrder.id,
+          //                         },
+          //                       },
+          //                       notification: {
+          //                         topic: {
+          //                           slug: "information",
+          //                         },
+          //                         template: {
+          //                           variant:
+          //                             notificationEcommerceNotificationTemplate.variant,
+          //                         },
+          //                         notification: {
+          //                           method: notificationMethod,
+          //                           data: JSON.stringify({
+          //                             ecommerce: {
+          //                               order: {
+          //                                 ...updatedOrder,
+          //                                 status: "[triggerResult.data.status]",
+          //                                 checkoutAttributes,
+          //                                 ordersToBillingModuleCurrencies:
+          //                                   ecommerceOrdersToBillingModuleCurrencies.map(
+          //                                     (
+          //                                       ecommerceOrderToBillingModuleCurrency,
+          //                                     ) => {
+          //                                       return {
+          //                                         ...ecommerceOrderToBillingModuleCurrency,
+          //                                         billingModuleCurrency:
+          //                                           billingModuleCurrencies.find(
+          //                                             (billingModuleCurrency) =>
+          //                                               billingModuleCurrency.id ===
+          //                                               ecommerceOrderToBillingModuleCurrency.billingModuleCurrencyId,
+          //                                           ),
+          //                                       };
+          //                                     },
+          //                                   ),
+          //                                 ordersToProducts:
+          //                                   ordersToProducts.map(
+          //                                     (orderToProduct) => {
+          //                                       return {
+          //                                         ...orderToProduct,
+          //                                         product: products.find(
+          //                                           (product) =>
+          //                                             product.id ===
+          //                                             orderToProduct.productId,
+          //                                         ),
+          //                                       };
+          //                                     },
+          //                                   ),
+          //                                 ordersToFileStorageModuleFiles: [],
+          //                               },
+          //                             },
+          //                             comment: props.data.comment,
+          //                           }),
+          //                         },
+          //                       },
+          //                     },
+          //                   },
+          //                 },
+          //               ],
+          //             }),
+          //           },
+          //           options: {
+          //             headers: {
+          //               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          //             },
+          //           },
+          //         });
+          //       }
+          //     }
+          //   }
+          // }
         }
       }
     }

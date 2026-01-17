@@ -157,8 +157,7 @@ export class Handler {
             id: uuid,
             data: {
               ...entity,
-              status:
-                attributes.type === "subscription" ? "delivering" : "approving",
+              status: "paid",
               type: "history",
             },
             options: {

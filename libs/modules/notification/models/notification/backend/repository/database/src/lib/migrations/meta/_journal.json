@@ -15,6 +15,41 @@
       "when": 1763671859031,
       "tag": "0001_thick_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768601675457,
+      "tag": "0002_vengeful_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768602049907,
+      "tag": "0003_salty_the_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768603515719,
+      "tag": "0004_rich_zuras",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1768607920363,
+      "tag": "0005_brave_mattie_franklin",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768607988102,
+      "tag": "0006_chief_daredevil",
+      "breakpoints": true
     }
   ]
 }

@@ -21,8 +21,16 @@ async function util<T>(props: {
       // Not JSON
     }
 
-    if (errorJson?.data) {
-      errorMessages.push(errorJson.data);
+    const primaryMessage =
+      errorJson?.error ||
+      errorJson?.message ||
+      errorJson?.data ||
+      (Array.isArray(errorJson?.cause)
+        ? errorJson.cause[0]?.message
+        : errorJson?.cause);
+
+    if (primaryMessage) {
+      errorMessages.push(primaryMessage);
     }
 
     if (errorJson?.cause) {
@@ -31,25 +39,25 @@ async function util<T>(props: {
           message: e.message,
           stack: isDebug ? e.stack?.replace(/\n/g, "\\n") : undefined,
         }));
-        errorMessages.push(...errorJson.cause.map((e) => e.message));
       } else {
         causes.push({
           message: errorJson.cause,
           stack: isDebug ? errorJson?.stack?.replace(/\n/g, "\\n") : undefined,
         });
-        errorMessages.push(errorJson.cause);
       }
     }
 
-    const currentErrorMessage = `${props.res.status} | ${props.res.statusText}`;
-    causes.push({
-      message: currentErrorMessage,
-      stack: isDebug ? new Error().stack?.replace(/\n/g, "\\n") : undefined,
-    });
-    errorMessages.push(currentErrorMessage);
+    if (!primaryMessage) {
+      const currentErrorMessage = `${props.res.status} | ${props.res.statusText}`;
+      causes.push({
+        message: currentErrorMessage,
+        stack: isDebug ? new Error().stack?.replace(/\n/g, "\\n") : undefined,
+      });
+      errorMessages.push(currentErrorMessage);
+    }
 
     const errorPayload = {
-      message: errorMessages.join(" | "),
+      message: errorMessages[0] || "Unknown error",
       status: props.res.status,
       cause: causes,
     };

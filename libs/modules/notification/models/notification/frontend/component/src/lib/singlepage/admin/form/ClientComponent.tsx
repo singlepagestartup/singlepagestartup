@@ -28,12 +28,11 @@ export function Component(props: IComponentPropsExtended) {
     resolver: zodResolver(insertSchema),
     defaultValues: {
       variant: props.data?.variant || "default",
-      data: props.data?.data || "",
+      data: props.data?.data || {},
       status: props.data?.status || "new",
       title: props.data?.title || "",
-      method: props.data?.method || "email",
       reciever: props.data?.reciever || "",
-      attachments: props.data?.attachments || "",
+      attachments: props.data?.attachments || [],
     },
   });
 

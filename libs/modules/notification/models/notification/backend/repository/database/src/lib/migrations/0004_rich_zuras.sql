@@ -1,0 +1,1 @@
+ALTER TABLE "sps_nn_notification" DROP COLUMN "method";

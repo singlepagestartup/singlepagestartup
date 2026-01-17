@@ -8,6 +8,53 @@ export function util(error: any): UtilsProp {
   const message = extractMessage(error) || "Unknown error";
   const details = extractOriginalError(error);
 
+  try {
+    const parsed = JSON.parse(message);
+    if (typeof parsed?.status === "number") {
+      const parsedMessage = parsed?.message || message;
+      const parsedCategory = parseCategoryFromMessage(parsedMessage);
+      const parsedDetails = parsed?.cause ?? details;
+
+      if (parsedCategory) {
+        return {
+          status: parsed.status,
+          message: parsedMessage,
+          category: parsedCategory,
+          details: parsedDetails,
+        };
+      }
+
+      for (const entry of httpErrorPatterns as ErrorPatternEntry[]) {
+        if (entry.patterns.some((regex) => regex.test(parsedMessage))) {
+          return {
+            status: parsed.status,
+            message: parsedMessage,
+            category: entry.category,
+            details: parsedDetails,
+          };
+        }
+      }
+
+      return {
+        status: parsed.status,
+        message: parsedMessage,
+        category: "Internal error",
+        details: parsedDetails,
+      };
+    }
+  } catch {
+    // Not JSON
+  }
+
+  if (typeof error?.status === "number") {
+    return {
+      status: error.status,
+      message,
+      category: "Internal error",
+      details,
+    };
+  }
+
   const parsedCategory = parseCategoryFromMessage(message);
 
   if (parsedCategory) {

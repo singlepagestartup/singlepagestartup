@@ -19,3 +19,7 @@ export {
   Middleware as ActionLoggerMiddleware,
   type IMiddlewareGeneric as IActionLoggerMiddlewareGeneric,
 } from "./actions-logger";
+export {
+  Middleware as BillRouteMiddleware,
+  type IMiddlewareGeneric as IBillRouteMiddlewareGeneric,
+} from "./bill-route";

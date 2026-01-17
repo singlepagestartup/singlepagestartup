@@ -13,7 +13,7 @@ export const Table = pgTable(table, {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   orderIndex: pgCore.integer("order_index").notNull().default(0),
-  quantity: pgCore.integer("quantity").notNull().default(1),
+  amount: pgCore.text("amount").notNull().default("0"),
   className: pgCore.text("class_name"),
   orderId: pgCore
     .uuid("or_id")

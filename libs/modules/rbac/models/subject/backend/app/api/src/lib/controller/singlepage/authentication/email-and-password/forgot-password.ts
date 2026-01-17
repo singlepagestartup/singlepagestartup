@@ -93,32 +93,32 @@ export class Handler {
         throw new Error("Not Found error. Could not update identity");
       }
 
-      await api.notify({
-        id: subjectsToIdentities[0].subjectId,
-        data: {
-          notification: {
-            notification: {
-              method: "email",
-              data: JSON.stringify({
-                rbac: {
-                  identity,
-                },
-              }),
-            },
-            template: {
-              variant: "reset-password",
-            },
-            topic: {
-              slug: "security",
-            },
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      // await api.notify({
+      //   id: subjectsToIdentities[0].subjectId,
+      //   data: {
+      //     notification: {
+      //       notification: {
+      //         method: "email",
+      //         data: {
+      //           rbac: {
+      //             identity,
+      //           },
+      //         }
+      //       },
+      //       template: {
+      //         variant: "reset-password",
+      //       },
+      //       topic: {
+      //         slug: "security",
+      //       },
+      //     },
+      //   },
+      //   options: {
+      //     headers: {
+      //       "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      //     },
+      //   },
+      // });
 
       return c.json(
         {

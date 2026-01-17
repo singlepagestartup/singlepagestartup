@@ -6,11 +6,18 @@ export const fields = {
   updatedAt: pgCore.timestamp("updated_at").notNull().defaultNow(),
   variant: pgCore.text("variant").notNull().default("default"),
   status: pgCore.text("status").notNull().default("new"),
-  method: pgCore.text("method").notNull().default("email"),
   title: pgCore.text("title"),
-  data: pgCore.text("data"),
+  data: pgCore.jsonb("data").$type<{ [key: string]: any }>().default({}),
   reciever: pgCore.text("reciever").notNull(),
-  attachments: pgCore.text("attachments"),
+  attachments: pgCore
+    .jsonb("attachments")
+    .$type<
+      {
+        url: string;
+        type: string;
+      }[]
+    >()
+    .default([]),
   sendAfter: pgCore.timestamp("send_after").notNull().defaultNow(),
   sourceSystemId: pgCore.text("source_system_id"),
 };

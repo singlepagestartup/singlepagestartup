@@ -210,7 +210,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async editBySourceSystem(props: {
     reciever: string;
     sourceSystemId: string | number;
-    payload?: any;
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
@@ -241,18 +240,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     const entity = notification[0];
 
-    if (props.payload) {
-      await this.update({
-        id: entity.id,
-        data: {
-          ...entity,
-          data: JSON.stringify(props.payload),
-        },
-      });
-    }
-
-    if (entity.method !== "telegram") {
-      return entity;
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
     }
 
     const notificationToTemplates = await notificationsToTemplatesApi.find({
@@ -304,6 +293,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Not Found error. Template not found");
     }
 
+    const method = templates[0].variant.includes("email")
+      ? "email"
+      : templates[0].variant.includes("telegram")
+        ? "telegram"
+        : undefined;
+
+    if (method !== "telegram") {
+      return entity;
+    }
+
     const template = templates.find((item) =>
       item.variant.includes("telegram"),
     );
@@ -314,7 +313,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     const renderResult = await templateApi.render({
       id: template.id,
-      data: props.payload || (entity.data ? JSON.parse(entity.data) : {}),
+      data: entity.data,
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -350,17 +349,76 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async deleteBySourceSystem(props: {
+    entity: IModel;
     reciever: string;
     sourceSystemId: string | number;
-    method: string;
   }) {
-    if (!TELEGRAM_SERVICE_BOT_TOKEN && props.method === "telegram") {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
+    }
+
+    const notificationToTemplates = await notificationsToTemplatesApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "notificationId",
+              method: "eq",
+              value: props.entity.id,
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!notificationToTemplates?.length) {
+      throw new Error("Not Found error. Template not found");
+    }
+
+    const templates = await templateApi.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: notificationToTemplates.map(
+                (notificationToTemplate) => notificationToTemplate.templateId,
+              ),
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    if (!templates?.length) {
+      throw new Error("Not Found error. Template not found");
+    }
+
+    const method = templates[0].variant.includes("email")
+      ? "email"
+      : templates[0].variant.includes("telegram")
+        ? "telegram"
+        : undefined;
+
+    if (!TELEGRAM_SERVICE_BOT_TOKEN && method === "telegram") {
       throw new Error(
         "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN not set",
       );
     }
 
-    if (props.method !== "telegram") {
+    if (method !== "telegram") {
       return;
     }
 
@@ -425,8 +483,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Not Found error. Reciever not found");
     }
 
-    const attachments: { type: "image"; url: string }[] =
-      JSON.parse(entity.attachments || "[]") || [];
+    const attachments = entity.attachments || [];
 
     const validAttachments: typeof attachments = [];
 
@@ -454,7 +511,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
         const renderResult = await templateApi.render({
           id: props.template.id,
-          data: entity.data ? JSON.parse(entity.data) : {},
+          data: entity.data,
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -491,7 +548,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (entity.reciever && TELEGRAM_SERVICE_BOT_TOKEN) {
         const renderResult = await templateApi.render({
           id: props.template.id,
-          data: entity.data ? JSON.parse(entity.data) : {},
+          data: entity.data,
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,

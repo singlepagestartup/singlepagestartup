@@ -207,7 +207,7 @@ export class Service {
         }
       }
     } catch (error) {
-      logger.error("isAuthorized ~ error:", error);
+      // logger.error("isAuthorized ~ error:", error);
     }
 
     if (!authorized) {

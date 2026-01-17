@@ -76,6 +76,8 @@ export class Handler {
         );
       }
 
+      console.log("🚀 ~ execute ~ parsedBody:", parsedBody);
+
       const files = formData
         .getAll("files")
         .filter((item) => item instanceof File) as File[];

@@ -106,6 +106,11 @@ import {
   type IResult as IAuthenticationIsAuthorizedResult,
 } from "./authentication/is-authorized";
 import {
+  action as authenticationBillRoute,
+  type IProps as IAuthenticationBillRouteProps,
+  type IResult as IAuthenticationBillRouteResult,
+} from "./authentication/bill-route";
+import {
   action as authenticationEmailAndPasswordForgotPassword,
   type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,
   type IResult as IAuthenticationEmailAndPasswordForgotPasswordResult,
@@ -227,6 +232,7 @@ export type IProps = {
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
+  IAuthenticationBillRouteProps: IAuthenticationBillRouteProps;
 
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
@@ -272,6 +278,7 @@ export type IResult = {
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
+  IAuthenticationBillRouteResult: IAuthenticationBillRouteResult;
 
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
@@ -324,6 +331,7 @@ export const api = {
   authenticationLogout,
   authenticationRefresh,
   authenticationIsAuthorized,
+  authenticationBillRoute,
 
   crmModuleFromRequestCreate,
 

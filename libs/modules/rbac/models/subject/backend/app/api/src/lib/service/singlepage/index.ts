@@ -40,6 +40,14 @@ import {
   Service as ChatSubjectsWithSocialModuleProfiles,
   IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps,
 } from "./social-module/chat-subjects-with-social-module-profiles";
+import {
+  Service as BillRoute,
+  IExecuteProps as IBillRouteProps,
+} from "./bill-route";
+import {
+  Service as EcommerceOrderProceed,
+  IExecuteProps as IEcommerceOrderProceedProps,
+} from "./ecommerce/order/proceed";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -97,5 +105,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new ChatSubjectsWithSocialModuleProfiles(this.repository).execute(
       props,
     );
+  }
+
+  async billRoute(props: IBillRouteProps) {
+    return new BillRoute(this.repository).execute(props);
+  }
+
+  async ecommerceOrderProceed(props: IEcommerceOrderProceedProps) {
+    return new EcommerceOrderProceed(this.repository).execute(props);
   }
 }

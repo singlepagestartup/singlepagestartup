@@ -5,7 +5,9 @@ import {
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
+import { IModel as INotificationModuleTemplate } from "@sps/notification/models/template/sdk/model";
+import { IModel as INotificationModuleNotification } from "@sps/notification/models/notification/sdk/model";
+import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
 export interface IProps {
   id: string;
@@ -17,13 +19,22 @@ export interface IProps {
   };
   options?: Partial<NextRequestOptions>;
   data: {
-    [key: string]: any;
+    notification: {
+      topic: {
+        slug: string;
+      };
+      template: INotificationModuleTemplate;
+      notification: Partial<INotificationModuleNotification>;
+    };
+    fileStorage?: {
+      files?: IFileStorageModuleFile[];
+    };
   };
 }
 
 export type IResult = {
   notificationService: {
-    notifications: INotificationServiceNotification[];
+    notifications: INotificationModuleNotification[];
   };
 } | null;
 

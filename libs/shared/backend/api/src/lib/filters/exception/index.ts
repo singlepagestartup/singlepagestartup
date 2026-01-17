@@ -14,9 +14,6 @@ import {
 } from "@sps/shared-utils";
 import { decode } from "hono/jwt";
 
-const isDebug =
-  process.env.NODE_ENV === "development" || process.env.DEBUG === "true";
-
 @injectable()
 export class Filter implements IFilter {
   async catch(
@@ -26,7 +23,7 @@ export class Filter implements IFilter {
     const requestId = c.req.header("x-request-id") || "unknown";
 
     let errorMessages: string[] = [];
-    let stack = isDebug ? error.stack || "" : undefined;
+    let stack = error.stack || "";
     let status = error instanceof HTTPException ? error.status : 500;
     let path = c.req.url;
     let method = c.req.method;
@@ -40,7 +37,7 @@ export class Filter implements IFilter {
         causes = Array.isArray(parsedError.cause)
           ? parsedError.cause.map((e) => ({
               message: e.message,
-              stack: isDebug ? e.stack.replace(/\\n/g, "\n") : undefined,
+              stack: e.stack.replace(/\\n/g, "\n"),
             }))
           : [{ message: parsedError.cause, stack }];
         errorMessages.push(...causes.map((e) => e.message));
@@ -111,8 +108,8 @@ export class Filter implements IFilter {
         method,
         status,
         error: errorMessages.join(" | "),
-        stack: isDebug ? stack : undefined,
-        cause: isDebug ? causes : undefined,
+        stack,
+        cause: causes,
       },
       status,
     );

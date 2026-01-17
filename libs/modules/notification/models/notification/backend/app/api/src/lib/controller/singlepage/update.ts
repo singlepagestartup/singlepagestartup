@@ -30,7 +30,11 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
+      console.log("🚀 ~ execute ~ data:", data);
+
       const entity = await this.service.update({ id: uuid, data });
+
+      console.log("🚀 ~ execute ~ entity:", entity);
 
       if (!entity) {
         throw new Error("Not found error. Entity not found with id: " + uuid);
