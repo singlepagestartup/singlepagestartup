@@ -200,6 +200,15 @@ export class Handler {
                 },
               ],
             },
+            orderBy: {
+              and: [
+                {
+                  column: "createdAt",
+                  method: "desc",
+                },
+              ],
+            },
+            limit: 5,
           },
           options: {
             headers: {
@@ -533,10 +542,6 @@ export class Handler {
               "Ensure the response fits within 4000 characters for Telegram.",
           },
           ...context,
-          {
-            role: "user",
-            content: socialModuleMessage.description || "",
-          },
         ],
       });
 
