@@ -66,6 +66,10 @@ function splitFileName(value: string) {
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
+  private mediaGroupBuffer = new Map<
+    string,
+    { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
+  >();
   conversations: {
     path: string;
     handler: (
@@ -253,55 +257,38 @@ export class TelegarmBot {
     });
 
     this.instance.on("message", async (ctx) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-      }
-
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
-      }
-
-      if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
-        throw new Error(
-          "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
-        );
-      }
-
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
-      const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
-        await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
-          ctx,
-        });
+      const mediaGroupId = ctx.message?.media_group_id;
 
-      await this.synchronizeRbacModuleRole({
+      if (mediaGroupId) {
+        const existing = this.mediaGroupBuffer.get(mediaGroupId);
+        const messages = existing?.messages ?? [];
+        messages.push(ctx);
+
+        if (existing?.timer) {
+          clearTimeout(existing.timer);
+        }
+
+        const timer = setTimeout(() => {
+          this.flushMediaGroup({
+            mediaGroupId,
+          }).catch((error) => {
+            console.error(
+              "🚀 ~ flushMediaGroup ~ error:",
+              error?.message || error,
+            );
+          });
+        }, 600);
+
+        this.mediaGroupBuffer.set(mediaGroupId, { messages, timer });
+        return;
+      }
+
+      await this.handleIncomingMessage({
         ctx,
-        rbacModuleSubject,
+        data: await this.buildTelegramMessageData({ ctx }),
       });
-
-      const jwtToken = await jwt.sign(
-        {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: rbacModuleSubject,
-        },
-        RBAC_JWT_SECRET,
-      );
-
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: await this.buildTelegramMessageData({ ctx }),
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
     });
   }
 
@@ -1225,9 +1212,124 @@ export class TelegarmBot {
       return { description, sourceSystemId };
     }
 
-    const files = await blobifyFiles({
+    const files = await this.buildTelegramFiles({
+      ctx: props.ctx,
+      attachments,
+    });
+
+    return {
+      description,
+      sourceSystemId,
+      files,
+    };
+  }
+
+  private async buildTelegramMessageDataFromMessages(props: {
+    ctx: GrammyContext;
+    messages: GrammyContext[];
+  }) {
+    const messageList = props.messages
+      .map((item) => item.message)
+      .filter(Boolean);
+
+    const description =
+      messageList.find((message) => message?.caption || message?.text)
+        ?.caption ||
+      messageList.find((message) => message?.text)?.text ||
+      "";
+
+    const sourceSystemId =
+      messageList.find((message) => message?.media_group_id)?.media_group_id ||
+      messageList[0]?.message_id?.toString() ||
+      "";
+
+    const attachments = messageList.flatMap((message) =>
+      this.extractTelegramAttachments(message),
+    );
+
+    if (!attachments.length) {
+      return { description, sourceSystemId };
+    }
+
+    const files = await this.buildTelegramFiles({
+      ctx: props.ctx,
+      attachments,
+    });
+
+    return {
+      description,
+      sourceSystemId,
+      files,
+    };
+  }
+
+  private extractTelegramAttachments(
+    message: any,
+  ): TelegramAttachmentCandidate[] {
+    const attachments: TelegramAttachmentCandidate[] = [];
+
+    if (message?.photo?.length) {
+      const photo = message.photo[message.photo.length - 1];
+      attachments.push({
+        fileId: photo.file_id,
+        title: `photo-${photo.file_unique_id}`,
+        mimeType: "image/jpeg",
+      });
+    }
+
+    if (message?.document) {
+      attachments.push({
+        fileId: message.document.file_id,
+        fileName: message.document.file_name,
+        title: message.document.file_name
+          ? splitFileName(message.document.file_name).title
+          : `document-${message.document.file_unique_id}`,
+        mimeType: message.document.mime_type,
+      });
+    }
+
+    if (message?.video) {
+      attachments.push({
+        fileId: message.video.file_id,
+        fileName: message.video.file_name,
+        title: message.video.file_name
+          ? splitFileName(message.video.file_name).title
+          : `video-${message.video.file_unique_id}`,
+        mimeType: message.video.mime_type,
+      });
+    }
+
+    if (message?.audio) {
+      attachments.push({
+        fileId: message.audio.file_id,
+        fileName: message.audio.file_name,
+        title: message.audio.file_name
+          ? splitFileName(message.audio.file_name).title
+          : `audio-${message.audio.file_unique_id}`,
+        mimeType: message.audio.mime_type,
+      });
+    }
+
+    return attachments;
+  }
+
+  private async buildTelegramFiles(props: {
+    ctx: GrammyContext;
+    attachments: TelegramAttachmentCandidate[];
+  }) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
+      );
+    }
+
+    const uniqueAttachments = new Map(
+      props.attachments.map((attachment) => [attachment.fileId, attachment]),
+    );
+
+    return blobifyFiles({
       files: await Promise.all(
-        attachments.map(async (attachment) => {
+        [...uniqueAttachments.values()].map(async (attachment) => {
           const fileInfo = await props.ctx.api.getFile(attachment.fileId);
 
           if (!fileInfo.file_path) {
@@ -1253,11 +1355,86 @@ export class TelegarmBot {
         }),
       ),
     });
+  }
 
-    return {
-      description,
-      sourceSystemId,
-      files,
+  private async handleIncomingMessage(props: {
+    ctx: GrammyContext;
+    data: {
+      description: string;
+      sourceSystemId: string;
+      files?: File[];
     };
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (!RBAC_JWT_SECRET) {
+      throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+    }
+
+    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+      throw new Error(
+        "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+      );
+    }
+
+    const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
+      await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+        ctx: props.ctx,
+      });
+
+    await this.synchronizeRbacModuleRole({
+      ctx: props.ctx,
+      rbacModuleSubject,
+    });
+
+    const jwtToken = await jwt.sign(
+      {
+        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+        iat: Math.floor(Date.now() / 1000),
+        subject: rbacModuleSubject,
+      },
+      RBAC_JWT_SECRET,
+    );
+
+    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      {
+        id: rbacModuleSubject.id,
+        socialModuleChatId: socialModuleChat.id,
+        socialModuleProfileId: socialModuleProfile.id,
+        data: props.data,
+        options: {
+          headers: {
+            Authorization: "Bearer " + jwtToken,
+          },
+        },
+      },
+    );
+  }
+
+  private async flushMediaGroup(props: { mediaGroupId: string }) {
+    const entry = this.mediaGroupBuffer.get(props.mediaGroupId);
+
+    if (!entry) {
+      return;
+    }
+
+    this.mediaGroupBuffer.delete(props.mediaGroupId);
+
+    const ctx = entry.messages[0];
+    if (!ctx) {
+      return;
+    }
+
+    const data = await this.buildTelegramMessageDataFromMessages({
+      ctx,
+      messages: entry.messages,
+    });
+
+    await this.handleIncomingMessage({
+      ctx,
+      data,
+    });
   }
 }
