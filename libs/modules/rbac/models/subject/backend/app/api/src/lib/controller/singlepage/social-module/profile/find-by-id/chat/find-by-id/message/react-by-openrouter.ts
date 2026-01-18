@@ -367,10 +367,19 @@ export class Handler {
                       text: socialModuleMessage.description || "",
                     },
                     ...fileStorageFiles?.map((fileStorageFile) => {
+                      if (fileStorageFile.mimeType?.includes("image")) {
+                        return {
+                          type: "image_url" as const,
+                          image_url: {
+                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
+                          },
+                        };
+                      }
+
                       return {
                         type: "file_url" as const,
                         file_url: {
-                          url: `${NEXT_PUBLIC_API_SERVICE_URL}${fileStorageFile.file}`,
+                          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
                         },
                       };
                     }),
