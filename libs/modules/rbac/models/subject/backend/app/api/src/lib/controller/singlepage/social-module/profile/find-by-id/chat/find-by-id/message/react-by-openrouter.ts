@@ -1,4 +1,5 @@
 import {
+  NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
@@ -11,9 +12,16 @@ import { Service } from "../../../../../../../../service";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
-import { OpenAI, OpenRouter, ZAI } from "@sps/shared-third-parties";
+import {
+  OpenAI,
+  OpenRouter,
+  type IOpenRouterRequestMessage,
+} from "@sps/shared-third-parties";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
+import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
+import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
+import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import * as jwt from "hono/jwt";
@@ -218,10 +226,7 @@ export class Handler {
           },
         });
 
-      const context: {
-        role: "user" | "assistant";
-        content: string;
-      }[] = [];
+      const context: IOpenRouterRequestMessage[] = [];
 
       const replyBySocialModuleProfile = data.shouldReplySocialModuleProfile;
 
@@ -306,10 +311,77 @@ export class Handler {
                     replyBySocialModuleProfile.id,
               );
 
-              context.push({
-                role: isAssistantMessage ? "assistant" : "user",
-                content: socialModuleMessage.description || "",
-              });
+              let fileStorageFiles: IFileStorageModuleFile[] | undefined = [];
+
+              const socialModuleMessagesToFileStorageModuleFiles =
+                await socialModuleMessagesToFileStorageModuleFilesApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "messageId",
+                          method: "eq",
+                          value: socialModuleMessage.id,
+                        },
+                      ],
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+
+              if (socialModuleMessagesToFileStorageModuleFiles?.length) {
+                fileStorageFiles = await fileStorageModuleFileApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "id",
+                          method: "inArray",
+                          value:
+                            socialModuleMessagesToFileStorageModuleFiles.map(
+                              (relation) => relation.fileStorageModuleFileId,
+                            ),
+                        },
+                      ],
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+              }
+              if (fileStorageFiles?.length) {
+                context.push({
+                  role: isAssistantMessage ? "assistant" : "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: socialModuleMessage.description || "",
+                    },
+                    ...fileStorageFiles?.map((fileStorageFile) => {
+                      return {
+                        type: "file_url" as const,
+                        file_url: {
+                          url: `${NEXT_PUBLIC_API_SERVICE_URL}${fileStorageFile.file}`,
+                        },
+                      };
+                    }),
+                  ],
+                });
+              } else {
+                context.push({
+                  role: isAssistantMessage ? "assistant" : "user",
+                  content: socialModuleMessage.description || "",
+                });
+              }
             }
           }
         }

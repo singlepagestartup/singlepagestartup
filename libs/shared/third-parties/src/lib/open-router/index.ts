@@ -1,6 +1,28 @@
 import { OPEN_ROUTER_API_KEY } from "@sps/shared-utils";
 import type { IOpenRouterModel } from "./interface";
 
+export type IOpenRouterMessageContent =
+  | { type: "text"; text: string }
+  | {
+      type: "image_url";
+      image_url: { url: string; detail?: "auto" | "low" | "high" };
+    }
+  | {
+      type: "file";
+      file: {
+        url?: string;
+        file_data?: string;
+        filename?: string;
+        mime_type?: string;
+      };
+    }
+  | { type: "file_url"; file_url: { url: string } };
+
+export type IOpenRouterRequestMessage = {
+  role: "user" | "assistant" | "system";
+  content: string | IOpenRouterMessageContent[];
+};
+
 export class Service {
   baseURL: string;
   apiKey: string;
@@ -15,7 +37,7 @@ export class Service {
   }
 
   async generate(props: {
-    context: { role: "user" | "assistant" | "system"; content: string }[];
+    context: IOpenRouterRequestMessage[];
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
@@ -31,6 +53,10 @@ export class Service {
   > {
     if (
       !props.context.some((m) => {
+        if (typeof m.content !== "string") {
+          return false;
+        }
+
         return (
           m.content.includes(
             "without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.",
