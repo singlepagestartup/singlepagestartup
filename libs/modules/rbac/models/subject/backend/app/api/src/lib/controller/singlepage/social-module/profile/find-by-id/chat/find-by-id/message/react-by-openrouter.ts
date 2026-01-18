@@ -563,6 +563,28 @@ export class Handler {
       });
 
       const detectedLanguage = detectedLanguageResult.text;
+      const requiredInputModalities = new Set<"text" | "image" | "file">();
+
+      for (const message of context) {
+        if (typeof message.content === "string") {
+          requiredInputModalities.add("text");
+          continue;
+        }
+
+        for (const part of message.content) {
+          if (part.type === "text") {
+            requiredInputModalities.add("text");
+          } else if (part.type === "image_url") {
+            requiredInputModalities.add("image");
+          } else if (part.type === "file" || part.type === "file_url") {
+            requiredInputModalities.add("file");
+          }
+        }
+      }
+
+      const requiredInputModalitiesList = ["text", "image", "file"].filter(
+        (modality) => requiredInputModalities.has(modality as any),
+      );
 
       const selectModelResult = await openRouter.generate({
         model: "x-ai/grok-4.1-fast",
@@ -574,7 +596,7 @@ export class Handler {
           },
           {
             role: "user",
-            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model, that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model that can finish that task with the best result in ${detectedLanguage} language. Required input modalities for this request: ${JSON.stringify(requiredInputModalitiesList)}. You MUST select a model whose 'input_modalities' includes ALL required input modalities. If required includes 'file', exclude any model without 'file'. If required includes 'image', exclude any model without 'image'. If required is only ['text'], choose a text-only or multimodal model, but still respect price sorting. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
           },
         ],
       });
