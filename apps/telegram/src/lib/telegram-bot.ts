@@ -36,9 +36,32 @@ import { IModel as ISocialModuleAttributeKeysToAttributes } from "@sps/social/re
 import { IModel as ISocialModuleProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { blobifyFiles } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
+
+type TelegramAttachmentCandidate = {
+  fileId: string;
+  fileName?: string;
+  title?: string;
+  mimeType?: string;
+};
+
+function splitFileName(value: string) {
+  const cleanValue = value.split("?")[0];
+  const baseName = cleanValue.split("/").pop() || cleanValue;
+  const dotIndex = baseName.lastIndexOf(".");
+
+  if (dotIndex > 0) {
+    return {
+      title: baseName.slice(0, dotIndex),
+      extension: baseName.slice(dotIndex + 1),
+    };
+  }
+
+  return { title: baseName, extension: "" };
+}
 
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
@@ -271,10 +294,7 @@ export class TelegarmBot {
           id: rbacModuleSubject.id,
           socialModuleChatId: socialModuleChat.id,
           socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            description: ctx.message.text || "",
-            sourceSystemId: ctx.message?.message_id?.toString() || "",
-          },
+          data: await this.buildTelegramMessageData({ ctx }),
           options: {
             headers: {
               Authorization: "Bearer " + jwtToken,
@@ -1140,5 +1160,104 @@ export class TelegarmBot {
       console.log("🚀 ~ synchronizeRbacModuleRole ~ toAddRoleIds:", toAddRoles);
     }
     //
+  }
+
+  private async buildTelegramMessageData(props: { ctx: GrammyContext }) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN) {
+      throw new Error(
+        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
+      );
+    }
+
+    const message = props.ctx.message;
+    const description = message?.text || message?.caption || "";
+    const sourceSystemId = message?.message_id?.toString() || "";
+
+    if (!message) {
+      return { description, sourceSystemId };
+    }
+
+    const attachments: TelegramAttachmentCandidate[] = [];
+
+    if (message.photo?.length) {
+      const photo = message.photo[message.photo.length - 1];
+      attachments.push({
+        fileId: photo.file_id,
+        title: `photo-${photo.file_unique_id}`,
+        mimeType: "image/jpeg",
+      });
+    }
+
+    if (message.document) {
+      attachments.push({
+        fileId: message.document.file_id,
+        fileName: message.document.file_name,
+        title: message.document.file_name
+          ? splitFileName(message.document.file_name).title
+          : `document-${message.document.file_unique_id}`,
+        mimeType: message.document.mime_type,
+      });
+    }
+
+    if (message.video) {
+      attachments.push({
+        fileId: message.video.file_id,
+        fileName: message.video.file_name,
+        title: message.video.file_name
+          ? splitFileName(message.video.file_name).title
+          : `video-${message.video.file_unique_id}`,
+        mimeType: message.video.mime_type,
+      });
+    }
+
+    if (message.audio) {
+      attachments.push({
+        fileId: message.audio.file_id,
+        fileName: message.audio.file_name,
+        title: message.audio.file_name
+          ? splitFileName(message.audio.file_name).title
+          : `audio-${message.audio.file_unique_id}`,
+        mimeType: message.audio.mime_type,
+      });
+    }
+
+    if (!attachments.length) {
+      return { description, sourceSystemId };
+    }
+
+    const files = await blobifyFiles({
+      files: await Promise.all(
+        attachments.map(async (attachment) => {
+          const fileInfo = await props.ctx.api.getFile(attachment.fileId);
+
+          if (!fileInfo.file_path) {
+            throw new Error(
+              `Telegram file_path missing for file_id ${attachment.fileId}`,
+            );
+          }
+
+          const inferred = splitFileName(
+            attachment.fileName || fileInfo.file_path,
+          );
+          const title = attachment.title || inferred.title || attachment.fileId;
+          const extension = inferred.extension || "bin";
+          const type = attachment.mimeType || "application/octet-stream";
+          const url = `https://api.telegram.org/file/bot${TELEGRAM_SERVICE_BOT_TOKEN}/${fileInfo.file_path}`;
+
+          return {
+            title,
+            extension,
+            type,
+            url,
+          };
+        }),
+      ),
+    });
+
+    return {
+      description,
+      sourceSystemId,
+      files,
+    };
   }
 }
