@@ -28,21 +28,21 @@ export class Configuration extends ParentConfiguration {
           type: "relation",
           filters: [
             {
-              column: "premissionId",
+              column: "permissionId",
               method: "eq",
               value: (data) => {
                 const subjectSeed = data.seeds.find(
                   (seed) =>
-                    seed.name === "premission" &&
+                    seed.name === "permission" &&
                     seed.type === "model" &&
                     seed.module === "rbac",
                 );
 
                 const entity = subjectSeed?.seeds.find(
-                  (seed) => seed.dump.id === data.entity.dump.premissionId,
+                  (seed) => seed.dump.id === data.entity.dump.permissionId,
                 );
 
-                return entity?.new?.id || data.entity.dump.premissionId;
+                return entity?.new?.id || data.entity.dump.permissionId;
               },
             },
             {
@@ -70,17 +70,17 @@ export class Configuration extends ParentConfiguration {
           ],
           transformers: [
             {
-              field: "subjectId",
+              field: "permissionId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
                     (seed) =>
-                      seed.name === "subject" &&
+                      seed.name === "permission" &&
                       seed.type === "model" &&
                       seed.module === "rbac",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.subjectId,
+                    (seed) => seed.dump.id === data.entity.dump.permissionId,
                   );
 
                 return relationEntites?.[0].new.id;
