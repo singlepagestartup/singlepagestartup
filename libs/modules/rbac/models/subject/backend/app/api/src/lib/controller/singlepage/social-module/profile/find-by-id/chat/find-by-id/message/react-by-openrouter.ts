@@ -585,10 +585,15 @@ export class Handler {
       const requiredInputModalitiesList = ["text", "image", "file"].filter(
         (modality) => requiredInputModalities.has(modality as any),
       );
+      const fileCapableModelAllowlist = new Set<string>(["openai/gpt-5-mini"]);
+      const requiresFileInput = requiredInputModalitiesList.includes("file");
 
-      const openRouterModalFilteredModels =
-        openRouterNotFreeSanitizedModels.filter((model) => {
-          if (!requiredInputModalitiesList.length) {
+      const filterModelsByModality = (
+        models: typeof openRouterSanitizedModels,
+        requiredList: string[],
+      ) => {
+        return models.filter((model) => {
+          if (!requiredList.length) {
             return true;
           }
 
@@ -598,15 +603,60 @@ export class Handler {
             .map((part) => part.trim())
             .filter(Boolean);
 
-          return requiredInputModalitiesList.every((required) =>
+          return requiredList.every((required) =>
             modalityParts.includes(required),
           );
         });
+      };
 
-      const openRouterSelectableModels =
-        openRouterModalFilteredModels.length > 0
-          ? openRouterModalFilteredModels
+      const modalityFilteredPaidModels = filterModelsByModality(
+        openRouterNotFreeSanitizedModels,
+        requiredInputModalitiesList,
+      );
+      const fileFilteredPaidModels = requiresFileInput
+        ? modalityFilteredPaidModels.filter((model) =>
+            fileCapableModelAllowlist.has(model.id),
+          )
+        : modalityFilteredPaidModels;
+
+      let openRouterSelectableModels = fileFilteredPaidModels;
+
+      if (!openRouterSelectableModels.length && requiresFileInput) {
+        const modalityFilteredAllModels = filterModelsByModality(
+          openRouterSanitizedModels,
+          requiredInputModalitiesList,
+        );
+        const fileFilteredAllModels = modalityFilteredAllModels.filter(
+          (model) => fileCapableModelAllowlist.has(model.id),
+        );
+
+        if (fileFilteredAllModels.length) {
+          openRouterSelectableModels = fileFilteredAllModels;
+        }
+      }
+
+      if (!openRouterSelectableModels.length && requiresFileInput) {
+        const relaxedRequiredList = requiredInputModalitiesList.filter(
+          (modality) => modality !== "file",
+        );
+        const relaxedModalityFilteredModels = filterModelsByModality(
+          openRouterNotFreeSanitizedModels,
+          relaxedRequiredList,
+        );
+
+        openRouterSelectableModels = relaxedModalityFilteredModels.length
+          ? relaxedModalityFilteredModels
           : openRouterNotFreeSanitizedModels;
+      }
+
+      console.log(
+        "🚀 ~ execute ~ openRouterSelectableModels:",
+        requiredInputModalitiesList,
+        modalityFilteredPaidModels.length,
+        openRouterSelectableModels.map((sm) => {
+          return `${sm.id} - ${sm.modality}`;
+        }),
+      );
 
       const selectModelResult = await openRouter.generate({
         model: "x-ai/grok-4.1-fast",
