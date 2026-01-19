@@ -586,6 +586,28 @@ export class Handler {
         (modality) => requiredInputModalities.has(modality as any),
       );
 
+      const openRouterModalFilteredModels =
+        openRouterNotFreeSanitizedModels.filter((model) => {
+          if (!requiredInputModalitiesList.length) {
+            return true;
+          }
+
+          const modalityInput = (model.modality || "").split("->")[0] || "";
+          const modalityParts = modalityInput
+            .split("+")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+          return requiredInputModalitiesList.every((required) =>
+            modalityParts.includes(required),
+          );
+        });
+
+      const openRouterSelectableModels =
+        openRouterModalFilteredModels.length > 0
+          ? openRouterModalFilteredModels
+          : openRouterNotFreeSanitizedModels;
+
       const selectModelResult = await openRouter.generate({
         model: "x-ai/grok-4.1-fast",
         reasoning: false,
@@ -596,7 +618,7 @@ export class Handler {
           },
           {
             role: "user",
-            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model that can finish that task with the best result in ${detectedLanguage} language. Required input modalities for this request: ${JSON.stringify(requiredInputModalitiesList)}. You MUST select a model whose 'architecture.modality' left side (before "->") includes ALL required input modalities. The 'modality' field has shape like "text+image->text"; compare ONLY the left side. If required includes 'file', exclude any model whose left side does not include 'file'. If required includes 'image', exclude any model whose left side does not include 'image'. If required is only ['text'], choose a text-only or multimodal model, but still respect price sorting. Ignore 'input_modalities' if it conflicts with 'architecture.modality'. Available models: ${JSON.stringify(openRouterNotFreeSanitizedModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterSelectableModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
           },
         ],
       });
