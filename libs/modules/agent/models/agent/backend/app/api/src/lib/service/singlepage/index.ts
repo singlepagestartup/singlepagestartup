@@ -776,16 +776,45 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         this.statusMessages.ecommerceModuleOrderPayButtonDescription.ru,
     };
 
-    const productPrice =
-      extendedEcommerceModuleProduct.productsToAttributes.filter(
-        (productToAttribute) => {
-          return productToAttribute.attribute.attributeKeysToAttributes.filter(
-            (attributeKeyToAttribute) => {
-              return attributeKeyToAttribute.attributeKey?.type === "price";
-            },
-          ).length;
+    const telegramStarBillingModuleCurrencies =
+      await billingModuleCurrencyApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "telegram-star",
+              },
+            ],
+          },
         },
-      )?.[0];
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    const productPrice = extendedEcommerceModuleProduct.productsToAttributes
+      .filter((productToAttribute) => {
+        return productToAttribute.attribute.attributeKeysToAttributes.filter(
+          (attributeKeyToAttribute) => {
+            return attributeKeyToAttribute.attributeKey?.type === "price";
+          },
+        ).length;
+      })
+      .filter((productToAttribute) => {
+        return productToAttribute.attribute.attributesToBillingModuleCurrencies.find(
+          (attributeToBillingModuleCurrency) => {
+            return (
+              attributeToBillingModuleCurrency.billingModuleCurrencyId ===
+              telegramStarBillingModuleCurrencies?.[0].id
+            );
+          },
+        );
+      })?.[0];
 
     messageWithCTA.interaction = {
       inline_keyboard: [
@@ -841,20 +870,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     const messageFromSubject =
       await this.getMessageFromRbacModuleSubject(props);
 
-    const billingModuleCurrencyId =
-      extendedEcommerceModuleProduct.productsToAttributes
-        .filter((productToAttribute) => {
-          return productToAttribute.attribute
-            .attributesToBillingModuleCurrencies.length;
-        })
-        .map((productToAttribute) => {
-          return productToAttribute.attribute.attributesToBillingModuleCurrencies.map(
-            (attributeToBillingModuleCurrency) => {
-              return attributeToBillingModuleCurrency.billingModuleCurrency;
-            },
-          );
-        })
-        .flat()?.[0]?.id;
+    const telegramStarBillingModuleCurrencies =
+      await billingModuleCurrencyApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "telegram-star",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!telegramStarBillingModuleCurrencies?.length) {
+      throw new Error(
+        "Not found error. 'telegramStarBillingModuleCurrencies' not found",
+      );
+    }
 
     const rbacModuleSubjectEcommerceModuleProductCheckoutResult =
       await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
@@ -862,7 +903,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         productId: extendedEcommerceModuleProduct.id,
         data: {
           provider: "telegram-star",
-          billingModuleCurrencyId,
+          billingModule: {
+            currency: telegramStarBillingModuleCurrencies[0],
+          },
           account: props.socialModuleChat.sourceSystemId,
         },
       });
@@ -1063,15 +1106,45 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         extendedProduct.title?.en ??
         extendedProduct.id;
 
-      const productPrice = extendedProduct.productsToAttributes.filter(
-        (productToAttribute) => {
+      const telegramStarBillingModuleCurrencies =
+        await billingModuleCurrencyApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "slug",
+                  method: "eq",
+                  value: "telegram-star",
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+      const productPrice = extendedProduct.productsToAttributes
+        .filter((productToAttribute) => {
           return productToAttribute.attribute.attributeKeysToAttributes.filter(
             (attributeKeyToAttribute) => {
               return attributeKeyToAttribute.attributeKey?.type === "price";
             },
           ).length;
-        },
-      )?.[0];
+        })
+        .filter((productToAttribute) => {
+          return productToAttribute.attribute.attributesToBillingModuleCurrencies.find(
+            (attributeToBillingModuleCurrency) => {
+              return (
+                attributeToBillingModuleCurrency.billingModuleCurrencyId ===
+                telegramStarBillingModuleCurrencies?.[0].id
+              );
+            },
+          );
+        })?.[0];
 
       ecommerceModuleProductButtons.push({
         text: `${productTitle} - ${productPrice ? productPrice.attribute.number : ""}${productPrice ? `\ ${productPrice.attribute.attributesToBillingModuleCurrencies?.[0].billingModuleCurrency?.symbol}` : ""}`,

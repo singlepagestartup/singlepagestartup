@@ -7,6 +7,7 @@ import {
 } from "@sps/shared-utils";
 import QueryString from "qs";
 import { IModel as IInvoice } from "@sps/billing/models/invoice/sdk/model";
+import { IModel as ICurrency } from "@sps/billing/models/currency/sdk/model";
 
 export interface IProps {
   id: string;
@@ -18,7 +19,14 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data?: any;
+  data: {
+    provider: string;
+    productId?: string;
+    billingModule?: {
+      currency: ICurrency;
+    };
+    account: string | null;
+  };
 }
 
 export type IResult = {

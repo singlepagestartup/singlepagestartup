@@ -505,7 +505,7 @@ export class Handler {
         })
         .filter((model) => {
           return (
-            model.pricePerMillionTokens > 0.05 &&
+            model.pricePerMillionTokens > 0.01 &&
             model.pricePerMillionTokens < 3
           );
         });
