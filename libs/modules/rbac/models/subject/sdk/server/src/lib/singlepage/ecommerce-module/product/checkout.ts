@@ -23,9 +23,11 @@ export interface IProps {
     provider: string;
     productId?: string;
     billingModule?: {
-      currency: ICurrency;
+      currency: {
+        id?: ICurrency["id"];
+      };
     };
-    account: string | null;
+    account?: string | null;
   };
 }
 
