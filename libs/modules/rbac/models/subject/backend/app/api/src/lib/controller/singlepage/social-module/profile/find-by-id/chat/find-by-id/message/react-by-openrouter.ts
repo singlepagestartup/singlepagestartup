@@ -565,19 +565,19 @@ export class Handler {
       const detectedLanguage = detectedLanguageResult.text;
       const requiredInputModalities = new Set<"text" | "image" | "file">();
 
-      for (const message of context) {
-        if (typeof message.content === "string") {
+      const latestMessage = context[context.length - 1];
+      if (latestMessage) {
+        if (typeof latestMessage.content === "string") {
           requiredInputModalities.add("text");
-          continue;
-        }
-
-        for (const part of message.content) {
-          if (part.type === "text") {
-            requiredInputModalities.add("text");
-          } else if (part.type === "image_url") {
-            requiredInputModalities.add("image");
-          } else if (part.type === "file" || part.type === "file_url") {
-            requiredInputModalities.add("file");
+        } else {
+          for (const part of latestMessage.content) {
+            if (part.type === "text") {
+              requiredInputModalities.add("text");
+            } else if (part.type === "image_url") {
+              requiredInputModalities.add("image");
+            } else if (part.type === "file" || part.type === "file_url") {
+              requiredInputModalities.add("file");
+            }
           }
         }
       }
