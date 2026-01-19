@@ -26,6 +26,8 @@ import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import * as jwt from "hono/jwt";
 
+const FILE_CAPABLE_MODEL_ALLOWLIST = new Set<string>(["openai/gpt-5-mini"]);
+
 export class Handler {
   service: Service;
   private readonly telegramRequiredChannelName =
@@ -493,7 +495,7 @@ export class Handler {
         };
       });
 
-      const openRouterNotFreeSanitizedModels = openRouterSanitizedModels
+      const openRouterAllowedModels = openRouterSanitizedModels
         .filter((model) => {
           return (
             !model.is_free &&
@@ -502,9 +504,7 @@ export class Handler {
           );
         })
         .filter((model) => {
-          return (
-            model.pricePerMillionTokens > 0.1 && model.pricePerMillionTokens < 3
-          );
+          return model.pricePerMillionTokens < 3;
         });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
@@ -585,78 +585,17 @@ export class Handler {
       const requiredInputModalitiesList = ["text", "image", "file"].filter(
         (modality) => requiredInputModalities.has(modality as any),
       );
-      const fileCapableModelAllowlist = new Set<string>(["openai/gpt-5-mini"]);
       const requiresFileInput = requiredInputModalitiesList.includes("file");
 
-      const filterModelsByModality = (
-        models: typeof openRouterSanitizedModels,
-        requiredList: string[],
-      ) => {
-        return models.filter((model) => {
-          if (!requiredList.length) {
-            return true;
-          }
-
-          const modalityInput = (model.modality || "").split("->")[0] || "";
-          const modalityParts = modalityInput
-            .split("+")
-            .map((part) => part.trim())
-            .filter(Boolean);
-
-          return requiredList.every((required) =>
-            modalityParts.includes(required),
-          );
-        });
-      };
-
-      const modalityFilteredPaidModels = filterModelsByModality(
-        openRouterNotFreeSanitizedModels,
+      const openRouterSelectableModels = this.filterModelsByModalityAndFile({
+        models: openRouterAllowedModels,
         requiredInputModalitiesList,
-      );
-      const fileFilteredPaidModels = requiresFileInput
-        ? modalityFilteredPaidModels.filter((model) =>
-            fileCapableModelAllowlist.has(model.id),
-          )
-        : modalityFilteredPaidModels;
+        requiresFileInput,
+      });
 
-      let openRouterSelectableModels = fileFilteredPaidModels;
-
-      if (!openRouterSelectableModels.length && requiresFileInput) {
-        const modalityFilteredAllModels = filterModelsByModality(
-          openRouterSanitizedModels,
-          requiredInputModalitiesList,
-        );
-        const fileFilteredAllModels = modalityFilteredAllModels.filter(
-          (model) => fileCapableModelAllowlist.has(model.id),
-        );
-
-        if (fileFilteredAllModels.length) {
-          openRouterSelectableModels = fileFilteredAllModels;
-        }
+      if (requiresFileInput && !openRouterSelectableModels.length) {
+        throw new Error("No file-capable models available for this request.");
       }
-
-      if (!openRouterSelectableModels.length && requiresFileInput) {
-        const relaxedRequiredList = requiredInputModalitiesList.filter(
-          (modality) => modality !== "file",
-        );
-        const relaxedModalityFilteredModels = filterModelsByModality(
-          openRouterNotFreeSanitizedModels,
-          relaxedRequiredList,
-        );
-
-        openRouterSelectableModels = relaxedModalityFilteredModels.length
-          ? relaxedModalityFilteredModels
-          : openRouterNotFreeSanitizedModels;
-      }
-
-      console.log(
-        "🚀 ~ execute ~ openRouterSelectableModels:",
-        requiredInputModalitiesList,
-        modalityFilteredPaidModels.length,
-        openRouterSelectableModels.map((sm) => {
-          return `${sm.id} - ${sm.modality}`;
-        }),
-      );
 
       const selectModelResult = await openRouter.generate({
         model: "x-ai/grok-4.1-fast",
@@ -678,11 +617,6 @@ export class Handler {
       }
 
       let selectModelForRequest = selectModelResult.text;
-
-      console.log(
-        "🚀 ~ openRouterReplyMessageCreate ~ selectModelForRequest:",
-        selectModelForRequest,
-      );
 
       let generatedMessageDescription = "";
       const replyMessageData: any = {};
@@ -793,5 +727,35 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  private filterModelsByModalityAndFile<
+    T extends { modality?: string; id: string },
+  >(props: {
+    models: T[];
+    requiredInputModalitiesList: string[];
+    requiresFileInput: boolean;
+  }): T[] {
+    const { models, requiredInputModalitiesList, requiresFileInput } = props;
+
+    return models.filter((model) => {
+      if (requiresFileInput && !FILE_CAPABLE_MODEL_ALLOWLIST.has(model.id)) {
+        return false;
+      }
+
+      if (!requiredInputModalitiesList.length) {
+        return true;
+      }
+
+      const modalityInput = (model.modality || "").split("->")[0] || "";
+      const modalityParts = modalityInput
+        .split("+")
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      return requiredInputModalitiesList
+        .filter((modality) => modality !== "file")
+        .every((required) => modalityParts.includes(required));
+    });
   }
 }

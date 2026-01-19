@@ -59,7 +59,7 @@ export class Service {
 
         return (
           m.content.includes(
-            "without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model, that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.",
+            "Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.",
           ) ||
           m.content.includes(
             "You need to detect what language the user is speaking, NOT coding language (JavaScript, C#) - human language (english,spanish,russian and etc). Answer with the language name only (Spanish).",
