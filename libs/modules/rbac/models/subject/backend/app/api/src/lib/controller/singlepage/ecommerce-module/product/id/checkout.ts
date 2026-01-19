@@ -10,6 +10,7 @@ import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommer
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -178,6 +179,16 @@ export class Handler {
 
       const order = await ecommerceOrderApi.create({
         data: { comment: data.comment },
+        options: {
+          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+        },
+      });
+
+      await subjectsToEcommerceModuleOrdersApi.create({
+        data: {
+          subjectId: id,
+          ecommerceModuleOrderId: order.id,
+        },
         options: {
           headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
         },

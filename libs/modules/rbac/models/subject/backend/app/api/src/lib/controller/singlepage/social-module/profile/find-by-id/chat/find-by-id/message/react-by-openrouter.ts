@@ -504,7 +504,10 @@ export class Handler {
           );
         })
         .filter((model) => {
-          return model.pricePerMillionTokens < 3;
+          return (
+            model.pricePerMillionTokens > 0.05 &&
+            model.pricePerMillionTokens < 3
+          );
         });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({

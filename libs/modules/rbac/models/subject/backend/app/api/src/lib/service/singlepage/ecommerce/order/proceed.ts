@@ -97,6 +97,11 @@ export class Service {
         },
       });
 
+    console.log(
+      "🚀 ~ execute ~ subjectsToEcommerceModuleOrders:",
+      subjectsToEcommerceModuleOrders,
+    );
+
     if (!subjectsToEcommerceModuleOrders?.length) {
       return;
     }
@@ -131,11 +136,15 @@ export class Service {
       },
     });
 
+    console.log("🚀 ~ execute ~ orders:", orders);
+
     if (!orders?.length) {
       return;
     }
 
     for (const order of orders) {
+      console.log("🚀 ~ execute ~ order:", order);
+
       try {
         const extendedOrder = await this.extendedEcommerceModuleOrder(order);
 
