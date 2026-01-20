@@ -29,10 +29,6 @@ import {
   IExecuteProps as IDeanonymizeExecuteProps,
 } from "./deanonymize";
 import {
-  Service as EcommerceOrderNotificationCreate,
-  IExecuteProps as IEcommerceOrderNotificationCreateExecuteProps,
-} from "./ecommerce/order/notification-create";
-import {
   Service as EcommerceOrderCheckout,
   IExecuteProps as IEcommerceOrderCheckoutExecuteProps,
 } from "./ecommerce/order/checkout";
@@ -87,12 +83,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async deanonymize(props: IDeanonymizeExecuteProps) {
     return new Deanonymize(this.repository).execute(props);
-  }
-
-  async ecommerceOrderNotificationCreate(
-    props: IEcommerceOrderNotificationCreateExecuteProps,
-  ) {
-    return new EcommerceOrderNotificationCreate(this.repository).execute(props);
   }
 
   async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {

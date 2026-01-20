@@ -214,11 +214,6 @@ export class Service {
           },
         });
 
-      console.log(
-        "🚀 ~ Service ~ execute ~ props.billingModuleCurrencyId:",
-        props.billingModuleCurrencyId,
-      );
-
       if (!targetPriceAttributes?.length) {
         throw new Error(
           "Not Found error. Product does not have any target price attributes",

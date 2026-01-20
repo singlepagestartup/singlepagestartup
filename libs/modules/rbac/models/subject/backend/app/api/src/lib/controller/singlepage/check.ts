@@ -19,8 +19,6 @@ export class Handler {
 
       await this.service.ecommerceOrderProceed({});
 
-      console.log("🚀 ~ execute ~ check");
-
       return c.json({
         data: {
           ok: true,

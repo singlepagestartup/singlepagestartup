@@ -41,6 +41,7 @@ export class Handler {
 
       const entity = await api.createFromUrl({
         data: {
+          ...data,
           url: `${HOST_SERVICE_URL}/api/image-generator/image.png?${query}`,
         },
         options: {

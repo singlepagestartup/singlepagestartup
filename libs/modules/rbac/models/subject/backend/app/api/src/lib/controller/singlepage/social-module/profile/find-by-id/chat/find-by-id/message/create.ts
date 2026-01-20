@@ -7,6 +7,7 @@ import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/se
 import { api as socialModuleProfilesApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
@@ -16,8 +17,6 @@ import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/m
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-
-const DEGUG = false;
 export class Handler {
   service: Service;
 
@@ -281,6 +280,15 @@ export class Handler {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
+    const socialModuleChat = await socialModuleChatApi.findById({
+      id: props.socialModuleChatId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
     const socialModuleProfilesToChats =
       await socialModuleProfilesToChatsApi.find({
         params: {
@@ -414,7 +422,20 @@ export class Handler {
       subjects?.length &&
       socialModuleGenerateSocialModuleMessageCreatedTemplates?.length
     ) {
+      const isTelegramGroup =
+        socialModuleChat?.variant === "telegram" &&
+        socialModuleChat.sourceSystemId?.startsWith("-");
+
+      let messageCreated = false;
+
       for (const subject of subjects) {
+        if (isTelegramGroup && messageCreated) {
+          /**
+           * Stop after first message if replies to group chat, because everybody will get notification
+           */
+          continue;
+        }
+
         const subjectToSocialModuleProfiles =
           subjectsToSocialModuleProfiles.filter(
             (subjectToSocialModuleProfile) =>
@@ -424,47 +445,6 @@ export class Handler {
         if (!subjectToSocialModuleProfiles.length) {
           continue;
         }
-
-        const subjectsWithProfiles =
-          await this.service.socialModuleChatSubjectsWithSocialModuleProfiles({
-            socialModuleChatId: props.socialModuleChatId,
-          });
-
-        DEGUG &&
-          console.log(
-            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ subjectsWithProfiles:",
-            subjectsWithProfiles,
-            "from",
-            props.id,
-            "to",
-            subject.id,
-          );
-
-        const chatHasManInTheLoop = subjectsWithProfiles.some((entity) => {
-          return entity.socialModuleProfiles.length > 1;
-        });
-
-        const messageIsFromProfileWithAI = subjectsWithProfiles.some(
-          (entity) => {
-            return entity.socialModuleProfiles.some(
-              (socialModuleProfile) =>
-                socialModuleProfile?.variant === "artificial-intelligence" &&
-                props.socialModuleProfileId === socialModuleProfile.id,
-            );
-          },
-        );
-
-        DEGUG &&
-          console.log(
-            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ messageIsFromProfileWithAI:",
-            messageIsFromProfileWithAI,
-          );
-
-        DEGUG &&
-          console.log(
-            "🚀 ~ Handler ~ notifyOtherSubjectsInChat ~ chatHasManInTheLoop:",
-            chatHasManInTheLoop,
-          );
 
         for (const socialModuleGenerateSocialModuleMessageCreatedTemplate of socialModuleGenerateSocialModuleMessageCreatedTemplates) {
           try {
@@ -499,6 +479,11 @@ export class Handler {
                     },
                   },
                 },
+                social: {
+                  chat: {
+                    id: props.socialModuleChatId,
+                  },
+                },
                 fileStorage: {
                   files,
                 },
@@ -528,6 +513,7 @@ export class Handler {
                   },
                 },
               });
+              messageCreated = true;
             }
           } catch (error) {
             console.log("🚀 ~ notifyOtherSubjectsInChat ~ error:", error);

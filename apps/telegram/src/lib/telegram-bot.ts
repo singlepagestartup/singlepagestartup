@@ -4,6 +4,7 @@ import {
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
   TELEGRAM_SERVICE_BOT_TOKEN,
+  TELEGRAM_SERVICE_BOT_USERNAME,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
 } from "@sps/shared-utils";
 import {
@@ -1379,6 +1380,12 @@ export class TelegarmBot {
       );
     }
 
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. 'TELEGRAM_SERVICE_BOT_USERNAME' is not set",
+      );
+    }
+
     const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
       await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
         ctx: props.ctx,
@@ -1398,19 +1405,47 @@ export class TelegarmBot {
       RBAC_JWT_SECRET,
     );
 
-    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: rbacModuleSubject.id,
-        socialModuleChatId: socialModuleChat.id,
-        socialModuleProfileId: socialModuleProfile.id,
-        data: props.data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + jwtToken,
+    const sanitizedDescription = props.data.description.replaceAll(
+      `@${TELEGRAM_SERVICE_BOT_USERNAME} `,
+      "",
+    );
+
+    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
+    const isMentioned =
+      props.ctx.message?.text &&
+      props.ctx.message.text.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`);
+
+    if (!isGroup) {
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: rbacModuleSubject.id,
+          socialModuleChatId: socialModuleChat.id,
+          socialModuleProfileId: socialModuleProfile.id,
+          data: { ...props.data, description: sanitizedDescription },
+          options: {
+            headers: {
+              Authorization: "Bearer " + jwtToken,
+            },
           },
         },
-      },
-    );
+      );
+    }
+
+    if (isMentioned) {
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: rbacModuleSubject.id,
+          socialModuleChatId: socialModuleChat.id,
+          socialModuleProfileId: socialModuleProfile.id,
+          data: { ...props.data, description: sanitizedDescription },
+          options: {
+            headers: {
+              Authorization: "Bearer " + jwtToken,
+            },
+          },
+        },
+      );
+    }
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {

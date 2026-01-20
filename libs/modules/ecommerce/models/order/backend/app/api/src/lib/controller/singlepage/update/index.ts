@@ -234,6 +234,7 @@ export class Handler {
           for (const fileStorageReceiptTemplateFile of fileStorageReceiptTemplateFiles) {
             const receiptFile = await fileStorageFileApi.generate({
               data: {
+                adminTitle: `Ecommerce Module | Order ${entity.id} | Receipt`,
                 variant: fileStorageReceiptTemplateFile.variant,
                 width: fileStorageReceiptTemplateFile.width,
                 height: fileStorageReceiptTemplateFile.height,

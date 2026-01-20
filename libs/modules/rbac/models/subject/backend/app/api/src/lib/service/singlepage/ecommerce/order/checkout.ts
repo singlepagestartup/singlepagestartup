@@ -19,7 +19,6 @@ import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/e
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
-// import { Service as NotificationCreateService } from "./notification-create";
 import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 export type IExecuteProps =
@@ -716,17 +715,6 @@ export class Service {
           },
         },
       });
-
-      // const notificationCreateService = new NotificationCreateService(
-      //   this.repository,
-      // );
-      // await notificationCreateService.execute({
-      //   id: props.id,
-      //   orderId: order["id"],
-      //   data: {
-      //     comment: props.comment,
-      //   },
-      // });
     }
 
     const billingModulePaymentIntentsToInvoices =

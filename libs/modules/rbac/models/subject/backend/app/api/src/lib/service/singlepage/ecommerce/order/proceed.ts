@@ -97,11 +97,6 @@ export class Service {
         },
       });
 
-    console.log(
-      "🚀 ~ execute ~ subjectsToEcommerceModuleOrders:",
-      subjectsToEcommerceModuleOrders,
-    );
-
     if (!subjectsToEcommerceModuleOrders?.length) {
       return;
     }
@@ -116,6 +111,11 @@ export class Service {
               value: subjectsToEcommerceModuleOrders.map(
                 (item) => item.ecommerceModuleOrderId,
               ),
+            },
+            {
+              column: "status",
+              method: "ne",
+              value: "completed",
             },
           ],
         },
@@ -136,14 +136,12 @@ export class Service {
       },
     });
 
-    console.log("🚀 ~ execute ~ orders:", orders);
-
     if (!orders?.length) {
       return;
     }
 
     for (const order of orders) {
-      console.log("🚀 ~ execute ~ order:", order);
+      console.log("🚀 ~ proceed ~ order:", order);
 
       try {
         const extendedOrder = await this.extendedEcommerceModuleOrder(order);
@@ -392,8 +390,6 @@ export class Service {
               return deliveringProduct.id === orderToProduct.productId;
             })
           ) {
-            console.log(orderToProduct);
-
             continue;
           }
 

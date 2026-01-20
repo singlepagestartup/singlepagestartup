@@ -7,7 +7,7 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
-import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
+import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
@@ -141,6 +141,17 @@ export class Handler {
           ? "telegram"
           : undefined;
 
+      const socialModuleChat = data.social?.chat?.id
+        ? await socialModuleChatApi.findById({
+            id: data.social.chat.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          })
+        : null;
+
       const attachments = data.fileStorage?.files?.map(
         (fileStorageModuleFile: IFileStorageModuleFile) => {
           return {
@@ -163,6 +174,18 @@ export class Handler {
             attachments,
           });
         } else if (type === "telegram") {
+          const isGroupChat = socialModuleChat?.sourceSystemId?.startsWith("-");
+
+          if (isGroupChat) {
+            notifications.push({
+              ...data.notification.notification,
+              data: data.notification.notification.data,
+              reciever: socialModuleChat?.sourceSystemId,
+              attachments,
+            });
+            continue;
+          }
+
           if (identity.provider !== "telegram") {
             continue;
           }

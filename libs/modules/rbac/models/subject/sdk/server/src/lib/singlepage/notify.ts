@@ -8,6 +8,7 @@ import {
 import { IModel as INotificationModuleTemplate } from "@sps/notification/models/template/sdk/model";
 import { IModel as INotificationModuleNotification } from "@sps/notification/models/notification/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 
 export interface IProps {
   id: string;
@@ -28,6 +29,11 @@ export interface IProps {
     };
     fileStorage?: {
       files?: IFileStorageModuleFile[];
+    };
+    social?: {
+      chat: {
+        id: ISocialModuleChat["id"];
+      };
     };
   };
 }
