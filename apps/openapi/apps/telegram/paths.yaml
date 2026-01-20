@@ -7,7 +7,9 @@ paths:
       description: Get list of available models from OpenRouter
       servers:
         - url: http://localhost:8000/api
-          description: Telegram App
+          description: Local Telegram App
+        - url: https://telegram.singlepagestartup.com
+          description: Production Telegram App
       requestBody:
         required: true
         content:
