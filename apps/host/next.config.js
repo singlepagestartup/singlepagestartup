@@ -24,6 +24,7 @@ function makeConfig() {
 
   return withBundleAnalyzer({
     reactStrictMode: true,
+    staticPageGenerationTimeout: 6000,
     images: {
       unoptimized: true,
       remotePatterns: [

@@ -19,8 +19,11 @@ export type IProps = {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: {
-    [key: string]: any;
+  data: Partial<IModel> & {
+    generateData: {
+      variant: string;
+      [key: string]: any;
+    };
   };
 };
 

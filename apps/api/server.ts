@@ -10,5 +10,5 @@ serve({
   fetch: app.fetch,
   port: API_SERVICE_PORT,
   websocket,
-  idleTimeout: 60,
+  idleTimeout: 0,
 });

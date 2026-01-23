@@ -28,14 +28,18 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const deflatedData = pako.deflate(JSON.stringify(data));
+      if (!data.generateData) {
+        throw new Error("Validation error. 'data.generateData' is required");
+      }
+
+      const deflatedData = pako.deflate(JSON.stringify(data.generateData));
 
       const queryData = Buffer.from(deflatedData).toString("base64");
 
       const query = QueryString.stringify({
-        variant: data.variant,
-        width: data.width ?? 500,
-        height: data.height ?? 500,
+        variant: data.generateData.variant,
+        width: data.generateData.width ?? 500,
+        height: data.generateData.height ?? 500,
         data: queryData,
       });
 

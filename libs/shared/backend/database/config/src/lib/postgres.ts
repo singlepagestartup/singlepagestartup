@@ -29,7 +29,7 @@ export function getPostgresClient() {
     pgClient = postgres({
       ...DATABASE_OPTIONS,
       idle_timeout: 20,
-      max_lifetime: 60 * 30,
+      max_lifetime: 0,
       // Use reasonable pool size - all models share this pool
       max: isMigration ? 1 : 20,
       connect_timeout: 10,

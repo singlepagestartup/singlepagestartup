@@ -36,106 +36,25 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
+    let subjectId: string | undefined = undefined;
     const authorization = props.authorization.value;
 
-    let subjectsToRoles: ISubjectsToRoles[] | undefined;
-
     if (authorization) {
-      try {
-        const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
 
-        if (!decoded.subject?.["id"]) {
-          throw new Error(
-            "Authorization error. No subject provided in the token",
-          );
-        }
-
-        subjectsToRoles = await subjectsToRolesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: decoded.subject["id"],
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
-      } catch (error) {
-        throw new Error(
-          "Authorization error. " +
-            (error?.["message"] || "Invalid authorization token provided"),
-        );
+      if (!decoded.subject?.["id"]) {
+        throw new Error("Validation error. No subject provided in the token");
       }
+
+      if (typeof decoded.subject["id"] !== "string") {
+        throw new Error("Validation error. Subject ID is not a string");
+      }
+
+      subjectId = decoded.subject["id"];
     }
 
-    try {
-      const rootPermission = await permissionApi.findByRoute({
-        params: {
-          permission: {
-            method: "*",
-            route: "*",
-            type: "HTTP",
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
-
-      if (rootPermission) {
-        if (subjectsToRoles?.length) {
-          for (const subjectToRole of subjectsToRoles) {
-            const rolesToPermissions = await rolesToPermissionsApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "roleId",
-                      method: "eq",
-                      value: subjectToRole.roleId,
-                    },
-                    {
-                      column: "permissionId",
-                      method: "eq",
-                      value: rootPermission.id,
-                    },
-                  ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
-
-            if (rolesToPermissions?.length) {
-              return {
-                ok: true,
-              };
-            }
-          }
-        }
-      }
-    } catch (error) {
-      logger.error("isAuthorized ~ error:", error);
-    }
-
-    try {
-      const permission = await permissionApi.findByRoute({
+    const permission = await permissionApi
+      .findByRoute({
         params: {
           permission: {
             method: props.permission.method,
@@ -146,74 +65,124 @@ export class Service {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
-      });
+      })
+      .catch((error) => {});
 
-      if (permission) {
-        const rolesToPermissions = await rolesToPermissionsApi.find({
+    const rolesToPermissions = await rolesToPermissionsApi
+      .find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      })
+      .catch((error) => {});
+
+    if (permission && rolesToPermissions) {
+      const rolesToPremission = rolesToPermissions.filter(
+        (roleToPermission) => {
+          return roleToPermission.permissionId === permission.id;
+        },
+      );
+
+      /**
+       * Permissions without roles are public
+       */
+      if (!rolesToPremission?.length) {
+        authorized = true;
+      }
+
+      if (!authorized && subjectId) {
+        const subjectsToRoles = await subjectsToRolesApi
+          .find({
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          })
+          .catch((error) => {});
+
+        const subjectToRoles = subjectId
+          ? subjectsToRoles?.filter((subjectToRole) => {
+              return subjectToRole.subjectId === subjectId;
+            })
+          : [];
+
+        if (subjectToRoles?.length) {
+          for (const subjectToRole of subjectToRoles) {
+            const rolesToPermission = rolesToPermissions.filter(
+              (roleToPermission) => {
+                return (
+                  roleToPermission.roleId === subjectToRole.roleId &&
+                  roleToPermission.permissionId === permission.id
+                );
+              },
+            );
+
+            if (rolesToPermission?.length) {
+              authorized = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!authorized && subjectId) {
+      const rootPermission = await permissionApi
+        .findByRoute({
           params: {
-            filters: {
-              and: [
-                {
-                  column: "permissionId",
-                  method: "eq",
-                  value: permission.id,
-                },
-              ],
+            permission: {
+              method: "*",
+              route: "*",
+              type: "HTTP",
             },
           },
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
+        })
+        .catch((error) => {});
+
+      if (rootPermission && rolesToPermissions) {
+        const rootRoles = rolesToPermissions?.filter((roleToPermission) => {
+          return roleToPermission.permissionId === rootPermission.id;
         });
 
-        /**
-         * Permissions without roles are public
-         */
-        if (!rolesToPermissions?.length) {
-          authorized = true;
-        }
-
-        if (subjectsToRoles?.length && !authorized) {
-          for (const subjectToRole of subjectsToRoles) {
-            const rolesToPermissions = await rolesToPermissionsApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "roleId",
-                      method: "eq",
-                      value: subjectToRole.roleId,
-                    },
-                    {
-                      column: "permissionId",
-                      method: "eq",
-                      value: permission.id,
-                    },
-                  ],
-                },
-              },
+        if (rootRoles?.length) {
+          const subjectsToRoles = await subjectsToRolesApi
+            .find({
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
-            });
+            })
+            .catch((error) => {});
 
-            if (rolesToPermissions?.length) {
-              authorized = true;
+          if (subjectsToRoles?.length) {
+            for (const subjectToRole of subjectsToRoles) {
+              if (subjectToRole.subjectId !== subjectId) {
+                continue;
+              }
+
+              const isRootSubject = rootRoles?.find((rootRole) => {
+                return rootRole.roleId === subjectToRole.roleId;
+              });
+
+              if (isRootSubject) {
+                authorized = true;
+                break;
+              }
             }
           }
         }
       }
-    } catch (error) {
-      // logger.error("isAuthorized ~ error:", error);
     }
 
     if (!authorized) {

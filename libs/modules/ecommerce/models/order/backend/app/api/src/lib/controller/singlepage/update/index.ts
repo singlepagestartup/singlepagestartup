@@ -235,38 +235,43 @@ export class Handler {
             const receiptFile = await fileStorageFileApi.generate({
               data: {
                 adminTitle: `Ecommerce Module | Order ${entity.id} | Receipt`,
-                variant: fileStorageReceiptTemplateFile.variant,
-                width: fileStorageReceiptTemplateFile.width,
-                height: fileStorageReceiptTemplateFile.height,
-                ecommerce: {
-                  order: {
-                    ...entity,
-                    checkoutAttributes,
-                    ordersToProducts: ordersToProducts.map((orderToProduct) => {
-                      return {
-                        ...orderToProduct,
-                        product: products.find(
-                          (product) => product.id === orderToProduct.productId,
-                        ),
-                      };
-                    }),
-                    ordersToBillingModuleCurrencies:
-                      ordersToBillingModuleCurrencies.map(
-                        (orderToBillingModuleCurrency) => {
+                generateData: {
+                  variant: fileStorageReceiptTemplateFile.variant,
+                  width: fileStorageReceiptTemplateFile.width,
+                  height: fileStorageReceiptTemplateFile.height,
+                  ecommerce: {
+                    order: {
+                      ...entity,
+                      checkoutAttributes,
+                      ordersToProducts: ordersToProducts.map(
+                        (orderToProduct) => {
                           return {
-                            ...orderToBillingModuleCurrency,
-                            billingModuleCurrency: billingCurrencies.find(
-                              (billingCurrency) =>
-                                billingCurrency.id ===
-                                orderToBillingModuleCurrency.billingModuleCurrencyId,
+                            ...orderToProduct,
+                            product: products.find(
+                              (product) =>
+                                product.id === orderToProduct.productId,
                             ),
                           };
                         },
                       ),
+                      ordersToBillingModuleCurrencies:
+                        ordersToBillingModuleCurrencies.map(
+                          (orderToBillingModuleCurrency) => {
+                            return {
+                              ...orderToBillingModuleCurrency,
+                              billingModuleCurrency: billingCurrencies.find(
+                                (billingCurrency) =>
+                                  billingCurrency.id ===
+                                  orderToBillingModuleCurrency.billingModuleCurrencyId,
+                              ),
+                            };
+                          },
+                        ),
+                    },
                   },
-                },
-                fileStorage: {
-                  file: fileStorageReceiptTemplateFile,
+                  fileStorage: {
+                    file: fileStorageReceiptTemplateFile,
+                  },
                 },
               },
               options: {
@@ -360,41 +365,43 @@ export class Handler {
               ) {
                 const generatedFile = await fileStorageFileApi.generate({
                   data: {
-                    variant: fileStorageModuleFile.variant,
-                    width: fileStorageModuleFile.width,
-                    height: fileStorageModuleFile.height,
-                    ecommerce: {
-                      order: {
-                        ...entity,
-                        checkoutAttributes,
-                        ordersToProducts: ordersToProducts.map(
-                          (orderToProduct) => {
-                            return {
-                              ...orderToProduct,
-                              product: products.find(
-                                (product) =>
-                                  product.id === orderToProduct.productId,
-                              ),
-                            };
-                          },
-                        ),
-                        ordersToBillingModuleCurrencies:
-                          ordersToBillingModuleCurrencies.map(
-                            (orderToBillingModuleCurrency) => {
+                    generateData: {
+                      variant: fileStorageModuleFile.variant,
+                      width: fileStorageModuleFile.width,
+                      height: fileStorageModuleFile.height,
+                      ecommerce: {
+                        order: {
+                          ...entity,
+                          checkoutAttributes,
+                          ordersToProducts: ordersToProducts.map(
+                            (orderToProduct) => {
                               return {
-                                ...orderToBillingModuleCurrency,
-                                billingModuleCurrency: billingCurrencies.find(
-                                  (billingCurrency) =>
-                                    billingCurrency.id ===
-                                    orderToBillingModuleCurrency.billingModuleCurrencyId,
+                                ...orderToProduct,
+                                product: products.find(
+                                  (product) =>
+                                    product.id === orderToProduct.productId,
                                 ),
                               };
                             },
                           ),
+                          ordersToBillingModuleCurrencies:
+                            ordersToBillingModuleCurrencies.map(
+                              (orderToBillingModuleCurrency) => {
+                                return {
+                                  ...orderToBillingModuleCurrency,
+                                  billingModuleCurrency: billingCurrencies.find(
+                                    (billingCurrency) =>
+                                      billingCurrency.id ===
+                                      orderToBillingModuleCurrency.billingModuleCurrencyId,
+                                  ),
+                                };
+                              },
+                            ),
+                        },
                       },
-                    },
-                    fileStorage: {
-                      file: fileStorageModuleFile,
+                      fileStorage: {
+                        file: fileStorageModuleFile,
+                      },
                     },
                   },
                   options: {

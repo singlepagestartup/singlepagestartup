@@ -33,14 +33,6 @@ export class Handler {
       }
 
       const permissions = await api.find({
-        params: {
-          filters: {
-            and: [
-              { column: "type", method: "eq", value: type },
-              { column: "method", method: "eq", value: method },
-            ],
-          },
-        },
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -54,7 +46,14 @@ export class Handler {
         );
       }
 
-      for (const permission of permissions) {
+      const filteredPermissions = permissions.filter((permission) => {
+        return (
+          permission.method.toUpperCase() === method.toUpperCase() &&
+          permission.type === type
+        );
+      });
+
+      for (const permission of filteredPermissions) {
         if (permission.path === "*") {
           return c.json({ data: permission });
         }

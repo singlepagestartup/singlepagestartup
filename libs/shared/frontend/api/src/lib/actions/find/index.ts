@@ -45,48 +45,24 @@ export async function action<T>(props: IProps): Promise<IResult<T>> {
       tags: [route],
       ...options?.next,
     },
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(600000),
   };
 
-  let retries = 3;
-  let lastError;
+  const res = await fetch(
+    `${host}${route}?${stringifiedQuery}`,
+    requestOptions,
+  );
 
-  while (retries > 0) {
-    try {
-      const res = await fetch(
-        `${host}${route}?${stringifiedQuery}`,
-        requestOptions,
-      );
+  const json = await responsePipe<{ data: IResult<T> }>({
+    res,
+    catchErrors: props.catchErrors || productionBuild,
+  });
 
-      const json = await responsePipe<{ data: IResult<T> }>({
-        res,
-        catchErrors: props.catchErrors || productionBuild,
-      });
-
-      if (!json) {
-        return;
-      }
-
-      const transformedData = transformResponseItem<IResult<T>>(json);
-
-      return transformedData;
-    } catch (error: any) {
-      if (!error.message.includes("404 |")) {
-        retries = 0;
-      }
-
-      lastError = error;
-
-      if (error.cause?.code !== "ERR_SOCKET_CONNECTION_TIMEOUT") {
-        throw error;
-      }
-
-      retries--;
-      if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
+  if (!json) {
+    return;
   }
 
-  throw lastError;
+  const transformedData = transformResponseItem<IResult<T>>(json);
+
+  return transformedData;
 }
