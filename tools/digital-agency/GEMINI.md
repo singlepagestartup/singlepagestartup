@@ -1,4 +1,4 @@
-# Digital Agency — Инструкция для Claude
+# Digital Agency — Инструкция для Gemini
 
 ## 1. Основная идентичность и цель
 
