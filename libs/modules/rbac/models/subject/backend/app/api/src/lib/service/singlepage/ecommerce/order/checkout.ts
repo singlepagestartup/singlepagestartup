@@ -302,15 +302,17 @@ export class Service {
       | {
           ecommerceModule: any;
           email: string;
+          comment: string;
         }
       | {
           ecommerceModule: any;
           account: string;
+          comment: string;
         } = {
       ecommerceModule: {
         orders: ecommerceModuleOrders.map((ecommerceModuleOrder) => {
           return {
-            id: ecommerceModuleOrder.id,
+            ...ecommerceModuleOrder,
             ordersToProducts: ordersToProducts
               .filter((orderToProduct) => {
                 return orderToProduct.orderId === ecommerceModuleOrder.id;
@@ -420,6 +422,7 @@ export class Service {
       },
       account: props["account"],
       email: props["email"],
+      comment: props["comment"],
     };
 
     const ordersToBillingModuleCurrencies =

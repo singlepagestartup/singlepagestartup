@@ -1,11 +1,17 @@
 import { IRepository } from "@sps/shared-backend-api";
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+  createMemoryCache,
+} from "@sps/shared-utils";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
+import { IModel as IPermission } from "@sps/rbac/models/permission/sdk/model";
+import { IModel as IRolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
 import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
-import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import * as jwt from "hono/jwt";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
-import { logger } from "@sps/backend-utils";
+
+const cache = createMemoryCache({ ttlMs: 30_000 });
 
 export type IExecuteProps = {
   permission: {
@@ -53,32 +59,54 @@ export class Service {
       subjectId = decoded.subject["id"];
     }
 
-    const permission = await permissionApi
-      .findByRoute({
-        params: {
-          permission: {
-            method: props.permission.method,
-            route: props.permission.route,
-            type: props.permission.type,
+    const permissionCacheKey = `permission:${props.permission.type}:${props.permission.method}:${props.permission.route}`;
+    let permission = cache.get<IPermission>(permissionCacheKey);
+    if (!permission) {
+      const fetched = await permissionApi
+        .findByRoute({
+          params: {
+            permission: {
+              method: props.permission.method,
+              route: props.permission.route,
+              type: props.permission.type,
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
           },
-        },
-      })
-      .catch((error) => {});
+        })
+        .catch((error) => undefined);
 
-    const rolesToPermissions = await rolesToPermissionsApi
-      .find({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      permission = fetched ?? undefined;
+
+      if (permission) {
+        cache.set(permissionCacheKey, permission);
+      }
+    }
+
+    const rolesToPermissionsCacheKey = "roles-to-permissions:all";
+    let rolesToPermissions = cache.get<IRolesToPermissions[]>(
+      rolesToPermissionsCacheKey,
+    );
+    if (!rolesToPermissions) {
+      const fetched = await rolesToPermissionsApi
+        .find({
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
           },
-        },
-      })
-      .catch((error) => {});
+        })
+        .catch((error) => undefined);
+
+      rolesToPermissions = Array.isArray(fetched) ? fetched : undefined;
+
+      if (rolesToPermissions) {
+        cache.set(rolesToPermissionsCacheKey, rolesToPermissions);
+      }
+    }
 
     if (permission && rolesToPermissions) {
       const rolesToPremission = rolesToPermissions.filter(
@@ -132,22 +160,32 @@ export class Service {
     }
 
     if (!authorized && subjectId) {
-      const rootPermission = await permissionApi
-        .findByRoute({
-          params: {
-            permission: {
-              method: "*",
-              route: "*",
-              type: "HTTP",
+      const rootPermissionCacheKey = "permission:HTTP:*:*";
+      let rootPermission = cache.get<IPermission>(rootPermissionCacheKey);
+      if (!rootPermission) {
+        const fetched = await permissionApi
+          .findByRoute({
+            params: {
+              permission: {
+                method: "*",
+                route: "*",
+                type: "HTTP",
+              },
             },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
             },
-          },
-        })
-        .catch((error) => {});
+          })
+          .catch((error) => undefined);
+
+        rootPermission = fetched ?? undefined;
+
+        if (rootPermission) {
+          cache.set(rootPermissionCacheKey, rootPermission);
+        }
+      }
 
       if (rootPermission && rolesToPermissions) {
         const rootRoles = rolesToPermissions?.filter((roleToPermission) => {

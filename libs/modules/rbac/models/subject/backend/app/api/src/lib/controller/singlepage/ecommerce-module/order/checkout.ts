@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
 export class Handler {
   service: Service;
@@ -75,6 +76,42 @@ export class Handler {
       }
 
       await this.service.deanonymize({ id, email: data.email });
+
+      for (const dataEcommerceModuleOrder of data.ecommerceModule.orders) {
+        await ecommerceModuleOrderApi
+          .findById({
+            id: dataEcommerceModuleOrder.id,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          })
+          .then(async (ecommerceModuleOrder) => {
+            if (!RBAC_SECRET_KEY) {
+              throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+            }
+
+            if (!ecommerceModuleOrder) {
+              return;
+            }
+
+            await ecommerceModuleOrderApi.update({
+              id: ecommerceModuleOrder.id,
+              data: {
+                ...ecommerceModuleOrder,
+                comment: data.comment,
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+          });
+      }
 
       const result = await this.service.ecommerceOrderCheckout({
         id,

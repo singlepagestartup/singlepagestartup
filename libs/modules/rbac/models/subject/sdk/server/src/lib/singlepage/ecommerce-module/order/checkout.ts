@@ -20,6 +20,7 @@ export interface IProps {
   data: {
     email: string;
     provider: string;
+    comment?: string;
   };
 }
 

@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import {
   NEXT_PUBLIC_HOST_SERVICE_URL,
   RBAC_SECRET_KEY,
+  createMemoryCache,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
@@ -74,34 +75,7 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
 ];
 
 const inFlight = new Map<string, Promise<void>>();
-const cache = new Map<string, number>();
-const CACHE_TTL_MS = 30_000;
-const MAX_CACHE_SIZE = 5000;
-
-function isCacheValid(key: string) {
-  const expiresAt = cache.get(key);
-  if (!expiresAt) {
-    return false;
-  }
-
-  if (expiresAt <= Date.now()) {
-    cache.delete(key);
-    return false;
-  }
-
-  return true;
-}
-
-function setCache(key: string) {
-  if (cache.size >= MAX_CACHE_SIZE) {
-    const firstKey = cache.keys().next().value;
-    if (firstKey) {
-      cache.delete(firstKey);
-    }
-  }
-
-  cache.set(key, Date.now() + CACHE_TTL_MS);
-}
+const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 5000 });
 
 export class Middleware {
   private allowedRoutes: Map<string, Set<string>>;
@@ -152,14 +126,14 @@ export class Middleware {
         };
 
         const cacheKey = `${reqMethod}:${reqPath}:${authorization || ""}:${secretKey || ""}`;
-        if (isCacheValid(cacheKey)) {
+        if (cache.get<boolean>(cacheKey)) {
           return next();
         }
 
         const existing = inFlight.get(cacheKey);
         if (existing) {
           await existing;
-          setCache(cacheKey);
+          cache.set(cacheKey, true);
         } else {
           const promise = (async () => {
             try {
@@ -180,7 +154,7 @@ export class Middleware {
 
           inFlight.set(cacheKey, promise);
           await promise;
-          setCache(cacheKey);
+          cache.set(cacheKey, true);
         }
       } catch (error: any) {
         const { status, message, details } = getHttpErrorType(error);
