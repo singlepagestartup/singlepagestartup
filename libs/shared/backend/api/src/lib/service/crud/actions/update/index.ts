@@ -12,6 +12,8 @@ export class Action<SCHEMA extends Record<string, unknown>> {
   }
 
   async execute(props: { id: string; data: any }) {
+    delete props.data.updatedAt;
+
     const result = await this.repository.updateFirstByField(
       "id",
       props.id,

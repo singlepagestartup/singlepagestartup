@@ -602,12 +602,9 @@ export class TelegarmBot {
       props.ctx.message.text.startsWith("/start") &&
       props.ctx.message.text.replace("/start ", "")
     ) {
-      const referralCode = props.ctx.message.text.replace("/start ", "");
-
-      console.log(
-        "🚀 ~ rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate ~ referralCode:",
-        referralCode,
-      );
+      const referralCode = props.ctx.message.text
+        .replace("/start ", "")
+        .replace("/start", "");
 
       let socialModuleReferrerAttributeKey: ISocialModuleAttributeKey;
 

@@ -1517,7 +1517,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     } catch (error) {
       if (error instanceof Error) {
         if (
-          error.message.includes("do not have enough balance for that route")
+          error.message.includes("do not have enough balance for that route") ||
+          error.message.includes(
+            "Validation error. You do not have access to this resource because you have not 'subjectsToBillingModuleCurrencies' for pay that route",
+          )
         ) {
           await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
             {

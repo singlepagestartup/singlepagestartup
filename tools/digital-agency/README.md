@@ -32,26 +32,26 @@
 
 ```
 tools/digital-agency/
-├── `agency_context.md`              # Архитектура агентства
-├── `agency_roles.md`                # Определения ролей
-├── `agency_pipeline.md`             # 5 этапов процесса
-├── `agency_pipeline_first_messages.md`  # Промпты для агентов
-├── `templates/`                     # Шаблоны артефактов
-│   ├── `client_brief_template.md`
-│   ├── `project_plan_template.md`
-│   ├── `marketing_strategy_template.md`
-│   ├── `content_framework_template.md`
-│   ├── `performance_analysis_report_template.md`
-│   └── `readme_template.md`         # Шаблон визитной карточки бизнеса
+├── agency_context.md              # Архитектура агентства
+├── agency_roles.md                # Определения ролей
+├── agency_pipeline.md             # 5 этапов процесса
+├── agency_pipeline_first_messages.md  # Промпты для агентов
+├── templates/                     # Шаблоны артефактов
+│   ├── client_brief_template.md
+│   ├── project_plan_template.md
+│   ├── marketing_strategy_template.md
+│   ├── content_framework_template.md
+│   ├── performance_analysis_report_template.md
+│   └── readme_template.md         # Шаблон визитной карточки бизнеса
 └── `CLAUDE.md`                      # Технический файл для Claude
 
 project/                             # ИСТОЧНИК ИСТИНЫ (только заполненные данные)
-├── `README.md`                     # Агрегатор бизнес-данных (из `readme_template.md`)
-├── `client_brief.md`               # Этап 01
-├── `marketing_strategy.md`         # Этап 02
-├── `project_plan.md`               # Этап 03: План тестирования связок
-├── `content_framework.md`          # Этап 04
-└── `performance_analysis.md`       # Этап 05
+├── README.md                     # Агрегатор бизнес-данных (из `readme_template.md`)
+├── client_brief.md               # Этап 01
+├── marketing_strategy.md         # Этап 02
+├── project_plan.md               # Этап 03: План тестирования связок
+├── content_framework.md          # Этап 04
+└── performance_analysis.md       # Этап 05
 ```
 
 ## Flow артефактов
@@ -63,13 +63,6 @@ project/                             # ИСТОЧНИК ИСТИНЫ (тольк
 | 03   | План тестирования связок | `project_plan.md`         |
 | 04   | Правила контента         | `content_framework.md`    |
 | 05   | Отчёт об эффективности   | `performance_analysis.md` |
-
-## Почему /project/?
-
-- MCP серверы читают эту директорию
-- Фронтенд/бэкенд виджеты генерируются из этих артефактов
-- Единый источник истины для всех систем
-- Версионирование через git
 
 ## Роли агентов
 

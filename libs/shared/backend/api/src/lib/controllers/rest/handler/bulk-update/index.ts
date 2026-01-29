@@ -41,9 +41,11 @@ export class Handler<
           throw new Error("Validation error. Invalid data");
         }
 
+        delete dataEntity.data.updatedAt;
+
         const updatedEntity = await this.service.update({
           id: dataEntity["id"],
-          data: dataEntity["data"],
+          data: dataEntity.data,
         });
 
         if (!updatedEntity) {

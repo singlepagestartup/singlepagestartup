@@ -83,6 +83,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       text: string;
       url?: string;
       callback_data?: string;
+      copy_text?: {
+        text: string;
+      };
     }[][];
   }): InlineKeyboardButton[][] | undefined {
     if (!interaction?.inline_keyboard?.length) {
@@ -107,6 +110,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               };
             }
 
+            if (button.copy_text) {
+              return {
+                text: button.text,
+                copy_text: {
+                  text: button.copy_text.text,
+                },
+              };
+            }
+
             return null;
           })
           .filter(Boolean) as InlineKeyboardButton[];
@@ -123,6 +135,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             text: string;
             url?: string;
             callback_data?: string;
+            copy_text?: {
+              text: string;
+            };
           }[][];
         }
       | Record<string, unknown>,
@@ -137,6 +152,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           text: string;
           url?: string;
           callback_data?: string;
+          copy_text?: {
+            text: string;
+          };
         }[][];
       },
     );
@@ -655,6 +673,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   text: string;
                   url?: string;
                   callback_data?: string;
+                  copyText?: {
+                    text: string;
+                  };
                 }[][];
               },
             );
