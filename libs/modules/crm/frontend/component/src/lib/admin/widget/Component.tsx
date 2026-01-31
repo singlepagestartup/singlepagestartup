@@ -2,6 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/crm/models/widget/frontend/component";
 import { Component as WidgetsToForms } from "@sps/crm/relations/widgets-to-forms/frontend/component";
+import { Component as WidgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/frontend/component";
 
 export function Component() {
   return (
@@ -21,6 +22,31 @@ export function Component() {
 
               return (
                 <WidgetsToForms
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "widgetId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            widgetsToWebsiteBuilderModuleWidgets={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <WidgetsToWebsiteBuilderModuleWidgets
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

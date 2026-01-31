@@ -1,0 +1,3 @@
+type: string
+description: JSON string
+example: '{"variant": "default", "orderIndex": 0, "className": "example-class", "widgetId": "00000000-0000-0000-0000-000000000000", "formId": "00000000-0000-0000-0000-000000000000"}'

@@ -84,6 +84,9 @@
           },
           {
             "command": "nx run @sps/crm:relations:forms-to-steps:repository-generate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:widgets-to-website-builder-module-widgets:repository-generate"
           }
         ]
       }
@@ -138,6 +141,9 @@
           },
           {
             "command": "nx run @sps/crm:relations:forms-to-steps:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/crm:relations:widgets-to-website-builder-module-widgets:repository-migrate"
           }
         ]
       }
@@ -484,6 +490,35 @@
         "parallel": false,
         "envFile": "apps/api/.env",
         "cwd": "libs/modules/crm/relations/forms-to-steps/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-website-builder-module-widgets:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/crm/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:widgets-to-website-builder-module-widgets:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/crm/relations/widgets-to-website-builder-module-widgets/backend/repository/database",
         "commands": [
           {
             "command": "bun run ./src/lib/migrate.ts"

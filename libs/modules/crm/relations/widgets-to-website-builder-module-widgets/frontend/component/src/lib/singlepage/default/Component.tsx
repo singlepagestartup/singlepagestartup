@@ -1,0 +1,47 @@
+import { IComponentPropsExtended } from "./interface";
+import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as WebsiteBuilderModuleWidget } from "@sps/website-builder/models/widget/frontend/component";
+
+export function Component(props: IComponentPropsExtended) {
+  return (
+    <div
+      data-module="crm"
+      data-relation="widgets-to-website-builder-module-widgets"
+      data-id={props.data?.id || ""}
+      data-variant={props.variant}
+      className={cn("w-full flex", props.data.className, props.className)}
+    >
+      <WebsiteBuilderModuleWidget
+        isServer={props.isServer}
+        variant="find"
+        apiProps={{
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "eq",
+                  value: props.data?.websiteBuilderModuleWidgetId,
+                },
+              ],
+            },
+          },
+        }}
+      >
+        {({ data }) => {
+          return data?.map((entity, index) => {
+            return (
+              <WebsiteBuilderModuleWidget
+                key={index}
+                isServer={props.isServer}
+                variant={entity.variant as any}
+                data={entity}
+                language={props.language}
+              />
+            );
+          });
+        }}
+      </WebsiteBuilderModuleWidget>
+    </div>
+  );
+}

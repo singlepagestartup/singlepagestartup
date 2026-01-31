@@ -11,6 +11,7 @@ import { app as inputApp } from "@sps/crm/models/input/backend/app/api";
 import { app as requestApp } from "@sps/crm/models/request/backend/app/api";
 import { app as widgetsToFormsApp } from "@sps/crm/relations/widgets-to-forms/backend/app/api";
 import { app as formsToRequestsApp } from "@sps/crm/relations/forms-to-requests/backend/app/api";
+import { app as widgetsToWebsiteBuilderModuleWidgets } from "@sps/crm/relations/widgets-to-website-builder-module-widgets/backend/app/api";
 
 export class Apps {
   apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] =
@@ -80,6 +81,11 @@ export class Apps {
       type: "relation",
       route: "/forms-to-requests",
       app: formsToRequestsApp,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/widgets-to-website-builder-module-widgets",
+      app: widgetsToWebsiteBuilderModuleWidgets,
     });
   }
 }
