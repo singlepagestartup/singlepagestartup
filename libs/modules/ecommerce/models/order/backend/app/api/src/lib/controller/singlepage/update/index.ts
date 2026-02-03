@@ -151,17 +151,18 @@ export class Handler {
           throw new Error("Not Found error. Billing currencies not found");
         }
 
-        const checkoutAttributes = await api.checkoutAttributes({
-          id: uuid,
-          billingModuleCurrencyId:
-            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
+        const checkoutAttributesByCurrency =
+          await api.checkoutAttributesByCurrency({
+            id: uuid,
+            billingModuleCurrencyId:
+              ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
             },
-          },
-        });
+          });
 
         const ordersToProducts = await ordersToProductsApi.find({
           params: {
@@ -242,7 +243,7 @@ export class Handler {
                   ecommerce: {
                     order: {
                       ...entity,
-                      checkoutAttributes,
+                      checkoutAttributesByCurrency,
                       ordersToProducts: ordersToProducts.map(
                         (orderToProduct) => {
                           return {
@@ -372,7 +373,7 @@ export class Handler {
                       ecommerce: {
                         order: {
                           ...entity,
-                          checkoutAttributes,
+                          checkoutAttributesByCurrency,
                           ordersToProducts: ordersToProducts.map(
                             (orderToProduct) => {
                               return {

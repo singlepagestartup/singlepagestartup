@@ -24,6 +24,8 @@ export const statuses = [
   "packaging",
   "delivering",
   "delivered",
+  "requested_cancelation",
+  "canceling",
   "canceled",
 ];
 export const query = {};

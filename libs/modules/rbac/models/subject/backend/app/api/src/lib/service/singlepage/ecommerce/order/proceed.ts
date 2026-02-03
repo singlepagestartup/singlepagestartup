@@ -4,6 +4,9 @@ import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/s
 import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
+import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
+import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
 import { api as rolesToEcommerceModuleProductsApi } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
@@ -38,13 +41,23 @@ import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps
 import { api as ecommerceModuleProductsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as ecommerceModuleOrdersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
 import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
+import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
+import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
+import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
+import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
+import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
+import { api as billingModulePaymentIntentsToCurreciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
+import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
+import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 
 export type IExecuteProps = {};
 
 type IExtendedEcommerceModuleOrder = IEcommerceModuleOrder & {
-  checkoutAttributes: IEcommerceOrderResult["ICheckoutAttributesResult"];
+  checkoutAttributesByCurrency: IEcommerceOrderResult["ICheckoutAttributesByCurrencyResult"];
   ordersToProducts: (IEcommerceModuleOrdersToProducts & {
     product: IExtendedEcommerceModuleProduct;
   })[];
@@ -53,6 +66,16 @@ type IExtendedEcommerceModuleOrder = IEcommerceModuleOrder & {
   })[];
   ordersToFileStorageModuleFiles: (IEcommerceModuleOrdersToFileStorageModuleFiles & {
     fileStorageModuleFile?: IFileStorageModuleFile;
+  })[];
+  ordersToBillingModulePaymentIntents: (IEcommerceModuleOrdersToBillingModulePaymentIntents & {
+    billingModulePaymentIntent: IBillingModulePaymentIntent & {
+      paymentIntentsToCurrencies: (IBillingModulePaymentIntentsToCurrecies & {
+        currency: IBillingModuleCurrency;
+      })[];
+      paymentIntentsToInvoices: (IBillingModulePaymentIntentsToInvoices & {
+        invoice: IBillingModuleInvoice;
+      })[];
+    };
   })[];
 };
 
@@ -117,6 +140,11 @@ export class Service {
               method: "ne",
               value: "completed",
             },
+            {
+              column: "status",
+              method: "ne",
+              value: "canceled",
+            },
           ],
         },
         orderBy: {
@@ -141,8 +169,6 @@ export class Service {
     }
 
     for (const order of orders) {
-      console.log("🚀 ~ proceed ~ order:", order);
-
       try {
         const extendedOrder = await this.extendedEcommerceModuleOrder(order);
 
@@ -177,7 +203,7 @@ export class Service {
             (rbacSubjectToRole) => rbacSubjectToRole.roleId,
           );
 
-          const productRolesIds =
+          const productsRolesIds =
             extendedOrder.ordersToProducts
               ?.map((orderToProduct) => {
                 return orderToProduct.product.rolesToEcommerceModuleProduct?.map(
@@ -188,11 +214,8 @@ export class Service {
               .flat()
               .filter((roleId): roleId is string => Boolean(roleId)) ?? [];
 
-          if (
-            order.status &&
-            ["delivered", "canceled"].includes(order.status)
-          ) {
-            await this.deliveredOrCanceled({
+          if (order.status && order.status === "delivered") {
+            await this.delivered({
               order,
               extendedOrder,
               subjectToEcommerceModuleOrder: {
@@ -201,7 +224,7 @@ export class Service {
                   subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
               },
               existingRolesIds,
-              productRolesIds,
+              productsRolesIds,
               subjectsToRoles: rbacSubjectsToRoles,
             });
           } else if (order.status === "paid") {
@@ -214,10 +237,10 @@ export class Service {
                   subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
               },
               existingRolesIds,
-              productRolesIds,
+              productsRolesIds,
             });
           } else if (order.status === "delivering") {
-            const newRolesIds = productRolesIds?.filter(
+            const newRolesIds = productsRolesIds?.filter(
               (productRoleId) =>
                 productRoleId && !existingRolesIds?.includes(productRoleId),
             );
@@ -237,6 +260,48 @@ export class Service {
                 });
               }
             }
+          } else if (order.status === "canceling") {
+            const toRemoveRolesIds = productsRolesIds?.filter(
+              (productRoleId) =>
+                productRoleId && existingRolesIds?.includes(productRoleId),
+            );
+
+            if (existingRolesIds?.length) {
+              for (const existingRoleId of existingRolesIds) {
+                if (!toRemoveRolesIds.includes(existingRoleId)) {
+                  continue;
+                }
+
+                const toRemoveSubjectToRole = rbacSubjectsToRoles?.find(
+                  (rbacSubjectToRole) => {
+                    return rbacSubjectToRole.roleId === existingRoleId;
+                  },
+                );
+
+                if (!toRemoveSubjectToRole) {
+                  continue;
+                }
+
+                await subjectsToRolesApi.delete({
+                  id: toRemoveSubjectToRole?.id,
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    },
+                  },
+                });
+              }
+            }
+
+            await ecommerceOrderApi.update({
+              id: order.id,
+              data: { ...order, status: "canceled" },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
           }
         }
       } catch (error) {
@@ -415,13 +480,13 @@ export class Service {
       ecommerceModuleOrderId: string;
     };
     existingRolesIds?: string[];
-    productRolesIds?: string[];
+    productsRolesIds?: string[];
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const newRolesIds = props.productRolesIds?.filter(
+    const newRolesIds = props.productsRolesIds?.filter(
       (productRoleId) =>
         productRoleId && !props.existingRolesIds?.includes(productRoleId),
     );
@@ -518,7 +583,9 @@ export class Service {
       status: "approving",
     };
 
-    if (props.extendedOrder.checkoutAttributes.type == "subscription") {
+    if (
+      props.extendedOrder.checkoutAttributesByCurrency.type == "subscription"
+    ) {
       updateEcommerceOrderData.status = "delivering";
     }
 
@@ -547,7 +614,7 @@ export class Service {
     });
   }
 
-  async deliveredOrCanceled(props: {
+  async delivered(props: {
     order: IEcommerceModuleOrder;
     extendedOrder: IExtendedEcommerceModuleOrder;
     subjectToEcommerceModuleOrder: {
@@ -555,14 +622,14 @@ export class Service {
       ecommerceModuleOrderId: string;
     };
     existingRolesIds?: string[];
-    productRolesIds?: string[];
+    productsRolesIds?: string[];
     subjectsToRoles?: ISubjectsToRoles[];
   }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const removeRolesIds = props.productRolesIds?.filter(
+    const removeRolesIds = props.productsRolesIds?.filter(
       (productRoleId) =>
         productRoleId && props.existingRolesIds?.includes(productRoleId),
     );
@@ -629,6 +696,147 @@ export class Service {
             },
           },
         });
+      }
+    }
+
+    const needToCreateSubscriptionOrder =
+      props.extendedOrder.checkoutAttributesByCurrency.type ===
+        "subscription" &&
+      props.extendedOrder.ordersToBillingModulePaymentIntents
+        .map((orderToBillingModulePaymentIntent) => {
+          return orderToBillingModulePaymentIntent.billingModulePaymentIntent
+            .type;
+        })
+        .every((billingModulePaymentIntentType) => {
+          return billingModulePaymentIntentType === "one_off";
+        }) &&
+      props.extendedOrder.ordersToProducts.length === 1;
+
+    const currencies = props.extendedOrder.ordersToBillingModulePaymentIntents
+      .map((orderToBillingModulePaymentIntent) => {
+        return orderToBillingModulePaymentIntent.billingModulePaymentIntent.paymentIntentsToCurrencies.map(
+          (paymentIntentToCurrency) => {
+            return paymentIntentToCurrency.currency;
+          },
+        );
+      })
+      .flat(1);
+
+    const invoices = props.extendedOrder.ordersToBillingModulePaymentIntents
+      .map((orderToBillingModulePaymentIntent) => {
+        return orderToBillingModulePaymentIntent.billingModulePaymentIntent.paymentIntentsToInvoices.map(
+          (paymentIntentsToInvoices) => {
+            return paymentIntentsToInvoices.invoice;
+          },
+        );
+      })
+      .flat(1);
+
+    const allOrderCurrenciesAreTheSame = currencies.every((entity) => {
+      return currencies[0].id === entity.id;
+    });
+
+    const allProvidersAreTheSame = invoices.every((invoice) => {
+      return invoice.provider === invoices[0].provider;
+    });
+
+    if (
+      needToCreateSubscriptionOrder &&
+      allOrderCurrenciesAreTheSame &&
+      allProvidersAreTheSame
+    ) {
+      const provider = invoices[0].provider;
+      const currency = currencies[0];
+
+      if (provider === "telegram-star") {
+        const subjectToSocialModuleProfiles =
+          await subjectsToSocialModuleProfilesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: props.subjectToEcommerceModuleOrder.subjectId,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          });
+
+        if (subjectToSocialModuleProfiles?.length) {
+          const socialModuleProfilesToChats =
+            await socialModuleProfilesToChatsApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "profileId",
+                      method: "inArray",
+                      value: subjectToSocialModuleProfiles.map((entity) => {
+                        return entity.socialModuleProfileId;
+                      }),
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+
+          if (socialModuleProfilesToChats?.length) {
+            const telegramChats = await socialModuleChatApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "id",
+                      method: "inArray",
+                      value: socialModuleProfilesToChats.map((entity) => {
+                        return entity.chatId;
+                      }),
+                    },
+                    {
+                      column: "variant",
+                      method: "eq",
+                      value: "telegram",
+                    },
+                  ],
+                },
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+
+            if (telegramChats?.length && telegramChats.length === 1) {
+              await api.ecommerceModuleProductCheckout({
+                id: props.subjectToEcommerceModuleOrder.subjectId,
+                productId: props.extendedOrder.ordersToProducts[0].productId,
+                data: {
+                  provider,
+                  billingModule: {
+                    currency,
+                  },
+                  account: telegramChats[0].sourceSystemId,
+                },
+              });
+            }
+          }
+        }
       }
     }
 
@@ -1171,8 +1379,8 @@ export class Service {
           );
         });
 
-    const ecommerceOrderCheckoutAttributes =
-      await ecommerceOrderApi.checkoutAttributes({
+    const ecommerceOrderCheckoutAttributesByCurrency =
+      await ecommerceOrderApi.checkoutAttributesByCurrency({
         id: props.id,
         billingModuleCurrencyId:
           ecommerceModuleOrderToBillingModuleCurrencies[0]
@@ -1259,9 +1467,269 @@ export class Service {
           );
         });
 
+    const ecommerceModuleOrdersToBillingModulePaymentIntents =
+      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
+        .find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "eq",
+                  value: props.id,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        })
+        .then(async (ecommerceModuleOrdersToBillingModulePaymentIntents) => {
+          if (!RBAC_SECRET_KEY) {
+            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+          }
+
+          if (!ecommerceModuleOrdersToBillingModulePaymentIntents?.length) {
+            return ecommerceModuleOrdersToBillingModulePaymentIntents;
+          }
+
+          const billingModulePaymentIntents =
+            await billingModulePaymentIntentApi
+              .find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "id",
+                        method: "inArray",
+                        value:
+                          ecommerceModuleOrdersToBillingModulePaymentIntents.map(
+                            (entity) => {
+                              return entity.billingModulePaymentIntentId;
+                            },
+                          ),
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              })
+              .then(async (billingModulePaymentIntents) => {
+                if (!RBAC_SECRET_KEY) {
+                  throw new Error(
+                    "Configuration error. RBAC_SECRET_KEY not set",
+                  );
+                }
+
+                if (!billingModulePaymentIntents?.length) {
+                  return billingModulePaymentIntents;
+                }
+
+                const billingModulePaymentIntentsToCurrencies =
+                  await billingModulePaymentIntentsToCurreciesApi
+                    .find({
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "paymentIntentId",
+                              method: "inArray",
+                              value: billingModulePaymentIntents.map(
+                                (entity) => {
+                                  return entity.id;
+                                },
+                              ),
+                            },
+                          ],
+                        },
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                          "Cache-Control": "no-store",
+                        },
+                      },
+                    })
+                    .then(async (billingModulePaymentIntentsToCurrencies) => {
+                      if (!RBAC_SECRET_KEY) {
+                        throw new Error(
+                          "Configuration error. RBAC_SECRET_KEY not set",
+                        );
+                      }
+
+                      if (!billingModulePaymentIntentsToCurrencies?.length) {
+                        return billingModulePaymentIntentsToCurrencies;
+                      }
+
+                      const billingModuleCurrencies =
+                        await billingModuleCurrencyApi.find({
+                          params: {
+                            filters: {
+                              and: [
+                                {
+                                  column: "id",
+                                  method: "inArray",
+                                  value:
+                                    billingModulePaymentIntentsToCurrencies.map(
+                                      (entity) => {
+                                        return entity.currencyId;
+                                      },
+                                    ),
+                                },
+                              ],
+                            },
+                          },
+                          options: {
+                            headers: {
+                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                              "Cache-Control": "no-store",
+                            },
+                          },
+                        });
+
+                      return billingModulePaymentIntentsToCurrencies.map(
+                        (billingModulePaymentIntentToCurrency) => {
+                          return {
+                            ...billingModulePaymentIntentToCurrency,
+                            currency: billingModuleCurrencies?.find(
+                              (entity) => {
+                                return (
+                                  billingModulePaymentIntentToCurrency.currencyId ===
+                                  entity.id
+                                );
+                              },
+                            ),
+                          };
+                        },
+                      );
+                    });
+
+                const billingModulePaymentIntentsToInvoices =
+                  await billingModulePaymentIntentsToInvoicesApi
+                    .find({
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "paymentIntentId",
+                              method: "eq",
+                              value: billingModulePaymentIntents.map(
+                                (entity) => {
+                                  return entity.id;
+                                },
+                              ),
+                            },
+                          ],
+                        },
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                          "Cache-Control": "no-store",
+                        },
+                      },
+                    })
+                    .then(async (billingModulePaymentIntentsToInvoices) => {
+                      if (!RBAC_SECRET_KEY) {
+                        throw new Error(
+                          "Configuration error. RBAC_SECRET_KEY not set",
+                        );
+                      }
+
+                      if (!billingModulePaymentIntentsToInvoices?.length) {
+                        return billingModulePaymentIntentsToInvoices;
+                      }
+
+                      const billingModuleInvoices =
+                        await billingModuleInvoiceApi.find({
+                          params: {
+                            filters: {
+                              and: [
+                                {
+                                  column: "id",
+                                  method: "inArray",
+                                  value:
+                                    billingModulePaymentIntentsToInvoices.map(
+                                      (entity) => {
+                                        return entity.invoiceId;
+                                      },
+                                    ),
+                                },
+                              ],
+                            },
+                          },
+                          options: {
+                            headers: {
+                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                              "Cache-Control": "no-store",
+                            },
+                          },
+                        });
+
+                      return billingModulePaymentIntentsToInvoices.map(
+                        (billingModulePaymentIntentToInvoice) => {
+                          return {
+                            ...billingModulePaymentIntentToInvoice,
+                            invoice: billingModuleInvoices?.find(
+                              (billingModuleInvoice) => {
+                                return (
+                                  billingModuleInvoice.id ===
+                                  billingModulePaymentIntentToInvoice.invoiceId
+                                );
+                              },
+                            ),
+                          };
+                        },
+                      );
+                    });
+
+                return billingModulePaymentIntents.map(
+                  (billingModulePaymentIntent) => {
+                    return {
+                      ...billingModulePaymentIntent,
+                      paymentIntentsToCurrencies:
+                        billingModulePaymentIntentsToCurrencies,
+                      paymentIntentsToInvoices:
+                        billingModulePaymentIntentsToInvoices,
+                    };
+                  },
+                );
+              });
+
+          // console.log(
+          //   "🚀 ~ extendedEcommerceModuleOrder ~ billingModulePaymentIntents:",
+          //   billingModulePaymentIntents,
+          // );
+
+          return ecommerceModuleOrdersToBillingModulePaymentIntents.map(
+            (ecommerceModuleOrderToBillingModulePaymentIntent) => {
+              return {
+                ...ecommerceModuleOrderToBillingModulePaymentIntent,
+                billingModulePaymentIntent: billingModulePaymentIntents?.find(
+                  (billingModulePaymentIntent) => {
+                    return (
+                      billingModulePaymentIntent.id ===
+                      ecommerceModuleOrderToBillingModulePaymentIntent.billingModulePaymentIntentId
+                    );
+                  },
+                ),
+              };
+            },
+          );
+        });
+
     return {
       ...props,
-      checkoutAttributes: ecommerceOrderCheckoutAttributes,
+      checkoutAttributesByCurrency: ecommerceOrderCheckoutAttributesByCurrency,
       ordersToProducts: ecommerceModuleOrderToProducts.map(
         (ecommerceModuleOrderToProduct) => {
           const product = ecommerceModuleProducts.find(
@@ -1287,6 +1755,8 @@ export class Service {
         ecommerceModuleOrderToBillingModuleCurrencies,
       ordersToFileStorageModuleFiles:
         ecommerceModuleOrdersToFileStorageModuleFiles,
+      ordersToBillingModulePaymentIntents:
+        ecommerceModuleOrdersToBillingModulePaymentIntents as IExtendedEcommerceModuleOrder["ordersToBillingModulePaymentIntents"],
     };
   }
 

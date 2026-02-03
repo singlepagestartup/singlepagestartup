@@ -99,7 +99,7 @@ export function Component(props: IComponentPropsExtended) {
             props.data.ecommerce.order.ordersToBillingModuleCurrencies[0]
               .billingModuleCurrency.symbol
           }
-          {props.data.ecommerce.order.checkoutAttributes.amount}
+          {props.data.ecommerce.order.checkoutAttributesByCurrency.amount}
         </p>
         <p
           style={{

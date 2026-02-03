@@ -68,7 +68,7 @@ export class Handler {
             id: uuid,
             data: {
               ...entity,
-              status: "canceled",
+              status: "canceling",
               type: "history",
             },
             options: {
@@ -167,13 +167,10 @@ export class Handler {
             },
           });
         }
-      } else if (entity.status === "delivering") {
-        if (!ordersToBillingModuleCurrencies?.length) {
-          throw new Error(
-            "Not Found error. Orders to billing module currencies not found",
-          );
-        }
-
+      } else if (
+        entity.status === "delivering" &&
+        ordersToBillingModuleCurrencies?.length
+      ) {
         const attributes = await this.service.getCheckoutAttributes({
           id: uuid,
           billingModuleCurrencyId:
@@ -227,10 +224,6 @@ export class Handler {
 
           const isExpired = new Date() > intervalDeadline;
 
-          logger.debug("🚀 ~ check ~ new Date():", new Date());
-          logger.debug("🚀 ~ check ~ intervalDeadline:", intervalDeadline);
-          logger.debug("🚀 ~ check ~ isExpired:", isExpired);
-
           if (isExpired) {
             const ordersToBillingModulePaymentIntents =
               await ordersToBillingModulePaymentIntentsApi.find({
@@ -253,48 +246,16 @@ export class Handler {
                 },
               });
 
-            if (!ordersToBillingModulePaymentIntents?.length) {
-              throw new Error(
-                "Not Found error. Orders to billing module payment intents not found",
-              );
-            }
-
-            const paymentIntents = await billingPaymentIntentApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: ordersToBillingModulePaymentIntents.map(
-                        (order) => order.billingModulePaymentIntentId,
-                      ),
-                    },
-                  ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
-
-            if (!paymentIntents?.length) {
-              throw new Error("Not Found error. Payment intents not found");
-            }
-
-            const paymentIntentsToInvoices =
-              await billingPaymentIntentsToInvoicesApi.find({
+            if (ordersToBillingModulePaymentIntents?.length) {
+              const paymentIntents = await billingPaymentIntentApi.find({
                 params: {
                   filters: {
                     and: [
                       {
-                        column: "paymentIntentId",
+                        column: "id",
                         method: "inArray",
-                        value: paymentIntents.map(
-                          (paymentIntent) => paymentIntent.id,
+                        value: ordersToBillingModulePaymentIntents.map(
+                          (order) => order.billingModulePaymentIntentId,
                         ),
                       },
                     ],
@@ -308,57 +269,161 @@ export class Handler {
                 },
               });
 
-            if (!paymentIntentsToInvoices?.length) {
-              throw new Error(
-                "Not Found error. Payment intents to invoices not found",
-              );
+              if (paymentIntents?.length) {
+                const paymentIntentsToInvoices =
+                  await billingPaymentIntentsToInvoicesApi.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "paymentIntentId",
+                            method: "inArray",
+                            value: paymentIntents.map(
+                              (paymentIntent) => paymentIntent.id,
+                            ),
+                          },
+                        ],
+                      },
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        "Cache-Control": "no-store",
+                      },
+                    },
+                  });
+
+                if (paymentIntentsToInvoices?.length) {
+                  const invoices = await billingInvoiceApi.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "id",
+                            method: "inArray",
+                            value: paymentIntentsToInvoices.map(
+                              (paymentIntentToInvoice) =>
+                                paymentIntentToInvoice.invoiceId,
+                            ),
+                          },
+                          {
+                            column: "createdAt",
+                            method: "gt",
+                            value: new Date(intervalDeadline).toISOString(),
+                          },
+                        ],
+                      },
+                    },
+                    options: {
+                      headers: {
+                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        "Cache-Control": "no-store",
+                      },
+                    },
+                  });
+
+                  if (invoices?.length) {
+                    return c.json({
+                      data: {
+                        ok: true,
+                      },
+                    });
+                  }
+                }
+              }
             }
 
-            const invoices = await billingInvoiceApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: paymentIntentsToInvoices.map(
-                        (paymentIntentToInvoice) =>
-                          paymentIntentToInvoice.invoiceId,
-                      ),
-                    },
-                    {
-                      column: "createdAt",
-                      method: "gt",
-                      value: new Date(intervalDeadline).toISOString(),
-                    },
-                  ],
-                },
+            await api.update({
+              id: uuid,
+              data: {
+                ...entity,
+                status: "delivered",
               },
               options: {
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             });
-
-            logger.debug("🚀 ~ check ~ invoices:", invoices);
-
-            if (!invoices?.length) {
-              await api.update({
-                id: uuid,
-                data: {
-                  ...entity,
-                  status: "delivered",
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  },
-                },
-              });
-            }
           }
+        }
+      } else if (
+        entity.status === "requested_cancelation" &&
+        ordersToBillingModuleCurrencies?.length
+      ) {
+        const attributes = await this.service.getCheckoutAttributes({
+          id: uuid,
+          billingModuleCurrencyId:
+            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+        });
+
+        if (attributes.interval) {
+          const minuteIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setMinutes(
+              new Date(entity.updatedAt).getMinutes() + 1,
+            ),
+          );
+          const hourIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setHours(
+              new Date(entity.updatedAt).getHours() + 1,
+            ),
+          );
+          const dayIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setDate(
+              new Date(entity.updatedAt).getDate() + 1,
+            ),
+          );
+          const weekIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setDate(
+              new Date(entity.updatedAt).getDate() + 7,
+            ),
+          );
+          const monthIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setMonth(
+              new Date(entity.updatedAt).getMonth() + 1,
+            ),
+          );
+          const yearIntervalDeadline = new Date(
+            new Date(entity.updatedAt).setFullYear(
+              new Date(entity.updatedAt).getFullYear() + 1,
+            ),
+          );
+
+          const intervalDeadline =
+            attributes.interval === "minute"
+              ? minuteIntervalDeadline
+              : attributes.interval === "hour"
+                ? hourIntervalDeadline
+                : attributes.interval === "day"
+                  ? dayIntervalDeadline
+                  : attributes.interval === "week"
+                    ? weekIntervalDeadline
+                    : attributes.interval === "month"
+                      ? monthIntervalDeadline
+                      : yearIntervalDeadline;
+
+          const isExpired = new Date() > intervalDeadline;
+
+          if (!isExpired) {
+            return c.json({
+              data: {
+                ok: true,
+              },
+            });
+          }
+
+          await api.update({
+            id: uuid,
+            data: {
+              ...entity,
+              status: "canceling",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
         }
       }
 

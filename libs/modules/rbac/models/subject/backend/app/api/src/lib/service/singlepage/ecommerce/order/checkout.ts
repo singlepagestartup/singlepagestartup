@@ -20,6 +20,7 @@ import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 
 export type IExecuteProps =
   | {
@@ -492,7 +493,7 @@ export class Service {
     const billingModulePaymentIntents: {
       billingModulePaymentIntent: IBillingModulePaymentIntent;
       billingModuleCurrencyId: string;
-      checkoutAttributes: {
+      checkoutAttributesByCurrency: {
         type: string;
         interval: string;
       };
@@ -512,7 +513,7 @@ export class Service {
       }
 
       const { amount, type, interval } =
-        await ecommerceModuleOrderApi.checkoutAttributes({
+        await ecommerceModuleOrderApi.checkoutAttributesByCurrency({
           id: order["id"],
           billingModuleCurrencyId,
           options: {
@@ -523,13 +524,101 @@ export class Service {
           },
         });
 
+      if (type === "subscription") {
+        const subjectToEcommerceModuleOrders =
+          await subjectsToEcommerceModuleOrdersApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "subjectId",
+                    method: "eq",
+                    value: props.id,
+                  },
+                ],
+              },
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          });
+
+        if (subjectToEcommerceModuleOrders?.length) {
+          for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
+            const ecommerceModuleOrder = await ecommerceModuleOrderApi.findById(
+              {
+                id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              },
+            );
+
+            if (!ecommerceModuleOrder) {
+              continue;
+            }
+
+            if (
+              ["completed", "canceled"].includes(ecommerceModuleOrder.status) &&
+              ecommerceModuleOrder.type !== "history"
+            ) {
+              continue;
+            }
+
+            const ecommerceModuleOrderCheckoutAttributes =
+              await ecommerceModuleOrderApi.checkoutAttributes({
+                id: ecommerceModuleOrder.id,
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              });
+
+            if (
+              ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
+            ) {
+              continue;
+            }
+
+            await ecommerceModuleOrderApi.update({
+              id: ecommerceModuleOrder.id,
+              data: {
+                ...ecommerceModuleOrder,
+                status: "requested_cancelation",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                  "Cache-Control": "no-store",
+                },
+              },
+            });
+
+            console.log(
+              "🚀 ~ execute ~ ecommerceModuleOrderCheckoutAttributes:",
+              ecommerceModuleOrderCheckoutAttributes,
+            );
+          }
+        }
+      }
+
       const existingBillingModulePaymentIntentWithSameBillingModuleCurrencyAndCheckoutAttributes =
         billingModulePaymentIntents.find(
           (billingModulePaymentIntent) =>
             billingModulePaymentIntent.billingModuleCurrencyId ===
               billingModuleCurrencyId &&
-            billingModulePaymentIntent.checkoutAttributes.type === type &&
-            billingModulePaymentIntent.checkoutAttributes.interval === interval,
+            billingModulePaymentIntent.checkoutAttributesByCurrency.type ===
+              type &&
+            billingModulePaymentIntent.checkoutAttributesByCurrency.interval ===
+              interval,
         );
 
       if (
@@ -563,7 +652,7 @@ export class Service {
         billingModulePaymentIntents.push({
           billingModulePaymentIntent: updatedBillingModulePaymentIntent,
           billingModuleCurrencyId,
-          checkoutAttributes: {
+          checkoutAttributesByCurrency: {
             type,
             interval,
           },
@@ -613,7 +702,7 @@ export class Service {
       billingModulePaymentIntents.push({
         billingModulePaymentIntent,
         billingModuleCurrencyId,
-        checkoutAttributes: {
+        checkoutAttributesByCurrency: {
           type,
           interval,
         },

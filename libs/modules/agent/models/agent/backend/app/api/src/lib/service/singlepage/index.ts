@@ -61,9 +61,9 @@ interface ISocialModuleTelegramMessageData {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private readonly telegramRequiredChannelName =
+  telegramRequiredChannelName =
     TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
-  private readonly telegramRequiredChannelLink =
+  telegramRequiredChannelLink =
     TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
     (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
       ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`

@@ -963,6 +963,11 @@ export class TelegarmBot {
       }
     }
 
+    await this.synchronizeRbacModuleRole({
+      ctx: props.ctx,
+      rbacModuleSubject: subject,
+    });
+
     return {
       rbacModuleSubject: subject,
       socialModuleProfile: profile,

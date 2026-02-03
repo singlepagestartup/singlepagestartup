@@ -24,10 +24,10 @@ export class Handler {
       }
 
       const billingModuleCurrencyId = c.req.param("billingModuleCurrencyId");
-
-      if (!billingModuleCurrencyId) {
-        throw new Error("Validation error. Invalid billing module currency id");
-      }
+      console.log(
+        "🚀 ~ execute ~ billingModuleCurrencyId:",
+        billingModuleCurrencyId,
+      );
 
       const attributes = await this.service.getCheckoutAttributes({
         id: uuid,

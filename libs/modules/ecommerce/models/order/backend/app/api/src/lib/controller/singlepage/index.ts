@@ -39,8 +39,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "GET",
-        path: "/:uuid/checkout-attributes/:billingModuleCurrencyId",
+        path: "/:uuid/checkout-attributes",
         handler: this.checkoutAttributes,
+      },
+      {
+        method: "GET",
+        path: "/:uuid/checkout-attributes/:billingModuleCurrencyId",
+        handler: this.checkoutAttributesByCurrency,
       },
       {
         method: "POST",
@@ -94,6 +99,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   }
 
   async checkoutAttributes(c: Context, next: any): Promise<Response> {
+    return new CheckoutAttributes(this.service).execute(c, next);
+  }
+
+  async checkoutAttributesByCurrency(c: Context, next: any): Promise<Response> {
     return new CheckoutAttributes(this.service).execute(c, next);
   }
 

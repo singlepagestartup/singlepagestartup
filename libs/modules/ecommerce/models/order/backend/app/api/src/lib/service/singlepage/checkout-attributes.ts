@@ -12,7 +12,7 @@ import { internationalization } from "@sps/shared-configuration";
 
 export type IExecuteProps = {
   id: string;
-  billingModuleCurrencyId: string;
+  billingModuleCurrencyId?: string;
 };
 
 export class Service {
@@ -185,27 +185,50 @@ export class Service {
         );
       }
 
-      const targetPriceAttributes =
-        await attributesToBillingModuleCurrenciesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "inArray",
-                  value: productPriceAttributes.map(
-                    (productPriceAttribute) =>
-                      productPriceAttribute.attributeId,
-                  ),
-                },
-                {
-                  column: "billingModuleCurrencyId",
-                  method: "eq",
-                  value: props.billingModuleCurrencyId,
-                },
-              ],
+      if (props.billingModuleCurrencyId) {
+        const targetPriceAttributes =
+          await attributesToBillingModuleCurrenciesApi.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "attributeId",
+                    method: "inArray",
+                    value: productPriceAttributes.map(
+                      (productPriceAttribute) =>
+                        productPriceAttribute.attributeId,
+                    ),
+                  },
+                  {
+                    column: "billingModuleCurrencyId",
+                    method: "eq",
+                    value: props.billingModuleCurrencyId,
+                  },
+                ],
+              },
             },
-          },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
+          });
+
+        if (!targetPriceAttributes?.length) {
+          throw new Error(
+            "Not Found error. Product does not have any target price attributes",
+          );
+        }
+
+        if (targetPriceAttributes.length > 1) {
+          throw new Error(
+            "Internal error. Product has multiple target price attributes",
+          );
+        }
+
+        const priceAttribute = await attributeApi.findById({
+          id: targetPriceAttributes[0].attributeId,
           options: {
             headers: {
               "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -214,41 +237,20 @@ export class Service {
           },
         });
 
-      if (!targetPriceAttributes?.length) {
-        throw new Error(
-          "Not Found error. Product does not have any target price attributes",
-        );
+        if (!priceAttribute) {
+          throw new Error("Not Found error. Price attribute not found");
+        }
+
+        productPrices.push(priceAttribute);
+
+        if (!productPrices.length) {
+          throw new Error(
+            "Not Found error. Product does not have any price attributes",
+          );
+        }
+
+        amount += Number(productPrices[0].number) * orderToProduct.quantity;
       }
-
-      if (targetPriceAttributes.length > 1) {
-        throw new Error(
-          "Internal error. Product has multiple target price attributes",
-        );
-      }
-
-      const priceAttribute = await attributeApi.findById({
-        id: targetPriceAttributes[0].attributeId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
-
-      if (!priceAttribute) {
-        throw new Error("Not Found error. Price attribute not found");
-      }
-
-      productPrices.push(priceAttribute);
-
-      if (!productPrices.length) {
-        throw new Error(
-          "Not Found error. Product does not have any price attributes",
-        );
-      }
-
-      amount += Number(productPrices[0].number) * orderToProduct.quantity;
 
       const productIntervals: IAttribute[] = [];
 

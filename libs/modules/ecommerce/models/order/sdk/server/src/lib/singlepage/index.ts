@@ -12,6 +12,11 @@ import {
   type IResult as ICheckoutAttributesResult,
 } from "./checkout-attributes";
 import {
+  action as checkoutAttributesByCurrency,
+  type IProps as ICheckoutAttributesByCurrencyProps,
+  type IResult as ICheckoutAttributesByCurrencyResult,
+} from "./checkout-attributes-by-currency";
+import {
   action as clearOldOrders,
   type IProps as IChearOldOrdersProps,
   type IResult as IChearOldOrdersResult,
@@ -39,6 +44,7 @@ import {
 
 export type IProps = {
   ICheckoutAttributesProps: ICheckoutAttributesProps;
+  ICheckoutAttributesByCurrencyProps: ICheckoutAttributesByCurrencyProps;
   IChearOldOrdersProps: IChearOldOrdersProps;
   ITotalProps: ITotalProps;
   IQuantityProps: IQuantityProps;
@@ -48,6 +54,7 @@ export type IProps = {
 
 export type IResult = {
   ICheckoutAttributesResult: ICheckoutAttributesResult;
+  ICheckoutAttributesByCurrencyResult: ICheckoutAttributesByCurrencyResult;
   IChearOldOrdersResult: IChearOldOrdersResult;
   ITotalResult: ITotalResult;
   IQuantityResult: IQuantityResult;
@@ -68,4 +75,5 @@ export const api = {
   quantity,
   ordersToProductsUpdate,
   check,
+  checkoutAttributesByCurrency,
 };

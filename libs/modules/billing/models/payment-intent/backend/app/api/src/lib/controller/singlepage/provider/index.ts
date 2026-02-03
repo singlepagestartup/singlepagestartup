@@ -7,10 +7,12 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
+import { api } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as currencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
+import { api as paymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 
 export class Handler {
   service: Service;
@@ -70,6 +72,18 @@ export class Handler {
         throw new Error("Not Found error. Currency not found");
       }
 
+      await paymentIntentsToCurrenciesApi.create({
+        data: {
+          paymentIntentId: entity.id,
+          currencyId: currency.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
       logger.debug("currency", currency);
 
       let result: any;
@@ -83,6 +97,21 @@ export class Handler {
       }
 
       if (entity.amount === 0) {
+        if (entity.type === "subscription") {
+          await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              type: "one_off",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+
         const invoice = await invoiceApi.create({
           data: {
             amount: entity.amount,
@@ -165,6 +194,20 @@ export class Handler {
         if (!data.metadata?.email) {
           throw new Error("Validation error. Email is required");
         }
+        if (entity.type === "subscription") {
+          await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              type: "one_off",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
 
         result = await this.service.OxProcessing({
           action: "create",
@@ -177,6 +220,21 @@ export class Handler {
       } else if (provider.includes("payselection")) {
         if (!data.metadata?.email) {
           throw new Error("Validation error. Email is required");
+        }
+
+        if (entity.type === "subscription") {
+          await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              type: "one_off",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
         }
 
         const credentialsType = provider.includes("international")
@@ -247,6 +305,21 @@ export class Handler {
             });
         }, 10000);
       } else if (provider === "paykeeper") {
+        if (entity.type === "subscription") {
+          await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              type: "one_off",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+
         result = await this.service.paykeeper({
           entity,
           action: "create",
@@ -255,6 +328,21 @@ export class Handler {
           metadata: data.metadata,
         });
       } else if (provider === "telegram-star") {
+        if (entity.type === "subscription") {
+          await api.update({
+            id: entity.id,
+            data: {
+              ...entity,
+              type: "one_off",
+            },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              },
+            },
+          });
+        }
+
         result = await this.service.telegramStar({
           entity,
           action: "create",

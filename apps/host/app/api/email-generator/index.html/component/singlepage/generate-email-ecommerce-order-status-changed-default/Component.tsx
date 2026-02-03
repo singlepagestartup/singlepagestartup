@@ -23,7 +23,8 @@ export function Component(props: IComponentPropsExtended) {
           <Text>Order Id: {props.data.ecommerce.order.id}</Text>
           <Text>Status: {props.data.ecommerce.order.status}</Text>
           <Text>
-            Amount: {props.data.ecommerce.order.checkoutAttributes.amount}
+            Amount:{" "}
+            {props.data.ecommerce.order.checkoutAttributesByCurrency.amount}
           </Text>
           <Text>
             Currency:{" "}

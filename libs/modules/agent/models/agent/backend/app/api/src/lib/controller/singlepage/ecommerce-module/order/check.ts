@@ -20,14 +20,14 @@ export class Handler {
 
       logger.info("Ecommerce module order check started");
 
-      const notSucceededOrders = await ecommerceModuleOrderApi.find({
+      const notCompletedOrders = await ecommerceModuleOrderApi.find({
         params: {
           filters: {
             and: [
               {
                 column: "status",
                 method: "ne",
-                value: "paid",
+                value: "completed",
               },
             ],
           },
@@ -39,8 +39,8 @@ export class Handler {
         },
       });
 
-      if (notSucceededOrders?.length) {
-        for (const order of notSucceededOrders) {
+      if (notCompletedOrders?.length) {
+        for (const order of notCompletedOrders) {
           try {
             await ecommerceModuleOrderApi.check({
               id: order.id,

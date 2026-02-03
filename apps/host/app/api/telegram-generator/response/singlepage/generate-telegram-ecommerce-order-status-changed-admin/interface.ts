@@ -15,7 +15,7 @@ export interface IResponseProps {
   data: {
     ecommerce: {
       order: IEcommerceOrder & {
-        checkoutAttributes: {
+        checkoutAttributesByCurrency: {
           amount: number;
           type: "subscription" | "one-time";
           interval: "day" | "week" | "month" | "year";

@@ -8,6 +8,7 @@ import QueryString from "qs";
 
 export interface IProps {
   id: string;
+  billingModuleCurrencyId?: string;
   host?: string;
   tag?: string;
   revalidate?: number;
@@ -24,7 +25,13 @@ export interface IResult {
 }
 
 export async function action(props: IProps): Promise<IResult> {
-  const { id, params, options, host = serverHost } = props;
+  const {
+    id,
+    billingModuleCurrencyId,
+    params,
+    options,
+    host = serverHost,
+  } = props;
 
   const stringifiedQuery = QueryString.stringify(params, {
     encodeValuesOnly: true,
@@ -40,7 +47,7 @@ export async function action(props: IProps): Promise<IResult> {
   };
 
   const res = await fetch(
-    `${host}${route}/${id}/checkout-attributes?${stringifiedQuery}`,
+    `${host}${route}/${id}/checkout-attributes/${billingModuleCurrencyId}?${stringifiedQuery}`,
     requestOptions,
   );
 
