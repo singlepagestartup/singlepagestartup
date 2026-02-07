@@ -262,6 +262,37 @@ export class Handler {
               data: entity,
             });
           }
+
+          if (
+            new Date(invoice.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 <
+            Date.now()
+          ) {
+            await invoiceApi.update({
+              id: invoice.id,
+              data: {
+                ...invoice,
+                status: "failed",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+
+            await api.update({
+              id: entity.id,
+              data: {
+                ...entity,
+                status: "failed",
+              },
+              options: {
+                headers: {
+                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                },
+              },
+            });
+          }
         }
       }
 

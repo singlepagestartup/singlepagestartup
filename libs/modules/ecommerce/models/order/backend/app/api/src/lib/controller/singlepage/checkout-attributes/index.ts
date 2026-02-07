@@ -24,10 +24,6 @@ export class Handler {
       }
 
       const billingModuleCurrencyId = c.req.param("billingModuleCurrencyId");
-      console.log(
-        "🚀 ~ execute ~ billingModuleCurrencyId:",
-        billingModuleCurrencyId,
-      );
 
       const attributes = await this.service.getCheckoutAttributes({
         id: uuid,

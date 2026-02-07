@@ -1,0 +1,63 @@
+import {
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
+} from "../envs";
+
+const telegramRequiredChannelName =
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
+const telegramRequiredChannelLink =
+  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
+  (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
+    ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
+    : "https://t.me");
+
+export const util = {
+  openRouterStarted: {
+    ru: "💭 Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
+    en: "Starting to process your request. Please wait.",
+  },
+  openRouterFetchingModels: {
+    ru: "🤖 Получаю список моделей. Пожалуйста, подождите.",
+    en: "Fetching models list. Please wait.",
+  },
+  openRouterDetectingLanguage: {
+    ru: "👅 Определяю язык сообщения. Пожалуйста, подождите.",
+    en: "Detecting message language. Please wait.",
+  },
+  openRouterSelectingModels: {
+    ru: "👨🏻‍⚕️ Выбираю модель для ответа. Пожалуйста, подождите.",
+    en: "Selecting model for response. Please wait.",
+  },
+  openRouterGeneratingResponse: {
+    ru: "🏥 Генерирую ответ с помощью [selectModelForRequest]. Пожалуйста, подождите.",
+    en: "Generating response using [selectModelForRequest]. Please wait.",
+  },
+  openRouterError: {
+    ru: "🪦 Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
+    en: "An error occurred while processing your request. Please try again later.",
+  },
+  openRouterRequiredTelegamChannelSubscriptionError: {
+    ru: `🧾 Перед началом приёма\n\nЧтобы пользоваться ботом, тебе нужно быть пациентом *Doctor GPT*.\n\nПодпишись на канал [*${telegramRequiredChannelName}*](${telegramRequiredChannelLink})`,
+    en: `You need to subscribe to our Telegram channel  - [${telegramRequiredChannelName}](${telegramRequiredChannelLink}) to use this feature.`,
+  },
+  ecommerceModuleSelectSubscriptionProductsOffer: {
+    ru: "💊 Пожалуйста, выберите одну из наших подписок, чтобы продолжить.",
+    en: "Please select one of our subscription products to continue.",
+  },
+  openRouterNotFoundSubscription: {
+    ru: "✨ У вас нет активной подписки. Пожалуйста, оформите подписку, чтобы использовать эту функцию.",
+    en: "You do not have an active subscription. Please subscribe to use this feature.",
+  },
+  openRouterNotEnoughTokens: {
+    ru: "⛔ У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
+    en: "У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
+  },
+  ecommerceModuleOrderPayButtonDescription: {
+    ru: "Для оплаты подписки нажмите на кнопку с выбором способа оплаты",
+    en: "You can subscribe by the clicking buttons below",
+  },
+  ecommerceModuleOrderAlreadyHaveSubscription: {
+    ru: "У вас уже есть активная подписка.",
+    en: "You have active subscription.",
+  },
+};

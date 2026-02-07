@@ -27,6 +27,7 @@ export const statuses = [
   "requested_cancelation",
   "canceling",
   "canceled",
+  "completed",
 ];
 export const query = {};
 export const options = {

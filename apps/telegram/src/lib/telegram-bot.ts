@@ -21,6 +21,7 @@ import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
 import { api as rbacModuleSubjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
+import { api as rbacModuleSubjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
@@ -37,6 +38,14 @@ import { IModel as ISocialModuleAttributeKeysToAttributes } from "@sps/social/re
 import { IModel as ISocialModuleProfilesToAttributes } from "@sps/social/relations/profiles-to-attributes/sdk/model";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { api as ecommerceModuleProductApi } from "@sps/ecommerce/models/product/sdk/server";
+import { api as ecommerceModuleAttributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
+import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
+import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
+import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
+import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
+import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
 
@@ -968,6 +977,11 @@ export class TelegarmBot {
       rbacModuleSubject: subject,
     });
 
+    await this.checkoutFreeSubscriptionEcommerceModuleProducts({
+      ctx: props.ctx,
+      rbacModuleSubject: subject,
+    });
+
     return {
       rbacModuleSubject: subject,
       socialModuleProfile: profile,
@@ -1149,7 +1163,321 @@ export class TelegarmBot {
 
       console.log("🚀 ~ synchronizeRbacModuleRole ~ toAddRoleIds:", toAddRoles);
     }
-    //
+  }
+
+  async checkoutFreeSubscriptionEcommerceModuleProducts(props: {
+    ctx: GrammyContext;
+    rbacModuleSubject: IRbacSubject;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. 'RBAC_SECRET_KEY' no set.");
+    }
+
+    const rbacModuleSubjectsToEcommerceModuleOrders =
+      await rbacModuleSubjectsToEcommerceModuleOrdersApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: props.rbacModuleSubject.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (rbacModuleSubjectsToEcommerceModuleOrders?.length) {
+      const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: rbacModuleSubjectsToEcommerceModuleOrders.map(
+                  (rbacModuleSubjectToEcommerceModuleOrder) => {
+                    return rbacModuleSubjectToEcommerceModuleOrder.ecommerceModuleOrderId;
+                  },
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+      const allOrdersAreCompleted = ecommerceModuleOrders?.every(
+        (ecommerceModuleOrder) => {
+          if (ecommerceModuleOrder.status === "completed") {
+            return true;
+          }
+
+          if (ecommerceModuleOrder.status === "canceled") {
+            return true;
+          }
+
+          return false;
+        },
+      );
+
+      if (!allOrdersAreCompleted) {
+        return;
+      }
+    }
+
+    const ecommerceModuleSubscriptionProducts =
+      await ecommerceModuleProductApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "type",
+                method: "eq",
+                value: "subscription",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleSubscriptionProducts?.length) {
+      return;
+    }
+
+    const ecommerceModulePriceAttributeKeys =
+      await ecommerceModuleAttributeKeyApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "type",
+                method: "eq",
+                value: "price",
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModulePriceAttributeKeys?.length) {
+      return;
+    }
+
+    const ecommerceModulePriceAttributeKey =
+      ecommerceModulePriceAttributeKeys[0];
+
+    const ecommerceModulePriceAttributeKeysToAttributes =
+      await ecommerceModuleAttributeKeysToAttributesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeKeyId",
+                method: "eq",
+                value: ecommerceModulePriceAttributeKey.id,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModulePriceAttributeKeysToAttributes?.length) {
+      return;
+    }
+
+    const productsToPriceAttributes =
+      await ecommerceModuleProductsToAttributesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "productId",
+                method: "inArray",
+                value: ecommerceModuleSubscriptionProducts.map((entity) => {
+                  return entity.id;
+                }),
+              },
+              {
+                column: "attributeId",
+                method: "inArray",
+                value: ecommerceModulePriceAttributeKeysToAttributes.map(
+                  (entity) => {
+                    return entity.attributeId;
+                  },
+                ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!productsToPriceAttributes?.length) {
+      return;
+    }
+
+    const ecommerceModuleSubscriptionProductPriceAttributes =
+      await ecommerceModuleAttributeApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: productsToPriceAttributes.map((entity) => {
+                  return entity.attributeId;
+                }),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleSubscriptionProductPriceAttributes?.length) {
+      return;
+    }
+
+    const ecommerceModuleZeroNumberSubscriptionProductPriceAttributes =
+      ecommerceModuleSubscriptionProductPriceAttributes.filter((entity) => {
+        return entity.number === "0";
+      });
+
+    const ecommerceModuleZeroPriceProductsToAttributes =
+      productsToPriceAttributes.filter((productToPriceAttribute) => {
+        return ecommerceModuleZeroNumberSubscriptionProductPriceAttributes
+          .map((entity) => {
+            return entity.id;
+          })
+          .includes(productToPriceAttribute.attributeId);
+      });
+
+    const everyProductToAttributeIsTheSameProduct =
+      ecommerceModuleZeroPriceProductsToAttributes.every((entity) => {
+        return (
+          entity.productId ===
+          ecommerceModuleZeroPriceProductsToAttributes[0].productId
+        );
+      });
+
+    if (!everyProductToAttributeIsTheSameProduct) {
+      return;
+    }
+
+    const ecommerceModuleAttributesToBillingModuleCurrencies =
+      await ecommerceModuleAttributesToBillingModuleCurrenciesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "attributeId",
+                method: "inArray",
+                value:
+                  ecommerceModuleZeroNumberSubscriptionProductPriceAttributes.map(
+                    (entity) => {
+                      return entity.id;
+                    },
+                  ),
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    if (!ecommerceModuleAttributesToBillingModuleCurrencies?.length) {
+      return;
+    }
+
+    const billingModuleCurrency = await billingModuleCurrencyApi.findById({
+      id: ecommerceModuleAttributesToBillingModuleCurrencies[0]
+        .billingModuleCurrencyId,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!billingModuleCurrency) {
+      return;
+    }
+
+    const freeSubscriptionProduct = ecommerceModuleSubscriptionProducts.find(
+      (entity) => {
+        return (
+          entity.id ===
+          ecommerceModuleZeroPriceProductsToAttributes[0].productId
+        );
+      },
+    );
+
+    if (!freeSubscriptionProduct) {
+      return;
+    }
+
+    if (!props.ctx.chatId) {
+      return;
+    }
+
+    await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
+      id: props.rbacModuleSubject.id,
+      productId: freeSubscriptionProduct.id,
+      data: {
+        provider: "telegram-star",
+        billingModule: {
+          currency: billingModuleCurrency,
+        },
+        account: String(props.ctx.chatId),
+      },
+    });
   }
 
   private async buildTelegramMessageData(props: { ctx: GrammyContext }) {

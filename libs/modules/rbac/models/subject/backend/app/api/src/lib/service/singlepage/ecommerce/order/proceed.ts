@@ -50,6 +50,7 @@ import { api as billingModulePaymentIntentApi } from "@sps/billing/models/paymen
 import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 import { api as billingModulePaymentIntentsToCurreciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
+import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
@@ -293,6 +294,53 @@ export class Service {
               }
             }
 
+            await subjectsToBillingModuleCurrenciesApi
+              .find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "subjectId",
+                        method: "eq",
+                        value: subjectToEcommerceModuleOrder.subjectId,
+                      },
+                    ],
+                  },
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Constrol": "no-store",
+                  },
+                },
+              })
+              .then(async (subjectsToBillingModuleCurrencies) => {
+                if (!RBAC_SECRET_KEY) {
+                  return;
+                }
+
+                if (subjectsToBillingModuleCurrencies?.length) {
+                  for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
+                    await subjectsToBillingModuleCurrenciesApi.update({
+                      id: subjectToBillingModuleCurrency.id,
+                      data: {
+                        ...subjectToBillingModuleCurrency,
+                        amount: "0",
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                          "Cache-Constrol": "no-store",
+                        },
+                      },
+                    });
+                  }
+                }
+              })
+              .catch(() => {
+                //
+              });
+
             await ecommerceOrderApi.update({
               id: order.id,
               data: { ...order, status: "canceled" },
@@ -512,6 +560,65 @@ export class Service {
       subjectToEcommerceModuleOrder: props.subjectToEcommerceModuleOrder,
     });
 
+    const rbacSubjectsToSocialModuleProfiles =
+      await subjectsToSocialModuleProfilesApi.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: props.subjectToEcommerceModuleOrder.subjectId,
+              },
+            ],
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
+          },
+        },
+      });
+
+    const invitedSocialModuleProfilesIds: string[] = [];
+
+    if (rbacSubjectsToSocialModuleProfiles?.length) {
+      for (const rbacSubjectsToSocialModuleProfile of rbacSubjectsToSocialModuleProfiles) {
+        const socialModuleAttributes = await socialModuleAttributeApi.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "slug",
+                  method: "ilike",
+                  value: `-invitedby-${rbacSubjectsToSocialModuleProfile.socialModuleProfileId}`,
+                },
+              ],
+            },
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+              "Cache-Control": "no-store",
+            },
+          },
+        });
+
+        if (socialModuleAttributes?.length) {
+          socialModuleAttributes.forEach((socialModuleAttribute) => {
+            const invitedSocialModuleProfileId =
+              socialModuleAttribute.slug.replaceAll(
+                `-invitedby-${rbacSubjectsToSocialModuleProfile.socialModuleProfileId}`,
+                "",
+              );
+
+            invitedSocialModuleProfilesIds.push(invitedSocialModuleProfileId);
+          });
+        }
+      }
+    }
+
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
         await subjectsToBillingModuleCurrenciesApi.find({
@@ -545,6 +652,10 @@ export class Service {
             },
           );
 
+        const topupAmount =
+          parseFloat(topupCurrency.amount) +
+          invitedSocialModuleProfilesIds.length * 3;
+
         if (existingSubjectToBillingModuleCurrency) {
           await subjectsToBillingModuleCurrenciesApi.update({
             id: existingSubjectToBillingModuleCurrency.id,
@@ -552,7 +663,7 @@ export class Service {
               ...existingSubjectToBillingModuleCurrency,
               amount: String(
                 parseFloat(existingSubjectToBillingModuleCurrency.amount) +
-                  parseFloat(topupCurrency.amount),
+                  topupAmount,
               ),
             },
             options: {
@@ -566,7 +677,7 @@ export class Service {
             data: {
               subjectId: props.subjectToEcommerceModuleOrder.subjectId,
               billingModuleCurrencyId: topupCurrency.billingModuleCurrency.id,
-              amount: topupCurrency.amount,
+              amount: String(topupAmount),
             },
             options: {
               headers: {
@@ -740,6 +851,20 @@ export class Service {
       return invoice.provider === invoices[0].provider;
     });
 
+    await ecommerceOrderApi.update({
+      id: props.extendedOrder.id,
+      data: {
+        ...props.extendedOrder,
+        status: "completed",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
     if (
       needToCreateSubscriptionOrder &&
       allOrderCurrenciesAreTheSame &&
@@ -839,20 +964,6 @@ export class Service {
         }
       }
     }
-
-    await ecommerceOrderApi.update({
-      id: props.extendedOrder.id,
-      data: {
-        ...props.extendedOrder,
-        status: "completed",
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
   }
 
   async notifyOrderOwner(props: {

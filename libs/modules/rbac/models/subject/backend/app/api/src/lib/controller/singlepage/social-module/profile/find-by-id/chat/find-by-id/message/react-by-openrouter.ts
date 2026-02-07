@@ -5,6 +5,7 @@ import {
   RBAC_SECRET_KEY,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
+  telegramBotServiceMessages,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -218,7 +219,7 @@ export class Handler {
                 },
               ],
             },
-            limit: 5,
+            limit: 20,
           },
           options: {
             headers: {
@@ -305,6 +306,34 @@ export class Handler {
 
           if (socialModuleProfilesToMessages?.length) {
             for (const socialModuleMessage of socialModuleMessages) {
+              const russianValues = Object.keys(telegramBotServiceMessages).map(
+                (key) => {
+                  return telegramBotServiceMessages[key]?.["ru"];
+                },
+              );
+
+              if (russianValues.includes(socialModuleMessage.description)) {
+                continue;
+              }
+
+              if (
+                socialModuleMessage.description?.includes(
+                  "Генерирую ответ с помощью",
+                ) ||
+                socialModuleMessage.description?.includes(
+                  "Выбираю модель для ответа. Пожалуйста, подождите.",
+                )
+              ) {
+                continue;
+              }
+
+              if (
+                !socialModuleMessage.description ||
+                socialModuleMessage.description === ""
+              ) {
+                continue;
+              }
+
               const isAssistantMessage = socialModuleProfilesToMessages.find(
                 (socialModuleProfileToMessage) =>
                   socialModuleProfileToMessage.messageId ===
@@ -397,8 +426,6 @@ export class Handler {
           }
         }
       }
-
-      console.log("🚀 ~ execute ~ context:", context);
 
       const subjectsToSocialModuleProfiles =
         await subjectsToSocialModuleProfilesApi.find({
@@ -504,9 +531,12 @@ export class Handler {
           );
         })
         .filter((model) => {
+          return !["minimax/minimax-m2-her"].includes(model.id);
+        })
+        .filter((model) => {
           return (
-            model.pricePerMillionTokens > 0.01 &&
-            model.pricePerMillionTokens < 3
+            model.pricePerMillionTokens > 0.3 &&
+            model.pricePerMillionTokens < 11
           );
         });
 
@@ -540,11 +570,6 @@ export class Handler {
           },
         ],
       });
-
-      console.log(
-        "🚀 ~ openRouterReplyMessageCreate ~ detectedLanguageResult:",
-        detectedLanguageResult,
-      );
 
       if ("error" in detectedLanguageResult) {
         throw new Error("Language detection error");
@@ -588,6 +613,7 @@ export class Handler {
       const requiredInputModalitiesList = ["text", "image", "file"].filter(
         (modality) => requiredInputModalities.has(modality as any),
       );
+
       const requiresFileInput = requiredInputModalitiesList.includes("file");
 
       const openRouterSelectableModels = this.filterModelsByModalityAndFile({
@@ -601,7 +627,7 @@ export class Handler {
       }
 
       const selectModelResult = await openRouter.generate({
-        model: "x-ai/grok-4.1-fast",
+        model: "openai/gpt-5-mini",
         reasoning: false,
         context: [
           {
@@ -610,7 +636,7 @@ export class Handler {
           },
           {
             role: "user",
-            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterSelectableModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing.`,
+            content: `Now I have the task:'\n${socialModuleMessage.description}\n'. Select the most suitable AI model that can finish that task with the best result in ${detectedLanguage} language. Available models: ${JSON.stringify(openRouterSelectableModels).replaceAll('"', "'")}. Send me a reply with the exact 'id' without any additional text and symbols. Don't try to do the task itself, choose a model. Sort models by price for the requested item 'image' and select the cheapest model that can solve the task. Check 'input_modalities' to have passed parameters and 'output_modalities' for requesting thing. If I ask you use specific model - use it, do not try to select another.`,
           },
         ],
       });

@@ -13,7 +13,7 @@ import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/cha
 import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
 import { api as socialModuleProfilesToChatsToApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleProfilesToMessagesToApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
-import { api as socialModuleProfilesToActionsToApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
+import { api as socialModuleProfilesToActionsApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
 
 export class Handler {
   service: Service;
@@ -113,6 +113,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -144,6 +145,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       },
@@ -160,6 +162,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -237,6 +240,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -264,6 +268,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -275,7 +280,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToActions =
-      await socialModuleProfilesToActionsToApi.find({
+      await socialModuleProfilesToActionsApi.find({
         params: {
           filters: {
             and: [
@@ -290,6 +295,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -378,6 +384,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -404,6 +411,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -419,6 +427,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -445,6 +454,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });
@@ -472,6 +482,7 @@ export class Handler {
       options: {
         headers: {
           "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
       },
     });
@@ -498,6 +509,7 @@ export class Handler {
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            "Cache-Control": "no-store",
           },
         },
       });

@@ -524,75 +524,20 @@ export class Service {
           },
         });
 
-      if (type === "subscription") {
-        const subjectToEcommerceModuleOrders =
-          await subjectsToEcommerceModuleOrdersApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "subjectId",
-                    method: "eq",
-                    value: props.id,
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-        if (subjectToEcommerceModuleOrders?.length) {
-          for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
-            const ecommerceModuleOrder = await ecommerceModuleOrderApi.findById(
-              {
-                id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
+      try {
+        if (type === "subscription") {
+          const subjectToEcommerceModuleOrders =
+            await subjectsToEcommerceModuleOrdersApi.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "subjectId",
+                      method: "eq",
+                      value: props.id,
+                    },
+                  ],
                 },
-              },
-            );
-
-            if (!ecommerceModuleOrder) {
-              continue;
-            }
-
-            if (
-              ["completed", "canceled"].includes(ecommerceModuleOrder.status) &&
-              ecommerceModuleOrder.type !== "history"
-            ) {
-              continue;
-            }
-
-            const ecommerceModuleOrderCheckoutAttributes =
-              await ecommerceModuleOrderApi.checkoutAttributes({
-                id: ecommerceModuleOrder.id,
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
-
-            if (
-              ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
-            ) {
-              continue;
-            }
-
-            await ecommerceModuleOrderApi.update({
-              id: ecommerceModuleOrder.id,
-              data: {
-                ...ecommerceModuleOrder,
-                status: "requested_cancelation",
               },
               options: {
                 headers: {
@@ -602,10 +547,137 @@ export class Service {
               },
             });
 
-            console.log(
-              "🚀 ~ execute ~ ecommerceModuleOrderCheckoutAttributes:",
-              ecommerceModuleOrderCheckoutAttributes,
-            );
+          if (subjectToEcommerceModuleOrders?.length) {
+            for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
+              const ecommerceModuleOrder =
+                await ecommerceModuleOrderApi.findById({
+                  id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+
+              if (!ecommerceModuleOrder) {
+                continue;
+              }
+
+              if (
+                ecommerceModuleOrders
+                  .map((order) => order.id)
+                  .includes(ecommerceModuleOrder.id)
+              ) {
+                continue;
+              }
+
+              if (
+                [
+                  "requested_cancelation",
+                  "canceling",
+                  "completed",
+                  "canceled",
+                ].includes(ecommerceModuleOrder.status)
+              ) {
+                continue;
+              }
+
+              const ecommerceModuleOrderCheckoutAttributes =
+                await ecommerceModuleOrderApi.checkoutAttributes({
+                  id: ecommerceModuleOrder.id,
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+
+              if (
+                ecommerceModuleOrderCheckoutAttributes.type !== "subscription"
+              ) {
+                continue;
+              }
+
+              const ordersToProducts =
+                await ecommerceModuleOrdersToProductsApi.find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "orderId",
+                          method: "eq",
+                          value: ecommerceModuleOrder.id,
+                        },
+                      ],
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                });
+
+              if (
+                ordersToProducts?.some((orderToProduct) => {
+                  return ecommerceModuleProducts
+                    .map((entity) => {
+                      return entity.id;
+                    })
+                    .includes(orderToProduct.productId);
+                })
+              ) {
+                console.log(
+                  "🚀 ~ execute ~ ecommerceModuleOrder:",
+                  ecommerceModuleOrder,
+                );
+                throw new Error(
+                  "Validation error. Checking out order has active subscription products.",
+                );
+              }
+
+              await ecommerceModuleOrderApi.update({
+                id: ecommerceModuleOrder.id,
+                data: {
+                  ...ecommerceModuleOrder,
+                  status: "requested_cancelation",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              });
+            }
+          }
+        }
+      } catch (error) {
+        if (error?.["message"]) {
+          if (
+            error["message"].includes(
+              "Checking out order has active subscription products.",
+            )
+          ) {
+            for (const ecommerceModuleOrder of ecommerceModuleOrders) {
+              await ecommerceModuleOrderApi.update({
+                id: ecommerceModuleOrder.id,
+                data: {
+                  ...ecommerceModuleOrder,
+                  status: "canceled",
+                },
+                options: {
+                  headers: {
+                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                    "Cache-Control": "no-store",
+                  },
+                },
+              });
+            }
+            throw new Error(error["message"]);
           }
         }
       }

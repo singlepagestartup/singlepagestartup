@@ -573,152 +573,152 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           },
         });
 
-        if (!renderResult) {
-          throw new Error("Internal error. Template not rendered");
-        }
+        if (renderResult) {
+          const parsedRenderResult = JSON.parse(renderResult);
 
-        const parsedRenderResult = JSON.parse(renderResult);
+          const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
 
-        const bot = new Bot(TELEGRAM_SERVICE_BOT_TOKEN);
-
-        if (validAttachments?.length) {
-          const captionOptions = parsedRenderResult.props[1] || {};
-          const baseCaptionOptions = { ...(captionOptions || {}) };
-          delete (baseCaptionOptions as { reply_markup?: unknown })
-            .reply_markup;
-          const normalizedReplyMarkup = this.normalizeReplyMarkup(
-            (captionOptions as { reply_markup?: unknown })?.reply_markup as {
-              inline_keyboard?: {
-                text: string;
-                url?: string;
-                callback_data?: string;
-              }[][];
-            },
-          );
-          const parseMode = captionOptions?.parse_mode;
-          const shouldFormat = !parseMode || parseMode === "MarkdownV2";
-          const captionSource = shouldFormat
-            ? telegramMarkdownFormatter({
-                input: parsedRenderResult.props[0],
-              })
-            : parsedRenderResult.props[0];
-          const captionLimit = 1024;
-          const captionChunks = this.splitTelegramText(
-            captionSource || "",
-            captionLimit,
-          );
-          const formattedCaption = captionChunks.shift() || "";
-          const finalParseMode = parseMode || "MarkdownV2";
-          const response = await bot.api.sendMediaGroup(
-            entity.reciever,
-            validAttachments.map((attachment, index) => {
-              const mimeType = this.getMimeType(attachment.url);
-              return {
-                type: mimeType.startsWith("image/") ? "photo" : "document",
-                media: attachment.url,
-                ...(index === 0 && {
-                  caption: formattedCaption,
-                  parse_mode: finalParseMode,
-                }),
-              };
-            }),
-          );
-
-          if (response.length) {
-            const messageId = response[0].message_id;
-
-            sourceSystemId = String(messageId);
-          }
-
-          if (captionChunks.length) {
-            const chunkCount = captionChunks.length;
-            for (const [index, chunk] of captionChunks.entries()) {
-              const isLast = index === chunkCount - 1;
-              const nextOptions = {
-                ...baseCaptionOptions,
-                ...(isLast && normalizedReplyMarkup
-                  ? { reply_markup: normalizedReplyMarkup }
-                  : {}),
-              };
-              if (!isLast) {
-                delete (nextOptions as { reply_markup?: unknown }).reply_markup;
-              }
-              await bot.api.sendMessage(entity.reciever, chunk, nextOptions);
-            }
-          } else if (normalizedReplyMarkup) {
-            await bot.api.sendMessage(entity.reciever, ".", {
-              ...baseCaptionOptions,
-              reply_markup: normalizedReplyMarkup,
-            });
-          }
-        } else {
-          const formattedProps = this.normalizeTelegramProps(
-            parsedRenderResult.props || [],
-          );
-          if (
-            parsedRenderResult.method === "sendMessage" &&
-            typeof formattedProps[0] === "string"
-          ) {
-            const [text, options] = formattedProps;
-            const baseOptions =
-              options && typeof options === "object"
-                ? { ...(options as Record<string, unknown>) }
-                : undefined;
-            if (baseOptions) {
-              delete (baseOptions as { reply_markup?: unknown }).reply_markup;
-            }
+          if (validAttachments?.length) {
+            const captionOptions = parsedRenderResult.props[1] || {};
+            const baseCaptionOptions = { ...(captionOptions || {}) };
+            delete (baseCaptionOptions as { reply_markup?: unknown })
+              .reply_markup;
             const normalizedReplyMarkup = this.normalizeReplyMarkup(
-              (options as { reply_markup?: unknown })?.reply_markup as {
+              (captionOptions as { reply_markup?: unknown })?.reply_markup as {
                 inline_keyboard?: {
                   text: string;
                   url?: string;
                   callback_data?: string;
-                  copyText?: {
-                    text: string;
-                  };
                 }[][];
               },
             );
-            const chunks = this.splitTelegramText(text as string, 4000);
-            const chunkCount = chunks.length;
-            let lastResponse: { message_id?: number } | undefined = undefined;
-
-            for (const [index, chunk] of chunks.entries()) {
-              const isLast = index === chunkCount - 1;
-              const nextOptions = baseOptions
-                ? {
-                    ...baseOptions,
-                    ...(isLast && normalizedReplyMarkup
-                      ? { reply_markup: normalizedReplyMarkup }
-                      : {}),
-                  }
-                : normalizedReplyMarkup && isLast
-                  ? { reply_markup: normalizedReplyMarkup }
-                  : undefined;
-
-              if (nextOptions && !isLast) {
-                delete (nextOptions as { reply_markup?: unknown }).reply_markup;
-              }
-
-              const response = await bot.api.sendMessage(
-                entity.reciever,
-                chunk,
-                nextOptions as any,
-              );
-              lastResponse = response;
-            }
-
-            if (lastResponse?.message_id) {
-              sourceSystemId = String(lastResponse.message_id);
-            }
-          } else {
-            const response = await bot.api[parsedRenderResult.method](
+            const parseMode = captionOptions?.parse_mode;
+            const shouldFormat = !parseMode || parseMode === "MarkdownV2";
+            const captionSource = shouldFormat
+              ? telegramMarkdownFormatter({
+                  input: parsedRenderResult.props[0],
+                })
+              : parsedRenderResult.props[0];
+            const captionLimit = 1024;
+            const captionChunks = this.splitTelegramText(
+              captionSource || "",
+              captionLimit,
+            );
+            const formattedCaption = captionChunks.shift() || "";
+            const finalParseMode = parseMode || "MarkdownV2";
+            const response = await bot.api.sendMediaGroup(
               entity.reciever,
-              ...formattedProps,
+              validAttachments.map((attachment, index) => {
+                const mimeType = this.getMimeType(attachment.url);
+                return {
+                  type: mimeType.startsWith("image/") ? "photo" : "document",
+                  media: attachment.url,
+                  ...(index === 0 && {
+                    caption: formattedCaption,
+                    parse_mode: finalParseMode,
+                  }),
+                };
+              }),
             );
 
-            if (response.message_id) {
-              sourceSystemId = String(response.message_id);
+            if (response.length) {
+              const messageId = response[0].message_id;
+
+              sourceSystemId = String(messageId);
+            }
+
+            if (captionChunks.length) {
+              const chunkCount = captionChunks.length;
+              for (const [index, chunk] of captionChunks.entries()) {
+                const isLast = index === chunkCount - 1;
+                const nextOptions = {
+                  ...baseCaptionOptions,
+                  ...(isLast && normalizedReplyMarkup
+                    ? { reply_markup: normalizedReplyMarkup }
+                    : {}),
+                };
+                if (!isLast) {
+                  delete (nextOptions as { reply_markup?: unknown })
+                    .reply_markup;
+                }
+                await bot.api.sendMessage(entity.reciever, chunk, nextOptions);
+              }
+            } else if (normalizedReplyMarkup) {
+              await bot.api.sendMessage(entity.reciever, ".", {
+                ...baseCaptionOptions,
+                reply_markup: normalizedReplyMarkup,
+              });
+            }
+          } else {
+            const formattedProps = this.normalizeTelegramProps(
+              parsedRenderResult.props || [],
+            );
+            if (
+              parsedRenderResult.method === "sendMessage" &&
+              typeof formattedProps[0] === "string"
+            ) {
+              const [text, options] = formattedProps;
+              const baseOptions =
+                options && typeof options === "object"
+                  ? { ...(options as Record<string, unknown>) }
+                  : undefined;
+              if (baseOptions) {
+                delete (baseOptions as { reply_markup?: unknown }).reply_markup;
+              }
+              const normalizedReplyMarkup = this.normalizeReplyMarkup(
+                (options as { reply_markup?: unknown })?.reply_markup as {
+                  inline_keyboard?: {
+                    text: string;
+                    url?: string;
+                    callback_data?: string;
+                    copyText?: {
+                      text: string;
+                    };
+                  }[][];
+                },
+              );
+              const chunks = this.splitTelegramText(text as string, 4000);
+              const chunkCount = chunks.length;
+              let lastResponse: { message_id?: number } | undefined = undefined;
+
+              for (const [index, chunk] of chunks.entries()) {
+                const isLast = index === chunkCount - 1;
+                const nextOptions = baseOptions
+                  ? {
+                      ...baseOptions,
+                      ...(isLast && normalizedReplyMarkup
+                        ? { reply_markup: normalizedReplyMarkup }
+                        : {}),
+                    }
+                  : normalizedReplyMarkup && isLast
+                    ? { reply_markup: normalizedReplyMarkup }
+                    : undefined;
+
+                if (nextOptions && !isLast) {
+                  delete (nextOptions as { reply_markup?: unknown })
+                    .reply_markup;
+                }
+
+                const response = await bot.api.sendMessage(
+                  entity.reciever,
+                  chunk,
+                  nextOptions as any,
+                );
+                lastResponse = response;
+              }
+
+              if (lastResponse?.message_id) {
+                sourceSystemId = String(lastResponse.message_id);
+              }
+            } else {
+              const response = await bot.api[parsedRenderResult.method](
+                entity.reciever,
+                ...formattedProps,
+              );
+
+              if (response.message_id) {
+                sourceSystemId = String(response.message_id);
+              }
             }
           }
         }
