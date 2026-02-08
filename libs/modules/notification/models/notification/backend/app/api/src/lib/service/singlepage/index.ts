@@ -594,17 +594,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             );
             const parseMode = captionOptions?.parse_mode;
             const shouldFormat = !parseMode || parseMode === "MarkdownV2";
-            const captionSource = shouldFormat
-              ? telegramMarkdownFormatter({
-                  input: parsedRenderResult.props[0],
-                })
-              : parsedRenderResult.props[0];
+            const captionSource = parsedRenderResult.props[0] || "";
             const captionLimit = 1024;
             const captionChunks = this.splitTelegramText(
-              captionSource || "",
+              captionSource,
               captionLimit,
             );
-            const formattedCaption = captionChunks.shift() || "";
+            const formattedCaption = shouldFormat
+              ? telegramMarkdownFormatter({
+                  input: captionChunks.shift() || "",
+                })
+              : captionChunks.shift() || "";
             const finalParseMode = parseMode || "MarkdownV2";
             const response = await bot.api.sendMediaGroup(
               entity.reciever,
@@ -641,7 +641,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   delete (nextOptions as { reply_markup?: unknown })
                     .reply_markup;
                 }
-                await bot.api.sendMessage(entity.reciever, chunk, nextOptions);
+                const formattedChunk = shouldFormat
+                  ? telegramMarkdownFormatter({ input: chunk })
+                  : chunk;
+                await bot.api.sendMessage(
+                  entity.reciever,
+                  formattedChunk,
+                  nextOptions,
+                );
               }
             } else if (normalizedReplyMarkup) {
               await bot.api.sendMessage(entity.reciever, ".", {
@@ -650,20 +657,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               });
             }
           } else {
-            const formattedProps = this.normalizeTelegramProps(
-              parsedRenderResult.props || [],
-            );
+            const rawProps = parsedRenderResult.props || [];
             if (
               parsedRenderResult.method === "sendMessage" &&
-              typeof formattedProps[0] === "string"
+              typeof rawProps[0] === "string"
             ) {
-              const [text, options] = formattedProps;
+              const [text, options] = rawProps;
+              const parseMode =
+                options && typeof options === "object"
+                  ? (options as Record<string, unknown>)?.parse_mode
+                  : undefined;
+              const shouldFormat = !parseMode || parseMode === "MarkdownV2";
               const baseOptions =
                 options && typeof options === "object"
                   ? { ...(options as Record<string, unknown>) }
                   : undefined;
               if (baseOptions) {
                 delete (baseOptions as { reply_markup?: unknown }).reply_markup;
+                baseOptions.parse_mode = parseMode || "MarkdownV2";
               }
               const normalizedReplyMarkup = this.normalizeReplyMarkup(
                 (options as { reply_markup?: unknown })?.reply_markup as {
@@ -699,9 +710,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                     .reply_markup;
                 }
 
+                const formattedChunk = shouldFormat
+                  ? telegramMarkdownFormatter({ input: chunk })
+                  : chunk;
                 const response = await bot.api.sendMessage(
                   entity.reciever,
-                  chunk,
+                  formattedChunk,
                   nextOptions as any,
                 );
                 lastResponse = response;
@@ -711,6 +725,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 sourceSystemId = String(lastResponse.message_id);
               }
             } else {
+              const formattedProps = this.normalizeTelegramProps(rawProps);
               const response = await bot.api[parsedRenderResult.method](
                 entity.reciever,
                 ...formattedProps,
