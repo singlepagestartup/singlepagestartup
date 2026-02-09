@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/crm/steps-to-inputs";
-export const variants = ["default"];
+export const variants = ["default", "hidden"];
 export const query = {};
 export const options = {
   next: {

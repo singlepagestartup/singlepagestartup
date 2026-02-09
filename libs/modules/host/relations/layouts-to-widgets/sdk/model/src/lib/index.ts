@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/host/layouts-to-widgets";
-export const variants = ["default", "additional"];
+export const variants = ["default", "additional", "hidden"];
 export const query = {};
 export const options = {
   next: {

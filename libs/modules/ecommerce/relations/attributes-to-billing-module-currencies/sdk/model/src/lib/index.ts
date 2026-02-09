@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/ecommerce/attributes-to-billing-module-currencies";
-export const variants = ["default"] as const;
+export const variants = ["default", "hidden"] as const;
 export const query = {};
 export const options = {
   next: {

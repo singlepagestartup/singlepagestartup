@@ -18,6 +18,7 @@ export const variants = [
   "default",
   "attachment-default",
   "receipt-default",
+  "hidden",
 ] as const;
 export const query = {};
 export const options = {

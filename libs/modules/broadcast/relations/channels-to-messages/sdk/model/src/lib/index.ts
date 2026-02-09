@@ -15,7 +15,7 @@ export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const tag = "channels-to-messages";
 export const route = "/api/broadcast/channels-to-messages";
-export const variants = ["default"] as const;
+export const variants = ["default", "hidden"] as const;
 export const query = {};
 export const options = {
   next: {

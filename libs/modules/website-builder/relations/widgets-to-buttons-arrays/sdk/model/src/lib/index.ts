@@ -14,7 +14,7 @@ import {
 export const serverHost = API_SERVICE_URL;
 export const clientHost = NEXT_PUBLIC_API_SERVICE_URL;
 export const route = "/api/website-builder/widgets-to-buttons-arrays";
-export const variants = ["default", "additional", "extra"] as const;
+export const variants = ["default", "additional", "extra", "hidden"] as const;
 export const query = {};
 export const options = {
   next: {
