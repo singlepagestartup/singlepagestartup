@@ -11,7 +11,10 @@ import {
   insertSchema,
 } from "@sps/file-storage/models/file/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin/form/Component";
-import { NEXT_PUBLIC_API_SERVICE_URL } from "@sps/shared-utils";
+import {
+  NEXT_PUBLIC_API_SERVICE_URL,
+  randomWordsGenerator,
+} from "@sps/shared-utils";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 
 export function Component(props: IComponentPropsExtended) {
@@ -32,11 +35,20 @@ export function Component(props: IComponentPropsExtended) {
   const form = useForm<z.infer<typeof insertSchema>>({
     resolver: zodResolver(insertSchema),
     defaultValues: {
-      adminTitle: props.data?.adminTitle || "",
+      adminTitle:
+        props.data?.adminTitle ||
+        randomWordsGenerator({
+          type: "title",
+        }),
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       containerClassName: props.data?.containerClassName || "",
       file: file || "",
+      slug:
+        props.data?.slug ||
+        randomWordsGenerator({
+          type: "slug",
+        }),
     },
   });
 
@@ -70,6 +82,14 @@ export function Component(props: IComponentPropsExtended) {
           name="adminTitle"
           form={form}
           placeholder="Type admin title"
+        />
+        <FormField
+          ui="shadcn"
+          type="text"
+          label="Slug"
+          name="slug"
+          form={form}
+          placeholder="Type slug"
         />
         <FormField
           ui="shadcn"

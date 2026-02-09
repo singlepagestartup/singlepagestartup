@@ -19,4 +19,9 @@ export const fields = {
   size: pgCore.integer("size"),
   extension: pgCore.text("extension"),
   mimeType: pgCore.text("mime_type"),
+  slug: pgCore
+    .text("slug")
+    .notNull()
+    .unique()
+    .$defaultFn(() => randomWordsGenerator({ type: "slug" })),
 };
