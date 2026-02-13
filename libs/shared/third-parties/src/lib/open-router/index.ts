@@ -23,6 +23,19 @@ export type IOpenRouterRequestMessage = {
   content: string | IOpenRouterMessageContent[];
 };
 
+export type IOpenRouterResponseFormat =
+  | {
+      type: "json_object";
+    }
+  | {
+      type: "json_schema";
+      json_schema: {
+        name: string;
+        schema: Record<string, unknown>;
+        strict?: boolean;
+      };
+    };
+
 export class Service {
   baseURL: string;
   apiKey: string;
@@ -178,6 +191,8 @@ export class Service {
     messages: IOpenRouterRequestMessage[];
     max_tokens?: number;
     reasoning?: boolean;
+    response_format?: IOpenRouterResponseFormat;
+    temperature?: number;
   }): Promise<any> {
     const response = await fetch(`${this.baseURL}/chat/completions`, {
       method: "POST",
@@ -191,6 +206,12 @@ export class Service {
         stream: false,
         max_tokens: props.max_tokens,
         ...(props.reasoning && { reasoning: {} }),
+        ...(props.response_format && {
+          response_format: props.response_format,
+        }),
+        ...(typeof props.temperature === "number" && {
+          temperature: props.temperature,
+        }),
       }),
     });
 
@@ -246,6 +267,9 @@ export class Service {
     fallbackModels?: string[];
     max_tokens?: number;
     reasoning?: boolean;
+    responseFormat?: IOpenRouterResponseFormat;
+    temperature?: number;
+    stripNonTextOnRetry?: boolean;
   }): Promise<
     | {
         text: string;
@@ -258,6 +282,7 @@ export class Service {
     const hasNonTextContent = props.context.some(
       (message) => typeof message.content !== "string",
     );
+    const shouldStripNonTextOnRetry = props.stripNonTextOnRetry ?? true;
 
     const normalizedMessages = await this.normalizeMessages(props.context);
     const data = await this.requestCompletion({
@@ -265,6 +290,8 @@ export class Service {
       messages: normalizedMessages,
       max_tokens: props.max_tokens,
       reasoning: props.reasoning,
+      response_format: props.responseFormat,
+      temperature: props.temperature,
     });
 
     if (data.error) {
@@ -272,7 +299,7 @@ export class Service {
         "❌ OpenRouter Error:",
         JSON.stringify(data.error, null, 2),
       );
-      if (hasNonTextContent) {
+      if (hasNonTextContent && shouldStripNonTextOnRetry) {
         console.error(
           "↩️ OpenRouter Retry: stripping non-text content and retrying once.",
         );
@@ -286,6 +313,8 @@ export class Service {
           messages: strippedMessages,
           max_tokens: props.max_tokens,
           reasoning: props.reasoning,
+          response_format: props.responseFormat,
+          temperature: props.temperature,
         });
 
         if (retryData.error) {

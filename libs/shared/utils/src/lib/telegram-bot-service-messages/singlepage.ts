@@ -17,12 +17,12 @@ export const util = {
     en: "Starting to process your request. Please wait.",
   },
   openRouterFetchingModels: {
-    ru: "🤖 Получаю список моделей. Пожалуйста, подождите.",
-    en: "Fetching models list. Please wait.",
+    ru: "🤖 Подготавливаю роутинг запроса. Пожалуйста, подождите.",
+    en: "Preparing request routing. Please wait.",
   },
   openRouterDetectingLanguage: {
-    ru: "👅 Определяю язык сообщения. Пожалуйста, подождите.",
-    en: "Detecting message language. Please wait.",
+    ru: "👅 Классифицирую запрос и модальность. Пожалуйста, подождите.",
+    en: "Classifying request and modality. Please wait.",
   },
   openRouterSelectingModels: {
     ru: "👨🏻‍⚕️ Выбираю модель для ответа. Пожалуйста, подождите.",

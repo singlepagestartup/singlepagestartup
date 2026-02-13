@@ -9,6 +9,7 @@ import {
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+  telegramBotServiceMessages,
 } from "@sps/shared-utils";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
@@ -70,56 +71,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       : "https://t.me");
 
   telegramBotCommands = ["/start", "/help", "/referral", "/premium"];
-  statusMessages = {
-    openRouterStarted: {
-      ru: "Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
-      en: "Starting to process your request. Please wait.",
-    },
-    openRouterFetchingModels: {
-      ru: "Получаю список моделей. Пожалуйста, подождите.",
-      en: "Fetching models list. Please wait.",
-    },
-    openRouterDetectingLanguage: {
-      ru: "Определяю язык сообщения. Пожалуйста, подождите.",
-      en: "Detecting message language. Please wait.",
-    },
-    openRouterSelectingModels: {
-      ru: "Выбираю модель для ответа. Пожалуйста, подождите.",
-      en: "Selecting model for response. Please wait.",
-    },
-    openRouterGeneratingResponse: {
-      ru: "Генерирую ответ с помощью [selectModelForRequest]. Пожалуйста, подождите.",
-      en: "Generating response using [selectModelForRequest]. Please wait.",
-    },
-    openRouterError: {
-      ru: "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
-      en: "An error occurred while processing your request. Please try again later.",
-    },
-    openRouterRequiredTelegamChannelSubscriptionError: {
-      ru: `Для использования этой функции необходимо подписаться на наш Telegram-канал - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink})`,
-      en: `You need to subscribe to our Telegram channel  - [${this.telegramRequiredChannelName}](${this.telegramRequiredChannelLink}) to use this feature.`,
-    },
-    ecommerceModuleSelectSubscriptionProductsOffer: {
-      ru: "Пожалуйста, выберите один из наших продуктов-подписок, чтобы продолжить.",
-      en: "Please select one of our subscription products to continue.",
-    },
-    openRouterNotFoundSubscription: {
-      ru: "У вас нет активной подписки. Пожалуйста, оформите подписку, чтобы использовать эту функцию.",
-      en: "You do not have an active subscription. Please subscribe to use this feature.",
-    },
-    openRouterNotEnoughTokens: {
-      ru: "У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
-      en: "У вас закончились токены для данного функционала. Дождитесь возобновления счетчика, выберите другую подписку или пополните баланс токенов",
-    },
-    ecommerceModuleOrderPayButtonDescription: {
-      ru: "Для оплаты подписки нажмите на кнопку с выбором способа оплаты",
-      en: "You can subscribe by the clicking buttons below",
-    },
-    ecommerceModuleOrderAlreadyHaveSubscription: {
-      ru: "У вас уже есть активная подписка.",
-      en: "You have active subscription.",
-    },
-  };
+  statusMessages = telegramBotServiceMessages;
 
   async agentSocialModuleProfileHandler(
     props:
