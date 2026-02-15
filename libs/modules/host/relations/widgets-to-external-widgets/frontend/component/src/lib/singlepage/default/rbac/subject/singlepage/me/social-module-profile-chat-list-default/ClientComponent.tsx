@@ -33,10 +33,10 @@ export function Component(props: IComponentProps) {
           >
             {({ data: subjectsToSocialModuleProfiles }) => {
               return subjectsToSocialModuleProfiles?.map(
-                (subjectToSocialModuleProfile, index) => {
+                (subjectToSocialModuleProfile) => {
                   return (
                     <SocialModuleProfile
-                      key={index}
+                      key={subjectToSocialModuleProfile.id}
                       isServer={false}
                       variant="find"
                       apiProps={{
@@ -56,10 +56,10 @@ export function Component(props: IComponentProps) {
                     >
                       {({ data: socialModuleProfiles }) => {
                         return socialModuleProfiles?.map(
-                          (socialModuleProfile, index) => {
+                          (socialModuleProfile) => {
                             return (
                               <RbacModuleSubject
-                                key={index}
+                                key={socialModuleProfile.id}
                                 isServer={false}
                                 variant="social-module-profile-chat-list-default"
                                 data={subject}

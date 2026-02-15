@@ -12,6 +12,7 @@ import {
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
 import { STALE_TIME } from "@sps/shared-utils";
+import { useEffect } from "react";
 
 export type IProps = IParentProps["IEcommerceModuleOrderListProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -22,7 +23,11 @@ export type IResult = IParentResult["IEcommerceModuleOrderListResult"];
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/ecommerce-module/orders`;
-  subscription(queryKey, queryClient);
+
+  useEffect(() => {
+    const unsubscribe = subscription(queryKey, queryClient);
+    return unsubscribe;
+  }, [queryKey]);
 
   return useQuery<IResult>({
     queryKey: [queryKey],

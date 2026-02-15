@@ -62,6 +62,11 @@
   - `project/backend.mdc`
   - `project/code-review.mdc`
   - `expert.mdc`
+- Realtime revalidation and invalidation flow:
+  - `libs/middlewares/src/lib/revalidation/README.md`
+  - `libs/shared/frontend/client/api/README.md`
+  - `libs/shared/frontend/client/store/README.md`
+  - `libs/shared/frontend/client/store/src/lib/README.md`
 
 Use this AGENTS.md as the entry point; the linked rule files contain the authoritative, granular instructions for SPS development.
 

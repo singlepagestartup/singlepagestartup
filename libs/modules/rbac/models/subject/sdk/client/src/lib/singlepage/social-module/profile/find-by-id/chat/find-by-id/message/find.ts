@@ -12,6 +12,7 @@ import {
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
 import { STALE_TIME } from "@sps/shared-utils";
+import { useEffect } from "react";
 
 export type IProps =
   IParentProps["ISocialModuleProfileFindByIdChatFindByIdMessageFindProps"] & {
@@ -24,10 +25,21 @@ export type IResult =
 
 export function action(props: IProps) {
   const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/messages`;
-  subscription(queryKey, queryClient);
+  const topics = [
+    `social.chats.${props.socialModuleChatId}.messages`,
+    "social.messages",
+  ];
+
+  useEffect(() => {
+    const unsubscribe = subscription(queryKey, queryClient);
+    return unsubscribe;
+  }, [queryKey]);
 
   return useQuery<IResult>({
     queryKey: [queryKey],
+    meta: {
+      topics,
+    },
     queryFn: async () => {
       const result =
         await api.socialModuleProfileFindByIdChatFindByIdMessageFind({

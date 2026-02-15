@@ -2,6 +2,15 @@
 
 A library for managing API requests in the SinglePageStartup (SPS) application. Built on top of TanStack Query (React Query) and provides a factory pattern for creating API clients with built-in caching, error handling, and request tracking.
 
+## Why This Approach
+
+- Factory-based SDK hooks keep query keys and request behavior consistent across all modules.
+- Revalidation is centralized in one subscription pipeline instead of ad-hoc invalidation in components.
+- Hybrid invalidation (topics + route fallback) allows gradual migration:
+  - new flows can use precise topic tags,
+  - legacy flows continue to work through route matching.
+- Segment-boundary route matching prevents false positives between similarly named endpoints.
+
 ## Structure
 
 ```
@@ -76,6 +85,12 @@ requestLimiter.configure({
 - Includes built-in retry logic for failed requests
 - Provides hooks for loading and error states
 - Supports custom headers and authentication
+
+## Revalidation Contract
+
+Realtime invalidation contract (WebSocket + React Query) is documented in:
+
+- `libs/middlewares/src/lib/revalidation/README.md`
 
 ## Testing
 

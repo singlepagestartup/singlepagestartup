@@ -39,6 +39,17 @@ Read files directly in this order:
 3. `libs/modules/<module>/models/<model>/README.md` or
    `libs/modules/<module>/relations/<relation>/README.md` (entity details).
 
+## 2.1 Realtime/Data Invalidation Docs (read before debugging rerenders)
+
+When task is about websocket revalidation, React Query refetches, stale data, or unexpected rerenders, start here:
+
+1. `libs/middlewares/src/lib/revalidation/README.md`
+2. `libs/shared/frontend/client/api/README.md`
+3. `libs/shared/frontend/client/store/README.md`
+4. `libs/shared/frontend/client/store/src/lib/README.md`
+
+These files define the current contract and should be treated as source of truth before changing revalidation logic.
+
 ## 3. Architecture rules (must follow)
 
 ### Frontend

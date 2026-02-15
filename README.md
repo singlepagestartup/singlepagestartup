@@ -145,6 +145,29 @@ Strict layered architecture: Repository → Service → Controller → App.
   </RelationComponent>
   ```
 
+## Realtime Data Revalidation
+
+If you need to understand why data updates/refetches happen in UI (chat, cart, counters, etc.), do not reverse-engineer from code first. Start from these docs:
+
+- `libs/middlewares/src/lib/revalidation/README.md` - backend revalidation contract (payload + topics), routing rules, rule priority.
+- `libs/shared/frontend/client/api/README.md` - frontend subscription/invalidation strategy (topics first, route fallback).
+- `libs/shared/frontend/client/store/README.md` - role of `global-actions-store` in runtime event flow.
+- `libs/shared/frontend/client/store/src/lib/README.md` - low-level details of `global-actions-store`.
+
+### Minimal runtime flow
+
+1. Write request succeeds (`POST`/`PUT`/`PATCH`/`DELETE`).
+2. Revalidation middleware broadcasts websocket message with `payload` and optional `topics`.
+3. Frontend `subscription(...)` consumes message from `global-actions-store`.
+4. If matching `meta.topics` queries exist, invalidate by topics.
+5. Otherwise fallback to route-based invalidation.
+
+### Why this design exists
+
+- Route-only invalidation causes too many refetches on realtime-heavy pages.
+- Topic-only invalidation breaks legacy flows without `meta.topics`.
+- Hybrid model keeps old features working and allows gradual migration to precise invalidation.
+
 ## Development Standards
 
 ### General Principles

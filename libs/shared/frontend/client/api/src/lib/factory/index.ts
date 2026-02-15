@@ -30,7 +30,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { globalActionsStore, IAction } from "@sps/shared-frontend-client-store";
-import { STALE_TIME, UUID_PATH_SEGMENT_REGEX } from "@sps/shared-utils";
+import { STALE_TIME } from "@sps/shared-utils";
 import { createId } from "@paralleldrive/cuid2";
 import QueryString from "qs";
 import { useEffect } from "react";
@@ -61,18 +61,63 @@ const unsubscribeFunctions = new Map<string, () => void>();
 const MAX_ACTIONS = 10;
 
 const normalizePath = (value: string) => value.split("?")[0];
-const stripUuidSegments = (value: string) =>
-  value.replace(UUID_PATH_SEGMENT_REGEX, "");
+const isSegmentPrefix = (fullPath: string, candidatePrefix: string) => {
+  if (!fullPath.startsWith(candidatePrefix)) {
+    return false;
+  }
+
+  if (fullPath.length === candidatePrefix.length) {
+    return true;
+  }
+
+  const nextChar = fullPath[candidatePrefix.length];
+  return nextChar === "/";
+};
+
 const isMatchingRoute = (route: string, payload: string) => {
-  const normalizedRoute = stripUuidSegments(normalizePath(route));
-  const normalizedPayload = stripUuidSegments(normalizePath(payload));
+  const normalizedRoute = normalizePath(route);
+  const normalizedPayload = normalizePath(payload);
 
   return (
-    route.startsWith(payload) ||
-    payload.startsWith(route) ||
-    normalizedRoute.startsWith(normalizedPayload) ||
-    normalizedPayload.startsWith(normalizedRoute)
+    isSegmentPrefix(normalizedRoute, normalizedPayload) ||
+    isSegmentPrefix(normalizedPayload, normalizedRoute)
   );
+};
+
+const invalidateByTopics = (topics: string[], queryClient: QueryClient) => {
+  if (!topics.length) {
+    return;
+  }
+
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      const meta = query.meta as { topics?: string[] } | undefined;
+      const metaTopics = Array.isArray(meta?.topics) ? meta.topics : [];
+
+      return topics.some((topic) => metaTopics.includes(topic));
+    },
+  });
+};
+
+const hasTopicQueries = (topics: string[], queryClient: QueryClient) => {
+  if (!topics.length) {
+    return false;
+  }
+
+  const queries = queryClient.getQueryCache().findAll({
+    predicate: (query) => {
+      const meta = query.meta as { topics?: string[] } | undefined;
+      const metaTopics = Array.isArray(meta?.topics) ? meta.topics : [];
+
+      return topics.some((topic) => metaTopics.includes(topic));
+    },
+  });
+
+  return queries.length > 0;
+};
+
+const getTopicTriggerKey = (createdAt: string, topics: string[]) => {
+  return `${createdAt}:${topics.slice().sort().join("|")}`;
 };
 
 export function subscription(route: string, queryClient: QueryClient) {
@@ -84,6 +129,7 @@ export function subscription(route: string, queryClient: QueryClient) {
   // If this is the first subscription to this route, create listener
   if (currentCount === 0) {
     let triggeredActions: IAction[] = [];
+    let triggeredTopicKeys: string[] = [];
     const mountTime = Date.now();
 
     const unsubscribe = globalActionsStore.subscribe((state) => {
@@ -93,6 +139,39 @@ export function subscription(route: string, queryClient: QueryClient) {
       const messages = revalidationMessages || [];
       for (const message of messages) {
         if (new Date(message.result["createdAt"]).getTime() > mountTime) {
+          const topics = Array.isArray(message.result?.["topics"])
+            ? message.result["topics"].filter(
+                (topic: unknown): topic is string =>
+                  typeof topic === "string" && topic.length > 0,
+              )
+            : [];
+
+          if (topics.length) {
+            const topicTriggerKey = getTopicTriggerKey(
+              String(message.result?.["createdAt"] || ""),
+              topics,
+            );
+            const hasTopicsToInvalidate = hasTopicQueries(topics, queryClient);
+
+            const isTopicTriggered =
+              triggeredTopicKeys.includes(topicTriggerKey);
+
+            if (hasTopicsToInvalidate && !isTopicTriggered) {
+              triggeredTopicKeys = [
+                ...triggeredTopicKeys.slice(-MAX_ACTIONS),
+                topicTriggerKey,
+              ];
+
+              setTimeout(() => {
+                invalidateByTopics(topics, queryClient);
+              }, 1000);
+            }
+
+            if (hasTopicsToInvalidate) {
+              continue;
+            }
+          }
+
           const isTriggered = triggeredActions.some(
             (triggeredAction) =>
               JSON.stringify(triggeredAction) === JSON.stringify(message),
