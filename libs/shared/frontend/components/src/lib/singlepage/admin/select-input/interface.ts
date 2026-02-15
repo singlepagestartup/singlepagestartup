@@ -13,6 +13,10 @@ export interface IComponentProps<M extends { id?: string }, V>
   formFieldName: string;
   form: UseFormReturn<any>;
   renderField?: keyof M;
+  limit?: number;
+  searchField?: string;
+  searchById?: boolean;
+  searchDebounceMs?: number;
 }
 
 export type IComponentPropsExtended<
@@ -21,4 +25,7 @@ export type IComponentPropsExtended<
   IComponentProps,
 > = IComponentProps & {
   data: M[];
+  searchValue?: string;
+  onSearchValueChange?: (value: string) => void;
+  isSearching?: boolean;
 };

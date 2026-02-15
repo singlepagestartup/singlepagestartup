@@ -14,6 +14,10 @@ export function Component(props: IComponentProps) {
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}
+      limit={100}
+      searchField="adminTitle"
+      searchById={true}
+      renderField="adminTitle"
       {...props}
     />
   );

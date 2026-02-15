@@ -23,6 +23,10 @@ export type TTypedProps = {
   selectContentClassName?: string;
   selectItemClassName?: string;
   portalContainer?: HTMLElement | null;
+  searchValue?: string;
+  onSearchValueChange?: (value: string) => void;
+  disableClientFilter?: boolean;
+  isLoading?: boolean;
 };
 
 export type IComponentProps = IUniversalProps & TTypedProps;

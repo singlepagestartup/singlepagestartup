@@ -1,63 +1,37 @@
-import { cn } from "@sps/shared-frontend-client-utils";
-import { FormField } from "@sps/ui-adapter";
+import { ReactNode } from "react";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
-import { getNestedValue } from "@sps/shared-utils";
+import { factory } from "@sps/shared-frontend-client-api";
+import { Component as ClientComponent } from "./ClientComponent";
 
-export function Component<M extends { id: string }, V>(
-  props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
-    label?: string;
-    module: string;
-    name: string;
-    type?: "model" | "relation";
-    renderFunction?: (entity: M) => any;
-  },
+type TSelectRenderProps<M extends { id?: string }, V> = IComponentPropsExtended<
+  M,
+  V,
+  IComponentProps<M, V>
+> & {
+  label?: string;
+  module: string;
+  name: string;
+  type?: "model" | "relation";
+  renderFunction?: (entity: M) => any;
+};
+
+type TSelectContainerProps<M extends { id?: string }, V> = IComponentProps<
+  M,
+  V
+> & {
+  api: ReturnType<typeof factory<M>>;
+  Skeleton?: ReactNode;
+  Component: React.ComponentType<
+    IComponentPropsExtended<M, V, IComponentProps<M, V>>
+  >;
+};
+
+export function Component<M extends { id?: string }, V>(
+  props: TSelectContainerProps<M, V> | TSelectRenderProps<M, V>,
 ) {
-  return (
-    <div
-      data-module={props.module}
-      data-variant={props.variant}
-      className={cn("w-full", props.className)}
-      {...(props.type === "relation"
-        ? {
-            "data-relation": props.name,
-          }
-        : {
-            "data-model": props.name,
-          })}
-    >
-      <FormField
-        ui="shadcn"
-        type="select-with-search"
-        name={props.formFieldName}
-        label={props.label}
-        form={props.form}
-        placeholder={`Select ${props.name}`}
-        options={props.data.map((entity) => {
-          if (props.renderFunction && typeof props.renderField === "string") {
-            const renderValue = getNestedValue(entity, props.renderField);
+  if (props.isServer) {
+    return null;
+  }
 
-            if (typeof renderValue === "string") {
-              return [entity.id, renderValue, props.renderFunction(entity)];
-            }
-          }
-          if (props.renderField && entity[props.renderField]) {
-            const renderValue = entity[props.renderField];
-            if (typeof renderValue === "string") {
-              return [entity.id, renderValue];
-            }
-          }
-
-          if (typeof props.renderField === "string") {
-            const renderValue = getNestedValue(entity, props.renderField);
-
-            if (typeof renderValue === "string") {
-              return [entity.id, renderValue];
-            }
-          }
-
-          return [entity.id, entity.id];
-        })}
-      />
-    </div>
-  );
+  return <ClientComponent {...props} />;
 }

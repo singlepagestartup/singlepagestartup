@@ -14,9 +14,14 @@ import { Check } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: IComponentProps) {
-  const [searchValue, setSearchValue] = useState("");
+  const [internalSearchValue, setInternalSearchValue] = useState("");
+  const searchValue = props.searchValue ?? internalSearchValue;
 
   const filteredOptions = useMemo(() => {
+    if (props.disableClientFilter) {
+      return props.options;
+    }
+
     if (!searchValue.trim()) {
       return props.options;
     }
@@ -41,11 +46,17 @@ export function Component(props: IComponentProps) {
         placeholder={props.placeholder}
         className="h-9"
         value={searchValue}
-        onValueChange={(value) => setSearchValue(value)}
+        onValueChange={(value) => {
+          if (props.searchValue === undefined) {
+            setInternalSearchValue(value);
+          }
+
+          props.onSearchValueChange?.(value);
+        }}
       />
       <CommandList className="relative block w-full h-40 overflow-y-auto border-t">
         <CommandEmpty className="mt-16 text-center text-muted-foreground">
-          No found items.
+          {props.isLoading ? "Searching..." : "No found items."}
         </CommandEmpty>
         <CommandGroup>
           {filteredOptions.map((option) => {
@@ -56,7 +67,10 @@ export function Component(props: IComponentProps) {
                 value={itemValue}
                 onSelect={() => {
                   props.form.setValue(props.field.name, option[0]);
-                  setSearchValue("");
+                  if (props.searchValue === undefined) {
+                    setInternalSearchValue("");
+                  }
+                  props.onSearchValueChange?.("");
                 }}
                 data-is-selected={selectedOption?.[0] === option[0]}
                 className="cursor-pointer data-[is-selected=true]:bg-accent data-[is-selected=true]:text-accent-foreground"

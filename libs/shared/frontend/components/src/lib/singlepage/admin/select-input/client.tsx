@@ -3,8 +3,8 @@ import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
-import { Component as Skeleton } from "./Skeleton";
 import { ReactNode } from "react";
+import { Component as ChildComponent } from "./Component";
 
 export function Component<
   M extends { id?: string },
@@ -18,14 +18,5 @@ export function Component<
   },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const { Component: Child } = props;
-  const { data, isLoading } = props.api.find({
-    ...props.apiProps,
-  });
-
-  if (isLoading || !data) {
-    return props.Skeleton ?? <Skeleton />;
-  }
-
-  return <Child {...props} isServer={false} data={data} />;
+  return <ChildComponent {...props} />;
 }

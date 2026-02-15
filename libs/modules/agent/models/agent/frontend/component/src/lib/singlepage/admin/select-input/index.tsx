@@ -11,6 +11,7 @@ export function Component(props: IComponentProps) {
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}
+      searchField="adminTitle"
       {...props}
     />
   );

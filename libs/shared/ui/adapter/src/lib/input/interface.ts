@@ -66,6 +66,10 @@ export type TTypedProps =
       options: Option[];
       selectContentClassName?: string;
       selectItemClassName?: string;
+      searchValue?: string;
+      onSearchValueChange?: (value: string) => void;
+      disableClientFilter?: boolean;
+      isLoading?: boolean;
     }
   | {
       type: "radio";

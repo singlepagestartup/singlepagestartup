@@ -14,6 +14,9 @@ export function Component(props: IComponentPropsExtended) {
       data={props.data}
       form={props.form}
       variant={props.variant}
+      limit={100}
+      searchField="adminTitle"
+      searchById={true}
       renderField={props.renderField || "adminTitle"}
       renderFunction={MiniImage}
     />

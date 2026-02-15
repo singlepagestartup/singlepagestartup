@@ -3,9 +3,10 @@ import "server-only";
 
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { factory } from "@sps/shared-frontend-server-api";
+import { Component as ChildComponent } from "./Component";
 
 export async function Component<
-  M extends { id: string },
+  M extends { id?: string },
   V,
   A extends {
     api: ReturnType<typeof factory<M>>;
@@ -16,24 +17,5 @@ export async function Component<
   },
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
-  const { Component: Child } = props;
-
-  const data = await props.api.find({
-    ...props.apiProps,
-  });
-
-  if (!data) {
-    return <></>;
-  }
-
-  return (
-    <Child
-      variant={props.variant}
-      isServer={props.isServer}
-      formFieldName={props.formFieldName}
-      renderField={props.renderField}
-      form={props.form}
-      data={data}
-    />
-  );
+  return <ChildComponent {...(props as any)} />;
 }
