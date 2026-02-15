@@ -56,8 +56,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
-          push: false
-          load: true
+          push: true
           tags: |
             ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
           build-args: |
@@ -71,8 +70,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
-          push: false
-          load: true
+          push: true
           tags: |
             ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
             ${{ env.IMAGE_URL }}:latest
@@ -81,16 +79,3 @@ jobs:
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
             NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
             YANDEX_METRIKA_ID=${{ env.YANDEX_METRIKA_ID }}
-      - name: Inspect release tag image
-        run: docker image inspect ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
-
-      - if: ${{ inputs.PRERELEASE == false }}
-        name: Inspect latest tag image
-        run: docker image inspect ${{ env.IMAGE_URL }}:latest
-
-      - name: Push release tag to registry
-        run: docker push ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
-
-      - if: ${{ inputs.PRERELEASE == false }}
-        name: Push latest tag to registry
-        run: docker push ${{ env.IMAGE_URL }}:latest
