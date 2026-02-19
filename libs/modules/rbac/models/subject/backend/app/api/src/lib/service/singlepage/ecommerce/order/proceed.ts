@@ -130,13 +130,6 @@ export class Service {
         filters: {
           and: [
             {
-              column: "id",
-              method: "inArray",
-              value: subjectsToEcommerceModuleOrders.map(
-                (item) => item.ecommerceModuleOrderId,
-              ),
-            },
-            {
               column: "status",
               method: "ne",
               value: "completed",

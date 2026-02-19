@@ -306,6 +306,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           return command === passedCommand;
         });
 
+      console.log(
+        "🚀 ~ telegramBotCallbackQueryHandler ~ telegramBotTargetCommand:",
+        telegramBotTargetCommand,
+      );
+
       switch (telegramBotTargetCommand) {
         case "help":
           return this.telegramBotHelpMessageWithKeyboardCreate(props);

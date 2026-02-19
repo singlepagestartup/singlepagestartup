@@ -148,6 +148,8 @@ export class TelegarmBot {
           ctx,
         });
 
+      console.log("🚀 ~ init ~ rbacModuleSubject:", rbacModuleSubject);
+
       const jwtToken = await jwt.sign(
         {
           exp:
@@ -311,7 +313,10 @@ export class TelegarmBot {
 
     const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
 
-    const res = await this.instance.api.setWebhook(endpoint);
+    const res = await this.instance.api.setWebhook(endpoint, {
+      // Empty list resets any previous webhook update filter and enables all updates.
+      allowed_updates: [],
+    });
 
     return res;
   }
