@@ -4,6 +4,11 @@
 
 Actions represent time-bound authorizations or events associated with a subject.
 
+Typical RBAC usages:
+
+- temporary authentication actions (password reset, OAuth state/exchange),
+- subject-scoped system events that must expire or be consumed once.
+
 ## Fields
 
 - `id`: unique identifier (UUID).
@@ -11,7 +16,12 @@ Actions represent time-bound authorizations or events associated with a subject.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
 - `expiresAt`: expiration timestamp.
-- `payload`: JSON payload for the action.
+- `payload`: JSON payload for the action (typed by `payload.type`).
+
+Common payload types in authentication flows:
+
+- `oauth-state`: provider/start-flow state before callback.
+- `oauth-exchange`: one-time exchange code mapped to `subjectId` after callback.
 
 ## Variants
 

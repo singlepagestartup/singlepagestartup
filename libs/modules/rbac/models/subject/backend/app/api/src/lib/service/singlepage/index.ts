@@ -21,6 +21,18 @@ import {
   IExecuteProps as IAuthenticationEthereumVirtualMachineExecuteProps,
 } from "./authentication/ethereum-virtual-machine";
 import {
+  Service as AuthenticationOAuthStart,
+  IExecuteProps as IAuthenticationOAuthStartExecuteProps,
+} from "./authentication/oauth/start";
+import {
+  Service as AuthenticationOAuthCallback,
+  IExecuteProps as IAuthenticationOAuthCallbackExecuteProps,
+} from "./authentication/oauth/callback";
+import {
+  Service as AuthenticationOAuthExchange,
+  IExecuteProps as IAuthenticationOAuthExchangeExecuteProps,
+} from "./authentication/oauth/exchange";
+import {
   Service as DeleteAnonymousSubjects,
   IExecuteProps as IDeleteAnonymousSubjectsExecuteProps,
 } from "./delete-anonymous-subjects";
@@ -75,6 +87,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new AuthenticationEthereumVirtualMachine(this.repository).execute(
       props,
     );
+  }
+
+  async authenticationOAuthStart(props: IAuthenticationOAuthStartExecuteProps) {
+    return new AuthenticationOAuthStart(this.repository).execute(props);
+  }
+
+  async authenticationOAuthCallback(
+    props: IAuthenticationOAuthCallbackExecuteProps,
+  ) {
+    return new AuthenticationOAuthCallback(this.repository).execute(props);
+  }
+
+  async authenticationOAuthExchange(
+    props: IAuthenticationOAuthExchangeExecuteProps,
+  ) {
+    return new AuthenticationOAuthExchange(this.repository).execute(props);
   }
 
   async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {

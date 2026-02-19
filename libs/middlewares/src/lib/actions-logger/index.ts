@@ -29,6 +29,10 @@ const notLoggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["POST"],
   },
   {
+    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
+    methods: ["POST"],
+  },
+  {
     regexPath: /\/api\/agent\/agents\/(\w+)?/,
     methods: ["POST"],
   },

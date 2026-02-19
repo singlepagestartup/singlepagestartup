@@ -2,7 +2,7 @@ import { internationalization } from "@sps/shared-configuration";
 import { NextResponse } from "next/server";
 
 export async function middleware(request: any) {
-  const { pathname, origin } = request.nextUrl;
+  const { pathname } = request.nextUrl;
   const defaultLanguage = internationalization.defaultLanguage.code;
 
   const pathSegments = pathname.split("/").filter(Boolean);
@@ -13,7 +13,9 @@ export async function middleware(request: any) {
     );
 
   if (!hasLanguagePrefix) {
-    return NextResponse.redirect(`${origin}/${defaultLanguage}${pathname}`);
+    const nextUrl = request.nextUrl.clone();
+    nextUrl.pathname = `/${defaultLanguage}${pathname}`;
+    return NextResponse.redirect(nextUrl);
   }
 
   return NextResponse.next();

@@ -1,19 +1,12 @@
 import { IComponentPropsExtended } from "./interface";
-import { Component as AuthenticationEmailAndPasswordAuthenticationFormDefault } from "../email-and-password/authentication-form-default";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as ClientComponent } from "./ClientComponent";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <div
-      data-module="rbac"
-      data-model="subject"
-      data-variant={props.variant}
-      className={cn("flex flex-col w-full", props.className)}
-    >
-      <AuthenticationEmailAndPasswordAuthenticationFormDefault
-        isServer={props.isServer}
-        variant="authentication-email-and-password-authentication-form-default"
-      />
-    </div>
+    <ClientComponent
+      isServer={props.isServer}
+      variant={props.variant}
+      className={props.className}
+    />
   );
 }

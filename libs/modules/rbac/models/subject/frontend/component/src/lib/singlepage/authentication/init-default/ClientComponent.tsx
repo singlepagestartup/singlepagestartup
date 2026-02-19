@@ -8,10 +8,12 @@ import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [seconds, setSeconds] = useState(new Date().getTime());
 
@@ -36,13 +38,26 @@ export function Component(props: IComponentPropsExtended) {
     iat: number;
   }>(refreshToken || "");
 
+  const isOAuthCallbackPending =
+    pathname?.includes("/rbac/subject/authentication/select-method") &&
+    (Boolean(searchParams.get("code")) ||
+      Boolean(searchParams.get("oauthError")));
+
   useEffect(() => {
+    if (isOAuthCallbackPending) {
+      return;
+    }
+
     if (!refreshToken && typeof refreshToken !== "string") {
       init.refetch();
     }
-  }, [refreshToken]);
+  }, [refreshToken, isOAuthCallbackPending]);
 
   const handleStorageChange = () => {
+    if (isOAuthCallbackPending) {
+      return;
+    }
+
     if (cookies["rbac.subject.jwt"] && !tokenDecoded.decodedToken) {
       return;
     }
@@ -84,6 +99,7 @@ export function Component(props: IComponentPropsExtended) {
   useEffect(() => {
     handleStorageChange();
   }, [
+    isOAuthCallbackPending,
     tokenDecoded.decodedToken,
     refreshToken,
     refreshTokenDecoded.isExpired,

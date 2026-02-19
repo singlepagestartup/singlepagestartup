@@ -4,6 +4,47 @@
 
 Subjects represent authenticated users or actors, and connect identities, roles, and application-specific flows.
 
+## Authentication API
+
+- `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.
+- `GET /rbac/subjects/authentication/me`: get current subject from JWT.
+- `POST /rbac/subjects/authentication/refresh`: refresh JWT/refresh pair.
+- `POST /rbac/subjects/authentication/logout`: logout current session.
+- `POST /rbac/subjects/authentication/email-and-password/authentication`: login by email+password.
+- `POST /rbac/subjects/authentication/email-and-password/registration`: register by email+password.
+- `POST /rbac/subjects/authentication/email-and-password/forgot-password`: request reset code.
+- `POST /rbac/subjects/authentication/email-and-password/reset-password`: reset password by code.
+- `POST /rbac/subjects/authentication/ethereum-virtual-machine`: EVM signature login.
+- `POST /rbac/subjects/authentication/oauth/{provider}`: start OAuth flow (`google`).
+- `GET /rbac/subjects/authentication/oauth/{provider}/callback`: OAuth provider callback.
+- `POST /rbac/subjects/authentication/oauth/exchange`: exchange one-time code to JWT/refresh.
+
+## OAuth Configuration
+
+- `RBAC_OAUTH_GOOGLE_CLIENT_ID`: Google OAuth client id.
+- `RBAC_OAUTH_GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
+- `RBAC_OAUTH_GOOGLE_REDIRECT_URI`: optional explicit callback URI (fallback is `${API_SERVICE_URL}/api/rbac/subjects/authentication/oauth/google/callback`).
+- `RBAC_OAUTH_SUCCESS_REDIRECT_PATH`: host path used after successful callback/exchange handoff (default `/`).
+- `RBAC_OAUTH_STATE_LIFETIME_IN_SECONDS`: OAuth state TTL (default `600`).
+- `RBAC_OAUTH_EXCHANGE_LIFETIME_IN_SECONDS`: OAuth exchange code TTL (default `120`).
+
+## OAuth Subject Resolution Rules
+
+- OAuth callback stores temporary data in `rbac.action` records (`oauth-state`, `oauth-exchange`) and marks them as consumed to prevent replay.
+- Priority for selecting target subject:
+
+1. Existing `oauth_google` identity by provider account (`account`) and its linked subject.
+2. Existing `email_and_password` identity with same verified email and its linked subject.
+3. Current authenticated subject from OAuth start JWT (`sourceSubjectId`), if present.
+4. New subject creation.
+
+- If OAuth identity is already linked to another subject, login is performed into that already linked subject.
+- In `flow=link`, authenticated source subject is required.
+- Callback redirects to host with either:
+
+1. `?code=<oauth-exchange-action-id>` on success.
+2. `?oauthError=<error-code>` on failure.
+
 ## Fields
 
 - `id`: unique identifier (UUID).

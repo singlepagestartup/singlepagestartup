@@ -140,6 +140,21 @@ import {
   type IProps as IAuthenticationEmailAndPasswordRegistrationProps,
   type IResult as IAuthenticationEmailAndPasswordRegistrationResult,
 } from "./authentication/email-and-password/registration";
+import {
+  action as authenticationOAuthStart,
+  type IProps as IAuthenticationOAuthStartProps,
+  type IResult as IAuthenticationOAuthStartResult,
+} from "./authentication/oauth/start";
+import {
+  action as authenticationOAuthCallback,
+  type IProps as IAuthenticationOAuthCallbackProps,
+  type IResult as IAuthenticationOAuthCallbackResult,
+} from "./authentication/oauth/callback";
+import {
+  action as authenticationOAuthExchange,
+  type IProps as IAuthenticationOAuthExchangeProps,
+  type IResult as IAuthenticationOAuthExchangeResult,
+} from "./authentication/oauth/exchange";
 
 import {
   action as crmModuleFromRequestCreate,
@@ -233,6 +248,9 @@ export type IProps = {
   IAuthenticationRefreshProps: IAuthenticationRefreshProps;
   IAuthenticationIsAuthorizedProps: IAuthenticationIsAuthorizedProps;
   IAuthenticationBillRouteProps: IAuthenticationBillRouteProps;
+  IAuthenticationOAuthStartProps: IAuthenticationOAuthStartProps;
+  IAuthenticationOAuthCallbackProps: IAuthenticationOAuthCallbackProps;
+  IAuthenticationOAuthExchangeProps: IAuthenticationOAuthExchangeProps;
 
   ICrmModuleFromRequestCreateProps: ICrmModuleFromRequestCreateProps;
 
@@ -279,6 +297,9 @@ export type IResult = {
   IAuthenticationRefreshResult: IAuthenticationRefreshResult;
   IAuthenticationIsAuthorizedResult: IAuthenticationIsAuthorizedResult;
   IAuthenticationBillRouteResult: IAuthenticationBillRouteResult;
+  IAuthenticationOAuthStartResult: IAuthenticationOAuthStartResult;
+  IAuthenticationOAuthCallbackResult: IAuthenticationOAuthCallbackResult;
+  IAuthenticationOAuthExchangeResult: IAuthenticationOAuthExchangeResult;
 
   ICrmModuleFromRequestCreateResult: ICrmModuleFromRequestCreateResult;
 
@@ -332,6 +353,9 @@ export const api = {
   authenticationRefresh,
   authenticationIsAuthorized,
   authenticationBillRoute,
+  authenticationOAuthStart,
+  authenticationOAuthCallback,
+  authenticationOAuthExchange,
 
   crmModuleFromRequestCreate,
 

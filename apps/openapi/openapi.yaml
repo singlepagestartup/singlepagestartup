@@ -132,6 +132,12 @@ paths:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1logout"
   /rbac/subjects/authentication/refresh:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1refresh"
+  /rbac/subjects/authentication/oauth/{provider}:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1oauth~1{provider}"
+  /rbac/subjects/authentication/oauth/{provider}/callback:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1oauth~1{provider}~1callback"
+  /rbac/subjects/authentication/oauth/exchange:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1oauth~1exchange"
   /rbac/subjects/authentication/is-authorized:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1authentication~1is-authorized"
   /rbac/subjects/authentication/ethereum-virtual-machine:
@@ -188,6 +194,12 @@ paths:
     $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions"
   /rbac/roles-to-permissions/{id}:
     $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions~1{id}"
+
+  # rbac/relations/permissions-to-billing-module-currencies
+  /rbac/permissions-to-billing-module-currencies:
+    $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions-to-billing-module-currencies"
+  /rbac/permissions-to-billing-module-currencies/{id}:
+    $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions-to-billing-module-currencies~1{id}"
 
   # rbac/relations/subjects-to-actions
   /rbac/subjects-to-actions:
@@ -498,6 +510,12 @@ paths:
     $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms"
   /crm/widgets-to-forms/{id}:
     $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms~1{id}"
+
+  # crm/relations/widgets-to-website-builder-module-widgets
+  /crm/widgets-to-website-builder-module-widgets:
+    $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-website-builder-module-widgets"
+  /crm/widgets-to-website-builder-module-widgets/{id}:
+    $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-website-builder-module-widgets~1{id}"
 
   # ecommerce/attribute-key
   /ecommerce/attribute-keys:
@@ -1075,6 +1093,10 @@ components:
       $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/rbac-roles-to-permissions.yaml"
     "rbac-roles-to-permissions-input":
       $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/rbac-roles-to-permissions-input.yaml"
+    "rbac-permissions-to-billing-module-currencies":
+      $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/rbac-permissions-to-billing-module-currencies.yaml"
+    "rbac-permissions-to-billing-module-currencies-input":
+      $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/rbac-permissions-to-billing-module-currencies-input.yaml"
     "rbac-subjects-to-actions":
       $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/rbac-subjects-to-actions.yaml"
     "rbac-subjects-to-actions-input":
@@ -1111,6 +1133,8 @@ components:
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles.yaml"
     "rbac-subjects-to-social-module-profiles-input":
       $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/rbac-subjects-to-social-module-profiles-input.yaml"
+    "rbac-subjects-to-billing-module-currencies":
+      $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/rbac-subjects-to-billing-module-currencies.yaml"
     "rbac-subjects-to-billing-module-currencies-input":
       $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/rbac-subjects-to-billing-module-currencies-input.yaml"
     "agent-agent":
@@ -1253,6 +1277,10 @@ components:
       $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms.yaml"
     "crm-widgets-to-forms-input":
       $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
+    "crm-widgets-to-website-builder-module-widgets":
+      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-forms.yaml"
+    "crm-widgets-to-website-builder-module-widgets-input":
+      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
     "ecommerce-attribute-key":
       $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/ecommerce-attribute-key.yaml"
     "ecommerce-attribute-key-input":

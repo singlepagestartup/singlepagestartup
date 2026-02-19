@@ -21,6 +21,10 @@ const notBillingRoutes: { regexPath: RegExp; methods: string[] }[] = [
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],
   },
+  {
+    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
+    methods: ["POST"],
+  },
 ];
 
 export type IMiddlewareGeneric = {

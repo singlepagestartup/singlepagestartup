@@ -33,6 +33,10 @@ const allowedRoutes: { regexPath: RegExp; methods: string[] }[] = [
     methods: ["GET", "POST"],
   },
   {
+    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
+    methods: ["GET", "POST"],
+  },
+  {
     regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
     methods: ["POST"],
   },

@@ -10,6 +10,7 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Defines permissions and role assignments.
 - Connects subjects to roles, identities, and actions.
 - Exposes UI variants for authentication and authorization flows.
+- Supports OAuth authentication/link flows (Google) with safe one-time exchange via action records.
 
 ### Typical use cases:
 

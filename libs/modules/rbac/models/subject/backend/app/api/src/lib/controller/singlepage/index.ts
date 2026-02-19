@@ -17,6 +17,9 @@ import { Handler as AuthenticationInit } from "./authentication/init";
 import { Handler as AuthenticationEmailAndPasswordAuthentication } from "./authentication/email-and-password/authentication";
 import { Handler as AuthenticationRefresh } from "./authentication/refresh";
 import { Handler as AuthenticationEthereumVirtualMachine } from "./authentication/ethereum-virtual-machine";
+import { Handler as AuthenticationOAuthStart } from "./authentication/oauth/start";
+import { Handler as AuthenticationOAuthCallback } from "./authentication/oauth/callback";
+import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/exchange";
 
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
@@ -109,6 +112,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/authentication/refresh",
         handler: this.authenticationRefresh,
+      },
+      {
+        method: "POST",
+        path: "/authentication/oauth/exchange",
+        handler: this.authenticationOAuthExchange,
+      },
+      {
+        method: "POST",
+        path: "/authentication/oauth/:provider",
+        handler: this.authenticationOAuthStart,
+      },
+      {
+        method: "GET",
+        path: "/authentication/oauth/:provider/callback",
+        handler: this.authenticationOAuthCallback,
       },
       {
         method: "POST",
@@ -378,6 +396,18 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async authenticationRefresh(c: Context, next: any): Promise<Response> {
     return new AuthenticationRefresh(this.service).execute(c, next);
+  }
+
+  async authenticationOAuthStart(c: Context, next: any): Promise<Response> {
+    return new AuthenticationOAuthStart(this.service).execute(c, next);
+  }
+
+  async authenticationOAuthCallback(c: Context, next: any): Promise<Response> {
+    return new AuthenticationOAuthCallback(this.service).execute(c, next);
+  }
+
+  async authenticationOAuthExchange(c: Context, next: any): Promise<Response> {
+    return new AuthenticationOAuthExchange(this.service).execute(c, next);
   }
 
   async notify(c: Context, next: any): Promise<Response> {

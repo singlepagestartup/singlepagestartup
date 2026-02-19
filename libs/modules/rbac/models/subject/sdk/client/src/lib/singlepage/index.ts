@@ -60,6 +60,21 @@ import {
   type IProps as IAuthenticationEmailAndPasswordResetPasswordProps,
   type IResult as IAuthenticationEmailAndPasswordResetPasswordResult,
 } from "./authentication/email-and-password/reset-password";
+import {
+  action as authenticationOAuthStart,
+  type IProps as IAuthenticationOAuthStartProps,
+  type IResult as IAuthenticationOAuthStartResult,
+} from "./authentication/oauth/start";
+import {
+  action as authenticationOAuthCallback,
+  type IProps as IAuthenticationOAuthCallbackProps,
+  type IResult as IAuthenticationOAuthCallbackResult,
+} from "./authentication/oauth/callback";
+import {
+  action as authenticationOAuthExchange,
+  type IProps as IAuthenticationOAuthExchangeProps,
+  type IResult as IAuthenticationOAuthExchangeResult,
+} from "./authentication/oauth/exchange";
 
 import {
   action as ecommerceModuleProductCheckout,
@@ -191,6 +206,9 @@ export type IProps = {
   IAuthenticationEmailAndPasswordForgotPasswordProps: IAuthenticationEmailAndPasswordForgotPasswordProps;
   IAuthenticationLogoutProps: IAuthenticationLogoutProps;
   IAuthenticationEmailAndPasswordResetPasswordProps: IAuthenticationEmailAndPasswordResetPasswordProps;
+  IAuthenticationOAuthStartProps: IAuthenticationOAuthStartProps;
+  IAuthenticationOAuthCallbackProps: IAuthenticationOAuthCallbackProps;
+  IAuthenticationOAuthExchangeProps: IAuthenticationOAuthExchangeProps;
 
   IIdentityUpdateProps: IIdentityUpdateProps;
   IIdentityDeleteProps: IIdentityDeleteProps;
@@ -231,6 +249,9 @@ export type IResult = {
   IAuthenticationEmailAndPasswordForgotPasswordResult: IAuthenticationEmailAndPasswordForgotPasswordResult;
   IAuthenticationLogoutResult: IAuthenticationLogoutResult;
   IAuthenticationEmailAndPasswordResetPasswordResult: IAuthenticationEmailAndPasswordResetPasswordResult;
+  IAuthenticationOAuthStartResult: IAuthenticationOAuthStartResult;
+  IAuthenticationOAuthCallbackResult: IAuthenticationOAuthCallbackResult;
+  IAuthenticationOAuthExchangeResult: IAuthenticationOAuthExchangeResult;
 
   IIdentityUpdateResult: IIdentityUpdateResult;
   IIdentityDeleteResult: IIdentityDeleteResult;
@@ -278,6 +299,9 @@ export const api = {
   authenticationEmailAndPasswordForgotPassword,
   authenticationLogout,
   authenticationEmailAndPasswordResetPassword,
+  authenticationOAuthStart,
+  authenticationOAuthCallback,
+  authenticationOAuthExchange,
 
   identityUpdate,
   identityDelete,

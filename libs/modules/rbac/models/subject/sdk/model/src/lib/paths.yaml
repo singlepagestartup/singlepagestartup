@@ -372,6 +372,119 @@ paths:
                   - jwt
                   - refresh
 
+  /rbac/subjects/authentication/oauth/{provider}:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: OAuth start
+      description: Start OAuth flow and get provider authorization URL
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            example: google
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"flow":"signin","redirectTo":"/rbac/subject/authentication/oauth/callback"}'
+      responses:
+        "200":
+          description: OAuth state and authorization URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    type: string
+                    format: uuid
+                  authorizationUrl:
+                    type: string
+                required:
+                  - state
+                  - authorizationUrl
+
+  /rbac/subjects/authentication/oauth/{provider}/callback:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: OAuth callback
+      description: Provider callback endpoint; redirects to host callback page with exchange code or oauth error
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            example: google
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to host callback route
+
+  /rbac/subjects/authentication/oauth/exchange:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: OAuth exchange
+      description: Exchange one-time OAuth code to JWT and refresh tokens
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"code":"00000000-0000-0000-0000-000000000000"}'
+              required:
+                - data
+      responses:
+        "200":
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                  refresh:
+                    type: string
+                required:
+                  - jwt
+                  - refresh
+
   /rbac/subjects/authentication/is-authorized:
     get:
       tags:

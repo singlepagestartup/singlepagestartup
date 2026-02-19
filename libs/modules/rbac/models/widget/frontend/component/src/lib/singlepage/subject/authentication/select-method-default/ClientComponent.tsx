@@ -5,7 +5,6 @@ import { Component as Subject } from "@sps/rbac/models/subject/frontend/componen
 import { internationalization } from "@sps/shared-configuration";
 import { cn } from "@sps/shared-frontend-client-utils";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
@@ -15,14 +14,8 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { GalleryVerticalEnd } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
-  const [provider, setProvider] = useState<
-    | "authentication-email-and-password-authentication-form-default"
-    | "authentication-ethereum-virtual-machine-default"
-  >("authentication-email-and-password-authentication-form-default");
-
   return (
     <div
       data-module="rbac"
@@ -63,40 +56,10 @@ export function Component(props: IComponentPropsExtended) {
             </CardHeader>
             <CardContent>
               <div className="grid gap-6">
-                <div className="flex flex-col gap-4">
-                  {provider !==
-                  "authentication-email-and-password-authentication-form-default" ? (
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setProvider(
-                          "authentication-email-and-password-authentication-form-default",
-                        )
-                      }
-                    >
-                      Login and Password
-                    </Button>
-                  ) : null}
-                  {provider !==
-                  "authentication-ethereum-virtual-machine-default" ? (
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setProvider(
-                          "authentication-ethereum-virtual-machine-default",
-                        )
-                      }
-                    >
-                      Ethereum Virtual Machine
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-                <Subject isServer={false} variant={provider} />
+                <Subject
+                  isServer={false}
+                  variant="authentication-select-method-default"
+                />
               </div>
             </CardContent>
           </Card>

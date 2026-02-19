@@ -9,9 +9,9 @@ Identities store authentication credentials and account identifiers.
 - `id`: unique identifier (UUID).
 - `password`: hashed password.
 - `salt`: password salt.
-- `account`: account identifier.
+- `account`: external provider account identifier (used for OAuth providers, e.g. Google `sub`).
 - `email`: email address.
-- `provider`: auth provider (default: `email`).
+- `provider`: auth provider (`email_and_password`, `oauth_google`, `ethereum_virtual_machine`, etc.).
 - `createdAt`: creation timestamp.
 - `updatedAt`: last update timestamp.
 - `variant`: display variant.
