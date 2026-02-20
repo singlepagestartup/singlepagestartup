@@ -71,35 +71,16 @@
         </div>
 
         <div class="flex-1 overflow-hidden">
-          <div class="p-4 pb-2">
-            <div class="mb-3 flex items-center justify-between">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Models
-              </h3>
-            </div>
-            <div class="relative mb-3">
-              <i
-                data-lucide="search"
-                class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
-              ></i>
-              <input
-                id="modelSearchInput"
-                data-testid="model-search-input"
-                type="text"
-                placeholder="Search models..."
-                class="h-9 w-full rounded-md border border-border bg-card pl-8 pr-3 text-sm outline-none ring-0 transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-              />
-            </div>
-          </div>
-
-          <div class="scroll-thin h-[calc(100vh-16rem)] overflow-y-auto px-3 pb-4" data-testid="models-scroll">
+          <div class="scroll-thin h-full overflow-y-auto px-3 py-4" data-testid="models-scroll">
             <div id="modelsList" data-testid="models-list"></div>
           </div>
         </div>
 
         <div class="border-t border-border p-3">
           <button
+            id="settingsButton"
             type="button"
+            data-action="open-settings"
             data-testid="settings-button"
             class="flex w-full items-center justify-start rounded-md px-3 py-2 text-sm transition hover:bg-muted"
           >
@@ -127,7 +108,14 @@
             <button type="button" data-testid="help-button" class="rounded-md p-2 transition hover:bg-muted" aria-label="Help">
               <i data-lucide="circle-help" class="h-5 w-5"></i>
             </button>
-            <button type="button" data-testid="user-button" class="rounded-md p-2 transition hover:bg-muted" aria-label="User">
+            <button
+              id="userButton"
+              type="button"
+              data-action="open-account-settings"
+              data-testid="user-button"
+              class="rounded-md p-2 transition hover:bg-muted"
+              aria-label="User"
+            >
               <i data-lucide="user" class="h-5 w-5"></i>
             </button>
           </div>
@@ -140,7 +128,7 @@
               <h1 id="pageTitle" data-testid="page-title" class="text-3xl font-bold tracking-tight capitalize"></h1>
             </div>
 
-            <section data-testid="list-toolbar" class="rounded-lg border border-border bg-card p-4">
+            <section id="listToolbar" data-testid="list-toolbar" class="rounded-lg border border-border bg-card p-4">
               <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
                   <div class="relative min-w-[300px] flex-1">
@@ -209,6 +197,17 @@
       data-testid="relation-drawer"
       class="fixed right-0 top-0 z-[60] flex h-screen w-full max-w-xl translate-x-full flex-col overflow-hidden border-l border-border bg-slate-50 shadow-panel transition-transform duration-300"
     ></aside>
+
+    <div
+      id="previewDialogBackdrop"
+      data-testid="preview-dialog-backdrop"
+      class="pointer-events-none fixed inset-0 z-[65] bg-slate-900/30 opacity-0 transition"
+    ></div>
+    <div
+      id="previewDialog"
+      data-testid="preview-dialog-root"
+      class="pointer-events-none fixed inset-0 z-[75] flex items-center justify-center p-4 opacity-0 transition"
+    ></div>
 
     <div
       id="confirmDialogBackdrop"
