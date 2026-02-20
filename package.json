@@ -19,7 +19,8 @@
     "openapi:dev": "nx run openapi:dev",
     "telegram:dev": "nx run telegram:dev",
     "telegram:start": "nx run telegram:start",
-    "telegram:build": "nx run telegram:build"
+    "telegram:build": "nx run telegram:build",
+    "drafts:validate": "node tools/drafts/validate-manifests.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.717.0",

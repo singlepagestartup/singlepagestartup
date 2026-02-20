@@ -1,0 +1,12 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "id": "basic-html",
+  "title": "Basic HTML Draft",
+  "description": "Reference draft for plain HTML generation",
+  "type": "html",
+  "entry": "src/index.html",
+  "status": "incoming",
+  "tags": ["reference", "html"],
+  "createdAt": "2026-02-20T00:00:00.000Z",
+  "updatedAt": "2026-02-20T00:00:00.000Z"
+}
