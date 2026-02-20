@@ -111,7 +111,7 @@ const MODEL_ROUTER_CONFIG = {
         strengths: ["general_chat", "instruction_following"],
       },
       {
-        id: "anthropic/claude-opus-4.6",
+        id: "anthropic/claude-sonnet-4.6",
         enabled: true,
         priority: 80,
         input_modalities: ["text", "image", "file"],
@@ -147,7 +147,7 @@ const MODEL_ROUTER_CONFIG = {
         best_for: ["code_generation", "code_review", "optimization"],
       },
       {
-        id: "anthropic/claude-opus-4.6",
+        id: "anthropic/claude-sonnet-4.6",
         enabled: true,
         priority: 80,
         input_modalities: ["text", "image", "file"],
@@ -165,7 +165,7 @@ const MODEL_ROUTER_CONFIG = {
         strengths: ["image_understanding", "ocr", "analysis"],
       },
       {
-        id: "anthropic/claude-opus-4.6",
+        id: "anthropic/claude-sonnet-4.6",
         enabled: true,
         priority: 90,
         input_modalities: ["text", "image", "file"],
@@ -192,7 +192,7 @@ const MODEL_ROUTER_CONFIG = {
         best_for: ["branding", "logo_style", "marketing_visuals_with_text"],
       },
       {
-        id: "black-forest-labs/flux.2-max",
+        id: "black-forest-labs/flux.2-pro",
         enabled: true,
         priority: 95,
         input_modalities: ["text"],
@@ -541,31 +541,35 @@ export class Handler {
 
           if (socialModuleProfilesToMessages?.length) {
             for (const socialModuleMessage of socialModuleMessages) {
-              const russianValues = Object.keys(telegramBotServiceMessages).map(
-                (key) => {
-                  return telegramBotServiceMessages[key]?.["ru"];
-                },
-              );
+              const messageDescription =
+                socialModuleMessage.description?.trim() || "";
 
-              if (russianValues.includes(socialModuleMessage.description)) {
+              // Soft context reset marker: keep messages only after the latest /new.
+              if (messageDescription.startsWith("/new")) {
+                context.length = 0;
                 continue;
               }
 
-              if (
-                socialModuleMessage.description?.includes(
-                  "Генерирую ответ с помощью",
-                ) ||
-                socialModuleMessage.description?.includes(
-                  "Выбираю модель для ответа. Пожалуйста, подождите.",
-                )
-              ) {
+              const localizedServiceValues = Object.keys(
+                telegramBotServiceMessages,
+              )
+                .flatMap((key) => {
+                  return [
+                    telegramBotServiceMessages[key]?.["ru"],
+                    telegramBotServiceMessages[key]?.["en"],
+                  ];
+                })
+                .filter(Boolean);
+
+              if (localizedServiceValues.includes(messageDescription)) {
                 continue;
               }
 
-              if (
-                !socialModuleMessage.description ||
-                socialModuleMessage.description === ""
-              ) {
+              if (this.isOpenRouterProgressStatusMessage(messageDescription)) {
+                continue;
+              }
+
+              if (!messageDescription) {
                 continue;
               }
 
@@ -630,7 +634,7 @@ export class Handler {
                   content: [
                     {
                       type: "text",
-                      text: socialModuleMessage.description || "",
+                      text: messageDescription,
                     },
                     ...fileStorageFiles?.map((fileStorageFile) => {
                       if (fileStorageFile.mimeType?.includes("image")) {
@@ -654,7 +658,7 @@ export class Handler {
               } else {
                 context.push({
                   role: isAssistantMessage ? "assistant" : "user",
-                  content: socialModuleMessage.description || "",
+                  content: messageDescription,
                 });
               }
             }
@@ -1019,6 +1023,49 @@ export class Handler {
     return ALLOWED_INPUT_MODALITIES.filter((modality) =>
       modalities.has(modality),
     );
+  }
+
+  private isOpenRouterProgressStatusMessage(
+    messageDescription: string,
+  ): boolean {
+    const selectingVariants = [
+      this.statusMessages.openRouterSelectingModels?.ru,
+      this.statusMessages.openRouterSelectingModels?.en,
+    ].filter(Boolean) as string[];
+
+    if (
+      selectingVariants.some((variant) => messageDescription.includes(variant))
+    ) {
+      return true;
+    }
+
+    const generatingVariants = [
+      this.statusMessages.openRouterGeneratingResponse?.ru,
+      this.statusMessages.openRouterGeneratingResponse?.en,
+    ].filter(Boolean) as string[];
+
+    for (const variant of generatingVariants) {
+      const placeholder = "[selectModelForRequest]";
+      if (!variant.includes(placeholder)) {
+        if (messageDescription.includes(variant)) {
+          return true;
+        }
+        continue;
+      }
+
+      const [prefix, suffix] = variant.split(placeholder);
+      if (!prefix) {
+        continue;
+      }
+
+      if (messageDescription.startsWith(prefix)) {
+        if (!suffix || messageDescription.includes(suffix)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private getEnabledCandidatesByClass(

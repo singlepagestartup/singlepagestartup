@@ -1,0 +1,12 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "id": "admin-panel-redesign-html",
+  "title": "Admin Panel Redesign (HTML)",
+  "description": "Vanilla JS + Tailwind CDN prototype ported from Next.js admin-panel-redesign",
+  "type": "html",
+  "entry": "src/index.html",
+  "status": "incoming",
+  "tags": ["admin", "prototype", "tailwind", "vanilla-js"],
+  "createdAt": "2026-02-20T00:00:00.000Z",
+  "updatedAt": "2026-02-20T00:00:00.000Z"
+}

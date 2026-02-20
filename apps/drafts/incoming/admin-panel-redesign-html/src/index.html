@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel Redesign</title>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: "#eaf0f7",
+              foreground: "#111827",
+              card: "#ffffff",
+              border: "#d6dfeb",
+              muted: "#e8edf4",
+              "muted-foreground": "#6b7280",
+              accent: "#dfe7f2",
+              surface: "#f4f7fb",
+              primary: "#111827",
+              "primary-foreground": "#f9fafb",
+              destructive: "#dc2626",
+            },
+            boxShadow: {
+              panel: "0 12px 42px rgba(15, 23, 42, 0.24)",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+      }
+
+      .scroll-thin::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      .scroll-thin::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 9999px;
+      }
+    </style>
+  </head>
+  <body class="h-screen overflow-hidden bg-background text-foreground antialiased" data-testid="admin-prototype-body">
+    <div class="flex h-screen" data-testid="admin-prototype-root">
+      <aside
+        id="sidebar"
+        data-testid="sidebar"
+        class="flex w-64 shrink-0 flex-col border-r border-border bg-card transition-all duration-300"
+      >
+        <div class="flex h-16 items-center justify-between border-b border-border px-4">
+          <div class="flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span class="text-sm font-bold">A</span>
+            </div>
+            <span class="text-sm font-semibold">Admin Panel</span>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-hidden">
+          <div class="p-4 pb-2">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Models
+              </h3>
+            </div>
+            <div class="relative mb-3">
+              <i
+                data-lucide="search"
+                class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              ></i>
+              <input
+                id="modelSearchInput"
+                data-testid="model-search-input"
+                type="text"
+                placeholder="Search models..."
+                class="h-9 w-full rounded-md border border-border bg-card pl-8 pr-3 text-sm outline-none ring-0 transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              />
+            </div>
+          </div>
+
+          <div class="scroll-thin h-[calc(100vh-16rem)] overflow-y-auto px-3 pb-4" data-testid="models-scroll">
+            <div id="modelsList" data-testid="models-list"></div>
+          </div>
+        </div>
+
+        <div class="border-t border-border p-3">
+          <button
+            type="button"
+            data-testid="settings-button"
+            class="flex w-full items-center justify-start rounded-md px-3 py-2 text-sm transition hover:bg-muted"
+          >
+            <i data-lucide="settings" class="mr-2 h-4 w-4"></i>
+            <span>Settings</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header class="flex h-16 items-center border-b border-border bg-card px-6" data-testid="top-header">
+          <div class="flex min-w-0 flex-1 items-center gap-4">
+            <button
+              id="toggleSidebarButton"
+              data-testid="toggle-sidebar-button"
+              type="button"
+              class="rounded-md p-2 transition hover:bg-muted"
+              aria-label="Toggle sidebar"
+            >
+              <i data-lucide="panel-left-close" class="h-5 w-5"></i>
+            </button>
+            <div id="modulesNav" data-testid="modules-nav" class="scroll-thin flex min-w-0 items-center gap-2 overflow-x-auto"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-testid="help-button" class="rounded-md p-2 transition hover:bg-muted" aria-label="Help">
+              <i data-lucide="circle-help" class="h-5 w-5"></i>
+            </button>
+            <button type="button" data-testid="user-button" class="rounded-md p-2 transition hover:bg-muted" aria-label="User">
+              <i data-lucide="user" class="h-5 w-5"></i>
+            </button>
+          </div>
+        </header>
+
+        <main class="flex-1 overflow-auto bg-background p-6" data-testid="main-content">
+          <div class="mx-auto max-w-7xl space-y-4">
+            <div>
+              <div id="breadcrumb" data-testid="breadcrumb" class="mb-2 flex items-center gap-2 text-sm text-muted-foreground"></div>
+              <h1 id="pageTitle" data-testid="page-title" class="text-3xl font-bold tracking-tight capitalize"></h1>
+            </div>
+
+            <section data-testid="list-toolbar" class="rounded-lg border border-border bg-card p-4">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div class="relative min-w-[300px] flex-1">
+                    <i
+                      data-lucide="search"
+                      class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    ></i>
+                    <input
+                      id="entitySearchInput"
+                      data-testid="entity-search-input"
+                      type="text"
+                      class="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                      placeholder="Search entities..."
+                    />
+                  </div>
+
+                  <select
+                    id="sortSelect"
+                    data-testid="sort-select"
+                    class="w-[180px] rounded-md border border-border bg-card px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                  >
+                    <option value="id">Sort: ID</option>
+                    <option value="title">Sort: Title</option>
+                    <option value="slug">Sort: Slug</option>
+                  </select>
+                </div>
+
+                <button
+                  id="addNewButton"
+                  data-testid="add-new-button"
+                  type="button"
+                  class="inline-flex items-center rounded-md border border-slate-400 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                >
+                  <i data-lucide="plus" class="mr-2 h-4 w-4"></i>
+                  Add new
+                </button>
+              </div>
+            </section>
+
+            <section id="entityList" data-testid="entity-list" class="space-y-3"></section>
+
+            <section id="paginationPanel" data-testid="pagination-panel" class="rounded-lg border border-border bg-card p-4"></section>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div
+      id="entityDrawerBackdrop"
+      data-testid="entity-drawer-backdrop"
+      class="pointer-events-none fixed inset-0 z-40 bg-slate-900/25 opacity-0 transition"
+    ></div>
+    <div
+      id="entityDrawer"
+      data-testid="entity-drawer-root"
+      class="pointer-events-none fixed inset-0 z-50"
+    ></div>
+
+    <div
+      id="relationDrawerBackdrop"
+      data-testid="relation-drawer-backdrop"
+      class="pointer-events-none fixed inset-0 z-50 bg-slate-900/20 opacity-0 transition"
+    ></div>
+    <aside
+      id="relationDrawer"
+      data-testid="relation-drawer"
+      class="fixed right-0 top-0 z-[60] flex h-screen w-full max-w-xl translate-x-full flex-col overflow-hidden border-l border-border bg-slate-50 shadow-panel transition-transform duration-300"
+    ></aside>
+
+    <div
+      id="confirmDialogBackdrop"
+      data-testid="confirm-dialog-backdrop"
+      class="pointer-events-none fixed inset-0 z-[70] bg-slate-900/35 opacity-0 transition"
+    ></div>
+    <div
+      id="confirmDialog"
+      data-testid="confirm-dialog-root"
+      class="pointer-events-none fixed inset-0 z-[80] flex items-center justify-center p-4 opacity-0 transition"
+    ></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -70,7 +70,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
       : "https://t.me");
 
-  telegramBotCommands = ["/start", "/help", "/referral", "/premium"];
+  telegramBotCommands = ["/start", "/help", "/referral", "/premium", "/new"];
   statusMessages = telegramBotServiceMessages;
 
   async agentSocialModuleProfileHandler(
@@ -248,6 +248,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       return this.telegramBotPremiumMessageWithKeyboardCreate(props);
     } else if (props.socialModuleMessage.description?.startsWith("/referral")) {
       return this.telegramBotReferralMessageWithKeyboardCreate(props);
+    } else if (props.socialModuleMessage.description?.startsWith("/new")) {
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description: this.statusMessages.openRouterContextResetByNew.ru,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
     }
 
     await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
