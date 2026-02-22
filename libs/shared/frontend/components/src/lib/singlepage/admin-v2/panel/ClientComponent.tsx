@@ -2,10 +2,19 @@
 
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Button, ScrollArea } from "@sps/shared-ui-shadcn";
-import { ChevronDown, ChevronRight, Settings } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+} from "lucide-react";
+import { useState } from "react";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
     <aside
       id="sidebar"
@@ -14,19 +23,47 @@ export function Component(props: IComponentProps) {
       data-module={props.state.selectedModule}
       className={cn(
         "flex shrink-0 flex-col border-r border-border bg-card transition-all duration-300",
-        props.state.sidebarOpen ? "w-80" : "w-0 overflow-hidden",
+        isSidebarOpen ? "w-80" : "w-14",
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b border-border px-4">
-        <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          "flex h-16 items-center border-b border-border",
+          isSidebarOpen ? "justify-between px-4" : "justify-center px-2",
+        )}
+      >
+        <div
+          className={cn("flex items-center gap-2", !isSidebarOpen && "hidden")}
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <span className="text-sm font-bold">A</span>
           </div>
           <span className="text-sm font-semibold">Admin Panel</span>
         </div>
+
+        {!isSidebarOpen ? (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <span className="text-sm font-bold">A</span>
+          </div>
+        ) : null}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="!w-8 rounded-md p-1.5 transition hover:bg-muted"
+          aria-label="Toggle sidebar"
+          onClick={() => setIsSidebarOpen((current) => !current)}
+        >
+          {isSidebarOpen ? (
+            <PanelLeftClose className="h-4 w-4" />
+          ) : (
+            <PanelLeftOpen className="h-4 w-4" />
+          )}
+        </Button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className={cn("flex-1 overflow-hidden", !isSidebarOpen && "hidden")}>
         <ScrollArea className="h-full px-3 py-4">
           <section className="space-y-2">
             {props.modules.map((moduleItem) => {
@@ -137,7 +174,7 @@ export function Component(props: IComponentProps) {
         </ScrollArea>
       </div>
 
-      {props.showSettingsButton !== false ? (
+      {props.showSettingsButton !== false && isSidebarOpen ? (
         <div className="border-t border-border p-3">
           <Button
             id="settingsButton"

@@ -5,7 +5,6 @@ export type TModuleItem = {
 };
 
 export type TSidebarState = {
-  sidebarOpen: boolean;
   selectedModule: string;
   expandedModule: string;
   selectedModel: string;
