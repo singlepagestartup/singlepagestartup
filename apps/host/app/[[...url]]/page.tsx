@@ -4,6 +4,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { internationalization } from "@sps/shared-configuration";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { notFound } from "next/navigation";
+import { Component as AdminPanelDraft } from "../../src/components/admin-panel-draft";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -50,6 +51,16 @@ export default async function Page(props: {
 
   const pageUrl = urlSegments.join("/") || "/";
   const slashedUrl = pageUrl.startsWith("/") ? pageUrl : `/${pageUrl}`;
+
+  if (slashedUrl.startsWith("/admin")) {
+    return (
+      <AdminPanelDraft
+        isServer={false}
+        language={defaultLanguage}
+        url={slashedUrl}
+      />
+    );
+  }
 
   return (
     <HostModulePage isServer={true} variant="find-by-url" url={slashedUrl}>
