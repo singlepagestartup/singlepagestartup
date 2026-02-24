@@ -26,41 +26,21 @@ type IFrameworkModeProps<M extends { id?: string }, V> = IComponentProps<
   serverApi: ReturnType<typeof serverFactory<M>>;
 } & Partial<ITableControllerComponentProps<M>>;
 
-type IHeadlessModeProps = IComponentPropsExtended<{ id?: string }, string> & {
-  Skeleton?: ReactNode;
-};
-
 export function Component<M extends { id?: string }, V>(
-  props: IFrameworkModeProps<M, V> | IHeadlessModeProps,
+  props: IFrameworkModeProps<M, V>,
 ) {
   const Comp: React.ComponentType<any> = props.isServer ? Server : Client;
-  const isFrameworkMode =
-    "Provider" in props &&
-    "Component" in props &&
-    "clientApi" in props &&
-    "serverApi" in props;
-
-  if (isFrameworkMode) {
-    const api = props.isServer ? props.serverApi : props.clientApi;
-    const Provider = props.Provider;
-
-    return (
-      <ErrorBoundary fallback={Error}>
-        <Suspense fallback={props.Skeleton ?? <Skeleton />}>
-          <Provider>
-            <TableController {...props}>
-              <Comp {...props} api={api} />
-            </TableController>
-          </Provider>
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
+  const api = props.isServer ? props.serverApi : props.clientApi;
+  const Provider = props.Provider;
 
   return (
     <ErrorBoundary fallback={Error}>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
-        <Comp {...props} />
+        <Provider>
+          <TableController {...props}>
+            <Comp {...props} api={api} />
+          </TableController>
+        </Provider>
       </Suspense>
     </ErrorBoundary>
   );

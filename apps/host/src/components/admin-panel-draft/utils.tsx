@@ -149,10 +149,6 @@ export function createInitialState(): AdminState {
     selectedModel: "product",
     viewMode: "module",
     modelSearch: "",
-    entitySearch: "",
-    sortBy: "id",
-    currentPage: 1,
-    itemsPerPage: 4,
     modelEntities: cloneValue(baseModelEntities),
     drawerStack: [],
     relationEditor: {

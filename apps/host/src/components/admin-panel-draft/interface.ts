@@ -128,10 +128,6 @@ export type AdminState = {
   selectedModel: string;
   viewMode: ViewMode;
   modelSearch: string;
-  entitySearch: string;
-  sortBy: "id" | "title" | "slug";
-  currentPage: number;
-  itemsPerPage: number;
   modelEntities: Record<string, GenericEntity[]>;
   drawerStack: DrawerPanel[];
   relationEditor: RelationEditorState;

@@ -15,7 +15,7 @@ export interface IComponentProps<
   };
   className?: string;
 
-  // Draft/headless mode props used by admin-panel-draft.
+  // Admin-v2 form layout props.
   id?: string;
   module?: string;
   name?: string;

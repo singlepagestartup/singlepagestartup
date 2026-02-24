@@ -1,10 +1,12 @@
-import { IComponentProps } from "./interface";
-import { Component as Client } from "./client";
-import { Component as Server } from "./server";
+import { ReactNode } from "react";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
+import { Component as ClientComponent } from "./ClientComponent";
 
-export function Component<M extends { id?: string }, V>(
-  props: IComponentProps<M, V>,
+export function Component<M extends { id: string }, V>(
+  props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
+    onDelete?: (e: any) => void;
+    children?: ReactNode;
+  },
 ) {
-  const Comp: any = props.isServer ? Server : Client;
-  return <Comp {...(props as unknown as IComponentProps)} />;
+  return <ClientComponent {...props} />;
 }

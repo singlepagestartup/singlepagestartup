@@ -5,7 +5,6 @@ import { factory } from "@sps/shared-frontend-client-api";
 import { IComponentProps } from "./interface";
 import { IComponentPropsExtended } from "./interface";
 import { Component as Skeleton } from "./Skeleton";
-import { Component as HeadlessComponent } from "./ClientComponent";
 import { ReactNode } from "react";
 
 export function Component<
@@ -19,12 +18,8 @@ export function Component<
     >;
   },
   CP extends IComponentProps<M, V>,
->(props: (CP & Partial<A>) | IComponentProps) {
-  if (!("api" in props) || !props.api || !("Component" in props)) {
-    return <HeadlessComponent {...(props as IComponentProps)} />;
-  }
-
-  const typedProps = props as CP & A;
+>(props: CP & A) {
+  const typedProps = props;
   const { Component: Child } = typedProps;
 
   if (typedProps.data?.id) {

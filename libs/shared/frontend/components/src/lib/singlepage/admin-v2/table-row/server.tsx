@@ -1,10 +1,8 @@
 "use server";
 import "server-only";
 
-import { IComponentProps } from "./interface";
-import { IComponentPropsExtended } from "./interface";
+import { IComponentPropsExtended, IComponentProps } from "./interface";
 import { factory } from "@sps/shared-frontend-server-api";
-import { Component as HeadlessComponent } from "./ClientComponent";
 
 export async function Component<
   M extends { id: string },
@@ -17,14 +15,10 @@ export async function Component<
     >;
   },
   CP extends IComponentProps<M, V>,
->(props: (CP & Partial<A>) | IComponentProps) {
-  if (!("api" in props) || !props.api || !("Component" in props)) {
-    return <HeadlessComponent {...(props as IComponentProps)} />;
-  }
-
-  const typedProps = props as CP & A;
+>(props: CP & A) {
+  const typedProps = props;
   const { Component: Child } = typedProps;
-  const dataId = (typedProps.data as { id?: string } | undefined)?.id;
+  const dataId = typedProps.data.id;
 
   if (!dataId) {
     return <></>;

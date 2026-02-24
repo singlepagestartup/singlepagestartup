@@ -82,36 +82,6 @@ export function Component<M extends { id?: string }>(
 
   const contextValue = useMemo(() => state, [state]);
 
-  if (props.headless) {
-    return (
-      <TableContext.Provider value={[contextValue, setState]}>
-        <div
-          data-module={props.module}
-          data-variant={props.variant}
-          {...(props.type === "relation"
-            ? {
-                "data-relation": props.name,
-              }
-            : {
-                "data-model": props.name,
-              })}
-          data-count={selectedCount}
-          data-page={currentPage}
-          data-start={startItem}
-          data-end={endItem}
-          data-total={state.total}
-          data-search-field={state.searchField}
-          data-selected-field={state.selectedField}
-          data-field-count={availableFields.length}
-          data-base-count={baseCount.join(",")}
-          className={cn("w-full", props.className)}
-        >
-          {props.children}
-        </div>
-      </TableContext.Provider>
-    );
-  }
-
   return (
     <TableContext.Provider value={[contextValue, setState]}>
       <div
