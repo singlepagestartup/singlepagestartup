@@ -1,72 +1,72 @@
 # Client Utils
 
-Библиотека клиентских утилит для SinglePageStartup (SPS). Содержит набор функций для работы с авторизацией, заголовками и другими клиентскими задачами.
+Client-side utility library for SinglePageStartup (SPS). Provides functions for working with authorization, headers, and other client-side tasks.
 
-## Структура
+## Structure
 
 ```
 src/
 ├── lib/
-│   ├── authorization/    # Утилиты авторизации
-│   │   └── headers.ts    # Получение заголовков авторизации из cookies
-│   ├── saturate-headers/ # Обработка заголовков
-│   │   └── index.ts      # Объединение пользовательских и авторизационных заголовков
-│   └── cn/              # Утилиты для работы с CSS классами
+│   ├── authorization/    # Authorization utilities
+│   │   └── headers.ts    # Read authorization headers from cookies
+│   ├── saturate-headers/ # Header merging
+│   │   └── index.ts      # Merge user-provided and authorization headers
+│   └── cn/              # CSS class utilities
 ```
 
-## Основные функции
+## Functions
 
-### Авторизация и заголовки
+### Authorization & Headers
 
-- `authorization.headers()` - Получение заголовков авторизации из cookies
+- `authorization.headers()` — Read authorization headers from cookies
 
   ```typescript
   const headers = authorization.headers();
-  // Возвращает объект с заголовками:
+  // Returns:
   // {
   //   Authorization: "Bearer <jwt>",
   //   "X-RBAC-SECRET-KEY": "<secret-key>"
   // }
   ```
 
-- `saturateHeaders(userHeaders?)` - Объединение пользовательских и авторизационных заголовков
+- `saturateHeaders(userHeaders?)` — Merge user-provided headers with authorization headers
   ```typescript
   const headers = saturateHeaders({ "Content-Type": "application/json" });
-  // Возвращает объединенные заголовки с авторизацией
+  // Returns merged headers including authorization
   ```
 
-### CSS классы
+### CSS Classes
 
-- `cn(...inputs)` - Утилита для условного объединения CSS классов
+- `cn(...inputs)` — Conditionally join CSS class names
   ```typescript
   const className = cn("base-class", condition && "conditional-class", { "object-class": true });
   ```
 
-## Использование
+## Usage
 
 ```typescript
 import { authorization, saturateHeaders, cn } from "@sps/shared/frontend/client/utils";
 
-// Пример работы с заголовками
+// Working with headers
 const headers = saturateHeaders({
   "Content-Type": "application/json",
   "Custom-Header": "value",
 });
 
-// Пример работы с CSS классами
+// Working with CSS classes
 const buttonClass = cn("button", isActive && "button--active", { "button--disabled": isDisabled });
 ```
 
-## Примечания
+## Notes
 
-- Все функции работают на клиентской стороне
-- Авторизационные заголовки автоматически добавляются к запросам
-- Утилита `cn` использует библиотеку `clsx` для работы с классами
+- All functions run on the client side
+- Authorization headers are added automatically
+- `cn` uses the `clsx` library internally
 
-## Тестирование
+## Testing
 
-Библиотека использует Jest для тестирования. Конфигурация тестов находится в `jest.config.ts`.
+Uses Jest. Configuration in `jest.config.ts`.
 
-## Лицензия
+## License
 
 MIT

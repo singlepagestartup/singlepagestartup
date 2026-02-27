@@ -4,7 +4,7 @@ description: Research highest priority GitHub Project issue needing investigatio
 
 ## PART I - IF A GITHUB ISSUE IS MENTIONED
 
-0c. run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/ISSUE-XXXX.md`
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
 0d. read the issue and all comments to understand what research is needed and any previous attempts
 
 ## PART I - IF NO ISSUE IS MENTIONED
@@ -12,12 +12,12 @@ description: Research highest priority GitHub Project issue needing investigatio
 0.  read `.claude/commands/github.md`
     0a. fetch issues from the GitHub Project in status "Research Needed":
     `bash
-    gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
-      jq '[.items[] | select(.status == "Research Needed")] | sort_by(.priority // 999) | .[0:10]'
-    `
+gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
+  jq '[.items[] | select(.status == "Research Needed")] | sort_by(.priority // 999) | .[0:10]'
+`
     If that doesn't work, try: `gh issue list --label "status:research-needed" --json number,title,labels,url`
     0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/ISSUE-XXXX.md`
+    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
     0d. read the issue and all comments to understand what research is needed and any previous attempts
 
 ## PART II - NEXT STEPS
@@ -28,8 +28,8 @@ think deeply
    1a. read any linked documents or file references in the issue description/comments
    1b. if insufficient information to conduct research, add a comment asking for clarification:
    `bash
-    gh issue comment ISSUE_NUMBER --body "Need clarification before research: [specific question]"
-    `
+ gh issue comment ISSUE_NUMBER --body "Need clarification before research: [specific question]"
+ `
    Then move back to "Research Needed" and EXIT
 
 think deeply about the research needs
@@ -41,14 +41,14 @@ think deeply about the research needs
    2d. examine existing similar features or related code
    2e. identify technical constraints and opportunities
    2f. Be unbiased — document all related files and how the systems work today, don't jump to implementation ideas
-   2g. document findings in a new thoughts document: `thoughts/shared/research/YYYY-MM-DD-ISSUE-XXXX-description.md`
+   2g. run `gh repo view --json name -q '.name'` to get REPO_NAME, then document findings in a new thoughts document: `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md`
    - Format: `YYYY-MM-DD-ISSUE-XXXX-description.md` where:
      - YYYY-MM-DD is today's date
      - ISSUE-XXXX is the GitHub issue number
      - description is a brief kebab-case description of the research topic
-   - Examples:
-     - `2025-01-08-ISSUE-42-parent-child-tracking.md`
-     - `2025-01-08-ISSUE-78-error-handling-patterns.md`
+   - Examples (for repo `singlepagestartup`):
+     - `thoughts/shared/research/singlepagestartup/2025-01-08-ISSUE-42-parent-child-tracking.md`
+     - `thoughts/shared/research/singlepagestartup/2025-01-08-ISSUE-78-error-handling-patterns.md`
 
 think deeply about the findings
 
@@ -59,8 +59,9 @@ think deeply about the findings
 
 4.  update the issue with research results:
     4a. add a comment with the research summary and link to the document:
-    ```bash
-    gh issue comment ISSUE_NUMBER --body "Research complete: \`thoughts/shared/research/FILENAME.md\`
+
+    ````bash
+    gh issue comment ISSUE_NUMBER --body "Research complete: \`thoughts/shared/research/REPO_NAME/FILENAME.md\`
 
         Key findings:
         - [Major finding 1]
@@ -73,6 +74,7 @@ think deeply about the findings
         ```
 
     4b. move the item to "Research in Review" status in the GitHub Project
+    ````
 
 think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE — specifically the highest priority issue.
 
@@ -87,7 +89,7 @@ Research topic: [research topic description]
 
 The research has been:
 
-Created at thoughts/shared/research/YYYY-MM-DD-ISSUE-XXXX-description.md
+Created at thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md
 Attached to the GitHub issue as a comment
 Issue moved to "Research in Review" status
 

@@ -4,7 +4,7 @@ description: Create implementation plan for highest priority GitHub Project issu
 
 ## PART I - IF AN ISSUE IS MENTIONED
 
-0c. run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save the output to `thoughts/shared/tickets/ISSUE-XXXX.md`
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save the output to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
 0d. read the issue and all comments to learn about past implementations, research, and any questions or concerns about them
 
 ## PART I - IF NO ISSUE IS MENTIONED
@@ -12,12 +12,12 @@ description: Create implementation plan for highest priority GitHub Project issu
 0.  read `.claude/commands/github.md`
     0a. fetch issues from the GitHub Project in status "Ready for Plan":
     `bash
-    gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
-      jq '[.items[] | select(.status == "Ready for Plan")] | sort_by(.priority // 999) | .[0:10]'
-    `
+gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
+  jq '[.items[] | select(.status == "Ready for Plan")] | sort_by(.priority // 999) | .[0:10]'
+`
     If that doesn't work, try: `gh issue list --label "status:ready-for-plan" --json number,title,labels,url`
     0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/ISSUE-XXXX.md`
+    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
     0d. read the issue and all comments to learn about past implementations and research
 
 ## PART II - NEXT STEPS
@@ -35,7 +35,7 @@ think deeply
 2. when the plan is complete, attach a link to the plan file in the issue as a comment:
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "Implementation plan created: \`thoughts/shared/plans/PLAN_FILENAME.md\`
+   gh issue comment ISSUE_NUMBER --body "Implementation plan created: \`thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md\`
 
    [Brief summary of the plan approach and phases]"
    ```
@@ -55,7 +55,7 @@ Approach: [selected approach description]
 
 The plan has been:
 
-Created at thoughts/shared/plans/YYYY-MM-DD-ISSUE-XXXX-description.md
+Created at thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md
 Attached to the GitHub issue as a comment
 Issue moved to "Plan in Review" status
 

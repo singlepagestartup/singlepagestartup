@@ -13,7 +13,7 @@ When this command is invoked:
 
 1. **Parse the input to identify**:
 
-   - Plan file path (e.g., `thoughts/shared/plans/2025-10-16-feature.md`)
+   - Plan file path (e.g., `thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md`)
    - Requested changes/feedback
 
 2. **Handle different input scenarios**:
@@ -23,7 +23,7 @@ When this command is invoked:
    ```
    I'll help you iterate on an existing implementation plan.
 
-   Which plan would you like to update? Please provide the path to the plan file (e.g., `thoughts/shared/plans/2025-10-16-feature.md`).
+   Which plan would you like to update? Please provide the path to the plan file (e.g., `thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md`).
 
    Tip: You can list recent plans with `ls -lt thoughts/shared/plans/ | head`
    ```
@@ -248,14 +248,14 @@ When spawning research sub-tasks:
 **Scenario 1: User provides everything upfront**
 
 ```
-User: /iterate_plan thoughts/shared/plans/2025-10-16-feature.md - add phase for error handling
+User: /iterate_plan thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md - add phase for error handling
 Assistant: [Reads plan, researches error handling patterns, updates plan]
 ```
 
 **Scenario 2: User provides just plan file**
 
 ```
-User: /iterate_plan thoughts/shared/plans/2025-10-16-feature.md
+User: /iterate_plan thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md
 Assistant: I've found the plan. What changes would you like to make?
 User: Split Phase 2 into two phases - one for backend, one for frontend
 Assistant: [Proceeds with update]
@@ -266,7 +266,7 @@ Assistant: [Proceeds with update]
 ```
 User: /iterate_plan
 Assistant: Which plan would you like to update? Please provide the path...
-User: thoughts/shared/plans/2025-10-16-feature.md
+User: thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md
 Assistant: I've found the plan. What changes would you like to make?
 User: Add more specific success criteria
 Assistant: [Proceeds with update]

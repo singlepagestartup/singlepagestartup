@@ -183,14 +183,14 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
-   - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
+1. **Write the plan** — run `gh repo view --json name -q '.name'` to get REPO_NAME, then save to `thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md`
+   - Format: `YYYY-MM-DD-ISSUE-XXXX-description.md` where:
      - YYYY-MM-DD is today's date
-     - ENG-XXXX is the ticket number (omit if no ticket)
+     - ISSUE-XXXX is the GitHub issue number (omit if no issue)
      - description is a brief kebab-case description
-   - Examples:
-     - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
-     - Without ticket: `2025-01-08-improve-error-handling.md`
+   - Examples (for repo `singlepagestartup`):
+     - With issue: `thoughts/shared/plans/singlepagestartup/2025-01-08-ISSUE-42-parent-child-tracking.md`
+     - Without issue: `thoughts/shared/plans/singlepagestartup/2025-01-08-improve-error-handling.md`
 2. **Use this template structure**:
 
 ````markdown

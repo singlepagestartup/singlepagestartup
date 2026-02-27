@@ -341,8 +341,9 @@ Consider adding a comment explaining the status change.
 To save an issue for reference:
 
 ```bash
+REPO_NAME=$(gh repo view --json name -q '.name')
 gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url \
-  > thoughts/shared/tickets/ISSUE-XXXX.md
+  > thoughts/shared/tickets/$REPO_NAME/ISSUE-XXXX.md
 ```
 
 Then format the file as readable markdown for reference during planning.
