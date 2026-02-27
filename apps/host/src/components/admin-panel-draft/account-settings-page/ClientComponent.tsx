@@ -1,7 +1,12 @@
 "use client";
 
 import { Button, Card } from "@sps/shared-ui-shadcn";
-import { ExternalLink, LogOut } from "lucide-react";
+import { AdminV2Component as EcommerceAdminV2Component } from "@sps/ecommerce/frontend/component";
+import { CircleHelp, ExternalLink, LogOut, UserRound } from "lucide-react";
+import { copyToClipboard } from "@sps/shared-frontend-client-utils";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import {
   accountIdentities,
   accountSocialProfiles,
@@ -11,8 +16,7 @@ import {
 } from "./data";
 
 type IAccountSettingsPageProps = {
-  onCopyId?: (value: string) => void;
-  onOpenSocialProfile?: (profileId: string) => void;
+  adminBasePath: string;
   onIdentityAction?: (identityId: string, actionKey: string) => void;
   onLogout?: () => void;
 };
@@ -106,8 +110,37 @@ function getIdentityPrimaryLogin(identity: {
   return identity.email || identity.account || "No public account/email stored";
 }
 
-export function Component(props: IAccountSettingsPageProps) {
+function getAdminRoutePath(pathname: string | null): string {
+  const value = pathname || "";
+  const adminIndex = value.indexOf("/admin");
+
+  if (adminIndex === -1) {
+    return "/";
+  }
+
+  const next = value.slice(adminIndex + "/admin".length) || "/";
+  return next.replace(/\/+$/, "") || "/";
+}
+
+function isProfileRoute(path: string): boolean {
   return (
+    path === "/profile" ||
+    path.startsWith("/profile/") ||
+    path === "/account" ||
+    path.startsWith("/account/")
+  );
+}
+
+export function Component(props: IAccountSettingsPageProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const currentPath = useMemo(() => getAdminRoutePath(pathname), [pathname]);
+
+  if (!isProfileRoute(currentPath)) {
+    return null;
+  }
+
+  const content = (
     <section data-testid="account-settings-page" className="space-y-4">
       <Card
         data-testid="account-subject-card"
@@ -127,7 +160,9 @@ export function Component(props: IAccountSettingsPageProps) {
               variant="outline"
               className="mt-0.5 block !w-fit max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded border border-slate-300 bg-white px-2 py-1 text-left font-mono text-xs text-slate-900 transition hover:bg-slate-100"
               title={accountSubject.id}
-              onClick={() => props.onCopyId?.(accountSubject.id)}
+              onClick={() => {
+                void copyToClipboard(accountSubject.id);
+              }}
             >
               {accountSubject.id}
             </Button>
@@ -206,7 +241,9 @@ export function Component(props: IAccountSettingsPageProps) {
                         variant="outline"
                         className="mt-0.5 block !w-fit max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded border border-slate-300 bg-white px-2 py-1 text-left font-mono text-xs text-slate-900 transition hover:bg-slate-100"
                         title={identity.id}
-                        onClick={() => props.onCopyId?.(identity.id)}
+                        onClick={() => {
+                          void copyToClipboard(identity.id);
+                        }}
                       >
                         {identity.id}
                       </Button>
@@ -233,7 +270,9 @@ export function Component(props: IAccountSettingsPageProps) {
                         variant="outline"
                         className="mt-0.5 block !w-fit max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded border border-slate-300 bg-white px-2 py-1 text-left font-mono text-xs text-slate-900 transition hover:bg-slate-100"
                         title={subjectToIdentity.id}
-                        onClick={() => props.onCopyId?.(subjectToIdentity.id)}
+                        onClick={() => {
+                          void copyToClipboard(subjectToIdentity.id);
+                        }}
                       >
                         {subjectToIdentity.id}
                       </Button>
@@ -319,7 +358,11 @@ export function Component(props: IAccountSettingsPageProps) {
                       type="button"
                       variant="outline"
                       className="!w-auto rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                      onClick={() => props.onOpenSocialProfile?.(profile.id)}
+                      onClick={() => {
+                        router.push(
+                          `${props.adminBasePath}/modules/social/models/profile/${profile.id}`,
+                        );
+                      }}
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Open profile
@@ -343,5 +386,56 @@ export function Component(props: IAccountSettingsPageProps) {
         </Button>
       </div>
     </section>
+  );
+
+  return (
+    <EcommerceAdminV2Component
+      adminBasePath={props.adminBasePath}
+      isSettingsView={false}
+    >
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex h-16 items-center border-b border-border bg-card px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-4" />
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="!w-10 rounded-md p-2 transition hover:bg-muted"
+              aria-label="Help"
+            >
+              <CircleHelp className="h-5 w-5" />
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className="!w-10 rounded-md p-2 transition hover:bg-muted"
+            >
+              <Link
+                href={`${props.adminBasePath}/profile`}
+                aria-label="Account"
+              >
+                <UserRound className="h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto bg-background p-6">
+          <div className="mx-auto max-w-7xl space-y-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight capitalize">
+                Profile
+              </h1>
+            </div>
+
+            {content}
+          </div>
+        </main>
+      </div>
+    </EcommerceAdminV2Component>
   );
 }

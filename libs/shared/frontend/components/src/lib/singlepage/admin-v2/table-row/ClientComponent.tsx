@@ -15,8 +15,12 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
 } from "@sps/shared-ui-shadcn";
-import { Check, Copy, Monitor, Pencil, Trash2 } from "lucide-react";
+import { Monitor, Pencil, SquareArrowOutUpRight, Trash2 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 
@@ -27,22 +31,13 @@ export function Component<M extends { id: string }, V>(
   },
 ) {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isRelatedOpen, setIsRelatedOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(props.data?.id || "");
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1500);
-  };
+  const isRelation = props.type === "relation";
 
   const payload = props.data as {
     id?: string;
     adminTitle?: string;
-    title?: Record<string, string> | string;
-    shortDescription?: Record<string, string> | string;
     slug?: string;
     variant?: string;
   };
@@ -52,7 +47,7 @@ export function Component<M extends { id: string }, V>(
       data-module={props.module}
       data-variant={props.variant}
       className={cn("w-full", props.className)}
-      {...(props.type === "relation"
+      {...(isRelation
         ? {
             "data-relation": props.name,
           }
@@ -61,31 +56,47 @@ export function Component<M extends { id: string }, V>(
           })}
     >
       <article className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm transition hover:border-slate-400">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleCopy}
-            className={cn(
-              "h-auto w-fit max-w-full gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded border border-slate-300 bg-white px-2 py-1 text-left font-mono text-xs text-slate-900 hover:bg-slate-100",
-              copied &&
-                "border-emerald-500 bg-emerald-100 text-emerald-700 hover:border-emerald-500 hover:bg-emerald-100 hover:text-emerald-700",
-            )}
-            title={props.data?.id}
-          >
-            <span className="max-w-44 overflow-hidden text-ellipsis whitespace-nowrap">
-              {props.data?.id}
-            </span>
-            {copied ? (
-              <Check className="h-3 w-3" />
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            {props.children ? (
+              props.children
             ) : (
-              <Copy className="h-3 w-3" />
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+                {"adminTitle" in payload && payload.adminTitle ? (
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <p className="text-xs text-slate-500">Admin Title</p>
+                    <p className="truncate text-slate-900">
+                      {String(payload.adminTitle)}
+                    </p>
+                  </div>
+                ) : null}
+                {"slug" in payload && payload.slug ? (
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <p className="text-xs text-slate-500">Slug</p>
+                    <p className="truncate text-slate-900">
+                      {String(payload.slug)}
+                    </p>
+                  </div>
+                ) : null}
+                {"variant" in payload && payload.variant ? (
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <p className="text-xs text-slate-500">Variant</p>
+                    <p className="truncate text-slate-900">
+                      {String(payload.variant)}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             )}
-          </Button>
+          </div>
 
-          <div className="flex items-center gap-2">
-            {props.type !== "relation" ? (
+          <div
+            className={cn(
+              "shrink-0",
+              isRelation ? "flex flex-col gap-2" : "flex items-center gap-2",
+            )}
+          >
+            {!isRelation ? (
               <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
                 <Button
                   type="button"
@@ -120,28 +131,60 @@ export function Component<M extends { id: string }, V>(
             ) : null}
 
             {props.adminForm ? (
-              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+              <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="gap-2"
+                  className={cn("gap-2", isRelation ? "px-2" : undefined)}
                   onClick={() => setIsEditOpen(true)}
                 >
                   <Pencil className="h-3 w-3" />
-                  <span className="hidden lg:inline">Edit</span>
+                  {!isRelation ? (
+                    <span className="hidden lg:inline">Edit</span>
+                  ) : null}
                 </Button>
-                <DialogContent className="max-h-[80vh] overflow-y-scroll p-0 lg:max-w-screen-lg">
-                  <DialogTitle className="sr-only">Edit</DialogTitle>
-                  <DialogDescription className="sr-only">
+                <SheetContent
+                  side="right"
+                  className="h-screen w-full max-w-3xl overflow-y-auto p-0 sm:max-w-3xl"
+                >
+                  <SheetTitle className="sr-only">Edit</SheetTitle>
+                  <SheetDescription className="sr-only">
                     Edit entity form
-                  </DialogDescription>
+                  </SheetDescription>
                   {props.adminForm({
                     data: props.data,
                     isServer: props.isServer,
                   })}
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
+            ) : null}
+
+            {isRelation && props.relatedAdminForm ? (
+              <Sheet open={isRelatedOpen} onOpenChange={setIsRelatedOpen}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="px-2"
+                  onClick={() => setIsRelatedOpen(true)}
+                >
+                  <SquareArrowOutUpRight className="h-3 w-3" />
+                </Button>
+                <SheetContent
+                  side="right"
+                  className="h-screen w-full max-w-3xl overflow-y-auto p-0 sm:max-w-3xl"
+                >
+                  <SheetTitle className="sr-only">Open related</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Open related entity form
+                  </SheetDescription>
+                  {props.relatedAdminForm({
+                    data: props.data,
+                    isServer: props.isServer,
+                  })}
+                </SheetContent>
+              </Sheet>
             ) : null}
 
             <AlertDialog>
@@ -150,10 +193,12 @@ export function Component<M extends { id: string }, V>(
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="gap-2"
+                  className={cn("gap-2", isRelation ? "px-2" : undefined)}
                 >
                   <Trash2 className="h-3 w-3" />
-                  <span className="hidden lg:inline">Delete</span>
+                  {!isRelation ? (
+                    <span className="hidden lg:inline">Delete</span>
+                  ) : null}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -174,37 +219,6 @@ export function Component<M extends { id: string }, V>(
             </AlertDialog>
           </div>
         </div>
-
-        {props.children ? (
-          <div className="mt-4">{props.children}</div>
-        ) : (
-          <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
-            {"adminTitle" in payload && payload.adminTitle ? (
-              <div className="flex flex-col gap-0.5 overflow-hidden">
-                <p className="text-xs text-slate-500">Admin Title</p>
-                <p className="truncate text-slate-900">
-                  {String(payload.adminTitle)}
-                </p>
-              </div>
-            ) : null}
-            {"slug" in payload && payload.slug ? (
-              <div className="flex flex-col gap-0.5 overflow-hidden">
-                <p className="text-xs text-slate-500">Slug</p>
-                <p className="truncate text-slate-900">
-                  {String(payload.slug)}
-                </p>
-              </div>
-            ) : null}
-            {"variant" in payload && payload.variant ? (
-              <div className="flex flex-col gap-0.5 overflow-hidden">
-                <p className="text-xs text-slate-500">Variant</p>
-                <p className="truncate text-slate-900">
-                  {String(payload.variant)}
-                </p>
-              </div>
-            ) : null}
-          </div>
-        )}
       </article>
     </div>
   );

@@ -47,6 +47,10 @@ export function Component(props: IComponentPropsExtended) {
             <p className="text-xs text-muted-foreground">Variant</p>
             <p className="truncate">{props.data.variant}</p>
           </div>
+          <div className="flex flex-col gap-0.5 overflow-hidden">
+            <p className="text-xs text-muted-foreground">ID</p>
+            <p className="truncate font-mono text-xs">{props.data.id}</p>
+          </div>
         </div>
       </ParentComponent>
     </Provider>

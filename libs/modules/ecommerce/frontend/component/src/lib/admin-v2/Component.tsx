@@ -7,7 +7,6 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       adminBasePath={props.adminBasePath}
       isSettingsView={props.isSettingsView}
-      onOpenSettings={props.onOpenSettings}
     >
       {props.children}
     </ClientComponent>

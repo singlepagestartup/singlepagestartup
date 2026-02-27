@@ -8,6 +8,7 @@ import { Component as AdminV2Table } from "./admin-v2/table";
 import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as AdminV2ModuleOverviewCard } from "./admin-v2/module-overview-card";
+import { Component as AdminV2ModelHeader } from "./admin-v2/model-header";
 import { Component as Default } from "./default";
 export const variants = {
   find: Find,
@@ -20,5 +21,6 @@ export const variants = {
   "admin-v2-select-input": AdminV2SelectInput,
   "admin-v2-form": AdminV2Form,
   "admin-v2-module-overview-card": AdminV2ModuleOverviewCard,
+  "admin-v2-model-header": AdminV2ModelHeader,
   default: Default,
 };

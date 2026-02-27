@@ -5,12 +5,7 @@ export interface IComponentProps {
   isServer?: boolean;
   adminBasePath: string;
   isSettingsView: boolean;
-  onOpenSettings: () => void;
-  children: (props: {
-    moduleName: string;
-    moduleOverviewCards: ReactNode;
-    getModelHeader: (modelName: string) => ReactNode;
-  }) => ReactNode;
+  children?: ReactNode;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

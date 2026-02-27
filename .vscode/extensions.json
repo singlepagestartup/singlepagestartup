@@ -4,14 +4,12 @@
     "dbaeumer.vscode-eslint",
     "mhutchie.git-graph",
     "chakrounanas.turbo-console-log",
-    "esbenp.prettier-vscode",
     "MS-vsliveshare.vsliveshare",
     "github.vscode-github-actions",
     "ms-playwright.playwright",
     "bradlc.vscode-tailwindcss",
     "redhat.vscode-yaml",
     "nrwl.angular-console",
-    "firsttris.vscode-jest-runner",
     "eamodio.gitlens"
   ]
 }

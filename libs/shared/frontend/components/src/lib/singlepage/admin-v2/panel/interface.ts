@@ -6,7 +6,8 @@ export interface IComponentProps {
   showSettingsButton?: boolean;
   children?: ReactNode;
   isSettingsView: boolean;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
+  settingsHref?: string;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {}

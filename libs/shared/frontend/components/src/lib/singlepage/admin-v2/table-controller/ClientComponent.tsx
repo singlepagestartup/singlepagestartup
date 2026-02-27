@@ -9,22 +9,40 @@ import {
   SelectContent,
   SelectItem,
   SelectValue,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
 } from "@sps/shared-ui-shadcn";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { TableContext } from "./Context";
 import { type IComponentProps } from "./interface";
+
+const DEFAULT_SEARCHABLE_FIELDS = [
+  "id",
+  "adminTitle",
+  "title",
+  "variant",
+  "slug",
+];
+const DEFAULT_PAGE_SIZES = ["2", "5", "10", "25", "50", "100"];
+
+function getFieldLabel(field: string) {
+  return field
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export function Component<M extends { id?: string }>(
   props: IComponentProps<M>,
 ) {
   const [open, setOpen] = useState(false);
-
+  const baseSearchableFields =
+    props.baseSearchableFields ?? DEFAULT_SEARCHABLE_FIELDS;
+  const baseCount = props.baseCount ?? DEFAULT_PAGE_SIZES;
   const [state, setState] = useState({
     search: "",
     debouncedSearch: "",
@@ -62,23 +80,30 @@ export function Component<M extends { id?: string }>(
     }));
   }, [props.searchField]);
 
-  const baseSearchableFields = props.baseSearchableFields ?? [
-    "id",
-    "adminTitle",
-    "title",
-    "variant",
-    "slug",
-  ];
-  const baseCount = props.baseCount ?? ["100", "200", "300", "500", "1000"];
-
   const availableFields = useMemo(() => {
     const all = [...baseSearchableFields, ...(props.searchableFields ?? [])];
     return Array.from(new Set(all));
   }, [baseSearchableFields, props.searchableFields]);
 
-  const currentPage = Math.floor(state.offset / state.limit) + 1;
-  const startItem = state.offset + 1;
-  const endItem = state.offset + state.limit;
+  useEffect(() => {
+    if (!state.total) return;
+
+    const totalPages = Math.max(1, Math.ceil(state.total / state.limit));
+    const maxOffset = Math.max(0, (totalPages - 1) * state.limit);
+
+    if (state.offset > maxOffset) {
+      setState((prev) => ({
+        ...prev,
+        offset: maxOffset,
+      }));
+    }
+  }, [state.total, state.limit, state.offset]);
+
+  const rawCurrentPage = Math.floor(state.offset / state.limit) + 1;
+  const totalPages = Math.max(1, Math.ceil(state.total / state.limit));
+  const currentPage = Math.min(rawCurrentPage, totalPages);
+  const canGoPrev = state.offset > 0;
+  const canGoNext = currentPage < totalPages;
 
   const contextValue = useMemo(() => state, [state]);
 
@@ -94,47 +119,22 @@ export function Component<M extends { id?: string }>(
           : {
               "data-model": props.name,
             })}
-        className={cn(
-          "relative w-full flex flex-col gap-4 rounded-lg border border-input bg-input px-2 pb-2 pt-6",
-          props.className,
-        )}
+        className={cn("w-full space-y-3", props.className)}
       >
-        <div className="absolute inset-x-0 top-0 flex -translate-y-1/2 items-center justify-between px-4">
-          <Button variant="outline" size="sm" className="w-fit gap-2">
-            {props.name}
-          </Button>
+        <section className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center gap-3">
-            {props.adminForm ? (
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-fit gap-2">
-                    <Plus className="h-3 w-3" /> Add new
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[80vh] overflow-y-scroll p-0 lg:w-full lg:max-w-screen-lg">
-                  <DialogTitle className="hidden">{props.name}</DialogTitle>
-                  <DialogDescription className="hidden">
-                    {props.name}
-                  </DialogDescription>
-                  {props.adminForm({
-                    isServer: false,
-                  })}
-                </DialogContent>
-              </Dialog>
-            ) : null}
-          </div>
-        </div>
-        <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-2">
-          <div className="flex w-full gap-4">
-            <Input
-              placeholder="Search..."
-              value={state.search}
-              onChange={(e) => {
-                const value = e.target.value;
-                setState((prev) => ({ ...prev, search: value, offset: 0 }));
-              }}
-              className="w-full"
-            />
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search entities..."
+                value={state.search}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setState((prev) => ({ ...prev, search: value, offset: 0 }));
+                }}
+                className="w-full py-2 pl-9 pr-3 text-sm"
+              />
+            </div>
 
             <Select
               value={state.selectedField}
@@ -146,77 +146,105 @@ export function Component<M extends { id?: string }>(
                 }));
               }}
             >
-              <SelectTrigger className="min-w-[180px]">
+              <SelectTrigger className="w-[180px] shrink-0">
                 <SelectValue placeholder="Field" />
               </SelectTrigger>
               <SelectContent>
-                {availableFields.map((f) => (
-                  <SelectItem key={f} value={f}>
-                    {f}
+                {availableFields.map((field) => (
+                  <SelectItem key={field} value={field}>
+                    {`Field: ${getFieldLabel(field)}`}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
+            {props.adminForm ? (
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    type="button"
+                    className="inline-flex w-fit shrink-0 items-center rounded-md border border-slate-400 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add new
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="h-screen w-full max-w-3xl overflow-y-auto p-0 sm:max-w-3xl"
+                >
+                  <SheetTitle className="sr-only">{props.name}</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    {props.name}
+                  </SheetDescription>
+                  {props.adminForm({
+                    isServer: false,
+                  })}
+                </SheetContent>
+              </Sheet>
+            ) : null}
           </div>
-        </div>
+        </section>
 
-        {props.children}
+        <section className="space-y-3">{props.children}</section>
 
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <Select value={selectedCount} onValueChange={setSelectedCount}>
-              <SelectTrigger className="min-w-[180px]">
-                <SelectValue placeholder="Per page" />
-              </SelectTrigger>
-              <SelectContent>
-                {baseCount.map((c) => (
-                  <SelectItem key={`c-${c}`} value={c}>
-                    {c} per page
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="mt-1 text-sm text-muted-foreground">
-              Page {currentPage} • {startItem}–{endItem}
-              {state.total ? ` of ${state.total}` : ""}
+        <section className="rounded-lg border border-border bg-card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Select value={selectedCount} onValueChange={setSelectedCount}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Per page" />
+                </SelectTrigger>
+                <SelectContent>
+                  {baseCount.map((c) => (
+                    <SelectItem key={`c-${c}`} value={c}>
+                      {c} per page
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages} ({state.total} total)
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!canGoPrev}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    offset: Math.max(0, prev.offset - prev.limit),
+                  }))
+                }
+                className="gap-1"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!canGoNext}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    offset: prev.offset + prev.limit,
+                  }))
+                }
+                className="gap-1"
+                aria-label="Next page"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={state.offset <= 0}
-              onClick={() =>
-                setState((prev) => ({
-                  ...prev,
-                  offset: Math.max(0, prev.offset - prev.limit),
-                }))
-              }
-              className="gap-1"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Prev
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setState((prev) => ({
-                  ...prev,
-                  offset: prev.offset + prev.limit,
-                }))
-              }
-              className="gap-1"
-              aria-label="Next page"
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        </section>
       </div>
     </TableContext.Provider>
   );

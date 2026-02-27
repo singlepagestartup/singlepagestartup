@@ -3,6 +3,7 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Button, ScrollArea } from "@sps/shared-ui-shadcn";
 import { PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { IComponentProps } from "./interface";
 
@@ -64,22 +65,43 @@ export function Component(props: IComponentProps) {
 
       {props.showSettingsButton !== false && isSidebarOpen ? (
         <div className="border-t border-border p-3">
-          <Button
-            id="settingsButton"
-            type="button"
-            variant="outline"
-            data-action="open-settings"
-            className={cn(
-              "!w-full justify-start rounded-md px-3 py-2 text-sm transition",
-              props.isSettingsView
-                ? "border border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900"
-                : "hover:bg-muted",
-            )}
-            onClick={props.onOpenSettings}
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Button>
+          {props.settingsHref ? (
+            <Button
+              asChild
+              id="settingsButton"
+              type="button"
+              variant="outline"
+              data-action="open-settings"
+              className={cn(
+                "!w-full justify-start rounded-md px-3 py-2 text-sm transition",
+                props.isSettingsView
+                  ? "border border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900"
+                  : "hover:bg-muted",
+              )}
+            >
+              <Link href={props.settingsHref}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              id="settingsButton"
+              type="button"
+              variant="outline"
+              data-action="open-settings"
+              className={cn(
+                "!w-full justify-start rounded-md px-3 py-2 text-sm transition",
+                props.isSettingsView
+                  ? "border border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900"
+                  : "hover:bg-muted",
+              )}
+              onClick={props.onOpenSettings}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Button>
+          )}
         </div>
       ) : null}
     </aside>
