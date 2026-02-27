@@ -104,3 +104,6 @@ apps/openapi/shared
 ############################
 
 .cursor/rules/nx-rules.mdc
+
+# Claude local project config
+.claude/.env

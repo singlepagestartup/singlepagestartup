@@ -1,0 +1,90 @@
+name: Issue
+description: Create a new issue (feature, bug, refactoring, or research)
+title: "[TITLE]"
+labels: []
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Feature
+        - Bug
+        - Refactoring
+        - Research
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: Estimated effort. xs/small are picked up by automated workflows.
+      options:
+        - "size:xs"
+        - "size:small"
+        - "size:medium"
+        - "size:large"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project is affected?
+      multiple: true
+      options:
+        - "area:api"
+        - "area:host"
+        - "area:db"
+        - "area:mcp"
+        - "area:openapi"
+        - "area:telegram"
+        - "area:redis"
+        - "area:drafts"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem does this issue address? Describe from the user's perspective.
+      placeholder: "Users currently cannot... / The system fails when... / The code is hard to maintain because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Key details
+      description: Important context, constraints, or technical decisions.
+      placeholder: |
+        - Affected files or modules
+        - Technical constraints
+        - Related issues or dependencies
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation notes
+      description: Optional. Specific technical approach or steps if already known.
+      placeholder: |
+        1. Step one
+        2. Step two
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to related code, docs, research, or external resources.
+      placeholder: |
+        - `libs/modules/...`
+        - https://...
+    validations:
+      required: false
