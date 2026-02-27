@@ -10,6 +10,8 @@
 
 Issue #142 calls for migrating the admin panel to its updated v2 design, using `ecommerce.product`, `ecommerce.attribute`, and `ecommerce.products-to-attributes` as a pilot scope. The pilot implementation already exists and is partially functional. This research documents exactly what has been built, what patterns have emerged, what inconsistencies exist, and what remains to be done.
 
+For the current phase, `/admin/settings` and account/profile pages are explicitly out of scope, and RBAC permittions to admin changes are not included. The implementation target is to keep model/relation component structure as close as possible to admin v1 while porting functional behavior from the Vanilla JS prototype into reusable admin-v2 shared primitives.
+
 ---
 
 ## 1. Source of Truth: The HTML Prototype
@@ -54,7 +56,7 @@ Any URL starting with `/admin` renders `<AdminPanelDraft>`. All other URLs go to
 2. `<SettingsPageClientComponent>` — only when pathname matches `/admin/settings/**`
 3. `<AccountSettingsPageClientComponent>` — only when pathname matches `/admin/profile` or `/admin/account`
 
-The settings/profile pages wrap their content in `<EcommerceAdminV2Component>` to get the sidebar, which causes the sidebar to be re-instantiated per page.
+The settings/profile routes currently wrap their content in `<EcommerceAdminV2Component>` to get the sidebar. These routes are out of scope for the current implementation phase.
 
 ### 2.3 Ecommerce Module Shell
 
@@ -66,7 +68,7 @@ The settings/profile pages wrap their content in `<EcommerceAdminV2Component>` t
 
 **Implemented Models:** `["product", "attribute"]` (hardcoded)
 
-**Route logic** (line 54): if `props.children` is NOT provided AND the route's module is NOT `"ecommerce"`, returns `null`. This is how settings/profile pages co-exist — they pass `children` to bypass this guard.
+**Route logic** (line 54): if `props.children` is NOT provided AND the route's module is NOT `"ecommerce"`, returns `null`.
 
 **Content rendering (no children):**
 
@@ -165,32 +167,18 @@ Sub-components: `form/`, `table/`, `table-row/`, `select-input/`
 
 ## 5. Identified Inconsistencies and Issues
 
-### 5.1 Route Parsing Duplication (Critical)
+### 5.1 Route Parsing Duplication + Missing Hierarchical Contract (Critical)
 
-The admin route parsing logic is copy-pasted in at least 5 locations:
+In the current in-scope implementation, route parsing logic is duplicated in at least:
 
 1. `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/ClientComponent.tsx:22`
 2. `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/sidebar-module-item/ClientComponent.tsx:11`
-3. `apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx:63`
-4. `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx:113`
-5. `apps/host/src/components/admin-panel-draft/utils.tsx:199`
 
-**Risk:** Any change to route structure must be replicated in all 5 locations. Should be extracted to a shared utility.
+**Risk:** Route changes require multi-file edits and are error-prone.
 
-### 5.2 Sidebar Re-instantiation
+**Required direction:** Routing should be composed by level. Each level (module, model, relation) receives only its base path and parses only the next mutable URL segment. Lower levels must not assume where they are mounted.
 
-`ClientComponent.tsx` renders `<EcommerceAdminV2Component>` three separate times (once as primary, twice as a layout wrapper for settings/profile). This means:
-
-- Sidebar state (open/closed) resets on navigation between sections
-- No shared layout state across settings/profile/main sections
-
-**Fix:** Should use a shared layout component wrapping all admin routes, not re-instantiating `EcommerceAdminV2Component` per page.
-
-### 5.3 No RBAC Gating
-
-Admin v1 checked `rbac/subject → rbac/role → subjects-to-roles` for `admin` role before rendering. Admin v2 has no access control at all. Any authenticated or unauthenticated user can access `/admin/**`.
-
-### 5.4 Hardcoded Module/Model Lists
+### 5.2 Hardcoded Module/Model Lists
 
 `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/ClientComponent.tsx`:
 
@@ -201,11 +189,7 @@ const MODELS = ["product", "attribute"];
 
 And in `utils.tsx`: `modules` and `modelsByModule` are hardcoded. When other modules are added, these must be manually updated in all locations.
 
-### 5.5 Account Settings Page Uses Mock Data
-
-`apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx` renders hardcoded mock data (`subject`, identities, social profiles). Not wired to live SDK calls.
-
-### 5.6 `module-overview-card` Has Commented-Out Count
+### 5.3 `module-overview-card` Has Commented-Out Count
 
 `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/module-overview-card/ClientComponent.tsx:31`:
 
@@ -217,28 +201,24 @@ And in `utils.tsx`: `modules` and `modelsByModule` are hardcoded. When other mod
 
 The entity count badge is disabled/commented out.
 
-### 5.7 Product Form Relations Tab Only Wires `productsToAttributes`
+### 5.4 Product Form Relations Tab Only Wires `productsToAttributes`
 
 Product form has 7 relation render-prop slots defined in `interface.ts`, but only `productsToAttributes` is wired in `defaultAdminForm` in `table/index.tsx`. The remaining 6 slots are defined but never used in the pilot.
 
-### 5.8 Inconsistent Relation Rendering Style
+### 5.5 Inconsistent Relation Rendering Style
 
 - Product form uses **Details/Relations tabs** for relation sections
 - Attribute form uses **inline rendering** in the form body (no tabs)
 
 Both approaches exist in the pilot scope without a clear decision on which to standardize.
 
-### 5.9 `select-input` Delegates to Old Admin
+### 5.6 `select-input` Delegates to Old Admin
 
 Both product and `products-to-attributes` `select-input/Component.tsx` delegate to `singlepage/admin/select-input` (admin v1 component), not a new admin-v2 select input. This means select inputs in admin-v2 forms depend on admin-v1 infrastructure.
 
-### 5.10 `use-model-table-state.ts` Not Integrated
+### 5.7 `use-model-table-state.ts` Not Integrated
 
 `libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/use-model-table-state.ts` defines a URL-driven (`q`, `sort`, `page`, `perPage` query params) table state hook. This hook is NOT used by any current implementation — all tables use the `TableContext` approach instead. It may be dead code or a planned alternative.
-
-### 5.11 `utils.tsx` State Machine Unused in Current Implementation
-
-`apps/host/src/components/admin-panel-draft/utils.tsx` contains `applyRoute()`, `createInitialState()`, `mapProductToEntity()`, etc. — a full client-side state machine ported from the JS prototype. But `ClientComponent.tsx` does NOT use this state machine; it delegates entirely to `EcommerceAdminV2Component` which has its own URL-based routing. The `utils.tsx` file appears to be legacy/unused.
 
 ---
 
@@ -248,30 +228,36 @@ When extending admin-v2 to other modules, the pilot establishes this pattern:
 
 1. Create `libs/modules/<module>/frontend/component/src/lib/admin-v2/` with:
 
-   - `ClientComponent.tsx` — module shell (sidebar module item + model content routing)
+   - `ClientComponent.tsx` — module shell (sidebar module item + model content routing) that receives a base path and parses only module-level URL segments
    - `sidebar-module-item/` — module nav item
    - `module-overview-card/` — overview cards per model
 
 2. For each model, create `libs/modules/<module>/models/<model>/frontend/component/src/lib/singlepage/admin-v2/`:
 
-   - `table/index.tsx` — composition layer (binds SDK + default form factory)
+   - `table/index.tsx` — composition layer (binds SDK + default form factory), receiving model-level base path for its route segment
    - `table-row/` — card view of a single entity
    - `form/` — create/edit form with zod resolver
    - `module-overview-card/` — card for module overview page
    - `model-header/` — breadcrumb header
    - `select-input/` — dropdown for relation form selectors
 
-3. Register variants in the model's main `Component.tsx` variant dispatcher.
+3. Keep model/relation component composition as close as possible to admin v1 (structure and integration style), while adding functional behavior from the Vanilla JS prototype.
 
-4. Add the module to `EcommerceAdminV2Component`'s `MODELS` list (currently hardcoded).
+4. Extract repeated UI/behavioral logic into `libs/shared/frontend/components/src/lib/singlepage/admin-v2/` primitives instead of copying into each model/relation.
 
-5. Register the module's admin component in `apps/host/src/components/admin-panel-draft/ClientComponent.tsx`.
+5. Register variants in the model's main `Component.tsx` variant dispatcher.
+
+6. Add the module to the module/model registry (currently hardcoded in the pilot) and register the module admin component in `apps/host/src/components/admin-panel-draft/ClientComponent.tsx`.
 
 ---
 
-## 7. Technical Decisions Already Made
+## 7. Technical Decisions and Constraints for Current Phase
 
 - **URL-based routing** (not overlay/modal state): admin panel lives at `/admin/**`
+- **Hierarchical routing by level**: each layer (module/model/relation) handles only its own mutable path segment and receives a base path from the parent
+- **Admin v1 structural parity**: model/relation component architecture should stay as close as possible to admin v1 to reduce migration risk
+- **Vanilla prototype behavior parity**: functional UX behavior should be ported from the HTML/Vanilla JS prototype
+- **Shared-first extraction**: repeating logic must be moved into shared admin-v2 primitives
 - **Variant-based dispatch**: all admin-v2 views are variants of the model's main component
 - **Row-fetches-own-data**: table passes only `{ id }` to row; row calls `findById` itself
 - **`adminForm` render-prop**: table/row components accept an `adminForm` factory for decoupling forms
@@ -279,46 +265,44 @@ When extending admin-v2 to other modules, the pilot establishes this pattern:
 - **`Sheet`** for create/edit drawers (Radix UI slide-in from right)
 - **`AlertDialog`** for delete confirmation
 - **`react-hook-form` + zod** for all forms
+- **Out of scope (this phase)**: settings/account/profile pages and RBAC permissions to admin changes
 
 ---
 
 ## 8. Open Questions / Validation Criteria for Pilot
 
-1. Is the sidebar re-instantiation (issue 5.2) a problem in practice? Does it cause visible flicker or state loss?
-2. Should the route parsing be extracted to a shared utility before rollout?
-3. Should RBAC gating be added to `/admin/**` routes?
-4. Which relation rendering style should be standardized: tabs (product) or inline (attribute)?
-5. Is `use-model-table-state.ts` planned for use or should it be removed?
-6. Should `utils.tsx` (the unused state machine) be removed?
-7. Should the module/model lists be driven by a config object (vs hardcoded)?
-8. When should account settings be wired to live SDK?
+1. Should route parsing be extracted now into a shared utility with a strict `basePath` contract for module/model/relation levels?
+2. Which relation rendering style should be standardized: tabs (product) or inline (attribute)?
+3. Which repeated patterns must be mandatory shared primitives before rollout (table controls, relation sections, select inputs)?
+4. Is `use-model-table-state.ts` planned for use or should it be removed?
+5. Should the module/model lists be driven by a config object (vs hardcoded)?
 
 ---
 
 ## 9. Files Involved in Pilot Scope
 
-| Path                                                                                                      | Purpose                                                          |
-| --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `apps/drafts/incoming/admin-panel-redesign-html/`                                                         | HTML prototype (source of truth for design)                      |
-| `apps/host/app/[[...url]]/page.tsx`                                                                       | Route entry: redirects `/admin/**` to AdminPanelDraft            |
-| `apps/host/src/components/admin-panel-draft/`                                                             | React migration shell + types + settings/profile pages           |
-| `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/`                                             | Ecommerce module shell                                           |
-| `libs/shared/frontend/components/src/lib/singlepage/admin-v2/`                                            | Shared primitives: Panel, Table, TableRow, Form, TableController |
-| `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/`                   | Product admin-v2 variants                                        |
-| `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/`                 | Attribute admin-v2 variants                                      |
-| `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/` | ProductsToAttributes admin-v2 variants                           |
+| Path                                                                                                      | Purpose                                                                               |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `apps/drafts/incoming/admin-panel-redesign-html/`                                                         | HTML prototype (source of truth for design)                                           |
+| `apps/host/app/[[...url]]/page.tsx`                                                                       | Route entry: redirects `/admin/**` to AdminPanelDraft                                 |
+| `apps/host/src/components/admin-panel-draft/`                                                             | React migration shell + types (settings/profile subpages excluded from current phase) |
+| `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/`                                             | Ecommerce module shell                                                                |
+| `libs/shared/frontend/components/src/lib/singlepage/admin-v2/`                                            | Shared primitives: Panel, Table, TableRow, Form, TableController                      |
+| `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/`                   | Product admin-v2 variants                                                             |
+| `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/`                 | Attribute admin-v2 variants                                                           |
+| `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/` | ProductsToAttributes admin-v2 variants                                                |
 
 ---
 
 ## 10. Recommended Next Steps (Implementation Plan Candidates)
 
-1. **Fix route parsing duplication** — extract to `libs/shared/frontend/components/src/lib/singlepage/admin-v2/utils/parse-admin-route.ts`
-2. **Fix sidebar re-instantiation** — create a shared admin layout component that wraps all `/admin/**` routes
-3. **Standardize relation rendering** — pick one pattern (tabs vs inline) and apply consistently
-4. **Wire account settings to live SDK** — remove mock data, use RBAC/social SDK hooks
-5. **Add RBAC gating** — protect `/admin/**` routes with role check
+1. **Introduce shared route parsing utility** — extract parsing into `libs/shared/frontend/components/src/lib/singlepage/admin-v2/utils/parse-admin-route.ts` with parent `basePath` input
+2. **Enforce hierarchical route composition** — module/model/relation layers parse only their own mutable segment and stay mount-location agnostic
+3. **Align component architecture with admin v1** — keep model/relation component structure and integration style consistent with v1
+4. **Port functional behavior from Vanilla JS prototype** — move reusable behavior into shared admin-v2 primitives, not per-model copies
+5. **Standardize relation rendering** — pick one pattern (tabs vs inline) and apply consistently
 6. **Fix `select-input` to use admin-v2 primitives** — remove dependency on admin-v1 select
 7. **Validate pilot** — test create/read/update/delete for product, attribute, products-to-attributes
-8. **Remove dead code** — `utils.tsx` state machine, `use-model-table-state.ts` if not planned
+8. **Remove or adopt unused table state hook** — decide the fate of `use-model-table-state.ts`
 9. **Define rollout gate criteria** — formalize what "pilot validated" means before scaling to other modules
 10. **Scale to remaining modules** — apply the established pattern to all other business modules
