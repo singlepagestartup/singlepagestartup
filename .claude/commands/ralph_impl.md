@@ -19,7 +19,7 @@ if [ "$CURRENT_STATUS" != "Ready for Dev" ]; then
 fi
 ```
 
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. **NOTE: If the ticket file already exists, DO NOT recreate it - just read it directly.** The Markdown format must include:
 
 - Header: `# Issue #XXX: [title]`
 - Metadata: URL, status (from labels), created date
@@ -37,7 +37,7 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 `
     If that doesn't work, try: `gh issue list --label "status:ready-for-dev" --json number,title,labels,url`
     0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
+    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. **NOTE: If the ticket file already exists, DO NOT recreate it - just read it directly.** The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
     0d. read the issue and all comments to understand the implementation plan and any concerns
 
 ## PART II - NEXT STEPS
