@@ -15,60 +15,9 @@ fi
 SCRIPT_DIR="$(dirname "$0")"
 source "$SCRIPT_DIR/load_config.sh"
 
-# Get issue node ID
-ISSUE_NODE_ID=$(gh issue view "$ISSUE_NUMBER" --json id -q '.id')
-
-# Build GraphQL query based on owner type
-if [ "$GITHUB_PROJECT_OWNER_TYPE" = "organization" ]; then
-  QUERY_PATH=".data.organization.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-
-  CURRENT_STATUS=$(gh api graphql -f query='
-    query($login: String!, $number: Int!) {
-      organization(login: $login) {
-        projectV2(number: $number) {
-          items(first: 20) {
-            nodes {
-              content { ... on Issue { id } }
-              fieldValues(first: 20) {
-                nodes {
-                  field { name }
-                  ... on ProjectV2ItemFieldSingleSelectValue {
-                    option { name }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$GITHUB_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-else
-  QUERY_PATH=".data.user.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-
-  CURRENT_STATUS=$(gh api graphql -f query='
-    query($login: String!, $number: Int!) {
-      user(login: $login) {
-        projectV2(number: $number) {
-          items(first: 20) {
-            nodes {
-              content { ... on Issue { id } }
-              fieldValues(first: 20) {
-                nodes {
-                  field { name }
-                  ... on ProjectV2ItemFieldSingleSelectValue {
-                    option { name }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$GITHUB_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-fi
+# Get issue status using gh project item-list (REST API)
+# This is simpler and more reliable than GraphQL for this use case
+CURRENT_STATUS=$(gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --format json 2>/dev/null | \
+  jq -r --arg num "$ISSUE_NUMBER" '.items[] | select(.content.number == ($num | tonumber)) | .status')
 
 echo "$CURRENT_STATUS"
