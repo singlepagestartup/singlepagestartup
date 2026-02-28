@@ -11,12 +11,16 @@ model: sonnet
 CURRENT_STATUS=$(.claude/helpers/get_issue_status.sh ISSUE_NUMBER)
 
 if [ "$CURRENT_STATUS" != "Ready for Dev" ]; then
-  echo "❌ Cannot proceed: Issue #ISSUE_NUMBER has status '$CURRENT_STATUS'"
-  echo "This command requires status: 'Ready for Dev'"
-  echo "Please move the issue to 'Ready for Dev' first, or use:"
-  echo "  .claude/helpers/update_issue_status.sh ISSUE_NUMBER \"Ready for Dev\""
+  echo "❌ Cannot proceed: Issue #ISSUE_NUMBER is not in 'Ready for Dev' status"
+  echo "Current status: '$CURRENT_STATUS'"
+  echo "This command only works with issues in 'Ready for Dev' status"
+  echo ""
+  echo "To move issue to 'Ready for Dev', use:"
+  echo "  /github  (or manually in GitHub Project UI)"
   exit 1
 fi
+
+echo "✅ Issue #ISSUE_NUMBER is in 'Ready for Dev' status — proceeding with implementation"
 ```
 
 0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
