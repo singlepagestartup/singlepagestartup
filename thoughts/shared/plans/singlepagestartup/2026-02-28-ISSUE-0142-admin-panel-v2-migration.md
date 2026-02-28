@@ -24,8 +24,8 @@ Migrate the admin panel from v1 to v2 for a unified admin experience. This plan 
 
    - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/ClientComponent.tsx:22-32`
    - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/sidebar-module-item/ClientComponent.tsx:11-21`
-   - `apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx:63-73`
-   - `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx:113-123`
+   - `apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx:63-73` (out of scope)
+   - `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx:113-123` (out of scope)
    - `apps/host/src/components/admin-panel-draft/utils.tsx:199-230`
 
 2. **Sidebar re-instantiation bug:**
@@ -33,26 +33,16 @@ Migrate the admin panel from v1 to v2 for a unified admin experience. This plan 
    - `apps/host/src/components/admin-panel-draft/ClientComponent.tsx:21-31` renders `EcommerceAdminV2Component` three times
    - This causes sidebar state to reset on navigation
 
-3. **No RBAC gating:**
-
-   - Admin-v1 had role checking; admin-v2 has none
-   - Any user can access `/admin/**`
-
-4. **Account settings uses hardcoded mock data:**
-
-   - `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts` contains mock data
-   - Not wired to live SDK calls
-
-5. **`utils.tsx` state machine appears unused:**
+3. **`utils.tsx` state machine appears unused:**
 
    - Full client-side state machine in `utils.tsx` is not called by `ClientComponent.tsx`
 
-6. **Inconsistent relation rendering styles:**
+4. **Inconsistent relation rendering styles:**
 
    - Product form uses Details/Relations tabs
    - Attribute form uses inline sections
 
-7. **`select-input` delegates to admin-v1:**
+5. **`select-input` delegates to admin-v1:**
    - `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/select-input/Component.tsx:2`
    - `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/select-input/Component.tsx:2`
    - Both import from `@sps/shared-frontend-components/singlepage/admin/select-input/Component`
@@ -63,19 +53,15 @@ Migrate the admin panel from v1 to v2 for a unified admin experience. This plan 
 
 1. **Route parsing consolidated:** Single shared utility for admin route parsing
 2. **Sidebar state preserved:** Sidebar maintains state across navigation
-3. **RBAC gating:** Only users with admin role can access admin panel
-4. **Live data:** Account settings displays real data from SDK
-5. **Clean architecture:** No dead code, consistent patterns
-6. **Unified relation rendering:** Standardized approach across all forms
-7. **Self-contained v2:** No cross-version dependencies to admin-v1
+3. **Clean architecture:** No dead code, consistent patterns
+4. **Unified relation rendering:** Standardized approach across all forms
+5. **Self-contained v2:** No cross-version dependencies to admin-v1
 
 ### Pilot Validation Criteria
 
 - [ ] CRUD operations work for all 3 entities (product, attribute, products-to-attributes)
 - [ ] No console errors in admin panel
 - [ ] Sidebar state persists across navigation
-- [ ] Non-admin users are redirected from `/admin/**`
-- [ ] Account settings shows live data
 
 ## What We're NOT Doing
 
@@ -83,6 +69,9 @@ Migrate the admin panel from v1 to v2 for a unified admin experience. This plan 
 - Implementing new admin features beyond what exists in v1
 - Modifying the core admin-v1 implementation
 - Changing the URL routing structure beyond consolidation
+- **RBAC gating** - Role-based access control is out of scope for this issue
+- **Settings and Account pages** - `/admin/settings` and account/profile-related work are excluded
+- **Linting** - Not running linting during implementation to save context/time
 
 ## Implementation Approach
 
@@ -90,18 +79,16 @@ Migrate the admin panel from v1 to v2 for a unified admin experience. This plan 
 
 **Phasing:**
 
-1. Extract shared utilities and consolidate duplicated code
+1. Extract shared utilities and consolidate duplicated code (pilot entities only)
 2. Fix sidebar re-instantiation bug
-3. Add RBAC gating
-4. Standardize relation rendering and remove cross-version dependencies
-5. Wire live data for account settings
-6. Clean up dead code
+3. Standardize relation rendering and remove cross-version dependencies
+4. Clean up dead code
 
 ## Phase 1: Consolidate Route Parsing
 
 ### Overview
 
-Extract duplicated route parsing logic into a shared utility to eliminate code duplication across 5 locations.
+Extract duplicated route parsing logic into a shared utility to eliminate code duplication. Focus on pilot entities only (ecommerce module, not settings/account pages).
 
 ### Changes Required
 
@@ -183,44 +170,23 @@ export function useAdminBasePath(pathname: string) {
 // Add imports from shared utility
 ```
 
-#### 4. Update settings-page ClientComponent
-
-**File:** `apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx`
-**Changes:** Replace local `getAdminRoutePath` with shared utility
-
-```typescript
-// Remove lines 63-73 (getAdminRoutePath function)
-// Add imports from shared utility
-```
-
-#### 5. Update account-settings-page ClientComponent
-
-**File:** `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx`
-**Changes:** Replace local `getAdminRoutePath` with shared utility
-
-```typescript
-// Remove lines 113-123 (getAdminRoutePath function)
-// Add imports from shared utility
-```
-
-#### 6. Remove unused utils.tsx state machine
+#### 4. Remove unused utils.tsx state machine
 
 **File:** `apps/host/src/components/admin-panel-draft/utils.tsx`
 **Changes:** Remove or refactor; only keep `applyRoute` if still needed elsewhere
+
+**Note:** Settings-page and account-settings-page components are out of scope and will not be updated in this phase.
 
 ### Success Criteria
 
 #### Automated Verification:
 
 - [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
-- [ ] No broken imports: `nx run host:build`
+- [ ] Build succeeds: `nx run host:build`
 
 #### Manual Verification:
 
 - [ ] Navigation still works: `/admin/modules/ecommerce/models/product`
-- [ ] Settings page still renders correctly
-- [ ] Account settings page still renders correctly
 - [ ] Sidebar navigation functions properly
 
 **Implementation Note:** After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
@@ -319,141 +285,18 @@ export function Component(props: IAdminPanelDraftProps) {
 #### Automated Verification:
 
 - [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
 - [ ] Build succeeds: `nx run host:build`
 
 #### Manual Verification:
 
 - [ ] Sidebar state persists when navigating between pages
-- [ ] Can navigate to `/admin/settings` and see sidebar still open
 - [ ] Can navigate to `/admin/modules/ecommerce/models/product` and see sidebar state preserved
-- [ ] Settings page still renders correctly
-- [ ] Account settings page still renders correctly
 
 **Implementation Note:** After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
 ---
 
-## Phase 3: Add RBAC Gating
-
-### Overview
-
-Implement role-based access control to ensure only users with admin role can access the admin panel.
-
-### Changes Required
-
-#### 1. Create admin role check hook
-
-**File:** `libs/shared/frontend/client-hooks/src/lib/useAdminRole.ts`
-**Changes:** New file containing role checking logic
-
-```typescript
-import { useSubject } from "@sps/rbac/frontend/component"; // Adjust import based on actual RBAC hooks location
-import { useMemo } from "react";
-
-export function useAdminRole() {
-  const { data: subject } = useSubject(); // Need to verify actual hook name
-
-  return useMemo(() => {
-    if (!subject) return false;
-
-    // Check if subject has admin role
-    // This may require a subjects-to-roles relation check
-    // Adjust based on actual RBAC implementation
-    return subject.roles?.some?.((role: any) => role.title === "admin") ?? false;
-  }, [subject]);
-}
-
-export function useRequireAdminRole(redirectTo = "/") {
-  const isAdmin = useAdminRole();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAdmin && typeof window !== "undefined") {
-      router.replace(redirectTo);
-    }
-  }, [isAdmin, router, redirectTo]);
-
-  return isAdmin;
-}
-```
-
-#### 2. Create admin gate component
-
-**File:** `libs/shared/frontend/components/src/lib/singlepage/admin-v2/gate/Component.tsx`
-**Changes:** New component that wraps admin panel with RBAC check
-
-```typescript
-"use client";
-
-import { IComponentProps } from "./interface";
-import { useRequireAdminRole } from "@sps/shared-frontend-client-hooks/useAdminRole";
-
-export interface IComponentProps {
-  children: React.ReactNode;
-  redirectTo?: string;
-}
-
-export function Component(props: IComponentProps) {
-  const isAdmin = useRequireAdminRole(props.redirectTo);
-
-  if (!isAdmin) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold">Access Denied</h1>
-          <p className="mt-2 text-muted-foreground">
-            You need admin privileges to access this page.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return <>{props.children}</>;
-}
-```
-
-#### 3. Wrap admin panel with gate
-
-**File:** `apps/host/src/components/admin-panel-draft/ClientComponent.tsx`
-**Changes:** Add RBAC gating at the component level
-
-```typescript
-import { Component as AdminGate } from "@sps/shared-frontend-components/singlepage/admin-v2/gate/Component";
-
-// Wrap the entire section with AdminGate
-<AdminGate redirectTo="/">
-  <section
-    data-variant="admin-panel-draft"
-    data-testid="admin-prototype-body"
-    className={...}
-  >
-    {/* existing content */}
-  </section>
-</AdminGate>
-```
-
-### Success Criteria
-
-#### Automated Verification:
-
-- [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
-- [ ] Build succeeds: `nx run host:build`
-
-#### Manual Verification:
-
-- [ ] Users with admin role can access `/admin/**`
-- [ ] Users without admin role are redirected to home page
-- [ ] Access denied message displays correctly for non-admin users
-- [ ] Admin functionality works normally for admin users
-
-**Implementation Note:** After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-
----
-
-## Phase 4: Standardize Relation Rendering and Remove Cross-Version Dependencies
+## Phase 3: Standardize Relation Rendering and Remove Cross-Version Dependencies
 
 ### Overview
 
@@ -586,7 +429,6 @@ export function Component<T = any>(props: IComponentProps<T>) {
 #### Automated Verification:
 
 - [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
 - [ ] Build succeeds: `nx run host:build`
 
 #### Manual Verification:
@@ -601,66 +443,7 @@ export function Component<T = any>(props: IComponentProps<T>) {
 
 ---
 
-## Phase 5: Wire Live Data for Account Settings
-
-### Overview
-
-Replace hardcoded mock data in account settings with live SDK calls to display real user data.
-
-### Changes Required
-
-#### 1. Update account settings to use SDK hooks
-
-**File:** `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx`
-**Changes:** Replace mock data with actual SDK calls
-
-```typescript
-// Add imports:
-import { api as rbacApi } from "@sps/rbac/module/sdk/client";
-import { api as socialApi } from "@sps/social/module/sdk/client";
-
-export function Component(props: IAccountSettingsPageProps) {
-  const pathname = usePathname();
-  const { currentPath } = useAdminRoute(pathname);
-
-  // Fetch real data
-  const { data: subject } = rbacApi.subject.find(); // Adjust based on actual API
-  const { data: identities } = rbacApi.identity.find(); // With relation filters
-  const { data: socialProfiles } = socialApi.profile.find(); // With relation filters
-
-  // Replace mock data with real data
-  const displaySubject = subject?.[0];
-  const displayIdentities = identities || [];
-  const displaySocialProfiles = socialProfiles || [];
-
-  // ... rest of component using displaySubject, displayIdentities, displaySocialProfiles
-```
-
-#### 2. Remove mock data file
-
-**File:** `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts`
-**Changes:** Delete this file after confirming live data works
-
-### Success Criteria
-
-#### Automated Verification:
-
-- [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
-- [ ] Build succeeds: `nx run host:build`
-
-#### Manual Verification:
-
-- [ ] Account settings displays real user data
-- [ ] Identities list shows actual user identities
-- [ ] Social profiles section shows actual profiles
-- [ ] Data updates when user data changes
-
-**Implementation Note:** After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-
----
-
-## Phase 6: Clean Up Dead Code
+## Phase 4: Clean Up Dead Code
 
 ### Overview
 
@@ -685,18 +468,11 @@ Remove unused code and clean up any remaining artifacts from the migration proce
 **Files:** All modified files in previous phases
 **Changes:** Remove any unused imports added during refactoring
 
-#### 3. Remove mock data file
-
-**File:** `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts`
-**Changes:** Delete this file
-
 ### Success Criteria
 
 #### Automated Verification:
 
 - [ ] TypeScript compiles: `npm run typecheck`
-- [ ] Linting passes: `npm run lint`
-- [ ] No unused imports detected
 - [ ] Build succeeds: `nx run host:build`
 
 #### Manual Verification:
