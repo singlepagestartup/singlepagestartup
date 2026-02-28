@@ -10,6 +10,10 @@ description: Create and configure a GitHub Project with required statuses and la
 GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
 GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
 source .claude/.env
+
+# Determine project owner and entity type
+PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
+PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
 ```
 
 ### Step 2 — Create or use existing project
@@ -19,7 +23,7 @@ If `GITHUB_PROJECT_NUMBER` is already set in `.claude/.env`, skip to Step 3.
 Otherwise, create a new project:
 
 ```bash
-PROJECT_URL=$(gh project create --owner "$GITHUB_LOGIN" --title "$(gh repo view --json name -q '.name') Board" --format json | jq -r '.url')
+PROJECT_URL=$(gh project create --owner "$PROJECT_OWNER" --title "$(gh repo view --json name -q '.name') Board" --format json | jq -r '.url')
 GITHUB_PROJECT_NUMBER=$(echo "$PROJECT_URL" | grep -o '[0-9]*$')
 echo "Created project #$GITHUB_PROJECT_NUMBER: $PROJECT_URL"
 ```
@@ -33,27 +37,50 @@ sed -i '' "s/GITHUB_PROJECT_NUMBER=/GITHUB_PROJECT_NUMBER=$GITHUB_PROJECT_NUMBER
 ### Step 3 — Fetch the project node ID and Status field ID
 
 ```bash
-PROJECT_DATA=$(gh api graphql -f query='
-  query($login: String!, $number: Int!) {
-    user(login: $login) {
-      projectV2(number: $number) {
-        id
-        fields(first: 20) {
-          nodes {
-            ... on ProjectV2SingleSelectField {
-              id
-              name
-              options { id name }
+# Use organization(...) or user(...) depending on PROJECT_OWNER_TYPE
+if [ "$PROJECT_OWNER_TYPE" = "organization" ]; then
+  PROJECT_DATA=$(gh api graphql -f query='
+    query($login: String!, $number: Int!) {
+      organization(login: $login) {
+        projectV2(number: $number) {
+          id
+          fields(first: 20) {
+            nodes {
+              ... on ProjectV2SingleSelectField {
+                id
+                name
+                options { id name }
+              }
             }
           }
         }
       }
     }
-  }
-' -f login="$GITHUB_LOGIN" -F number="$GITHUB_PROJECT_NUMBER")
-
-PROJECT_NODE_ID=$(echo "$PROJECT_DATA" | jq -r '.data.user.projectV2.id')
-STATUS_FIELD_ID=$(echo "$PROJECT_DATA" | jq -r '[.data.user.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].id')
+  ' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER")
+  PROJECT_NODE_ID=$(echo "$PROJECT_DATA" | jq -r '.data.organization.projectV2.id')
+  STATUS_FIELD_ID=$(echo "$PROJECT_DATA" | jq -r '[.data.organization.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].id')
+else
+  PROJECT_DATA=$(gh api graphql -f query='
+    query($login: String!, $number: Int!) {
+      user(login: $login) {
+        projectV2(number: $number) {
+          id
+          fields(first: 20) {
+            nodes {
+              ... on ProjectV2SingleSelectField {
+                id
+                name
+                options { id name }
+              }
+            }
+          }
+        }
+      }
+    }
+  ' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER")
+  PROJECT_NODE_ID=$(echo "$PROJECT_DATA" | jq -r '.data.user.projectV2.id')
+  STATUS_FIELD_ID=$(echo "$PROJECT_DATA" | jq -r '[.data.user.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].id')
+fi
 
 echo "Project node ID: $PROJECT_NODE_ID"
 echo "Status field ID: $STATUS_FIELD_ID"
@@ -192,10 +219,17 @@ done
 
 ```bash
 echo "✅ GitHub Project configured"
-echo "Project URL: https://github.com/users/$GITHUB_LOGIN/projects/$GITHUB_PROJECT_NUMBER"
-echo ""
-echo "Status options set:"
-echo "$PROJECT_DATA" | jq -r '[.data.user.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].options[].name'
+if [ "$PROJECT_OWNER_TYPE" = "organization" ]; then
+  echo "Project URL: https://github.com/orgs/$PROJECT_OWNER/projects/$GITHUB_PROJECT_NUMBER"
+  echo ""
+  echo "Status options set:"
+  echo "$PROJECT_DATA" | jq -r '[.data.organization.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].options[].name'
+else
+  echo "Project URL: https://github.com/users/$PROJECT_OWNER/projects/$GITHUB_PROJECT_NUMBER"
+  echo ""
+  echo "Status options set:"
+  echo "$PROJECT_DATA" | jq -r '[.data.user.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].options[].name'
+fi
 ```
 
 ### Done

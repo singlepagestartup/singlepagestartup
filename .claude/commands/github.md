@@ -6,6 +6,12 @@ description: Manage GitHub Project issues - create, update, comment, and follow 
 
 ## Project Configuration
 
+**IMPORTANT:**
+
+- `GITHUB_PROJECT_NUMBER` = numeric project ID (e.g., `2`)
+- `PROJECT_NODE_ID` = global project ID (e.g., `PVTI_lADO...`) — resolved from GraphQL
+- When using `gh project item-edit`, always pass `--project-id "$PROJECT_NODE_ID"`, NOT the numeric number
+
 **Only `GITHUB_PROJECT_NUMBER` is required in `.claude/.env`.** All other IDs are resolved dynamically by name.
 
 At the start of every session, load config and fetch the project structure:
@@ -170,6 +176,8 @@ Get issue node ID via: `gh issue view ISSUE_NUMBER --json id -q '.id'`
 
 ### Updating Status Field
 
+**IMPORTANT:** Use `gh project item-edit` with the global PROJECT_NODE_ID (not the numeric project number).
+
 ```bash
 # Resolve the target status name to its UUID
 TARGET_STATUS_ID=$(get_status_id "Ready for Dev")
@@ -177,6 +185,18 @@ TARGET_STATUS_ID=$(get_status_id "Ready for Dev")
 # Get the project item ID for the issue (see "Getting Issue's Project Item ID" above)
 ITEM_ID="..."
 
+# Update status using gh CLI (NOT GraphQL mutation)
+# NOTE: --project-id must be PROJECT_NODE_ID (the global ID), NOT GITHUB_PROJECT_NUMBER (numeric)
+gh project item-edit \
+  --id "$ITEM_ID" \
+  --project-id "$PROJECT_NODE_ID" \
+  --field-id "$STATUS_FIELD_ID" \
+  --single-select-option-id "$TARGET_STATUS_ID"
+```
+
+Alternative GraphQL mutation (same result, more complex):
+
+```bash
 gh api graphql -f query='
   mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
     updateProjectV2ItemFieldValue(input: {
@@ -338,15 +358,20 @@ Consider adding a comment explaining the status change.
 
 ### 5. Fetching Issue into Thoughts
 
-To save an issue for reference:
+To save an issue for reference as readable Markdown:
 
 ```bash
 REPO_NAME=$(gh repo view --json name -q '.name')
-gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url \
-  > thoughts/shared/tickets/$REPO_NAME/ISSUE-XXXX.md
 ```
 
-Then format the file as readable markdown for reference during planning.
+Then fetch the issue data and format it as Markdown before saving to `thoughts/shared/tickets/$REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+
+- Header: `# Issue #XXX: [title]`
+- Metadata: URL, status (from labels), created date
+- Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
+- All comments formatted as subsections with author and date
+
+Do NOT save raw JSON — always format as human-readable Markdown.
 
 ## Issue Quality Guidelines
 
