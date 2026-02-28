@@ -107,7 +107,19 @@ Apply the determined changes to the plan:
 - The commit will still include all successful changes
 - Document any failed changes in the GitHub comment so the user is aware
 
-### Step 7: Create a Commit
+### Step 7: Update Last Sync Marker
+
+At the end of the plan, update the sync marker:
+
+```markdown
+<!-- Last synced at: [current UTC timestamp] -->
+```
+
+Use current UTC timestamp (ISO 8601 format).
+
+### Step 8: Create a Commit
+
+**IMPORTANT:** All plan file edits and the sync marker MUST be completed BEFORE this step. The commit happens after all changes are made.
 
 ```bash
 # Create a commit with clear message
@@ -123,15 +135,7 @@ EOF
 )"
 ```
 
-### Step 8: Update Last Sync Marker
-
-At the end of the plan, update the sync marker:
-
-```markdown
-<!-- Last synced at: [current UTC timestamp] -->
-```
-
-Use current UTC timestamp (ISO 8601 format).
+**Verify the commit was successful** before proceeding to the next step. If the commit fails, do NOT post the GitHub comment.
 
 ### Step 9: Post Reply Comment in GitHub Issue
 
@@ -155,6 +159,8 @@ The plan has been updated and committed.
 ```
 
 ### Step 10: Complete Confirmation
+
+**IMPORTANT:** Only reach this step after the commit has been successfully created. The GitHub comment should reference the commit hash to provide proof of work.
 
 Print completion summary:
 
@@ -242,6 +248,6 @@ The plan has been updated and committed.
 - **Fully autonomous**: No console questions, no user prompts. Reads comments, updates plan, commits, replies.
 - **One-way sync**: GitHub → Plan only. Never modifies GitHub issues.
 - **Idempotent**: Running multiple times with no new comments is safe and quick.
-- **Commit first**: Plan changes are committed before posting comment, providing proof of work.
+- **Commit before comment**: Plan changes MUST be committed successfully before posting the GitHub comment. The comment references the commit hash to provide proof of work.
 - **Context-aware**: Reads ALL new comments, not just the last one, to understand the full discussion.
 - **Resilient editing**: Uses small, targeted edits with error handling to minimize failed updates.
