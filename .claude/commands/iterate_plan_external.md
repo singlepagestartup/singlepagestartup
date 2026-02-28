@@ -89,10 +89,23 @@ Plan changes:
 Apply the determined changes to the plan:
 
 1. **Use Edit tool** for surgical modifications
-2. **Maintain existing structure** unless the change requires restructuring
-3. **Add/modify phases** as needed
-4. **Update success criteria** if requirements changed
-5. **Add implementation notes** for new context
+2. **Re-read file before each large edit** - The Edit tool requires exact string matches, so read the file again immediately before editing to get the current state
+3. **Use minimal, targeted edits** - Replace small, specific strings instead of large blocks to reduce the chance of mismatches
+4. **For large deletions/replacements** - Break into multiple smaller edits (e.g., remove header first, then content)
+5. **Handle edit failures gracefully** - If an Edit tool call fails:
+   - Log the error but continue with other changes that can be made
+   - Don't interrupt the entire process for a single failed edit
+   - Critical changes should be prioritized over cosmetic ones
+6. **Maintain existing structure** unless the change requires restructuring
+7. **Add/modify phases** as needed
+8. **Update success criteria** if requirements changed
+9. **Add implementation notes** for new context
+
+**Error handling strategy:**
+
+- If an edit fails due to string mismatch, the process continues with remaining edits
+- The commit will still include all successful changes
+- Document any failed changes in the GitHub comment so the user is aware
 
 ### Step 7: Create a Commit
 
@@ -231,3 +244,4 @@ The plan has been updated and committed.
 - **Idempotent**: Running multiple times with no new comments is safe and quick.
 - **Commit first**: Plan changes are committed before posting comment, providing proof of work.
 - **Context-aware**: Reads ALL new comments, not just the last one, to understand the full discussion.
+- **Resilient editing**: Uses small, targeted edits with error handling to minimize failed updates.

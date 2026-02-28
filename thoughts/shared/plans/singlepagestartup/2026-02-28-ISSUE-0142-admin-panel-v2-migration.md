@@ -567,3 +567,5 @@ After pilot stabilization:
 - Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-0142.md`
 - Research findings: Referenced in ticket comments
 - Draft design: `apps/drafts/incoming/admin-panel-redesign-html/`
+
+<!-- Last synced at: 2026-02-28T11:30:00Z -->
