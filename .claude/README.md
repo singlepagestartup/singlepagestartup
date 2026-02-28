@@ -18,6 +18,8 @@ This directory contains Claude Code agents, commands (skills), and local configu
 │   ├── ralph_plan.md    # Create plan for highest priority issue
 │   ├── ralph_research.md
 │   ├── ralph_impl.md
+│   ├── iterate_plan.md    # Update plan with local edits
+│   ├── iterate_plan_external.md  # Sync GitHub comments to plan
 │   ├── oneshot.md
 │   ├── oneshot_plan.md
 │   ├── create_plan_generic.md
@@ -213,6 +215,49 @@ claude
 ```
 
 Claude Code reads `.claude/commands/` and makes all slash commands available. You are now ready to work.
+
+---
+
+### Plan Iteration Workflow
+
+When working with implementation plans, there are **two interaction modes**:
+
+| Mode                   | Command                           | Source of Changes                                                      | When to Use |
+| ---------------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------- |
+| **Local iteration**    | `/iterate_plan ISSUE_ID`          | Direct edits to plan file (you specify changes in CLI)                 |
+| **External iteration** | `/iterate_plan_external ISSUE_ID` | Sync from GitHub issue comments to plan (discussions happen in GitHub) |
+
+### How External Iteration Works
+
+```
+1. GitHub Issue (external system)
+   ↓ Discuss, make decisions
+2. /iterate_plan_external 142
+   ↓ Syncs comments to plan file
+3. Review synced comments
+4. /iterate_plan 142
+   ↓ Apply changes to plan based on comments
+```
+
+**Key points:**
+
+- All discussion happens in **GitHub issue** — this is the "cloud" system
+- `/iterate_plan_external` is a **one-way sync** from GitHub to plan
+- No console questions — decisions are made in GitHub comments
+- Re-running `/iterate_plan_external` picks up new comments since last sync
+- `/iterate_plan` is for local plan editing (you specify what to change)
+
+### Command Summary
+
+| Command                  | Purpose                                | Input Format                        |
+| ------------------------ | -------------------------------------- | ----------------------------------- |
+| `/iterate_plan`          | Update plan with local edits           | `142` or `142 - add error handling` |
+| `/iterate_plan_external` | Sync GitHub comments to plan           | `142`                               |
+| `/ralph_research`        | Research "Research Needed" issue       | `142` (or auto-picks)               |
+| `/ralph_plan`            | Create plan for "Ready for Plan" issue | `142` (or auto-picks)               |
+| `/ralph_impl`            | Implement "Ready for Dev" issue        | `142` (or auto-picks)               |
+
+**Status checks:** All `ralph_*` commands verify the issue is in the correct status before proceeding.
 
 ---
 
@@ -458,7 +503,8 @@ When you run `/ralph_plan`, for example, the command spawns several of these in 
 /oneshot [#]           → research + plan in sequence
 /oneshot_plan [#]      → plan + implement in sequence
 /create_plan [file]    → interactive plan creation (for medium/large issues)
-/iterate_plan [file]   → update an existing plan with new requirements or corrections
+/iterate_plan [file]   → update an existing plan with local edits (you specify changes)
+/iterate_plan_external → sync GitHub issue comments to plan (discussions happen in GitHub)
 /implement_plan [file] → implement a plan file manually
 /validate_plan [file]  → verify implementation against a plan's success criteria
 /research_codebase     → deep codebase research — asks what to investigate, then runs parallel agents

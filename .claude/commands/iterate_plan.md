@@ -11,43 +11,55 @@ You are tasked with updating existing implementation plans based on user feedbac
 
 When this command is invoked:
 
-1. **Parse the input to identify**:
+1. **Parse input to identify**:
 
-   - Plan file path (e.g., `thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md`)
+   - Issue ID (e.g., `142`)
    - Requested changes/feedback
 
-2. **Handle different input scenarios**:
+2. **Find the most recent plan for this issue**:
 
-   **If NO plan file provided**:
+   ```bash
+   # Get repo name from context
+   REPO_NAME=$(gh repo view --json name -q '.name')
 
-   ```
-   I'll help you iterate on an existing implementation plan.
-
-   Which plan would you like to update? Please provide the path to the plan file (e.g., `thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md`).
-
-   Tip: You can list recent plans with `ls -lt thoughts/shared/plans/ | head`
+   # Find the most recent plan for this issue
+   find "thoughts/shared/plans/$REPO_NAME" -name "*ISSUE-${ISSUE_ID}*.md" -type f | sort -r | head -1
    ```
 
-   Wait for user input, then re-check for feedback.
-
-   **If plan file provided but NO feedback**:
+   If no plan found:
 
    ```
-   I've found the plan at [path]. What changes would you like to make?
+   No plan found for issue #ISSUE_NUMBER in thoughts/shared/plans/$REPO_NAME/
+
+   Available plans:
+   [list all plans in the directory]
+
+   Please provide the exact plan file path, or create a plan first using /ralph_plan.
+   ```
+
+   If multiple plans exist, ask which one to update.
+
+   If a plan is found, read it completely and proceed.
+
+3. **Confirm the plan with user**:
+
+   ```
+   Found plan: [plan filename]
+
+   Current approach: [brief summary from plan]
+   Current phases: [list phases]
+
+   What changes would you like to make?
 
    For example:
    - "Add a phase for migration handling"
-   - "Update the success criteria to include performance tests"
-   - "Adjust the scope to exclude feature X"
+   - "Update success criteria to include performance tests"
+   - "Adjust scope to exclude feature X"
    - "Split Phase 2 into two separate phases"
+   - "Fix typo in phase 3"
    ```
 
    Wait for user input.
-
-   **If BOTH plan file AND feedback provided**:
-
-   - Proceed immediately to Step 1
-   - No preliminary questions needed
 
 ## Process Steps
 
@@ -55,24 +67,25 @@ When this command is invoked:
 
 1. **Read the existing plan file COMPLETELY**:
 
-   - Use the Read tool WITHOUT limit/offset parameters
+   - Use Read tool WITHOUT limit/offset parameters
    - Understand the current structure, phases, and scope
    - Note the success criteria and implementation approach
 
 2. **Understand the requested changes**:
    - Parse what the user wants to add/modify/remove
    - Identify if changes require codebase research
-   - Determine scope of the update
+   - Determine the scope of the update
 
 ### Step 2: Research If Needed
 
-**Only spawn research tasks if the changes require new technical understanding.**
+**Only spawn research tasks if changes require new technical understanding.**
 
 If the user's feedback requires understanding new code patterns or validating assumptions:
 
 1. **Create a research todo list** using TodoWrite
 
 2. **Spawn parallel sub-tasks for research**:
+
    Use the right agent for each type of research:
 
    **For code investigation:**
@@ -88,14 +101,14 @@ If the user's feedback requires understanding new code patterns or validating as
 
    **Be EXTREMELY specific about directories**:
 
-   - If the change involves "WUI", specify `humanlayer-wui/` directory
-   - If it involves "daemon", specify `hld/` directory
+   - If the change involves "UI", specify `apps/host` directory
+   - If it involves "API", specify `apps/api` directory
    - Include full path context in prompts
 
 3. **Read any new files identified by research**:
 
    - Read them FULLY into the main context
-   - Cross-reference with the plan requirements
+   - Cross-reference with plan requirements
 
 4. **Wait for ALL sub-tasks to complete** before proceeding
 
@@ -125,7 +138,7 @@ Get user confirmation before proceeding.
 
 1. **Make focused, precise edits** to the existing plan:
 
-   - Use the Edit tool for surgical changes
+   - Use Edit tool for surgical changes
    - Maintain the existing structure unless explicitly changing it
    - Keep all file:line references accurate
    - Update success criteria if needed
@@ -138,6 +151,7 @@ Get user confirmation before proceeding.
    - Maintain the distinction between automated vs manual success criteria
 
 3. **Preserve quality standards**:
+
    - Include specific file paths and line numbers for new content
    - Write measurable success criteria
    - Use `make` commands for automated verification
@@ -150,10 +164,10 @@ Get user confirmation before proceeding.
    - Run `humanlayer thoughts sync`
    - This ensures changes are properly indexed
 
-2. **Present the changes made**:
+2. **Present changes made**:
 
    ```
-   I've updated the plan at `thoughts/shared/plans/[filename].md`
+   I've updated the plan at `thoughts/shared/plans/$REPO_NAME/[filename].md`
 
    Changes made:
    - [Specific change 1]
@@ -181,8 +195,8 @@ Get user confirmation before proceeding.
 
    - Make precise edits, not wholesale rewrites
    - Preserve good content that doesn't need changing
-   - Only research what's necessary for the specific changes
-   - Don't over-engineer the updates
+   - Only research what's necessary for specific changes
+   - Don't over-engineer updates
 
 3. **Be Thorough**:
 
@@ -205,7 +219,8 @@ Get user confirmation before proceeding.
    - Mark tasks complete when done
 
 6. **No Open Questions**:
-   - If the requested change raises questions, ASK
+
+   - If a requested change raises questions, ASK
    - Research or get clarification immediately
    - Do NOT update the plan with unresolved questions
    - Every change must be complete and actionable
@@ -217,47 +232,38 @@ When updating success criteria, always maintain the two-category structure:
 1. **Automated Verification** (can be run by execution agents):
 
    - Commands that can be run: `make test`, `npm run lint`, etc.
-   - Prefer `make` commands: `make -C humanlayer-wui check` instead of `cd humanlayer-wui && bun run fmt`
+   - Prefer `make` commands: `make -C apps/api check` instead of `cd apps/api && bun run fmt`
    - Specific files that should exist
    - Code compilation/type checking
 
 2. **Manual Verification** (requires human testing):
+
    - UI/UX functionality
    - Performance under real conditions
    - Edge cases that are hard to automate
    - User acceptance criteria
 
-## Sub-task Spawning Best Practices
-
-When spawning research sub-tasks:
-
-1. **Only spawn if truly needed** - don't research for simple changes
-2. **Spawn multiple tasks in parallel** for efficiency
-3. **Each task should be focused** on a specific area
-4. **Provide detailed instructions** including:
-   - Exactly what to search for
-   - Which directories to focus on
-   - What information to extract
-   - Expected output format
-5. **Request specific file:line references** in responses
-6. **Wait for all tasks to complete** before synthesizing
-7. **Verify sub-task results** - if something seems off, spawn follow-up tasks
-
 ## Example Interaction Flows
 
-**Scenario 1: User provides everything upfront**
+**Scenario 1: User provides issue ID and changes**
 
 ```
-User: /iterate_plan thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md - add phase for error handling
-Assistant: [Reads plan, researches error handling patterns, updates plan]
+User: /iterate_plan 142 - add phase for error handling
+Assistant: [Finds plan for issue 142, researches error handling patterns, updates plan]
 ```
 
-**Scenario 2: User provides just plan file**
+**Scenario 2: User provides just issue ID**
 
 ```
-User: /iterate_plan thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md
-Assistant: I've found the plan. What changes would you like to make?
-User: Split Phase 2 into two phases - one for backend, one for frontend
+User: /iterate_plan 142
+Assistant: Found plan: 2026-02-28-ISSUE-0142-admin-panel-v2-migration.md
+
+Current approach: Pilot stabilization with architecture cleanup
+Current phases: 3 phases
+
+What changes would you like to make?
+
+User: Add more specific success criteria
 Assistant: [Proceeds with update]
 ```
 
@@ -265,9 +271,10 @@ Assistant: [Proceeds with update]
 
 ```
 User: /iterate_plan
-Assistant: Which plan would you like to update? Please provide the path...
-User: thoughts/shared/plans/singlepagestartup/2025-10-16-ISSUE-42-feature.md
-Assistant: I've found the plan. What changes would you like to make?
-User: Add more specific success criteria
-Assistant: [Proceeds with update]
+Assistant: Which issue would you like to update? Please provide issue ID (e.g., `142`).
+
+Tip: List recent plans with `find thoughts/shared/plans/$(gh repo view --json name -q '.name') -name "ISSUE-*.md" | sort -r | head`
+
+User: 142
+Assistant: [Finds plan and asks for changes]
 ```
