@@ -263,107 +263,156 @@ When working with implementation plans, there are **two interaction modes**:
 
 ### How to Work on a Task
 
-#### Step 1 — Create an issue
+This section describes the **linear development workflow** using AI agents. Each step must be completed in order — steps cannot be skipped or jumped. Within each step, there may be cycles of iteration/rework, but these loops are contained within the bounds of that step.
 
-Run `/github` in Claude Code and ask it to create an issue. Claude will prompt you for:
+**Workflow overview:**
+
+```
+Step 1 → Step 2 → Step 3 → Step 4 → Step 5 → Step 6 → Step 7
+  ↓         ↓         ↓         ↓         ↓         ↓         ↓
+Create    Research   Review     Plan      Review     Implement   Review PR
+issue    (agent)   research   (agent)   plan       (agent)     (manual)
+                                            (loop)               (loop)
+```
+
+**Key principle:** At each step, the AI agent produces an output, and you (the developer) make a decision based on that output. This creates **two review gates** where you approve before code is written — after research (Step 3) and after the plan (Step 5).
+
+---
+
+### Step 1 — Create an Issue
+
+**Purpose:** Define the problem to solve and initialize the workflow.
+
+**Action:** Run `/github` in Claude Code and ask it to create an issue. The command will prompt you for:
 
 - A clear description of the **problem to solve** (from the user's perspective)
 - The size label: `size:xs`, `size:small`, `size:medium`, or `size:large`
 - The area label: `area:api`, `area:host`, etc.
 
-After creating the issue, Claude automatically adds it to the GitHub Project with status `Triage`.
+**What happens:**
 
-Move the issue to `Research Needed` when it's ready to be worked on (either manually in the GitHub Project UI, or by asking `/github` to update it).
+- The issue is created in GitHub
+- It is automatically added to the GitHub Project with status `Triage`
 
-> Only `size:xs` and `size:small` issues are picked up by automated commands. For `size:medium` and `size:large`, use manual planning commands described below.
+**Your decision:** Move the issue to `Research Needed` when ready (manually in the GitHub Project UI or via `/github`).
+
+**Note:** Only `size:xs` and `size:small` issues are processed by automated commands (`/ralph_research`, `/ralph_plan`, `/ralph_impl`). For `size:medium` and `size:large`, use manual planning commands.
 
 ---
 
-#### Step 2 — Run research
+### Step 2 — Run Research
 
-```
-/ralph_research 42
-```
+**Purpose:** Investigate the codebase to understand the problem and identify implementation approaches.
 
-Replace `42` with the issue number. If you omit the number, the agent picks the highest-priority `Research Needed` issue automatically.
+**Command:** `/ralph_research 42` (replace `42` with the issue number, or omit to auto-pick)
 
 **What the agent does:**
 
-1. Fetches the issue from GitHub, saves it to `thoughts/shared/tickets/REPO_NAME/ISSUE-42.md`
-2. Sets the issue status to `Research in Progress`
-3. Spawns parallel sub-agents to search the codebase for relevant files, patterns, and existing implementations
-4. If needed, searches the web for external documentation or best practices
+1. Validates the issue is in `Research Needed` status
+2. Fetches the issue from GitHub, saves it as readable Markdown to `thoughts/shared/tickets/REPO_NAME/ISSUE-42.md`
+3. Sets the issue status to `Research in Progress`
+4. Spawns parallel sub-agents to investigate:
+   - **codebase-locator** — finds relevant files and entry points
+   - **codebase-analyzer** — reads files in depth to explain implementation details
+   - **codebase-pattern-finder** — finds similar implementations to follow
+   - **thoughts-locator** — searches for existing notes on the topic
+   - **thoughts-analyzer** — extracts research context from thoughts documents
+   - **web-search-researcher** — searches for external docs, APIs, or best practices (if needed)
 5. Writes findings to `thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md`
 6. Posts a summary comment on the GitHub issue
 7. Sets the issue status to `Research in Review`
 
-**When it finishes**, Claude prints a summary with the file path it created.
+**Your decision:** Proceed to Step 3 to review the research findings.
 
 ---
 
-#### Step 3 — Review the research
+### Step 3 — Review the Research (First Gate)
 
-Open the research file that the agent created:
+**Purpose:** Validate that the agent understood the problem correctly and identified relevant approaches.
+
+**Action:** Open the research file:
 
 ```
 thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
 ```
 
-Read it and verify:
+**Verify:**
 
-- **Is the problem understood correctly?** The agent should have identified which parts of the codebase are relevant.
-- **Are the findings grounded in actual code?** Look for file:line references — these mean the agent actually read the code, not guessed.
-- **Are the proposed approaches reasonable?** The document typically outlines 2–3 possible directions with tradeoffs.
-- **Is anything missing?** If the agent missed a relevant module or misunderstood a constraint, note it.
+- [ ] Is the problem understood correctly? The agent should have identified which parts of the codebase are relevant
+- [ ] Are the findings grounded in actual code? Look for file:line references — these mean the agent actually read the code, not guessed
+- [ ] Are the proposed approaches reasonable? The document typically outlines 2–3 possible directions with tradeoffs
+- [ ] Is anything missing? If the agent missed a relevant module or misunderstood a constraint, note it
 
-**If the research looks good** → move the issue to `Ready for Plan` in the GitHub Project UI (or ask `/github` to do it).
+**Your decision:**
 
-**If the research needs correction** → add a comment to the GitHub issue explaining what was missed or misunderstood, then run `/ralph_research 42` again. The agent will read the previous research and the new comment before starting. You can also edit the research file directly and ask the agent to incorporate your notes.
+| Outcome                   | Action                                                                                            | Next Step      |
+| ------------------------- | ------------------------------------------------------------------------------------------------- | -------------- |
+| Research looks good       | Move issue to `Ready for Plan` (via GitHub Project UI or `/github`)                               | Step 4         |
+| Research needs correction | Add a comment to the GitHub issue explaining what was missed, then run `/ralph_research 42` again | Back to Step 2 |
+
+**Loop within Step 3:** If the research needs correction, the command `/ralph_research` reads the previous research and your new comment before starting again. This loop repeats until the research is approved. You cannot skip to Step 4 without passing this gate.
 
 ---
 
-#### Step 4 — Run planning
+### Step 4 — Run Planning
 
-```
-/ralph_plan 42
-```
+**Purpose:** Create a detailed implementation plan based on approved research.
+
+**Prerequisite:** Issue must be in `Ready for Plan` status.
+
+**Command:** `/ralph_plan 42`
 
 **What the agent does:**
 
-1. Reads the issue, all comments, and the linked research document
-2. Sets the issue status to `Plan in Progress`
-3. Researches the codebase again, focusing on implementation details (existing patterns, file structure, related tests)
-4. Writes a detailed implementation plan to `thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md`
-5. Posts a summary comment on the GitHub issue linking to the plan
-6. Sets the issue status to `Plan in Review`
+1. Validates the issue is in `Ready for Plan` status
+2. Reads the issue, all comments, and the linked research document
+3. Sets the issue status to `Plan in Progress`
+4. Researches the codebase again, focusing on implementation details:
+   - **codebase-locator** — finds files to be modified
+   - **codebase-analyzer** — understands current implementation patterns
+   - **codebase-pattern-finder** — finds similar implementations to follow
+   - **thoughts-locator** — searches for related decisions or patterns
+   - **thoughts-analyzer** — extracts relevant context from existing plans
+5. Writes a detailed implementation plan to `thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md`
+6. Posts a summary comment on the GitHub issue linking to the plan
+7. Sets the issue status to `Plan in Review`
+
+**Your decision:** Proceed to Step 5 to review the plan.
 
 ---
 
-#### Step 5 — Review the plan
+### Step 5 — Review the Plan (Second Gate)
 
-Open the plan file:
+**Purpose:** Validate that the implementation plan is complete, feasible, and follows project patterns.
+
+**Action:** Open the plan file:
 
 ```
 thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
 ```
 
-A good plan contains:
+**Verify the plan contains:**
 
-- **Phases** — a numbered list of implementation steps
-- **File changes** — specific files to create or modify, with the expected changes described
-- **Success criteria** — how to verify each phase worked correctly
-- **No ambiguity** — every step should be clear enough that the agent can execute it without asking questions
+- [ ] **Phases** — a numbered list of implementation steps
+- [ ] **File changes** — specific files to create or modify, with the expected changes described
+- [ ] **Success criteria** — how to verify each phase worked correctly
+- [ ] **No ambiguity** — every step should be clear enough that the agent can execute it without asking questions
 
-Check for:
+**Check for issues:**
 
 - [ ] Do the phases cover everything the issue requires?
 - [ ] Are the file paths and module names real (not hallucinated)?
 - [ ] Does the approach match existing patterns in the codebase?
 - [ ] Are there any steps that would break something else?
 
-**If the plan looks good** → move the issue to `Ready for Dev` in the GitHub Project UI.
+**Your decision:**
 
-**If the plan needs changes** → do not move the issue. You have two options:
+| Outcome            | Action                                                             | Next Step     |
+| ------------------ | ------------------------------------------------------------------ | ------------- |
+| Plan looks good    | Move issue to `Ready for Dev` (via GitHub Project UI or `/github`) | Step 6        |
+| Plan needs changes | Choose local or external iteration (see below)                     | Repeat Step 5 |
+
+**Loop within Step 5:** If the plan needs changes, you have two iteration options:
 
 **Option A: Local iteration (direct conversation)**
 
@@ -386,44 +435,58 @@ Use external iteration when:
 - You want a full audit trail in GitHub issue comments
 - You prefer the "cloud" system for discussions and local CLI for final execution
 
+**Important:** You cannot proceed to Step 6 without passing this gate. The loop repeats until the plan is approved.
+
 ---
 
-#### Step 6 — Run implementation
+### Step 6 — Run Implementation
 
-```
-/ralph_impl 42
-```
+**Purpose:** Execute the approved implementation plan.
+
+**Prerequisite:** Issue must be in `Ready for Dev` status.
+
+**Command:** `/ralph_impl 42`
 
 **What the agent does:**
 
-1. Reads the issue and finds the linked plan file from the issue comments
-2. Sets the issue status to `In Dev`
-3. Executes each phase of the plan, checking success criteria after each one
-4. Creates a commit for the changes
-5. Opens a PR and posts the PR link as a comment on the issue
-6. Sets the issue status to `Code Review`
+1. Validates the issue is in `Ready for Dev` status
+2. Reads the issue and finds the linked plan file from the issue comments
+3. Sets the issue status to `In Dev`
+4. Executes each phase of the plan, checking success criteria after each one
+5. Creates a commit for the changes
+6. Opens a PR and posts the PR link as a comment on the issue
+7. Sets the issue status to `Code Review`
+
+**Your decision:** Proceed to Step 7 to review the PR.
 
 ---
 
-#### Step 7 — Review the PR
+### Step 7 — Review the PR
 
-Open the PR link that the agent posted. Review the code diff normally:
+**Purpose:** Verify that the implementation matches the plan and follows project patterns.
+
+**Action:** Open the PR link that the agent posted. Review the code diff normally:
 
 - Does the implementation match what was described in the plan?
 - Are there edge cases the agent missed?
 - Does the code follow the project's patterns (TypeScript, Tailwind, SDK-based data fetching)?
 
-To verify the implementation more thoroughly, run:
+**To verify the implementation thoroughly:**
 
 ```
 /validate_plan thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
 ```
 
-This agent re-reads both the plan and the actual changed files, then reports which success criteria passed and which didn't.
+This command reads both the plan and the actual changed files, then reports which success criteria passed and which didn't.
 
-**If something needs fixing** → comment on the PR or the issue with specific instructions, then run `/ralph_impl 42` again. The agent will read all prior comments before re-implementing.
+**Your decision:**
 
-**If everything looks good** → merge the PR and move the issue to `Done`.
+| Outcome                | Action                                                                                 | Final Step     |
+| ---------------------- | -------------------------------------------------------------------------------------- | -------------- |
+| Everything looks good  | Merge the PR and move the issue to `Done` (via `/github`)                              | Complete       |
+| Something needs fixing | Comment on the PR or issue with specific instructions, then run `/ralph_impl 42` again | Back to Step 6 |
+
+**Loop within Step 6/7:** If the implementation needs fixes, `/ralph_impl` reads all prior comments before re-implementing. This loop repeats until the PR is approved and merged.
 
 ---
 
