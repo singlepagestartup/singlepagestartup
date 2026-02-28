@@ -218,49 +218,6 @@ Claude Code reads `.claude/commands/` and makes all slash commands available. Yo
 
 ---
 
-### Plan Iteration Workflow
-
-When working with implementation plans, there are **two interaction modes**:
-
-| Mode                   | Command                           | Source of Changes                                                      | When to Use |
-| ---------------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------- |
-| **Local iteration**    | `/iterate_plan ISSUE_ID`          | Direct edits to plan file (you specify changes in CLI)                 |
-| **External iteration** | `/iterate_plan_external ISSUE_ID` | Sync from GitHub issue comments to plan (discussions happen in GitHub) |
-
-### How External Iteration Works
-
-```
-1. GitHub Issue (external system)
-   ↓ Discuss, make decisions
-2. /iterate_plan_external 142
-   ↓ Syncs comments to plan file
-3. Review synced comments
-4. /iterate_plan 142
-   ↓ Apply changes to plan based on comments
-```
-
-**Key points:**
-
-- All discussion happens in **GitHub issue** — this is the "cloud" system
-- `/iterate_plan_external` is a **one-way sync** from GitHub to plan
-- No console questions — decisions are made in GitHub comments
-- Re-running `/iterate_plan_external` picks up new comments since last sync
-- `/iterate_plan` is for local plan editing (you specify what to change)
-
-### Command Summary
-
-| Command                  | Purpose                                | Input Format                        |
-| ------------------------ | -------------------------------------- | ----------------------------------- |
-| `/iterate_plan`          | Update plan with local edits           | `142` or `142 - add error handling` |
-| `/iterate_plan_external` | Sync GitHub comments to plan           | `142`                               |
-| `/ralph_research`        | Research "Research Needed" issue       | `142` (or auto-picks)               |
-| `/ralph_plan`            | Create plan for "Ready for Plan" issue | `142` (or auto-picks)               |
-| `/ralph_impl`            | Implement "Ready for Dev" issue        | `142` (or auto-picks)               |
-
-**Status checks:** All `ralph_*` commands verify the issue is in the correct status before proceeding.
-
----
-
 ### How to Work on a Task
 
 This section describes the **linear development workflow** using AI agents. Each step must be completed in order — steps cannot be skipped or jumped. Within each step, there may be cycles of iteration/rework, but these loops are contained within the bounds of that step.
