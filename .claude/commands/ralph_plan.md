@@ -18,13 +18,17 @@ if [ "$CURRENT_STATUS" != "Ready for Plan" ]; then
 fi
 ```
 
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data.
 
-- Header: `# Issue #XXX: [title]`
-- Metadata: URL, status (from labels), created date
-- Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
-- All comments formatted as subsections with author and date
-  0d. read the issue and all comments to learn about past implementations and research
+- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- If file exists: skip creation and proceed to step 0d (read existing file)
+- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- The Markdown format must include:
+  - Header: `# Issue #XXX: [title]`
+  - Metadata: URL, status (from labels), created date
+  - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
+  - All comments formatted as subsections with author and date
+    0d. read the issue and all comments to learn about past implementations and research
 
 ## PART I - IF NO ISSUE IS MENTIONED
 
@@ -37,8 +41,17 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
     If that doesn't work, try: `gh issue list --label "status:ready-for-plan" --json number,title,labels,url`
 
 0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
-0d. read the issue and all comments to learn about past implementations and research
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data.
+
+- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- If file exists: skip creation and proceed to step 0d (read existing file)
+- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- The Markdown format must include:
+  - Header: `# Issue #XXX: [title]`
+  - Metadata: URL, status (from labels), created date
+  - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
+  - All comments formatted as subsections with author and date
+    0d. read the issue and all comments to learn about past implementations and research
 
 ## PART II - NEXT STEPS
 
