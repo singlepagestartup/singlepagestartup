@@ -363,13 +363,28 @@ Check for:
 
 **If the plan looks good** → move the issue to `Ready for Dev` in the GitHub Project UI.
 
-**If the plan needs changes** → do not move the issue. Instead, run:
+**If the plan needs changes** → do not move the issue. You have two options:
+
+**Option A: Local iteration (direct conversation)**
 
 ```
 /iterate_plan thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
 ```
 
 Tell the agent what needs to change: "Phase 2 should use the existing `X` utility instead of creating a new one" or "The plan doesn't cover error handling for Y case." The agent will update the plan file. Review again and repeat until satisfied.
+
+**Option B: External iteration (GitHub issue discussion)**
+
+1. Add comments to the GitHub issue describing what needs to change
+2. Run `/iterate_plan_external 42` to sync those comments to the plan
+3. The command is fully autonomous — it reads comments, updates the plan, creates a commit, and posts a reply
+4. Review the updated plan and repeat if needed
+
+Use external iteration when:
+
+- Multiple people need to collaborate on plan changes
+- You want a full audit trail in GitHub issue comments
+- You prefer the "cloud" system for discussions and local CLI for final execution
 
 ---
 
