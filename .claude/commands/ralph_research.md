@@ -4,8 +4,90 @@ description: Research highest priority GitHub Project issue needing investigatio
 
 ## PART I - IF A GITHUB ISSUE IS MENTIONED
 
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
-0d. read the issue and all comments to understand what research is needed and any previous attempts
+0b. **CRITICAL: Check issue status in GitHub Project** — only proceed if status is "Research Needed"
+
+```bash
+# Load config and fetch project structure
+source .claude/.env
+GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
+PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
+PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
+
+# Get issue node ID
+ISSUE_NODE_ID=$(gh issue view ISSUE_NUMBER --json id -q '.id')
+
+# Determine GraphQL query path based on owner type
+if [ "$PROJECT_OWNER_TYPE" = "organization" ]; then
+  QUERY_PATH=".data.organization.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
+else
+  QUERY_PATH=".data.user.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
+fi
+
+# Get current status
+CURRENT_STATUS=$(gh api graphql -f query='
+  query($login: String!, $number: Int!) {
+    organization(login: $login) {
+      projectV2(number: $number) {
+        items(first: 20) {
+          nodes {
+            content { ... on Issue { id } }
+            fieldValues(first: 20) {
+              nodes {
+                field { name }
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  option { name }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
+
+if [ "$PROJECT_OWNER_TYPE" = "user" ]; then
+  CURRENT_STATUS=$(gh api graphql -f query='
+    query($login: String!, $number: Int!) {
+      user(login: $login) {
+        projectV2(number: $number) {
+          items(first: 20) {
+            nodes {
+              content { ... on Issue { id } }
+              fieldValues(first: 20) {
+                nodes {
+                  field { name }
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    option { name }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
+fi
+
+# Validate status
+if [ "$CURRENT_STATUS" != "Research Needed" ]; then
+  echo "❌ Cannot proceed: Issue #ISSUE_NUMBER has status '$CURRENT_STATUS'"
+  echo "This command requires status: 'Research Needed'"
+  echo "Please move the issue to 'Research Needed' in the GitHub Project UI first, or use:"
+  echo "  /github  (to update the status)"
+  exit 1
+fi
+```
+
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+
+- Header: `# Issue #XXX: [title]`
+- Metadata: URL, status (from labels), created date
+- Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
+- All comments formatted as subsections with author and date
+  0d. read the issue and all comments to understand what research is needed and any previous attempts
 
 ## PART I - IF NO ISSUE IS MENTIONED
 
@@ -17,7 +99,7 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 `
     If that doesn't work, try: `gh issue list --label "status:research-needed" --json number,title,labels,url`
     0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then run `gh issue view ISSUE_NUMBER --json number,title,body,comments,labels,url` and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
     0d. read the issue and all comments to understand what research is needed and any previous attempts
 
 ## PART II - NEXT STEPS
@@ -28,8 +110,8 @@ think deeply
    1a. read any linked documents or file references in the issue description/comments
    1b. if insufficient information to conduct research, add a comment asking for clarification:
    `bash
- gh issue comment ISSUE_NUMBER --body "Need clarification before research: [specific question]"
- `
+gh issue comment ISSUE_NUMBER --body "Need clarification before research: [specific question]"
+`
    Then move back to "Research Needed" and EXIT
 
 think deeply about the research needs
