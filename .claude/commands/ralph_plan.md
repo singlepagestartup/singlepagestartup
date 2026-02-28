@@ -57,7 +57,10 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 
 think deeply
 
-1. move the item to "Plan in Progress" status in the GitHub Project (see `.claude/commands/github.md` for the GraphQL mutation pattern)
+1. move the item to "Plan in Progress" status in the GitHub Project:
+   ```bash
+   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Plan in Progress"
+   ```
    1a. read `.claude/commands/create_plan_generic.md`
    1b. check if the issue has a linked implementation plan document mentioned in comments or description
    1d. if the plan exists and is complete, you're done — respond with a link to the issue
@@ -73,7 +76,11 @@ think deeply
    [Brief summary of the plan approach and phases]"
    ```
 
-   2a. move the item to "Plan in Review" status in the GitHub Project
+   2a. move the item to "Plan in Review" status:
+
+   ```bash
+   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Plan in Review"
+   ```
 
 think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE — specifically, highest priority xs or small sized issue.
 

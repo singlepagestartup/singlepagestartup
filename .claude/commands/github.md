@@ -16,7 +16,7 @@ description: Manage GitHub Project issues - create, update, comment, and follow 
 
 At the start of every session, load config and fetch the project structure:
 
-```bash
+````bash
 # Auto-detect repo context from gh CLI
 GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
 GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
@@ -77,7 +77,6 @@ else
   STATUS_FIELD_ID=$(echo "$PROJECT_DATA" | jq -r '[.data.user.projectV2.fields.nodes[] | select(.name == "Status")] | .[0].id')
   PROJECT_FIELDS_PATH=".data.user.projectV2.fields.nodes"
 fi
-```
 
 To resolve a status name to its UUID (use this whenever you need an `optionId`):
 
@@ -88,7 +87,7 @@ get_status_id() {
 
 # Example:
 READY_FOR_DEV_ID=$(get_status_id "Ready for Dev")
-```
+````
 
 If `GITHUB_PROJECT_NUMBER` is empty, ask the user to fill in `.claude/.env`:
 
@@ -151,69 +150,42 @@ The team follows this workflow (Status is a custom field in the GitHub Project):
 
 ## Helper Functions
 
-### Getting Issue's Project Item ID
+### Available Helper Scripts
 
-To update a project field, you need the item ID (not the issue number):
+Use these scripts instead of GraphQL queries for simpler operations:
 
-```bash
-gh api graphql -f query='
-  query($issueId: ID!) {
-    node(id: $issueId) {
-      ... on Issue {
-        projectItems(first: 5) {
-          nodes {
-            id
-            project { title }
-          }
-        }
-      }
-    }
-  }
-' -f issueId="ISSUE_NODE_ID"
-```
-
-Get issue node ID via: `gh issue view ISSUE_NUMBER --json id -q '.id'`
+- `.claude/helpers/get_issue_status.sh ISSUE_NUMBER` — Get issue status
+- `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
+- `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
 
 ### Updating Status Field
 
-**IMPORTANT:** Use `gh project item-edit` with the global PROJECT_NODE_ID (not the numeric project number).
+Use the helper script for status updates:
 
 ```bash
-# Resolve the target status name to its UUID
-TARGET_STATUS_ID=$(get_status_id "Ready for Dev")
-
-# Get the project item ID for the issue (see "Getting Issue's Project Item ID" above)
-ITEM_ID="..."
-
-# Update status using gh CLI (NOT GraphQL mutation)
-# NOTE: --project-id must be PROJECT_NODE_ID (the global ID), NOT GITHUB_PROJECT_NUMBER (numeric)
-gh project item-edit \
-  --id "$ITEM_ID" \
-  --project-id "$PROJECT_NODE_ID" \
-  --field-id "$STATUS_FIELD_ID" \
-  --single-select-option-id "$TARGET_STATUS_ID"
+# Update status using helper script
+.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Plan in Progress"
 ```
 
-Alternative GraphQL mutation (same result, more complex):
+Available status names:
 
-```bash
-gh api graphql -f query='
-  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-    updateProjectV2ItemFieldValue(input: {
-      projectId: $projectId
-      itemId: $itemId
-      fieldId: $fieldId
-      value: { singleSelectOptionId: $optionId }
-    }) {
-      projectV2Item { id }
-    }
-  }
-' -f projectId="$PROJECT_NODE_ID" -f itemId="$ITEM_ID" -f fieldId="$STATUS_FIELD_ID" -f optionId="$TARGET_STATUS_ID"
-```
+- Triage
+- Spec Needed
+- Research Needed
+- Research in Progress
+- Research in Review
+- Ready for Plan
+- Plan in Progress
+- Plan in Review
+- Ready for Dev
+- In Dev
+- Code Review
+- Done
 
 ### Listing Issues by Status
 
 ```bash
+# Via project items
 gh project item-list PROJECT_NUMBER --owner GITHUB_LOGIN --format json | \
   jq '[.items[] | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
 ```
@@ -244,6 +216,7 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
    - Look for action items or next steps
 
 3. **Draft the issue summary:**
+
    Present a draft to the user:
 
    ```
@@ -271,6 +244,7 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
    ```
 
 4. **Interactive refinement:**
+
    Ask the user:
 
    - Does this summary capture the issue accurately?
@@ -292,12 +266,14 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
    # Add issue to project
    gh project item-add PROJECT_NUMBER --owner GITHUB_LOGIN --url ISSUE_URL
 
-   # Then update status field to Triage (use graphql mutation above)
+   # Then update status field to Triage (use helper script)
+   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
    ```
 
 7. **Post-creation actions:**
+
    - Show the created issue URL
-   - Ask if user wants to update the original thoughts document with the issue reference
+   - Ask if the user wants to update the original thoughts document with the issue reference
    - If yes, add at the top of the document:
      ```
      ---
@@ -308,9 +284,9 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
 
 ### 2. Adding Comments to Existing Issues
 
-When user wants to add a comment to an issue:
+When the user wants to add a comment to an issue:
 
-1. **Determine which issue** from conversation context or ask
+1. **Determine which issue** from the conversation context or ask
 2. **Format comments for clarity:**
 
    - Keep concise (~10 lines) unless more is needed
@@ -332,6 +308,7 @@ When user wants to add a comment to an issue:
    ```
 
 4. **Add the comment:**
+
    ```bash
    gh issue comment ISSUE_NUMBER --body "COMMENT_BODY"
    ```
@@ -350,8 +327,9 @@ gh issue list --label "status:research-needed" --json number,title,url,labels
 ### 4. Updating Issue Status
 
 ```bash
-# Update status field in GitHub Project (use graphql mutation above)
+# Update status field in GitHub Project (use helper script)
 # With correct optionId for the target status
+.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Ready for Plan"
 ```
 
 Consider adding a comment explaining the status change.
@@ -375,7 +353,7 @@ Do NOT save raw JSON — always format as human-readable Markdown.
 
 ## Issue Quality Guidelines
 
-- All issues must include a clear **problem to solve** — if the user gives only implementation details, ask: "To write a good issue, please explain the problem you're trying to solve from a user perspective"
+- All issues must include a clear **problem to solve** — if user gives only implementation details, ask: "To write a good issue, please explain the problem you're trying to solve from a user perspective"
 - Focus on "what" and "why"; include "how" only if well-defined
 - Use labels for: size (`size:xs`, `size:small`, `size:medium`, `size:large`), area (`area:api`, `area:frontend`, `area:db`)
 - Keep issues concise but complete

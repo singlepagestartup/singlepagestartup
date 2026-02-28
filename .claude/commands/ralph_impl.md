@@ -8,76 +8,13 @@ model: sonnet
 0b. **CRITICAL: Check issue status in GitHub Project** — only proceed if status is "Ready for Dev"
 
 ```bash
-# Load config and fetch project structure
-source .claude/.env
-GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
-PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
-PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
+CURRENT_STATUS=$(.claude/helpers/get_issue_status.sh ISSUE_NUMBER)
 
-# Get issue node ID
-ISSUE_NODE_ID=$(gh issue view ISSUE_NUMBER --json id -q '.id')
-
-# Determine GraphQL query path based on owner type
-if [ "$PROJECT_OWNER_TYPE" = "organization" ]; then
-  QUERY_PATH=".data.organization.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-else
-  QUERY_PATH=".data.user.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-fi
-
-# Get current status
-CURRENT_STATUS=$(gh api graphql -f query='
-  query($login: String!, $number: Int!) {
-    organization(login: $login) {
-      projectV2(number: $number) {
-        items(first: 20) {
-          nodes {
-            content { ... on Issue { id } }
-            fieldValues(first: 20) {
-              nodes {
-                field { name }
-                ... on ProjectV2ItemFieldSingleSelectValue {
-                  option { name }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-
-if [ "$PROJECT_OWNER_TYPE" = "user" ]; then
-  CURRENT_STATUS=$(gh api graphql -f query='
-    query($login: String!, $number: Int!) {
-      user(login: $login) {
-        projectV2(number: $number) {
-          items(first: 20) {
-            nodes {
-              content { ... on Issue { id } }
-              fieldValues(first: 20) {
-                nodes {
-                  field { name }
-                  ... on ProjectV2ItemFieldSingleSelectValue {
-                    option { name }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-fi
-
-# Validate status
 if [ "$CURRENT_STATUS" != "Ready for Dev" ]; then
   echo "❌ Cannot proceed: Issue #ISSUE_NUMBER has status '$CURRENT_STATUS'"
   echo "This command requires status: 'Ready for Dev'"
-  echo "Please move the issue to 'Ready for Dev' in the GitHub Project UI first, or use:"
-  echo "  /github  (to update the status)"
+  echo "Please move the issue to 'Ready for Dev' first, or use:"
+  echo "  .claude/helpers/update_issue_status.sh ISSUE_NUMBER \"Ready for Dev\""
   exit 1
 fi
 ```
@@ -107,7 +44,10 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 
 think deeply
 
-1. move the item to "In Dev" status in the GitHub Project (see `.claude/commands/github.md` for the GraphQL mutation pattern)
+1. move the item to "In Dev" status:
+   ```bash
+   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "In Dev"
+   ```
    1a. find the linked implementation plan document from the issue comments or description
    1b. if no plan exists, move the issue back to "Ready for Plan" and EXIT with an explanation:
    `bash
@@ -134,7 +74,9 @@ think deeply about the implementation
         - [Key change 2]"
         ```
 
-    3d. move the item to "Code Review" status in the GitHub Project
+    3d. move the item to "Code Review" status:
+    ```bash
+    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Code Review"
     ````
 
 think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE — specifically the highest priority xs or small sized issue.

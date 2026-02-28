@@ -7,76 +7,13 @@ description: Research highest priority GitHub Project issue needing investigatio
 0b. **CRITICAL: Check issue status in GitHub Project** — only proceed if status is "Research Needed"
 
 ```bash
-# Load config and fetch project structure
-source .claude/.env
-GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
-PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
-PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
+CURRENT_STATUS=$(.claude/helpers/get_issue_status.sh ISSUE_NUMBER)
 
-# Get issue node ID
-ISSUE_NODE_ID=$(gh issue view ISSUE_NUMBER --json id -q '.id')
-
-# Determine GraphQL query path based on owner type
-if [ "$PROJECT_OWNER_TYPE" = "organization" ]; then
-  QUERY_PATH=".data.organization.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-else
-  QUERY_PATH=".data.user.projectV2.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | [0].fieldValues.nodes[] | select(.field.name == \"Status\") | [0].option.name"
-fi
-
-# Get current status
-CURRENT_STATUS=$(gh api graphql -f query='
-  query($login: String!, $number: Int!) {
-    organization(login: $login) {
-      projectV2(number: $number) {
-        items(first: 20) {
-          nodes {
-            content { ... on Issue { id } }
-            fieldValues(first: 20) {
-              nodes {
-                field { name }
-                ... on ProjectV2ItemFieldSingleSelectValue {
-                  option { name }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-
-if [ "$PROJECT_OWNER_TYPE" = "user" ]; then
-  CURRENT_STATUS=$(gh api graphql -f query='
-    query($login: String!, $number: Int!) {
-      user(login: $login) {
-        projectV2(number: $number) {
-          items(first: 20) {
-            nodes {
-              content { ... on Issue { id } }
-              fieldValues(first: 20) {
-                nodes {
-                  field { name }
-                  ... on ProjectV2ItemFieldSingleSelectValue {
-                    option { name }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-' -f login="$PROJECT_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r "$QUERY_PATH")
-fi
-
-# Validate status
 if [ "$CURRENT_STATUS" != "Research Needed" ]; then
   echo "❌ Cannot proceed: Issue #ISSUE_NUMBER has status '$CURRENT_STATUS'"
   echo "This command requires status: 'Research Needed'"
   echo "Please move the issue to 'Research Needed' in the GitHub Project UI first, or use:"
-  echo "  /github  (to update the status)"
+  echo "  .claude/helpers/update_issue_status.sh ISSUE_NUMBER \"Research Needed\""
   exit 1
 fi
 ```
@@ -106,7 +43,10 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 
 think deeply
 
-1. move the item to "Research in Progress" status in the GitHub Project (see `.claude/commands/github.md` for the GraphQL mutation pattern)
+1. move the item to "Research in Progress" status:
+   ```bash
+   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research in Progress"
+   ```
    1a. read any linked documents or file references in the issue description/comments
    1b. if insufficient information to conduct research, add a comment asking for clarification:
    `bash
@@ -155,7 +95,9 @@ think deeply about the findings
         - [Approach B]"
         ```
 
-    4b. move the item to "Research in Review" status in the GitHub Project
+    4b. move the item to "Research in Review" status:
+    ```bash
+    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research in Review"
     ````
 
 think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE — specifically the highest priority issue.
