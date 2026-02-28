@@ -1,11 +1,13 @@
 ---
-description: Create detailed implementation plans through interactive research and iteration
+description: Create implementation plans through interactive research and iteration
 model: opus
 ---
 
 # Implementation Plan
 
-You are tasked with creating detailed implementation plans through an interactive, iterative process. You should be skeptical, thorough, and work collaboratively with the user to produce high-quality technical specifications.
+You are tasked with creating implementation plans through an interactive, iterative process. **Your plans should be brief and focused — what to do, where, and why — NOT how to do it with code.**
+
+**Key principle:** The implementation details come from the research done by `/ralph_research`. Your job is to synthesize that research into actionable steps, not to write code.
 
 ## Initial Response
 
@@ -194,12 +196,14 @@ After structure approval:
      - Without ticket: `2025-01-08-improve-error-handling.md`
 2. **Use this template structure**:
 
-````markdown
+```markdown
 # [Feature/Task Name] Implementation Plan
 
 ## Overview
 
-[Brief description of what we're implementing and why]
+[Brief description of what we're implementing and why — 1-2 sentences max]
+
+**This plan is high-level: WHAT to do, WHERE, and WHY (based on research). Actual implementation details will be handled by `/ralph_impl` command.**
 
 ## Current State Analysis
 
@@ -234,11 +238,10 @@ After structure approval:
 #### 1. [Component/File Group]
 
 **File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
+**Why**: [Rationale based on research — what this file does and why it needs modification]
+**Changes**: [Summary of what to do — NOT actual code]
 
-```[language]
-// Specific code to add/modify
-```
+**IMPORTANT: Do NOT include actual code snippets in the plan. Describe only what needs to be done and why.**
 
 ### Success Criteria:
 
@@ -297,7 +300,7 @@ After structure approval:
 - Original ticket: `thoughts/flakecode/tickets/eng_XXXX.md`
 - Related research: `thoughts/shared/research/[relevant].md`
 - Similar implementation: `[file:line]`
-````
+```
 
 ### Step 5: Sync and Review
 
@@ -331,6 +334,8 @@ After structure approval:
 
 ## Important Guidelines
 
+**CORE PRINCIPLE: Your plans should be brief and high-level. They describe WHAT to do, WHERE, and WHY — NOT HOW with actual code. Implementation details come from `/ralph_research` research and are executed by `/ralph_impl`.**
+
 1. **Be Skeptical**:
 
    - Question vague requirements
@@ -351,22 +356,30 @@ After structure approval:
    - Research actual code patterns using parallel sub-tasks
    - Include specific file paths and line numbers
    - Write measurable success criteria with clear automated vs manual distinction
-   - automated steps should use `make` whenever possible - for example `make -C humanlayer-wui check` instead of `cd humanlayer-wui && bun run fmt`
+   - automated steps should use `make` whenever possible - for example `make -C apps/api check` instead of `cd apps/api && bun run fmt`
 
-4. **Be Practical**:
+4. **Be Brief — NO CODE IN PLANS**:
+
+   - Plans should describe WHAT to do and WHERE, not HOW to do it with code
+   - Include rationale (WHY) based on research findings
+   - Do NOT include actual code snippets, functions, or implementations
+   - Reference existing patterns or files to use
+   - The `/ralph_impl` command will handle the actual implementation details based on your plan
+
+5. **Be Practical**:
 
    - Focus on incremental, testable changes
    - Consider migration and rollback
    - Think about edge cases
    - Include "what we're NOT doing"
 
-5. **Track Progress**:
+6. **Track Progress**:
 
    - Use TodoWrite to track planning tasks
    - Update todos as you complete research
    - Mark planning tasks complete when done
 
-6. **No Open Questions in Final Plan**:
+7. **No Open Questions in Final Plan**:
    - If you encounter open questions during planning, STOP
    - Research or ask for clarification immediately
    - Do NOT write the plan with unresolved questions
