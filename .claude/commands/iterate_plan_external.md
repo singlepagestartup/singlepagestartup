@@ -220,7 +220,7 @@ Co-Authored-By: Claude Code <noreply@anthropic.com>
 ```
 ✅ Plan updated and committed for #142
 
-Plan file: thoughts/shared/plans/singlepagestartup/2026-02-28-ISSUE-0142-admin-panel-v2-migration.md
+Plan file: thoughts/shared/plans/singlepagestartup/2026-02-28-ISSUE-142-admin-panel-v2-migration.md
 
 Changes made:
 - Added Phase 4: Migration rollout to remaining modules

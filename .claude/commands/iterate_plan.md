@@ -256,7 +256,7 @@ Assistant: [Finds plan for issue 142, researches error handling patterns, update
 
 ```
 User: /iterate_plan 142
-Assistant: Found plan: 2026-02-28-ISSUE-0142-admin-panel-v2-migration.md
+Assistant: Found plan: 2026-02-28-ISSUE-142-admin-panel-v2-migration.md
 
 Current approach: Pilot stabilization with architecture cleanup
 Current phases: 3 phases

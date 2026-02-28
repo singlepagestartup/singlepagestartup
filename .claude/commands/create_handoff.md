@@ -13,9 +13,9 @@ You are tasked with writing a handoff document to hand off your work to another 
 Use the following information to understand how to create your document:
 
     - run `gh repo view --json name -q '.name'` to get REPO_NAME
-    - create your file under `thoughts/shared/handoffs/REPO_NAME/ISSUE-XXXX/YYYY-MM-DD_HH-MM-SS_description.md`, where:
+    - create your file under `thoughts/shared/handoffs/REPO_NAME/ISSUE-NUM/YYYY-MM-DD_HH-MM-SS_description.md`, where:
         - REPO_NAME is the short repository name (e.g. `singlepagestartup`)
-        - ISSUE-XXXX is the GitHub issue number (replace with `general` if no issue)
+        - ISSUE-NUM is the GitHub issue number (replace with `general` if no issue)
         - YYYY-MM-DD is today's date
         - HH-MM-SS is the hours, minutes and seconds based on the current time, in 24-hour format
         - description is a brief kebab-case description

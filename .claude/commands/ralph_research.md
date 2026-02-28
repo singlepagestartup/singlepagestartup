@@ -18,7 +18,7 @@ if [ "$CURRENT_STATUS" != "Research Needed" ]; then
 fi
 ```
 
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`. The Markdown format must include:
 
 - Header: `# Issue #XXX: [title]`
 - Metadata: URL, status (from labels), created date
@@ -36,7 +36,7 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 `
     If that doesn't work, try: `gh issue list --label "status:research-needed" --json number,title,labels,url`
     0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
+    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`. The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
     0d. read the issue and all comments to understand what research is needed and any previous attempts
 
 ## PART II - NEXT STEPS
@@ -63,10 +63,10 @@ think deeply about the research needs
    2d. examine existing similar features or related code
    2e. identify technical constraints and opportunities
    2f. Be unbiased — document all related files and how the systems work today, don't jump to implementation ideas
-   2g. run `gh repo view --json name -q '.name'` to get REPO_NAME, then document findings in a new thoughts document: `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md`
-   - Format: `YYYY-MM-DD-ISSUE-XXXX-description.md` where:
+   2g. run `gh repo view --json name -q '.name'` to get REPO_NAME, then document findings in a new thoughts document: `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md`
+   - Format: `YYYY-MM-DD-ISSUE-NUM-description.md` where:
      - YYYY-MM-DD is today's date
-     - ISSUE-XXXX is the GitHub issue number
+     - ISSUE-NUM is the GitHub issue number
      - description is a brief kebab-case description of the research topic
    - Examples (for repo `singlepagestartup`):
      - `thoughts/shared/research/singlepagestartup/2025-01-08-ISSUE-42-parent-child-tracking.md`
@@ -113,7 +113,7 @@ Research topic: [research topic description]
 
 The research has been:
 
-Created at thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md
+Created at thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md
 Attached to the GitHub issue as a comment
 Issue moved to "Research in Review" status
 

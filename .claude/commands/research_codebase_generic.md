@@ -61,10 +61,10 @@ Then wait for the user's research query.
 5. **Gather metadata for the research document:**
 
    - generate all relevant metadata
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME, then save as `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md`
-     - Format: `YYYY-MM-DD-ISSUE-XXXX-description.md` where:
+   - Run `gh repo view --json name -q '.name'` to get REPO_NAME, then save as `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md`
+     - Format: `YYYY-MM-DD-ISSUE-NUM-description.md` where:
        - YYYY-MM-DD is today's date
-       - ISSUE-XXXX is the GitHub issue number (omit if no issue)
+       - ISSUE-NUM is the GitHub issue number (omit if no issue)
        - description is a brief kebab-case description of the research topic
      - Examples (for repo `singlepagestartup`):
        - With issue: `thoughts/shared/research/singlepagestartup/2025-01-08-ISSUE-42-parent-child-tracking.md`

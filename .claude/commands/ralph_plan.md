@@ -20,9 +20,9 @@ fi
 
 0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data.
 
-- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`
 - If file exists: skip creation and proceed to step 0d (read existing file)
-- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`
 - The Markdown format must include:
   - Header: `# Issue #XXX: [title]`
   - Metadata: URL, status (from labels), created date
@@ -43,9 +43,9 @@ gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
 0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
 0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data.
 
-- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- **IMPORTANT:** Check if the ticket file already exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`
 - If file exists: skip creation and proceed to step 0d (read existing file)
-- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-XXXX.md`
+- If file does NOT exist: format the issue data as readable Markdown and save to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`
 - The Markdown format must include:
   - Header: `# Issue #XXX: [title]`
   - Metadata: URL, status (from labels), created date
@@ -95,7 +95,7 @@ Approach: [selected approach description]
 
 The plan has been:
 
-Created at thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-XXXX-description.md
+Created at thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md
 Attached to the GitHub issue as a comment
 Issue moved to "Plan in Review" status
 

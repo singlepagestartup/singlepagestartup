@@ -342,7 +342,7 @@ To save an issue for reference as readable Markdown:
 REPO_NAME=$(gh repo view --json name -q '.name')
 ```
 
-Then fetch the issue data and format it as Markdown before saving to `thoughts/shared/tickets/$REPO_NAME/ISSUE-XXXX.md`. The Markdown format must include:
+Then fetch the issue data and format it as Markdown before saving to `thoughts/shared/tickets/$REPO_NAME/ISSUE-NUM.md`. The Markdown format must include:
 
 - Header: `# Issue #XXX: [title]`
 - Metadata: URL, status (from labels), created date
