@@ -329,6 +329,29 @@ npm run api:dev
 npm run host:dev
 ```
 
+## Testing Convention (BDD Required)
+
+All test files in SPS follow a BDD-oriented format (`unit`, `integration`, `e2e`).
+
+### Required pattern
+
+1. Add a top-level JSDoc block in each test file with `BDD Suite` or `BDD Scenario`.
+2. Include `Given`, `When`, `Then` lines in that block.
+3. Keep behavior intent in file header + test name; avoid inline `Given/When/Then` comments in test body.
+4. Prefer deterministic `Given` setup (fixtures/mocks) so scenarios are reproducible.
+
+Example:
+
+```ts
+/**
+ * BDD Suite: API module mounting.
+ *
+ * Given: module apps are registered in API host source.
+ * When: integration contract checks route mounts.
+ * Then: required module routes are present and stable.
+ */
+```
+
 ## Attaching Upstream
 
 After creating repository based on singlepagestartup template, call command:

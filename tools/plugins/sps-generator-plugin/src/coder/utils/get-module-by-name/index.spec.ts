@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: get-module-by-name.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { util } from ".";
 
 describe("get-module-by-name", () => {

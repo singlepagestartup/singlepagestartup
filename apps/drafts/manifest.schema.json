@@ -41,6 +41,36 @@
     },
     "updatedAt": {
       "type": "string"
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dev": {
+          "type": "string",
+          "minLength": 1
+        },
+        "install": {
+          "type": "string",
+          "minLength": 1
+        },
+        "autoInstall": {
+          "type": "boolean"
+        },
+        "cwd": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   }
 }

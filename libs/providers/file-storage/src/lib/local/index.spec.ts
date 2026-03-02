@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: Providers | S3 | Local.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import * as fs from "fs";
 import { Provider } from "./index";
 

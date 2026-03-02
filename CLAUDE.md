@@ -47,6 +47,15 @@ If anything is unclear, read the relevant README files instead of guessing.
 - Start API server: `npm run api:dev`
 - Start host (Next.js) server: `npm run host:dev`
 
+## Test format (BDD)
+
+All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD format:
+
+- Top-level JSDoc with `BDD Suite` or `BDD Scenario`.
+- Mandatory `Given`, `When`, `Then` lines in that header.
+- Behavior-first test naming; avoid inline `Given/When/Then` comments in test bodies.
+- JSDoc with `BDD Suite` or `BDD Scenario` above test case.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.

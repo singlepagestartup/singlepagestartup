@@ -1,14 +1,37 @@
-# AGENTS.md
+# SinglePageStartup
 
-## Overview
+Use this file as the specific entry point for working in this repository.
 
-- SinglePageStartup (SPS) is an Nx monorepo composed of a Bun + Hono API (`apps/api`) and a Next.js App Router host (`apps/host`).
-- Backend logic lives in `libs/modules/<module>/backend`; frontend variants live in `libs/modules/<module>/frontend`.
-- Global operational scripts (e.g., database, Redis) are orchestrated from the repository root via shell helpers and Nx targets.
+## Repository Overview
 
-## AI Entry Point
+SinglePageStartup (SPS) is an Nx monorepo with:
 
-- Start with `AI_GUIDE.md` for AI-specific onboarding, workflows, and MCP usage.
+- API app: `apps/api` (Bun + Hono).
+- Host app: `apps/host` (Next.js App Router).
+- MCP server: `apps/mcp` (tools/resources for creating data in apps/api by MCP).
+- Business modules: `libs/modules/<module>`.
+
+Each module contains:
+
+- `models/<model>` and `relations/<relation>` with backend and frontend layers.
+- Module-level docs: `libs/modules/<module>/README.md`.
+- Per-model docs: `libs/modules/<module>/models/<model>/README.md`.
+- Per-relation docs: `libs/modules/<module>/relations/<relation>/README.md`.
+
+## Documentation order
+
+- Root overview: `README.md`
+- Module summary: `libs/modules/<module>/README.md`
+- Entity docs: `libs/modules/<module>/models/<model|relation>/README.md`.
+
+## Key rules (short)
+
+- TailwindCSS only, no ad-hoc CSS.
+- Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
+- Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
+- Backend only hosted in `apps/api/app.ts`.
+
+If anything is unclear, read the relevant README files instead of guessing.
 
 ## Environment & Requirements
 
@@ -23,30 +46,15 @@
   - Creates environment files, starts Postgres (`apps/db`) and Redis (`apps/redis`), then runs `npx nx run api:db:migrate`.
 - Start API server: `npm run api:dev`
 - Start host (Next.js) server: `npm run host:dev`
-- Additional Nx database targets: see `apps/api/project.json` (`repository-generate`, `repository-migrate`, `db:seed`, etc.).
 
-## Frontend Guidelines
+## Test format (BDD)
 
-- **TailwindCSS only**: use Tailwind utility classes. If you need new tokens (colors, spacing, radii, etc.), extend `apps/host/styles/presets/shadcn.ts`; never introduce ad-hoc CSS classes.
-- **Variant structure**: each variant follows `interface.ts` → `index.tsx` → `Component.tsx`; add `ClientComponent.tsx` only when browser APIs are required.
-- When a component becomes client-only (`"use client"`), pass `isServer={false}` to every downstream relation/model component to avoid React Server Component hydration issues.
-- Keep any extra helpers in an `assets/` directory and import them from the main variant file.
-- Data access must go through module SDK providers (`Provider`, `clientApi`, `serverApi`). Relation components should use `variant="find"` with filters supplied via `apiProps.params.filters.and`.
-- For advanced fetching/transform logic, mirror the `singlepage/default` pattern: move data-handling into `client.tsx` / `server.tsx` wrappers so `Component.tsx` stays purely presentational.
+All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD format:
 
-## Backend Guidelines
-
-- `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.
-- Module structure:
-  - `backend/repository/database`: Drizzle schema (`fields/`, `schema.ts`), migration config, optional seed/dump data, exported via `index.ts`.
-  - `backend/app/api`: Inversify bootstrap binding `Repository`, `Service`, `Controller`, `Configuration`, `App`; controllers extend `RESTController`, services extend `CRUDService`, repositories extend `DatabaseRepository`.
-- Middlewares reside in `libs/middlewares` and are instantiated **only** inside `apps/api` (order: request id → observer → CORS → session → authorization → cache → revalidation, etc.). Modules must never import them directly.
-- When adding a model/relation:
-  1. Implement repository schema/migrations.
-  2. Implement backend app (bootstrap + DI bindings).
-  3. Export bootstrapped `app` (`const { app } = await bootstrap();`).
-  4. Register the app in the module’s `apps.ts` aggregator and mount it in `apps/api/app.ts`.
-  5. Update Nx targets (`repository-generate`, `repository-migrate`, seeds/dumps) if necessary.
+- Top-level JSDoc with `BDD Suite` or `BDD Scenario`.
+- Mandatory `Given`, `When`, `Then` lines in that header.
+- Behavior-first test naming; avoid inline `Given/When/Then` comments in test bodies.
+- JSDoc with `BDD Suite` or `BDD Scenario` above test case.
 
 ## Code Review Checklist
 
@@ -54,32 +62,3 @@
 - Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
 - Ensure migrations/seeds or Nx targets are updated when schema changes.
-
-## References
-
-- Detailed rule files (auto-applied by Cursor) remain in `.cursor/rules/`:
-  - `project/frontend.mdc`
-  - `project/backend.mdc`
-  - `project/code-review.mdc`
-  - `expert.mdc`
-- Realtime revalidation and invalidation flow:
-  - `libs/middlewares/src/lib/revalidation/README.md`
-  - `libs/shared/frontend/client/api/README.md`
-  - `libs/shared/frontend/client/store/README.md`
-  - `libs/shared/frontend/client/store/src/lib/README.md`
-
-Use this AGENTS.md as the entry point; the linked rule files contain the authoritative, granular instructions for SPS development.
-
-<!-- nx configuration start-->
-<!-- Leave the start & end comments to automatically receive updates. -->
-
-# General Guidelines for working with Nx
-
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- You have access to the Nx MCP server and its tools, use them to help the user
-- When answering questions about the repository, use the `nx_workspace` tool first to gain an understanding of the workspace architecture where applicable.
-- When working in individual projects, use the `nx_project_details` mcp tool to analyze and understand the specific project structure and dependencies
-- For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
-- If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
-
-<!-- nx configuration end-->

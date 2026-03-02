@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: RegexCreator.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { RegexCreator } from "./RegexCreator";
 
 class ExportRoute extends RegexCreator {

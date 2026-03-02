@@ -2,7 +2,7 @@ import { Component as SharedModelHeaderComponent } from "@sps/shared-frontend-co
 import { IComponentPropsExtended } from "./interface";
 
 export function Component(props: IComponentPropsExtended) {
-  const moduleHref = `${props.adminBasePath}/modules/ecommerce`;
+  const moduleHref = `${props.adminBasePath}/ecommerce`;
 
   return (
     <SharedModelHeaderComponent
@@ -10,7 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       moduleName="Ecommerce"
       moduleHref={moduleHref}
       modelName="Product"
-      modelHref={`${moduleHref}/models/product`}
+      modelHref={`${moduleHref}/product`}
     />
   );
 }

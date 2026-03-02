@@ -24,7 +24,7 @@ export function Component(props: IComponentProps) {
     selectedModuleFromRoute && !selectedModelFromRoute,
   );
   const isModuleSelected = props.moduleItem.id === selectedModuleFromRoute;
-  const modulePathPrefix = `/modules/${props.moduleItem.id}`;
+  const modulePathPrefix = `/${props.moduleItem.id}`;
   const isModuleExpanded =
     currentPath === modulePathPrefix ||
     currentPath.startsWith(`${modulePathPrefix}/`);
@@ -50,7 +50,7 @@ export function Component(props: IComponentProps) {
             : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white",
         )}
       >
-        <Link href={`${adminBasePath}/modules/${props.moduleItem.id}`}>
+        <Link href={`${adminBasePath}/${props.moduleItem.id}`}>
           <span className="inline-flex min-w-0 items-center gap-2">
             <span className="text-base">{props.moduleItem.icon}</span>
             <span className="truncate">{props.moduleItem.name}</span>
@@ -101,7 +101,7 @@ export function Component(props: IComponentProps) {
                   )}
                 >
                   <Link
-                    href={`${adminBasePath}/modules/${props.moduleItem.id}/models/${modelName}`}
+                    href={`${adminBasePath}/${props.moduleItem.id}/${modelName}`}
                   >
                     <span
                       className={cn(

@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: shared frontend api actions.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 const responsePipeMock = jest.fn();
 const transformResponseItemMock = jest.fn();
 const prepareFormDataToSendMock = jest.fn();

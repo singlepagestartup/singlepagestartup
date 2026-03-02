@@ -1,0 +1,20 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "id": "admin-v2",
+  "title": "Admin V2 (React + Vite)",
+  "description": "Incoming admin panel draft imported from Figma Make export.",
+  "type": "react",
+  "entry": "index.html",
+  "status": "incoming",
+  "tags": ["admin", "react", "vite", "incoming"],
+  "createdAt": "2026-03-02T00:00:00.000Z",
+  "updatedAt": "2026-03-02T00:00:00.000Z",
+  "run": {
+    "cwd": ".",
+    "install": "bun install",
+    "autoInstall": true,
+    "dev": "bun run dev -- --host 127.0.0.1 --port 5173",
+    "port": 5173,
+    "host": "127.0.0.1"
+  }
+}

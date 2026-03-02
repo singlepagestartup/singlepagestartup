@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: is-authorized.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 
