@@ -17,7 +17,7 @@ import {
   Button,
 } from "@sps/shared-ui-shadcn";
 import { Check, Copy, Pencil, Trash } from "lucide-react";
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn, copyToClipboard } from "@sps/shared-frontend-client-utils";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { IComponentPropsExtended, IComponentProps } from "./interface";
 
@@ -31,7 +31,7 @@ export function Component<M extends { id: string }, V>(
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(props.data?.id || "");
+    void copyToClipboard(props.data?.id || "");
     setCopied(true);
     setTimeout(() => {
       setCopied(false);

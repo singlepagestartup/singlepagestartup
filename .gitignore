@@ -97,6 +97,9 @@ apps/openapi/shared
 ############################
 
 .env.testing
+test-results/
+playwright-report/
+blob-report/
 .github/instructions/nx.instructions.md
 
 ############################
@@ -104,3 +107,6 @@ apps/openapi/shared
 ############################
 
 .cursor/rules/nx-rules.mdc
+
+# Claude local project config
+.claude/.env

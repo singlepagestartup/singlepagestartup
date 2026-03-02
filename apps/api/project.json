@@ -160,6 +160,15 @@
       }
     },
     "eslint:lint": {},
-    "jest:test": {}
+    "jest:test": {},
+    "jest:integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/api/jest.integration.config.ts",
+        "passWithNoTests": true
+      }
+    }
   }
 }
