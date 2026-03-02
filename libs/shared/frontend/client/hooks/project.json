@@ -1,11 +1,12 @@
 {
   "name": "@sps/shared-frontend-client-hooks",
   "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/shared/frontend/hooks/src",
+  "sourceRoot": "libs/shared/frontend/client/hooks/src",
   "projectType": "library",
   "tags": [],
   "targets": {
     "eslint:lint": {},
-    "tsc:build": {}
+    "tsc:build": {},
+    "jest:test": {}
   }
 }

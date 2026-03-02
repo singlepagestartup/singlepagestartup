@@ -1,13 +1,24 @@
 "use client";
 
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn, useAdminRoute } from "@sps/shared-frontend-client-utils";
 import { AdminV2Component as EcommerceAdminV2Component } from "@sps/ecommerce/frontend/component";
 import { SettingsPageClientComponent } from "./settings-page";
 import { AccountSettingsPageClientComponent } from "./account-settings-page";
-import { IAdminPanelDraftProps } from "./interface";
+import { usePathname } from "next/navigation";
 
-export function Component(props: IAdminPanelDraftProps) {
+interface IComponentProps {
+  className?: string;
+}
+
+export function Component(props: IComponentProps) {
   const adminBasePath = "/admin";
+  const pathname = usePathname();
+  const { currentPath } = useAdminRoute(pathname);
+
+  const isMainView =
+    !currentPath.startsWith("/settings") &&
+    !currentPath.startsWith("/profile") &&
+    !currentPath.startsWith("/account");
 
   return (
     <section
@@ -21,14 +32,21 @@ export function Component(props: IAdminPanelDraftProps) {
       <EcommerceAdminV2Component
         adminBasePath={adminBasePath}
         isSettingsView={false}
-      />
+      >
+        {/* Settings page - rendered as child when on settings route */}
+        {currentPath === "/settings" && (
+          <SettingsPageClientComponent adminBasePath={adminBasePath} />
+        )}
 
-      <SettingsPageClientComponent adminBasePath={adminBasePath} />
-      <AccountSettingsPageClientComponent
-        adminBasePath={adminBasePath}
-        onIdentityAction={() => {}}
-        onLogout={() => {}}
-      />
+        {/* Account settings page - rendered as child when on profile/account route */}
+        {(currentPath === "/profile" || currentPath.startsWith("/account")) && (
+          <AccountSettingsPageClientComponent
+            adminBasePath={adminBasePath}
+            onIdentityAction={() => {}}
+            onLogout={() => {}}
+          />
+        )}
+      </EcommerceAdminV2Component>
     </section>
   );
 }

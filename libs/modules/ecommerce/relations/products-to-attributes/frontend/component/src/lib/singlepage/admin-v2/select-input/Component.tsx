@@ -1,5 +1,5 @@
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/select-input/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/select-input/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -8,10 +8,6 @@ export function Component(props: IComponentPropsExtended) {
       module="ecommerce"
       name="products-to-attributes"
       label="products-to-attributes"
-      formFieldName={props.formFieldName}
-      data={props.data}
-      form={props.form}
-      variant={props.variant}
       renderField={props.renderField}
     />
   );

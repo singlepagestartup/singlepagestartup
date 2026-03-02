@@ -1,44 +1,28 @@
 "use client";
 
-import { cn } from "@sps/shared-frontend-client-utils";
+import {
+  cn,
+  useAdminRoute,
+  useAdminBasePath,
+} from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { IComponentProps } from "./interface";
-
-function getAdminRoutePath(pathname: string | null): string {
-  const value = pathname || "";
-  const adminIndex = value.indexOf("/admin");
-
-  if (adminIndex === -1) {
-    return "/";
-  }
-
-  const next = value.slice(adminIndex + "/admin".length) || "/";
-  return next.replace(/\/+$/, "") || "/";
-}
+import { usePathname } from "next/navigation";
 
 export function Component(props: IComponentProps) {
   const pathname = usePathname();
-  const currentPath = useMemo(() => getAdminRoutePath(pathname), [pathname]);
-  const routeMatch = currentPath.match(
-    /^\/modules\/([^/]+)(?:\/models\/([^/]+))?$/,
+  const {
+    currentPath,
+    module: selectedModuleFromRoute,
+    model: selectedModelFromRoute,
+  } = useAdminRoute(pathname);
+  const adminBasePath = useAdminBasePath(pathname || "");
+  const isModuleView = Boolean(
+    selectedModuleFromRoute && !selectedModelFromRoute,
   );
-  const selectedModuleFromRoute = routeMatch?.[1] || "";
-  const selectedModelFromRoute = routeMatch?.[2] || "";
-  const isModuleView = Boolean(routeMatch?.[1] && !routeMatch?.[2]);
-  const adminBasePath = useMemo(() => {
-    const path = pathname || "";
-    const adminIndex = path.indexOf("/admin");
-
-    if (adminIndex === -1) {
-      return "/admin";
-    }
-
-    return path.slice(0, adminIndex + "/admin".length);
-  }, [pathname]);
   const isModuleSelected = props.moduleItem.id === selectedModuleFromRoute;
   const modulePathPrefix = `/modules/${props.moduleItem.id}`;
   const isModuleExpanded =

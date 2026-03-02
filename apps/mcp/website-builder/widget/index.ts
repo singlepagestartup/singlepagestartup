@@ -31,7 +31,7 @@ export function registerTools(mcp: McpServer) {
     "website-builder-module-widget-get",
     {
       title: "List of website-builder module widgets",
-      description: `Get list of all widgets from website-builder module.`,
+      description: "Get list of all widgets from website-builder module.",
       inputSchema: {},
     },
     async (args) => {
@@ -73,7 +73,7 @@ export function registerTools(mcp: McpServer) {
     "website-builder-module-widget-get-by-id",
     {
       title: "Get website-builder module widget by id",
-      description: `Get a widget from website-builder module by id.`,
+      description: "Get a widget from website-builder module by id.",
       inputSchema: {
         id: websiteBuilderWidgetInsertSchema.shape.id,
       },
@@ -113,7 +113,7 @@ export function registerTools(mcp: McpServer) {
     "website-builder-module-widget-post",
     {
       title: "Create website-builder module widget",
-      description: `Create a new widget in the website-builder module.`,
+      description: "Create a new widget in the website-builder module.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
     async (args) => {
@@ -156,7 +156,8 @@ export function registerTools(mcp: McpServer) {
     "website-builder-module-widget-patch",
     {
       title: "Update website-builder module widget by id",
-      description: `Update an existing widget in the website-builder module by id.`,
+      description:
+        "Update an existing widget in the website-builder module by id.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
     async (args) => {
@@ -204,7 +205,8 @@ export function registerTools(mcp: McpServer) {
     "website-builder-module-widget-delete",
     {
       title: "Delete website-builder module widget by id",
-      description: `Delete an existing widget in the website-builder module by id.`,
+      description:
+        "Delete an existing widget in the website-builder module by id.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
     async (args) => {

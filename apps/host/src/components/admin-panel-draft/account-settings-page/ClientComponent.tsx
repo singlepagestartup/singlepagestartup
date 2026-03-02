@@ -1,12 +1,10 @@
 "use client";
 
 import { Button, Card } from "@sps/shared-ui-shadcn";
-import { AdminV2Component as EcommerceAdminV2Component } from "@sps/ecommerce/frontend/component";
 import { CircleHelp, ExternalLink, LogOut, UserRound } from "lucide-react";
 import { copyToClipboard } from "@sps/shared-frontend-client-utils";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   accountIdentities,
   accountSocialProfiles,
@@ -92,7 +90,7 @@ function getIdentityProviderMeta(provider: string) {
     return {
       title: "OAuth",
       description:
-        "OAuth identity. Password management is handled by the upstream provider.",
+        "OAuth identity. Password management is handled by upstream provider.",
     };
   }
 
@@ -110,35 +108,8 @@ function getIdentityPrimaryLogin(identity: {
   return identity.email || identity.account || "No public account/email stored";
 }
 
-function getAdminRoutePath(pathname: string | null): string {
-  const value = pathname || "";
-  const adminIndex = value.indexOf("/admin");
-
-  if (adminIndex === -1) {
-    return "/";
-  }
-
-  const next = value.slice(adminIndex + "/admin".length) || "/";
-  return next.replace(/\/+$/, "") || "/";
-}
-
-function isProfileRoute(path: string): boolean {
-  return (
-    path === "/profile" ||
-    path.startsWith("/profile/") ||
-    path === "/account" ||
-    path.startsWith("/account/")
-  );
-}
-
 export function Component(props: IAccountSettingsPageProps) {
-  const pathname = usePathname();
   const router = useRouter();
-  const currentPath = useMemo(() => getAdminRoutePath(pathname), [pathname]);
-
-  if (!isProfileRoute(currentPath)) {
-    return null;
-  }
 
   const content = (
     <section data-testid="account-settings-page" className="space-y-4">
@@ -389,53 +360,45 @@ export function Component(props: IAccountSettingsPageProps) {
   );
 
   return (
-    <EcommerceAdminV2Component
-      adminBasePath={props.adminBasePath}
-      isSettingsView={false}
-    >
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center border-b border-border bg-card px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-4" />
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <header className="flex h-16 items-center border-b border-border bg-card px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-4" />
 
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="!w-10 rounded-md p-2 transition hover:bg-muted"
-              aria-label="Help"
-            >
-              <CircleHelp className="h-5 w-5" />
-            </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="!w-10 rounded-md p-2 transition hover:bg-muted"
+            aria-label="Help"
+          >
+            <CircleHelp className="h-5 w-5" />
+          </Button>
 
-            <Button
-              asChild
-              variant="outline"
-              size="icon"
-              className="!w-10 rounded-md p-2 transition hover:bg-muted"
-            >
-              <Link
-                href={`${props.adminBasePath}/profile`}
-                aria-label="Account"
-              >
-                <UserRound className="h-5 w-5" />
-              </Link>
-            </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="!w-10 rounded-md p-2 transition hover:bg-muted"
+          >
+            <Link href={`${props.adminBasePath}/profile`} aria-label="Account">
+              <UserRound className="h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-auto bg-background p-6">
+        <div className="mx-auto max-w-7xl space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight capitalize">
+              Profile
+            </h1>
           </div>
-        </header>
 
-        <main className="flex-1 overflow-auto bg-background p-6">
-          <div className="mx-auto max-w-7xl space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight capitalize">
-                Profile
-              </h1>
-            </div>
-
-            {content}
-          </div>
-        </main>
-      </div>
-    </EcommerceAdminV2Component>
+          {content}
+        </div>
+      </main>
+    </div>
   );
 }

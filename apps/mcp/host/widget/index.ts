@@ -31,7 +31,7 @@ export function registerTools(mcp: McpServer) {
     "host-module-widget-get",
     {
       title: "List of host module widgets",
-      description: `Get list of all widgets from host module.`,
+      description: "Get list of all widgets from host module.",
       inputSchema: {},
     },
     async (args) => {
@@ -73,7 +73,7 @@ export function registerTools(mcp: McpServer) {
     "host-module-widget-get-by-id",
     {
       title: "Get host module widget by id",
-      description: `Get a widget from host module by id.`,
+      description: "Get a widget from host module by id.",
       inputSchema: {
         id: hostModuleWidgetInsertSchema.shape.id,
       },
@@ -113,7 +113,7 @@ export function registerTools(mcp: McpServer) {
     "host-module-widget-post",
     {
       title: "Create host module widget",
-      description: `Create a new widget in the host module.`,
+      description: "Create a new widget in the host module.",
       inputSchema: hostModuleWidgetInsertSchema.shape,
     },
     async (args) => {
@@ -156,7 +156,7 @@ export function registerTools(mcp: McpServer) {
     "host-module-widget-patch",
     {
       title: "Update host module widget by id",
-      description: `Update an existing widget in the host module by id.`,
+      description: "Update an existing widget in the host module by id.",
       inputSchema: hostModuleWidgetInsertSchema.shape,
     },
     async (args) => {
@@ -204,7 +204,7 @@ export function registerTools(mcp: McpServer) {
     "host-module-widget-delete",
     {
       title: "Delete host module widget by id",
-      description: `Delete an existing widget in the host module by id.`,
+      description: "Delete an existing widget in the host module by id.",
       inputSchema: hostModuleWidgetInsertSchema.shape,
     },
     async (args) => {

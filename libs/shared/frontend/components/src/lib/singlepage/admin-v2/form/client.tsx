@@ -2,8 +2,7 @@
 import "client-only";
 
 import { factory } from "@sps/shared-frontend-client-api";
-import { IComponentProps } from "./interface";
-import { IComponentPropsExtended } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { Component as Skeleton } from "./Skeleton";
 import { ReactNode } from "react";
 

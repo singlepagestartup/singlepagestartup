@@ -1,6 +1,5 @@
-import { IComponentPropsExtended } from "./interface";
 import { Component as RootComponent } from "./Component";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component(props: { className?: string }) {
   return <RootComponent {...props} />;
 }

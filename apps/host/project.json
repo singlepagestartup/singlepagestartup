@@ -42,6 +42,14 @@
         "buildTarget": "host:build:production"
       }
     },
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["{workspaceRoot}/dist/.playwright/apps/host"],
+      "options": {
+        "config": "apps/host/playwright.config.ts",
+        "skipInstall": true
+      }
+    },
     "eslint:lint": {}
   }
 }

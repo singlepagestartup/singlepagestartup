@@ -6,6 +6,7 @@
   "tags": [],
   "targets": {
     "eslint:lint": {},
-    "tsc:build": {}
+    "tsc:build": {},
+    "jest:test": {}
   }
 }

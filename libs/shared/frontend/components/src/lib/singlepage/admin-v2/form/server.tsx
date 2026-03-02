@@ -1,8 +1,7 @@
 "use server";
 import "server-only";
 
-import { IComponentProps } from "./interface";
-import { IComponentPropsExtended } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { factory } from "@sps/shared-frontend-server-api";
 
 export async function Component<

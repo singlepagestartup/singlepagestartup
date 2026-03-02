@@ -7,9 +7,10 @@ import { Component as ProductComponent } from "@sps/ecommerce/models/product/fro
 import { Component as AttributeComponent } from "@sps/ecommerce/models/attribute/frontend/component";
 import { CircleHelp, UserRound } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { IComponentProps } from "./interface";
+import { useAdminRoute } from "@sps/shared-frontend-client-utils";
 
 const MODULE = {
   id: "ecommerce",
@@ -18,18 +19,6 @@ const MODULE = {
 };
 
 const MODELS = ["product", "attribute"] as const;
-
-function getAdminRoutePath(pathname: string | null): string {
-  const value = pathname || "";
-  const adminIndex = value.indexOf("/admin");
-
-  if (adminIndex === -1) {
-    return "/";
-  }
-
-  const next = value.slice(adminIndex + "/admin".length) || "/";
-  return next.replace(/\/+$/, "") || "/";
-}
 
 function formatLabel(value: string): string {
   return String(value || "")
@@ -41,15 +30,14 @@ function formatLabel(value: string): string {
 
 export function Component(props: IComponentProps) {
   const pathname = usePathname();
-  const currentPath = useMemo(() => getAdminRoutePath(pathname), [pathname]);
-  const routeMatch = useMemo(
-    () => currentPath.match(/^\/modules\/([^/]+)(?:\/models\/([^/]+))?$/),
-    [currentPath],
-  );
-  const selectedModule = routeMatch?.[1] || "";
-  const selectedModel = routeMatch?.[2] || "";
+  const {
+    currentPath,
+    module: selectedModule,
+    model: selectedModel,
+  } = useAdminRoute(pathname);
   const isModuleOverview =
-    (!routeMatch || selectedModule === MODULE.id) && !selectedModel;
+    (!selectedModule || selectedModule === MODULE.id) && !selectedModel;
+  const hasRenderableChildren = Boolean(props.children);
 
   if (!props.children && selectedModule && selectedModule !== MODULE.id) {
     return null;
@@ -167,7 +155,7 @@ export function Component(props: IComponentProps) {
         <SidebarModuleItemComponent moduleItem={MODULE} models={[...MODELS]} />
       </PanelComponent>
 
-      {props.children ?? defaultContent}
+      {hasRenderableChildren ? props.children : defaultContent}
     </div>
   );
 }

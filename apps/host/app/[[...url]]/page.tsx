@@ -53,13 +53,7 @@ export default async function Page(props: {
   const slashedUrl = pageUrl.startsWith("/") ? pageUrl : `/${pageUrl}`;
 
   if (slashedUrl.startsWith("/admin")) {
-    return (
-      <AdminPanelDraft
-        isServer={false}
-        language={defaultLanguage}
-        url={slashedUrl}
-      />
-    );
+    return <AdminPanelDraft />;
   }
 
   return (

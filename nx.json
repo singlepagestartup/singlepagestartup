@@ -6,7 +6,7 @@
       "cache": true,
       "inputs": ["{projectRoot}/**/*"],
       "options": {
-        "eslintConfig": "eslint.config.js",
+        "eslintConfig": "eslint.config.mjs",
         "quiet": false
       }
     },

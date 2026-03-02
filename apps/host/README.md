@@ -9,6 +9,56 @@
 - Data access must go through module SDK providers (`Provider`, `clientApi`, `serverApi`). Relation components should use `variant="find"` with filters supplied via `apiProps.params.filters.and`.
 - For advanced fetching/transform logic, mirror the `singlepage/default` pattern: move data-handling into `client.tsx` / `server.tsx` wrappers so `Component.tsx` stays purely presentational.
 
+## Testing
+
+This repository uses a layered test strategy so developers can validate changes quickly without manual UI clicking.
+
+### Test levels and intent
+
+- `Unit` tests validate isolated logic (utilities, adapters, component state helpers).
+- `Integration` tests validate module contracts and orchestration (mounting, route/type registry consistency).
+- `E2E` tests validate real user flows in the Host admin UI.
+
+### Where tests live
+
+- Unit (shared + ecommerce scope): colocated with source files as `*.spec.ts` / `*.spec.tsx`.
+- Integration:
+  - `apps/api/specs/integration/*.integration.spec.ts`
+  - `libs/modules/ecommerce/**/**/*.integration.spec.ts`
+- Host E2E:
+  - `apps/host/e2e/singlepage/*.e2e.ts` (framework team owned)
+  - `apps/host/e2e/startup/*.e2e.ts` (customer/startup owned)
+  - `apps/host/e2e/support/*.ts`
+  - config: `apps/host/playwright.config.ts`
+  - e2e TypeScript config: `apps/host/tsconfig.spec.json`
+
+### How Host E2E works
+
+- `nx run host:e2e` starts Playwright against the Host app.
+- A dedicated mock API process is started on `127.0.0.1:4310` (`apps/host/e2e/support/mock-api-server.mjs`) to serve deterministic backend responses for server-side and client-side calls.
+- Host app for e2e is started with `apps/host/.env.testing` (loaded only for e2e command in Playwright config).
+- Playwright projects are split by ownership:
+  - `singlepage` for framework-maintained business flows
+  - `startup` for customer-maintained business flows
+- Readiness is checked via `GET /healthz` (`apps/host/app/healthz/route.ts`).
+- Current smoke scenarios use reusable API mocks from `apps/host/e2e/support` to verify critical admin flows deterministically.
+
+### Run commands (from repository root)
+
+- `npm run test:unit:scoped`
+- `npm run test:integration:scoped`
+- `npm run test:e2e:singlepage`
+- `npm run test:e2e:startup`
+- `npm run test:e2e:scoped` (alias for `singlepage`)
+- `npm run test:all:scoped`
+
+### Why this structure
+
+- Fast local feedback with clear test boundaries.
+- Modular ownership: each layer has a dedicated purpose and location.
+- Lower maintenance cost: reusable e2e fixtures and isolated configs reduce flaky cross-coupling.
+- Safer upstream pulls: framework changes stay in `singlepage`, customer scenarios stay in `startup`.
+
 ## Patterns
 
 ### Variant dispatcher pattern (`index.tsx` + `variants.ts`)
