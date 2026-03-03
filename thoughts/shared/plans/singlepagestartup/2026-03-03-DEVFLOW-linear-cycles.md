@@ -92,8 +92,8 @@ The refactoring will be done in 4 phases:
 
 1. **Phase 1**: Create new `core/` command structure — 4 phase commands + `next.md` smart dispatcher; create `utilities/` directory with `commit.md` and `describe_pr.md` moved from root; `20-plan.md` absorbs the plan-update and GitHub-comment-sync functionality from `iterate_plan` and `iterate_plan_external`
 2. **Phase 2**: Define progress file format and handoff protocol at `thoughts/shared/handoffs/REPO_NAME/ISSUE-{NUMBER}-progress.md` (agent handoff point at 70% context)
-3. **Phase 3**: Delete duplicate, `_nt`, and obsolete variant commands (explicit file list provided)
-4. **Phase 4**: Update documentation and examples to use new commands
+3. **Phase 3**: Update documentation and examples to use new commands
+4. **Phase 4**: Delete duplicate, `_nt`, and obsolete variant commands (explicit file list provided — done last so existing commands remain available as reference throughout Phases 1–3)
 
 Each phase builds on the previous one and can be verified independently.
 
@@ -564,7 +564,7 @@ git mv .claude/commands/commit.md .claude/commands/utilities/commit.md
 git mv .claude/commands/describe_pr.md .claude/commands/utilities/describe_pr.md
 ```
 
-> The plan-update and GitHub-comment-sync functionality from `iterate_plan.md` and `iterate_plan_external.md` has been merged into `core/20-plan.md`. Those original files are deleted in Phase 3 — they do not go to `utilities/`.
+> The plan-update and GitHub-comment-sync functionality from `iterate_plan.md` and `iterate_plan_external.md` has been merged into `core/20-plan.md`. Those original files are deleted in Phase 4 — they do not go to `utilities/`.
 
 > **Note**: The `utilities/` directory does not exist yet. It must be created as part of this phase. Any existing references to `/commit` or `/describe_pr` slash-commands will break and must be updated to `/utilities/commit` and `/utilities/describe_pr`.
 
@@ -796,96 +796,7 @@ This is also how `next.md` detects `In Dev` issues — it reads the progress fil
 
 ---
 
-## Phase 3: Delete Obsolete Commands
-
-### Overview
-
-Delete all duplicate, `_nt`, and superseded commands. Do not add deprecation notices — the files are simply removed. Move `commit.md` and `describe_pr.md` to `utilities/` (already done in Phase 1).
-
-> **Why delete instead of deprecate**: Claude Code does not process a `deprecated:` frontmatter field — adding it has no effect on behavior. Keeping deprecated files in the directory causes confusion since they still appear as slash-commands. Deletion is the only effective approach.
-
-### Changes Required:
-
-#### 1. Delete the following files
-
-```bash
-# _nt variants (skip thoughts/ directory — no longer needed)
-git rm .claude/commands/create_plan_nt.md
-git rm .claude/commands/iterate_plan_nt.md
-git rm .claude/commands/research_codebase_nt.md
-git rm .claude/commands/describe_pr_nt.md
-git rm .claude/commands/ci_commit.md
-git rm .claude/commands/ci_describe_pr.md
-
-# Superseded by core/20-plan.md (functionality merged in)
-git rm .claude/commands/create_plan.md
-git rm .claude/commands/create_plan_generic.md
-git rm .claude/commands/iterate_plan.md
-git rm .claude/commands/iterate_plan_external.md
-
-# Superseded by core/10-research.md
-git rm .claude/commands/research_codebase.md
-git rm .claude/commands/research_codebase_generic.md
-```
-
-Total files deleted: **13**
-
-> `iterate_plan.md` and `iterate_plan_external.md` are deleted because their functionality has been merged into `core/20-plan.md`. They are not moved to `utilities/`.
-
-#### 2. Create deletion record document
-
-**File**: `.claude/REMOVED_COMMANDS.md`
-**Changes**: Record what was removed and why, for historical reference
-
-```markdown
-# Removed Commands
-
-The following commands were removed as part of the linear cycle workflow refactoring.
-
-## Deleted Files
-
-| File                           | Replaced By                | Reason                                             |
-| ------------------------------ | -------------------------- | -------------------------------------------------- |
-| `create_plan_nt.md`            | `core/20-plan.md`          | \_nt variant — skipped thoughts/, no longer needed |
-| `create_plan.md`               | `core/20-plan.md`          | Superseded by unified plan command                 |
-| `create_plan_generic.md`       | `core/20-plan.md`          | Superseded by unified plan command                 |
-| `iterate_plan_nt.md`           | `core/20-plan.md`          | \_nt variant — functionality merged into 20-plan   |
-| `iterate_plan.md`              | `core/20-plan.md`          | Functionality merged into 20-plan (create + sync)  |
-| `iterate_plan_external.md`     | `core/20-plan.md`          | Autonomous sync merged into 20-plan                |
-| `research_codebase_nt.md`      | `core/10-research.md`      | \_nt variant — no longer needed                    |
-| `research_codebase.md`         | `core/10-research.md`      | Superseded by unified research command             |
-| `research_codebase_generic.md` | `core/10-research.md`      | Superseded by unified research command             |
-| `describe_pr_nt.md`            | `utilities/describe_pr.md` | \_nt variant — no longer needed                    |
-| `ci_describe_pr.md`            | `utilities/describe_pr.md` | CI variant — integrated into implement phase       |
-| `ci_commit.md`                 | `utilities/commit.md`      | CI variant — plain commit.md is sufficient         |
-
-## Moved Files
-
-| Old Path         | New Path                   |
-| ---------------- | -------------------------- |
-| `commit.md`      | `utilities/commit.md`      |
-| `describe_pr.md` | `utilities/describe_pr.md` |
-```
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- [ ] All 13 files listed above are deleted from `.claude/commands/`
-- [ ] `commit.md` and `describe_pr.md` exist at `utilities/` paths
-- [ ] `.claude/REMOVED_COMMANDS.md` created
-- [ ] No `_nt` files remain in `.claude/commands/`
-
-#### Manual Verification:
-
-- [ ] Running `/create_plan` in Claude Code returns "command not found" (file deleted)
-- [ ] Running `/utilities/commit` works correctly
-- [ ] Running `/core/20-plan` handles both new plan creation and existing plan update
-- [ ] No broken references in `core/30-implement.md` to utility commands
-
----
-
-## Phase 4: Update Documentation and Examples
+## Phase 3: Update Documentation and Examples
 
 ### Overview
 
@@ -1037,6 +948,95 @@ For special-purpose tasks, see `.claude/commands/README.md` for the full command
 - [ ] README clearly shows the linear pipeline flow
 - [ ] All special-purpose commands documented with purpose
 - [ ] Status gate concept is clearly explained
+
+---
+
+## Phase 4: Delete Obsolete Commands
+
+### Overview
+
+Delete all duplicate, `_nt`, and superseded commands. Do not add deprecation notices — the files are simply removed. Move `commit.md` and `describe_pr.md` to `utilities/` (already done in Phase 1).
+
+> **Why delete instead of deprecate**: Claude Code does not process a `deprecated:` frontmatter field — adding it has no effect on behavior. Keeping deprecated files in the directory causes confusion since they still appear as slash-commands. Deletion is the only effective approach.
+
+### Changes Required:
+
+#### 1. Delete the following files
+
+```bash
+# _nt variants (skip thoughts/ directory — no longer needed)
+git rm .claude/commands/create_plan_nt.md
+git rm .claude/commands/iterate_plan_nt.md
+git rm .claude/commands/research_codebase_nt.md
+git rm .claude/commands/describe_pr_nt.md
+git rm .claude/commands/ci_commit.md
+git rm .claude/commands/ci_describe_pr.md
+
+# Superseded by core/20-plan.md (functionality merged in)
+git rm .claude/commands/create_plan.md
+git rm .claude/commands/create_plan_generic.md
+git rm .claude/commands/iterate_plan.md
+git rm .claude/commands/iterate_plan_external.md
+
+# Superseded by core/10-research.md
+git rm .claude/commands/research_codebase.md
+git rm .claude/commands/research_codebase_generic.md
+```
+
+Total files deleted: **13**
+
+> `iterate_plan.md` and `iterate_plan_external.md` are deleted because their functionality has been merged into `core/20-plan.md`. They are not moved to `utilities/`.
+
+#### 2. Create deletion record document
+
+**File**: `.claude/REMOVED_COMMANDS.md`
+**Changes**: Record what was removed and why, for historical reference
+
+```markdown
+# Removed Commands
+
+The following commands were removed as part of the linear cycle workflow refactoring.
+
+## Deleted Files
+
+| File                           | Replaced By                | Reason                                             |
+| ------------------------------ | -------------------------- | -------------------------------------------------- |
+| `create_plan_nt.md`            | `core/20-plan.md`          | \_nt variant — skipped thoughts/, no longer needed |
+| `create_plan.md`               | `core/20-plan.md`          | Superseded by unified plan command                 |
+| `create_plan_generic.md`       | `core/20-plan.md`          | Superseded by unified plan command                 |
+| `iterate_plan_nt.md`           | `core/20-plan.md`          | \_nt variant — functionality merged into 20-plan   |
+| `iterate_plan.md`              | `core/20-plan.md`          | Functionality merged into 20-plan (create + sync)  |
+| `iterate_plan_external.md`     | `core/20-plan.md`          | Autonomous sync merged into 20-plan                |
+| `research_codebase_nt.md`      | `core/10-research.md`      | \_nt variant — no longer needed                    |
+| `research_codebase.md`         | `core/10-research.md`      | Superseded by unified research command             |
+| `research_codebase_generic.md` | `core/10-research.md`      | Superseded by unified research command             |
+| `describe_pr_nt.md`            | `utilities/describe_pr.md` | \_nt variant — no longer needed                    |
+| `ci_describe_pr.md`            | `utilities/describe_pr.md` | CI variant — integrated into implement phase       |
+| `ci_commit.md`                 | `utilities/commit.md`      | CI variant — plain commit.md is sufficient         |
+
+## Moved Files
+
+| Old Path         | New Path                   |
+| ---------------- | -------------------------- |
+| `commit.md`      | `utilities/commit.md`      |
+| `describe_pr.md` | `utilities/describe_pr.md` |
+```
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- [ ] All 13 files listed above are deleted from `.claude/commands/`
+- [ ] `commit.md` and `describe_pr.md` exist at `utilities/` paths
+- [ ] `.claude/REMOVED_COMMANDS.md` created
+- [ ] No `_nt` files remain in `.claude/commands/`
+
+#### Manual Verification:
+
+- [ ] Running `/create_plan` in Claude Code returns "command not found" (file deleted)
+- [ ] Running `/utilities/commit` works correctly
+- [ ] Running `/core/20-plan` handles both new plan creation and existing plan update
+- [ ] No broken references in `core/30-implement.md` to utility commands
 
 ---
 

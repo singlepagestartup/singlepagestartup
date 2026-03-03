@@ -103,22 +103,18 @@ export class Handler {
         }
 
         data[name] = "";
-        const createdEntity = await this.service.create({ data });
-
         const fileStorage = new Provider({
           type: FILE_STORAGE_PROVIDER,
           folder: FILE_STORAGE_FOLDER,
         });
+
         const uploadedFileUrl = await fileStorage.uploadFile({
           file: file,
         });
 
         data[name] = uploadedFileUrl;
 
-        const entity = await this.service.update({
-          id: createdEntity.id,
-          data,
-        });
+        const entity = await this.service.create({ data });
 
         return c.json(
           {

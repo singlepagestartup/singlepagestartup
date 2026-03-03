@@ -32,7 +32,7 @@ export class Provider implements IProvider {
       throw new Error("Validation error. Invalid file extension");
     }
 
-    const fileName = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+    const fileName = `${crypto.getRandomValues(new Uint32Array(1))[0].toString(16)}${crypto.getRandomValues(new Uint32Array(1))[0].toString(16)}`;
 
     await fs.promises
       .stat(path.join(this.filesPath))

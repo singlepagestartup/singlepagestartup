@@ -13,10 +13,10 @@ export function util(
   },
 ) {
   if (props.type === "slug") {
-    return uniqueNamesGenerator({
+    return `${uniqueNamesGenerator({
       dictionaries: [adjectives, colors, animals],
       separator: "-",
-    });
+    })}-${Math.floor(Math.random() * 10000)}`;
   }
 
   return uniqueNamesGenerator({
