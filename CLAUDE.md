@@ -56,6 +56,27 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 - Behavior-first test naming; avoid inline `Given/When/Then` comments in test bodies.
 - JSDoc with `BDD Suite` or `BDD Scenario` above test case.
 
+## Development Workflow Commands
+
+The unified development workflow uses commands in `.claude/commands/core/`.
+
+**Start here in most cases:**
+
+- **`/core/next [issue-number]`** - Auto-detects the current phase from GitHub Project status and runs the correct command. No need to open GitHub Project separately.
+
+**Individual phase commands (if you need direct control):**
+
+- **`/core/00-create`** - Create new issue (→ Research Needed)
+- **`/core/10-research`** - Research issue (Research Needed → Research in Review)
+- **`/core/20-plan`** - Create implementation plan (Ready for Plan → Plan in Review)
+- **`/core/30-implement`** - Implement approved plan (Ready for Dev → Code Review)
+
+**After phases that require human review** (Research in Review, Plan in Review): manually advance the issue status in GitHub Project, then run `/core/next` again.
+
+**After PR merge**: manually move the issue to "Done" in GitHub Project.
+
+For special-purpose tasks, see `.claude/commands/README.md` for the full command list.
+
 ## Code Review Checklist
 
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.

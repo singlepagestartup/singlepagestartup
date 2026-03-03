@@ -1,0 +1,78 @@
+---
+description: Create new issue with local documentation and GitHub issue
+model: opus
+---
+
+# Create Issue
+
+You create a new development issue with local documentation and GitHub issue creation.
+
+## Status Gate
+
+**Entry**: None (can be run anytime for new issues)
+
+## Process
+
+1. **Gather information**:
+
+   - Ask user for issue title
+   - Ask for problem description
+   - Ask for priority (high/medium/low)
+   - Ask for size label (xs/small/medium/large)
+   - Ask for issue type (feature/bug/refactoring/research)
+
+2. **Create local ticket file**:
+
+   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Determine an IDENTIFIER (kebab-case from title, e.g., `ISSUE-auth-login-fix`)
+   - Save to `thoughts/shared/tickets/REPO_NAME/ISSUE-{IDENTIFIER}.md`
+   - Format: Use the standard ticket structure below
+
+   ```markdown
+   # Issue: [title]
+
+   ## Metadata
+
+   **URL**: (local issue, not in GitHub yet)
+   **Status**: Triage
+   **Created**: YYYY-MM-DD
+   **Priority**: [priority]
+   **Size**: [size]
+
+   ---
+
+   ## Problem to Solve
+
+   [Detailed description of the problem]
+
+   ## Key Details
+
+   - [Bullet points of important details]
+
+   ## Implementation Notes
+
+   [Any implementation hints or constraints]
+   ```
+
+3. **Create GitHub issue** (ask user to confirm first):
+
+   - Create issue via `gh issue create --title "..." --body "..." --label "size:[size]"`
+   - Add to GitHub Project: `gh project item-add PROJECT_NUMBER --owner PROJECT_OWNER --url ISSUE_URL`
+   - Set initial status to "Triage":
+     ```bash
+     .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
+     ```
+   - Update local ticket file with GitHub URL and issue number
+
+4. **Update status to "Research Needed"**:
+
+   - Run `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research Needed"`
+   - This signals the issue is ready for the `research` phase
+
+5. **Update local ticket file** with GitHub issue number and URL
+
+## Exit
+
+- [ ] Local ticket file created at `thoughts/shared/tickets/REPO_NAME/ISSUE-{IDENTIFIER}.md`
+- [ ] GitHub issue created (or user declined)
+- [ ] Status updated to "Research Needed" in GitHub Project
