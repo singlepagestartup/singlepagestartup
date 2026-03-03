@@ -21,13 +21,11 @@ export function parseAdminRoute(path: string): {
   model: string | null;
 } {
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  const routeMatch = normalized.match(
-    /^\/modules\/([^/]+)(?:\/models\/([^/]+))?$/,
-  );
+  const segments = normalized.split("/").filter(Boolean);
 
   return {
-    module: routeMatch?.[1] || null,
-    model: routeMatch?.[2] || null,
+    module: segments[0] || null,
+    model: segments[1] || null,
   };
 }
 
@@ -37,14 +35,8 @@ export function useAdminRoute(pathname: string | null) {
   return { currentPath, ...route };
 }
 
-export function getAdminBasePath(pathname: string): string {
-  const adminIndex = pathname.indexOf("/admin");
-
-  if (adminIndex === -1) {
-    return "/admin";
-  }
-
-  return pathname.slice(0, adminIndex + "/admin".length);
+export function getAdminBasePath(_pathname: string): string {
+  return "/admin";
 }
 
 export function useAdminBasePath(pathname: string) {

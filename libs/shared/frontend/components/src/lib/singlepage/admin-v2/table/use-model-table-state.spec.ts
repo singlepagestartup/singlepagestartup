@@ -1,6 +1,14 @@
+/**
+ * BDD Suite: getAdminV2ModelTablePage.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn() }),
-  usePathname: () => "/admin/modules/ecommerce/models/product",
+  usePathname: () => "/admin/ecommerce/product",
   useSearchParams: () => new URLSearchParams(),
 }));
 

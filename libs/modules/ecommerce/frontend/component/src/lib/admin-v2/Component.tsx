@@ -6,9 +6,6 @@ export function Component(props: IComponentPropsExtended) {
     <ClientComponent
       className={props.className}
       adminBasePath={props.adminBasePath}
-      isSettingsView={props.isSettingsView}
-    >
-      {props.children}
-    </ClientComponent>
+    />
   );
 }

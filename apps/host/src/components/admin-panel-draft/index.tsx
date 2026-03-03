@@ -1,5 +1,6 @@
-import { Component as RootComponent } from "./Component";
+import { Component as ChildComponent } from "./Component";
+import { IComponentProps } from "./interface";
 
-export function Component(props: { className?: string }) {
-  return <RootComponent {...props} />;
+export function Component(props: IComponentProps) {
+  return <ChildComponent {...props} />;
 }

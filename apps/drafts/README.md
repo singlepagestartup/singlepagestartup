@@ -34,22 +34,81 @@ Optional fields:
 - `tags`
 - `createdAt`
 - `updatedAt`
+- `run`
 
-## Recommended Draft Folder Structure
+## Recommended Folder Structure (Supports Double Nesting)
 
 ```txt
-apps/drafts/incoming/<draft-id>/
+apps/drafts/incoming/<group>/<draft-id>/
+  manifest.json
+  src/
+    ...
+
+apps/drafts/approved/<group>/<draft-id>/
+  manifest.json
+  src/
+    ...
+
+apps/drafts/archived/<group>/<draft-id>/
   manifest.json
   src/
     ...
 ```
 
+Single-level paths (`incoming/<draft-id>`) are still supported.
+
+## Optional `run` Contract
+
+Use `run` when draft startup cannot be inferred automatically:
+
+```json
+{
+  "run": {
+    "dev": "bun run dev",
+    "install": "bun install",
+    "autoInstall": true,
+    "cwd": ".",
+    "port": 4400,
+    "host": "127.0.0.1"
+  }
+}
+```
+
+Behavior:
+
+- `html`: starts built-in static server (entry from `manifest.entry`).
+- `react` / `next`:
+  - uses `run.dev` if provided;
+  - otherwise runs `npm run dev` in `run.cwd` (or draft root) if `package.json` exists.
+  - if `package.json` exists and `node_modules` is missing, auto-runs `run.install` (or `bun install`).
+  - set `run.autoInstall` to `false` to disable auto-install.
+
+## Commands
+
+- Init/generate manifest for draft folder: `npm run drafts:init -- incoming/my-draft`
+- List drafts: `npm run drafts:list`
+- Validate manifests: `npm run drafts:validate`
+- Run draft by id: `npm run drafts:dev -- admin-panel-redesign-html`
+- Run draft by nested path: `npm run drafts:dev -- incoming/ui/admin-panel-redesign-html`
+- Run with env var: `DRAFT=incoming/ui/my-next-prototype npm run drafts:dev`
+- Override network params: `npm run drafts:dev -- --draft incoming/ui/my-next-prototype --port 4400 --host 127.0.0.1`
+
+## Quick Start For Simple HTML + CSS (+ JS)
+
+If your draft folder only contains static files (for example `index.html`, `styles.css`, `app.js`), use:
+
+1. `npm run drafts:init -- incoming/my-html-draft`
+2. `npm run drafts:validate`
+3. `npm run drafts:dev -- my-html-draft`
+
+`drafts:init` auto-detects it as `type: "html"` and sets `entry` to `index.html` (or `src/index.html` when applicable).
+
 ## Typical Flow
 
-1. AI generates a draft into `incoming/<draft-id>`.
+1. AI generates a draft into `incoming/<group>/<draft-id>` (or `incoming/<draft-id>`).
 2. Developer reviews the result and smoke-tests it manually.
-3. If accepted, move folder to `approved/<draft-id>`.
-4. If stale/rejected, move folder to `archived/<draft-id>`.
+3. If accepted, move folder to `approved/<group>/<draft-id>`.
+4. If stale/rejected, move folder to `archived/<group>/<draft-id>`.
 
 ## Guardrails
 

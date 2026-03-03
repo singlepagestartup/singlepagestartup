@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: parse-jwt.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { util as parseJwt } from "./parse-jwt";
 
 function encodeBase64Url(value: string): string {

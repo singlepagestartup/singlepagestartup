@@ -19,6 +19,29 @@ This repository uses a layered test strategy so developers can validate changes 
 - `Integration` tests validate module contracts and orchestration (mounting, route/type registry consistency).
 - `E2E` tests validate real user flows in the Host admin UI.
 
+### BDD format (required)
+
+All tests in this repository use a BDD-oriented format.
+
+Rules:
+
+- Each test file starts with a top-level JSDoc block: `BDD Suite` or `BDD Scenario`.
+- The JSDoc block must include `Given`, `When`, `Then`.
+- Avoid inline `Given/When/Then` comments inside test bodies; keep intent in the top block and test names.
+- Test names should describe behavior (action + expected result), not implementation details.
+
+Example:
+
+```ts
+/**
+ * BDD Suite: admin route contract.
+ *
+ * Given: route helpers receive admin URLs with optional trailing slash.
+ * When: helper parses a URL into route segments.
+ * Then: parsed module/model names match expected values.
+ */
+```
+
 ### Where tests live
 
 - Unit (shared + ecommerce scope): colocated with source files as `*.spec.ts` / `*.spec.tsx`.
@@ -35,19 +58,31 @@ This repository uses a layered test strategy so developers can validate changes 
 ### How Host E2E works
 
 - `nx run host:e2e` starts Playwright against the Host app.
-- A dedicated mock API process is started on `127.0.0.1:4310` (`apps/host/e2e/support/mock-api-server.mjs`) to serve deterministic backend responses for server-side and client-side calls.
-- Host app for e2e is started with `apps/host/.env.testing` (loaded only for e2e command in Playwright config).
+- By default, Playwright starts Host on `http://127.0.0.1:3000` using `apps/host/playwright.config.ts`.
+- If `PW_SKIP_WEBSERVER=1` is set, Playwright reuses an already running Host process and does not restart it.
 - Playwright projects are split by ownership:
   - `singlepage` for framework-maintained business flows
   - `startup` for customer-maintained business flows
-- Readiness is checked via `GET /healthz` (`apps/host/app/healthz/route.ts`).
-- Current smoke scenarios use reusable API mocks from `apps/host/e2e/support` to verify critical admin flows deterministically.
+- Current `singlepage` smoke scenarios use browser-level API mocks from `apps/host/e2e/support`.
+
+### Running Playwright without Host cold-start
+
+To avoid restarting the Host app for each Playwright run:
+
+1. Start Host manually:
+   - `npm run host:dev` (recommended for local iteration), or
+   - `npm run host:start` (after build).
+2. Run Playwright in reuse mode:
+   - `npm run test:e2e:singlepage:reuse -- --testFiles=apps/host/e2e/singlepage/<your-test>.e2e.ts`
+
+For the current `apps/host/e2e/singlepage` suite, backend startup is not required. These tests use browser-level mocks from `apps/host/e2e/support/mock-ecommerce-api.ts`.
 
 ### Run commands (from repository root)
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
 - `npm run test:e2e:singlepage`
+- `npm run test:e2e:singlepage:reuse` (reuse already running Host server, no Host cold-start)
 - `npm run test:e2e:startup`
 - `npm run test:e2e:scoped` (alias for `singlepage`)
 - `npm run test:all:scoped`

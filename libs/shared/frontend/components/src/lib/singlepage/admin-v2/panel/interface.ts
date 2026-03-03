@@ -5,7 +5,6 @@ export interface IComponentProps {
   isServer?: boolean;
   showSettingsButton?: boolean;
   children?: ReactNode;
-  isSettingsView: boolean;
   onOpenSettings?: () => void;
   settingsHref?: string;
 }

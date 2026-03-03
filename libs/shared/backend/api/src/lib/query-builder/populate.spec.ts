@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: Query Builder | Populate.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { queryBuilder } from "./populate";
 
 describe("Query Builder | Populate", () => {

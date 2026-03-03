@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: build-tree-path.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { util as buildTreePath } from "./";
 
 describe("build-tree-path", () => {

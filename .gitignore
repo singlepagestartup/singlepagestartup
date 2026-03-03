@@ -110,3 +110,5 @@ blob-report/
 
 # Claude local project config
 .claude/.env
+
+**/*.tsbuildinfo

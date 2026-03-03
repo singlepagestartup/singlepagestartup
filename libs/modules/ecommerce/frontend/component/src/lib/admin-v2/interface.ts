@@ -4,7 +4,6 @@ export interface IComponentProps {
   className?: string;
   isServer?: boolean;
   adminBasePath: string;
-  isSettingsView: boolean;
   children?: ReactNode;
 }
 

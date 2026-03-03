@@ -2,6 +2,34 @@
   "name": "@sps/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
+    "drafts:list": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/list.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/dev.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:init": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/init.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/validate-manifests.ts",
+        "forwardAllArgs": true
+      }
+    },
     "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {

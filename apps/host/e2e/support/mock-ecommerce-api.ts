@@ -42,12 +42,25 @@ function jsonResponse(
   status: number,
   payload: unknown,
 ): Promise<void> {
+  const request = route.request();
+  const requestHeaders = request.headers();
+  const origin =
+    requestHeaders["origin"] ||
+    requestHeaders["referer"]?.replace(/\/$/, "") ||
+    "http://localhost:3000";
+  const requestedHeaders =
+    requestHeaders["access-control-request-headers"] ||
+    "authorization,content-type,cache-control";
+
   return route.fulfill({
     status,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*",
+      "access-control-allow-origin": origin,
       "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "access-control-allow-headers": requestedHeaders,
+      vary: "Origin",
     },
     body: JSON.stringify(payload),
   });

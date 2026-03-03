@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: global-actions-store.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { useGlobalActionsStore } from "./global-actions-store";
 
 function createSessionStorageMock() {

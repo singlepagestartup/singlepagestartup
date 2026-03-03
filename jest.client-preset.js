@@ -4,7 +4,7 @@ module.exports = {
   ...nxPreset,
   testEnvironment: "node",
   transform: {
-    "^.+\\.[tj]s$": [
+    "^.+\\.[tj]sx?$": [
       "ts-jest",
       {
         tsconfig: "<rootDir>/tsconfig.spec.json",
@@ -13,5 +13,5 @@ module.exports = {
       },
     ],
   },
-  moduleFileExtensions: ["ts", "js", "html"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "html"],
 };

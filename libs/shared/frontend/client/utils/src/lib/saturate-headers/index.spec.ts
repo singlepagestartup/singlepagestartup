@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: saturate-headers.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 import { util as saturateHeaders } from "./index";
 import * as clientUtils from "../index";
 

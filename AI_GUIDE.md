@@ -96,6 +96,15 @@ The MCP server (`apps/mcp`) exposes tools/resources for models and relations. Us
 
 Prefer running tasks via Nx (`nx run`, `nx run-many`, `nx affected`).
 
-## 8. If you are unsure
+## 8. Test format (BDD)
+
+All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD format:
+
+- Top-level JSDoc with `BDD Suite` or `BDD Scenario`.
+- Mandatory `Given`, `When`, `Then` lines in that header.
+- Behavior-first test naming; avoid inline `Given/When/Then` comments in test bodies.
+- JSDoc with `BDD Suite` or `BDD Scenario` above test case.
+
+## 9. If you are unsure
 
 Do not guess. Read the relevant README file or inspect the actual component code.

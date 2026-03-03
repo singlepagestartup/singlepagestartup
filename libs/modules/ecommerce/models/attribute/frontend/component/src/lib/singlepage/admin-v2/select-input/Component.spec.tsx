@@ -1,3 +1,11 @@
+/**
+ * BDD Suite: attribute admin-v2 select-input component.
+ *
+ * Given: suite fixtures and test doubles are prepared for deterministic behavior.
+ * When: a scenario action from this suite is executed.
+ * Then: assertions verify expected observable behavior and contracts.
+ */
+
 jest.mock(
   "@sps/shared-frontend-components/singlepage/admin/select-input/Component",
   () => ({

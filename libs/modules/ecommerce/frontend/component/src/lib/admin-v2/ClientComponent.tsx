@@ -7,7 +7,6 @@ import { Component as ProductComponent } from "@sps/ecommerce/models/product/fro
 import { Component as AttributeComponent } from "@sps/ecommerce/models/attribute/frontend/component";
 import { CircleHelp, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { IComponentProps } from "./interface";
 import { useAdminRoute } from "@sps/shared-frontend-client-utils";
@@ -30,16 +29,11 @@ function formatLabel(value: string): string {
 
 export function Component(props: IComponentProps) {
   const pathname = usePathname();
-  const {
-    currentPath,
-    module: selectedModule,
-    model: selectedModel,
-  } = useAdminRoute(pathname);
-  const isModuleOverview =
-    (!selectedModule || selectedModule === MODULE.id) && !selectedModel;
-  const hasRenderableChildren = Boolean(props.children);
+  const { module: selectedModule, model: selectedModel } =
+    useAdminRoute(pathname);
+  const isModuleOverview = selectedModule === MODULE.id && !selectedModel;
 
-  if (!props.children && selectedModule && selectedModule !== MODULE.id) {
+  if (selectedModule && selectedModule !== MODULE.id) {
     return null;
   }
 
@@ -88,7 +82,7 @@ export function Component(props: IComponentProps) {
             {isModuleOverview ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {MODELS.map((modelName) => {
-                  const href = `${props.adminBasePath}/modules/${MODULE.id}/models/${modelName}`;
+                  const href = `${props.adminBasePath}/${MODULE.id}/${modelName}`;
 
                   if (modelName === "product") {
                     return (
@@ -148,14 +142,11 @@ export function Component(props: IComponentProps) {
 
   return (
     <div className="flex h-screen" data-testid="admin-prototype-root">
-      <PanelComponent
-        isSettingsView={props.isSettingsView}
-        settingsHref={`${props.adminBasePath}/settings`}
-      >
+      <PanelComponent settingsHref={`${props.adminBasePath}/settings`}>
         <SidebarModuleItemComponent moduleItem={MODULE} models={[...MODELS]} />
       </PanelComponent>
 
-      {hasRenderableChildren ? props.children : defaultContent}
+      {props.children ?? defaultContent}
     </div>
   );
 }
