@@ -140,6 +140,29 @@ Each phase:
 │       └── ralph_impl.md
 ```
 
+### Content Aggregation Requirement
+
+> **Critical**: When implementing the new `core/` commands, the agent MUST NOT write content from scratch. Each new unified command must be built by reading and aggregating the existing fragmented files listed below. The goal is to consolidate existing knowledge, not to reinvent it.
+
+| New File                   | Must aggregate content FROM                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `core/10-research.md`      | `research_codebase.md`, `research_codebase_generic.md`, `ralph_research.md`                                |
+| `core/20-plan.md`          | `create_plan.md`, `create_plan_generic.md`, `iterate_plan.md`, `iterate_plan_external.md`, `ralph_plan.md` |
+| `core/30-implement.md`     | `implement_plan.md`, `ralph_impl.md`                                                                       |
+| `utilities/commit.md`      | `commit.md` (move, not rewrite)                                                                            |
+| `utilities/describe_pr.md` | `describe_pr.md` (move, not rewrite)                                                                       |
+
+**Process for each new file:**
+
+1. Read ALL source files listed in the table above
+2. Identify unique logic, patterns, and edge cases from each
+3. Merge into the unified command, preserving all meaningful behavior
+4. Add the new structure (status gates, progress tracking) on top of the aggregated content
+
+This ensures no hard-won logic or edge cases from the existing files are lost during the consolidation.
+
+---
+
 ### How It Works
 
 **1. Status Gates**

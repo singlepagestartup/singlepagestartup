@@ -103,6 +103,19 @@ Each phase builds on the previous one and can be verified independently.
 
 Create new `core/` subdirectory with unified commands that implement the linear single-track cycle. Each command will have explicit status gates and follow a consistent pattern.
 
+> **Critical — Content Aggregation**: Do NOT write the new command files from scratch. Each new file must be built by reading and merging the existing source files listed in the table below. Read all source files first, extract unique logic and edge cases from each, then produce the unified file.
+>
+> | New File                   | Read BEFORE writing                                                                                                                                                                             |
+> | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | `core/00-create.md`        | No existing source — write from scratch using the spec below                                                                                                                                    |
+> | `core/10-research.md`      | `.claude/commands/research_codebase.md`, `.claude/commands/research_codebase_generic.md`, `.claude/commands/ralph_research.md`                                                                  |
+> | `core/20-plan.md`          | `.claude/commands/create_plan.md`, `.claude/commands/create_plan_generic.md`, `.claude/commands/iterate_plan.md`, `.claude/commands/iterate_plan_external.md`, `.claude/commands/ralph_plan.md` |
+> | `core/30-implement.md`     | `.claude/commands/implement_plan.md`, `.claude/commands/ralph_impl.md`                                                                                                                          |
+> | `utilities/commit.md`      | `.claude/commands/commit.md` (move, not rewrite)                                                                                                                                                |
+> | `utilities/describe_pr.md` | `.claude/commands/describe_pr.md` (move, not rewrite)                                                                                                                                           |
+>
+> The specs below define the **target structure and new additions** (status gates, progress tracking, GitHub sync). Merge them with the logic found in the source files — do not discard existing patterns.
+
 ### Changes Required:
 
 #### 1. Create `.claude/commands/core/` directory

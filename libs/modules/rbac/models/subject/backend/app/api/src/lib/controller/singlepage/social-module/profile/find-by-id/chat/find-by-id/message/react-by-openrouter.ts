@@ -95,7 +95,7 @@ const MODEL_ROUTER_CONFIG = {
     ],
     CHAT: [
       {
-        id: "openai/gpt-5-mini",
+        id: "openai/gpt-5.2",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
@@ -157,7 +157,7 @@ const MODEL_ROUTER_CONFIG = {
     ],
     VISION: [
       {
-        id: "openai/gpt-5-mini",
+        id: "openai/gpt-5.2",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
@@ -1341,7 +1341,7 @@ No markdown. No extra keys.`,
       const classificationResponse = await props.openRouter.generate({
         model: classifierModel,
         reasoning: false,
-        max_tokens: 300,
+        max_tokens: 600,
         responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
         temperature: 0,
         context: [
@@ -1382,6 +1382,9 @@ No markdown. No explanation. No extra keys.`,
         await this.parseAndNormalizeClassification({
           openRouter: props.openRouter,
           classifierModel,
+          fallbackClassifierModels: classifierModels.filter(
+            (m) => m !== classifierModel,
+          ),
           requestText: props.requestText,
           requiredInputModalitiesList: props.requiredInputModalitiesList,
           rawClassifierOutput: classificationResponse.text,
@@ -1451,6 +1454,7 @@ No markdown. No explanation. No extra keys.`,
   private async parseAndNormalizeClassification(props: {
     openRouter: OpenRouter;
     classifierModel: string;
+    fallbackClassifierModels?: string[];
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
     rawClassifierOutput: string;
@@ -1465,8 +1469,11 @@ No markdown. No explanation. No extra keys.`,
       });
     }
 
+    const repairModelId =
+      props.fallbackClassifierModels?.[0] ?? props.classifierModel;
+
     const repairResponse = await props.openRouter.generate({
-      model: props.classifierModel,
+      model: repairModelId,
       reasoning: false,
       max_tokens: 300,
       responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
