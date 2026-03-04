@@ -24,8 +24,8 @@ You create a new development issue with local documentation and GitHub issue cre
 2. **Create local ticket file**:
 
    - Run `gh repo view --json name -q '.name'` to get REPO_NAME
-   - Determine an IDENTIFIER (kebab-case from title, e.g., `ISSUE-auth-login-fix`)
-   - Save to `thoughts/shared/tickets/REPO_NAME/ISSUE-{IDENTIFIER}.md`
+   - Determine a TEMP_IDENTIFIER (kebab-case from title, e.g., `auth-login-fix`)
+   - Save to `thoughts/shared/tickets/REPO_NAME/ISSUE-{TEMP_IDENTIFIER}.md`
    - Format: Use the standard ticket structure below
 
    ```markdown
@@ -63,16 +63,15 @@ You create a new development issue with local documentation and GitHub issue cre
      .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
      ```
    - Update local ticket file with GitHub URL and issue number
+   - Rename the local ticket file from `ISSUE-{TEMP_IDENTIFIER}.md` to `ISSUE-{ISSUE_NUMBER}.md` (e.g., `ISSUE-145.md`)
 
 4. **Update status to "Research Needed"**:
 
    - Run `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research Needed"`
    - This signals the issue is ready for the `research` phase
 
-5. **Update local ticket file** with GitHub issue number and URL
-
 ## Exit
 
-- [ ] Local ticket file created at `thoughts/shared/tickets/REPO_NAME/ISSUE-{IDENTIFIER}.md`
+- [ ] Local ticket file created at `thoughts/shared/tickets/REPO_NAME/ISSUE-{ISSUE_NUMBER}.md`
 - [ ] GitHub issue created (or user declined)
 - [ ] Status updated to "Research Needed" in GitHub Project

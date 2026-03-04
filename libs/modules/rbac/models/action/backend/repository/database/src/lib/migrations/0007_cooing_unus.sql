@@ -1,0 +1,1 @@
+ALTER TABLE "rc_action" ALTER COLUMN "expires_at" SET DEFAULT NOW() + INTERVAL '1 week';

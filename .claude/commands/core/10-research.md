@@ -103,7 +103,7 @@ fi
      git log -1 --format="%H"   # commit hash
      git branch --show-current  # branch name
      ```
-   - Save to `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md`
+   - Save to `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md`
    - Use existing research structure with YAML frontmatter:
 
    ```markdown
@@ -193,7 +193,7 @@ fi
 
 ## Exit
 
-- [ ] Research documented at `thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md`
+- [ ] Research documented at `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md`
 - [ ] Issue commented with research summary and document link
 - [ ] Status updated to "Research in Review" in GitHub Project
 
@@ -204,7 +204,7 @@ fi
 
 Research topic: [research topic description]
 
-Created at: thoughts/shared/research/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md
+Created at: thoughts/shared/research/REPO_NAME/ISSUE-NUM.md
 Attached to the GitHub issue as a comment
 Issue moved to "Research in Review" status
 
