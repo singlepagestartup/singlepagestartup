@@ -68,6 +68,22 @@ export class Provider implements IProvider {
     return this.client.get(`${props.prefix}:${hashedKey}`);
   }
 
+  async incr(props: {
+    prefix: string;
+    key: string;
+    options?: { ttl?: number };
+  }): Promise<number> {
+    const hashedKey = await this.hashKey({ key: props.key });
+    const redisKey = `${props.prefix}:${hashedKey}`;
+    const value = await this.client.incr(redisKey);
+
+    if (props.options?.ttl && value === 1) {
+      await this.client.expire(redisKey, props.options.ttl);
+    }
+
+    return value;
+  }
+
   async set(props: {
     prefix: string;
     key: string;

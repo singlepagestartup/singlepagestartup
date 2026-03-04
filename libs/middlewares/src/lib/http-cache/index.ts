@@ -4,6 +4,10 @@ import { KV_PROVIDER, KV_TTL, UUID_PATH_SUFFIX_REGEX } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { logger } from "@sps/backend-utils";
 
+const CACHE_DATA_PREFIX = "http-cache:data";
+const CACHE_VERSION_PREFIX = "http-cache:version";
+const DEFAULT_CACHE_VERSION = 0;
+
 export type IMiddlewareGeneric = {
   Variables: undefined;
 };
@@ -13,6 +17,40 @@ export class Middleware {
 
   constructor() {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
+  }
+
+  private getVersionedDataPrefix(path: string, version: number): string {
+    return `${CACHE_DATA_PREFIX}:${path}:v${version}`;
+  }
+
+  private async getCacheVersion(path: string): Promise<number> {
+    const rawVersion = await this.storeProvider.get({
+      prefix: CACHE_VERSION_PREFIX,
+      key: path,
+    });
+
+    if (!rawVersion) {
+      return DEFAULT_CACHE_VERSION;
+    }
+
+    const version = Number(rawVersion);
+
+    if (!Number.isFinite(version) || version < DEFAULT_CACHE_VERSION) {
+      return DEFAULT_CACHE_VERSION;
+    }
+
+    return version;
+  }
+
+  private async bumpCacheVersion(path: string): Promise<void> {
+    if (!path) {
+      return;
+    }
+
+    await this.storeProvider.incr({
+      prefix: CACHE_VERSION_PREFIX,
+      key: path,
+    });
   }
 
   init(): MiddlewareHandler<any, any, {}> {
@@ -47,9 +85,17 @@ export class Middleware {
         return await next();
       }
 
+      let cacheVersion = DEFAULT_CACHE_VERSION;
+
       if (method === "GET" && cacheControl !== "no-store") {
+        cacheVersion = await this.getCacheVersion(path);
+        const versionedDataPrefix = this.getVersionedDataPrefix(
+          path,
+          cacheVersion,
+        );
+
         const cachedValue = await this.storeProvider.get({
-          prefix: path,
+          prefix: versionedDataPrefix,
           key: params,
         });
 
@@ -72,9 +118,13 @@ export class Middleware {
           if (c.res.status >= 200 && c.res.status < 300) {
             if (method === "GET" && cacheControl !== "no-store") {
               const resJson = await c.res.clone().json();
+              const versionedDataPrefix = this.getVersionedDataPrefix(
+                path,
+                cacheVersion,
+              );
 
               await this.storeProvider.set({
-                prefix: path,
+                prefix: versionedDataPrefix,
                 key: params,
                 value: JSON.stringify(resJson),
                 options: { ttl: KV_TTL },
@@ -82,57 +132,49 @@ export class Middleware {
             }
 
             if (["PUT", "PATCH"].includes(method)) {
-              await this.storeProvider.delByPrefix({
-                prefix: "/rbac/permissions",
-              });
-
-              await this.storeProvider.delByPrefix({
-                prefix: path,
-              });
-
               const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-
-              await this.storeProvider.delByPrefix({
-                prefix: pathWithoutId,
-              });
+              const prefixesToBump = new Set<string>([
+                "/rbac/permissions",
+                path,
+                pathWithoutId,
+              ]);
 
               if (pathWithoutId.includes("bulk")) {
-                const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
-
-                await this.storeProvider.delByPrefix({
-                  prefix: pathWithoutBluk,
-                });
+                const pathWithoutBulk = pathWithoutId.replace(/\/bulk/, "");
+                prefixesToBump.add(pathWithoutBulk);
               }
+
+              await Promise.all(
+                [...prefixesToBump].map(async (prefix) =>
+                  this.bumpCacheVersion(prefix),
+                ),
+              );
             }
 
             if (["POST", "DELETE"].includes(method)) {
-              await this.storeProvider.delByPrefix({
-                prefix: "/rbac/permissions",
-              });
-
               const pathWithIdBase = path.match(
                 /(.*\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/,
               )?.[1];
+              const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
+              const prefixesToBump = new Set<string>([
+                "/rbac/permissions",
+                pathWithoutId,
+              ]);
 
               if (pathWithIdBase) {
-                await this.storeProvider.delByPrefix({
-                  prefix: `${pathWithIdBase}`,
-                });
+                prefixesToBump.add(pathWithIdBase);
               }
-
-              const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-
-              await this.storeProvider.delByPrefix({
-                prefix: pathWithoutId,
-              });
 
               if (pathWithoutId.includes("bulk")) {
-                const pathWithoutBluk = pathWithoutId.replace(/\/bulk/, "");
-
-                await this.storeProvider.delByPrefix({
-                  prefix: pathWithoutBluk,
-                });
+                const pathWithoutBulk = pathWithoutId.replace(/\/bulk/, "");
+                prefixesToBump.add(pathWithoutBulk);
               }
+
+              await Promise.all(
+                [...prefixesToBump].map(async (prefix) =>
+                  this.bumpCacheVersion(prefix),
+                ),
+              );
             }
           } else {
             if (path.includes("rbac/permissions")) {
@@ -140,13 +182,12 @@ export class Middleware {
             }
 
             if (c.res.status >= 500) {
-              await this.storeProvider.delByPrefix({
-                prefix: path,
-              });
               const pathWithoutId = path.replace(UUID_PATH_SUFFIX_REGEX, "");
-              await this.storeProvider.delByPrefix({
-                prefix: pathWithoutId,
-              });
+
+              await Promise.all([
+                this.bumpCacheVersion(path),
+                this.bumpCacheVersion(pathWithoutId),
+              ]);
             }
           }
         } catch (error) {

@@ -36,6 +36,14 @@ export class Provider implements IProvider {
     return await this.client.get(props);
   }
 
+  async incr(props: {
+    prefix: string;
+    key: string;
+    options?: { ttl?: number };
+  }) {
+    return await this.client.incr(props);
+  }
+
   async set(props: {
     prefix: string;
     key: string;
