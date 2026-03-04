@@ -24,3 +24,17 @@ Channels define broadcast streams used to group and deliver messages.
 - `admin-select-input`: admin select input for choosing a channel.
 - `admin-table`: admin table listing channels.
 - `admin-table-row`: admin row showing channel fields.
+
+## Custom API Routes
+
+- `POST /api/broadcast/channels/push-message`
+- `GET /api/broadcast/channels/:id/messages`
+- `POST /api/broadcast/channels/:id/messages`
+- `DELETE /api/broadcast/channels/:id/messages/:messageId`
+
+These routes are available in channel SDKs as:
+
+- `api.pushMessage(...)`
+- `api.messageFind(...)`
+- `api.messageCreate(...)`
+- `api.messageDelete(...)`

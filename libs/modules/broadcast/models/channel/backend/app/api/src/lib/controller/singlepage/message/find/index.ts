@@ -1,8 +1,10 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
-import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
-import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
+import {
+  type IParseQueryMiddlewareGeneric,
+  type FindServiceProps,
+} from "@sps/shared-backend-api";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -12,20 +14,19 @@ export class Handler {
     this.service = service;
   }
 
-  async execute(c: Context, next: any): Promise<Response> {
+  async execute(
+    c: Context<IParseQueryMiddlewareGeneric>,
+    next: any,
+  ): Promise<Response> {
     try {
       const id = c.req.param("id");
-      const headers = c.req.header();
+      const parsedQuery = c.var.parsedQuery;
 
       if (!id) {
         throw new Error("Validation error. Invalid id, id is required.");
       }
 
-      /**
-       * Without passing Cache-Control data are mismathed, because
-       * http-cache middleware use this models
-       */
-      const channelsToMessages = await channelsToMessagesApi.find({
+      const channelsToMessages = await this.service.channelsToMessages.find({
         params: {
           filters: {
             and: [
@@ -37,29 +38,35 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (channelsToMessages?.length) {
-        const messages = await messageApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: channelsToMessages.map((c) => c.messageId),
-                },
-              ],
-            },
+        const messageIds = Array.from(
+          new Set(channelsToMessages.map((item) => item.messageId)),
+        );
+
+        const existingMessageFilters = Array.isArray(parsedQuery?.filters?.and)
+          ? parsedQuery.filters.and
+          : [];
+
+        const mergedParams: FindServiceProps["params"] = {
+          orderBy: parsedQuery?.orderBy,
+          offset: parsedQuery?.offset,
+          limit: parsedQuery?.limit,
+          filters: {
+            and: [
+              ...existingMessageFilters,
+              {
+                column: "id",
+                method: "inArray",
+                value: messageIds,
+              },
+            ],
           },
-          options: {
-            headers,
-          },
+        };
+
+        const messages = await this.service.messages.find({
+          params: mergedParams,
         });
 
         return c.json({

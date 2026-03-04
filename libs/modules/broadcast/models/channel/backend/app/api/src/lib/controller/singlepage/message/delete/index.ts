@@ -1,9 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
-import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -15,12 +12,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      const headers = c.req.header();
-
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-      }
-
       const id = c.req.param("id");
 
       if (!id) {
@@ -35,7 +26,7 @@ export class Handler {
         );
       }
 
-      const channelsToMessages = await channelsToMessagesApi.find({
+      const channelsToMessages = await this.service.channelsToMessages.find({
         params: {
           filters: {
             and: [
@@ -56,12 +47,9 @@ export class Handler {
 
       if (channelsToMessages?.length) {
         for (const channelToMessage of channelsToMessages) {
-          await channelsToMessagesApi
+          await this.service.channelsToMessages
             .delete({
               id: channelToMessage.id,
-              options: {
-                headers,
-              },
             })
             .catch((error) => {
               //
@@ -69,12 +57,9 @@ export class Handler {
         }
       }
 
-      const message = await messageApi
+      await this.service.messages
         .delete({
           id: messageId,
-          options: {
-            headers,
-          },
         })
         .catch((error) => {
           //

@@ -1,9 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
-import { api as messageApi } from "@sps/broadcast/models/message/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -15,10 +12,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-      }
-
       const id = c.req.param("id");
 
       if (!id) {
@@ -33,24 +26,14 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const message = await messageApi.create({
+      const message = await this.service.messages.create({
         data,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
-      await channelsToMessagesApi.create({
+      await this.service.channelsToMessages.create({
         data: {
           channelId: id,
           messageId: message.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
         },
       });
 

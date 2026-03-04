@@ -1,8 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api } from "@sps/broadcast/models/channel/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -14,10 +12,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-      }
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -32,7 +26,7 @@ export class Handler {
         );
       }
 
-      const channels = await api.find({
+      const channels = await this.service.find({
         params: {
           filters: {
             and: [
@@ -44,25 +38,15 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       let channel = channels?.[0];
 
       if (!channels?.length) {
-        channel = await api.create({
+        channel = await this.service.create({
           data: {
             title: data.slug,
             slug: data.slug,
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
           },
         });
       }
@@ -71,13 +55,14 @@ export class Handler {
         throw new Error("Not Found error. Channel not found");
       }
 
-      const createdMessage = await api.messageCreate({
-        id: channel.id,
+      const createdMessage = await this.service.messages.create({
         data,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+      });
+
+      await this.service.channelsToMessages.create({
+        data: {
+          channelId: channel.id,
+          messageId: createdMessage.id,
         },
       });
 

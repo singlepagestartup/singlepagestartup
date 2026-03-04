@@ -6,7 +6,6 @@ import {
 import { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { api as channelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { api as channelsToMessagesApi } from "@sps/broadcast/relations/channels-to-messages/sdk/server";
 import { api as messagesApi } from "@sps/broadcast/models/message/sdk/server";
 import { IModel as IBroadcastMessage } from "@sps/broadcast/models/message/sdk/model";
 import { logger } from "@sps/backend-utils";
@@ -72,57 +71,59 @@ export class Middleware {
           }
 
           /**
-           * Without passing Cache-Control data are mismathed, because
-           * http-cache middleware use this models
+           * Without passing Cache-Control data are mismatched, because
+           * http-cache middleware uses these models.
            */
-          const channelsToMessages = await channelsToMessagesApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "channelId",
-                    method: "inArray",
-                    value: observerChannels.map((channel) => channel.id),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "Cache-Control": "no-store",
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+          const messagesByChannels = await Promise.all(
+            observerChannels.map((channel) => {
+              if (!RBAC_SECRET_KEY) {
+                throw Error(
+                  "RBAC_SECRET_KEY is not defined, broadcast middleware 'revalidation' can't request to service.",
+                );
+              }
 
-          if (!channelsToMessages?.length) {
-            return;
-          }
+              return channelApi
+                .messageFind({
+                  id: channel.id,
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "payload",
+                          method: "ilike",
+                          value: `%${path}%`,
+                        },
+                        {
+                          column: "payload",
+                          method: "ilike",
+                          value: `%${method}%`,
+                        },
+                      ],
+                    },
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Control": "no-store",
+                    },
+                  },
+                })
+                .then((result) => result || [])
+                .catch((error) => {
+                  logger.error(error);
+                  return [];
+                });
+            }),
+          );
 
-          const messages = await messagesApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "payload",
-                    method: "ilike",
-                    value: `%${path}%`,
-                  },
-                  {
-                    column: "payload",
-                    method: "ilike",
-                    value: `%${method}%`,
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
+          const messages = Array.from(
+            new Map(
+              messagesByChannels
+                .flat()
+                .filter((message) => !!message?.id)
+                .map((message) => [message.id, message]),
+            ).values(),
+          );
 
           if (messages?.length) {
             for (const message of messages) {
@@ -147,11 +148,13 @@ export class Middleware {
                     }
                   }
 
-                  await this.executePipeline({
+                  this.executePipeline({
                     message,
                     pipe: payload.pipe,
                     index: 0,
                     triggerResult,
+                  }).catch((error) => {
+                    logger.error(error);
                   });
                 }
               } catch (error) {
