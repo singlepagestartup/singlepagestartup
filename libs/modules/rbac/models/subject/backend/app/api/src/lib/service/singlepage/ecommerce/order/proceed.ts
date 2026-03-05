@@ -1,7 +1,6 @@
 import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
-import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
@@ -15,13 +14,9 @@ import { IModel as IEcommerceModuleAttributeKey } from "@sps/ecommerce/models/at
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
 import { IModel as IEcommerceModuleAttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
 import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
-import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
-import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
@@ -29,29 +24,18 @@ import {
   api as ecommerceOrderApi,
   type IResult as IEcommerceOrderResult,
 } from "@sps/ecommerce/models/order/sdk/server";
+import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as ecommerceModuleOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceModuleAttributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
 import { IModel as IEcommerceModuleProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { api as ecommerceModuleProductsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
-import { api as ecommerceModuleOrdersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
-import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
-import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
-import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
-import { api as billingModulePaymentIntentsToCurreciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
 import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
-import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 
@@ -1343,44 +1327,36 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const ecommerceModuleOrderToProducts =
-      await ecommerceModuleOrdersToProductsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "eq",
-                value: props.id,
-              },
-            ],
-          },
+    const extendedOrder = await ecommerceOrderApi.extended({
+      id: props.id,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      },
+    });
 
-    if (!ecommerceModuleOrderToProducts?.length) {
-      throw new Error(
-        "Not found error. 'ecommerceModuleOrdersToProducts' not found.",
-      );
+    if (!extendedOrder) {
+      throw new Error("Not found error. 'extendedOrder' not found.");
     }
 
-    const ecommerceModuleProducts = await ecommerceProductApi
-      .find({
+    const productIds =
+      extendedOrder.ordersToProducts?.map((item) => item.productId) ?? [];
+
+    if (!productIds.length) {
+      return extendedOrder as IExtendedEcommerceModuleOrder;
+    }
+
+    const rolesToEcommerceModuleProducts =
+      await rolesToEcommerceModuleProductsApi.find({
         params: {
           filters: {
             and: [
               {
-                column: "id",
+                column: "ecommerceModuleProductId",
                 method: "inArray",
-                value: ecommerceModuleOrderToProducts.map((entity) => {
-                  return entity.productId;
-                }),
+                value: productIds,
               },
             ],
           },
@@ -1391,477 +1367,25 @@ export class Service {
             "Cache-Control": "no-store",
           },
         },
-      })
-      .then(async (products) => {
-        const extendedProducts: IExtendedEcommerceModuleProduct[] = [];
-
-        if (!products) {
-          return extendedProducts;
-        }
-
-        for (const product of products) {
-          const extendedProduct =
-            await this.extendedEcommerceModuleProduct(product);
-          extendedProducts.push(extendedProduct);
-        }
-
-        return extendedProducts;
       });
-
-    const ecommerceModuleOrderToBillingModuleCurrencies =
-      await ecommerceModuleOrdersToBillingModuleCurrenciesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (orderToBillingModuleCurrencies) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!orderToBillingModuleCurrencies?.length) {
-            return [];
-          }
-
-          const billingModuleCurrencies = await billingModuleCurrencyApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: orderToBillingModuleCurrencies.map(
-                      (item) => item.billingModuleCurrencyId,
-                    ),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          return orderToBillingModuleCurrencies.map(
-            (ecommerceModuleOrderToBillingModuleCurrency) => {
-              const billingModuleCurrency = billingModuleCurrencies?.find(
-                (billingModuleCurrency) => {
-                  return (
-                    billingModuleCurrency.id ===
-                    ecommerceModuleOrderToBillingModuleCurrency.billingModuleCurrencyId
-                  );
-                },
-              );
-
-              if (!billingModuleCurrency) {
-                return ecommerceModuleOrderToBillingModuleCurrency;
-              }
-
-              return {
-                ...ecommerceModuleOrderToBillingModuleCurrency,
-                billingModuleCurrency,
-              };
-            },
-          );
-        });
-
-    const ecommerceOrderCheckoutAttributesByCurrency =
-      await ecommerceOrderApi.checkoutAttributesByCurrency({
-        id: props.id,
-        billingModuleCurrencyId:
-          ecommerceModuleOrderToBillingModuleCurrencies[0]
-            .billingModuleCurrencyId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
-
-    const ecommerceModuleOrdersToFileStorageModuleFiles =
-      await ecommerceModuleOrdersToFileStorageModuleFilesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleOrdersToFileStorageModuleFiles) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleOrdersToFileStorageModuleFiles?.length) {
-            return [];
-          }
-          const fileIds = ecommerceModuleOrdersToFileStorageModuleFiles.map(
-            (item) => item.fileStorageModuleFileId,
-          );
-
-          const fileStorageModuleFiles = await fileStorageModuleFileApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: fileIds,
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          return ecommerceModuleOrdersToFileStorageModuleFiles.map(
-            (ecommerceModuleOrdersToFileStorageModuleFile) => {
-              const file = fileStorageModuleFiles?.find((file) => {
-                return (
-                  file.id ===
-                  ecommerceModuleOrdersToFileStorageModuleFile.fileStorageModuleFileId
-                );
-              });
-
-              if (!file) {
-                return ecommerceModuleOrdersToFileStorageModuleFile;
-              }
-
-              return {
-                ...ecommerceModuleOrdersToFileStorageModuleFile,
-                fileStorageModuleFile: file,
-              };
-            },
-          );
-        });
-
-    const ecommerceModuleOrdersToBillingModulePaymentIntents =
-      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "orderId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleOrdersToBillingModulePaymentIntents) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleOrdersToBillingModulePaymentIntents?.length) {
-            return ecommerceModuleOrdersToBillingModulePaymentIntents;
-          }
-
-          const billingModulePaymentIntents =
-            await billingModulePaymentIntentApi
-              .find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "id",
-                        method: "inArray",
-                        value:
-                          ecommerceModuleOrdersToBillingModulePaymentIntents.map(
-                            (entity) => {
-                              return entity.billingModulePaymentIntentId;
-                            },
-                          ),
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              })
-              .then(async (billingModulePaymentIntents) => {
-                if (!RBAC_SECRET_KEY) {
-                  throw new Error(
-                    "Configuration error. RBAC_SECRET_KEY not set",
-                  );
-                }
-
-                if (!billingModulePaymentIntents?.length) {
-                  return billingModulePaymentIntents;
-                }
-
-                const billingModulePaymentIntentsToCurrencies =
-                  await billingModulePaymentIntentsToCurreciesApi
-                    .find({
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "paymentIntentId",
-                              method: "inArray",
-                              value: billingModulePaymentIntents.map(
-                                (entity) => {
-                                  return entity.id;
-                                },
-                              ),
-                            },
-                          ],
-                        },
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                          "Cache-Control": "no-store",
-                        },
-                      },
-                    })
-                    .then(async (billingModulePaymentIntentsToCurrencies) => {
-                      if (!RBAC_SECRET_KEY) {
-                        throw new Error(
-                          "Configuration error. RBAC_SECRET_KEY not set",
-                        );
-                      }
-
-                      if (!billingModulePaymentIntentsToCurrencies?.length) {
-                        return billingModulePaymentIntentsToCurrencies;
-                      }
-
-                      const billingModuleCurrencies =
-                        await billingModuleCurrencyApi.find({
-                          params: {
-                            filters: {
-                              and: [
-                                {
-                                  column: "id",
-                                  method: "inArray",
-                                  value:
-                                    billingModulePaymentIntentsToCurrencies.map(
-                                      (entity) => {
-                                        return entity.currencyId;
-                                      },
-                                    ),
-                                },
-                              ],
-                            },
-                          },
-                          options: {
-                            headers: {
-                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                              "Cache-Control": "no-store",
-                            },
-                          },
-                        });
-
-                      return billingModulePaymentIntentsToCurrencies.map(
-                        (billingModulePaymentIntentToCurrency) => {
-                          return {
-                            ...billingModulePaymentIntentToCurrency,
-                            currency: billingModuleCurrencies?.find(
-                              (entity) => {
-                                return (
-                                  billingModulePaymentIntentToCurrency.currencyId ===
-                                  entity.id
-                                );
-                              },
-                            ),
-                          };
-                        },
-                      );
-                    });
-
-                const billingModulePaymentIntentsToInvoices =
-                  await billingModulePaymentIntentsToInvoicesApi
-                    .find({
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "paymentIntentId",
-                              method: "eq",
-                              value: billingModulePaymentIntents.map(
-                                (entity) => {
-                                  return entity.id;
-                                },
-                              ),
-                            },
-                          ],
-                        },
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                          "Cache-Control": "no-store",
-                        },
-                      },
-                    })
-                    .then(async (billingModulePaymentIntentsToInvoices) => {
-                      if (!RBAC_SECRET_KEY) {
-                        throw new Error(
-                          "Configuration error. RBAC_SECRET_KEY not set",
-                        );
-                      }
-
-                      if (!billingModulePaymentIntentsToInvoices?.length) {
-                        return billingModulePaymentIntentsToInvoices;
-                      }
-
-                      const billingModuleInvoices =
-                        await billingModuleInvoiceApi.find({
-                          params: {
-                            filters: {
-                              and: [
-                                {
-                                  column: "id",
-                                  method: "inArray",
-                                  value:
-                                    billingModulePaymentIntentsToInvoices.map(
-                                      (entity) => {
-                                        return entity.invoiceId;
-                                      },
-                                    ),
-                                },
-                              ],
-                            },
-                          },
-                          options: {
-                            headers: {
-                              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                              "Cache-Control": "no-store",
-                            },
-                          },
-                        });
-
-                      return billingModulePaymentIntentsToInvoices.map(
-                        (billingModulePaymentIntentToInvoice) => {
-                          return {
-                            ...billingModulePaymentIntentToInvoice,
-                            invoice: billingModuleInvoices?.find(
-                              (billingModuleInvoice) => {
-                                return (
-                                  billingModuleInvoice.id ===
-                                  billingModulePaymentIntentToInvoice.invoiceId
-                                );
-                              },
-                            ),
-                          };
-                        },
-                      );
-                    });
-
-                return billingModulePaymentIntents.map(
-                  (billingModulePaymentIntent) => {
-                    return {
-                      ...billingModulePaymentIntent,
-                      paymentIntentsToCurrencies:
-                        billingModulePaymentIntentsToCurrencies,
-                      paymentIntentsToInvoices:
-                        billingModulePaymentIntentsToInvoices,
-                    };
-                  },
-                );
-              });
-
-          // console.log(
-          //   "🚀 ~ extendedEcommerceModuleOrder ~ billingModulePaymentIntents:",
-          //   billingModulePaymentIntents,
-          // );
-
-          return ecommerceModuleOrdersToBillingModulePaymentIntents.map(
-            (ecommerceModuleOrderToBillingModulePaymentIntent) => {
-              return {
-                ...ecommerceModuleOrderToBillingModulePaymentIntent,
-                billingModulePaymentIntent: billingModulePaymentIntents?.find(
-                  (billingModulePaymentIntent) => {
-                    return (
-                      billingModulePaymentIntent.id ===
-                      ecommerceModuleOrderToBillingModulePaymentIntent.billingModulePaymentIntentId
-                    );
-                  },
-                ),
-              };
-            },
-          );
-        });
 
     return {
-      ...props,
-      checkoutAttributesByCurrency: ecommerceOrderCheckoutAttributesByCurrency,
-      ordersToProducts: ecommerceModuleOrderToProducts.map(
-        (ecommerceModuleOrderToProduct) => {
-          const product = ecommerceModuleProducts.find(
-            (ecommerceModuleProduct) => {
-              return (
-                ecommerceModuleProduct.id ===
-                ecommerceModuleOrderToProduct.productId
-              );
-            },
-          );
-
-          if (!product) {
-            throw new Error("Not found error. 'product' not found.");
-          }
-
-          return {
-            ...ecommerceModuleOrderToProduct,
-            product,
-          };
-        },
-      ),
-      ordersToBillingModuleCurrencies:
-        ecommerceModuleOrderToBillingModuleCurrencies,
-      ordersToFileStorageModuleFiles:
-        ecommerceModuleOrdersToFileStorageModuleFiles,
-      ordersToBillingModulePaymentIntents:
-        ecommerceModuleOrdersToBillingModulePaymentIntents as IExtendedEcommerceModuleOrder["ordersToBillingModulePaymentIntents"],
-    };
+      ...extendedOrder,
+      ordersToProducts: extendedOrder.ordersToProducts.map((orderToProduct) => {
+        return {
+          ...orderToProduct,
+          product: {
+            ...orderToProduct.product,
+            rolesToEcommerceModuleProduct:
+              rolesToEcommerceModuleProducts?.filter((item) => {
+                return (
+                  item.ecommerceModuleProductId === orderToProduct.productId
+                );
+              }) ?? [],
+          },
+        };
+      }),
+    } as IExtendedEcommerceModuleOrder;
   }
 
   async extendedEcommerceModuleProduct(
@@ -1869,6 +1393,20 @@ export class Service {
   ): Promise<IExtendedEcommerceModuleProduct> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    const extendedProduct = await ecommerceProductApi.extended({
+      id: props.id,
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    if (!extendedProduct) {
+      throw new Error("Not found error. 'extendedProduct' not found.");
     }
 
     const rolesToEcommerceModuleProducts =
@@ -1892,317 +1430,9 @@ export class Service {
         },
       });
 
-    const ecommerceModuleProductToAttributes =
-      await ecommerceModuleProductsToAttributesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleProductsToAttributes) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleProductsToAttributes?.length) {
-            return [];
-          }
-
-          const extendedEcommerceModuleAttributeByIdPromises =
-            ecommerceModuleProductsToAttributes.map(
-              async (ecommerceModuleProductsToAttribute) => {
-                const extendedEcommerceModuleAttribute =
-                  await this.extendedEcommerceModuleAttributeById({
-                    id: ecommerceModuleProductsToAttribute.attributeId,
-                  });
-
-                return {
-                  ...ecommerceModuleProductsToAttribute,
-                  attribute: extendedEcommerceModuleAttribute,
-                };
-              },
-            );
-
-          const ecommerceModuleProductsToAttributesWithAttributes =
-            await Promise.all(extendedEcommerceModuleAttributeByIdPromises);
-
-          return ecommerceModuleProductsToAttributesWithAttributes;
-        });
-
-    const ecommerceModuleProductsToFileStorageModuleFiles =
-      await ecommerceModuleProductsToFileStorageModuleFilesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "productId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleProductsToFileStorageModuleFiles) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleProductsToFileStorageModuleFiles?.length) {
-            return [];
-          }
-
-          const fileIds = ecommerceModuleProductsToFileStorageModuleFiles.map(
-            (item) => item.fileStorageModuleFileId,
-          );
-
-          const fileStorageModuleFiles = await fileStorageModuleFileApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: fileIds,
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          return ecommerceModuleProductsToFileStorageModuleFiles.map(
-            (ecommerceModuleProductsToFileStorageModuleFile) => {
-              const file = fileStorageModuleFiles?.find((file) => {
-                return (
-                  file.id ===
-                  ecommerceModuleProductsToFileStorageModuleFile.fileStorageModuleFileId
-                );
-              });
-
-              if (!file) {
-                return ecommerceModuleProductsToFileStorageModuleFile;
-              }
-
-              return {
-                ...ecommerceModuleProductsToFileStorageModuleFile,
-                file,
-              };
-            },
-          );
-        });
-
     return {
-      ...props,
+      ...extendedProduct,
       rolesToEcommerceModuleProduct: rolesToEcommerceModuleProducts,
-      productsToAttributes: ecommerceModuleProductToAttributes,
-      productsToFileStorageModuleFiles:
-        ecommerceModuleProductsToFileStorageModuleFiles,
-    };
-  }
-
-  async extendedEcommerceModuleAttributeById(props: {
-    id: IEcommerceModuleAttribute["id"];
-  }): Promise<IExtendedEcommerceModuleAttribute> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-    const ecommerceModuleAttribute = await ecommerceModuleAttributeApi.findById(
-      {
-        id: props.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      },
-    );
-
-    if (!ecommerceModuleAttribute) {
-      throw new Error("Not found error. 'attribute' not found.");
-    }
-
-    const ecommerceModuleAttributeToBillingModuleCurrencies =
-      await ecommerceModuleAttributesToBillingModuleCurrenciesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleAttributeToBillingModuleCurrencies) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleAttributeToBillingModuleCurrencies?.length) {
-            return [];
-          }
-
-          const billingModuleCurrencies = await billingModuleCurrencyApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value:
-                      ecommerceModuleAttributeToBillingModuleCurrencies.map(
-                        (item) => item.billingModuleCurrencyId,
-                      ),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          return ecommerceModuleAttributeToBillingModuleCurrencies.map(
-            (ecommerceModuleAttributeToBillingModuleCurrency) => {
-              const billingModuleCurrency = billingModuleCurrencies?.find(
-                (billingModuleCurrency) => {
-                  return (
-                    billingModuleCurrency.id ===
-                    ecommerceModuleAttributeToBillingModuleCurrency.billingModuleCurrencyId
-                  );
-                },
-              );
-
-              if (!billingModuleCurrency) {
-                return ecommerceModuleAttributeToBillingModuleCurrency;
-              }
-
-              return {
-                ...ecommerceModuleAttributeToBillingModuleCurrency,
-                billingModuleCurrency,
-              };
-            },
-          );
-        });
-
-    const ecommerceModuleAttributeKeysToAttribute =
-      await ecommerceModuleAttributeKeysToAttributesApi
-        .find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        })
-        .then(async (ecommerceModuleAttributeKeysToAttributes) => {
-          if (!RBAC_SECRET_KEY) {
-            throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-          }
-
-          if (!ecommerceModuleAttributeKeysToAttributes?.length) {
-            return [];
-          }
-
-          const attributeKeys = await ecommerceModuleAttributeKeyApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: ecommerceModuleAttributeKeysToAttributes.map(
-                      (item) => item.attributeKeyId,
-                    ),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
-
-          return ecommerceModuleAttributeKeysToAttributes.map(
-            (ecommerceModuleAttributeKeyToAttribute) => {
-              const attributeKey = attributeKeys?.find((attributeKey) => {
-                return (
-                  attributeKey.id ===
-                  ecommerceModuleAttributeKeyToAttribute.attributeKeyId
-                );
-              });
-
-              if (!attributeKey) {
-                return ecommerceModuleAttributeKeyToAttribute;
-              }
-
-              return {
-                ...ecommerceModuleAttributeKeyToAttribute,
-                attributeKey,
-              };
-            },
-          );
-        });
-
-    return {
-      ...ecommerceModuleAttribute,
-      attributeKeysToAttribute: ecommerceModuleAttributeKeysToAttribute,
-      attributesToBillingModuleCurrencies:
-        ecommerceModuleAttributeToBillingModuleCurrencies,
     };
   }
 }

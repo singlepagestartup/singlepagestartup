@@ -1,12 +1,20 @@
 import { QueryBuilderFilterMethods } from "../configuration";
 
+export type QueryBuilderFilterValue =
+  | string
+  | Date
+  | number
+  | boolean
+  | [number, number]
+  | Array<string | Date | number | boolean>;
+
 export interface FindServiceProps {
   params?: {
     filters?: {
       and: {
         column: string;
         method: keyof QueryBuilderFilterMethods;
-        value: string | Date | number | boolean | [number, number];
+        value: QueryBuilderFilterValue;
       }[];
     };
     orderBy?: {

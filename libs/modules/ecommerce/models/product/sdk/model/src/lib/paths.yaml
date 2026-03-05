@@ -102,3 +102,20 @@ paths:
             application/json:
               schema:
                 $ref: "ecommerce-product.yaml"
+
+  /ecommerce/products/{id}/extended:
+    get:
+      tags:
+        - "ecommerce-product"
+      summary: Extended product
+      description: Retrieve product with aggregated related entities
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Extended product
+          content:
+            application/json:
+              schema:
+                type: object

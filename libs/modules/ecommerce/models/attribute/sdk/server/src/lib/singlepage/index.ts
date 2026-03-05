@@ -6,14 +6,26 @@ import {
   query,
   options,
 } from "@sps/ecommerce/models/attribute/sdk/model";
+import {
+  action as billingModuleCurrencyFind,
+  type IProps as IBillingModuleCurrencyFindProps,
+  type IResult as IBillingModuleCurrencyFindResult,
+} from "./billing-module-currency-find";
 
-export type IProps = {};
+export type IProps = {
+  IBillingModuleCurrencyFindProps: IBillingModuleCurrencyFindProps;
+};
 
-export type IResult = {};
+export type IResult = {
+  IBillingModuleCurrencyFindResult: IBillingModuleCurrencyFindResult;
+};
 
-export const api = factory<IModel>({
-  route,
-  host: serverHost,
-  options,
-  params: query,
-});
+export const api = {
+  ...factory<IModel>({
+    route,
+    host: serverHost,
+    options,
+    params: query,
+  }),
+  billingModuleCurrencyFind,
+};

@@ -15,6 +15,12 @@ export type IExecuteProps = {
   billingModuleCurrencyId?: string;
 };
 
+export type IResult = {
+  amount: number;
+  type: "subscription" | "one-time";
+  interval?: "minute" | "hour" | "day" | "week" | "month" | "year";
+};
+
 export class Service {
   repository: IRepository;
 
@@ -22,7 +28,7 @@ export class Service {
     this.repository = repository;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(props: IExecuteProps): Promise<IResult> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
@@ -100,8 +106,8 @@ export class Service {
     }
 
     let amount = 0;
-    let type: string | undefined = undefined;
-    let interval: string | undefined = undefined;
+    let type: IResult["type"] | undefined = undefined;
+    let interval: IResult["interval"] = undefined;
 
     for (const orderToProduct of orderToProducts) {
       const product = await productApi.findById({
@@ -116,6 +122,12 @@ export class Service {
 
       if (!product) {
         throw new Error("Not Found error. Product not found");
+      }
+
+      if (product.type !== "subscription" && product.type !== "one-time") {
+        throw new Error(
+          "Validation error. Unsupported product.type value: " + product.type,
+        );
       }
 
       if (!type) {
@@ -315,15 +327,29 @@ export class Service {
         continue;
       }
 
-      if (!interval && productIntervals[0].string) {
-        interval =
-          productIntervals[0].string[internationalization.defaultLanguage.code];
-      } else if (
-        interval !==
-        productIntervals[0].string?.[internationalization.defaultLanguage.code]
+      const nextIntervalRaw =
+        productIntervals[0].string?.[internationalization.defaultLanguage.code];
+
+      if (
+        nextIntervalRaw &&
+        !["minute", "day", "week", "month", "year"].includes(nextIntervalRaw)
       ) {
+        throw new Error(
+          "Validation error. Unsupported interval value: " + nextIntervalRaw,
+        );
+      }
+
+      const nextInterval = nextIntervalRaw as IResult["interval"];
+
+      if (!interval && nextInterval) {
+        interval = nextInterval;
+      } else if (interval !== nextInterval) {
         throw new Error("Internal error. Order has multiple intervals");
       }
+    }
+
+    if (!type) {
+      throw new Error("Not Found error. Order type not found");
     }
 
     return { amount, type, interval };

@@ -41,6 +41,11 @@ import {
   type IProps as ICheckProps,
   type IResult as ICheckResult,
 } from "./check";
+import {
+  action as extended,
+  type IProps as IExtendedProps,
+  type IResult as IExtendedResult,
+} from "./extended";
 
 export type IProps = {
   ICheckoutAttributesProps: ICheckoutAttributesProps;
@@ -50,6 +55,7 @@ export type IProps = {
   IQuantityProps: IQuantityProps;
   IOrdersToProductsUpdateProps: IOrdersToProductsUpdateProps;
   ICheckProps: ICheckProps;
+  IExtendedProps: IExtendedProps;
 };
 
 export type IResult = {
@@ -60,6 +66,7 @@ export type IResult = {
   IQuantityResult: IQuantityResult;
   IOrdersToProductsUpdateResult: IOrdersToProductsUpdateResult;
   ICheckResult: ICheckResult;
+  IExtendedResult: IExtendedResult;
 };
 
 export const api = {
@@ -76,4 +83,5 @@ export const api = {
   ordersToProductsUpdate,
   check,
   checkoutAttributesByCurrency,
+  extended,
 };

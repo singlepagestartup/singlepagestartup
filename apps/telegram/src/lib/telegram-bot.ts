@@ -1781,6 +1781,8 @@ export class TelegarmBot {
         },
       );
     }
+
+    return;
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {

@@ -136,6 +136,23 @@ paths:
                   - type
                   - interval
 
+  /ecommerce/orders/{id}/extended:
+    get:
+      tags:
+        - "ecommerce-order"
+      summary: Extended order
+      description: Retrieve order with aggregated related entities
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Extended order
+          content:
+            application/json:
+              schema:
+                type: object
+
   /ecommerce/orders/clear-old-orders:
     post:
       tags:

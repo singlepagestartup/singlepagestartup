@@ -1,39 +1,55 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { FindServiceProps } from "@sps/shared-backend-api";
 import { api as orderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
+import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
+import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 
 export type IExecuteProps = {};
 
-export class Service {
-  repository: IRepository;
+type IFindOldOrders = (
+  props: FindServiceProps,
+) => Promise<IEcommerceModuleOrder[] | undefined>;
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+type IFindOrdersToBillingModulePaymentIntents = (
+  props: FindServiceProps,
+) =>
+  | Promise<IEcommerceModuleOrdersToBillingModulePaymentIntents[] | undefined>
+  | Promise<IEcommerceModuleOrdersToBillingModulePaymentIntents[]>;
+
+export interface IConstructorProps {
+  findOldOrders: IFindOldOrders;
+  findOrdersToBillingModulePaymentIntents: IFindOrdersToBillingModulePaymentIntents;
+}
+
+export class Service {
+  findOldOrders: IFindOldOrders;
+  findOrdersToBillingModulePaymentIntents: IFindOrdersToBillingModulePaymentIntents;
+
+  constructor(props: IConstructorProps) {
+    this.findOldOrders = props.findOldOrders;
+    this.findOrdersToBillingModulePaymentIntents =
+      props.findOrdersToBillingModulePaymentIntents;
   }
 
-  async execute(props: IExecuteProps) {
+  async execute(_props: IExecuteProps) {
     try {
+      void _props;
+
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
       }
 
-      const oldOrders = await orderApi.find({
+      const oldOrders = await this.findOldOrders({
         params: {
           filters: {
             and: [
               {
                 column: "createdAt",
                 method: "lt",
-                value: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                value: new Date(Date.now() - 1000 * 60 * 60 * 24),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });
@@ -41,7 +57,7 @@ export class Service {
       if (oldOrders?.length) {
         for (const oldOrder of oldOrders) {
           const orderToBillingPaymentIntents =
-            await ordersToBillingModulePaymentIntentsApi.find({
+            await this.findOrdersToBillingModulePaymentIntents({
               params: {
                 filters: {
                   and: [
@@ -51,11 +67,6 @@ export class Service {
                       value: oldOrder.id,
                     },
                   ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 },
               },
             });
