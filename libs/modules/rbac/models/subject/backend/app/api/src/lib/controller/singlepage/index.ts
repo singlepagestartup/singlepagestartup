@@ -54,6 +54,9 @@ import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-modul
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionCreate } from "./social-module/profile/find-by-id/chat/find-by-id/action/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionFind } from "./social-module/profile/find-by-id/chat/find-by-id/action/find";
+import { Handler as TelegramBootstrap } from "./telegram/bootstrap";
+import { Handler as TelegramSyncMembership } from "./telegram/sync-membership";
+import { Handler as TelegramCheckoutFreeSubscription } from "./telegram/checkout-free-subscription";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -152,6 +155,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/check",
         handler: this.check,
+      },
+      {
+        method: "POST",
+        path: "/telegram/bootstrap",
+        handler: this.telegramBootstrap,
+      },
+      {
+        method: "POST",
+        path: "/:id/telegram/sync-membership",
+        handler: this.telegramSyncMembership,
+      },
+      {
+        method: "POST",
+        path: "/:id/telegram/checkout-free-subscription",
+        handler: this.telegramCheckoutFreeSubscription,
       },
       {
         method: "POST",
@@ -416,6 +434,18 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async check(c: Context, next: any): Promise<Response> {
     return new Check(this.service).execute(c, next);
+  }
+
+  async telegramBootstrap(c: Context): Promise<Response> {
+    return new TelegramBootstrap(this.service).execute(c);
+  }
+
+  async telegramSyncMembership(c: Context): Promise<Response> {
+    return new TelegramSyncMembership(this.service).execute(c);
+  }
+
+  async telegramCheckoutFreeSubscription(c: Context): Promise<Response> {
+    return new TelegramCheckoutFreeSubscription(this.service).execute(c);
   }
 
   async identitiesUpdate(c: Context, next: any): Promise<Response> {

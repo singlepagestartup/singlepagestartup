@@ -1,9 +1,7 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { DI, type IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
-import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
@@ -12,7 +10,6 @@ import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk
 import { IModel as IEcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { IModel as IEcommerceModuleAttributeKey } from "@sps/ecommerce/models/attribute-key/sdk/model";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
 import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
@@ -38,6 +35,13 @@ import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/r
 import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
+import { inject, injectable } from "inversify";
+import { SubjectDI } from "../../../../di";
+import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
+import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
+import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {};
 
@@ -83,11 +87,34 @@ type IExtendedEcommerceModuleProduct = IEcommerceModuleProduct & {
   })[];
 };
 
+@injectable()
 export class Service {
   repository: IRepository;
+  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  subjectsToRoles: SubjectsToRolesService;
+  subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
+  subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService;
+  subjectsToIdentities: SubjectsToIdentitiesService;
 
-  constructor(repository: IRepository) {
+  constructor(
+    @inject(DI.IRepository) repository: IRepository,
+    @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
+    subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
+    @inject(SubjectDI.ISubjectsToRolesService)
+    subjectsToRoles: SubjectsToRolesService,
+    @inject(SubjectDI.ISubjectsToSocialModuleProfilesService)
+    subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService,
+    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
+    subjectsToBillingModuleCurrencies: SubjectsToBillingModuleCurrenciesService,
+    @inject(SubjectDI.ISubjectsToIdentitiesService)
+    subjectsToIdentities: SubjectsToIdentitiesService,
+  ) {
     this.repository = repository;
+    this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
+    this.subjectsToRoles = subjectsToRoles;
+    this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
+    this.subjectsToBillingModuleCurrencies = subjectsToBillingModuleCurrencies;
+    this.subjectsToIdentities = subjectsToIdentities;
   }
 
   async execute(props: IExecuteProps) {
@@ -96,14 +123,7 @@ export class Service {
     }
 
     const subjectsToEcommerceModuleOrders =
-      await subjectsToEcommerceModuleOrdersApi.find({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      await this.subjectsToEcommerceModuleOrders.find();
 
     if (!subjectsToEcommerceModuleOrders?.length) {
       return;
@@ -157,7 +177,7 @@ export class Service {
             continue;
           }
 
-          const rbacSubjectsToRoles = await subjectsToRolesApi.find({
+          const rbacSubjectsToRoles = await this.subjectsToRoles.find({
             params: {
               filters: {
                 and: [
@@ -167,12 +187,6 @@ export class Service {
                     value: subjectToEcommerceModuleOrder.subjectId,
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
               },
             },
           });
@@ -271,52 +285,40 @@ export class Service {
               }
             }
 
-            await subjectsToBillingModuleCurrenciesApi
-              .find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "subjectId",
-                        method: "eq",
-                        value: subjectToEcommerceModuleOrder.subjectId,
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Constrol": "no-store",
-                  },
-                },
-              })
-              .then(async (subjectsToBillingModuleCurrencies) => {
-                if (!RBAC_SECRET_KEY) {
-                  return;
-                }
-
-                if (subjectsToBillingModuleCurrencies?.length) {
-                  for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
-                    await subjectsToBillingModuleCurrenciesApi.update({
-                      id: subjectToBillingModuleCurrency.id,
-                      data: {
-                        ...subjectToBillingModuleCurrency,
-                        amount: "0",
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                          "Cache-Constrol": "no-store",
+            const subjectsToBillingModuleCurrencies =
+              await this.subjectsToBillingModuleCurrencies
+                .find({
+                  params: {
+                    filters: {
+                      and: [
+                        {
+                          column: "subjectId",
+                          method: "eq",
+                          value: subjectToEcommerceModuleOrder.subjectId,
                         },
-                      },
-                    });
-                  }
-                }
-              })
-              .catch(() => {
-                //
-              });
+                      ],
+                    },
+                  },
+                })
+                .catch(() => undefined);
+
+            if (subjectsToBillingModuleCurrencies?.length) {
+              for (const subjectToBillingModuleCurrency of subjectsToBillingModuleCurrencies) {
+                await subjectsToBillingModuleCurrenciesApi.update({
+                  id: subjectToBillingModuleCurrency.id,
+                  data: {
+                    ...subjectToBillingModuleCurrency,
+                    amount: "0",
+                  },
+                  options: {
+                    headers: {
+                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                      "Cache-Constrol": "no-store",
+                    },
+                  },
+                });
+              }
+            }
 
             await ecommerceOrderApi.update({
               id: order.id,
@@ -362,7 +364,7 @@ export class Service {
       const productsToAttributes =
         orderToProduct.product.productsToAttributes ?? [];
 
-      const deliveringProducts = await subjectsToEcommerceModuleOrdersApi
+      const deliveringProducts = await this.subjectsToEcommerceModuleOrders
         .find({
           params: {
             filters: {
@@ -373,12 +375,6 @@ export class Service {
                   value: props.subjectToEcommerceModuleOrder.subjectId,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         })
@@ -538,7 +534,7 @@ export class Service {
     });
 
     const rbacSubjectsToSocialModuleProfiles =
-      await subjectsToSocialModuleProfilesApi.find({
+      await this.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -548,12 +544,6 @@ export class Service {
                 value: props.subjectToEcommerceModuleOrder.subjectId,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -598,7 +588,7 @@ export class Service {
 
     if (topupCurrencies.length) {
       const subjectsToBillingModuleCurrencies =
-        await subjectsToBillingModuleCurrenciesApi.find({
+        await this.subjectsToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -608,12 +598,6 @@ export class Service {
                   value: props.subjectToEcommerceModuleOrder.subjectId,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Constrol": "no-store",
             },
           },
         });
@@ -744,7 +728,7 @@ export class Service {
     }
 
     const subjectsToBillingModuleCurrencies =
-      await subjectsToBillingModuleCurrenciesApi.find({
+      await this.subjectsToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -759,12 +743,6 @@ export class Service {
                 value: "0",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -852,7 +830,7 @@ export class Service {
 
       if (provider === "telegram-star") {
         const subjectToSocialModuleProfiles =
-          await subjectsToSocialModuleProfilesApi.find({
+          await this.subjectsToSocialModuleProfiles.find({
             params: {
               filters: {
                 and: [
@@ -862,12 +840,6 @@ export class Service {
                     value: props.subjectToEcommerceModuleOrder.subjectId,
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
               },
             },
           });
@@ -978,7 +950,7 @@ export class Service {
       });
 
     const subjectsToEcommerceModuleOrders =
-      await subjectsToEcommerceModuleOrdersApi.find({
+      await this.subjectsToEcommerceModuleOrders.find({
         params: {
           filters: {
             and: [
@@ -990,19 +962,13 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!subjectsToEcommerceModuleOrders?.length) {
       return;
     }
 
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+    const subjectsToIdentities = await this.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -1014,12 +980,6 @@ export class Service {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -1179,7 +1139,7 @@ export class Service {
       return;
     }
 
-    const subjectsToRoles = await subjectsToRolesApi.find({
+    const subjectsToRoles = await this.subjectsToRoles.find({
       params: {
         filters: {
           and: [
@@ -1191,18 +1151,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!subjectsToRoles?.length) {
       return;
     }
 
-    const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+    const subjectsToIdentities = await this.subjectsToIdentities.find({
       params: {
         filters: {
           and: [
@@ -1212,12 +1167,6 @@ export class Service {
               value: subjectsToRoles.map((item) => item.subjectId),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });

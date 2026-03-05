@@ -57,11 +57,34 @@ import {
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
 import { SubjectDI } from "../../di";
+import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
+import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
+import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import {
+  Service as TelegramBootstrap,
+  IExecuteProps as ITelegramBootstrapExecuteProps,
+  IResult as ITelegramBootstrapResult,
+} from "./telegram/bootstrap";
+import {
+  Service as TelegramSyncMembership,
+  IExecuteProps as ITelegramSyncMembershipExecuteProps,
+  IResult as ITelegramSyncMembershipResult,
+} from "./telegram/sync-membership";
+import {
+  Service as TelegramCheckoutFreeSubscription,
+  IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps,
+} from "./telegram/checkout-free-subscription";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   isAuthorizedService: IsAuthorized;
   billRouteService: BillRoute;
+  ecommerceOrderProceedService: EcommerceOrderProceed;
+  subjectsToIdentities: SubjectsToIdentitiesService;
+  subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
+  subjectsToRoles: SubjectsToRolesService;
+  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -69,10 +92,25 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     isAuthorizedService: IsAuthorized,
     @inject(SubjectDI.IBillRouteService)
     billRouteService: BillRoute,
+    @inject(SubjectDI.IEcommerceOrderProceedService)
+    ecommerceOrderProceedService: EcommerceOrderProceed,
+    @inject(SubjectDI.ISubjectsToIdentitiesService)
+    subjectsToIdentities: SubjectsToIdentitiesService,
+    @inject(SubjectDI.ISubjectsToSocialModuleProfilesService)
+    subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService,
+    @inject(SubjectDI.ISubjectsToRolesService)
+    subjectsToRoles: SubjectsToRolesService,
+    @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
+    subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
   ) {
     super(repository);
     this.isAuthorizedService = isAuthorizedService;
     this.billRouteService = billRouteService;
+    this.ecommerceOrderProceedService = ecommerceOrderProceedService;
+    this.subjectsToIdentities = subjectsToIdentities;
+    this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
+    this.subjectsToRoles = subjectsToRoles;
+    this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
@@ -142,6 +180,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async ecommerceOrderProceed(props: IEcommerceOrderProceedProps) {
-    return new EcommerceOrderProceed(this.repository).execute(props);
+    return this.ecommerceOrderProceedService.execute(props);
+  }
+
+  async telegramBootstrap(
+    props: ITelegramBootstrapExecuteProps,
+  ): Promise<ITelegramBootstrapResult> {
+    return new TelegramBootstrap({
+      findById: ({ id }) => this.findById({ id }),
+      subjectsToIdentities: this.subjectsToIdentities,
+      subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
+    }).execute(props);
+  }
+
+  async telegramSyncMembership(
+    props: ITelegramSyncMembershipExecuteProps,
+  ): Promise<ITelegramSyncMembershipResult> {
+    return new TelegramSyncMembership({
+      subjectsToRoles: this.subjectsToRoles,
+    }).execute(props);
+  }
+
+  async telegramCheckoutFreeSubscription(
+    props: ITelegramCheckoutFreeSubscriptionExecuteProps,
+  ) {
+    return new TelegramCheckoutFreeSubscription({
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+    }).execute(props);
   }
 }

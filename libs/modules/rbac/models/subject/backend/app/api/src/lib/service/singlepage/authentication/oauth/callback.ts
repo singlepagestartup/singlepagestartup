@@ -197,7 +197,7 @@ export class Service {
     }
 
     if (!targetSubjectId) {
-      targetSubjectId = await this.createSubjectFromProfile(profile);
+      targetSubjectId = await this.createFromProfile(profile);
       targetSubjectOrigin = "new";
     }
 
@@ -282,7 +282,7 @@ export class Service {
     };
   }
 
-  private async createSubjectFromProfile(profile: TGoogleProfile) {
+  private async createFromProfile(profile: TGoogleProfile) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }

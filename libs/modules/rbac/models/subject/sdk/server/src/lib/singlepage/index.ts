@@ -17,6 +17,21 @@ import {
   type IProps as ICheckProps,
   type IResult as ICheckResult,
 } from "./check";
+import {
+  action as telegramBootstrap,
+  type IProps as ITelegramBootstrapProps,
+  type IResult as ITelegramBootstrapResult,
+} from "./telegram/bootstrap";
+import {
+  action as telegramSyncMembership,
+  type IProps as ITelegramSyncMembershipProps,
+  type IResult as ITelegramSyncMembershipResult,
+} from "./telegram/sync-membership";
+import {
+  action as telegramCheckoutFreeSubscription,
+  type IProps as ITelegramCheckoutFreeSubscriptionProps,
+  type IResult as ITelegramCheckoutFreeSubscriptionResult,
+} from "./telegram/checkout-free-subscription";
 
 import {
   action as ecommerceModuleProductCheckout,
@@ -221,6 +236,9 @@ import {
 export type IProps = {
   INotifyProps: INotifyProps;
   ICheckProps: ICheckProps;
+  ITelegramBootstrapProps: ITelegramBootstrapProps;
+  ITelegramSyncMembershipProps: ITelegramSyncMembershipProps;
+  ITelegramCheckoutFreeSubscriptionProps: ITelegramCheckoutFreeSubscriptionProps;
 
   IEcommerceModuleProductCheckoutProps: IEcommerceModuleProductCheckoutProps;
   IEcommerceModuleOrderCreateProps: IEcommerceModuleOrderCreateProps;
@@ -270,6 +288,9 @@ export type IProps = {
 export type IResult = {
   INotifyResult: INotifyResult;
   ICheckResult: ICheckResult;
+  ITelegramBootstrapResult: ITelegramBootstrapResult;
+  ITelegramSyncMembershipResult: ITelegramSyncMembershipResult;
+  ITelegramCheckoutFreeSubscriptionResult: ITelegramCheckoutFreeSubscriptionResult;
 
   IEcommerceModuleProductCheckoutResult: IEcommerceModuleProductCheckoutResult;
   IEcommerceModuleOrderCreateResult: IEcommerceModuleOrderCreateResult;
@@ -326,6 +347,9 @@ export const api = {
 
   notify,
   check,
+  telegramBootstrap,
+  telegramSyncMembership,
+  telegramCheckoutFreeSubscription,
 
   ecommerceModuleProductCheckout,
   ecommerceModuleOrderCreate,

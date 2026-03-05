@@ -176,6 +176,89 @@ paths:
                 required:
                   - data
 
+  /rbac/subjects/telegram/bootstrap:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Telegram bootstrap
+      description: Find or create telegram subject/profile/chat in one request
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"telegram":{"fromId":"1","chatId":"1","messageText":"/start"}}'
+              required:
+                - data
+      responses:
+        "200":
+          description: Bootstrap result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /rbac/subjects/{id}/telegram/sync-membership:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Telegram role sync
+      description: Synchronize subject roles for telegram membership and registration defaults
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"memberStatus":"member"}'
+      responses:
+        "200":
+          description: Role synchronization result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /rbac/subjects/{id}/telegram/checkout-free-subscription:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Telegram free subscription checkout
+      description: Checkout free subscription product for telegram subject if available
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: '{"chatId":"1"}'
+              required:
+                - data
+      responses:
+        "200":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                type: object
+
   /rbac/subjects/{id}/identities:
     get:
       tags:

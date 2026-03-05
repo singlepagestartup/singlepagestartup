@@ -1278,9 +1278,9 @@ components:
     "crm-widgets-to-forms-input":
       $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
     "crm-widgets-to-website-builder-module-widgets":
-      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-forms.yaml"
+      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-website-builder-module-widgets.yaml"
     "crm-widgets-to-website-builder-module-widgets-input":
-      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-forms-input.yaml"
+      $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/crm-widgets-to-website-builder-module-widgets-input.yaml"
     "ecommerce-attribute-key":
       $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/ecommerce-attribute-key.yaml"
     "ecommerce-attribute-key-input":
