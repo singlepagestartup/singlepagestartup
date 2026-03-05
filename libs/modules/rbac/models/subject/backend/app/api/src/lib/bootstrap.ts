@@ -14,6 +14,10 @@ import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-
 import { Repository as SubjectsToRolesRepository } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToRolesConfiguration } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/configuration";
 import { Service as IsAuthorizedService } from "./service/singlepage/is-authorized";
+import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
+import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/repository";
+import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
+import { Service as BillRouteService } from "./service/singlepage/bill-route";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -30,8 +34,23 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         ),
     )
     .inSingletonScope();
+  bind<SubjectsToBillingModuleCurrenciesService>(
+    SubjectDI.ISubjectsToBillingModuleCurrenciesService,
+  )
+    .toDynamicValue(
+      () =>
+        new SubjectsToBillingModuleCurrenciesService(
+          new SubjectsToBillingModuleCurrenciesRepository(
+            new SubjectsToBillingModuleCurrenciesConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
   bind<IsAuthorizedService>(SubjectDI.IIsAuthorizedService)
     .to(IsAuthorizedService)
+    .inSingletonScope();
+  bind<BillRouteService>(SubjectDI.IBillRouteService)
+    .to(BillRouteService)
     .inSingletonScope();
 });
 

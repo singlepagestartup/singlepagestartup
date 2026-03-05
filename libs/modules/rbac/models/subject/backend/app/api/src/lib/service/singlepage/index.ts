@@ -61,14 +61,18 @@ import { SubjectDI } from "../../di";
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   isAuthorizedService: IsAuthorized;
+  billRouteService: BillRoute;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
     @inject(SubjectDI.IIsAuthorizedService)
     isAuthorizedService: IsAuthorized,
+    @inject(SubjectDI.IBillRouteService)
+    billRouteService: BillRoute,
   ) {
     super(repository);
     this.isAuthorizedService = isAuthorizedService;
+    this.billRouteService = billRouteService;
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
@@ -134,7 +138,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async billRoute(props: IBillRouteProps) {
-    return new BillRoute(this.repository).execute(props);
+    return this.billRouteService.execute(props);
   }
 
   async ecommerceOrderProceed(props: IEcommerceOrderProceedProps) {

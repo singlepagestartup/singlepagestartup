@@ -63,7 +63,7 @@ export function Component(props: IComponentProps) {
         </ScrollArea>
       </div>
 
-      {props.showSettingsButton !== false && isSidebarOpen ? (
+      {/* {props.showSettingsButton !== false && isSidebarOpen ? (
         <div className="border-t border-border p-3">
           {props.settingsHref ? (
             <Button
@@ -103,7 +103,7 @@ export function Component(props: IComponentProps) {
             </Button>
           )}
         </div>
-      ) : null}
+      ) : null} */}
     </aside>
   );
 }

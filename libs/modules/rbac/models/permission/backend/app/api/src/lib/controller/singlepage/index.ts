@@ -5,6 +5,7 @@ import { Table } from "@sps/rbac/models/permission/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as FindByRoute } from "./find-by-route";
+import { Handler as ResolveByRoute } from "./resolve-by-route";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
@@ -19,6 +20,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "GET",
         path: "/find-by-route",
         handler: this.findByRoute,
+      },
+      {
+        method: "GET",
+        path: "/resolve-by-route",
+        handler: this.resolveByRoute,
       },
       {
         method: "GET",
@@ -55,5 +61,9 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   public async findByRoute(c: Context, next: any): Promise<Response> {
     return new FindByRoute(this.service).execute(c, next);
+  }
+
+  public async resolveByRoute(c: Context, next: any): Promise<Response> {
+    return new ResolveByRoute(this.service).execute(c, next);
   }
 }

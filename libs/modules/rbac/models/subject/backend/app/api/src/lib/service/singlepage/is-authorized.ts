@@ -5,8 +5,7 @@ import {
   createMemoryCache,
 } from "@sps/shared-utils";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-import { IModel as IPermission } from "@sps/rbac/models/permission/sdk/model";
-import { IModel as IRolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
+import { type IModel as IRolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
 import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import * as jwt from "hono/jwt";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service/singlepage";
@@ -79,6 +78,28 @@ export class Service {
     return roleIds;
   }
 
+  private getRoleIdsByPermissionId(props: {
+    rolesToPermissions: IRolesToPermissions[];
+    permissionId?: string;
+  }) {
+    const { rolesToPermissions, permissionId } = props;
+
+    if (!permissionId) {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        rolesToPermissions
+          .filter((roleToPermission) => {
+            return roleToPermission.permissionId === permissionId;
+          })
+          .map((roleToPermission) => roleToPermission.roleId)
+          .filter((roleId): roleId is string => typeof roleId === "string"),
+      ),
+    );
+  }
+
   async execute(props: IExecuteProps) {
     let authorized = false;
 
@@ -113,32 +134,40 @@ export class Service {
       }
     }
 
-    const permissionCacheKey = `permission:${props.permission.type}:${props.permission.method}:${props.permission.route}`;
-    let permission = cache.get<IPermission>(permissionCacheKey);
-    if (!permission) {
-      const fetched = await permissionApi
-        .findByRoute({
-          params: {
-            permission: {
-              method: props.permission.method,
-              route: props.permission.route,
-              type: props.permission.type,
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        })
-        .catch(() => undefined);
+    const permissionResolutionCacheKey = [
+      "permission-resolution",
+      props.permission.type,
+      props.permission.method,
+      props.permission.route,
+    ].join(":");
 
-      permission = fetched ?? undefined;
+    let permissionResolution = cache.get<
+      Awaited<ReturnType<typeof permissionApi.resolveByRoute>>
+    >(permissionResolutionCacheKey);
 
-      if (permission) {
-        cache.set(permissionCacheKey, permission);
+    if (!permissionResolution) {
+      permissionResolution = await permissionApi.resolveByRoute({
+        params: {
+          permission: {
+            method: props.permission.method,
+            route: props.permission.route,
+            type: props.permission.type,
+          },
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      if (permissionResolution) {
+        cache.set(permissionResolutionCacheKey, permissionResolution);
       }
     }
+
+    const permission = permissionResolution?.permission;
+    const rootPermission = permissionResolution?.rootPermission;
 
     const rolesToPermissionsCacheKey = "roles-to-permissions:all";
     let rolesToPermissions = cache.get<IRolesToPermissions[]>(
@@ -155,20 +184,29 @@ export class Service {
         })
         .catch(() => undefined);
 
-      rolesToPermissions = Array.isArray(fetched) ? fetched : undefined;
-
-      if (rolesToPermissions) {
-        cache.set(rolesToPermissionsCacheKey, rolesToPermissions);
-      }
+      rolesToPermissions = Array.isArray(fetched) ? fetched : [];
+      cache.set(rolesToPermissionsCacheKey, rolesToPermissions);
     }
 
-    if (permission && rolesToPermissions) {
+    let subjectRoleIds: string[] | undefined = undefined;
+    const getSubjectRoleIds = async () => {
+      if (!subjectId) {
+        return [];
+      }
+
+      if (!subjectRoleIds) {
+        subjectRoleIds = await this.getSubjectRoleIds(subjectId);
+      }
+
+      return subjectRoleIds;
+    };
+
+    if (permission) {
       const permissionRoleIds = new Set(
-        rolesToPermissions
-          .filter((roleToPermission) => {
-            return roleToPermission.permissionId === permission.id;
-          })
-          .map((roleToPermission) => roleToPermission.roleId),
+        this.getRoleIdsByPermissionId({
+          rolesToPermissions,
+          permissionId: permission.id,
+        }),
       );
 
       /**
@@ -179,58 +217,28 @@ export class Service {
       }
 
       if (!authorized && subjectId) {
-        const subjectRoleIds = await this.getSubjectRoleIds(subjectId);
+        const roles = await getSubjectRoleIds();
 
-        authorized = subjectRoleIds.some((roleId) => {
+        authorized = roles.some((roleId) => {
           return permissionRoleIds.has(roleId);
         });
       }
     }
 
     if (!authorized && subjectId) {
-      const rootPermissionCacheKey = "permission:HTTP:*:*";
-      let rootPermission = cache.get<IPermission>(rootPermissionCacheKey);
-      if (!rootPermission) {
-        const fetched = await permissionApi
-          .findByRoute({
-            params: {
-              permission: {
-                method: "*",
-                route: "*",
-                type: "HTTP",
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          })
-          .catch(() => undefined);
+      const rootRoleIds = new Set(
+        this.getRoleIdsByPermissionId({
+          rolesToPermissions,
+          permissionId: rootPermission?.id,
+        }),
+      );
 
-        rootPermission = fetched ?? undefined;
+      if (rootRoleIds.size) {
+        const roles = await getSubjectRoleIds();
 
-        if (rootPermission) {
-          cache.set(rootPermissionCacheKey, rootPermission);
-        }
-      }
-
-      if (rootPermission && rolesToPermissions) {
-        const rootRoleIds = new Set(
-          rolesToPermissions
-            .filter((roleToPermission) => {
-              return roleToPermission.permissionId === rootPermission.id;
-            })
-            .map((roleToPermission) => roleToPermission.roleId),
-        );
-
-        if (rootRoleIds.size) {
-          const subjectRoleIds = await this.getSubjectRoleIds(subjectId);
-
-          authorized = subjectRoleIds.some((roleId) => {
-            return rootRoleIds.has(roleId);
-          });
-        }
+        authorized = roles.some((roleId) => {
+          return rootRoleIds.has(roleId);
+        });
       }
     }
 

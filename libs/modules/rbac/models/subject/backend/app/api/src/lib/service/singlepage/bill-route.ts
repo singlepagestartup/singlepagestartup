@@ -1,10 +1,17 @@
-import { IRepository } from "@sps/shared-backend-api";
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { DI, type IRepository } from "@sps/shared-backend-api";
+import {
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+  createMemoryCache,
+} from "@sps/shared-utils";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
-import { api as permissionsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/server";
-import { IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/model";
+import { type IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/model";
 import * as jwt from "hono/jwt";
-import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
+import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
+import { inject, injectable } from "inversify";
+import { SubjectDI } from "../../di";
+
+const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 
 export type IExecuteProps = {
   permission: {
@@ -17,11 +24,50 @@ export type IExecuteProps = {
   };
 };
 
+@injectable()
 export class Service {
   repository: IRepository;
+  subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService;
 
-  constructor(repository: IRepository) {
+  constructor(
+    @inject(DI.IRepository) repository: IRepository,
+    @inject(SubjectDI.ISubjectsToBillingModuleCurrenciesService)
+    subjectsToBillingModuleCurrenciesService: SubjectsToBillingModuleCurrenciesService,
+  ) {
     this.repository = repository;
+    this.subjectsToBillingModuleCurrenciesService =
+      subjectsToBillingModuleCurrenciesService;
+  }
+
+  private async getSubjectId(authorization?: string) {
+    if (!authorization) {
+      return undefined;
+    }
+
+    const cacheKey = `jwt:subject:${authorization}`;
+    let subjectId = cache.get<string>(cacheKey);
+
+    if (!subjectId) {
+      const decoded = await jwt.verify(
+        authorization,
+        RBAC_JWT_SECRET as string,
+      );
+
+      if (!decoded.subject?.["id"]) {
+        throw new Error(
+          "Authorization error. No subject provided in the token",
+        );
+      }
+
+      if (typeof decoded.subject["id"] !== "string") {
+        throw new Error("Authorization error. Subject ID is not a string");
+      }
+
+      subjectId = decoded.subject["id"];
+      cache.set(cacheKey, subjectId);
+    }
+
+    return subjectId;
   }
 
   async execute(props: IExecuteProps) {
@@ -34,50 +80,28 @@ export class Service {
     }
 
     const authorization = props.authorization.value;
+    const subjectId = await this.getSubjectId(authorization);
 
-    let subjectsToBillingModuleCurrencies:
-      | ISubjectsToBillingModuleCurrencies[]
-      | undefined;
+    const permissionResolutionCacheKey = [
+      "permission-resolution",
+      props.permission.type,
+      props.permission.method,
+      props.permission.route,
+    ].join(":");
 
-    if (authorization) {
-      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+    let permissionResolution = cache.get<
+      Awaited<ReturnType<typeof permissionApi.resolveByRoute>>
+    >(permissionResolutionCacheKey);
 
-      if (!decoded.subject?.["id"]) {
-        throw new Error(
-          "Authorization error. No subject provided in the token",
-        );
-      }
-
-      subjectsToBillingModuleCurrencies =
-        await subjectsToBillingModuleCurrenciesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "subjectId",
-                  method: "eq",
-                  value: decoded.subject["id"],
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
-    }
-
-    const permission = await permissionApi
-      .findByRoute({
+    if (!permissionResolution) {
+      permissionResolution = await permissionApi.resolveByRoute({
         params: {
           permission: {
             method: props.permission.method,
             route: props.permission.route,
             type: props.permission.type,
           },
+          includeBillingRequirements: true,
         },
         options: {
           headers: {
@@ -85,11 +109,14 @@ export class Service {
             "Cache-Control": "no-store",
           },
         },
-      })
-      .catch((error) => {
-        // console.log("🚀 ~ execute ~ error:", error);
-        //
       });
+
+      if (permissionResolution) {
+        cache.set(permissionResolutionCacheKey, permissionResolution);
+      }
+    }
+
+    const permission = permissionResolution?.permission;
 
     // If no permission is found, allow access (free route)
     if (!permission) {
@@ -99,24 +126,7 @@ export class Service {
     }
 
     const permissionsToBillingModuleCurrencies =
-      await permissionsToBillingModuleCurrenciesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "permissionId",
-                method: "eq",
-                value: permission.id,
-              },
-            ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      permissionResolution?.permissionsToBillingModuleCurrencies || [];
 
     /**
      * Permissions without currencies are free
@@ -125,6 +135,30 @@ export class Service {
       return {
         ok: true,
       };
+    }
+
+    let subjectsToBillingModuleCurrencies:
+      | ISubjectsToBillingModuleCurrencies[]
+      | undefined;
+
+    if (subjectId) {
+      const fetched = await this.subjectsToBillingModuleCurrenciesService.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: subjectId,
+              },
+            ],
+          },
+        },
+      });
+
+      subjectsToBillingModuleCurrencies = Array.isArray(fetched)
+        ? fetched
+        : undefined;
     }
 
     if (!subjectsToBillingModuleCurrencies?.length) {
@@ -187,7 +221,7 @@ export class Service {
       );
     }
 
-    await subjectsToBillingModuleCurrenciesApi.update({
+    await this.subjectsToBillingModuleCurrenciesService.update({
       id: sameCurrencySubjectsToBillingModuleCurrencyWithEnoughBalance.id,
       data: {
         ...sameCurrencySubjectsToBillingModuleCurrencyWithEnoughBalance,
@@ -196,11 +230,6 @@ export class Service {
             sameCurrencySubjectsToBillingModuleCurrencyWithEnoughBalance.amount,
           ) - parseFloat(permissionToBillingModuleCurrency.amount),
         ),
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
       },
     });
 

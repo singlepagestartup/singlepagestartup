@@ -18,6 +18,12 @@ export class Handler {
       const route = query.permission?.["route"] as string;
       const method = query.permission?.["method"] as string;
       const type = query.permission?.["type"] as string;
+      const includeBillingRequirementsRaw =
+        query?.["includeBillingRequirements"];
+      const includeBillingRequirements =
+        includeBillingRequirementsRaw === "true" ||
+        (Array.isArray(includeBillingRequirementsRaw) &&
+          includeBillingRequirementsRaw.some((value) => value === "true"));
 
       if (!route || !method || !type) {
         throw new Error(
@@ -25,21 +31,16 @@ export class Handler {
         );
       }
 
-      const resolved = await this.service.resolveByRoute({
+      const data = await this.service.resolveByRoute({
         permission: {
           route,
           method,
           type,
         },
+        includeBillingRequirements,
       });
 
-      if (resolved.permission) {
-        return c.json({ data: resolved.permission });
-      }
-
-      throw new Error(
-        `Not Found error. No matching permission for route: ${route}, method: ${method}, type: ${type}`,
-      );
+      return c.json({ data });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });

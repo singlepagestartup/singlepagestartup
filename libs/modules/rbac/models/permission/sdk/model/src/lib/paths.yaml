@@ -134,3 +134,36 @@ paths:
             application/json:
               schema:
                 $ref: "rbac-permission.yaml"
+
+  /rbac/permissions/resolve-by-route:
+    get:
+      tags:
+        - "rbac-permission"
+      summary: Resolve by route
+      description: Resolve permission, related roles and billing requirements by route
+      parameters:
+        - name: permission
+          in: query
+          required: true
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            properties:
+              route:
+                type: string
+              method:
+                type: string
+              type:
+                type: string
+            required:
+              - route
+              - method
+        - name: includeBillingRequirements
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Resolved permission data
