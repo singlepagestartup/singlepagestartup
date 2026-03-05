@@ -883,12 +883,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    for (const expiredNotification of expiredNotifications) {
-      this.delete({
-        id: expiredNotification.id,
-      }).catch((error) => {
-        //
-      });
-    }
+    Promise.allSettled(
+      expiredNotifications.map((notification) =>
+        this.delete({ id: notification.id }).catch((error) => {
+          //
+        }),
+      ),
+    );
   }
 }

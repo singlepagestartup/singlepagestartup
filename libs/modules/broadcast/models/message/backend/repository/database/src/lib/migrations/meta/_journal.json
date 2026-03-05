@@ -8,6 +8,13 @@
       "when": 1737754236244,
       "tag": "0000_dusty_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772748082206,
+      "tag": "0001_thankful_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

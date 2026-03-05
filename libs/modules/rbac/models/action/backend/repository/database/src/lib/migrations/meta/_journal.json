@@ -57,6 +57,13 @@
       "when": 1772634505955,
       "tag": "0007_cooing_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772747988015,
+      "tag": "0008_melted_enchantress",
+      "breakpoints": true
     }
   ]
 }

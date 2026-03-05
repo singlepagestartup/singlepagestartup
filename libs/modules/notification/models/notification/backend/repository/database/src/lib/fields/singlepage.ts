@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import * as pgCore from "drizzle-orm/pg-core";
 
 export const fields = {
