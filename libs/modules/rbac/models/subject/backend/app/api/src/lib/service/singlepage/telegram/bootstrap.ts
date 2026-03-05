@@ -15,6 +15,7 @@ import { api as socialModuleAttributeKeysToAttributesApi } from "@sps/social/rel
 import { api as socialModuleProfilesToAttributesApi } from "@sps/social/relations/profiles-to-attributes/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+import { IModel as IRbacSubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/sdk/model";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 
@@ -72,6 +73,78 @@ export class Service {
       isStartCommand: Boolean(match),
       referralCode,
     };
+  }
+
+  private getCreatedAtTimestamp(value: unknown) {
+    if (!value) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+
+    const parsed = new Date(String(value)).getTime();
+
+    if (Number.isNaN(parsed)) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    return parsed;
+  }
+
+  private async resolveSubjectByIdentityLinks(props: {
+    identityId: string;
+    links: IRbacSubjectsToIdentities[];
+  }) {
+    const links = [...props.links].sort(
+      (a, b) =>
+        this.getCreatedAtTimestamp(a.createdAt) -
+        this.getCreatedAtTimestamp(b.createdAt),
+    );
+
+    let selectedSubject: IRbacSubject | null = null;
+    const duplicateLinkIds: string[] = [];
+
+    for (const link of links) {
+      const existingSubject = await this.findById({
+        id: link.subjectId,
+      });
+
+      if (!selectedSubject && existingSubject) {
+        selectedSubject = existingSubject;
+        continue;
+      }
+
+      duplicateLinkIds.push(link.id);
+    }
+
+    for (const duplicateLinkId of duplicateLinkIds) {
+      await subjectsToIdentitiesApi.delete({
+        id: duplicateLinkId,
+        options: {
+          headers: this.getSdkHeaders(),
+        },
+      });
+    }
+
+    if (duplicateLinkIds.length) {
+      console.warn(
+        "telegram/bootstrap: removed duplicate subjects-to-identities links",
+        {
+          identityId: props.identityId,
+          removedLinks: duplicateLinkIds,
+        },
+      );
+    }
+
+    if (!selectedSubject) {
+      throw new Error(
+        "Internal error. Subject not found for the given identity links",
+      );
+    }
+
+    return selectedSubject;
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
@@ -132,21 +205,10 @@ export class Service {
       });
 
       if (subjectsToIdentities?.length) {
-        if (subjectsToIdentities.length > 1) {
-          throw new Error(
-            "Internal error. Multiple subjects-to-identities found for the same identity",
-          );
-        }
-
-        subject = await this.findById({
-          id: subjectsToIdentities[0].subjectId,
+        subject = await this.resolveSubjectByIdentityLinks({
+          identityId: identity.id,
+          links: subjectsToIdentities,
         });
-
-        if (!subject) {
-          throw new Error(
-            "Internal error. Subject not found for the given subjectId",
-          );
-        }
       } else {
         subject = await api.create({
           data: {},
