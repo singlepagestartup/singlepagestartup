@@ -9,6 +9,11 @@ import { Repository } from "./repository";
 import { Controller } from "./controller";
 import { Service } from "./service";
 import { App } from "./app";
+import { SubjectDI } from "./di";
+import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service/singlepage";
+import { Repository as SubjectsToRolesRepository } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/repository";
+import { Configuration as SubjectsToRolesConfiguration } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/configuration";
+import { Service as IsAuthorizedService } from "./service/singlepage/is-authorized";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -17,6 +22,17 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<SubjectsToRolesService>(SubjectDI.ISubjectsToRolesService)
+    .toDynamicValue(
+      () =>
+        new SubjectsToRolesService(
+          new SubjectsToRolesRepository(new SubjectsToRolesConfiguration()),
+        ),
+    )
+    .inSingletonScope();
+  bind<IsAuthorizedService>(SubjectDI.IIsAuthorizedService)
+    .to(IsAuthorizedService)
+    .inSingletonScope();
 });
 
 export async function bootstrap() {

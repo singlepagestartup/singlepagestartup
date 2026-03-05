@@ -1,4 +1,4 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { DI, type IRepository } from "@sps/shared-backend-api";
 import {
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
@@ -9,9 +9,11 @@ import { IModel as IPermission } from "@sps/rbac/models/permission/sdk/model";
 import { IModel as IRolesToPermissions } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
 import { api as rolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import * as jwt from "hono/jwt";
-import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
+import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service/singlepage";
+import { inject, injectable } from "inversify";
+import { SubjectDI } from "../../di";
 
-const cache = createMemoryCache({ ttlMs: 30_000 });
+const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 
 export type IExecuteProps = {
   permission: {
@@ -24,11 +26,57 @@ export type IExecuteProps = {
   };
 };
 
+@injectable()
 export class Service {
   repository: IRepository;
+  subjectsToRolesService: SubjectsToRolesService;
 
-  constructor(repository: IRepository) {
+  constructor(
+    @inject(DI.IRepository) repository: IRepository,
+    @inject(SubjectDI.ISubjectsToRolesService)
+    subjectsToRolesService: SubjectsToRolesService,
+  ) {
     this.repository = repository;
+    this.subjectsToRolesService = subjectsToRolesService;
+  }
+
+  private async getSubjectRoleIds(subjectId: string) {
+    const cacheKey = `subjects-to-roles:subject:${subjectId}`;
+    const cachedRoleIds = cache.get<string[]>(cacheKey);
+
+    if (cachedRoleIds) {
+      return cachedRoleIds;
+    }
+
+    const subjectsToRoles = await this.subjectsToRolesService
+      .find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: subjectId,
+              },
+            ],
+          },
+        },
+      })
+      .catch(() => undefined);
+
+    const roleIds = Array.isArray(subjectsToRoles)
+      ? Array.from(
+          new Set(
+            subjectsToRoles
+              .map((item) => item.roleId)
+              .filter((roleId): roleId is string => typeof roleId === "string"),
+          ),
+        )
+      : [];
+
+    cache.set(cacheKey, roleIds);
+
+    return roleIds;
   }
 
   async execute(props: IExecuteProps) {
@@ -46,17 +94,23 @@ export class Service {
     const authorization = props.authorization.value;
 
     if (authorization) {
-      const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+      const tokenCacheKey = `jwt:subject:${authorization}`;
+      subjectId = cache.get<string>(tokenCacheKey);
 
-      if (!decoded.subject?.["id"]) {
-        throw new Error("Validation error. No subject provided in the token");
+      if (!subjectId) {
+        const decoded = await jwt.verify(authorization, RBAC_JWT_SECRET);
+
+        if (!decoded.subject?.["id"]) {
+          throw new Error("Validation error. No subject provided in the token");
+        }
+
+        if (typeof decoded.subject["id"] !== "string") {
+          throw new Error("Validation error. Subject ID is not a string");
+        }
+
+        subjectId = decoded.subject["id"];
+        cache.set(tokenCacheKey, subjectId);
       }
-
-      if (typeof decoded.subject["id"] !== "string") {
-        throw new Error("Validation error. Subject ID is not a string");
-      }
-
-      subjectId = decoded.subject["id"];
     }
 
     const permissionCacheKey = `permission:${props.permission.type}:${props.permission.method}:${props.permission.route}`;
@@ -77,7 +131,7 @@ export class Service {
             },
           },
         })
-        .catch((error) => undefined);
+        .catch(() => undefined);
 
       permission = fetched ?? undefined;
 
@@ -99,7 +153,7 @@ export class Service {
             },
           },
         })
-        .catch((error) => undefined);
+        .catch(() => undefined);
 
       rolesToPermissions = Array.isArray(fetched) ? fetched : undefined;
 
@@ -109,53 +163,27 @@ export class Service {
     }
 
     if (permission && rolesToPermissions) {
-      const rolesToPremission = rolesToPermissions.filter(
-        (roleToPermission) => {
-          return roleToPermission.permissionId === permission.id;
-        },
+      const permissionRoleIds = new Set(
+        rolesToPermissions
+          .filter((roleToPermission) => {
+            return roleToPermission.permissionId === permission.id;
+          })
+          .map((roleToPermission) => roleToPermission.roleId),
       );
 
       /**
        * Permissions without roles are public
        */
-      if (!rolesToPremission?.length) {
+      if (!permissionRoleIds.size) {
         authorized = true;
       }
 
       if (!authorized && subjectId) {
-        const subjectsToRoles = await subjectsToRolesApi
-          .find({
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          })
-          .catch((error) => {});
+        const subjectRoleIds = await this.getSubjectRoleIds(subjectId);
 
-        const subjectToRoles = subjectId
-          ? subjectsToRoles?.filter((subjectToRole) => {
-              return subjectToRole.subjectId === subjectId;
-            })
-          : [];
-
-        if (subjectToRoles?.length) {
-          for (const subjectToRole of subjectToRoles) {
-            const rolesToPermission = rolesToPermissions.filter(
-              (roleToPermission) => {
-                return (
-                  roleToPermission.roleId === subjectToRole.roleId &&
-                  roleToPermission.permissionId === permission.id
-                );
-              },
-            );
-
-            if (rolesToPermission?.length) {
-              authorized = true;
-              break;
-            }
-          }
-        }
+        authorized = subjectRoleIds.some((roleId) => {
+          return permissionRoleIds.has(roleId);
+        });
       }
     }
 
@@ -178,7 +206,7 @@ export class Service {
               },
             },
           })
-          .catch((error) => undefined);
+          .catch(() => undefined);
 
         rootPermission = fetched ?? undefined;
 
@@ -188,37 +216,20 @@ export class Service {
       }
 
       if (rootPermission && rolesToPermissions) {
-        const rootRoles = rolesToPermissions?.filter((roleToPermission) => {
-          return roleToPermission.permissionId === rootPermission.id;
-        });
-
-        if (rootRoles?.length) {
-          const subjectsToRoles = await subjectsToRolesApi
-            .find({
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                },
-              },
+        const rootRoleIds = new Set(
+          rolesToPermissions
+            .filter((roleToPermission) => {
+              return roleToPermission.permissionId === rootPermission.id;
             })
-            .catch((error) => {});
+            .map((roleToPermission) => roleToPermission.roleId),
+        );
 
-          if (subjectsToRoles?.length) {
-            for (const subjectToRole of subjectsToRoles) {
-              if (subjectToRole.subjectId !== subjectId) {
-                continue;
-              }
+        if (rootRoleIds.size) {
+          const subjectRoleIds = await this.getSubjectRoleIds(subjectId);
 
-              const isRootSubject = rootRoles?.find((rootRole) => {
-                return rootRole.roleId === subjectToRole.roleId;
-              });
-
-              if (isRootSubject) {
-                authorized = true;
-                break;
-              }
-            }
-          }
+          authorized = subjectRoleIds.some((roleId) => {
+            return rootRoleIds.has(roleId);
+          });
         }
       }
     }

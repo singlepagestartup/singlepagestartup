@@ -2,10 +2,12 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import QueryString from "qs";
-import { api } from "@sps/rbac/models/permission/sdk/server";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { createMemoryCache } from "@sps/shared-utils";
 import { match } from "path-to-regexp";
 import { getHttpErrorType } from "@sps/backend-utils";
+
+const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 200 });
+const matcherCache = new Map<string, ReturnType<typeof match>>();
 
 export class Handler {
   service: Service;
@@ -16,10 +18,6 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     try {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not found");
-      }
-
       const query = QueryString.parse(c.req.url.split("?")[1]);
 
       const route = query.permission?.["route"] as string;
@@ -32,13 +30,14 @@ export class Handler {
         );
       }
 
-      const permissions = await api.find({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const permissionsCacheKey = "permissions:all";
+      let permissions =
+        cache.get<Awaited<ReturnType<Service["find"]>>>(permissionsCacheKey);
+
+      if (!permissions) {
+        permissions = await this.service.find();
+        cache.set(permissionsCacheKey, permissions);
+      }
 
       if (!permissions?.length) {
         throw new Error(
@@ -62,14 +61,22 @@ export class Handler {
           continue;
         }
 
-        const template = permission.path.replace(
-          /\[(.+?)\]/g,
-          (_, p1) => `:${p1.replace(/[.\-]/g, "_")}`,
-        );
-        const matcher = match(template, {
-          decode: decodeURIComponent,
-          end: true,
-        });
+        const matcherCacheKey = permission.path;
+        let matcher = matcherCache.get(matcherCacheKey);
+
+        if (!matcher) {
+          const template = permission.path.replace(
+            /\[(.+?)\]/g,
+            (_, p1) => `:${p1.replace(/[.\-]/g, "_")}`,
+          );
+
+          matcher = match(template, {
+            decode: decodeURIComponent,
+            end: true,
+          });
+
+          matcherCache.set(matcherCacheKey, matcher);
+        }
 
         const result = matcher(route);
         if (result) {

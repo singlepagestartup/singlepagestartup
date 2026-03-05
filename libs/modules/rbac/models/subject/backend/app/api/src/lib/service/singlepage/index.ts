@@ -56,15 +56,23 @@ import {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
+import { SubjectDI } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  constructor(@inject(DI.IRepository) repository: Repository) {
+  isAuthorizedService: IsAuthorized;
+
+  constructor(
+    @inject(DI.IRepository) repository: Repository,
+    @inject(SubjectDI.IIsAuthorizedService)
+    isAuthorizedService: IsAuthorized,
+  ) {
     super(repository);
+    this.isAuthorizedService = isAuthorizedService;
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
-    return new IsAuthorized(this.repository).execute(props);
+    return this.isAuthorizedService.execute(props);
   }
 
   async logout(): Promise<any> {

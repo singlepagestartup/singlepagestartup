@@ -11,10 +11,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  TipTap,
 } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
-import { saveLanguageContext, TIPTAP_EMPTY_DOC } from "@sps/shared-utils";
+import { saveLanguageContext } from "@sps/shared-utils";
 
 export function Component(props: IComponentPropsExtended) {
   const href = saveLanguageContext(
@@ -75,11 +74,10 @@ export function Component(props: IComponentPropsExtended) {
             });
           }}
         </ProductsToFileStorageModuleWidgets>
-        {props.data.shortDescription?.[props.language] !== TIPTAP_EMPTY_DOC ? (
-          <TipTap
-            value={props.data.shortDescription?.[props.language] || ""}
-            className="text-sm text-muted-foreground"
-          />
+        {props.data.shortDescription?.[props.language] !== "" ? (
+          <p className="text-sm text-muted-foreground">
+            {props.data.shortDescription?.[props.language] || ""}
+          </p>
         ) : null}
         <ProductsToAttributes
           isServer={props.isServer}

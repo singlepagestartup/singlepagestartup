@@ -82,13 +82,14 @@ const inFlight = new Map<string, Promise<void>>();
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 5000 });
 
 export class Middleware {
-  private allowedRoutes: Map<string, Set<string>>;
+  private allowedRoutes: { regexPath: RegExp; methods: Set<string> }[];
 
   constructor() {
-    this.allowedRoutes = new Map();
-
-    allowedRoutes.forEach(({ regexPath, methods }) => {
-      this.allowedRoutes.set(regexPath.source, new Set(methods));
+    this.allowedRoutes = allowedRoutes.map(({ regexPath, methods }) => {
+      return {
+        regexPath,
+        methods: new Set(methods.map((method) => method.toUpperCase())),
+      };
     });
   }
 
@@ -116,8 +117,8 @@ export class Middleware {
         return next();
       }
 
-      for (const [pattern, methods] of this.allowedRoutes.entries()) {
-        if (new RegExp(pattern).test(reqPath) && methods.has(reqMethod)) {
+      for (const { regexPath, methods } of this.allowedRoutes) {
+        if (regexPath.test(reqPath) && methods.has(reqMethod)) {
           return next();
         }
       }
