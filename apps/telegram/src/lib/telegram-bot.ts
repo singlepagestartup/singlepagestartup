@@ -350,12 +350,10 @@ export class TelegarmBot {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
     });
 
-    if (bootstrap.shouldCheckoutFreeSubscription) {
-      await this.checkoutFreeSubscriptionEcommerceModuleProducts({
-        ctx: props.ctx,
-        rbacModuleSubject: bootstrap.rbacModuleSubject,
-      });
-    }
+    await this.checkoutFreeSubscriptionEcommerceModuleProducts({
+      ctx: props.ctx,
+      rbacModuleSubject: bootstrap.rbacModuleSubject,
+    });
 
     return {
       rbacModuleSubject: bootstrap.rbacModuleSubject,

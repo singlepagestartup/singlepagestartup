@@ -1,6 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
+import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 
 export interface IExecuteProps {
@@ -16,15 +17,18 @@ export interface IResult {
 export interface IConstructorProps {
   role: RoleService;
   subjectsToRoles: SubjectsToRolesService;
+  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
 }
 
 export class Service {
   role: RoleService;
   subjectsToRoles: SubjectsToRolesService;
+  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
 
   constructor(props: IConstructorProps) {
     this.role = props.role;
     this.subjectsToRoles = props.subjectsToRoles;
+    this.rolesToEcommerceModuleProducts = props.rolesToEcommerceModuleProducts;
   }
 
   private getSdkHeaders() {
@@ -130,6 +134,37 @@ export class Service {
     });
 
     if (availableOnRegistrationRoles?.length) {
+      const rolesToEcommerceModuleProducts =
+        await this.rolesToEcommerceModuleProducts.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "roleId",
+                  method: "inArray",
+                  value: availableOnRegistrationRoles.map((role) => role.id),
+                },
+              ],
+            },
+          },
+        });
+
+      const productBoundRoleIds = new Set(
+        (rolesToEcommerceModuleProducts ?? []).map((item) => item.roleId),
+      );
+
+      const availableOnRegistrationNonProductRoles =
+        availableOnRegistrationRoles.filter((role) => {
+          return !productBoundRoleIds.has(role.id);
+        });
+
+      if (!availableOnRegistrationNonProductRoles.length) {
+        return {
+          addedRoleIds: Array.from(new Set(addedRoleIds)),
+          removedRoleIds: Array.from(new Set(removedRoleIds)),
+        };
+      }
+
       const subjectToRoles = await this.subjectsToRoles.find({
         params: {
           filters: {
@@ -148,9 +183,11 @@ export class Service {
         (subjectToRoles ?? []).map((item) => item.roleId),
       );
 
-      const missingRoles = availableOnRegistrationRoles.filter((role) => {
-        return !existingRoleIds.has(role.id);
-      });
+      const missingRoles = availableOnRegistrationNonProductRoles.filter(
+        (role) => {
+          return !existingRoleIds.has(role.id);
+        },
+      );
 
       for (const missingRole of missingRoles) {
         await subjectsToRolesApi.create({

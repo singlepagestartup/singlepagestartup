@@ -445,6 +445,24 @@ export class Service {
     }[] = [];
 
     for (const order of props.ecommerceModule.orders) {
+      const checkoutOrderProductIds = new Set(
+        ordersToProducts
+          .filter((orderToProduct) => {
+            return orderToProduct.orderId === order["id"];
+          })
+          .map((orderToProduct) => {
+            return orderToProduct.productId;
+          })
+          .filter((productId): productId is string => Boolean(productId)),
+      );
+
+      if (!checkoutOrderProductIds.size) {
+        throw new Error(
+          "Not Found error. No checkout products found for order: " +
+            order["id"],
+        );
+      }
+
       const billingModuleCurrencyId = ordersToBillingModuleCurrencies.find(
         (orderToBillingModuleCurrency) =>
           orderToBillingModuleCurrency.orderId === order["id"],
@@ -533,7 +551,7 @@ export class Service {
                 continue;
               }
 
-              const ordersToProducts =
+              const existingOrdersToProducts =
                 await this.ecommerceModule.ordersToProducts.find({
                   params: {
                     filters: {
@@ -549,12 +567,8 @@ export class Service {
                 });
 
               if (
-                ordersToProducts?.some((orderToProduct) => {
-                  return ecommerceModuleProducts
-                    .map((entity) => {
-                      return entity.id;
-                    })
-                    .includes(orderToProduct.productId);
+                existingOrdersToProducts?.some((orderToProduct) => {
+                  return checkoutOrderProductIds.has(orderToProduct.productId);
                 })
               ) {
                 console.log(

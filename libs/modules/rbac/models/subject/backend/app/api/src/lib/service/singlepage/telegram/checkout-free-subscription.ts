@@ -54,29 +54,7 @@ export class Service {
     });
 
     if (subjectToOrders?.length) {
-      const ecommerceModuleOrders = await this.ecommerceModule.order.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: subjectToOrders.map(
-                  (item) => item.ecommerceModuleOrderId,
-                ),
-              },
-            ],
-          },
-        },
-      });
-
-      const allOrdersAreCompleted = ecommerceModuleOrders?.every((order) => {
-        return order.status === "completed" || order.status === "canceled";
-      });
-
-      if (!allOrdersAreCompleted) {
-        return null;
-      }
+      return null;
     }
 
     const subscriptionProducts = await this.ecommerceModule.product.find({

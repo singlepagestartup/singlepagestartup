@@ -89,7 +89,15 @@ export const queryBuilder = <T extends PgTableWithColumns<any>>(
           filterValue = parseInt(filter.value);
           break;
         case "boolean":
-          filterValue = filter.value === "true";
+          if (typeof filter.value === "boolean") {
+            filterValue = filter.value;
+          } else if (typeof filter.value === "string") {
+            filterValue = filter.value.toLowerCase() === "true";
+          } else if (typeof filter.value === "number") {
+            filterValue = filter.value === 1;
+          } else {
+            filterValue = Boolean(filter.value);
+          }
           break;
         case "json":
           try {

@@ -391,13 +391,59 @@ export class Service {
       });
 
       if (socialModuleProfiles?.length) {
-        if (socialModuleProfiles.length > 1) {
-          throw new Error(
-            "Internal error. Multiple social module profiles found for the same subject",
-          );
-        }
+        const sortedProfiles = [...socialModuleProfiles].sort(
+          (a, b) =>
+            this.getCreatedAtTimestamp(a.createdAt) -
+            this.getCreatedAtTimestamp(b.createdAt),
+        );
 
-        profile = socialModuleProfiles[0];
+        profile = sortedProfiles[0];
+
+        const duplicateProfiles = sortedProfiles.slice(1);
+
+        if (duplicateProfiles.length) {
+          const removedProfileIds: string[] = [];
+          const removedLinkIds: string[] = [];
+
+          for (const duplicateProfile of duplicateProfiles) {
+            const duplicateLinks = subjectToProfiles.filter((link) => {
+              return link.socialModuleProfileId === duplicateProfile.id;
+            });
+
+            for (const duplicateLink of duplicateLinks) {
+              await subjectsToSocialModuleProfilesApi.delete({
+                id: duplicateLink.id,
+                options: { headers },
+              });
+              removedLinkIds.push(duplicateLink.id);
+            }
+
+            try {
+              await socialModuleProfileApi.delete({
+                id: duplicateProfile.id,
+                options: { headers },
+              });
+              removedProfileIds.push(duplicateProfile.id);
+            } catch (error) {
+              console.warn(
+                "telegram/bootstrap: failed to delete duplicate profile",
+                {
+                  profileId: duplicateProfile.id,
+                  subjectId: subject.id,
+                },
+              );
+            }
+          }
+
+          if (removedProfileIds.length || removedLinkIds.length) {
+            console.warn("telegram/bootstrap: removed duplicate profiles", {
+              subjectId: subject.id,
+              keptProfileId: sortedProfiles[0].id,
+              removedProfileIds,
+              removedLinkIds,
+            });
+          }
+        }
       } else {
         profile = await socialModuleProfileApi.create({
           data: {

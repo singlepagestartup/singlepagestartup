@@ -72,6 +72,7 @@ import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subj
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
+import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 import {
   Service as TelegramBootstrap,
   IExecuteProps as ITelegramBootstrapExecuteProps,
@@ -101,6 +102,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ecommerceOrderProceedService: EcommerceOrderProceed;
   identity: IdentityService;
   role: RoleService;
+  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
@@ -118,6 +120,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(SubjectDI.IBroadcastModule) broadcastModule: IBroadcastModule,
     @inject(SubjectDI.IIdentityService) identity: IdentityService,
     @inject(SubjectDI.IRoleService) role: RoleService,
+    @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
+    rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
     @inject(SubjectDI.IIsAuthorizedService)
     isAuthorizedService: IsAuthorized,
     @inject(SubjectDI.IBillRouteService)
@@ -143,6 +147,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.broadcastModule = broadcastModule;
     this.identity = identity;
     this.role = role;
+    this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
     this.isAuthorizedService = isAuthorizedService;
     this.billRouteService = billRouteService;
     this.ecommerceOrderProceedService = ecommerceOrderProceedService;
@@ -252,6 +257,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new TelegramSyncMembership({
       role: this.role,
       subjectsToRoles: this.subjectsToRoles,
+      rolesToEcommerceModuleProducts: this.rolesToEcommerceModuleProducts,
     }).execute(props);
   }
 
