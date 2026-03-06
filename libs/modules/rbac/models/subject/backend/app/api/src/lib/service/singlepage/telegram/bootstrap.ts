@@ -1,5 +1,6 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
+import { IModel as IRbacIdentity } from "@sps/rbac/models/identity/sdk/model";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
@@ -147,6 +148,102 @@ export class Service {
     return selectedSubject;
   }
 
+  private async resolveIdentityDuplicates(props: {
+    account: string;
+    provider: string;
+    identities: IRbacIdentity[];
+    headers: Record<string, string>;
+  }) {
+    const identities = [...props.identities].sort(
+      (a, b) =>
+        this.getCreatedAtTimestamp(a.createdAt) -
+        this.getCreatedAtTimestamp(b.createdAt),
+    );
+
+    const linksByIdentity = new Map<string, IRbacSubjectsToIdentities[]>();
+
+    for (const identity of identities) {
+      const links = await this.subjectsToIdentities.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "identityId",
+                method: "eq",
+                value: identity.id,
+              },
+            ],
+          },
+        },
+      });
+
+      linksByIdentity.set(identity.id, links ?? []);
+    }
+
+    let selectedIdentity = identities[0];
+
+    for (const identity of identities) {
+      const links = linksByIdentity.get(identity.id) ?? [];
+
+      if (links.length) {
+        selectedIdentity = identity;
+        break;
+      }
+    }
+
+    const selectedLinks = linksByIdentity.get(selectedIdentity.id) ?? [];
+    const selectedSubjectIds = new Set(
+      selectedLinks.map((link) => link.subjectId),
+    );
+    const mergedIdentityIds: string[] = [];
+
+    for (const identity of identities) {
+      if (identity.id === selectedIdentity.id) {
+        continue;
+      }
+
+      const identityLinks = linksByIdentity.get(identity.id) ?? [];
+
+      for (const link of identityLinks) {
+        if (selectedSubjectIds.has(link.subjectId)) {
+          continue;
+        }
+
+        await subjectsToIdentitiesApi.create({
+          data: {
+            subjectId: link.subjectId,
+            identityId: selectedIdentity.id,
+          },
+          options: {
+            headers: props.headers,
+          },
+        });
+
+        selectedSubjectIds.add(link.subjectId);
+      }
+
+      await rbacModuleIdentityApi.delete({
+        id: identity.id,
+        options: {
+          headers: props.headers,
+        },
+      });
+
+      mergedIdentityIds.push(identity.id);
+    }
+
+    if (mergedIdentityIds.length) {
+      console.warn("telegram/bootstrap: merged duplicate identities", {
+        account: props.account,
+        provider: props.provider,
+        selectedIdentityId: selectedIdentity.id,
+        removedIdentityIds: mergedIdentityIds,
+      });
+    }
+
+    return selectedIdentity;
+  }
+
   async execute(props: IExecuteProps): Promise<IResult> {
     if (!props.fromId) {
       throw new Error("Validation error. 'fromId' is required");
@@ -183,13 +280,15 @@ export class Service {
     });
 
     if (identities?.length) {
-      if (identities.length > 1) {
-        throw new Error(
-          "Internal error. Multiple identities found for the same account and provider",
-        );
-      }
-
-      const identity = identities[0];
+      const identity =
+        identities.length > 1
+          ? await this.resolveIdentityDuplicates({
+              account: props.fromId,
+              provider: "telegram",
+              identities,
+              headers,
+            })
+          : identities[0];
       const subjectsToIdentities = await this.subjectsToIdentities.find({
         params: {
           filters: {
