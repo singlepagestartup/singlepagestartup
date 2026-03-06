@@ -36,7 +36,6 @@ You are a specialist at finding code patterns and examples in the codebase. Your
 3. **Provide Concrete Examples**
    - Include actual code snippets
    - Show multiple variations
-   - Note which approach is preferred
    - Include file:line references
 
 ## Search Strategy
@@ -98,6 +97,7 @@ const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
 **Key aspects**:
 
 - Uses query parameters for filtering
+- Implemnented in backend service
 - Uses `inArray` method for filtering by multiple IDs
 - Returns filtered list of orders based on provided IDs
 
@@ -107,42 +107,50 @@ const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
 **Used for**: Ecommerce orders fetching filtered orders by id and type in frontend component
 
 ```tsx
-<EcommerceOrder
-    isServer={false}
-    variant="find"
-    apiProps={{
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ecommerceModuleOrders?.map(
-                (entity) => entity.id,
-              ),
-            },
-            {
-              column: "type",
-              method: "eq",
-              value: "cart",
-            },
-          ],
+'use client';
+...
+export function Component(props: IComponentPropsExtended) {
+  return (
+    ...
+    <EcommerceOrder
+      isServer={false}
+      variant="find"
+      apiProps={{
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ecommerceModuleOrders?.map(
+                  (entity) => entity.id,
+                ),
+              },
+              {
+                column: "type",
+                method: "eq",
+                value: "cart",
+              },
+            ],
+          },
         },
-      },
-    }}
-  >
-    {({ data }) => {
-      if (!data || !data?.length) {
+      }}
+    >
+      {({ data }) => {
+        if (!data || !data?.length) {
+          return (
+            ...
+          );
+        }
+
         return (
           ...
         );
-      }
-
-      return (
-        ...
-      );
-    }}
-  </EcommerceOrder>
+      }}
+    </EcommerceOrder>
+    ...
+  )
+}
 ```
 
 **Key aspects**:

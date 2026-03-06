@@ -111,41 +111,42 @@ Use this structure:
 
 ### Backend Implementation
 
-- `path/to/file.ts` - purpose
+- `libs/<module>/backend/**` - purpose
+- `libs/<module>/models/<model_name>/backend/app/**` - purpose
+- `libs/<module>/relations/<relation_name>/backend/app/**` - purpose
 
 ### Data Layer (Schema/Migrations)
 
-- `path/to/schema.ts` - purpose
+- `libs/<module>/models/<model_name>/backend/repository/**` - purpose
+- `libs/<module>/relations/<relation_name>/backend/repository/**` - purpose
 
 ### Frontend
 
-- `path/to/component.tsx` - purpose
+- `libs/<module>/models/<model_name>/frontend/component/src/lib/**/singlepage/**` - purpose
+- `libs/<module>/models/<model_name>/frontend/component/src/lib/**/startup/**` - purpose
 
 ### SDK / Contracts
 
-- `path/to/sdk/file.ts` - purpose
-- `path/to/paths.yaml` - OpenAPI source
+- `libs/<module>/sdk/server/src/lib/**/*.ts` - purpose
+- `libs/<module>/sdk/client/src/lib/**/*.ts` - purpose
+- `libs/<module>/sdk/model/src/lib/**/*` - purpose
+- `**/paths.yaml` - OpenAPI source
 
 ### Middleware / Shared
 
-- `path/to/middleware.ts` - purpose
+- `libs/middlewares/src/lib/<middleware_name>.ts` - purpose
+- `libs/modules/<module>/models/<model_name>/backend/app/middlewares/src/lib/**` - purpose
+- `libs/modules/<module>/relations/<relation_name>/backend/app/middlewares/src/lib/**` - purpose
 
 ### Tests
 
-- `path/to/test.spec.ts` - purpose
-
-### Configuration / Ops
-
-- `path/to/project.json` - Nx target/config
-- `path/to/deployer/file` - deployment/env config
-
-### Related Directories
-
-- `path/to/dir/` - contains N related files
+- `**/*.spec.ts` - purpose
+- `**/*.test.ts` - purpose
+- `**/e2e/**` - purpose
 
 ### Entry Points
 
-- `path/to/file.ts:line` - route mount or registration point
+- `apps/**` - route mount or registration point
 
 ## Rules
 
