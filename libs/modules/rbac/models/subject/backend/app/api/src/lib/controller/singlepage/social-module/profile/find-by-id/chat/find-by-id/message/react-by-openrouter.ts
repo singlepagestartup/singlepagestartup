@@ -77,7 +77,7 @@ const MODEL_ROUTER_CONFIG = {
   classes: {
     CLASSIFIER: [
       {
-        id: "openai/gpt-5-mini",
+        id: "openai/gpt-5.2",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
@@ -85,7 +85,7 @@ const MODEL_ROUTER_CONFIG = {
         strengths: ["classification", "routing"],
       },
       {
-        id: "anthropic/claude-haiku-4.5",
+        id: "anthropic/claude-sonnet-4.6",
         enabled: true,
         priority: 90,
         input_modalities: ["text", "image", "file"],
@@ -198,7 +198,11 @@ const MODEL_ROUTER_CONFIG = {
         input_modalities: ["text"],
         output_modalities: ["image"],
         strengths: ["photoreal", "portrait", "product_photo"],
-        best_for: ["photography_style", "realistic_product_shots"],
+        best_for: [
+          "photography_style",
+          "realistic_product_shots",
+          "image_editing",
+        ],
       },
       {
         id: "openai/gpt-5-image",
@@ -1336,6 +1340,13 @@ No markdown. No extra keys.`,
     const classifierModels = this.getEnabledCandidatesByClass("CLASSIFIER").map(
       (candidate) => candidate.id,
     );
+    const fallbackClassifierModels = this.getEnabledCandidatesByClass("CHAT")
+      .map((candidate) => candidate.id)
+      .filter((candidateId) => !classifierModels.includes(candidateId));
+    const allClassifierModels = [
+      ...classifierModels,
+      ...fallbackClassifierModels,
+    ];
 
     for (const classifierModel of classifierModels) {
       const classificationResponse = await props.openRouter.generate({
@@ -1401,7 +1412,142 @@ No markdown. No explanation. No extra keys.`,
       return normalizedClassification;
     }
 
-    throw new Error("Classification failed: no model returned valid JSON.");
+    for (const classifierModel of fallbackClassifierModels) {
+      const classificationResponse = await props.openRouter.generate({
+        model: classifierModel,
+        reasoning: false,
+        max_tokens: 600,
+        temperature: 0,
+        context: [
+          {
+            role: "system",
+            content: `Classify user request and return JSON object only:
+{
+  "language": "ru|en|other",
+  "task": "${ALLOWED_TASKS.join(" | ")}",
+  "input_modalities": ["text|image|file"],
+  "output_modality": "text|image|audio|file",
+  "need_web": false,
+  "complexity": "low|medium|high",
+  "risk_level": "low|medium|high"
+}
+No markdown. No explanation.`,
+          },
+          {
+            role: "user",
+            content: `Request text: ${props.requestText}`,
+          },
+          {
+            role: "user",
+            content: `Detected input modalities from message payload: ${JSON.stringify(props.requiredInputModalitiesList)}`,
+          },
+        ],
+      });
+
+      if ("error" in classificationResponse) {
+        console.log(
+          "react-by-openrouter/classifier-fallback",
+          `model=${classifierModel}: fallback generation error`,
+        );
+        continue;
+      }
+
+      const normalizedClassification =
+        await this.parseAndNormalizeClassification({
+          openRouter: props.openRouter,
+          classifierModel,
+          fallbackClassifierModels: allClassifierModels.filter(
+            (modelId) => modelId !== classifierModel,
+          ),
+          requestText: props.requestText,
+          requiredInputModalitiesList: props.requiredInputModalitiesList,
+          rawClassifierOutput: classificationResponse.text,
+        });
+
+      if (!normalizedClassification) {
+        console.log(
+          "react-by-openrouter/classifier-fallback",
+          `model=${classifierModel}: fallback invalid json`,
+        );
+        continue;
+      }
+
+      return normalizedClassification;
+    }
+
+    const heuristicClassification = this.getHeuristicClassification({
+      requestText: props.requestText,
+      requiredInputModalitiesList: props.requiredInputModalitiesList,
+    });
+
+    console.log("react-by-openrouter/classifier-fallback", {
+      reason: "all classifier models failed; using heuristic classification",
+      modelsTried: allClassifierModels,
+      heuristicClassification,
+    });
+
+    return heuristicClassification;
+  }
+
+  private getHeuristicClassification(props: {
+    requestText: string;
+    requiredInputModalitiesList: TInputModality[];
+  }): IRequestClassification {
+    const normalizedRequestText = props.requestText.toLowerCase();
+    const hasImageInput = props.requiredInputModalitiesList.includes("image");
+    const hasFileInput = props.requiredInputModalitiesList.includes("file");
+
+    let task: TRequestTask = "qa";
+
+    if (
+      /(code|coding|debug|bug|refactor|typescript|javascript|python|код|программ)/i.test(
+        normalizedRequestText,
+      )
+    ) {
+      task = "coding";
+    } else if (
+      /(translate|translation|перевед|перевод|локализац)/i.test(
+        normalizedRequestText,
+      )
+    ) {
+      task = "translate";
+    } else if (
+      /(summarize|summary|кратк|резюм|подведи итог)/i.test(
+        normalizedRequestText,
+      )
+    ) {
+      task = "summarize";
+    } else if (
+      /(extract|извлеки|достань|вытащи|структурируй)/i.test(
+        normalizedRequestText,
+      )
+    ) {
+      task = "extract";
+    } else if (
+      /(image generation|generate image|draw|picture|poster|картин|изображен|нарисуй|сгенерируй)/i.test(
+        normalizedRequestText,
+      )
+    ) {
+      task = "image_gen";
+    } else if (hasImageInput || hasFileInput) {
+      task = "image_understanding";
+    }
+
+    const output_modality: TOutputModality =
+      task === "image_gen" ? "image" : "text";
+
+    return {
+      language: this.normalizeLanguage(props.requestText),
+      task,
+      input_modalities:
+        props.requiredInputModalitiesList.length > 0
+          ? props.requiredInputModalitiesList
+          : ["text"],
+      output_modality,
+      need_web: false,
+      complexity: "medium",
+      risk_level: "medium",
+    };
   }
 
   private resolveModelClass(props: {
