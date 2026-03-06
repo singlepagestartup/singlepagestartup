@@ -5,6 +5,7 @@ import { Table } from "@sps/notification/models/notification/backend/repository/
 import { AWS } from "@sps/shared-third-parties";
 import {
   AWS_SES_FROM_EMAIL,
+  NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT,
   RBAC_SECRET_KEY,
   TELEGRAM_SERVICE_BOT_TOKEN,
 } from "@sps/shared-utils";
@@ -875,7 +876,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               column: "createdAt",
               method: "lt",
               value: new Date(
-                Date.now() - 2 * 24 * 60 * 60 * 1000,
+                Date.now() -
+                  NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT,
               ).toISOString(),
             },
           ],
