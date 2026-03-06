@@ -39,35 +39,33 @@ export type IResult = IEcommerceModuleProduct & {
   })[];
 };
 
-type IFindById = (props: {
-  id: IEcommerceModuleProduct["id"];
-}) => Promise<IEcommerceModuleProduct | null>;
-
-export interface IConstructorProps {
-  findById: IFindById;
+type IConstructorProps = {
+  findById: (props: {
+    id: IEcommerceModuleProduct["id"];
+  }) => Promise<IEcommerceModuleProduct | null>;
   productsToAttributes: ProductsToAttributesService;
-  attributes: AttributeService;
+  attribute: AttributeService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributeKeys: AttributeKeyService;
+  attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
-}
+};
 
 export class Service {
-  findById: IFindById;
+  findById: IConstructorProps["findById"];
   productsToAttributes: ProductsToAttributesService;
-  attributes: AttributeService;
+  attribute: AttributeService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributeKeys: AttributeKeyService;
+  attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
     this.productsToAttributes = props.productsToAttributes;
-    this.attributes = props.attributes;
+    this.attribute = props.attribute;
     this.attributeKeysToAttributes = props.attributeKeysToAttributes;
-    this.attributeKeys = props.attributeKeys;
+    this.attributeKey = props.attributeKey;
     this.attributesToBillingModuleCurrencies =
       props.attributesToBillingModuleCurrencies;
     this.productsToFileStorageModuleFiles =
@@ -88,7 +86,7 @@ export class Service {
   private async extendedEcommerceModuleAttributeById(props: {
     id: IEcommerceModuleAttribute["id"];
   }): Promise<IExtendedEcommerceModuleAttribute> {
-    const ecommerceModuleAttribute = await this.attributes.findById({
+    const ecommerceModuleAttribute = await this.attribute.findById({
       id: props.id,
     });
 
@@ -128,7 +126,7 @@ export class Service {
 
     const [attributeKeys, billingModuleCurrencies] = await Promise.all([
       attributeKeysToAttributes?.length
-        ? this.attributeKeys.find({
+        ? this.attributeKey.find({
             params: {
               filters: {
                 and: [

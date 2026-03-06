@@ -1,18 +1,26 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { api as attributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
+import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
+import { OrderDI } from "../../di";
 
 export type IExecuteProps = {
   id: string;
 };
 
+@injectable()
 export class Service {
-  repository: IRepository;
+  attributeKey: AttributeKeyService;
+  ordersToProducts: OrdersToProductsService;
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+  constructor(
+    @inject(OrderDI.IAttributeKeysService) attributeKey: AttributeKeyService,
+    @inject(OrderDI.IOrdersToProductsService)
+    ordersToProducts: OrdersToProductsService,
+  ) {
+    this.attributeKey = attributeKey;
+    this.ordersToProducts = ordersToProducts;
   }
 
   async execute(props: IExecuteProps) {
@@ -20,7 +28,7 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const priceAttributeKeys = await attributeKeyApi.find({
+    const priceAttributeKeys = await this.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -32,18 +40,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!priceAttributeKeys?.length) {
       throw new Error("Not Found error. Price attribute key not found");
     }
 
-    const orderToProducts = await ordersToProductsApi.find({
+    const orderToProducts = await this.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -53,12 +56,6 @@ export class Service {
               value: props.id,
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -73,13 +70,8 @@ export class Service {
     }[] = [];
 
     for (const orderToProduct of orderToProducts) {
-      const orderToProductTotals = await ordersToProductsApi.total({
+      const orderToProductTotals = await this.ordersToProducts.getTotal({
         id: orderToProduct.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!orderToProductTotals) {

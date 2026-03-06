@@ -47,13 +47,8 @@ export class Handler {
         throw new Error("Not Found error. Order not found");
       }
 
-      const orderToProduct = await ordersToProductsApi.findById({
+      const orderToProduct = await this.service.ordersToProducts.findById({
         id: orderToProductId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!orderToProduct) {

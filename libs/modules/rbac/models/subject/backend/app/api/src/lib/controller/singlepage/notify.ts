@@ -6,13 +6,9 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { IModel as INotificationServiceNotification } from "@sps/notification/models/notification/sdk/model";
-import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
-import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 
@@ -43,31 +39,27 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      );
 
       if (!subjectsToIdentities?.length) {
         return c.json({ data: null });
       }
 
-      const identities = await identityApi.find({
+      const identities = await this.service.identity.find({
         params: {
           filters: {
             and: [
@@ -77,12 +69,6 @@ export class Handler {
                 value: subjectsToIdentities.map((item) => item.identityId),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -97,7 +83,7 @@ export class Handler {
         );
       }
 
-      const topics = await notificationTopicApi.find({
+      const topics = await this.service.notificationModule.topic.find({
         params: {
           filters: {
             and: [
@@ -107,12 +93,6 @@ export class Handler {
                 value: data.notification.topic.slug,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -142,13 +122,8 @@ export class Handler {
           : undefined;
 
       const socialModuleChat = data.social?.chat?.id
-        ? await socialModuleChatApi.findById({
+        ? await this.service.socialModule.chat.findById({
             id: data.social.chat.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
           })
         : null;
 

@@ -2,8 +2,6 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as ordersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
@@ -38,7 +36,7 @@ export class Handler {
       }
 
       const ordersToBillingModuleCurrencies =
-        await ordersToBillingModuleCurrenciesApi.find({
+        await this.service.ordersToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -48,12 +46,6 @@ export class Handler {
                   value: uuid,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -79,7 +71,7 @@ export class Handler {
           });
         } else {
           const ordersToBillingModulePaymentIntents =
-            await ordersToBillingModulePaymentIntentsApi.find({
+            await this.service.ordersToBillingModulePaymentIntents.find({
               params: {
                 filters: {
                   and: [
@@ -89,12 +81,6 @@ export class Handler {
                       value: uuid,
                     },
                   ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -226,7 +212,7 @@ export class Handler {
 
           if (isExpired) {
             const ordersToBillingModulePaymentIntents =
-              await ordersToBillingModulePaymentIntentsApi.find({
+              await this.service.ordersToBillingModulePaymentIntents.find({
                 params: {
                   filters: {
                     and: [
@@ -236,12 +222,6 @@ export class Handler {
                         value: uuid,
                       },
                     ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
                   },
                 },
               });

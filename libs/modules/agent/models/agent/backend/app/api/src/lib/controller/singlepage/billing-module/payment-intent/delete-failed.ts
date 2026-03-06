@@ -20,31 +20,27 @@ export class Handler {
 
       logger.info("Billing module payment intent delete failed started");
 
-      const notSucceededPaymentIntents = await paymentIntentApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "status",
-                method: "eq",
-                value: "failed",
-              },
-              {
-                column: "createdAt",
-                method: "lt",
-                value: new Date(
-                  Date.now() - 2 * 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              },
-            ],
+      const notSucceededPaymentIntents =
+        await this.service.billingModule.paymentIntent.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "status",
+                  method: "eq",
+                  value: "failed",
+                },
+                {
+                  column: "createdAt",
+                  method: "lt",
+                  value: new Date(
+                    Date.now() - 2 * 24 * 60 * 60 * 1000,
+                  ).toISOString(),
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+        });
 
       if (notSucceededPaymentIntents?.length) {
         for (const paymentIntent of notSucceededPaymentIntents) {

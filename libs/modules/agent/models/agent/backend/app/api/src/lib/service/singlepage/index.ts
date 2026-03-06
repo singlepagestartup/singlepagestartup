@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import {
   TELEGRAM_SERVICE_BOT_USERNAME,
   NEXT_PUBLIC_API_SERVICE_URL,
@@ -11,34 +11,31 @@ import {
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
   telegramBotServiceMessages,
 } from "@sps/shared-utils";
-import { CRUDService } from "@sps/shared-backend-api";
+import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/agent/models/agent/backend/repository/database";
+import { Repository } from "../../repository";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/model";
 import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
-import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { api as ecommerceModuleAttributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
-import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
-import { api as ecommerceModuleProductApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { api as ecommerceModuleProductsToFileStorageFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
-import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as rbacModuleRolesToEcommerceModuleProductsApi } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/server";
-import { api as rbacModuleSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
 import { blobifyFiles, logger } from "@sps/backend-utils";
-import { OpenRouter } from "@sps/shared-third-parties";
+import {
+  AgentDI,
+  type IBillingModule,
+  type IBroadcastModule,
+  type IEcommerceModule,
+  type IFileStorageModule,
+  type INotificationModule,
+  type IRbacModule,
+  type ISocialModule,
+} from "../../di";
 
 interface ISocialModuleTelegramMessageData {
   description: string;
@@ -62,6 +59,35 @@ interface ISocialModuleTelegramMessageData {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  socialModule: ISocialModule;
+  rbacModule: IRbacModule;
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
+  broadcastModule: IBroadcastModule;
+  notificationModule: INotificationModule;
+  fileStorageModule: IFileStorageModule;
+
+  constructor(
+    @inject(DI.IRepository) repository: Repository,
+    @inject(AgentDI.ISocialModule) socialModule: ISocialModule,
+    @inject(AgentDI.IRbacModule) rbacModule: IRbacModule,
+    @inject(AgentDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
+    @inject(AgentDI.IBillingModule) billingModule: IBillingModule,
+    @inject(AgentDI.IBroadcastModule) broadcastModule: IBroadcastModule,
+    @inject(AgentDI.INotificationModule)
+    notificationModule: INotificationModule,
+    @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
+  ) {
+    super(repository);
+    this.socialModule = socialModule;
+    this.rbacModule = rbacModule;
+    this.ecommerceModule = ecommerceModule;
+    this.billingModule = billingModule;
+    this.broadcastModule = broadcastModule;
+    this.notificationModule = notificationModule;
+    this.fileStorageModule = fileStorageModule;
+  }
+
   telegramRequiredChannelName =
     TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
   telegramRequiredChannelLink =
@@ -103,7 +129,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const rbacModuleSubjectsToSocialModuleProfiles =
-      await rbacModuleSubjectsToSocialModuleProfilesApi.find({
+      await this.rbacModule.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -115,24 +141,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
     if (!rbacModuleSubjectsToSocialModuleProfiles?.length) {
       return;
     }
 
-    const rbacModuleSubject = await rbacModuleSubjectApi.findById({
+    const rbacModuleSubject = await this.rbacModule.subject.findById({
       id: rbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!rbacModuleSubject) {
@@ -406,7 +422,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
       }
 
-      const notifications = await notificationNotificationApi.find({
+      const notifications = await this.notificationModule.notification.find({
         params: {
           filters: {
             and: [
@@ -421,12 +437,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 value: String(messageId),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -471,7 +481,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const notifications = await notificationNotificationApi.find({
+    const notifications = await this.notificationModule.notification.find({
       params: {
         filters: {
           and: [
@@ -486,12 +496,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               value: String(props.messageSourceSystemId),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -523,7 +527,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const generateTemplateSocilaModuleMessageAttachmentStartFiles =
-      await fileStorageModuleFileApi.find({
+      await this.fileStorageModule.file.find({
         params: {
           filters: {
             and: [
@@ -534,11 +538,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   "generate-template-social-module-message-attachment-start",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });
@@ -750,7 +749,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
 
     const telegramStarBillingModuleCurrencies =
-      await billingModuleCurrencyApi.find({
+      await this.billingModule.currency.find({
         params: {
           filters: {
             and: [
@@ -760,12 +759,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 value: "telegram-star",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -844,7 +837,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.getMessageFromRbacModuleSubject(props);
 
     const telegramStarBillingModuleCurrencies =
-      await billingModuleCurrencyApi.find({
+      await this.billingModule.currency.find({
         params: {
           filters: {
             and: [
@@ -854,12 +847,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 value: "telegram-star",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -911,14 +898,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.getMessageFromRbacModuleSubject(props);
 
     const rbacModuleRolesToEcommerceModuleProducts =
-      await rbacModuleRolesToEcommerceModuleProductsApi.find({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      await this.rbacModule.rolesToEcommerceModuleProducts.find({});
 
     if (!rbacModuleRolesToEcommerceModuleProducts?.length) {
       return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
@@ -939,7 +919,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const rbacModulePayableRoles = await rbacModuleRoleApi.find({
+    const rbacModulePayableRoles = await this.rbacModule.role.find({
       params: {
         filters: {
           and: [
@@ -953,12 +933,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -982,7 +956,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const rbacModuleSubjectsToProSubscriberRoles =
-      await rbacModuleSubjectsToRolesApi.find({
+      await this.rbacModule.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -1001,12 +975,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     console.log(
@@ -1018,7 +986,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       description: "",
     };
 
-    const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
+    const ecommerceModuleProducts = await this.ecommerceModule.product.find({
       params: {
         filters: {
           and: [
@@ -1032,12 +1000,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -1080,7 +1042,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         extendedProduct.id;
 
       const telegramStarBillingModuleCurrencies =
-        await billingModuleCurrencyApi.find({
+        await this.billingModule.currency.find({
           params: {
             filters: {
               and: [
@@ -1090,12 +1052,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   value: "telegram-star",
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -1314,22 +1270,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         await this.getMessageFromRbacModuleSubject(props);
 
       const rbacModuleRolesToEcommerceModuleProducts =
-        await rbacModuleRolesToEcommerceModuleProductsApi.find({
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        await this.rbacModule.rolesToEcommerceModuleProducts.find({});
 
-      const rbacModuleRoles = await rbacModuleRoleApi.find({
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const rbacModuleRoles = await this.rbacModule.role.find({});
 
       if (!rbacModuleRoles?.length) {
         throw new Error("Not found error. 'rbacModuleRoles' is empty.");
@@ -1343,7 +1286,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           .includes(role.id);
       });
 
-      const rbacSubjectsToRoles = await rbacModuleSubjectsToRolesApi.find({
+      const rbacSubjectsToRoles = await this.rbacModule.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -1353,12 +1296,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 value: messageFromRbacModuleSubject.id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -1556,14 +1493,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const ecommerceModuleProduct = await ecommerceModuleProductApi.findById({
+    const ecommerceModuleProduct = await this.ecommerceModule.product.findById({
       id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!ecommerceModuleProduct) {
@@ -1575,7 +1506,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     })[] = [];
 
     const foundEcommerceModuleProductsToFileStorageFiles =
-      await ecommerceModuleProductsToFileStorageFilesApi.find({
+      await this.ecommerceModule.productsToFileStorageModuleFiles.find({
         params: {
           filters: {
             and: [
@@ -1592,38 +1523,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (foundEcommerceModuleProductsToFileStorageFiles?.length) {
-      const foundFileStorageModuleFiles = await fileStorageModuleFileApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: foundEcommerceModuleProductsToFileStorageFiles.map(
-                  (foundEcommerceModuleProductsToFileStorageFile) => {
-                    return foundEcommerceModuleProductsToFileStorageFile.fileStorageModuleFileId;
-                  },
-                ),
-              },
-            ],
+      const foundFileStorageModuleFiles =
+        await this.fileStorageModule.file.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: foundEcommerceModuleProductsToFileStorageFiles.map(
+                    (foundEcommerceModuleProductsToFileStorageFile) => {
+                      return foundEcommerceModuleProductsToFileStorageFile.fileStorageModuleFileId;
+                    },
+                  ),
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
       if (foundFileStorageModuleFiles?.length) {
         foundEcommerceModuleProductsToFileStorageFiles.forEach(
           (foundEcommerceModuleProductsToFileStorageFile) => {
@@ -1649,7 +1569,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleProdctsToAttributes =
-      await ecommerceModuleProductsToAttributesApi.find({
+      await this.ecommerceModule.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -1661,12 +1581,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleProdctsToAttributes?.length) {
@@ -1675,36 +1589,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const ecommerceModuleAttributes = await ecommerceModuleAttributeApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ecommerceModuleProdctsToAttributes.map(
-                (productToAttribute) => {
-                  return productToAttribute.attributeId;
-                },
-              ),
-            },
-          ],
+    const ecommerceModuleAttributes = await this.ecommerceModule.attribute.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ecommerceModuleProdctsToAttributes.map(
+                  (productToAttribute) => {
+                    return productToAttribute.attributeId;
+                  },
+                ),
+              },
+            ],
+          },
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
+    );
 
     if (!ecommerceModuleAttributes?.length) {
       throw new Error("Not found error. 'ecommerceModuleAttributes' not found");
     }
 
     const ecommerceModuleAttributeKeysToAttributes =
-      await ecommerceModuleAttributeKeysToAttributesApi.find({
+      await this.ecommerceModule.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -1720,12 +1630,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleAttributeKeysToAttributes?.length) {
@@ -1735,7 +1639,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleAttributeKeys =
-      await ecommerceModuleAttributeKeyApi.find({
+      await this.ecommerceModule.attributeKey.find({
         params: {
           filters: {
             and: [
@@ -1751,12 +1655,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleAttributeKeys?.length) {
@@ -1766,7 +1664,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const ecommerceModuleAttributesToBillingModuleCurrencies =
-      await ecommerceModuleAttributesToBillingModuleCurrenciesApi.find({
+      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -1782,12 +1680,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleAttributesToBillingModuleCurrencies?.length) {
@@ -1796,7 +1688,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const billingModuleCurrencies = await billingModuleCurrencyApi.find({
+    const billingModuleCurrencies = await this.billingModule.currency.find({
       params: {
         filters: {
           and: [
@@ -1810,12 +1702,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -1918,7 +1804,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     const messageFromRbacModuleSubjectsToSocialModuleProfiles =
-      await rbacModuleSubjectsToSocialModuleProfilesApi.find({
+      await this.rbacModule.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -1928,12 +1814,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 value: props.messageFromSocialModuleProfile.id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -1962,14 +1842,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const messageFromSubject = await rbacModuleSubjectApi.findById({
+    const messageFromSubject = await this.rbacModule.subject.findById({
       id: messageFromRbacModuleSubjectsToSocialModuleProfiles[0].subjectId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!messageFromSubject) {

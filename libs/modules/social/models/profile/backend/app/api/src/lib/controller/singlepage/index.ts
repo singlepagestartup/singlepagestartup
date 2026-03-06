@@ -1,9 +1,53 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
-import { RESTController } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
+import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/social/models/profile/backend/repository/database";
+import { Context, Next } from "hono";
+import { Service } from "../../service";
+import { Handler as FindByIdChatFind } from "./chat/find";
 
 @injectable()
-export class Controller extends RESTController<
-  (typeof Table)["$inferSelect"]
-> {}
+export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
+  service: Service;
+
+  constructor(@inject(DI.IService) service: Service) {
+    super(service);
+    this.service = service;
+    this.bindHttpRoutes([
+      {
+        method: "GET",
+        path: "/",
+        handler: this.find,
+      },
+      {
+        method: "GET",
+        path: "/:uuid",
+        handler: this.findById,
+      },
+      {
+        method: "GET",
+        path: "/:id/chats",
+        handler: this.findByIdChatFind,
+      },
+      {
+        method: "POST",
+        path: "/",
+        handler: this.create,
+      },
+      {
+        method: "PATCH",
+        path: "/:uuid",
+        handler: this.update,
+      },
+      {
+        method: "DELETE",
+        path: "/:uuid",
+        handler: this.delete,
+      },
+    ]);
+  }
+
+  async findByIdChatFind(c: Context, next: Next): Promise<Response> {
+    return new FindByIdChatFind(this.service).execute(c, next);
+  }
+}

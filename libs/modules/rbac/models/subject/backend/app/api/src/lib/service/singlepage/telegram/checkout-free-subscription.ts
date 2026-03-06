@@ -1,13 +1,6 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceModuleProductApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api as ecommerceModuleAttributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
-import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { type IBillingModule, type IEcommerceModule } from "../../../di";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
 export interface IExecuteProps {
@@ -16,29 +9,28 @@ export interface IExecuteProps {
 }
 
 export interface IConstructorProps {
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
 }
 
 export class Service {
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
 
   constructor(props: IConstructorProps) {
+    this.ecommerceModule = props.ecommerceModule;
+    this.billingModule = props.billingModule;
     this.subjectsToEcommerceModuleOrders =
       props.subjectsToEcommerceModuleOrders;
   }
 
-  private getSdkHeaders() {
+  async execute(props: IExecuteProps) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
     }
 
-    return {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      "Cache-Control": "no-store",
-    };
-  }
-
-  async execute(props: IExecuteProps) {
     if (!props.id) {
       throw new Error("Validation error. 'id' is required");
     }
@@ -46,8 +38,6 @@ export class Service {
     if (!props.chatId) {
       return null;
     }
-
-    const headers = this.getSdkHeaders();
 
     const subjectToOrders = await this.subjectsToEcommerceModuleOrders.find({
       params: {
@@ -64,7 +54,7 @@ export class Service {
     });
 
     if (subjectToOrders?.length) {
-      const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
+      const ecommerceModuleOrders = await this.ecommerceModule.order.find({
         params: {
           filters: {
             and: [
@@ -78,7 +68,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
       const allOrdersAreCompleted = ecommerceModuleOrders?.every((order) => {
@@ -90,7 +79,7 @@ export class Service {
       }
     }
 
-    const subscriptionProducts = await ecommerceModuleProductApi.find({
+    const subscriptionProducts = await this.ecommerceModule.product.find({
       params: {
         filters: {
           and: [
@@ -102,14 +91,13 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     if (!subscriptionProducts?.length) {
       return null;
     }
 
-    const priceAttributeKeys = await ecommerceModuleAttributeKeyApi.find({
+    const priceAttributeKeys = await this.ecommerceModule.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -121,7 +109,6 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     const priceAttributeKey = priceAttributeKeys?.[0];
@@ -130,7 +117,7 @@ export class Service {
     }
 
     const priceKeyToAttributes =
-      await ecommerceModuleAttributeKeysToAttributesApi.find({
+      await this.ecommerceModule.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -142,7 +129,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
     if (!priceKeyToAttributes?.length) {
@@ -150,7 +136,7 @@ export class Service {
     }
 
     const productsToPriceAttributes =
-      await ecommerceModuleProductsToAttributesApi.find({
+      await this.ecommerceModule.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -167,14 +153,13 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
     if (!productsToPriceAttributes?.length) {
       return null;
     }
 
-    const productPriceAttributes = await ecommerceModuleAttributeApi.find({
+    const productPriceAttributes = await this.ecommerceModule.attribute.find({
       params: {
         filters: {
           and: [
@@ -186,7 +171,6 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     if (!productPriceAttributes?.length) {
@@ -223,7 +207,7 @@ export class Service {
     }
 
     const attributesToBillingCurrencies =
-      await ecommerceModuleAttributesToBillingModuleCurrenciesApi.find({
+      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -235,16 +219,14 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
     if (!attributesToBillingCurrencies?.length) {
       return null;
     }
 
-    const billingModuleCurrency = await billingModuleCurrencyApi.findById({
+    const billingModuleCurrency = await this.billingModule.currency.findById({
       id: attributesToBillingCurrencies[0].billingModuleCurrencyId,
-      options: { headers },
     });
 
     if (!billingModuleCurrency) {

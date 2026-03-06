@@ -1,26 +1,14 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
-import { api } from "@sps/rbac/models/subject/sdk/server";
+import { type IBillingModule, type IEcommerceModule } from "../../../../di";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as ecommerceModuleOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as ecommerceModuleAttributesKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as ecommerceModuleProductApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as ecommerceModuleAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
-import { api as ecommerceModuleAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { api as ecommerceModuleOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
-import { api as ecommerceModuleOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
 import { api as broadcastModuleChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
-import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as ecommerceModuleAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 
 export type IExecuteProps =
   | {
@@ -56,11 +44,25 @@ export type IExecuteProps =
       };
     };
 
-export class Service {
-  repository: IRepository;
+type IConstructorProps = {
+  findById: ({ id }: { id: string }) => Promise<any>;
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
+  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+};
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+export class Service {
+  findById: ({ id }: { id: string }) => Promise<any>;
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
+  subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+
+  constructor(props: IConstructorProps) {
+    this.findById = props.findById;
+    this.ecommerceModule = props.ecommerceModule;
+    this.billingModule = props.billingModule;
+    this.subjectsToEcommerceModuleOrders =
+      props.subjectsToEcommerceModuleOrders;
   }
 
   async execute(props: IExecuteProps) {
@@ -68,21 +70,15 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is required");
     }
 
-    const entity = await api.findById({
+    const entity = await this.findById({
       id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!entity) {
       throw new Error("Not Found error. No entity found");
     }
 
-    const ecommerceModuleOrders = await ecommerceModuleOrderApi.find({
+    const ecommerceModuleOrders = await this.ecommerceModule.order.find({
       params: {
         filters: {
           and: [
@@ -96,19 +92,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!ecommerceModuleOrders?.length) {
       throw new Error("Not Found error. No ecommerce module orders found");
     }
 
-    const ordersToProducts = await ecommerceModuleOrdersToProductsApi.find({
+    const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -120,19 +110,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!ordersToProducts?.length) {
       throw new Error("Not Found error. No orders to products found");
     }
 
-    const ecommerceModuleProducts = await ecommerceModuleProductApi.find({
+    const ecommerceModuleProducts = await this.ecommerceModule.product.find({
       params: {
         filters: {
           and: [
@@ -146,12 +130,6 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!ecommerceModuleProducts?.length) {
@@ -159,7 +137,7 @@ export class Service {
     }
 
     const ecommerceModuleProductsToAttributes =
-      await ecommerceModuleProductsToAttributesApi.find({
+      await this.ecommerceModule.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -173,12 +151,6 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleProductsToAttributes?.length) {
@@ -188,7 +160,7 @@ export class Service {
     }
 
     const ecommerceModuleAttributesKeysToAttributes =
-      await ecommerceModuleAttributesKeysToAttributesApi.find({
+      await this.ecommerceModule.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -203,12 +175,6 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!ecommerceModuleAttributesKeysToAttributes?.length) {
@@ -218,7 +184,7 @@ export class Service {
     }
 
     const ecommerceModuleAttributesKeys =
-      await ecommerceModuleAttributeKeyApi.find({
+      await this.ecommerceModule.attributeKey.find({
         params: {
           filters: {
             and: [
@@ -231,12 +197,6 @@ export class Service {
                 ),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -253,35 +213,31 @@ export class Service {
       );
     }
 
-    const ecommerceModuleAttributes = await ecommerceModuleAttributeApi.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ecommerceModuleProductsToAttributes.map(
-                (ecommerceModuleProductToAttribute) =>
-                  ecommerceModuleProductToAttribute.attributeId,
-              ),
-            },
-          ],
+    const ecommerceModuleAttributes = await this.ecommerceModule.attribute.find(
+      {
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: ecommerceModuleProductsToAttributes.map(
+                  (ecommerceModuleProductToAttribute) =>
+                    ecommerceModuleProductToAttribute.attributeId,
+                ),
+              },
+            ],
+          },
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
+    );
 
     if (!ecommerceModuleAttributes?.length) {
       throw new Error("Not Found error. No ecommerce module attributes found");
     }
 
     const ecommerceModuleAttributesToBillingModuleCurrencies =
-      await ecommerceModuleAttributesToBillingModuleCurrenciesApi.find({
+      await this.ecommerceModule.attributesToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -297,7 +253,7 @@ export class Service {
         },
       });
 
-    const billingModuleCurrencies = await billingModuleCurrencyApi.find({});
+    const billingModuleCurrencies = await this.billingModule.currency.find({});
 
     const metadata:
       | {
@@ -427,7 +383,7 @@ export class Service {
     };
 
     const ordersToBillingModuleCurrencies =
-      await ecommerceModuleOrdersToBillingModuleCurrenciesApi.find({
+      await this.ecommerceModule.ordersToBillingModuleCurrencies.find({
         params: {
           filters: {
             and: [
@@ -439,11 +395,6 @@ export class Service {
                 ),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });
@@ -455,7 +406,7 @@ export class Service {
     }
 
     const ordersToBillingModulePaymentIntents =
-      await ecommerceModuleOrdersToBillingModulePaymentIntentsApi.find({
+      await this.ecommerceModule.ordersToBillingModulePaymentIntents.find({
         params: {
           filters: {
             and: [
@@ -467,12 +418,6 @@ export class Service {
                 ),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -527,7 +472,7 @@ export class Service {
       try {
         if (type === "subscription") {
           const subjectToEcommerceModuleOrders =
-            await subjectsToEcommerceModuleOrdersApi.find({
+            await this.subjectsToEcommerceModuleOrders.find({
               params: {
                 filters: {
                   and: [
@@ -539,25 +484,13 @@ export class Service {
                   ],
                 },
               },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
             });
 
           if (subjectToEcommerceModuleOrders?.length) {
             for (const subjectToEcommerceModuleOrder of subjectToEcommerceModuleOrders) {
               const ecommerceModuleOrder =
-                await ecommerceModuleOrderApi.findById({
+                await this.ecommerceModule.order.findById({
                   id: subjectToEcommerceModuleOrder.ecommerceModuleOrderId,
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
-                    },
-                  },
                 });
 
               if (!ecommerceModuleOrder) {
@@ -601,7 +534,7 @@ export class Service {
               }
 
               const ordersToProducts =
-                await ecommerceModuleOrdersToProductsApi.find({
+                await this.ecommerceModule.ordersToProducts.find({
                   params: {
                     filters: {
                       and: [
@@ -611,12 +544,6 @@ export class Service {
                           value: ecommerceModuleOrder.id,
                         },
                       ],
-                    },
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
                     },
                   },
                 });
@@ -798,11 +725,8 @@ export class Service {
     }
 
     for (const order of props.ecommerceModule.orders) {
-      const orderToUpdate = await ecommerceModuleOrderApi.findById({
+      const orderToUpdate = await this.ecommerceModule.order.findById({
         id: order["id"],
-        options: {
-          headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-        },
       });
 
       if (!orderToUpdate) {
@@ -882,7 +806,7 @@ export class Service {
     }
 
     const billingModulePaymentIntentsToInvoices =
-      await billingModulePaymentIntentsToInvoicesApi.find({
+      await this.billingModule.paymentIntentsToInvoices.find({
         params: {
           filters: {
             and: [
@@ -897,12 +821,6 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!billingModulePaymentIntentsToInvoices?.length) {
@@ -911,7 +829,7 @@ export class Service {
       );
     }
 
-    const billingModuleInvoices = await billingModuleInvoiceApi.find({
+    const billingModuleInvoices = await this.billingModule.invoice.find({
       params: {
         filters: {
           and: [
@@ -923,12 +841,6 @@ export class Service {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });

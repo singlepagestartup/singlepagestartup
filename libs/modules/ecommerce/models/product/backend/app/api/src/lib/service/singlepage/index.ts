@@ -11,7 +11,7 @@ import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-
 import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
 import {
-  Service as GetExtended,
+  Service as GetExtendedService,
   type IExecuteProps as IGetExtendedExecuteProps,
   type IResult as IGetExtendedResult,
 } from "./get-extended";
@@ -21,9 +21,9 @@ export type IExtendedEcommerceModuleProduct = IGetExtendedResult;
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   productsToAttributes: ProductsToAttributesService;
-  attributes: AttributeService;
+  attribute: AttributeService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributeKeys: AttributeKeyService;
+  attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
 
@@ -31,10 +31,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(DI.IRepository) repository: Repository,
     @inject(ProductDI.IProductsToAttributesService)
     productsToAttributes: ProductsToAttributesService,
-    @inject(ProductDI.IAttributesService) attributes: AttributeService,
+    @inject(ProductDI.IAttributesService) attribute: AttributeService,
     @inject(ProductDI.IAttributeKeysToAttributesService)
     attributeKeysToAttributes: AttributeKeysToAttributesService,
-    @inject(ProductDI.IAttributeKeysService) attributeKeys: AttributeKeyService,
+    @inject(ProductDI.IAttributeKeysService) attributeKey: AttributeKeyService,
     @inject(ProductDI.IAttributesToBillingModuleCurrenciesService)
     attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
     @inject(ProductDI.IProductsToFileStorageModuleFilesService)
@@ -42,9 +42,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ) {
     super(repository);
     this.productsToAttributes = productsToAttributes;
-    this.attributes = attributes;
+    this.attribute = attribute;
     this.attributeKeysToAttributes = attributeKeysToAttributes;
-    this.attributeKeys = attributeKeys;
+    this.attributeKey = attributeKey;
     this.attributesToBillingModuleCurrencies =
       attributesToBillingModuleCurrencies;
     this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
@@ -53,12 +53,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async getExtended(
     props: IGetExtendedExecuteProps,
   ): Promise<IGetExtendedResult> {
-    return new GetExtended({
+    return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
       productsToAttributes: this.productsToAttributes,
-      attributes: this.attributes,
+      attribute: this.attribute,
       attributeKeysToAttributes: this.attributeKeysToAttributes,
-      attributeKeys: this.attributeKeys,
+      attributeKey: this.attributeKey,
       attributesToBillingModuleCurrencies:
         this.attributesToBillingModuleCurrencies,
       productsToFileStorageModuleFiles: this.productsToFileStorageModuleFiles,

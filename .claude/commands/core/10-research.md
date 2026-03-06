@@ -173,16 +173,12 @@ fi
 8. **Add GitHub issue comment with research summary**:
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "Research complete: \`thoughts/shared/research/REPO_NAME/FILENAME.md\`
+   gh issue comment ISSUE_NUMBER --body "Research complete: \`thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md\`
 
    Key findings:
    - [Major finding 1]
    - [Major finding 2]
    - [Major finding 3]
-
-   Potential approaches:
-   - [Approach A]
-   - [Approach B]"
    ```
 
 9. **Update status to "Research in Review"**:

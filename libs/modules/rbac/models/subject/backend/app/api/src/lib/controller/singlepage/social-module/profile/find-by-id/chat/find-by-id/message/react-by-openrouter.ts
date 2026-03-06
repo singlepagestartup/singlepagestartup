@@ -9,19 +9,12 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
 import {
   OpenRouter,
   type IOpenRouterRequestMessage,
 } from "@sps/shared-third-parties";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
-import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
-import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
-import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import * as jwt from "hono/jwt";
 
 type TRequestTask =
@@ -363,7 +356,7 @@ export class Handler {
       }
 
       const socialModuleSendMessageProfilesToMessages =
-        await socialModuleProfilesToMessagesApi.find({
+        await this.service.socialModule.profilesToMessages.find({
           params: {
             filters: {
               and: [
@@ -373,12 +366,6 @@ export class Handler {
                   value: socialModuleMessageId,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -408,14 +395,10 @@ export class Handler {
         );
       }
 
-      const socialModuleProfile = await socialModuleProfileApi.findById({
-        id: socialModuleProfileId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const socialModuleProfile =
+        await this.service.socialModule.profile.findById({
+          id: socialModuleProfileId,
+        });
 
       if (!socialModuleProfile) {
         throw new Error(
@@ -423,14 +406,10 @@ export class Handler {
         );
       }
 
-      const socialModuleMessage = await socialModuleMessageApi.findById({
-        id: socialModuleMessageId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const socialModuleMessage =
+        await this.service.socialModule.message.findById({
+          id: socialModuleMessageId,
+        });
 
       if (!socialModuleMessage?.description) {
         throw new Error(
@@ -439,7 +418,7 @@ export class Handler {
       }
 
       const socialModuleChatToMessages =
-        await socialModuleChatsToMessagesApi.find({
+        await this.service.socialModule.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -460,12 +439,6 @@ export class Handler {
             },
             limit: 20,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       const context: IOpenRouterRequestMessage[] = [];
@@ -479,40 +452,35 @@ export class Handler {
       }
 
       if (socialModuleChatToMessages?.length) {
-        const socialModuleMessages = await socialModuleMessageApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: socialModuleChatToMessages.map(
-                    (socialModuleChatToMessage) =>
-                      socialModuleChatToMessage.messageId,
-                  ),
-                },
-              ],
+        const socialModuleMessages =
+          await this.service.socialModule.message.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: socialModuleChatToMessages.map(
+                      (socialModuleChatToMessage) =>
+                        socialModuleChatToMessage.messageId,
+                    ),
+                  },
+                ],
+              },
+              orderBy: {
+                and: [
+                  {
+                    column: "createdAt",
+                    method: "asc",
+                  },
+                ],
+              },
             },
-            orderBy: {
-              and: [
-                {
-                  column: "createdAt",
-                  method: "asc",
-                },
-              ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+          });
 
         if (socialModuleMessages?.length) {
           const socialModuleProfilesToMessages =
-            await socialModuleProfilesToMessagesApi.find({
+            await this.service.socialModule.profilesToMessages.find({
               params: {
                 filters: {
                   and: [
@@ -533,12 +501,6 @@ export class Handler {
                       method: "asc",
                     },
                   ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -588,49 +550,40 @@ export class Handler {
               let fileStorageFiles: IFileStorageModuleFile[] | undefined = [];
 
               const socialModuleMessagesToFileStorageModuleFiles =
-                await socialModuleMessagesToFileStorageModuleFilesApi.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "messageId",
-                          method: "eq",
-                          value: socialModuleMessage.id,
-                        },
-                      ],
+                await this.service.socialModule.messagesToFileStorageModuleFiles.find(
+                  {
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "messageId",
+                            method: "eq",
+                            value: socialModuleMessage.id,
+                          },
+                        ],
+                      },
                     },
                   },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
-                    },
-                  },
-                });
+                );
 
               if (socialModuleMessagesToFileStorageModuleFiles?.length) {
-                fileStorageFiles = await fileStorageModuleFileApi.find({
-                  params: {
-                    filters: {
-                      and: [
-                        {
-                          column: "id",
-                          method: "inArray",
-                          value:
-                            socialModuleMessagesToFileStorageModuleFiles.map(
-                              (relation) => relation.fileStorageModuleFileId,
-                            ),
-                        },
-                      ],
+                fileStorageFiles =
+                  await this.service.fileStorageModule.file.find({
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "id",
+                            method: "inArray",
+                            value:
+                              socialModuleMessagesToFileStorageModuleFiles.map(
+                                (relation) => relation.fileStorageModuleFileId,
+                              ),
+                          },
+                        ],
+                      },
                     },
-                  },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
-                    },
-                  },
-                });
+                  });
               }
               if (fileStorageFiles?.length) {
                 context.push({
@@ -671,7 +624,7 @@ export class Handler {
       }
 
       const subjectsToSocialModuleProfiles =
-        await subjectsToSocialModuleProfilesApi.find({
+        await this.service.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {
               and: [
@@ -683,11 +636,6 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
 
       if (!subjectsToSocialModuleProfiles?.length) {
@@ -696,13 +644,8 @@ export class Handler {
         );
       }
 
-      const replyBySubject = await api.findById({
+      const replyBySubject = await this.service.findById({
         id: subjectsToSocialModuleProfiles[0].subjectId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!replyBySubject) {

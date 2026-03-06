@@ -7,8 +7,6 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { api as rbacModuleSubjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
-import { api as rbacModuleSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 
 export class Handler {
   service: Service;
@@ -31,7 +29,7 @@ export class Handler {
 
       logger.info("Rbac module subject delete anonymous started");
 
-      const oldSubjects = await rbacModuleSubjectApi.find({
+      const oldSubjects = await this.service.rbacModule.subject.find({
         params: {
           filters: {
             and: [
@@ -46,31 +44,13 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
-      const subjectsToIdentities = await rbacModuleSubjectsToIdentitiesApi.find(
-        {
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        },
-      );
+      const subjectsToIdentities =
+        await this.service.rbacModule.subjectsToIdentities.find();
 
       const subjectsToSocialModuleProfiles =
-        await rbacModuleSubjectsToSocialModuleProfilesApi.find({
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+        await this.service.rbacModule.subjectsToSocialModuleProfiles.find();
 
       if (!oldSubjects?.length) {
         return c.json({ data: { ok: true } });

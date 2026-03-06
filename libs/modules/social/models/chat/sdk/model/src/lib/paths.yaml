@@ -102,3 +102,26 @@ paths:
             application/json:
               schema:
                 $ref: "social-chat.yaml"
+
+  /social/chats/{id}/messages:
+    get:
+      tags:
+        - "social-chat"
+      summary: List messages
+      description: Retrieve messages for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/offset.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/limit.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/order-by.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"

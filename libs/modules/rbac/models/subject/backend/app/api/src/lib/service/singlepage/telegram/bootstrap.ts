@@ -19,6 +19,8 @@ import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/su
 import { IModel as IRbacSubjectsToIdentities } from "@sps/rbac/relations/subjects-to-identities/sdk/model";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
+import { type ISocialModule } from "../../../di";
+import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 
 export interface IExecuteProps {
   fromId: string;
@@ -39,17 +41,23 @@ type IFindById = (props: { id: string }) => Promise<IRbacSubject | null>;
 
 export interface IConstructorProps {
   findById: IFindById;
+  identity: IdentityService;
+  socialModule: ISocialModule;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
 }
 
 export class Service {
   findById: IFindById;
+  identity: IdentityService;
+  socialModule: ISocialModule;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
+    this.identity = props.identity;
+    this.socialModule = props.socialModule;
     this.subjectsToIdentities = props.subjectsToIdentities;
     this.subjectsToSocialModuleProfiles = props.subjectsToSocialModuleProfiles;
   }
@@ -259,7 +267,7 @@ export class Service {
     let profile: ISocialModuleProfile | null = null;
     let chat: ISocialModuleChat | null = null;
 
-    const identities = await rbacModuleIdentityApi.find({
+    const identities = await this.identity.find({
       params: {
         filters: {
           and: [
@@ -276,7 +284,6 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     if (identities?.length) {
@@ -362,7 +369,7 @@ export class Service {
     });
 
     if (subjectToProfiles?.length) {
-      const socialModuleProfiles = await socialModuleProfileApi.find({
+      const socialModuleProfiles = await this.socialModule.profile.find({
         params: {
           filters: {
             and: [
@@ -381,7 +388,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
       if (socialModuleProfiles?.length) {
@@ -425,6 +431,12 @@ export class Service {
       });
     }
 
+    if (!profile) {
+      throw new Error(
+        "Internal error. Social module profile not initialized for subject",
+      );
+    }
+
     const { isStartCommand, referralCode } = this.parseStartMessage(
       props.messageText,
     );
@@ -432,20 +444,20 @@ export class Service {
     if (isStartCommand && referralCode) {
       let socialModuleReferrerAttributeKey: ISocialModuleAttributeKey;
 
-      const socialModuleAttributeKeys = await socialModuleAttributeKeyApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "slug",
-                method: "eq",
-                value: "referrer",
-              },
-            ],
+      const socialModuleAttributeKeys =
+        await this.socialModule.attributeKey.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "slug",
+                  method: "eq",
+                  value: "referrer",
+                },
+              ],
+            },
           },
-        },
-        options: { headers },
-      });
+        });
 
       if (socialModuleAttributeKeys?.length) {
         socialModuleReferrerAttributeKey = socialModuleAttributeKeys[0];
@@ -466,7 +478,7 @@ export class Service {
 
       let socialModuleReferrerAttribute: ISocialModuleAttribute;
 
-      const socialModuleAttributes = await socialModuleAttributeApi.find({
+      const socialModuleAttributes = await this.socialModule.attribute.find({
         params: {
           filters: {
             and: [
@@ -478,7 +490,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
       if (socialModuleAttributes?.length) {
@@ -498,7 +509,7 @@ export class Service {
       }
 
       const socialModuleAttributeKeysToAttributes =
-        await socialModuleAttributeKeysToAttributesApi.find({
+        await this.socialModule.attributeKeysToAttributes.find({
           params: {
             filters: {
               and: [
@@ -515,7 +526,6 @@ export class Service {
               ],
             },
           },
-          options: { headers },
         });
 
       if (!socialModuleAttributeKeysToAttributes?.length) {
@@ -529,7 +539,7 @@ export class Service {
       }
 
       const socialModuleProfilesToAttributes =
-        await socialModuleProfilesToAttributesApi.find({
+        await this.socialModule.profilesToAttributes.find({
           params: {
             filters: {
               and: [
@@ -546,7 +556,6 @@ export class Service {
               ],
             },
           },
-          options: { headers },
         });
 
       if (!socialModuleProfilesToAttributes?.length) {
@@ -561,7 +570,7 @@ export class Service {
     }
 
     const socialModuleProfilesToChats =
-      await socialModuleProfilesToChatsApi.find({
+      await this.socialModule.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -573,7 +582,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
     if (!socialModuleProfilesToChats?.length) {
@@ -593,7 +601,7 @@ export class Service {
         options: { headers },
       });
     } else {
-      const socialModuleChats = await socialModuleChatApi.find({
+      const socialModuleChats = await this.socialModule.chat.find({
         params: {
           filters: {
             and: [
@@ -615,7 +623,6 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
       if (socialModuleChats?.length) {
@@ -645,8 +652,14 @@ export class Service {
       }
     }
 
+    if (!chat) {
+      throw new Error(
+        "Internal error. Social module chat not initialized for profile",
+      );
+    }
+
     const telegramBotAgentSocialModuleProfiles =
-      await socialModuleProfileApi.find({
+      await this.socialModule.profile.find({
         params: {
           filters: {
             and: [
@@ -658,24 +671,23 @@ export class Service {
             ],
           },
         },
-        options: { headers },
       });
 
     if (telegramBotAgentSocialModuleProfiles?.length) {
-      const existingProfileToChats = await socialModuleProfilesToChatsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "chatId",
-                method: "eq",
-                value: chat.id,
-              },
-            ],
+      const existingProfileToChats =
+        await this.socialModule.profilesToChats.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: chat.id,
+                },
+              ],
+            },
           },
-        },
-        options: { headers },
-      });
+        });
 
       if (existingProfileToChats?.length) {
         for (const agentProfile of telegramBotAgentSocialModuleProfiles) {

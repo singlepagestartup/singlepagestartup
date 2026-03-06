@@ -46,6 +46,9 @@ import { Configuration as OrdersToBillingModulePaymentIntentsConfiguration } fro
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { Service as CheckoutAttributesService } from "./service/singlepage/checkout-attributes";
+import { Service as GetTotalService } from "./service/singlepage/get-total";
+import { Service as GetQuantityService } from "./service/singlepage/get-quantity";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -54,6 +57,15 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
+  bind<CheckoutAttributesService>(OrderDI.ICheckoutAttributesService)
+    .to(CheckoutAttributesService)
+    .inSingletonScope();
+  bind<GetTotalService>(OrderDI.IGetTotalService)
+    .to(GetTotalService)
+    .inSingletonScope();
+  bind<GetQuantityService>(OrderDI.IGetQuantityService)
+    .to(GetQuantityService)
+    .inSingletonScope();
   bind<ProductService>(OrderDI.IProductsService)
     .toDynamicValue(
       () =>
@@ -129,6 +141,76 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
       () =>
         new OrdersToProductsService(
           new OrdersToProductsRepository(new OrdersToProductsConfiguration()),
+          new ProductService(
+            new ProductRepository(new ProductConfiguration()),
+            new ProductsToAttributesService(
+              new ProductsToAttributesRepository(
+                new ProductsToAttributesConfiguration(),
+              ),
+            ),
+            new AttributeService(
+              new AttributeRepository(new AttributeConfiguration()),
+              new AttributesToBillingModuleCurrenciesService(
+                new AttributesToBillingModuleCurrenciesRepository(
+                  new AttributesToBillingModuleCurrenciesConfiguration(),
+                ),
+              ),
+              new BillingModuleCurrencyService(
+                new BillingModuleCurrencyRepository(
+                  new BillingModuleCurrencyConfiguration(),
+                ),
+              ),
+            ),
+            new AttributeKeysToAttributesService(
+              new AttributeKeysToAttributesRepository(
+                new AttributeKeysToAttributesConfiguration(),
+              ),
+            ),
+            new AttributeKeyService(
+              new AttributeKeyRepository(new AttributeKeyConfiguration()),
+            ),
+            new AttributesToBillingModuleCurrenciesService(
+              new AttributesToBillingModuleCurrenciesRepository(
+                new AttributesToBillingModuleCurrenciesConfiguration(),
+              ),
+            ),
+            new ProductsToFileStorageModuleFilesService(
+              new ProductsToFileStorageModuleFilesRepository(
+                new ProductsToFileStorageModuleFilesConfiguration(),
+              ),
+            ),
+          ),
+          new AttributeService(
+            new AttributeRepository(new AttributeConfiguration()),
+            new AttributesToBillingModuleCurrenciesService(
+              new AttributesToBillingModuleCurrenciesRepository(
+                new AttributesToBillingModuleCurrenciesConfiguration(),
+              ),
+            ),
+            new BillingModuleCurrencyService(
+              new BillingModuleCurrencyRepository(
+                new BillingModuleCurrencyConfiguration(),
+              ),
+            ),
+          ),
+          new AttributeKeyService(
+            new AttributeKeyRepository(new AttributeKeyConfiguration()),
+          ),
+          new ProductsToAttributesService(
+            new ProductsToAttributesRepository(
+              new ProductsToAttributesConfiguration(),
+            ),
+          ),
+          new AttributeKeysToAttributesService(
+            new AttributeKeysToAttributesRepository(
+              new AttributeKeysToAttributesConfiguration(),
+            ),
+          ),
+          new AttributesToBillingModuleCurrenciesService(
+            new AttributesToBillingModuleCurrenciesRepository(
+              new AttributesToBillingModuleCurrenciesConfiguration(),
+            ),
+          ),
         ),
     )
     .inSingletonScope();

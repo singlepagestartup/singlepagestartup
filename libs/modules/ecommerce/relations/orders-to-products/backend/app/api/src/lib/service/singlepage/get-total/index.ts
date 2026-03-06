@@ -1,24 +1,46 @@
-import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as attributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as productsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as attributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as attributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
-import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
+import { IModel as IOrderToProduct } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
+import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
+import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
+import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
+import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
+import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
+import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {
   id: string;
 };
 
-export class Service {
-  repository: IRepository;
+type IConstructorProps = {
+  findById: (props: { id: string }) => Promise<IOrderToProduct | null>;
+  product: ProductService;
+  attribute: AttributeService;
+  attributeKey: AttributeKeyService;
+  productsToAttributes: ProductsToAttributesService;
+  attributeKeysToAttributes: AttributeKeysToAttributesService;
+  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
+};
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+export class Service {
+  findById: IConstructorProps["findById"];
+  product: ProductService;
+  attribute: AttributeService;
+  attributeKey: AttributeKeyService;
+  productsToAttributes: ProductsToAttributesService;
+  attributeKeysToAttributes: AttributeKeysToAttributesService;
+  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
+
+  constructor(props: IConstructorProps) {
+    this.findById = props.findById;
+    this.product = props.product;
+    this.attribute = props.attribute;
+    this.attributeKey = props.attributeKey;
+    this.productsToAttributes = props.productsToAttributes;
+    this.attributeKeysToAttributes = props.attributeKeysToAttributes;
+    this.attributesToBillingModuleCurrencies =
+      props.attributesToBillingModuleCurrencies;
   }
 
   async execute(props: IExecuteProps) {
@@ -26,20 +48,15 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const entity = await api.findById({
+    const entity = await this.findById({
       id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!entity) {
       throw new Error("Not Found error. Entity not found");
     }
 
-    const priceAttributeKeys = await attributeKeyApi.find({
+    const priceAttributeKeys = await this.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -49,11 +66,6 @@ export class Service {
               value: "price",
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
       },
     });
@@ -69,20 +81,15 @@ export class Service {
       billingModuleCurrency: IBillingModuleCurrency;
     }[] = [];
 
-    const product = await productApi.findById({
+    const product = await this.product.findById({
       id: entity.productId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!product) {
       throw new Error("Product not found");
     }
 
-    const productToAttributes = await productsToAttributesApi.find({
+    const productToAttributes = await this.productsToAttributes.find({
       params: {
         filters: {
           and: [
@@ -94,11 +101,6 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     if (!productToAttributes?.length) {
@@ -106,7 +108,7 @@ export class Service {
     }
 
     const productPriceAttributeKeysToAttributes =
-      await attributeKeysToAttributesApi.find({
+      await this.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -125,11 +127,6 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
     if (!productPriceAttributeKeysToAttributes?.length) {
@@ -137,13 +134,8 @@ export class Service {
     }
 
     for (const productPriceAttributeKeyToAttribute of productPriceAttributeKeysToAttributes) {
-      const priceAttribute = await attributeApi.findById({
+      const priceAttribute = await this.attribute.findById({
         id: productPriceAttributeKeyToAttribute.attributeId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!priceAttribute) {
@@ -151,7 +143,7 @@ export class Service {
       }
 
       const attributesToBillingModuleCurrencies =
-        await attributesToBillingModuleCurrenciesApi.find({
+        await this.attributesToBillingModuleCurrencies.find({
           params: {
             filters: {
               and: [
@@ -161,11 +153,6 @@ export class Service {
                   value: priceAttribute.id,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
           },
         });

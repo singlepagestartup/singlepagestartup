@@ -56,7 +56,18 @@ import {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
 } from "./ecommerce/order/proceed";
-import { SubjectDI } from "../../di";
+import {
+  SubjectDI,
+  type IBillingModule,
+  type IBroadcastModule,
+  type ICrmModule,
+  type IEcommerceModule,
+  type IFileStorageModule,
+  type INotificationModule,
+  type ISocialModule,
+} from "../../di";
+import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
+import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
@@ -78,9 +89,18 @@ import {
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  socialModule: ISocialModule;
+  ecommerceModule: IEcommerceModule;
+  billingModule: IBillingModule;
+  notificationModule: INotificationModule;
+  fileStorageModule: IFileStorageModule;
+  crmModule: ICrmModule;
+  broadcastModule: IBroadcastModule;
   isAuthorizedService: IsAuthorized;
   billRouteService: BillRoute;
   ecommerceOrderProceedService: EcommerceOrderProceed;
+  identity: IdentityService;
+  role: RoleService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
@@ -88,6 +108,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
+    @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
+    @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
+    @inject(SubjectDI.IBillingModule) billingModule: IBillingModule,
+    @inject(SubjectDI.INotificationModule)
+    notificationModule: INotificationModule,
+    @inject(SubjectDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
+    @inject(SubjectDI.ICrmModule) crmModule: ICrmModule,
+    @inject(SubjectDI.IBroadcastModule) broadcastModule: IBroadcastModule,
+    @inject(SubjectDI.IIdentityService) identity: IdentityService,
+    @inject(SubjectDI.IRoleService) role: RoleService,
     @inject(SubjectDI.IIsAuthorizedService)
     isAuthorizedService: IsAuthorized,
     @inject(SubjectDI.IBillRouteService)
@@ -104,6 +134,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
   ) {
     super(repository);
+    this.socialModule = socialModule;
+    this.ecommerceModule = ecommerceModule;
+    this.billingModule = billingModule;
+    this.notificationModule = notificationModule;
+    this.fileStorageModule = fileStorageModule;
+    this.crmModule = crmModule;
+    this.broadcastModule = broadcastModule;
+    this.identity = identity;
+    this.role = role;
     this.isAuthorizedService = isAuthorizedService;
     this.billRouteService = billRouteService;
     this.ecommerceOrderProceedService = ecommerceOrderProceedService;
@@ -156,15 +195,27 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async deleteAnonymousSubjects(props?: IDeleteAnonymousSubjectsExecuteProps) {
-    return new DeleteAnonymousSubjects(this.repository).execute(props);
+    return new DeleteAnonymousSubjects({
+      find: (findProps) => this.find(findProps),
+      subjectsToIdentities: this.subjectsToIdentities,
+    }).execute(props);
   }
 
   async deanonymize(props: IDeanonymizeExecuteProps) {
-    return new Deanonymize(this.repository).execute(props);
+    return new Deanonymize({
+      findById: ({ id }) => this.findById({ id }),
+      identity: this.identity,
+      subjectsToIdentities: this.subjectsToIdentities,
+    }).execute(props);
   }
 
   async ecommerceOrderCheckout(props: IEcommerceOrderCheckoutExecuteProps) {
-    return new EcommerceOrderCheckout(this.repository).execute(props);
+    return new EcommerceOrderCheckout({
+      findById: ({ id }) => this.findById({ id }),
+      ecommerceModule: this.ecommerceModule,
+      billingModule: this.billingModule,
+      subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
+    }).execute(props);
   }
 
   async socialModuleChatSubjectsWithSocialModuleProfiles(
@@ -188,6 +239,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ): Promise<ITelegramBootstrapResult> {
     return new TelegramBootstrap({
       findById: ({ id }) => this.findById({ id }),
+      identity: this.identity,
+      socialModule: this.socialModule,
       subjectsToIdentities: this.subjectsToIdentities,
       subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
     }).execute(props);
@@ -197,6 +250,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ITelegramSyncMembershipExecuteProps,
   ): Promise<ITelegramSyncMembershipResult> {
     return new TelegramSyncMembership({
+      role: this.role,
       subjectsToRoles: this.subjectsToRoles,
     }).execute(props);
   }
@@ -205,6 +259,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ITelegramCheckoutFreeSubscriptionExecuteProps,
   ) {
     return new TelegramCheckoutFreeSubscription({
+      ecommerceModule: this.ecommerceModule,
+      billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
   }

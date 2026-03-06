@@ -2,8 +2,6 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
-import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
-import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -47,7 +45,7 @@ export class Handler {
       const orderBy = parsedQuery?.orderBy;
 
       const socialModuleChatsToMessages =
-        await socialModuleChatsToMessagesApi.find({
+        await this.service.socialModule.chatsToMessages.find({
           params: {
             filters: {
               and: [
@@ -62,11 +60,6 @@ export class Handler {
             offset,
             orderBy,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
 
       if (!socialModuleChatsToMessages?.length) {
@@ -75,30 +68,26 @@ export class Handler {
         });
       }
 
-      const socialModuleMessages = await socialModuleMessageApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: socialModuleChatsToMessages?.map(
-                  (socialModuleChatsToMessage) => {
-                    return socialModuleChatsToMessage.messageId;
-                  },
-                ),
-              },
-            ],
-          },
-          orderBy,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
+      const socialModuleMessages = await this.service.socialModule.message.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "id",
+                  method: "inArray",
+                  value: socialModuleChatsToMessages?.map(
+                    (socialModuleChatsToMessage) => {
+                      return socialModuleChatsToMessage.messageId;
+                    },
+                  ),
+                },
+              ],
+            },
+            orderBy,
           },
         },
-      });
+      );
 
       return c.json({
         data: socialModuleMessages,

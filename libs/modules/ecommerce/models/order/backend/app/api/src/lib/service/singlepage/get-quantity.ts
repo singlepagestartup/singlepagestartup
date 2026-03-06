@@ -1,16 +1,21 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
+import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
+import { OrderDI } from "../../di";
 
 export type IExecuteProps = {
   id: string;
 };
 
+@injectable()
 export class Service {
-  repository: IRepository;
+  ordersToProducts: OrdersToProductsService;
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+  constructor(
+    @inject(OrderDI.IOrdersToProductsService)
+    ordersToProducts: OrdersToProductsService,
+  ) {
+    this.ordersToProducts = ordersToProducts;
   }
 
   async execute(props: IExecuteProps) {
@@ -18,7 +23,7 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const orderToProducts = await ordersToProductsApi.find({
+    const orderToProducts = await this.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -28,12 +33,6 @@ export class Service {
               value: props.id,
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });

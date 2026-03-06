@@ -4,23 +4,23 @@ import { CRUDService, DI } from "@sps/shared-backend-api";
 import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Repository } from "../../repository";
 import {
-  Service as ClearOldOrders,
+  Service as ClearOldOrdersService,
   IExecuteProps as IClearOldOrdersExecuteProps,
 } from "./clear-old-orders";
 import {
-  Service as CheckoutAttributes,
+  Service as CheckoutAttributesService,
   IExecuteProps as ICheckoutAttributesExecuteProps,
 } from "./checkout-attributes";
 import {
-  Service as GetTotal,
+  Service as GetTotalService,
   IExecuteProps as IGetTotalExecuteProps,
 } from "./get-total";
 import {
-  Service as GetQuantity,
+  Service as GetQuantityService,
   IExecuteProps as IGetQuantityExecuteProps,
 } from "./get-quantity";
 import {
-  Service as GetExtended,
+  Service as GetExtendedService,
   IExecuteProps as IGetExtendedExecuteProps,
   IResult as IGetExtendedResult,
 } from "./get-extended";
@@ -41,9 +41,12 @@ export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  products: ProductService;
-  attributes: AttributeService;
-  attributeKeys: AttributeKeyService;
+  checkoutAttributesService: CheckoutAttributesService;
+  getTotalService: GetTotalService;
+  getQuantityService: GetQuantityService;
+  product: ProductService;
+  attribute: AttributeService;
+  attributeKey: AttributeKeyService;
   ordersToProducts: OrdersToProductsService;
   productsToAttributes: ProductsToAttributesService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
@@ -55,9 +58,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(OrderDI.IProductsService) products: ProductService,
-    @inject(OrderDI.IAttributesService) attributes: AttributeService,
-    @inject(OrderDI.IAttributeKeysService) attributeKeys: AttributeKeyService,
+    @inject(OrderDI.ICheckoutAttributesService)
+    checkoutAttributesService: CheckoutAttributesService,
+    @inject(OrderDI.IGetTotalService) getTotalService: GetTotalService,
+    @inject(OrderDI.IGetQuantityService) getQuantityService: GetQuantityService,
+    @inject(OrderDI.IProductsService) product: ProductService,
+    @inject(OrderDI.IAttributesService) attribute: AttributeService,
+    @inject(OrderDI.IAttributeKeysService) attributeKey: AttributeKeyService,
     @inject(OrderDI.IOrdersToProductsService)
     ordersToProducts: OrdersToProductsService,
     @inject(OrderDI.IProductsToAttributesService)
@@ -76,9 +83,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService,
   ) {
     super(repository);
-    this.products = products;
-    this.attributes = attributes;
-    this.attributeKeys = attributeKeys;
+    this.checkoutAttributesService = checkoutAttributesService;
+    this.getTotalService = getTotalService;
+    this.getQuantityService = getQuantityService;
+    this.product = product;
+    this.attribute = attribute;
+    this.attributeKey = attributeKey;
     this.ordersToProducts = ordersToProducts;
     this.productsToAttributes = productsToAttributes;
     this.attributeKeysToAttributes = attributeKeysToAttributes;
@@ -94,12 +104,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async getExtended(
     props: IGetExtendedExecuteProps,
   ): Promise<IGetExtendedResult> {
-    return new GetExtended({
+    return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
-      getCheckoutAttributes: (data) => this.getCheckoutAttributes(data),
-      products: this.products,
-      attributes: this.attributes,
-      attributeKeys: this.attributeKeys,
+      checkoutAttributes: this.checkoutAttributesService,
+      product: this.product,
+      attribute: this.attribute,
+      attributeKey: this.attributeKey,
       ordersToProducts: this.ordersToProducts,
       productsToAttributes: this.productsToAttributes,
       attributeKeysToAttributes: this.attributeKeysToAttributes,
@@ -114,22 +124,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   async clearOldOrders(props: IClearOldOrdersExecuteProps) {
-    return new ClearOldOrders({
-      findOldOrders: (query) => this.find(query),
-      findOrdersToBillingModulePaymentIntents: (query) =>
-        this.ordersToBillingModulePaymentIntents.find(query),
+    return new ClearOldOrdersService({
+      find: (findProps) => this.find(findProps),
+      ordersToBillingModulePaymentIntents:
+        this.ordersToBillingModulePaymentIntents,
     }).execute(props);
   }
 
   async getCheckoutAttributes(props: ICheckoutAttributesExecuteProps) {
-    return new CheckoutAttributes(this.repository).execute(props);
+    return this.checkoutAttributesService.execute(props);
   }
 
   async getTotal(props: IGetTotalExecuteProps) {
-    return new GetTotal(this.repository).execute(props);
+    return this.getTotalService.execute(props);
   }
 
   async getQuantity(props: IGetQuantityExecuteProps) {
-    return new GetQuantity(this.repository).execute(props);
+    return this.getQuantityService.execute(props);
   }
 }

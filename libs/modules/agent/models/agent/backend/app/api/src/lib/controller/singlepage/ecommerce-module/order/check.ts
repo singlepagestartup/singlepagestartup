@@ -20,7 +20,7 @@ export class Handler {
 
       logger.info("Ecommerce module order check started");
 
-      const notCompletedOrders = await ecommerceModuleOrderApi.find({
+      const notCompletedOrders = await this.service.ecommerceModule.order.find({
         params: {
           filters: {
             and: [
@@ -30,11 +30,6 @@ export class Handler {
                 value: "completed",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });

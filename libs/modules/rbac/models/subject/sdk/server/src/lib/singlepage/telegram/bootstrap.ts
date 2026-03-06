@@ -1,11 +1,14 @@
-import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  serverHost,
+  route,
+  IModel as IRbacSubject,
+} from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   prepareFormDataToSend,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 

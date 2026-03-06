@@ -2,34 +2,23 @@ import { FindServiceProps } from "@sps/shared-backend-api";
 import { api as orderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { logger } from "@sps/backend-utils";
-import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
-import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
+import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {};
 
-type IFindOldOrders = (
-  props: FindServiceProps,
-) => Promise<IEcommerceModuleOrder[] | undefined>;
-
-type IFindOrdersToBillingModulePaymentIntents = (
-  props: FindServiceProps,
-) =>
-  | Promise<IEcommerceModuleOrdersToBillingModulePaymentIntents[] | undefined>
-  | Promise<IEcommerceModuleOrdersToBillingModulePaymentIntents[]>;
-
-export interface IConstructorProps {
-  findOldOrders: IFindOldOrders;
-  findOrdersToBillingModulePaymentIntents: IFindOrdersToBillingModulePaymentIntents;
-}
+type IConstructorProps = {
+  find: (props?: FindServiceProps) => Promise<any[]>;
+  ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+};
 
 export class Service {
-  findOldOrders: IFindOldOrders;
-  findOrdersToBillingModulePaymentIntents: IFindOrdersToBillingModulePaymentIntents;
+  find: IConstructorProps["find"];
+  ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
 
   constructor(props: IConstructorProps) {
-    this.findOldOrders = props.findOldOrders;
-    this.findOrdersToBillingModulePaymentIntents =
-      props.findOrdersToBillingModulePaymentIntents;
+    this.find = props.find;
+    this.ordersToBillingModulePaymentIntents =
+      props.ordersToBillingModulePaymentIntents;
   }
 
   async execute(_props: IExecuteProps) {
@@ -40,7 +29,7 @@ export class Service {
         throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
       }
 
-      const oldOrders = await this.findOldOrders({
+      const oldOrders = await this.find({
         params: {
           filters: {
             and: [
@@ -57,7 +46,7 @@ export class Service {
       if (oldOrders?.length) {
         for (const oldOrder of oldOrders) {
           const orderToBillingPaymentIntents =
-            await this.findOrdersToBillingModulePaymentIntents({
+            await this.ordersToBillingModulePaymentIntents.find({
               params: {
                 filters: {
                   and: [

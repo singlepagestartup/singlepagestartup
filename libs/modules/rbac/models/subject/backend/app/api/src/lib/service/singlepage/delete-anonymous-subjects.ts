@@ -1,16 +1,23 @@
-import { IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectApi } from "@sps/rbac/models/subject/sdk/server";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { logger } from "@sps/backend-utils";
+import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
+import { IModel } from "@sps/rbac/models/subject/sdk/model";
 
 export type IExecuteProps = {};
 
-export class Service {
-  repository: IRepository;
+export interface IConstructorProps {
+  find: (props?: any) => Promise<IModel[]>;
+  subjectsToIdentities: SubjectsToIdentitiesService;
+}
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+export class Service {
+  find: (props?: any) => Promise<IModel[]>;
+  subjectsToIdentities: SubjectsToIdentitiesService;
+
+  constructor(props: IConstructorProps) {
+    this.find = props.find;
+    this.subjectsToIdentities = props.subjectsToIdentities;
   }
 
   async execute(props?: IExecuteProps) {
@@ -19,7 +26,7 @@ export class Service {
         throw new Error("Configuration error. RBAC_SECRET_KEY is required");
       }
 
-      const existingSubjects = await subjectApi.find({
+      const existingSubjects = await this.find({
         params: {
           filters: {
             and: [
@@ -33,17 +40,11 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (existingSubjects?.length) {
         for (const existingSubject of existingSubjects) {
-          const subjectsToIdentities = await subjectsToIdentitiesApi.find({
+          const subjectsToIdentities = await this.subjectsToIdentities.find({
             params: {
               filters: {
                 and: [
@@ -53,12 +54,6 @@ export class Service {
                     value: existingSubject.id,
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
               },
             },
           });

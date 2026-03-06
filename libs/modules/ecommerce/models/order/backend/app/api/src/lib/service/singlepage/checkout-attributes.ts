@@ -1,14 +1,15 @@
-import { IRepository } from "@sps/shared-backend-api";
+import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
-import { api as attributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
-import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as productsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as attributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as attributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
-import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 import { internationalization } from "@sps/shared-configuration";
+import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
+import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
+import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
+import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
+import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
+import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
+import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
+import { OrderDI } from "../../di";
 
 export type IExecuteProps = {
   id: string;
@@ -21,11 +22,37 @@ export type IResult = {
   interval?: "minute" | "hour" | "day" | "week" | "month" | "year";
 };
 
+@injectable()
 export class Service {
-  repository: IRepository;
+  attributeKey: AttributeKeyService;
+  ordersToProducts: OrdersToProductsService;
+  product: ProductService;
+  productsToAttributes: ProductsToAttributesService;
+  attributeKeysToAttributes: AttributeKeysToAttributesService;
+  attribute: AttributeService;
+  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
 
-  constructor(repository: IRepository) {
-    this.repository = repository;
+  constructor(
+    @inject(OrderDI.IAttributeKeysService) attributeKey: AttributeKeyService,
+    @inject(OrderDI.IOrdersToProductsService)
+    ordersToProducts: OrdersToProductsService,
+    @inject(OrderDI.IProductsService) product: ProductService,
+    @inject(OrderDI.IProductsToAttributesService)
+    productsToAttributes: ProductsToAttributesService,
+    @inject(OrderDI.IAttributeKeysToAttributesService)
+    attributeKeysToAttributes: AttributeKeysToAttributesService,
+    @inject(OrderDI.IAttributesService) attribute: AttributeService,
+    @inject(OrderDI.IAttributesToBillingModuleCurrenciesService)
+    attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
+  ) {
+    this.attributeKey = attributeKey;
+    this.ordersToProducts = ordersToProducts;
+    this.product = product;
+    this.productsToAttributes = productsToAttributes;
+    this.attributeKeysToAttributes = attributeKeysToAttributes;
+    this.attribute = attribute;
+    this.attributesToBillingModuleCurrencies =
+      attributesToBillingModuleCurrencies;
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
@@ -33,7 +60,7 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const priceAttributeKeys = await attributeKeyApi.find({
+    const priceAttributeKeys = await this.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -45,19 +72,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!priceAttributeKeys?.length) {
       throw new Error("Not Found error. Price attribute key not found");
     }
 
-    const intervalAttributeKeys = await attributeKeyApi.find({
+    const intervalAttributeKeys = await this.attributeKey.find({
       params: {
         filters: {
           and: [
@@ -69,19 +90,13 @@ export class Service {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     const intervalAttributeKey = intervalAttributeKeys?.[0];
 
     const priceAttributeKey = priceAttributeKeys[0];
 
-    const orderToProducts = await ordersToProductsApi.find({
+    const orderToProducts = await this.ordersToProducts.find({
       params: {
         filters: {
           and: [
@@ -91,12 +106,6 @@ export class Service {
               value: props.id,
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -110,14 +119,8 @@ export class Service {
     let interval: IResult["interval"] = undefined;
 
     for (const orderToProduct of orderToProducts) {
-      const product = await productApi.findById({
+      const product = await this.product.findById({
         id: orderToProduct.productId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!product) {
@@ -136,7 +139,7 @@ export class Service {
         throw new Error("Not Found error. Order has multiple product types");
       }
 
-      const productToAttributes = await productsToAttributesApi.find({
+      const productToAttributes = await this.productsToAttributes.find({
         params: {
           filters: {
             and: [
@@ -146,12 +149,6 @@ export class Service {
                 value: orderToProduct.productId,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -164,7 +161,7 @@ export class Service {
 
       const productPrices: IAttribute[] = [];
 
-      const productPriceAttributes = await attributeKeysToAttributesApi.find({
+      const productPriceAttributes = await this.attributeKeysToAttributes.find({
         params: {
           filters: {
             and: [
@@ -183,12 +180,6 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!productPriceAttributes?.length) {
@@ -199,7 +190,7 @@ export class Service {
 
       if (props.billingModuleCurrencyId) {
         const targetPriceAttributes =
-          await attributesToBillingModuleCurrenciesApi.find({
+          await this.attributesToBillingModuleCurrencies.find({
             params: {
               filters: {
                 and: [
@@ -219,12 +210,6 @@ export class Service {
                 ],
               },
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
           });
 
         if (!targetPriceAttributes?.length) {
@@ -239,14 +224,8 @@ export class Service {
           );
         }
 
-        const priceAttribute = await attributeApi.findById({
+        const priceAttribute = await this.attribute.findById({
           id: targetPriceAttributes[0].attributeId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
         if (!priceAttribute) {
@@ -271,7 +250,7 @@ export class Service {
           continue;
         }
 
-        const intervals = await attributeKeysToAttributesApi.find({
+        const intervals = await this.attributeKeysToAttributes.find({
           params: {
             filters: {
               and: [
@@ -288,12 +267,6 @@ export class Service {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
         if (!intervals?.length) {
@@ -306,14 +279,8 @@ export class Service {
           );
         }
 
-        const intervalAttribute = await attributeApi.findById({
+        const intervalAttribute = await this.attribute.findById({
           id: intervals[0].attributeId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
         if (!intervalAttribute) {

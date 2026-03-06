@@ -7,7 +7,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../service";
 import { api as broadcastChannelApi } from "@sps/broadcast/models/channel/sdk/server";
-import { api } from "@sps/agent/models/agent/sdk/server";
 import { IModel as IAgentAgent } from "@sps/agent/models/agent/sdk/model";
 import cronParser from "cron-parser";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
@@ -26,12 +25,8 @@ export class Handler {
       }
 
       const [agents, cronChannels] = await Promise.all([
-        api.find({
-          options: {
-            headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
-          },
-        }),
-        broadcastChannelApi.find({
+        this.service.find(),
+        this.service.broadcastModule.channel.find({
           params: {
             filters: {
               and: [{ column: "slug", method: "eq", value: "cron" }],

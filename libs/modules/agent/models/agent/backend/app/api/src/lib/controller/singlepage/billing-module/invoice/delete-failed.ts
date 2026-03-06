@@ -20,31 +20,27 @@ export class Handler {
 
       logger.info("Billing module invoice delete failed started");
 
-      const notSucceededInvoices = await invoiceApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "status",
-                method: "eq",
-                value: "failed",
-              },
-              {
-                column: "createdAt",
-                method: "lt",
-                value: new Date(
-                  Date.now() - 2 * 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              },
-            ],
+      const notSucceededInvoices =
+        await this.service.billingModule.invoice.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "status",
+                  method: "eq",
+                  value: "failed",
+                },
+                {
+                  column: "createdAt",
+                  method: "lt",
+                  value: new Date(
+                    Date.now() - 2 * 24 * 60 * 60 * 1000,
+                  ).toISOString(),
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+        });
 
       if (notSucceededInvoices?.length) {
         for (const invoice of notSucceededInvoices) {

@@ -21,25 +21,21 @@ export class Handler {
       logger.info("Broadcast module message delete expired started");
 
       try {
-        const expiredMessages = await broadcastModuleMessageApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "expiresAt",
-                  method: "lt",
-                  value: new Date().toISOString(),
-                },
-              ],
+        const expiredMessages = await this.service.broadcastModule.message.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "expiresAt",
+                    method: "lt",
+                    value: new Date().toISOString(),
+                  },
+                ],
+              },
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        );
 
         if (expiredMessages?.length) {
           for (const message of expiredMessages) {

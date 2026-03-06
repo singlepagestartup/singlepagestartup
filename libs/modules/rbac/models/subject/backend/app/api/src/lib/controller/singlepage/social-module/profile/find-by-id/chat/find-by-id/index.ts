@@ -2,7 +2,6 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../service";
-import { api } from "@sps/rbac/models/subject/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -40,20 +39,35 @@ export class Handler {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
 
-      const socialModuleChats = await api.socialModuleProfileFindByIdChatFind({
-        id,
-        socialModuleProfileId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
+      const socialModuleProfilesToChats =
+        await this.service.socialModule.profilesToChats.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "profileId",
+                  method: "eq",
+                  value: socialModuleProfileId,
+                },
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: socialModuleChatId,
+                },
+              ],
+            },
           },
-        },
-      });
+        });
 
-      const socialModuleChat = socialModuleChats.find(
-        (socialModuleChat) => socialModuleChat.id === socialModuleChatId,
-      );
+      if (!socialModuleProfilesToChats?.length) {
+        throw new Error(
+          "Not found error. Requested social-module chat not found",
+        );
+      }
+
+      const socialModuleChat = await this.service.socialModule.chat.findById({
+        id: socialModuleChatId,
+      });
 
       if (!socialModuleChat) {
         throw new Error(

@@ -24,7 +24,7 @@ import { api as billingModulePaymentIntentsToCurreciesApi } from "@sps/billing/r
 import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import {
-  type IExecuteProps as ICheckoutAttributesExecuteProps,
+  Service as CheckoutAttributesService,
   type IResult as ICheckoutAttributesResult,
 } from "./checkout-attributes";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
@@ -84,20 +84,14 @@ export type IResult = IEcommerceModuleOrder & {
   })[];
 };
 
-type IFindById = (props: {
-  id: IEcommerceModuleOrder["id"];
-}) => Promise<IEcommerceModuleOrder | null>;
-
-type IGetCheckoutAttributes = (
-  props: ICheckoutAttributesExecuteProps,
-) => Promise<ICheckoutAttributesResult>;
-
-export interface IConstructorProps {
-  findById: IFindById;
-  getCheckoutAttributes: IGetCheckoutAttributes;
-  products: ProductService;
-  attributes: AttributeService;
-  attributeKeys: AttributeKeyService;
+type IConstructorProps = {
+  findById: (props: {
+    id: IEcommerceModuleOrder["id"];
+  }) => Promise<IEcommerceModuleOrder | null>;
+  checkoutAttributes: CheckoutAttributesService;
+  product: ProductService;
+  attribute: AttributeService;
+  attributeKey: AttributeKeyService;
   ordersToProducts: OrdersToProductsService;
   productsToAttributes: ProductsToAttributesService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
@@ -106,14 +100,14 @@ export interface IConstructorProps {
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
   ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
-}
+};
 
 export class Service {
-  findById: IFindById;
-  getCheckoutAttributes: IGetCheckoutAttributes;
-  products: ProductService;
-  attributes: AttributeService;
-  attributeKeys: AttributeKeyService;
+  findById: IConstructorProps["findById"];
+  checkoutAttributes: CheckoutAttributesService;
+  product: ProductService;
+  attribute: AttributeService;
+  attributeKey: AttributeKeyService;
   ordersToProducts: OrdersToProductsService;
   productsToAttributes: ProductsToAttributesService;
   attributeKeysToAttributes: AttributeKeysToAttributesService;
@@ -125,10 +119,10 @@ export class Service {
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
-    this.getCheckoutAttributes = props.getCheckoutAttributes;
-    this.products = props.products;
-    this.attributes = props.attributes;
-    this.attributeKeys = props.attributeKeys;
+    this.checkoutAttributes = props.checkoutAttributes;
+    this.product = props.product;
+    this.attribute = props.attribute;
+    this.attributeKey = props.attributeKey;
     this.ordersToProducts = props.ordersToProducts;
     this.productsToAttributes = props.productsToAttributes;
     this.attributeKeysToAttributes = props.attributeKeysToAttributes;
@@ -157,7 +151,7 @@ export class Service {
   private async extendedEcommerceModuleAttributeById(props: {
     id: IEcommerceModuleAttribute["id"];
   }): Promise<IExtendedEcommerceModuleAttribute> {
-    const ecommerceModuleAttribute = await this.attributes.findById({
+    const ecommerceModuleAttribute = await this.attribute.findById({
       id: props.id,
     });
 
@@ -197,7 +191,7 @@ export class Service {
 
     const [attributeKeys, billingModuleCurrencies] = await Promise.all([
       attributeKeysToAttributes?.length
-        ? this.attributeKeys.find({
+        ? this.attributeKey.find({
             params: {
               filters: {
                 and: [
@@ -427,7 +421,7 @@ export class Service {
       );
     }
 
-    const products = await this.products.find({
+    const products = await this.product.find({
       params: {
         filters: {
           and: [
@@ -502,7 +496,7 @@ export class Service {
       (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),
     );
 
-    const checkoutAttributesByCurrency = await this.getCheckoutAttributes({
+    const checkoutAttributesByCurrency = await this.checkoutAttributes.execute({
       id: props.id,
       billingModuleCurrencyId:
         ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,

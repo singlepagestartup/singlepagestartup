@@ -2,21 +2,16 @@ import { DI, type IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
-import { api as rolesToEcommerceModuleProductsApi } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { IModel as IEcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { IModel as IEcommerceModuleAttributeKey } from "@sps/ecommerce/models/attribute-key/sdk/model";
-import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as IEcommerceModuleAttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
 import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
-import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import {
   api as ecommerceOrderApi,
   type IResult as IEcommerceOrderResult,
@@ -24,7 +19,6 @@ import {
 import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { IModel as IEcommerceModuleProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
-import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
@@ -32,16 +26,23 @@ import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk
 import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
 import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
-import { api as socialModuleAttributeApi } from "@sps/social/models/attribute/sdk/server";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 import { inject, injectable } from "inversify";
-import { SubjectDI } from "../../../../di";
+import {
+  SubjectDI,
+  type IEcommerceModule,
+  type INotificationModule,
+  type ISocialModule,
+} from "../../../../di";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
+import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
+import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
+import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {};
 
@@ -90,6 +91,12 @@ type IExtendedEcommerceModuleProduct = IEcommerceModuleProduct & {
 @injectable()
 export class Service {
   repository: IRepository;
+  socialModule: ISocialModule;
+  ecommerceModule: IEcommerceModule;
+  notificationModule: INotificationModule;
+  identity: IdentityService;
+  role: RoleService;
+  rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
   subjectsToRoles: SubjectsToRolesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
@@ -98,6 +105,14 @@ export class Service {
 
   constructor(
     @inject(DI.IRepository) repository: IRepository,
+    @inject(SubjectDI.ISocialModule) socialModule: ISocialModule,
+    @inject(SubjectDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
+    @inject(SubjectDI.INotificationModule)
+    notificationModule: INotificationModule,
+    @inject(SubjectDI.IIdentityService) identity: IdentityService,
+    @inject(SubjectDI.IRoleService) role: RoleService,
+    @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
+    rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
     @inject(SubjectDI.ISubjectsToEcommerceModuleOrdersService)
     subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService,
     @inject(SubjectDI.ISubjectsToRolesService)
@@ -110,6 +125,12 @@ export class Service {
     subjectsToIdentities: SubjectsToIdentitiesService,
   ) {
     this.repository = repository;
+    this.socialModule = socialModule;
+    this.ecommerceModule = ecommerceModule;
+    this.notificationModule = notificationModule;
+    this.identity = identity;
+    this.role = role;
+    this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
@@ -129,7 +150,7 @@ export class Service {
       return;
     }
 
-    const orders = await ecommerceOrderApi.find({
+    const orders = await this.ecommerceModule.order.find({
       params: {
         filters: {
           and: [
@@ -152,12 +173,6 @@ export class Service {
               method: "asc",
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -387,7 +402,7 @@ export class Service {
             throw new Error("Configuration error. 'RBAC_SECRET_KEY' not set.");
           }
 
-          const deliveringExtendedOrders = await ecommerceOrderApi
+          const deliveringExtendedOrders = await this.ecommerceModule.order
             .find({
               params: {
                 filters: {
@@ -407,12 +422,6 @@ export class Service {
                       value: "delivering",
                     },
                   ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             })
@@ -552,7 +561,7 @@ export class Service {
 
     if (rbacSubjectsToSocialModuleProfiles?.length) {
       for (const rbacSubjectsToSocialModuleProfile of rbacSubjectsToSocialModuleProfiles) {
-        const socialModuleAttributes = await socialModuleAttributeApi.find({
+        const socialModuleAttributes = await this.socialModule.attribute.find({
           params: {
             filters: {
               and: [
@@ -562,12 +571,6 @@ export class Service {
                   value: `-invitedby-${rbacSubjectsToSocialModuleProfile.socialModuleProfileId}`,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -846,7 +849,7 @@ export class Service {
 
         if (subjectToSocialModuleProfiles?.length) {
           const socialModuleProfilesToChats =
-            await socialModuleProfilesToChatsApi.find({
+            await this.socialModule.profilesToChats.find({
               params: {
                 filters: {
                   and: [
@@ -860,16 +863,10 @@ export class Service {
                   ],
                 },
               },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
             });
 
           if (socialModuleProfilesToChats?.length) {
-            const telegramChats = await socialModuleChatApi.find({
+            const telegramChats = await this.socialModule.chat.find({
               params: {
                 filters: {
                   and: [
@@ -886,12 +883,6 @@ export class Service {
                       value: "telegram",
                     },
                   ],
-                },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
                 },
               },
             });
@@ -924,7 +915,7 @@ export class Service {
     }
 
     const notificationModuleEcommerceNotificationTemplates =
-      await notificationModuleTemplateApi.find({
+      await this.notificationModule.template.find({
         params: {
           filters: {
             and: [
@@ -939,12 +930,6 @@ export class Service {
                 value: "-admin",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -988,7 +973,7 @@ export class Service {
       return;
     }
 
-    const identities = await identityApi.find({
+    const identities = await this.identity.find({
       params: {
         filters: {
           and: [
@@ -1000,11 +985,6 @@ export class Service {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
       },
     });
@@ -1091,7 +1071,7 @@ export class Service {
     }
 
     const notificationModuleEcommerceNotificationTemplates =
-      await notificationModuleTemplateApi.find({
+      await this.notificationModule.template.find({
         params: {
           filters: {
             and: [
@@ -1108,15 +1088,9 @@ export class Service {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
-    const adminRoles = await roleApi.find({
+    const adminRoles = await this.role.find({
       params: {
         filters: {
           and: [
@@ -1126,11 +1100,6 @@ export class Service {
               value: "admin",
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
       },
     });
@@ -1175,7 +1144,7 @@ export class Service {
       return;
     }
 
-    const identities = await identityApi.find({
+    const identities = await this.identity.find({
       params: {
         filters: {
           and: [
@@ -1187,11 +1156,6 @@ export class Service {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
         },
       },
     });
@@ -1298,7 +1262,7 @@ export class Service {
     }
 
     const rolesToEcommerceModuleProducts =
-      await rolesToEcommerceModuleProductsApi.find({
+      await this.rolesToEcommerceModuleProducts.find({
         params: {
           filters: {
             and: [
@@ -1308,12 +1272,6 @@ export class Service {
                 value: productIds,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -1359,7 +1317,7 @@ export class Service {
     }
 
     const rolesToEcommerceModuleProducts =
-      await rolesToEcommerceModuleProductsApi.find({
+      await this.rolesToEcommerceModuleProducts.find({
         params: {
           filters: {
             and: [
@@ -1369,12 +1327,6 @@ export class Service {
                 value: props.id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

@@ -6,14 +6,26 @@ import {
   query,
   options,
 } from "@sps/social/models/profile/sdk/model";
+import {
+  action as findByIdChatFind,
+  type IFindByIdChatFindProps,
+  type IFindByIdChatFindResult,
+} from "./chat-find";
 
-export type IProps = {};
+export type IProps = {
+  IFindByIdChatFindProps: IFindByIdChatFindProps;
+};
 
-export type IResult = {};
+export type IResult = {
+  IFindByIdChatFindResult: IFindByIdChatFindResult;
+};
 
-export const api = factory<IModel>({
-  route,
-  host: serverHost,
-  options,
-  params: query,
-});
+export const api = {
+  ...factory<IModel>({
+    route,
+    host: serverHost,
+    options,
+    params: query,
+  }),
+  findByIdChatFind,
+};

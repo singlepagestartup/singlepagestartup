@@ -5,15 +5,6 @@ import { Service } from "../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { IModel as IRbacModuleAction } from "@sps/rbac/models/action/sdk/model";
 import { match } from "path-to-regexp";
-import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
-import { api as socialModuleActionApi } from "@sps/social/models/action/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
-import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
-import { api as socialModuleProfilesToChatsToApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleProfilesToMessagesToApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
-import { api as socialModuleProfilesToActionsApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
 
 export class Handler {
   service: Service;
@@ -108,14 +99,8 @@ export class Handler {
 
     let socialModuleAction;
     try {
-      socialModuleAction = await socialModuleActionApi.findById({
+      socialModuleAction = await this.service.socialModule.action.findById({
         id: actionId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
     } catch (error) {
       return c.json({
@@ -129,8 +114,8 @@ export class Handler {
       });
     }
 
-    const socialModuleChatsToActions = await socialModuleChatsToActionsApi.find(
-      {
+    const socialModuleChatsToActions =
+      await this.service.socialModule.chatsToActions.find({
         params: {
           filters: {
             and: [
@@ -142,14 +127,7 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      },
-    );
+      });
 
     if (!socialModuleChatsToActions?.length) {
       return c.json({
@@ -157,14 +135,8 @@ export class Handler {
       });
     }
 
-    const socialModuleChat = await socialModuleChatApi.findById({
+    const socialModuleChat = await this.service.socialModule.chat.findById({
       id: socialModuleChatsToActions[0].chatId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!socialModuleChat) {
@@ -225,7 +197,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToChats =
-      await socialModuleProfilesToChatsToApi.find({
+      await this.service.socialModule.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -237,12 +209,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!socialModuleProfilesToChats?.length) {
@@ -251,7 +217,7 @@ export class Handler {
       });
     }
 
-    const socialModuleProfiles = await socialModuleProfileApi.find({
+    const socialModuleProfiles = await this.service.socialModule.profile.find({
       params: {
         filters: {
           and: [
@@ -265,12 +231,6 @@ export class Handler {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!socialModuleProfiles?.length) {
@@ -280,7 +240,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToActions =
-      await socialModuleProfilesToActionsApi.find({
+      await this.service.socialModule.profilesToActions.find({
         params: {
           filters: {
             and: [
@@ -290,12 +250,6 @@ export class Handler {
                 value: socialModuleAction.id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -379,15 +333,10 @@ export class Handler {
       });
     }
 
-    const socialModuleMessage = await socialModuleMessageApi.findById({
-      id: props.data.rbacModuleAction.payload?.result.data.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
+    const socialModuleMessage =
+      await this.service.socialModule.message.findById({
+        id: props.data.rbacModuleAction.payload?.result.data.id,
+      });
 
     if (!socialModuleMessage) {
       return c.json({
@@ -396,7 +345,7 @@ export class Handler {
     }
 
     const socialModuleChatsToMessages =
-      await socialModuleChatsToMessagesApi.find({
+      await this.service.socialModule.chatsToMessages.find({
         params: {
           filters: {
             and: [
@@ -408,12 +357,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!socialModuleChatsToMessages?.length) {
@@ -422,14 +365,8 @@ export class Handler {
       });
     }
 
-    const socialModuleChat = await socialModuleChatApi.findById({
+    const socialModuleChat = await this.service.socialModule.chat.findById({
       id: socialModuleChatsToMessages[0].chatId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!socialModuleChat) {
@@ -439,7 +376,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToChats =
-      await socialModuleProfilesToChatsToApi.find({
+      await this.service.socialModule.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -451,12 +388,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!socialModuleProfilesToChats?.length) {
@@ -465,7 +396,7 @@ export class Handler {
       });
     }
 
-    const socialModuleProfiles = await socialModuleProfileApi.find({
+    const socialModuleProfiles = await this.service.socialModule.profile.find({
       params: {
         filters: {
           and: [
@@ -479,12 +410,6 @@ export class Handler {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
     });
 
     if (!socialModuleProfiles?.length) {
@@ -494,7 +419,7 @@ export class Handler {
     }
 
     const socialModuleProfilesToMessages =
-      await socialModuleProfilesToMessagesToApi.find({
+      await this.service.socialModule.profilesToMessages.find({
         params: {
           filters: {
             and: [
@@ -504,12 +429,6 @@ export class Handler {
                 value: socialModuleMessage.id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

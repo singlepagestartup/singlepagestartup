@@ -20,24 +20,20 @@ export class Handler {
 
       logger.info("Billing module payment intent check started");
 
-      const notSucceededPaymentIntents = await paymentIntentApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "status",
-                method: "ne",
-                value: "succeeded",
-              },
-            ],
+      const notSucceededPaymentIntents =
+        await this.service.billingModule.paymentIntent.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "status",
+                  method: "ne",
+                  value: "succeeded",
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+        });
 
       if (notSucceededPaymentIntents?.length) {
         for (const paymentIntent of notSucceededPaymentIntents) {

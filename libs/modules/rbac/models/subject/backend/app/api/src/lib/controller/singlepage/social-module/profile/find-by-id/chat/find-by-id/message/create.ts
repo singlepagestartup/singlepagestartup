@@ -4,17 +4,12 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
-import { api as socialModuleProfilesApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
-import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
-import { api as notificationModuleTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 export class Handler {
@@ -173,7 +168,7 @@ export class Handler {
       }
 
       const socialModuleMessagesToFileStorageModuleFiles =
-        await socialModuleMessagesToFileStorageModuleFilesApi.find({
+        await this.service.socialModule.messagesToFileStorageModuleFiles.find({
           params: {
             filters: {
               and: [
@@ -185,33 +180,29 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       let fileStorageModuleFiles: IFileStorageModuleFile[] | undefined;
 
       if (socialModuleMessagesToFileStorageModuleFiles?.length) {
-        fileStorageModuleFiles = await fileStorageModuleFileApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: socialModuleMessagesToFileStorageModuleFiles.map(
-                    (socialModuleMessagesToFileStorageModuleFile) =>
-                      socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
-                  ),
-                },
-              ],
+        fileStorageModuleFiles = await this.service.fileStorageModule.file.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: socialModuleMessagesToFileStorageModuleFiles.map(
+                      (socialModuleMessagesToFileStorageModuleFile) =>
+                        socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
+                    ),
+                  },
+                ],
+              },
             },
           },
-        });
+        );
       }
 
       socialModuleProfilesToMessagesApi
@@ -280,17 +271,12 @@ export class Handler {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const socialModuleChat = await socialModuleChatApi.findById({
+    const socialModuleChat = await this.service.socialModule.chat.findById({
       id: props.socialModuleChatId,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     const socialModuleProfilesToChats =
-      await socialModuleProfilesToChatsApi.find({
+      await this.service.socialModule.profilesToChats.find({
         params: {
           filters: {
             and: [
@@ -307,12 +293,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!socialModuleProfilesToChats?.length) {
@@ -320,7 +300,7 @@ export class Handler {
     }
 
     const subjectsToSocialModuleProfiles =
-      await subjectsToSocialModuleProfilesApi.find({
+      await this.service.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -335,19 +315,13 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
     if (!subjectsToSocialModuleProfiles?.length) {
       return;
     }
 
-    const socialModuleProfiles = await socialModuleProfilesApi.find({
+    const socialModuleProfiles = await this.service.socialModule.profile.find({
       params: {
         filters: {
           and: [
@@ -359,12 +333,6 @@ export class Handler {
               ),
             },
           ],
-        },
-      },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
         },
       },
     });
@@ -381,7 +349,7 @@ export class Handler {
         ),
       );
 
-    const subjects = await api.find({
+    const subjects = await this.service.find({
       params: {
         filters: {
           and: [
@@ -396,15 +364,10 @@ export class Handler {
           ],
         },
       },
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
     });
 
     const socialModuleGenerateSocialModuleMessageCreatedTemplates =
-      await notificationModuleTemplateApi.find({
+      await this.service.notificationModule.template.find({
         params: {
           filters: {
             and: [

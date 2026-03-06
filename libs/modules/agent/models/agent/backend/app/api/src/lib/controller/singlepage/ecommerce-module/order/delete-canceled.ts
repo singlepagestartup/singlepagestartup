@@ -20,7 +20,7 @@ export class Handler {
 
       logger.info("Ecommerce module order delete canceled started");
 
-      const canceledOrders = await ecommerceModuleOrderApi.find({
+      const canceledOrders = await this.service.ecommerceModule.order.find({
         params: {
           filters: {
             and: [
@@ -37,11 +37,6 @@ export class Handler {
                 ).toISOString(),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });

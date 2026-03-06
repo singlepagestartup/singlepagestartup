@@ -3,11 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
-import { api as productApi } from "@sps/ecommerce/models/product/sdk/server";
-import { api as ordersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as ordersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ordersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
-import { api as productsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -48,7 +44,7 @@ export class Handler {
       let entity = await this.service.update({ id: uuid, data });
 
       if (data.ordersToProducts) {
-        const ordersToProducts = await ordersToProductsApi.find({
+        const ordersToProducts = await this.service.ordersToProducts.find({
           params: {
             filters: {
               and: [
@@ -58,11 +54,6 @@ export class Handler {
                   value: uuid,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
           },
         });
@@ -100,7 +91,7 @@ export class Handler {
 
       if (entity?.status === "paid" && previousEntity?.status === "paying") {
         const ordersToBillingModuleCurrencies =
-          await ordersToBillingModuleCurrenciesApi.find({
+          await this.service.ordersToBillingModuleCurrencies.find({
             params: {
               filters: {
                 and: [
@@ -110,12 +101,6 @@ export class Handler {
                     value: uuid,
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
               },
             },
           });
@@ -164,7 +149,7 @@ export class Handler {
             },
           });
 
-        const ordersToProducts = await ordersToProductsApi.find({
+        const ordersToProducts = await this.service.ordersToProducts.find({
           params: {
             filters: {
               and: [
@@ -176,18 +161,13 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
 
         if (!ordersToProducts?.length) {
           throw new Error("Not Found error. Orders to products not found");
         }
 
-        const products = await productApi.find({
+        const products = await this.service.product.find({
           params: {
             filters: {
               and: [
@@ -199,11 +179,6 @@ export class Handler {
                   ),
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
           },
         });
@@ -298,7 +273,7 @@ export class Handler {
         }
 
         const productsToFileStorageModuleFiles =
-          await productsToFileStorageModuleFilesApi.find({
+          await this.service.productsToFileStorageModuleFiles.find({
             params: {
               filters: {
                 and: [
@@ -313,11 +288,6 @@ export class Handler {
                     value: "attachment-default",
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
               },
             },
           });

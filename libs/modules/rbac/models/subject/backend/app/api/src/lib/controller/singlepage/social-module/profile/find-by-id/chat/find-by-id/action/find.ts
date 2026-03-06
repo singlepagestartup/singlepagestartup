@@ -2,8 +2,6 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
-import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
-import { api as socialModuleActionApi } from "@sps/social/models/action/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -47,7 +45,7 @@ export class Handler {
       const orderBy = parsedQuery?.orderBy;
 
       const socialModuleChatsToActions =
-        await socialModuleChatsToActionsApi.find({
+        await this.service.socialModule.chatsToActions.find({
           params: {
             filters: {
               and: [
@@ -62,11 +60,6 @@ export class Handler {
             offset,
             orderBy,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
 
       if (!socialModuleChatsToActions?.length) {
@@ -75,7 +68,7 @@ export class Handler {
         });
       }
 
-      const socialModuleActions = await socialModuleActionApi.find({
+      const socialModuleActions = await this.service.socialModule.action.find({
         params: {
           filters: {
             and: [
@@ -91,12 +84,6 @@ export class Handler {
             ],
           },
           orderBy,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
         },
       });
 

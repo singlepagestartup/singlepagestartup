@@ -2,11 +2,7 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 
 export class Handler {
@@ -32,7 +28,7 @@ export class Handler {
         throw new Error("Validation error. No id provided");
       }
 
-      const subjectsToRoles = await subjectsToRolesApi.find({
+      const subjectsToRoles = await this.service.subjectsToRoles.find({
         params: {
           filters: {
             and: [
@@ -42,11 +38,6 @@ export class Handler {
                 value: id,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
         },
       });
@@ -75,14 +66,8 @@ export class Handler {
           const hasAdminRole = roles.find((role) => role.slug === "admin");
 
           if (hasAdminRole) {
-            const socialModuleChats = await socialModuleChatApi.find({
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
+            const socialModuleChats =
+              await this.service.socialModule.chat.find();
 
             return c.json({
               data: socialModuleChats,
@@ -99,14 +84,10 @@ export class Handler {
         throw new Error("Validation error. No socialModuleProfileId provided");
       }
 
-      const socialModuleProfile = await socialModuleProfileApi.findById({
-        id: socialModuleProfileId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const socialModuleProfile =
+        await this.service.socialModule.profile.findById({
+          id: socialModuleProfileId,
+        });
 
       if (!socialModuleProfile) {
         throw new Error(
@@ -120,7 +101,7 @@ export class Handler {
       const orderBy = parsedQuery?.orderBy;
 
       const socialModuleProfilesToChats =
-        await socialModuleProfilesToChatsApi.find({
+        await this.service.socialModule.profilesToChats.find({
           params: {
             filters: {
               and: [
@@ -132,11 +113,6 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
         });
 
       if (!socialModuleProfilesToChats?.length) {
@@ -145,7 +121,7 @@ export class Handler {
         });
       }
 
-      const socialModuleChats = await socialModuleChatApi.find({
+      const socialModuleChats = await this.service.socialModule.chat.find({
         params: {
           filters: {
             and: [
@@ -163,11 +139,6 @@ export class Handler {
           orderBy,
           limit,
           offset,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
         },
       });
 

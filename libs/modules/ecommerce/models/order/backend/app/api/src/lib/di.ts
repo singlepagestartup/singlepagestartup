@@ -1,4 +1,9 @@
 export const OrderDI = {
+  ICheckoutAttributesService: Symbol.for(
+    "ecommerce.order.checkout-attributes.service",
+  ),
+  IGetTotalService: Symbol.for("ecommerce.order.get-total.service"),
+  IGetQuantityService: Symbol.for("ecommerce.order.get-quantity.service"),
   IProductsService: Symbol.for("ecommerce.order.products.service"),
   IAttributesService: Symbol.for("ecommerce.order.attributes.service"),
   IAttributeKeysService: Symbol.for("ecommerce.order.attribute-keys.service"),

@@ -1,5 +1,5 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { api as rbacModuleRoleApi } from "@sps/rbac/models/role/sdk/server";
+import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 
@@ -14,13 +14,16 @@ export interface IResult {
 }
 
 export interface IConstructorProps {
+  role: RoleService;
   subjectsToRoles: SubjectsToRolesService;
 }
 
 export class Service {
+  role: RoleService;
   subjectsToRoles: SubjectsToRolesService;
 
   constructor(props: IConstructorProps) {
+    this.role = props.role;
     this.subjectsToRoles = props.subjectsToRoles;
   }
 
@@ -44,7 +47,7 @@ export class Service {
     const addedRoleIds: string[] = [];
     const removedRoleIds: string[] = [];
 
-    const requiredSubscriptionRoles = await rbacModuleRoleApi.find({
+    const requiredSubscriptionRoles = await this.role.find({
       params: {
         filters: {
           and: [
@@ -56,7 +59,6 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     const requiredSubscriptionRole = requiredSubscriptionRoles?.[0];
@@ -113,7 +115,7 @@ export class Service {
       }
     }
 
-    const availableOnRegistrationRoles = await rbacModuleRoleApi.find({
+    const availableOnRegistrationRoles = await this.role.find({
       params: {
         filters: {
           and: [
@@ -125,7 +127,6 @@ export class Service {
           ],
         },
       },
-      options: { headers },
     });
 
     if (availableOnRegistrationRoles?.length) {

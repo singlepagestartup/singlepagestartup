@@ -2,7 +2,6 @@ import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
-import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -36,15 +35,10 @@ export class Handler {
         throw new Error("Validation error. No socialModuleProfileId provided");
       }
 
-      const socialModuleProfile = await socialModuleProfileApi.findById({
-        id: socialModuleProfileId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      const socialModuleProfile =
+        await this.service.socialModule.profile.findById({
+          id: socialModuleProfileId,
+        });
 
       if (!socialModuleProfile) {
         throw new Error(

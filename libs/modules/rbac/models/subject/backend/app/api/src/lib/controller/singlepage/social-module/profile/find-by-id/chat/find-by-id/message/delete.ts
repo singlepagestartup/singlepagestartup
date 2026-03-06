@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
-import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -54,43 +53,34 @@ export class Handler {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
 
-      const chatToMessages = await socialModuleChatsToMessagesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "chatId",
-                method: "eq",
-                value: socialModuleChatId,
-              },
-              {
-                column: "messageId",
-                method: "eq",
-                value: socialModuleMessageId,
-              },
-            ],
+      const chatToMessages =
+        await this.service.socialModule.chatsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "eq",
+                  value: socialModuleChatId,
+                },
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: socialModuleMessageId,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (!chatToMessages?.length) {
         throw new Error("Not found error. Message not found in chat");
       }
 
-      const socialModuleMessage = await socialModuleMessageApi.findById({
-        id: socialModuleMessageId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+      const socialModuleMessage =
+        await this.service.socialModule.message.findById({
+          id: socialModuleMessageId,
+        });
 
       if (!socialModuleMessage) {
         throw new Error("Not found error. Social module message not found");
