@@ -23,6 +23,7 @@ import { Handler as AuthenticationOAuthExchange } from "./authentication/oauth/e
 
 import { Handler as Notify } from "./notify";
 import { Handler as Check } from "./check";
+import { Handler as FindByIdCheck } from "./findById/check";
 
 import { Handler as IdentitiesList } from "./identity/find";
 import { Handler as IdentitiesUpdate } from "./identity/update";
@@ -155,6 +156,11 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/check",
         handler: this.check,
+      },
+      {
+        method: "POST",
+        path: "/:id/check",
+        handler: this.findByIdCheck,
       },
       {
         method: "POST",
@@ -434,6 +440,10 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
 
   async check(c: Context, next: any): Promise<Response> {
     return new Check(this.service).execute(c, next);
+  }
+
+  async findByIdCheck(c: Context, next: any): Promise<Response> {
+    return new FindByIdCheck(this.service).execute(c, next);
   }
 
   async telegramBootstrap(c: Context): Promise<Response> {

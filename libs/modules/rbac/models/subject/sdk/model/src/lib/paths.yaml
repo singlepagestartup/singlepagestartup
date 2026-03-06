@@ -176,6 +176,47 @@ paths:
                 required:
                   - data
 
+  /rbac/subjects/{id}/check:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Check one subject
+      description: Check one subject orders and update roles
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                    required:
+                      - ok
+                required:
+                  - data
+
   /rbac/subjects/telegram/bootstrap:
     post:
       tags:

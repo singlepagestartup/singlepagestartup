@@ -44,7 +44,9 @@ import { Service as IdentityService } from "@sps/rbac/models/identity/backend/ap
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 
-export type IExecuteProps = {};
+export type IExecuteProps = {
+  subjectId?: string;
+};
 
 type IExtendedEcommerceModuleOrder = IEcommerceModuleOrder & {
   checkoutAttributesByCurrency: IEcommerceOrderResult["ICheckoutAttributesByCurrencyResult"];
@@ -144,9 +146,33 @@ export class Service {
     }
 
     const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find();
+      await this.subjectsToEcommerceModuleOrders.find(
+        props.subjectId
+          ? {
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "subjectId",
+                      method: "eq",
+                      value: props.subjectId,
+                    },
+                  ],
+                },
+              },
+            }
+          : {},
+      );
 
     if (!subjectsToEcommerceModuleOrders?.length) {
+      return;
+    }
+
+    const orderIds = subjectsToEcommerceModuleOrders
+      .map((item) => item.ecommerceModuleOrderId)
+      .filter((orderId): orderId is string => Boolean(orderId));
+
+    if (!orderIds.length) {
       return;
     }
 
@@ -154,6 +180,11 @@ export class Service {
       params: {
         filters: {
           and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: orderIds,
+            },
             {
               column: "status",
               method: "ne",

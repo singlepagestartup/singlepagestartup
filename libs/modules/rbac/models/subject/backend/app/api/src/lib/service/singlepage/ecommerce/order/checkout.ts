@@ -803,7 +803,7 @@ export class Service {
               {
                 type: "request",
                 method: "POST",
-                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/check`,
+                url: `${NEXT_PUBLIC_API_SERVICE_URL}/api/rbac/subjects/${props.id}/check`,
                 headers: {
                   "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
                 },
