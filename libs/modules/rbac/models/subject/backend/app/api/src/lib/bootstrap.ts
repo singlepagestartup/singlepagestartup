@@ -313,6 +313,19 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         new BillingPaymentIntentRepository(
           new BillingPaymentIntentConfiguration(),
         ),
+        {
+          currency: new BillingCurrencyService(
+            new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+          ),
+          invoice: new BillingInvoiceService(
+            new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+          ),
+          paymentIntentsToInvoices: new BillingPaymentIntentsToInvoicesService(
+            new BillingPaymentIntentsToInvoicesRepository(
+              new BillingPaymentIntentsToInvoicesConfiguration(),
+            ),
+          ),
+        },
       );
       const billingCurrency = new BillingCurrencyService(
         new BillingCurrencyRepository(new BillingCurrencyConfiguration()),

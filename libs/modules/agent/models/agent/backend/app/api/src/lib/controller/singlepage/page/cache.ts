@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
-import { api as hostModulePageApi } from "@sps/host/models/page/sdk/server";
 import { internationalization } from "@sps/shared-configuration";
 
 export class Handler {
@@ -21,7 +20,7 @@ export class Handler {
 
       logger.info("Host module page cache started");
 
-      const urls = await hostModulePageApi.urls({});
+      const urls = await this.service.hostModule.page.urls();
 
       if (urls?.length) {
         for (const [index, url] of urls.entries()) {

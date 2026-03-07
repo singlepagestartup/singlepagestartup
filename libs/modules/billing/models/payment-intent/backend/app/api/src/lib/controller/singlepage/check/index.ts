@@ -6,7 +6,6 @@ import {
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as api } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -54,25 +53,20 @@ export class Handler {
         });
       }
 
-      const paymentIntentsToInvoices = await paymentIntentsToInvoicesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "paymentIntentId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
+      const paymentIntentsToInvoices =
+        await this.service.billingModule.paymentIntentsToInvoices.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "paymentIntentId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (!paymentIntentsToInvoices?.length) {
         throw new Error(
@@ -80,7 +74,7 @@ export class Handler {
         );
       }
 
-      const invoices = await invoiceApi.find({
+      const invoices = await this.service.billingModule.invoice.find({
         params: {
           filters: {
             and: [
@@ -90,12 +84,6 @@ export class Handler {
                 value: paymentIntentsToInvoices.map((item) => item.invoiceId),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

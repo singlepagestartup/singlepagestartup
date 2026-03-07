@@ -3,6 +3,10 @@ export interface IReadService {
   findById: (props: { id: string }) => Promise<any>;
 }
 
+export interface IHostPageReadService extends IReadService {
+  urls: (props?: any) => Promise<any>;
+}
+
 export interface ISocialModule {
   profile: IReadService;
   chat: IReadService;
@@ -52,6 +56,11 @@ export interface IFileStorageModule {
 export interface IBroadcastModule {
   channel: IReadService;
   message: IReadService;
+  channelsToMessages: IReadService;
+}
+
+export interface IHostModule {
+  page: IHostPageReadService;
 }
 
 export const AgentDI = {
@@ -62,4 +71,5 @@ export const AgentDI = {
   INotificationModule: Symbol.for("agent.notification.module"),
   IFileStorageModule: Symbol.for("agent.file-storage.module"),
   IBroadcastModule: Symbol.for("agent.broadcast.module"),
+  IHostModule: Symbol.for("agent.host.module"),
 };

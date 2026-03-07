@@ -3,9 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import bcrypt from "bcrypt";
-import { api } from "@sps/rbac/models/subject/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -29,7 +27,7 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const identities = await identityApi.find({
+      const identities = await this.service.identity.find({
         params: {
           filters: {
             and: [
@@ -56,19 +54,21 @@ export class Handler {
         throw new Error("Authentication error. Multiple identities found");
       }
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "identityId",
-                method: "eq",
-                value: identities[0].id,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "identityId",
+                  method: "eq",
+                  value: identities[0].id,
+                },
+              ],
+            },
           },
         },
-      });
+      );
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");

@@ -47,11 +47,18 @@ import {
   IServiceProceedProps as ITelegramStarProps,
 } from "./telegram-star";
 import { logger } from "@sps/backend-utils";
+import { PaymentIntentDI, type IBillingModule } from "../../di";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  constructor(@inject(DI.IRepository) repository: Repository) {
+  billingModule: IBillingModule;
+
+  constructor(
+    @inject(DI.IRepository) repository: Repository,
+    @inject(PaymentIntentDI.IBillingModule) billingModule: IBillingModule,
+  ) {
     super(repository);
+    this.billingModule = billingModule;
   }
 
   async updatePaymentIntentStatus(props: { invoice: IInvoice }) {

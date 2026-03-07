@@ -100,6 +100,22 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           new BillingPaymentIntentRepository(
             new BillingPaymentIntentConfiguration(),
           ),
+          {
+            currency: new BillingModuleCurrencyService(
+              new BillingModuleCurrencyRepository(
+                new BillingModuleCurrencyConfiguration(),
+              ),
+            ),
+            invoice: new BillingInvoiceService(
+              new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+            ),
+            paymentIntentsToInvoices:
+              new BillingPaymentIntentsToInvoicesService(
+                new BillingPaymentIntentsToInvoicesRepository(
+                  new BillingPaymentIntentsToInvoicesConfiguration(),
+                ),
+              ),
+          },
         ),
     )
     .inSingletonScope();

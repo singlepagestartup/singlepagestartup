@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../../service";
-import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
 export class Handler {
   service: Service;
@@ -55,14 +54,8 @@ export class Handler {
         throw new Error("Permission error. Only order owner can update order");
       }
 
-      const order = await ecommerceOrderApi.findById({
+      const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!order) {

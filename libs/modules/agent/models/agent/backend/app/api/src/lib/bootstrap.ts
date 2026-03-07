@@ -16,6 +16,7 @@ import {
   type IBroadcastModule,
   type IEcommerceModule,
   type IFileStorageModule,
+  type IHostModule,
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
@@ -80,6 +81,11 @@ import { Repository as BroadcastChannelRepository } from "@sps/broadcast/models/
 import { Configuration as BroadcastChannelConfiguration } from "@sps/broadcast/models/channel/backend/app/api/src/lib/configuration";
 import { Repository as BroadcastMessageRepository } from "@sps/broadcast/models/message/backend/app/api/src/lib/repository";
 import { Configuration as BroadcastMessageConfiguration } from "@sps/broadcast/models/message/backend/app/api/src/lib/configuration";
+import { Repository as BroadcastChannelsToMessagesRepository } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/repository";
+import { Configuration as BroadcastChannelsToMessagesConfiguration } from "@sps/broadcast/relations/channels-to-messages/backend/app/api/src/lib/configuration";
+import { Repository as HostPageRepository } from "@sps/host/models/page/backend/app/api/src/lib/repository";
+import { Configuration as HostPageConfiguration } from "@sps/host/models/page/backend/app/api/src/lib/configuration";
+import { Service as HostPageService } from "@sps/host/models/page/backend/app/api/src/lib/service";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -250,6 +256,20 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         ),
         message: new CRUDService<any>(
           new BroadcastMessageRepository(new BroadcastMessageConfiguration()),
+        ),
+        channelsToMessages: new CRUDService<any>(
+          new BroadcastChannelsToMessagesRepository(
+            new BroadcastChannelsToMessagesConfiguration(),
+          ),
+        ),
+      };
+    })
+    .inSingletonScope();
+  bind<IHostModule>(AgentDI.IHostModule)
+    .toDynamicValue(() => {
+      return {
+        page: new HostPageService(
+          new HostPageRepository(new HostPageConfiguration()),
         ),
       };
     })

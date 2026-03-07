@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../service";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 
 export class Handler {
@@ -49,30 +48,26 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-              {
-                column: "identityId",
-                method: "eq",
-                value: identityUuid,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+                {
+                  column: "identityId",
+                  method: "eq",
+                  value: identityUuid,
+                },
+              ],
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      );
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");
@@ -84,14 +79,8 @@ export class Handler {
         );
       }
 
-      const identity = await identityApi.findById({
+      const identity = await this.service.identity.findById({
         id: identityUuid,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!identity) {

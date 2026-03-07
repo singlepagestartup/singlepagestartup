@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
-import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
@@ -266,27 +265,23 @@ export class Handler {
 
               if (paymentIntents?.length) {
                 const paymentIntentsToInvoices =
-                  await billingPaymentIntentsToInvoicesApi.find({
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "paymentIntentId",
-                            method: "inArray",
-                            value: paymentIntents.map(
-                              (paymentIntent) => paymentIntent.id,
-                            ),
-                          },
-                        ],
+                  await this.service.billingModule.paymentIntentsToInvoices.find(
+                    {
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "paymentIntentId",
+                              method: "inArray",
+                              value: paymentIntents.map(
+                                (paymentIntent) => paymentIntent.id,
+                              ),
+                            },
+                          ],
+                        },
                       },
                     },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                        "Cache-Control": "no-store",
-                      },
-                    },
-                  });
+                  );
 
                 if (paymentIntentsToInvoices?.length) {
                   const invoices = await this.findInvoicesByIdsAfterDate(

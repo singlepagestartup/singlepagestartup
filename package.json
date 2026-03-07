@@ -26,6 +26,7 @@
     "prepare": "husky",
     "openapi:build": "nx run openapi:build",
     "openapi:dev": "nx run openapi:dev",
+    "audit:controller-read-self-http": "bash tools/dev/audit-controller-read-self-http.sh",
     "telegram:dev": "nx run telegram:dev",
     "telegram:start": "nx run telegram:start",
     "telegram:build": "nx run telegram:build",

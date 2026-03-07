@@ -1,7 +1,6 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
-import { api as topicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
 import { api as notificationApi } from "@sps/notification/models/notification/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { getHttpErrorType } from "@sps/backend-utils";
@@ -22,37 +21,27 @@ export class Handler {
       const topics = await this.service.find();
 
       for (const topic of topics) {
-        const topicsToNotifications = await topicsToNotificationsApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "topicId",
-                  method: "eq",
-                  value: topic.id,
-                },
-              ],
+        const topicsToNotifications =
+          await this.service.notificationModule.topicsToNotifications.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "topicId",
+                    method: "eq",
+                    value: topic.id,
+                  },
+                ],
+              },
             },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+          });
 
         if (topicsToNotifications?.length) {
           for (const topicToNotification of topicsToNotifications) {
-            const notification = await notificationApi.findById({
-              id: topicToNotification.notificationId,
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
+            const notification =
+              await this.service.notificationModule.notification.findById({
+                id: topicToNotification.notificationId,
+              });
 
             if (!notification || notification.status !== "new") {
               continue;

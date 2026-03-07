@@ -63,14 +63,8 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const order = await ecommerceOrderApi.findById({
+      const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!order) {
@@ -81,25 +75,20 @@ export class Handler {
         throw new Error("Not Found error. Order is not in 'new' status");
       }
 
-      const ordersToProducts = await ecommerceOrdersToProductsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "orderId",
-                method: "eq",
-                value: orderId,
-              },
-            ],
+      const ordersToProducts =
+        await this.service.ecommerceModule.ordersToProducts.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "orderId",
+                  method: "eq",
+                  value: orderId,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (ordersToProducts?.length) {
         for (const orderToProduct of ordersToProducts) {

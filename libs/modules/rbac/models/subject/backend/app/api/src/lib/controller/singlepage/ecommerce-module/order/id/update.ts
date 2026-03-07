@@ -67,14 +67,8 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const order = await ecommerceOrderApi.findById({
+      const order = await this.service.ecommerceModule.order.findById({
         id: orderId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!order) {

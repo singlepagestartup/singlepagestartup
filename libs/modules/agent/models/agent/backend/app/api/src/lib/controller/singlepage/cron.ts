@@ -41,15 +41,38 @@ export class Handler {
 
       const cronChannel = cronChannels[0];
 
-      const messages = await broadcastChannelApi.messageFind({
-        id: cronChannel.id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
+      const channelsToMessages =
+        await this.service.broadcastModule.channelsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "channelId",
+                  method: "eq",
+                  value: cronChannel.id,
+                },
+              ],
+            },
           },
-        },
-      });
+        });
+
+      const messages = channelsToMessages?.length
+        ? await this.service.broadcastModule.message.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: Array.from(
+                      new Set(channelsToMessages.map((item) => item.messageId)),
+                    ),
+                  },
+                ],
+              },
+            },
+          })
+        : [];
 
       const executions =
         messages?.map((message) => ({

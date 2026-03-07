@@ -6,7 +6,6 @@ import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../service";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
-import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export class Handler {
   service: Service;
@@ -42,54 +41,45 @@ export class Handler {
         );
       }
 
-      const subjectsToAllIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
+      const subjectsToAllIdentities =
+        await this.service.subjectsToIdentities.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (subjectsToAllIdentities?.length === 1) {
         throw new Error("Internal error. Cannot delete last identity");
       }
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-              {
-                column: "identityId",
-                method: "eq",
-                value: identityUuid,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+                {
+                  column: "identityId",
+                  method: "eq",
+                  value: identityUuid,
+                },
+              ],
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      );
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");
@@ -119,14 +109,8 @@ export class Handler {
         },
       });
 
-      const entity = await api.findById({
+      const entity = await this.service.findById({
         id: uuid,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       return c.json(

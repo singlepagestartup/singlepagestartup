@@ -31,7 +31,7 @@ export class Handler {
         throw new Error("Validation error. No code provided");
       }
 
-      const identities = await identityApi.find({
+      const identities = await this.service.identity.find({
         params: {
           filters: {
             and: [
@@ -46,12 +46,6 @@ export class Handler {
                 value: "email_and_password",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

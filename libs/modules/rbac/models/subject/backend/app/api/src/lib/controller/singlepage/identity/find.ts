@@ -3,8 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import QueryString from "qs";
-import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -29,25 +27,21 @@ export class Handler {
       const params = c.req.query();
       const parsedQuery = QueryString.parse(params);
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      );
 
       if (!subjectsToIdentities) {
         throw new Error("Not Found error. No subjects to identities found");
@@ -55,7 +49,7 @@ export class Handler {
 
       const queryFilters = parsedQuery.filters?.["and"] || [];
 
-      const identities = await identityApi.find({
+      const identities = await this.service.identity.find({
         params: {
           filters: {
             and: [
@@ -66,12 +60,6 @@ export class Handler {
                 value: subjectsToIdentities.map((item) => item.identityId),
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

@@ -32,6 +32,7 @@ import {
   type IBroadcastModule,
   type IEcommerceModule,
   type IFileStorageModule,
+  type IHostModule,
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
@@ -64,6 +65,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ecommerceModule: IEcommerceModule;
   billingModule: IBillingModule;
   broadcastModule: IBroadcastModule;
+  hostModule: IHostModule;
   notificationModule: INotificationModule;
   fileStorageModule: IFileStorageModule;
 
@@ -74,6 +76,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(AgentDI.IEcommerceModule) ecommerceModule: IEcommerceModule,
     @inject(AgentDI.IBillingModule) billingModule: IBillingModule,
     @inject(AgentDI.IBroadcastModule) broadcastModule: IBroadcastModule,
+    @inject(AgentDI.IHostModule) hostModule: IHostModule,
     @inject(AgentDI.INotificationModule)
     notificationModule: INotificationModule,
     @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
@@ -84,6 +87,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.ecommerceModule = ecommerceModule;
     this.billingModule = billingModule;
     this.broadcastModule = broadcastModule;
+    this.hostModule = hostModule;
     this.notificationModule = notificationModule;
     this.fileStorageModule = fileStorageModule;
   }

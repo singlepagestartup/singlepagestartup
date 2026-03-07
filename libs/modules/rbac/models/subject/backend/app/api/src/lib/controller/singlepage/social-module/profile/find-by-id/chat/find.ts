@@ -3,7 +3,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
-import { api as roleApi } from "@sps/rbac/models/role/sdk/server";
 
 export class Handler {
   service: Service;
@@ -43,7 +42,7 @@ export class Handler {
       });
 
       if (subjectsToRoles?.length) {
-        const roles = await roleApi.find({
+        const roles = await this.service.role.find({
           params: {
             filters: {
               and: [
@@ -53,11 +52,6 @@ export class Handler {
                   value: subjectsToRoles.map((e) => e.roleId),
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
             },
           },
         });

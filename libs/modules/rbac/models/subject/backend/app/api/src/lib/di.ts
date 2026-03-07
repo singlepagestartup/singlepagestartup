@@ -8,6 +8,8 @@ export interface IExtendedReadService extends IReadService {
 }
 
 export interface IEcommerceOrderReadService extends IExtendedReadService {
+  findByIdTotal: (props: { id: string }) => Promise<any>;
+  findByIdQuantity: (props: { id: string }) => Promise<any>;
   findByIdCheckoutAttributes: (props: {
     id: string;
     billingModuleCurrencyId?: string;

@@ -4,8 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../service";
-import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 
 export class Handler {
   service: Service;
@@ -43,7 +41,7 @@ export class Handler {
       }
 
       const subjectsToEcommerceModuleOrders =
-        await subjectsToEcommerceModuleOrdersApi.find({
+        await this.service.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -55,12 +53,6 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       if (!subjectsToEcommerceModuleOrders?.length) {
@@ -70,7 +62,7 @@ export class Handler {
       }
 
       const ecommerceModuleOrdersWithCartType =
-        await ecommerceModuleOrderApi.find({
+        await this.service.ecommerceModule.order.find({
           params: {
             filters: {
               and: [
@@ -88,12 +80,6 @@ export class Handler {
                   value: "cart",
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });

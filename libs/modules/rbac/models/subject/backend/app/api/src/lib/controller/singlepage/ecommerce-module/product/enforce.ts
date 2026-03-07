@@ -2,19 +2,8 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../service";
-import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
-import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { IModel as IEcommerceAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
-import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
-import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
-import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
-import { api as ecommerceAttributeKeysToAttributesApi } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/server";
-import { api as ecommerceProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
-import { api as ecommerceAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
-import { api as ecommerceAttributeApi } from "@sps/ecommerce/models/attribute/sdk/server";
 import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
-import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 
@@ -57,31 +46,27 @@ export class Handler {
         throw new Error("Not Found error. No entity found");
       }
 
-      const subjectsToIdentities = await subjectsToIdentitiesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: uuid,
-              },
-            ],
+      const subjectsToIdentities = await this.service.subjectsToIdentities.find(
+        {
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: uuid,
+                },
+              ],
+            },
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+      );
 
       if (!subjectsToIdentities?.length) {
         throw new Error("Not Found error. No subjects to identities found");
       }
 
-      const identities = await identityApi.find({
+      const identities = await this.service.identity.find({
         params: {
           filters: {
             and: [
@@ -93,14 +78,9 @@ export class Handler {
               {
                 column: "email",
                 method: "isNotNull",
+                value: true,
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });
@@ -112,31 +92,26 @@ export class Handler {
       let price: IEcommerceAttribute | undefined;
       let interval: IEcommerceAttribute | undefined;
 
-      const productsToAttributes = await ecommerceProductsToAttributesApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: productId,
-              },
-            ],
+      const productsToAttributes =
+        await this.service.ecommerceModule.productsToAttributes.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "eq",
+                  value: productId,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (!productsToAttributes?.length) {
         throw new Error("Not Found error. No products to attributes found");
       }
 
-      const attributes = await ecommerceAttributeApi.find({
+      const attributes = await this.service.ecommerceModule.attribute.find({
         params: {
           filters: {
             and: [
@@ -148,12 +123,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!attributes?.length) {
@@ -162,7 +131,7 @@ export class Handler {
 
       for (const attribute of attributes) {
         const attributeKeysToAttributes =
-          await ecommerceAttributeKeysToAttributesApi.find({
+          await this.service.ecommerceModule.attributeKeysToAttributes.find({
             params: {
               filters: {
                 and: [
@@ -174,12 +143,6 @@ export class Handler {
                 ],
               },
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
           });
 
         if (!attributeKeysToAttributes?.length) {
@@ -188,25 +151,20 @@ export class Handler {
           );
         }
 
-        const attributeKey = await ecommerceAttributeKeyApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "eq",
-                  value: attributeKeysToAttributes[0].attributeKeyId,
-                },
-              ],
+        const attributeKey =
+          await this.service.ecommerceModule.attributeKey.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "eq",
+                    value: attributeKeysToAttributes[0].attributeKeyId,
+                  },
+                ],
+              },
             },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+          });
 
         if (!attributeKey?.length) {
           continue;
@@ -224,31 +182,26 @@ export class Handler {
       logger.debug("🚀 ~ prolongate ~ price:", price);
       logger.debug("🚀 ~ prolongate ~ interval:", interval);
 
-      const ordersToProducts = await ecommerceOrdersToProductsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: productId,
-              },
-            ],
+      const ordersToProducts =
+        await this.service.ecommerceModule.ordersToProducts.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "eq",
+                  value: productId,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       if (!ordersToProducts?.length) {
         throw new Error("Not Found error. No orders to products found");
       }
 
-      const orders = await ecommerceOrderApi.find({
+      const orders = await this.service.ecommerceModule.order.find({
         params: {
           filters: {
             and: [
@@ -265,12 +218,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!orders?.length) {
@@ -279,25 +226,21 @@ export class Handler {
 
       for (const order of orders) {
         const ordersToBillingModulePaymentIntents =
-          await ecommerceOrdersToBillingModulePaymentIntentsApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "orderId",
-                    method: "eq",
-                    value: order.id,
-                  },
-                ],
+          await this.service.ecommerceModule.ordersToBillingModulePaymentIntents.find(
+            {
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "orderId",
+                      method: "eq",
+                      value: order.id,
+                    },
+                  ],
+                },
               },
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
+          );
 
         if (!ordersToBillingModulePaymentIntents?.length) {
           continue;
@@ -312,22 +255,17 @@ export class Handler {
         const paymentIntentId =
           ordersToBillingModulePaymentIntents[0].billingModulePaymentIntentId;
 
-        const paymentIntent = await billingPaymentIntentApi.findById({
-          id: paymentIntentId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        const paymentIntent =
+          await this.service.billingModule.paymentIntent.findById({
+            id: paymentIntentId,
+          });
 
         if (!paymentIntent) {
           throw new Error("Not Found error. Payment intent not found");
         }
 
         const paymentIntentsToInvoices =
-          await billingPaymentIntentsToInvoicesApi.find({
+          await this.service.billingModule.paymentIntentsToInvoices.find({
             params: {
               filters: {
                 and: [
@@ -339,18 +277,13 @@ export class Handler {
                 ],
               },
             },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
           });
 
         if (!paymentIntentsToInvoices?.length) {
           continue;
         }
 
-        const invoices = await billingInvoiceApi.find({
+        const invoices = await this.service.billingModule.invoice.find({
           params: {
             filters: {
               and: [
@@ -373,12 +306,6 @@ export class Handler {
                   method: "desc",
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -464,25 +391,21 @@ export class Handler {
           // });
 
           const ecommerceOrdersToBillingModuleCurrencies =
-            await ecommerceOrdersToBillingModuleCurrenciesApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "orderId",
-                      method: "eq",
-                      value: order.id,
-                    },
-                  ],
+            await this.service.ecommerceModule.ordersToBillingModuleCurrencies.find(
+              {
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "orderId",
+                        method: "eq",
+                        value: order.id,
+                      },
+                    ],
+                  },
                 },
               },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
+            );
 
           if (!ecommerceOrdersToBillingModuleCurrencies?.length) {
             throw new Error(

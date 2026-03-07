@@ -4,12 +4,8 @@ import { HTTPException } from "hono/http-exception";
 import * as jwt from "hono/jwt";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { Service } from "../../../../service";
-import {
-  api as ecommerceModuleOrderApi,
-  type IResult,
-} from "@sps/ecommerce/models/order/sdk/server";
+import { type IResult } from "@sps/ecommerce/models/order/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
-import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 
 export class Handler {
@@ -48,7 +44,7 @@ export class Handler {
       }
 
       const subjectsToEcommerceModuleOrders =
-        await subjectsToEcommerceModuleOrdersApi.find({
+        await this.service.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -60,12 +56,6 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       if (!subjectsToEcommerceModuleOrders?.length) {
@@ -75,7 +65,7 @@ export class Handler {
       }
 
       const ecommerceModuleOrdersWithCartType =
-        await ecommerceModuleOrderApi.find({
+        await this.service.ecommerceModule.order.find({
           params: {
             filters: {
               and: [
@@ -93,12 +83,6 @@ export class Handler {
                   value: "cart",
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -121,15 +105,10 @@ export class Handler {
       >();
 
       for (const ecommerceModuleOrder of ecommerceModuleOrdersWithCartType) {
-        const ecommerceModuleOrderTotals = await ecommerceModuleOrderApi.total({
-          id: ecommerceModuleOrder.id,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        const ecommerceModuleOrderTotals =
+          await this.service.ecommerceModule.order.findByIdTotal({
+            id: ecommerceModuleOrder.id,
+          });
 
         for (const ecommerceModuleOrderTotal of ecommerceModuleOrderTotals) {
           const currencyId = ecommerceModuleOrderTotal.billingModuleCurrency.id;

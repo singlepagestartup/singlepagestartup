@@ -8,7 +8,6 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api } from "@sps/billing/models/payment-intent/sdk/server";
-import { api as currencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api as invoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { api as paymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
@@ -59,13 +58,8 @@ export class Handler {
         throw new Error("Validation error. Currency is required");
       }
 
-      const currency = await currencyApi.findById({
+      const currency = await this.service.billingModule.currency.findById({
         id: data.currencyId,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!currency) {

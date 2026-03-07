@@ -1,12 +1,9 @@
 import { ADMIN_EMAILS, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { api } from "@sps/crm/models/form/sdk/server";
 import { api as formsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
 import { api as requestApi } from "@sps/crm/models/request/sdk/server";
 import { Service } from "../../../service";
-import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
-import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
@@ -39,13 +36,8 @@ export class Handler {
 
       const data = JSON.parse(body["data"]);
 
-      const entity = await api.findById({
+      const entity = await this.service.findById({
         id,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
       });
 
       if (!entity) {
@@ -79,7 +71,7 @@ export class Handler {
         },
       });
 
-      const topics = await notificationTopicApi.find({
+      const topics = await this.service.notificationModule.topic.find({
         params: {
           filters: {
             and: [
@@ -91,12 +83,6 @@ export class Handler {
             ],
           },
         },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
       });
 
       if (!topics?.length) {
@@ -105,7 +91,7 @@ export class Handler {
 
       const topic = topics[0];
 
-      const templates = await notificationTemplateApi.find({
+      const templates = await this.service.notificationModule.template.find({
         params: {
           filters: {
             and: [
@@ -115,12 +101,6 @@ export class Handler {
                 value: "request-from-website",
               },
             ],
-          },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
           },
         },
       });

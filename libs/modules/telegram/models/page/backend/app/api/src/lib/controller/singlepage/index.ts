@@ -2,7 +2,6 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/telegram/models/page/backend/repository/database";
-import { api } from "@sps/telegram/models/page/sdk/server";
 import { Service } from "../../service";
 import { Context as GrammyContext, NextFunction } from "grammy";
 import {
@@ -74,13 +73,7 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
     }
 
-    const pages = await api.find({
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-        },
-      },
-    });
+    const pages = await this.service.find();
 
     logger.debug("🚀 ~ pages:", pages);
 

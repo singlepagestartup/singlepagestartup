@@ -8,7 +8,6 @@ import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 import { api as identityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api as subjectsToIdentitiesApi } from "@sps/rbac/relations/subjects-to-identities/sdk/server";
-import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export class Handler {
   service: Service;
@@ -86,7 +85,7 @@ export class Handler {
           throw new Error("Validation error. Invalid signature");
         }
 
-        const identities = await identityApi.find({
+        const identities = await this.service.identity.find({
           params: {
             filters: {
               and: [
@@ -96,12 +95,6 @@ export class Handler {
                   value: address.toLowerCase(),
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -134,14 +127,8 @@ export class Handler {
           },
         });
 
-        const entity = await api.findById({
+        const entity = await this.service.findById({
           id: uuid,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
         return c.json(

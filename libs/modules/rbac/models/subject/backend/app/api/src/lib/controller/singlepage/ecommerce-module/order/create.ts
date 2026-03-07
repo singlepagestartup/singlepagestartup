@@ -8,11 +8,7 @@ import { api as subjectsToEcommerceModuleOrdersApi } from "@sps/rbac/relations/s
 import { api as ecommerceOrdersToProductsApi } from "@sps/ecommerce/relations/orders-to-products/sdk/server";
 import { api as ecommerceStoresToOrdersApi } from "@sps/ecommerce/relations/stores-to-orders/sdk/server";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceModuleStoreApi } from "@sps/ecommerce/models/store/sdk/server";
-import { api as ecommerceModuleProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { api as ecommerceOrdersToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/server";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as attributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 
 export class Handler {
   service: Service;
@@ -67,14 +63,7 @@ export class Handler {
       let storeId = data.storeId;
 
       if (!storeId) {
-        const stores = await ecommerceModuleStoreApi.find({
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        const stores = await this.service.ecommerceModule.store.find();
 
         if (stores?.length === 0) {
           throw new Error("Not Found error. No stores found");
@@ -98,7 +87,7 @@ export class Handler {
       }
 
       const ecommerceModuleProductsToAttributes =
-        await ecommerceModuleProductsToAttributesApi.find({
+        await this.service.ecommerceModule.productsToAttributes.find({
           params: {
             filters: {
               and: [
@@ -110,44 +99,34 @@ export class Handler {
               ],
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       const attributesToBillingModuleCurrencies =
-        await attributesToBillingModuleCurrenciesApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "inArray",
-                  value:
-                    ecommerceModuleProductsToAttributes?.map(
-                      (productToAttribute) => productToAttribute.attributeId,
-                    ) || [],
-                },
-              ],
+        await this.service.ecommerceModule.attributesToBillingModuleCurrencies.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "attributeId",
+                    method: "inArray",
+                    value:
+                      ecommerceModuleProductsToAttributes?.map(
+                        (productToAttribute) => productToAttribute.attributeId,
+                      ) || [],
+                  },
+                ],
+              },
             },
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
-        });
+        );
 
       if (
         attributesToBillingModuleCurrencies?.length &&
         !billingModuleCurrencyId
       ) {
         const defaultBillingModuleCurrency =
-          await billingModuleCurrencyApi.find({
+          await this.service.billingModule.currency.find({
             params: {
               filters: {
                 and: [
@@ -157,12 +136,6 @@ export class Handler {
                     value: true,
                   },
                 ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
               },
             },
           });
@@ -181,28 +154,23 @@ export class Handler {
         }
       }
 
-      const existingOrdersToProducts = await ecommerceOrdersToProductsApi.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: productId,
-              },
-            ],
+      const existingOrdersToProducts =
+        await this.service.ecommerceModule.ordersToProducts.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "productId",
+                  method: "eq",
+                  value: productId,
+                },
+              ],
+            },
           },
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            "Cache-Control": "no-store",
-          },
-        },
-      });
+        });
 
       const existingOrdersToSubjects =
-        await subjectsToEcommerceModuleOrdersApi.find({
+        await this.service.subjectsToEcommerceModuleOrders.find({
           params: {
             filters: {
               and: [
@@ -212,12 +180,6 @@ export class Handler {
                   value: id,
                 },
               ],
-            },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
             },
           },
         });
@@ -236,36 +198,31 @@ export class Handler {
           );
 
           if (subjectToProductOrders.length) {
-            const ordersWithSubjectAndProduct = await ecommerceOrderApi.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "id",
-                      method: "inArray",
-                      value: subjectToProductOrders.map(
-                        (orderToProduct) => orderToProduct.orderId,
-                      ),
-                    },
-                    {
-                      column: "status",
-                      method: "eq",
-                      value: "new",
-                    },
-                  ],
+            const ordersWithSubjectAndProduct =
+              await this.service.ecommerceModule.order.find({
+                params: {
+                  filters: {
+                    and: [
+                      {
+                        column: "id",
+                        method: "inArray",
+                        value: subjectToProductOrders.map(
+                          (orderToProduct) => orderToProduct.orderId,
+                        ),
+                      },
+                      {
+                        column: "status",
+                        method: "eq",
+                        value: "new",
+                      },
+                    ],
+                  },
                 },
-              },
-              options: {
-                headers: {
-                  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                  "Cache-Control": "no-store",
-                },
-              },
-            });
+              });
 
             if (ordersWithSubjectAndProduct?.length) {
               const existingStoresToOrders =
-                await ecommerceStoresToOrdersApi.find({
+                await this.service.ecommerceModule.storesToOrders.find({
                   params: {
                     filters: {
                       and: [
@@ -284,38 +241,28 @@ export class Handler {
                       ],
                     },
                   },
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
-                    },
-                  },
                 });
 
               if (existingStoresToOrders?.length) {
                 const ordersToBillingModuleCurrencies =
-                  await ecommerceOrdersToBillingModuleCurrenciesApi.find({
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "orderId",
-                            method: "inArray",
-                            value:
-                              existingStoresToOrders?.map(
-                                (storeToOrder) => storeToOrder.orderId,
-                              ) || [],
-                          },
-                        ],
+                  await this.service.ecommerceModule.ordersToBillingModuleCurrencies.find(
+                    {
+                      params: {
+                        filters: {
+                          and: [
+                            {
+                              column: "orderId",
+                              method: "inArray",
+                              value:
+                                existingStoresToOrders?.map(
+                                  (storeToOrder) => storeToOrder.orderId,
+                                ) || [],
+                            },
+                          ],
+                        },
                       },
                     },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                        "Cache-Control": "no-store",
-                      },
-                    },
-                  });
+                  );
 
                 if (ordersToBillingModuleCurrencies?.length) {
                   throw new Error("Internal error. Order already exists");

@@ -52,13 +52,8 @@ export class Handler {
         let invoice: Invoice | undefined;
 
         try {
-          invoice = await invoiceApi.findById({
+          invoice = await this.service.billingModule.invoice.findById({
             id: data.data.id,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
           });
 
           if (invoice?.amount === 0) {
