@@ -71,6 +71,10 @@ export class Middleware {
         }
       }
 
+      if (c.res.headers.get("X-SPS-SKIP-ACTION-LOGGER") === "1") {
+        return;
+      }
+
       if (c.res.status >= 200 && c.res.status < 300) {
         if (method !== "GET") {
           if (!token || !RBAC_JWT_SECRET || !RBAC_SECRET_KEY) {

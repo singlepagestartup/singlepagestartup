@@ -3,6 +3,10 @@ export interface IReadService {
   findById: (props: { id: string }) => Promise<any>;
 }
 
+export interface IExtendedReadService extends IReadService {
+  extended: (props: { id: string }) => Promise<any>;
+}
+
 export interface ISocialModule {
   profile: IReadService;
   chat: IReadService;
@@ -22,15 +26,17 @@ export interface ISocialModule {
 
 export interface IEcommerceModule {
   store: IReadService;
-  order: IReadService;
-  product: IReadService;
+  order: IExtendedReadService;
+  product: IExtendedReadService;
   attribute: IReadService;
   attributeKey: IReadService;
   storesToOrders: IReadService;
   ordersToProducts: IReadService;
   ordersToBillingModuleCurrencies: IReadService;
   ordersToBillingModulePaymentIntents: IReadService;
+  ordersToFileStorageModuleFiles: IReadService;
   productsToAttributes: IReadService;
+  productsToFileStorageModuleFiles: IReadService;
   attributesToBillingModuleCurrencies: IReadService;
   attributeKeysToAttributes: IReadService;
 }
@@ -38,6 +44,7 @@ export interface IEcommerceModule {
 export interface IBillingModule {
   currency: IReadService;
   paymentIntent: IReadService;
+  paymentIntentsToCurrencies: IReadService;
   invoice: IReadService;
   paymentIntentsToInvoices: IReadService;
 }

@@ -101,9 +101,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ordersToBillingModulePaymentIntents;
   }
 
-  async getExtended(
-    props: IGetExtendedExecuteProps,
-  ): Promise<IGetExtendedResult> {
+  async extended(props: IGetExtendedExecuteProps): Promise<IGetExtendedResult> {
     return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
       checkoutAttributes: this.checkoutAttributesService,

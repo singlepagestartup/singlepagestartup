@@ -84,6 +84,15 @@ export class TelegarmBot {
     });
   }
 
+  private runInBackground(props: { label: string; task: () => Promise<void> }) {
+    void props.task().catch((error) => {
+      console.error(
+        `🚀 ~ TelegarmBot ~ ${props.label} ~ background error:`,
+        error?.message || error,
+      );
+    });
+  }
+
   /**
    * Should be called after routes and conversations are added
    */
@@ -98,65 +107,80 @@ export class TelegarmBot {
       //
     });
 
-    this.instance.on("callback_query:data", async (ctx, next) => {
+    this.instance.on("callback_query:data", async (ctx) => {
       console.log(
         "🚀 ~ TelegarmBot ~ init ~ ctx.callbackQuery:",
         ctx.callbackQuery,
       );
 
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
-      }
-
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
-      }
-
-      if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
-        throw new Error(
-          "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
-        );
-      }
-
-      const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
-        await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
-          ctx,
+      void ctx
+        .answerCallbackQuery({
+          text: `You clicked: ${ctx.callbackQuery.data}`,
+        })
+        .catch((error) => {
+          console.error(
+            "🚀 ~ TelegarmBot ~ callback_query:data ~ answer error:",
+            error?.message || error,
+          );
         });
 
-      console.log("🚀 ~ init ~ rbacModuleSubject:", rbacModuleSubject);
+      this.runInBackground({
+        label: "callback_query:data",
+        task: async () => {
+          if (!RBAC_SECRET_KEY) {
+            throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+          }
 
-      const jwtToken = await jwt.sign(
-        {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: rbacModuleSubject,
-        },
-        RBAC_JWT_SECRET,
-      );
+          if (!RBAC_JWT_SECRET) {
+            throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+          }
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            payload: {
-              telegram: {
-                callback_query: ctx.callbackQuery,
+          if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+            throw new Error(
+              "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+            );
+          }
+
+          const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
+            await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
+              {
+                ctx,
+              },
+            );
+
+          console.log("🚀 ~ init ~ rbacModuleSubject:", rbacModuleSubject);
+
+          const jwtToken = await jwt.sign(
+            {
+              exp:
+                Math.floor(Date.now() / 1000) +
+                RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+              iat: Math.floor(Date.now() / 1000),
+              subject: rbacModuleSubject,
+            },
+            RBAC_JWT_SECRET,
+          );
+
+          await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate(
+            {
+              id: rbacModuleSubject.id,
+              socialModuleChatId: socialModuleChat.id,
+              socialModuleProfileId: socialModuleProfile.id,
+              data: {
+                payload: {
+                  telegram: {
+                    callback_query: ctx.callbackQuery,
+                  },
+                },
+              },
+              options: {
+                headers: {
+                  Authorization: "Bearer " + jwtToken,
+                },
               },
             },
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
+          );
         },
-      );
-
-      ctx.answerCallbackQuery({
-        text: `You clicked: ${ctx.callbackQuery.data}`,
       });
 
       return;
@@ -186,9 +210,11 @@ export class TelegarmBot {
       try {
         console.log("🚀 ~ init ~ pre_checkout_query ~ ctx.update:", ctx.update);
 
-        return await ctx.answerPreCheckoutQuery(true);
+        await ctx.answerPreCheckoutQuery(true);
+        return;
       } catch (error: any) {
         console.log("🚀 ~ init ~ pre_checkout_query ~ error:", error.message);
+        return;
       }
     });
 
@@ -229,18 +255,25 @@ export class TelegarmBot {
         ctx.message.successful_payment,
       );
 
-      await billingModulePaymentIntentApi.providerWebhook({
-        data: {
-          provider: "telegram-star",
-          currency: "XTR",
-          invoice_payload: ctx.message.successful_payment.invoice_payload,
-          provider_payment_charge_id:
-            ctx.message.successful_payment.provider_payment_charge_id,
-          telegram_payment_charge_id:
-            ctx.message.successful_payment.telegram_payment_charge_id,
-          total_amount: ctx.message.successful_payment.total_amount,
+      this.runInBackground({
+        label: "message:successful_payment",
+        task: async () => {
+          await billingModulePaymentIntentApi.providerWebhook({
+            data: {
+              provider: "telegram-star",
+              currency: "XTR",
+              invoice_payload: ctx.message.successful_payment.invoice_payload,
+              provider_payment_charge_id:
+                ctx.message.successful_payment.provider_payment_charge_id,
+              telegram_payment_charge_id:
+                ctx.message.successful_payment.telegram_payment_charge_id,
+              total_amount: ctx.message.successful_payment.total_amount,
+            },
+          });
         },
       });
+
+      return;
     });
 
     this.instance.on("message", async (ctx) => {
@@ -272,10 +305,17 @@ export class TelegarmBot {
         return;
       }
 
-      await this.handleIncomingMessage({
-        ctx,
-        data: await this.buildTelegramMessageData({ ctx }),
+      this.runInBackground({
+        label: "message",
+        task: async () => {
+          await this.handleIncomingMessage({
+            ctx,
+            data: await this.buildTelegramMessageData({ ctx }),
+          });
+        },
       });
+
+      return;
     });
   }
 

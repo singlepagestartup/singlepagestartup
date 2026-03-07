@@ -79,6 +79,11 @@ import { Repository as EcommerceStoreRepository } from "@sps/ecommerce/models/st
 import { Configuration as EcommerceStoreConfiguration } from "@sps/ecommerce/models/store/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrderRepository } from "@sps/ecommerce/models/order/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrderConfiguration } from "@sps/ecommerce/models/order/backend/app/api/src/lib/configuration";
+import { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
+import { Service as EcommerceOrderCheckoutAttributesService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/checkout-attributes";
+import { Service as EcommerceOrderGetTotalService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/get-total";
+import { Service as EcommerceOrderGetQuantityService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/get-quantity";
+import { Service as EcommerceProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Repository as EcommerceProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceAttributeRepository } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/repository";
@@ -93,8 +98,12 @@ import { Repository as EcommerceOrdersToBillingModuleCurrenciesRepository } from
 import { Configuration as EcommerceOrdersToBillingModuleCurrenciesConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceOrdersToBillingModulePaymentIntentsRepository } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrdersToBillingModulePaymentIntentsConfiguration } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/configuration";
+import { Repository as EcommerceOrdersToFileStorageModuleFilesRepository } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/repository";
+import { Configuration as EcommerceOrdersToFileStorageModuleFilesConfiguration } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceProductsToAttributesRepository } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceProductsToAttributesConfiguration } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/configuration";
+import { Repository as EcommerceProductsToFileStorageModuleFilesRepository } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/repository";
+import { Configuration as EcommerceProductsToFileStorageModuleFilesConfiguration } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceAttributesToBillingModuleCurrenciesRepository } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceAttributesToBillingModuleCurrenciesConfiguration } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/configuration";
 import { Repository as EcommerceAttributeKeysToAttributesRepository } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
@@ -105,6 +114,8 @@ import { Repository as BillingPaymentIntentRepository } from "@sps/billing/model
 import { Configuration as BillingPaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
 import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
 import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Repository as BillingPaymentIntentsToCurrenciesRepository } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/repository";
+import { Configuration as BillingPaymentIntentsToCurrenciesConfiguration } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/configuration";
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
 import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
@@ -203,61 +214,122 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
     .inSingletonScope();
   bind<IEcommerceModule>(SubjectDI.IEcommerceModule)
     .toDynamicValue(() => {
+      const store = new CRUDService<any>(
+        new EcommerceStoreRepository(new EcommerceStoreConfiguration()),
+      );
+      const attribute = new CRUDService<any>(
+        new EcommerceAttributeRepository(new EcommerceAttributeConfiguration()),
+      );
+      const attributeKey = new CRUDService<any>(
+        new EcommerceAttributeKeyRepository(
+          new EcommerceAttributeKeyConfiguration(),
+        ),
+      );
+      const storesToOrders = new CRUDService<any>(
+        new EcommerceStoresToOrdersRepository(
+          new EcommerceStoresToOrdersConfiguration(),
+        ),
+      );
+      const ordersToProducts = new CRUDService<any>(
+        new EcommerceOrdersToProductsRepository(
+          new EcommerceOrdersToProductsConfiguration(),
+        ),
+      );
+      const ordersToBillingModuleCurrencies = new CRUDService<any>(
+        new EcommerceOrdersToBillingModuleCurrenciesRepository(
+          new EcommerceOrdersToBillingModuleCurrenciesConfiguration(),
+        ),
+      );
+      const ordersToBillingModulePaymentIntents = new CRUDService<any>(
+        new EcommerceOrdersToBillingModulePaymentIntentsRepository(
+          new EcommerceOrdersToBillingModulePaymentIntentsConfiguration(),
+        ),
+      );
+      const ordersToFileStorageModuleFiles = new CRUDService<any>(
+        new EcommerceOrdersToFileStorageModuleFilesRepository(
+          new EcommerceOrdersToFileStorageModuleFilesConfiguration(),
+        ),
+      );
+      const productsToAttributes = new CRUDService<any>(
+        new EcommerceProductsToAttributesRepository(
+          new EcommerceProductsToAttributesConfiguration(),
+        ),
+      );
+      const productsToFileStorageModuleFiles = new CRUDService<any>(
+        new EcommerceProductsToFileStorageModuleFilesRepository(
+          new EcommerceProductsToFileStorageModuleFilesConfiguration(),
+        ),
+      );
+      const attributesToBillingModuleCurrencies = new CRUDService<any>(
+        new EcommerceAttributesToBillingModuleCurrenciesRepository(
+          new EcommerceAttributesToBillingModuleCurrenciesConfiguration(),
+        ),
+      );
+      const attributeKeysToAttributes = new CRUDService<any>(
+        new EcommerceAttributeKeysToAttributesRepository(
+          new EcommerceAttributeKeysToAttributesConfiguration(),
+        ),
+      );
+      const product = new EcommerceProductService(
+        new EcommerceProductRepository(new EcommerceProductConfiguration()),
+        productsToAttributes as any,
+        attribute as any,
+        attributeKeysToAttributes as any,
+        attributeKey as any,
+        attributesToBillingModuleCurrencies as any,
+        productsToFileStorageModuleFiles as any,
+      );
+
+      const checkoutAttributesService =
+        new EcommerceOrderCheckoutAttributesService(
+          attributeKey as any,
+          ordersToProducts as any,
+          product as any,
+          productsToAttributes as any,
+          attributeKeysToAttributes as any,
+          attribute as any,
+          attributesToBillingModuleCurrencies as any,
+        );
+      const getTotalService = new EcommerceOrderGetTotalService(
+        attributeKey as any,
+        ordersToProducts as any,
+      );
+      const getQuantityService = new EcommerceOrderGetQuantityService(
+        ordersToProducts as any,
+      );
+      const order = new EcommerceOrderService(
+        new EcommerceOrderRepository(new EcommerceOrderConfiguration()),
+        checkoutAttributesService,
+        getTotalService,
+        getQuantityService,
+        product as any,
+        attribute as any,
+        attributeKey as any,
+        ordersToProducts as any,
+        productsToAttributes as any,
+        attributeKeysToAttributes as any,
+        attributesToBillingModuleCurrencies as any,
+        ordersToBillingModuleCurrencies as any,
+        ordersToFileStorageModuleFiles as any,
+        productsToFileStorageModuleFiles as any,
+        ordersToBillingModulePaymentIntents as any,
+      );
+
       return {
-        store: new CRUDService<any>(
-          new EcommerceStoreRepository(new EcommerceStoreConfiguration()),
-        ),
-        order: new CRUDService<any>(
-          new EcommerceOrderRepository(new EcommerceOrderConfiguration()),
-        ),
-        product: new CRUDService<any>(
-          new EcommerceProductRepository(new EcommerceProductConfiguration()),
-        ),
-        attribute: new CRUDService<any>(
-          new EcommerceAttributeRepository(
-            new EcommerceAttributeConfiguration(),
-          ),
-        ),
-        attributeKey: new CRUDService<any>(
-          new EcommerceAttributeKeyRepository(
-            new EcommerceAttributeKeyConfiguration(),
-          ),
-        ),
-        storesToOrders: new CRUDService<any>(
-          new EcommerceStoresToOrdersRepository(
-            new EcommerceStoresToOrdersConfiguration(),
-          ),
-        ),
-        ordersToProducts: new CRUDService<any>(
-          new EcommerceOrdersToProductsRepository(
-            new EcommerceOrdersToProductsConfiguration(),
-          ),
-        ),
-        ordersToBillingModuleCurrencies: new CRUDService<any>(
-          new EcommerceOrdersToBillingModuleCurrenciesRepository(
-            new EcommerceOrdersToBillingModuleCurrenciesConfiguration(),
-          ),
-        ),
-        ordersToBillingModulePaymentIntents: new CRUDService<any>(
-          new EcommerceOrdersToBillingModulePaymentIntentsRepository(
-            new EcommerceOrdersToBillingModulePaymentIntentsConfiguration(),
-          ),
-        ),
-        productsToAttributes: new CRUDService<any>(
-          new EcommerceProductsToAttributesRepository(
-            new EcommerceProductsToAttributesConfiguration(),
-          ),
-        ),
-        attributesToBillingModuleCurrencies: new CRUDService<any>(
-          new EcommerceAttributesToBillingModuleCurrenciesRepository(
-            new EcommerceAttributesToBillingModuleCurrenciesConfiguration(),
-          ),
-        ),
-        attributeKeysToAttributes: new CRUDService<any>(
-          new EcommerceAttributeKeysToAttributesRepository(
-            new EcommerceAttributeKeysToAttributesConfiguration(),
-          ),
-        ),
+        store,
+        order,
+        product,
+        attribute,
+        attributeKey,
+        storesToOrders,
+        ordersToProducts,
+        ordersToBillingModuleCurrencies,
+        ordersToBillingModulePaymentIntents,
+        ordersToFileStorageModuleFiles,
+        productsToAttributes,
+        productsToFileStorageModuleFiles,
+        attributesToBillingModuleCurrencies,
+        attributeKeysToAttributes,
       };
     })
     .inSingletonScope();
@@ -270,6 +342,11 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         paymentIntent: new CRUDService<any>(
           new BillingPaymentIntentRepository(
             new BillingPaymentIntentConfiguration(),
+          ),
+        ),
+        paymentIntentsToCurrencies: new CRUDService<any>(
+          new BillingPaymentIntentsToCurrenciesRepository(
+            new BillingPaymentIntentsToCurrenciesConfiguration(),
           ),
         ),
         invoice: new CRUDService<any>(

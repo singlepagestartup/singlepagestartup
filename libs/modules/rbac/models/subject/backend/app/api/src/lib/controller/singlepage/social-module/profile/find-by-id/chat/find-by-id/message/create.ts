@@ -74,6 +74,25 @@ export class Handler {
         );
       }
 
+      const sourceSystemId =
+        typeof parsedBody.data?.sourceSystemId === "string"
+          ? parsedBody.data.sourceSystemId.trim()
+          : "";
+
+      if (sourceSystemId) {
+        const existingMessage = await this.findExistingBySourceSystemId({
+          sourceSystemId,
+          socialModuleChatId,
+        });
+
+        if (existingMessage) {
+          c.header("X-SPS-SKIP-ACTION-LOGGER", "1");
+          return c.json({
+            data: existingMessage,
+          });
+        }
+      }
+
       const files = formData
         .getAll("files")
         .filter((item) => item instanceof File) as File[];
@@ -485,5 +504,66 @@ export class Handler {
         }
       }
     }
+  }
+
+  async findExistingBySourceSystemId(props: {
+    sourceSystemId: string;
+    socialModuleChatId: string;
+  }): Promise<ISocialModuleMessage | undefined> {
+    const messages = await this.service.socialModule.message.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "sourceSystemId",
+              method: "eq",
+              value: props.sourceSystemId,
+            },
+          ],
+        },
+      },
+    });
+
+    if (!messages?.length) {
+      return;
+    }
+
+    const messageIds = messages.map((message) => message.id);
+
+    const chatsToMessages =
+      await this.service.socialModule.chatsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+              {
+                column: "messageId",
+                method: "inArray",
+                value: messageIds,
+              },
+            ],
+          },
+        },
+      });
+
+    if (!chatsToMessages?.length) {
+      return;
+    }
+
+    const messageIdsInChat = chatsToMessages
+      .map((item) => item.messageId)
+      .filter((id): id is string => Boolean(id));
+
+    if (!messageIdsInChat.length) {
+      return;
+    }
+
+    const messageIdsSet = new Set(messageIdsInChat);
+
+    return messages.find((message) => messageIdsSet.has(message.id));
   }
 }

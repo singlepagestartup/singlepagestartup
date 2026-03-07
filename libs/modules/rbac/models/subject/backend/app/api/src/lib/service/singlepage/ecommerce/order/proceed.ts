@@ -1,33 +1,17 @@
 import { DI, type IRepository } from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
-import { IModel as IRolesToEcommerceModuleProducts } from "@sps/rbac/relations/roles-to-ecommerce-module-products/sdk/model";
 import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
-import { IModel as IEcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
-import { IModel as IEcommerceModuleAttributeKey } from "@sps/ecommerce/models/attribute-key/sdk/model";
 import { api } from "@sps/rbac/models/subject/sdk/server";
-import { IModel as IEcommerceModuleAttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
-import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
 import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
 import { IModel as ISubjectsToRoles } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
-import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import {
   api as ecommerceOrderApi,
   type IResult as IEcommerceOrderResult,
 } from "@sps/ecommerce/models/order/sdk/server";
-import { api as ecommerceProductApi } from "@sps/ecommerce/models/product/sdk/server";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { IModel as IEcommerceModuleProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { IModel as IEcommerceModuleOrdersToBillingModulePaymentIntents } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
-import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payment-intent/sdk/model";
-import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
-import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
-import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
-import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 import { inject, injectable } from "inversify";
 import {
   SubjectDI,
@@ -50,45 +34,7 @@ export type IExecuteProps = {
 
 type IExtendedEcommerceModuleOrder = IEcommerceModuleOrder & {
   checkoutAttributesByCurrency: IEcommerceOrderResult["ICheckoutAttributesByCurrencyResult"];
-  ordersToProducts: (IEcommerceModuleOrdersToProducts & {
-    product: IExtendedEcommerceModuleProduct;
-  })[];
-  ordersToBillingModuleCurrencies: (IEcommerceModuleOrdersToBillingModuleCurrencies & {
-    billingModuleCurrency?: IBillingModuleCurrency;
-  })[];
-  ordersToFileStorageModuleFiles: (IEcommerceModuleOrdersToFileStorageModuleFiles & {
-    fileStorageModuleFile?: IFileStorageModuleFile;
-  })[];
-  ordersToBillingModulePaymentIntents: (IEcommerceModuleOrdersToBillingModulePaymentIntents & {
-    billingModulePaymentIntent: IBillingModulePaymentIntent & {
-      paymentIntentsToCurrencies: (IBillingModulePaymentIntentsToCurrecies & {
-        currency: IBillingModuleCurrency;
-      })[];
-      paymentIntentsToInvoices: (IBillingModulePaymentIntentsToInvoices & {
-        invoice: IBillingModuleInvoice;
-      })[];
-    };
-  })[];
-};
-
-type IExtendedEcommerceModuleAttribute = IEcommerceModuleAttribute & {
-  attributeKeysToAttribute?: (IEcommerceModuleAttributeKeysToAttributes & {
-    attributeKey?: IEcommerceModuleAttributeKey;
-  })[];
-  attributesToBillingModuleCurrencies?: (IEcommerceModuleAttributesToBillingModuleCurrencies & {
-    billingModuleCurrency?: IBillingModuleCurrency;
-  })[];
-};
-
-type IExtendedEcommerceModuleProduct = IEcommerceModuleProduct & {
-  rolesToEcommerceModuleProduct?: IRolesToEcommerceModuleProducts[] | undefined;
-  productsToAttributes?: (IEcommerceModuleProductsToAttributes & {
-    attribute: IExtendedEcommerceModuleAttribute;
-  })[];
-  productsToFileStorageModuleFiles?: (IEcommerceModuleProductsToFileStorageModuleFiles & {
-    fileStorageModuleFile?: IFileStorageModuleFile;
-  })[];
-};
+} & IEcommerceOrderResult["IExtendedResult"];
 
 @injectable()
 export class Service {
@@ -214,7 +160,9 @@ export class Service {
 
     for (const order of orders) {
       try {
-        const extendedOrder = await this.extendedEcommerceModuleOrder(order);
+        const extendedOrder = await this.getExtendedEcommerceModuleOrderById({
+          id: order.id,
+        });
 
         for (const subjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
           if (
@@ -241,16 +189,14 @@ export class Service {
             (rbacSubjectToRole) => rbacSubjectToRole.roleId,
           );
 
-          const productsRolesIds =
-            extendedOrder.ordersToProducts
-              ?.map((orderToProduct) => {
-                return orderToProduct.product.rolesToEcommerceModuleProduct?.map(
-                  (roleToEcommerceModuleProduct) =>
-                    roleToEcommerceModuleProduct.roleId,
-                );
-              })
-              .flat()
-              .filter((roleId): roleId is string => Boolean(roleId)) ?? [];
+          const productsRolesIds = await this.getProductsRolesIds({
+            productIds:
+              extendedOrder.ordersToProducts
+                ?.map((orderToProduct) => orderToProduct.productId)
+                .filter((productId): productId is string =>
+                  Boolean(productId),
+                ) ?? [],
+          });
 
           if (order.status && order.status === "delivered") {
             await this.delivered({
@@ -464,8 +410,11 @@ export class Service {
               }
 
               for (const ecommerceModuleOrder of ecommerceModuleOrders) {
-                const extended =
-                  await this.extendedEcommerceModuleOrder(ecommerceModuleOrder);
+                const extended = await this.getExtendedEcommerceModuleOrderById(
+                  {
+                    id: ecommerceModuleOrder.id,
+                  },
+                );
 
                 orders.push(extended);
               }
@@ -1264,107 +1213,47 @@ export class Service {
     }
   }
 
-  async extendedEcommerceModuleOrder(
-    props: IEcommerceModuleOrder,
-  ): Promise<IExtendedEcommerceModuleOrder> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+  async getProductsRolesIds(props: {
+    productIds: string[];
+  }): Promise<string[]> {
+    if (!props.productIds.length) {
+      return [];
     }
 
-    const extendedOrder = await ecommerceOrderApi.extended({
-      id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
+    const rolesToProducts = await this.rolesToEcommerceModuleProducts.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "ecommerceModuleProductId",
+              method: "inArray",
+              value: props.productIds,
+            },
+          ],
         },
       },
     });
 
-    if (!extendedOrder) {
+    return Array.from(
+      new Set(
+        (rolesToProducts ?? [])
+          .map((item) => item.roleId)
+          .filter((roleId): roleId is string => Boolean(roleId)),
+      ),
+    );
+  }
+
+  async getExtendedEcommerceModuleOrderById(props: {
+    id: IEcommerceModuleOrder["id"];
+  }): Promise<IExtendedEcommerceModuleOrder> {
+    const extended = await this.ecommerceModule.order.extended({
+      id: props.id,
+    });
+
+    if (!extended) {
       throw new Error("Not found error. 'extendedOrder' not found.");
     }
 
-    const productIds =
-      extendedOrder.ordersToProducts?.map((item) => item.productId) ?? [];
-
-    if (!productIds.length) {
-      return extendedOrder as IExtendedEcommerceModuleOrder;
-    }
-
-    const rolesToEcommerceModuleProducts =
-      await this.rolesToEcommerceModuleProducts.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "ecommerceModuleProductId",
-                method: "inArray",
-                value: productIds,
-              },
-            ],
-          },
-        },
-      });
-
-    return {
-      ...extendedOrder,
-      ordersToProducts: extendedOrder.ordersToProducts.map((orderToProduct) => {
-        return {
-          ...orderToProduct,
-          product: {
-            ...orderToProduct.product,
-            rolesToEcommerceModuleProduct:
-              rolesToEcommerceModuleProducts?.filter((item) => {
-                return (
-                  item.ecommerceModuleProductId === orderToProduct.productId
-                );
-              }) ?? [],
-          },
-        };
-      }),
-    } as IExtendedEcommerceModuleOrder;
-  }
-
-  async extendedEcommerceModuleProduct(
-    props: IEcommerceModuleProduct,
-  ): Promise<IExtendedEcommerceModuleProduct> {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-    }
-
-    const extendedProduct = await ecommerceProductApi.extended({
-      id: props.id,
-      options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          "Cache-Control": "no-store",
-        },
-      },
-    });
-
-    if (!extendedProduct) {
-      throw new Error("Not found error. 'extendedProduct' not found.");
-    }
-
-    const rolesToEcommerceModuleProducts =
-      await this.rolesToEcommerceModuleProducts.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "ecommerceModuleProductId",
-                method: "eq",
-                value: props.id,
-              },
-            ],
-          },
-        },
-      });
-
-    return {
-      ...extendedProduct,
-      rolesToEcommerceModuleProduct: rolesToEcommerceModuleProducts,
-    };
+    return extended as IExtendedEcommerceModuleOrder;
   }
 }

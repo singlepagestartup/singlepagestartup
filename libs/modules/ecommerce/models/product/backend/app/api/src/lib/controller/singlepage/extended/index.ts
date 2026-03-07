@@ -23,7 +23,7 @@ export class Handler {
         throw new Error("Validation error. Invalid id. Got: " + id);
       }
 
-      const entity = await this.service.getExtended({
+      const entity = await this.service.extended({
         id,
       });
 

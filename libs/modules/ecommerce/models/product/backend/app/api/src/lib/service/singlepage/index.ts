@@ -50,9 +50,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
   }
 
-  async getExtended(
-    props: IGetExtendedExecuteProps,
-  ): Promise<IGetExtendedResult> {
+  async extended(props: IGetExtendedExecuteProps): Promise<IGetExtendedResult> {
     return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
       productsToAttributes: this.productsToAttributes,
