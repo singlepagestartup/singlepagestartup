@@ -1,7 +1,7 @@
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../service";
+import { Service } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {

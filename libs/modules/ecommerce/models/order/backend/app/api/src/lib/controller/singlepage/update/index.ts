@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api as fileStorageFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { api as ordersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
-import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
@@ -111,42 +110,32 @@ export class Handler {
           );
         }
 
-        const billingCurrencies = await billingCurrencyApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: ordersToBillingModuleCurrencies.map(
-                    (order) => order.billingModuleCurrencyId,
-                  ),
-                },
-              ],
+        const billingCurrencies =
+          await this.service.billingModule.currency.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: ordersToBillingModuleCurrencies.map(
+                      (order) => order.billingModuleCurrencyId,
+                    ),
+                  },
+                ],
+              },
             },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+          });
 
         if (!billingCurrencies?.length) {
           throw new Error("Not Found error. Billing currencies not found");
         }
 
         const checkoutAttributesByCurrency =
-          await api.checkoutAttributesByCurrency({
+          await this.service.findByIdCheckoutAttributesByCurrency({
             id: uuid,
             billingModuleCurrencyId:
               ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
           });
 
         const ordersToProducts = await this.service.ordersToProducts.find({
@@ -187,24 +176,20 @@ export class Handler {
           throw new Error("Not Found error. Products not found");
         }
 
-        const fileStorageReceiptTemplateFiles = await fileStorageFileApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "variant",
-                  method: "ilike",
-                  value: "generate-template-ecommerce-order-receipt-",
-                },
-              ],
+        const fileStorageReceiptTemplateFiles =
+          await this.service.fileStorageModule.file.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "variant",
+                    method: "ilike",
+                    value: "generate-template-ecommerce-order-receipt-",
+                  },
+                ],
+              },
             },
-          },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        });
+          });
 
         if (fileStorageReceiptTemplateFiles?.length) {
           for (const fileStorageReceiptTemplateFile of fileStorageReceiptTemplateFiles) {
@@ -293,28 +278,24 @@ export class Handler {
           });
 
         if (productsToFileStorageModuleFiles?.length) {
-          const fileStorageModuleFiles = await fileStorageFileApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: productsToFileStorageModuleFiles.map(
-                      (productToFileStorageModuleFile) => {
-                        return productToFileStorageModuleFile.fileStorageModuleFileId;
-                      },
-                    ),
-                  },
-                ],
+          const fileStorageModuleFiles =
+            await this.service.fileStorageModule.file.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "id",
+                      method: "inArray",
+                      value: productsToFileStorageModuleFiles.map(
+                        (productToFileStorageModuleFile) => {
+                          return productToFileStorageModuleFile.fileStorageModuleFileId;
+                        },
+                      ),
+                    },
+                  ],
+                },
               },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          });
+            });
 
           if (fileStorageModuleFiles?.length) {
             for (const fileStorageModuleFile of fileStorageModuleFiles) {

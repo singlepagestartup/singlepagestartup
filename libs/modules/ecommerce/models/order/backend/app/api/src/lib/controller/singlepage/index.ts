@@ -5,13 +5,13 @@ import { Table } from "@sps/ecommerce/models/order/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
 import { Handler as Update } from "./update";
-import { Handler as Check } from "./check";
-import { Handler as CheckoutAttributes } from "./checkout-attributes";
+import { Handler as Check } from "./find-by-id/check";
+import { Handler as CheckoutAttributes } from "./find-by-id/checkout-attributes";
 import { Handler as ClearOldOrders } from "./clear-old-orders";
-import { Handler as Total } from "./total";
-import { Handler as Quantity } from "./quantity";
-import { Handler as OrdersToProductsUpdate } from "./orders-to-products/update";
-import { Handler as Extended } from "./extended";
+import { Handler as Total } from "./find-by-id/total";
+import { Handler as Quantity } from "./find-by-id/quantity";
+import { Handler as OrdersToProductsUpdate } from "./find-by-id/orders-to-products/update";
+import { Handler as Extended } from "./find-by-id/extended";
 
 @injectable()
 export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
