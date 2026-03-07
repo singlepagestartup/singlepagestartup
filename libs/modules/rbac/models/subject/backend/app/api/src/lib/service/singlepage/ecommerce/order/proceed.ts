@@ -1246,7 +1246,7 @@ export class Service {
   async getExtendedEcommerceModuleOrderById(props: {
     id: IEcommerceModuleOrder["id"];
   }): Promise<IExtendedEcommerceModuleOrder> {
-    const extended = await this.ecommerceModule.order.extended({
+    const extended = await this.ecommerceModule.order.findByIdExtended({
       id: props.id,
     });
 

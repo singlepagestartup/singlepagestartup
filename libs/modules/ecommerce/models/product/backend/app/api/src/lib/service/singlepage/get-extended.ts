@@ -1,4 +1,3 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { IModel as IEcommerceModuleProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
@@ -8,8 +7,8 @@ import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
 import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
 import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
@@ -49,6 +48,12 @@ type IConstructorProps = {
   attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
+  billingModule: {
+    currency: BillingCurrencyService;
+  };
+  fileStorageModule: {
+    file: FileStorageFileService;
+  };
 };
 
 export class Service {
@@ -59,6 +64,8 @@ export class Service {
   attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
+  billingModule: IConstructorProps["billingModule"];
+  fileStorageModule: IConstructorProps["fileStorageModule"];
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -70,17 +77,8 @@ export class Service {
       props.attributesToBillingModuleCurrencies;
     this.productsToFileStorageModuleFiles =
       props.productsToFileStorageModuleFiles;
-  }
-
-  private getSdkHeaders() {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-    }
-
-    return {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      "Cache-Control": "no-store",
-    };
+    this.billingModule = props.billingModule;
+    this.fileStorageModule = props.fileStorageModule;
   }
 
   private async extendedEcommerceModuleAttributeById(props: {
@@ -143,7 +141,7 @@ export class Service {
           })
         : Promise.resolve([]),
       attributesToBillingModuleCurrencies?.length
-        ? billingModuleCurrencyApi.find({
+        ? this.billingModule.currency.find({
             params: {
               filters: {
                 and: [
@@ -156,9 +154,6 @@ export class Service {
                   },
                 ],
               },
-            },
-            options: {
-              headers: this.getSdkHeaders(),
             },
           })
         : Promise.resolve([]),
@@ -244,7 +239,7 @@ export class Service {
       });
 
     const fileStorageModuleFiles = productsToFileStorageModuleFiles?.length
-      ? await fileStorageModuleFileApi.find({
+      ? await this.fileStorageModule.file.find({
           params: {
             filters: {
               and: [
@@ -257,9 +252,6 @@ export class Service {
                 },
               ],
             },
-          },
-          options: {
-            headers: this.getSdkHeaders(),
           },
         })
       : [];

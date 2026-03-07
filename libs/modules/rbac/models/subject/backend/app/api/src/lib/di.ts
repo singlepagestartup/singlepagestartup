@@ -4,7 +4,18 @@ export interface IReadService {
 }
 
 export interface IExtendedReadService extends IReadService {
-  extended: (props: { id: string }) => Promise<any>;
+  findByIdExtended: (props: { id: string }) => Promise<any>;
+}
+
+export interface IEcommerceOrderReadService extends IExtendedReadService {
+  findByIdCheckoutAttributes: (props: {
+    id: string;
+    billingModuleCurrencyId?: string;
+  }) => Promise<any>;
+  findByIdCheckoutAttributesByCurrency: (props: {
+    id: string;
+    billingModuleCurrencyId?: string;
+  }) => Promise<any>;
 }
 
 export interface ISocialModule {
@@ -26,7 +37,7 @@ export interface ISocialModule {
 
 export interface IEcommerceModule {
   store: IReadService;
-  order: IExtendedReadService;
+  order: IEcommerceOrderReadService;
   product: IExtendedReadService;
   attribute: IReadService;
   attributeKey: IReadService;

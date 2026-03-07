@@ -8,49 +8,55 @@ import {
   IExecuteProps as IClearOldOrdersExecuteProps,
 } from "./clear-old-orders";
 import {
-  Service as CheckoutAttributesService,
-  IExecuteProps as ICheckoutAttributesExecuteProps,
-} from "./checkout-attributes";
+  Service as FindByIdCheckoutAttributesService,
+  IExecuteProps as IFindByIdCheckoutAttributesExecuteProps,
+} from "./find-by-id/checkout-attributes";
 import {
-  Service as GetTotalService,
-  IExecuteProps as IGetTotalExecuteProps,
-} from "./get-total";
+  Service as FindByIdTotalService,
+  IExecuteProps as IFindByIdTotalExecuteProps,
+} from "./find-by-id/total";
 import {
-  Service as GetQuantityService,
-  IExecuteProps as IGetQuantityExecuteProps,
-} from "./get-quantity";
+  Service as FindByIdQuantityService,
+  IExecuteProps as IFindByIdQuantityExecuteProps,
+} from "./find-by-id/quantity";
 import {
   Service as GetExtendedService,
   IExecuteProps as IGetExtendedExecuteProps,
   IResult as IGetExtendedResult,
-} from "./get-extended";
+} from "./find-by-id/extended";
 import { OrderDI } from "../../di";
 import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
-import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
-import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToFileStorageModuleFilesService } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 
 export type IExtendedEcommerceModuleOrder = IGetExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  checkoutAttributesService: CheckoutAttributesService;
-  getTotalService: GetTotalService;
-  getQuantityService: GetQuantityService;
+  billingModule: {
+    currency: BillingCurrencyService;
+    paymentIntent: BillingPaymentIntentService;
+    paymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService;
+    paymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService;
+    invoice: BillingInvoiceService;
+  };
+  fileStorageModule: {
+    file: FileStorageFileService;
+  };
+  findByIdCheckoutAttributesService: FindByIdCheckoutAttributesService;
+  findByIdTotalService: FindByIdTotalService;
+  findByIdQuantityService: FindByIdQuantityService;
   product: ProductService;
-  attribute: AttributeService;
-  attributeKey: AttributeKeyService;
   ordersToProducts: OrdersToProductsService;
-  productsToAttributes: ProductsToAttributesService;
-  attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
@@ -58,21 +64,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
-    @inject(OrderDI.ICheckoutAttributesService)
-    checkoutAttributesService: CheckoutAttributesService,
-    @inject(OrderDI.IGetTotalService) getTotalService: GetTotalService,
-    @inject(OrderDI.IGetQuantityService) getQuantityService: GetQuantityService,
+    @inject(OrderDI.IFindByIdCheckoutAttributesService)
+    findByIdCheckoutAttributesService: FindByIdCheckoutAttributesService,
+    @inject(OrderDI.IFindByIdTotalService)
+    findByIdTotalService: FindByIdTotalService,
+    @inject(OrderDI.IFindByIdQuantityService)
+    findByIdQuantityService: FindByIdQuantityService,
     @inject(OrderDI.IProductsService) product: ProductService,
-    @inject(OrderDI.IAttributesService) attribute: AttributeService,
-    @inject(OrderDI.IAttributeKeysService) attributeKey: AttributeKeyService,
     @inject(OrderDI.IOrdersToProductsService)
     ordersToProducts: OrdersToProductsService,
-    @inject(OrderDI.IProductsToAttributesService)
-    productsToAttributes: ProductsToAttributesService,
-    @inject(OrderDI.IAttributeKeysToAttributesService)
-    attributeKeysToAttributes: AttributeKeysToAttributesService,
-    @inject(OrderDI.IAttributesToBillingModuleCurrenciesService)
-    attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
     @inject(OrderDI.IOrdersToBillingModuleCurrenciesService)
     ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService,
     @inject(OrderDI.IOrdersToFileStorageModuleFilesService)
@@ -81,19 +81,35 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService,
     @inject(OrderDI.IOrdersToBillingModulePaymentIntentsService)
     ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService,
+    @inject(OrderDI.IBillingModuleCurrencyService)
+    billingModuleCurrency: BillingCurrencyService,
+    @inject(OrderDI.IBillingModulePaymentIntentService)
+    billingModulePaymentIntent: BillingPaymentIntentService,
+    @inject(OrderDI.IBillingModulePaymentIntentsToCurrenciesService)
+    billingModulePaymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService,
+    @inject(OrderDI.IBillingModulePaymentIntentsToInvoicesService)
+    billingModulePaymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService,
+    @inject(OrderDI.IBillingModuleInvoiceService)
+    billingModuleInvoice: BillingInvoiceService,
+    @inject(OrderDI.IFileStorageModuleFileService)
+    fileStorageModuleFile: FileStorageFileService,
   ) {
     super(repository);
-    this.checkoutAttributesService = checkoutAttributesService;
-    this.getTotalService = getTotalService;
-    this.getQuantityService = getQuantityService;
+    this.billingModule = {
+      currency: billingModuleCurrency,
+      paymentIntent: billingModulePaymentIntent,
+      paymentIntentsToCurrencies: billingModulePaymentIntentsToCurrencies,
+      paymentIntentsToInvoices: billingModulePaymentIntentsToInvoices,
+      invoice: billingModuleInvoice,
+    };
+    this.fileStorageModule = {
+      file: fileStorageModuleFile,
+    };
+    this.findByIdCheckoutAttributesService = findByIdCheckoutAttributesService;
+    this.findByIdTotalService = findByIdTotalService;
+    this.findByIdQuantityService = findByIdQuantityService;
     this.product = product;
-    this.attribute = attribute;
-    this.attributeKey = attributeKey;
     this.ordersToProducts = ordersToProducts;
-    this.productsToAttributes = productsToAttributes;
-    this.attributeKeysToAttributes = attributeKeysToAttributes;
-    this.attributesToBillingModuleCurrencies =
-      attributesToBillingModuleCurrencies;
     this.ordersToBillingModuleCurrencies = ordersToBillingModuleCurrencies;
     this.ordersToFileStorageModuleFiles = ordersToFileStorageModuleFiles;
     this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
@@ -101,23 +117,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ordersToBillingModulePaymentIntents;
   }
 
-  async extended(props: IGetExtendedExecuteProps): Promise<IGetExtendedResult> {
+  async findByIdExtended(
+    props: IGetExtendedExecuteProps,
+  ): Promise<IGetExtendedResult> {
     return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
-      checkoutAttributes: this.checkoutAttributesService,
-      product: this.product,
-      attribute: this.attribute,
-      attributeKey: this.attributeKey,
+      findByIdCheckoutAttributes: this.findByIdCheckoutAttributesService,
+      findByIdExtendedProduct: ({ id }) =>
+        this.product.findByIdExtended({ id }),
       ordersToProducts: this.ordersToProducts,
-      productsToAttributes: this.productsToAttributes,
-      attributeKeysToAttributes: this.attributeKeysToAttributes,
-      attributesToBillingModuleCurrencies:
-        this.attributesToBillingModuleCurrencies,
       ordersToBillingModuleCurrencies: this.ordersToBillingModuleCurrencies,
       ordersToFileStorageModuleFiles: this.ordersToFileStorageModuleFiles,
-      productsToFileStorageModuleFiles: this.productsToFileStorageModuleFiles,
       ordersToBillingModulePaymentIntents:
         this.ordersToBillingModulePaymentIntents,
+      billingModule: this.billingModule,
+      fileStorageModule: this.fileStorageModule,
     }).execute(props);
   }
 
@@ -129,15 +143,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  async getCheckoutAttributes(props: ICheckoutAttributesExecuteProps) {
-    return this.checkoutAttributesService.execute(props);
+  async findByIdCheckoutAttributes(
+    props: IFindByIdCheckoutAttributesExecuteProps,
+  ) {
+    return this.findByIdCheckoutAttributesService.execute(props);
   }
 
-  async getTotal(props: IGetTotalExecuteProps) {
-    return this.getTotalService.execute(props);
+  async findByIdCheckoutAttributesByCurrency(
+    props: IFindByIdCheckoutAttributesExecuteProps,
+  ) {
+    return this.findByIdCheckoutAttributesService.execute(props);
   }
 
-  async getQuantity(props: IGetQuantityExecuteProps) {
-    return this.getQuantityService.execute(props);
+  async findByIdTotal(props: IFindByIdTotalExecuteProps) {
+    return this.findByIdTotalService.execute(props);
+  }
+
+  async findByIdQuantity(props: IFindByIdQuantityExecuteProps) {
+    return this.findByIdQuantityService.execute(props);
   }
 }

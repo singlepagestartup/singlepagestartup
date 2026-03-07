@@ -3,9 +3,7 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
 import { api } from "@sps/ecommerce/models/order/sdk/server";
-import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
-import { api as billingPaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 
 export class Handler {
@@ -13,6 +11,53 @@ export class Handler {
 
   constructor(service: Service) {
     this.service = service;
+  }
+
+  async findPaymentIntentsByIds(ids: string[]): Promise<any[]> {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+
+    if (!uniqueIds.length) {
+      return [];
+    }
+
+    const paymentIntents = await Promise.all(
+      uniqueIds.map((id) => {
+        return this.service.billingModule.paymentIntent.findById({
+          id,
+        });
+      }),
+    );
+
+    return paymentIntents.filter((paymentIntent) => Boolean(paymentIntent));
+  }
+
+  async findInvoicesByIdsAfterDate(
+    ids: string[],
+    afterDate: Date,
+  ): Promise<any[]> {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+
+    if (!uniqueIds.length) {
+      return [];
+    }
+
+    const invoices = await Promise.all(
+      uniqueIds.map((id) => {
+        return this.service.billingModule.invoice.findById({
+          id,
+        });
+      }),
+    );
+
+    return invoices.filter(
+      (invoice): invoice is NonNullable<typeof invoice> => {
+        if (!invoice) {
+          return false;
+        }
+
+        return new Date(invoice.createdAt) > afterDate;
+      },
+    );
   }
 
   async execute(c: Context, next: any): Promise<Response> {
@@ -91,27 +136,11 @@ export class Handler {
             );
           }
 
-          const paymentIntents = await billingPaymentIntentApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: ordersToBillingModulePaymentIntents.map(
-                      (order) => order.billingModulePaymentIntentId,
-                    ),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                "Cache-Control": "no-store",
-              },
-            },
-          });
+          const paymentIntents = await this.findPaymentIntentsByIds(
+            ordersToBillingModulePaymentIntents.map(
+              (order) => order.billingModulePaymentIntentId,
+            ),
+          );
 
           if (!paymentIntents?.length) {
             throw new Error("Not Found error. Payment intents not found");
@@ -133,11 +162,12 @@ export class Handler {
             );
           }
 
-          const attributes = await this.service.getCheckoutAttributes({
-            id: uuid,
-            billingModuleCurrencyId:
-              ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-          });
+          const attributes =
+            await this.service.findByIdCheckoutAttributesByCurrency({
+              id: uuid,
+              billingModuleCurrencyId:
+                ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+            });
 
           await api.update({
             id: uuid,
@@ -157,11 +187,12 @@ export class Handler {
         entity.status === "delivering" &&
         ordersToBillingModuleCurrencies?.length
       ) {
-        const attributes = await this.service.getCheckoutAttributes({
-          id: uuid,
-          billingModuleCurrencyId:
-            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-        });
+        const attributes =
+          await this.service.findByIdCheckoutAttributesByCurrency({
+            id: uuid,
+            billingModuleCurrencyId:
+              ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+          });
 
         if (attributes.interval) {
           const minuteIntervalDeadline = new Date(
@@ -227,27 +258,11 @@ export class Handler {
               });
 
             if (ordersToBillingModulePaymentIntents?.length) {
-              const paymentIntents = await billingPaymentIntentApi.find({
-                params: {
-                  filters: {
-                    and: [
-                      {
-                        column: "id",
-                        method: "inArray",
-                        value: ordersToBillingModulePaymentIntents.map(
-                          (order) => order.billingModulePaymentIntentId,
-                        ),
-                      },
-                    ],
-                  },
-                },
-                options: {
-                  headers: {
-                    "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                    "Cache-Control": "no-store",
-                  },
-                },
-              });
+              const paymentIntents = await this.findPaymentIntentsByIds(
+                ordersToBillingModulePaymentIntents.map(
+                  (order) => order.billingModulePaymentIntentId,
+                ),
+              );
 
               if (paymentIntents?.length) {
                 const paymentIntentsToInvoices =
@@ -274,33 +289,13 @@ export class Handler {
                   });
 
                 if (paymentIntentsToInvoices?.length) {
-                  const invoices = await billingInvoiceApi.find({
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "id",
-                            method: "inArray",
-                            value: paymentIntentsToInvoices.map(
-                              (paymentIntentToInvoice) =>
-                                paymentIntentToInvoice.invoiceId,
-                            ),
-                          },
-                          {
-                            column: "createdAt",
-                            method: "gt",
-                            value: new Date(intervalDeadline).toISOString(),
-                          },
-                        ],
-                      },
-                    },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                        "Cache-Control": "no-store",
-                      },
-                    },
-                  });
+                  const invoices = await this.findInvoicesByIdsAfterDate(
+                    paymentIntentsToInvoices.map(
+                      (paymentIntentToInvoice) =>
+                        paymentIntentToInvoice.invoiceId,
+                    ),
+                    new Date(intervalDeadline),
+                  );
 
                   if (invoices?.length) {
                     return c.json({
@@ -331,11 +326,12 @@ export class Handler {
         entity.status === "requested_cancelation" &&
         ordersToBillingModuleCurrencies?.length
       ) {
-        const attributes = await this.service.getCheckoutAttributes({
-          id: uuid,
-          billingModuleCurrencyId:
-            ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-        });
+        const attributes =
+          await this.service.findByIdCheckoutAttributesByCurrency({
+            id: uuid,
+            billingModuleCurrencyId:
+              ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+          });
 
         if (attributes.interval) {
           const minuteIntervalDeadline = new Date(

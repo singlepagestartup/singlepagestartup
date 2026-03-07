@@ -34,6 +34,9 @@ import { Configuration as ProductsToFileStorageModuleFilesConfiguration } from "
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
+import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -82,6 +85,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
             new ProductsToFileStorageModuleFilesRepository(
               new ProductsToFileStorageModuleFilesConfiguration(),
             ),
+          ),
+          new BillingModuleCurrencyService(
+            new BillingModuleCurrencyRepository(
+              new BillingModuleCurrencyConfiguration(),
+            ),
+          ),
+          new FileStorageFileService(
+            new FileStorageFileRepository(new FileStorageFileConfiguration()),
           ),
         ),
     )

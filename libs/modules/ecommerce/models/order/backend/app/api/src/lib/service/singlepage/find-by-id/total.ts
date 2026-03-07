@@ -3,7 +3,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { OrderDI } from "../../di";
+import { OrderDI } from "../../../di";
 
 export type IExecuteProps = {
   id: string;

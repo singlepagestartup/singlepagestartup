@@ -476,15 +476,9 @@ export class Service {
       }
 
       const { amount, type, interval } =
-        await ecommerceModuleOrderApi.checkoutAttributesByCurrency({
+        await this.ecommerceModule.order.findByIdCheckoutAttributesByCurrency({
           id: order["id"],
           billingModuleCurrencyId,
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              "Cache-Control": "no-store",
-            },
-          },
         });
 
       try {
@@ -535,14 +529,8 @@ export class Service {
               }
 
               const ecommerceModuleOrderCheckoutAttributes =
-                await ecommerceModuleOrderApi.checkoutAttributes({
+                await this.ecommerceModule.order.findByIdCheckoutAttributes({
                   id: ecommerceModuleOrder.id,
-                  options: {
-                    headers: {
-                      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      "Cache-Control": "no-store",
-                    },
-                  },
                 });
 
               if (

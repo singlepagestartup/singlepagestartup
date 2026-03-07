@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { OrderDI } from "../../di";
+import { OrderDI } from "../../../di";
 
 export type IExecuteProps = {
   id: string;

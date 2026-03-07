@@ -29,7 +29,7 @@ export class Handler {
         throw new Error("Not Found error. Order not found");
       }
 
-      const total = await this.service.getTotal({ id });
+      const total = await this.service.findByIdTotal({ id });
 
       return c.json({
         data: total,

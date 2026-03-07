@@ -22,6 +22,9 @@ import { Configuration as AttributesToBillingModuleCurrenciesConfiguration } fro
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
+import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
 import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
 import { Repository as AttributeKeysToAttributesRepository } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
 import { Configuration as AttributeKeysToAttributesConfiguration } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/configuration";
@@ -108,6 +111,24 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           new ProductsToFileStorageModuleFilesRepository(
             new ProductsToFileStorageModuleFilesConfiguration(),
           ),
+        ),
+    )
+    .inSingletonScope();
+  bind<BillingModuleCurrencyService>(ProductDI.IBillingModuleCurrencyService)
+    .toDynamicValue(
+      () =>
+        new BillingModuleCurrencyService(
+          new BillingModuleCurrencyRepository(
+            new BillingModuleCurrencyConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<FileStorageFileService>(ProductDI.IFileStorageModuleFileService)
+    .toDynamicValue(
+      () =>
+        new FileStorageFileService(
+          new FileStorageFileRepository(new FileStorageFileConfiguration()),
         ),
     )
     .inSingletonScope();

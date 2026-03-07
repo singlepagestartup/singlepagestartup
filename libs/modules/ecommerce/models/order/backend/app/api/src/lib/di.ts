@@ -1,9 +1,11 @@
 export const OrderDI = {
-  ICheckoutAttributesService: Symbol.for(
-    "ecommerce.order.checkout-attributes.service",
+  IFindByIdCheckoutAttributesService: Symbol.for(
+    "ecommerce.order.find-by-id-checkout-attributes.service",
   ),
-  IGetTotalService: Symbol.for("ecommerce.order.get-total.service"),
-  IGetQuantityService: Symbol.for("ecommerce.order.get-quantity.service"),
+  IFindByIdTotalService: Symbol.for("ecommerce.order.find-by-id-total.service"),
+  IFindByIdQuantityService: Symbol.for(
+    "ecommerce.order.find-by-id-quantity.service",
+  ),
   IProductsService: Symbol.for("ecommerce.order.products.service"),
   IAttributesService: Symbol.for("ecommerce.order.attributes.service"),
   IAttributeKeysService: Symbol.for("ecommerce.order.attribute-keys.service"),
@@ -30,5 +32,23 @@ export const OrderDI = {
   ),
   IOrdersToBillingModulePaymentIntentsService: Symbol.for(
     "ecommerce.order.orders-to-billing-module-payment-intents.service",
+  ),
+  IBillingModuleCurrencyService: Symbol.for(
+    "ecommerce.order.billing-module-currency.service",
+  ),
+  IBillingModulePaymentIntentService: Symbol.for(
+    "ecommerce.order.billing-module-payment-intent.service",
+  ),
+  IBillingModulePaymentIntentsToCurrenciesService: Symbol.for(
+    "ecommerce.order.billing-module-payment-intents-to-currencies.service",
+  ),
+  IBillingModulePaymentIntentsToInvoicesService: Symbol.for(
+    "ecommerce.order.billing-module-payment-intents-to-invoices.service",
+  ),
+  IBillingModuleInvoiceService: Symbol.for(
+    "ecommerce.order.billing-module-invoice.service",
+  ),
+  IFileStorageModuleFileService: Symbol.for(
+    "ecommerce.order.file-storage-module-file.service",
   ),
 };

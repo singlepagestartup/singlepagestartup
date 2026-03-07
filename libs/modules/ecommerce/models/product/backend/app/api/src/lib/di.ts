@@ -13,4 +13,10 @@ export const ProductDI = {
   IProductsToFileStorageModuleFilesService: Symbol.for(
     "ecommerce.product.products-to-file-storage-module-files.service",
   ),
+  IBillingModuleCurrencyService: Symbol.for(
+    "ecommerce.product.billing-module-currency.service",
+  ),
+  IFileStorageModuleFileService: Symbol.for(
+    "ecommerce.product.file-storage-module-file.service",
+  ),
 };

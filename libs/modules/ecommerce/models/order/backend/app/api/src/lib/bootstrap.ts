@@ -46,9 +46,24 @@ import { Configuration as OrdersToBillingModulePaymentIntentsConfiguration } fro
 import { Service as BillingModuleCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingModuleCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingModuleCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
-import { Service as CheckoutAttributesService } from "./service/singlepage/checkout-attributes";
-import { Service as GetTotalService } from "./service/singlepage/get-total";
-import { Service as GetQuantityService } from "./service/singlepage/get-quantity";
+import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
+import { Repository as BillingPaymentIntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
+import { Configuration as BillingPaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
+import { Repository as BillingPaymentIntentsToCurrenciesRepository } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/repository";
+import { Configuration as BillingPaymentIntentsToCurrenciesConfiguration } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
+import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
+import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
+import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
+import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
+import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
+import { Service as FindByIdCheckoutAttributesService } from "./service/singlepage/find-by-id/checkout-attributes";
+import { Service as FindByIdTotalService } from "./service/singlepage/find-by-id/total";
+import { Service as FindByIdQuantityService } from "./service/singlepage/find-by-id/quantity";
 
 const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<IExceptionFilter>(DI.IExceptionFilter).to(ExceptionFilter);
@@ -57,14 +72,76 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<Repository>(DI.IRepository).to(Repository);
   bind<Service>(DI.IService).to(Service);
   bind<Configuration>(DI.IConfiguration).to(Configuration);
-  bind<CheckoutAttributesService>(OrderDI.ICheckoutAttributesService)
-    .to(CheckoutAttributesService)
+  bind<FindByIdCheckoutAttributesService>(
+    OrderDI.IFindByIdCheckoutAttributesService,
+  )
+    .to(FindByIdCheckoutAttributesService)
     .inSingletonScope();
-  bind<GetTotalService>(OrderDI.IGetTotalService)
-    .to(GetTotalService)
+  bind<FindByIdTotalService>(OrderDI.IFindByIdTotalService)
+    .to(FindByIdTotalService)
     .inSingletonScope();
-  bind<GetQuantityService>(OrderDI.IGetQuantityService)
-    .to(GetQuantityService)
+  bind<FindByIdQuantityService>(OrderDI.IFindByIdQuantityService)
+    .to(FindByIdQuantityService)
+    .inSingletonScope();
+  bind<BillingModuleCurrencyService>(OrderDI.IBillingModuleCurrencyService)
+    .toDynamicValue(
+      () =>
+        new BillingModuleCurrencyService(
+          new BillingModuleCurrencyRepository(
+            new BillingModuleCurrencyConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<BillingPaymentIntentService>(OrderDI.IBillingModulePaymentIntentService)
+    .toDynamicValue(
+      () =>
+        new BillingPaymentIntentService(
+          new BillingPaymentIntentRepository(
+            new BillingPaymentIntentConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<BillingPaymentIntentsToCurrenciesService>(
+    OrderDI.IBillingModulePaymentIntentsToCurrenciesService,
+  )
+    .toDynamicValue(
+      () =>
+        new BillingPaymentIntentsToCurrenciesService(
+          new BillingPaymentIntentsToCurrenciesRepository(
+            new BillingPaymentIntentsToCurrenciesConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<BillingPaymentIntentsToInvoicesService>(
+    OrderDI.IBillingModulePaymentIntentsToInvoicesService,
+  )
+    .toDynamicValue(
+      () =>
+        new BillingPaymentIntentsToInvoicesService(
+          new BillingPaymentIntentsToInvoicesRepository(
+            new BillingPaymentIntentsToInvoicesConfiguration(),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<BillingInvoiceService>(OrderDI.IBillingModuleInvoiceService)
+    .toDynamicValue(
+      () =>
+        new BillingInvoiceService(
+          new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
+        ),
+    )
+    .inSingletonScope();
+  bind<FileStorageFileService>(OrderDI.IFileStorageModuleFileService)
+    .toDynamicValue(
+      () =>
+        new FileStorageFileService(
+          new FileStorageFileRepository(new FileStorageFileConfiguration()),
+        ),
+    )
     .inSingletonScope();
   bind<ProductService>(OrderDI.IProductsService)
     .toDynamicValue(
@@ -106,6 +183,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
             new ProductsToFileStorageModuleFilesRepository(
               new ProductsToFileStorageModuleFilesConfiguration(),
             ),
+          ),
+          new BillingModuleCurrencyService(
+            new BillingModuleCurrencyRepository(
+              new BillingModuleCurrencyConfiguration(),
+            ),
+          ),
+          new FileStorageFileService(
+            new FileStorageFileRepository(new FileStorageFileConfiguration()),
           ),
         ),
     )
@@ -178,6 +263,14 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
               new ProductsToFileStorageModuleFilesRepository(
                 new ProductsToFileStorageModuleFilesConfiguration(),
               ),
+            ),
+            new BillingModuleCurrencyService(
+              new BillingModuleCurrencyRepository(
+                new BillingModuleCurrencyConfiguration(),
+              ),
+            ),
+            new FileStorageFileService(
+              new FileStorageFileRepository(new FileStorageFileConfiguration()),
             ),
           ),
           new AttributeService(

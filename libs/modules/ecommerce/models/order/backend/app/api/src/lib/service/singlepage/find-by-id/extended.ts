@@ -1,14 +1,7 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { IModel as IEcommerceModuleOrder } from "@sps/ecommerce/models/order/sdk/model";
 import { IModel as IEcommerceModuleOrdersToProducts } from "@sps/ecommerce/relations/orders-to-products/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
-import { IModel as IEcommerceModuleProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
-import { IModel as IEcommerceModuleAttribute } from "@sps/ecommerce/models/attribute/sdk/model";
-import { IModel as IEcommerceModuleAttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/sdk/model";
-import { IModel as IEcommerceModuleAttributeKey } from "@sps/ecommerce/models/attribute-key/sdk/model";
-import { IModel as IEcommerceModuleAttributesToBillingModuleCurrencies } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
 import { IModel as IBillingModuleCurrency } from "@sps/billing/models/currency/sdk/model";
-import { IModel as IEcommerceModuleProductsToFileStorageModuleFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { IModel as IEcommerceModuleOrdersToBillingModuleCurrencies } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/sdk/model";
 import { IModel as IEcommerceModuleOrdersToFileStorageModuleFiles } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
@@ -17,52 +10,28 @@ import { IModel as IBillingModulePaymentIntent } from "@sps/billing/models/payme
 import { IModel as IBillingModulePaymentIntentsToCurrecies } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 import { IModel as IBillingModulePaymentIntentsToInvoices } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
 import { IModel as IBillingModuleInvoice } from "@sps/billing/models/invoice/sdk/model";
-import { api as billingModuleCurrencyApi } from "@sps/billing/models/currency/sdk/server";
-import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
-import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
-import { api as billingModulePaymentIntentsToCurreciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
-import { api as billingModulePaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
-import { api as billingModuleInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
+import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
-  Service as CheckoutAttributesService,
-  type IResult as ICheckoutAttributesResult,
+  Service as FindByIdCheckoutAttributesService,
+  type IResult as IFindByIdCheckoutAttributesResult,
 } from "./checkout-attributes";
-import { Service as ProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
-import { Service as AttributeService } from "@sps/ecommerce/models/attribute/backend/app/api/src/lib/service";
-import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
+import { type IExtendedEcommerceModuleProduct } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
-import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/service";
-import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/orders-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToFileStorageModuleFilesService } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/backend/app/api/src/lib/service";
-import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
 import { Service as OrdersToBillingModulePaymentIntentsService } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/backend/app/api/src/lib/service";
 
 export type IExecuteProps = {
   id: IEcommerceModuleOrder["id"];
 };
 
-type IExtendedEcommerceModuleAttribute = IEcommerceModuleAttribute & {
-  attributeKeysToAttribute?: (IEcommerceModuleAttributeKeysToAttributes & {
-    attributeKey?: IEcommerceModuleAttributeKey;
-  })[];
-  attributesToBillingModuleCurrencies?: (IEcommerceModuleAttributesToBillingModuleCurrencies & {
-    billingModuleCurrency?: IBillingModuleCurrency;
-  })[];
-};
-
-type IExtendedEcommerceModuleProduct = IEcommerceModuleProduct & {
-  productsToAttributes?: (IEcommerceModuleProductsToAttributes & {
-    attribute: IExtendedEcommerceModuleAttribute;
-  })[];
-  productsToFileStorageModuleFiles?: (IEcommerceModuleProductsToFileStorageModuleFiles & {
-    fileStorageModuleFile?: IFileStorageModuleFile;
-  })[];
-};
-
 export type IResult = IEcommerceModuleOrder & {
-  checkoutAttributesByCurrency: ICheckoutAttributesResult;
+  checkoutAttributesByCurrency: IFindByIdCheckoutAttributesResult;
   ordersToProducts: (IEcommerceModuleOrdersToProducts & {
     product: IExtendedEcommerceModuleProduct;
   })[];
@@ -88,256 +57,49 @@ type IConstructorProps = {
   findById: (props: {
     id: IEcommerceModuleOrder["id"];
   }) => Promise<IEcommerceModuleOrder | null>;
-  checkoutAttributes: CheckoutAttributesService;
-  product: ProductService;
-  attribute: AttributeService;
-  attributeKey: AttributeKeyService;
+  findByIdCheckoutAttributes: FindByIdCheckoutAttributesService;
+  findByIdExtendedProduct: (props: {
+    id: IEcommerceModuleProduct["id"];
+  }) => Promise<IExtendedEcommerceModuleProduct>;
   ordersToProducts: OrdersToProductsService;
-  productsToAttributes: ProductsToAttributesService;
-  attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
-  productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
   ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+  billingModule: {
+    currency: BillingCurrencyService;
+    paymentIntent: BillingPaymentIntentService;
+    paymentIntentsToCurrencies: BillingPaymentIntentsToCurrenciesService;
+    paymentIntentsToInvoices: BillingPaymentIntentsToInvoicesService;
+    invoice: BillingInvoiceService;
+  };
+  fileStorageModule: {
+    file: FileStorageFileService;
+  };
 };
 
 export class Service {
   findById: IConstructorProps["findById"];
-  checkoutAttributes: CheckoutAttributesService;
-  product: ProductService;
-  attribute: AttributeService;
-  attributeKey: AttributeKeyService;
+  findByIdCheckoutAttributes: FindByIdCheckoutAttributesService;
+  findByIdExtendedProduct: IConstructorProps["findByIdExtendedProduct"];
   ordersToProducts: OrdersToProductsService;
-  productsToAttributes: ProductsToAttributesService;
-  attributeKeysToAttributes: AttributeKeysToAttributesService;
-  attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   ordersToBillingModuleCurrencies: OrdersToBillingModuleCurrenciesService;
   ordersToFileStorageModuleFiles: OrdersToFileStorageModuleFilesService;
-  productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
   ordersToBillingModulePaymentIntents: OrdersToBillingModulePaymentIntentsService;
+  billingModule: IConstructorProps["billingModule"];
+  fileStorageModule: IConstructorProps["fileStorageModule"];
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
-    this.checkoutAttributes = props.checkoutAttributes;
-    this.product = props.product;
-    this.attribute = props.attribute;
-    this.attributeKey = props.attributeKey;
+    this.findByIdCheckoutAttributes = props.findByIdCheckoutAttributes;
+    this.findByIdExtendedProduct = props.findByIdExtendedProduct;
     this.ordersToProducts = props.ordersToProducts;
-    this.productsToAttributes = props.productsToAttributes;
-    this.attributeKeysToAttributes = props.attributeKeysToAttributes;
-    this.attributesToBillingModuleCurrencies =
-      props.attributesToBillingModuleCurrencies;
     this.ordersToBillingModuleCurrencies =
       props.ordersToBillingModuleCurrencies;
     this.ordersToFileStorageModuleFiles = props.ordersToFileStorageModuleFiles;
-    this.productsToFileStorageModuleFiles =
-      props.productsToFileStorageModuleFiles;
     this.ordersToBillingModulePaymentIntents =
       props.ordersToBillingModulePaymentIntents;
-  }
-
-  private getSdkHeaders() {
-    if (!RBAC_SECRET_KEY) {
-      throw new Error("Configuration error. RBAC_SECRET_KEY is not defined");
-    }
-
-    return {
-      "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-      "Cache-Control": "no-store",
-    };
-  }
-
-  private async extendedEcommerceModuleAttributeById(props: {
-    id: IEcommerceModuleAttribute["id"];
-  }): Promise<IExtendedEcommerceModuleAttribute> {
-    const ecommerceModuleAttribute = await this.attribute.findById({
-      id: props.id,
-    });
-
-    if (!ecommerceModuleAttribute) {
-      throw new Error("Not found error. 'attribute' not found.");
-    }
-
-    const [attributeKeysToAttributes, attributesToBillingModuleCurrencies] =
-      await Promise.all([
-        this.attributeKeysToAttributes.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-        }),
-        this.attributesToBillingModuleCurrencies.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "attributeId",
-                  method: "eq",
-                  value: props.id,
-                },
-              ],
-            },
-          },
-        }),
-      ]);
-
-    const [attributeKeys, billingModuleCurrencies] = await Promise.all([
-      attributeKeysToAttributes?.length
-        ? this.attributeKey.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: attributeKeysToAttributes.map(
-                      (item) => item.attributeKeyId,
-                    ),
-                  },
-                ],
-              },
-            },
-          })
-        : Promise.resolve([]),
-      attributesToBillingModuleCurrencies?.length
-        ? billingModuleCurrencyApi.find({
-            params: {
-              filters: {
-                and: [
-                  {
-                    column: "id",
-                    method: "inArray",
-                    value: attributesToBillingModuleCurrencies.map(
-                      (item) => item.billingModuleCurrencyId,
-                    ),
-                  },
-                ],
-              },
-            },
-            options: {
-              headers: this.getSdkHeaders(),
-            },
-          })
-        : Promise.resolve([]),
-    ]);
-
-    const attributeKeysById = new Map(
-      (attributeKeys ?? []).map((item) => [item.id, item]),
-    );
-    const billingModuleCurrenciesById = new Map(
-      (billingModuleCurrencies ?? []).map((item) => [item.id, item]),
-    );
-
-    return {
-      ...ecommerceModuleAttribute,
-      attributeKeysToAttribute:
-        attributeKeysToAttributes?.map((item) => {
-          return {
-            ...item,
-            attributeKey: attributeKeysById.get(item.attributeKeyId),
-          };
-        }) ?? [],
-      attributesToBillingModuleCurrencies:
-        attributesToBillingModuleCurrencies?.map((item) => {
-          return {
-            ...item,
-            billingModuleCurrency: billingModuleCurrenciesById.get(
-              item.billingModuleCurrencyId,
-            ),
-          };
-        }) ?? [],
-    };
-  }
-
-  private async extendedEcommerceModuleProduct(
-    props: IEcommerceModuleProduct,
-  ): Promise<IExtendedEcommerceModuleProduct> {
-    const productsToAttributes = await this.productsToAttributes.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "productId",
-              method: "eq",
-              value: props.id,
-            },
-          ],
-        },
-      },
-    });
-
-    const productsToAttributesWithAttributes = productsToAttributes?.length
-      ? await Promise.all(
-          productsToAttributes.map(async (item) => {
-            return {
-              ...item,
-              attribute: await this.extendedEcommerceModuleAttributeById({
-                id: item.attributeId,
-              }),
-            };
-          }),
-        )
-      : [];
-
-    const productsToFileStorageModuleFiles =
-      await this.productsToFileStorageModuleFiles.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "productId",
-                method: "eq",
-                value: props.id,
-              },
-            ],
-          },
-        },
-      });
-
-    const fileStorageModuleFiles = productsToFileStorageModuleFiles?.length
-      ? await fileStorageModuleFileApi.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: productsToFileStorageModuleFiles.map(
-                    (item) => item.fileStorageModuleFileId,
-                  ),
-                },
-              ],
-            },
-          },
-          options: {
-            headers: this.getSdkHeaders(),
-          },
-        })
-      : [];
-
-    const filesById = new Map(
-      (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),
-    );
-
-    return {
-      ...props,
-      productsToAttributes: productsToAttributesWithAttributes,
-      productsToFileStorageModuleFiles:
-        productsToFileStorageModuleFiles?.map((item) => {
-          return {
-            ...item,
-            fileStorageModuleFile: filesById.get(item.fileStorageModuleFileId),
-          };
-        }) ?? [],
-    };
+    this.billingModule = props.billingModule;
+    this.fileStorageModule = props.fileStorageModule;
   }
 
   async execute(props: IExecuteProps): Promise<IResult> {
@@ -421,26 +183,11 @@ export class Service {
       );
     }
 
-    const products = await this.product.find({
-      params: {
-        filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: ordersToProducts.map((item) => item.productId),
-            },
-          ],
-        },
-      },
-    });
-
-    if (!products?.length) {
-      throw new Error("Not found error. 'products' not found.");
-    }
-
+    const productIds = [
+      ...new Set(ordersToProducts.map((item) => item.productId)),
+    ];
     const extendedProducts = await Promise.all(
-      products.map((product) => this.extendedEcommerceModuleProduct(product)),
+      productIds.map((id) => this.findByIdExtendedProduct({ id })),
     );
     const extendedProductsById = new Map(
       extendedProducts.map((item) => [item.id, item]),
@@ -448,7 +195,7 @@ export class Service {
 
     const [billingModuleCurrencies, fileStorageModuleFiles] = await Promise.all(
       [
-        billingModuleCurrencyApi.find({
+        this.billingModule.currency.find({
           params: {
             filters: {
               and: [
@@ -462,12 +209,9 @@ export class Service {
               ],
             },
           },
-          options: {
-            headers: this.getSdkHeaders(),
-          },
         }),
         ordersToFileStorageModuleFiles?.length
-          ? fileStorageModuleFileApi.find({
+          ? this.fileStorageModule.file.find({
               params: {
                 filters: {
                   and: [
@@ -481,9 +225,6 @@ export class Service {
                   ],
                 },
               },
-              options: {
-                headers: this.getSdkHeaders(),
-              },
             })
           : Promise.resolve([]),
       ],
@@ -496,15 +237,16 @@ export class Service {
       (fileStorageModuleFiles ?? []).map((item) => [item.id, item]),
     );
 
-    const checkoutAttributesByCurrency = await this.checkoutAttributes.execute({
-      id: props.id,
-      billingModuleCurrencyId:
-        ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
-    });
+    const checkoutAttributesByCurrency =
+      await this.findByIdCheckoutAttributes.execute({
+        id: props.id,
+        billingModuleCurrencyId:
+          ordersToBillingModuleCurrencies[0].billingModuleCurrencyId,
+      });
 
     const billingModulePaymentIntents =
       ordersToBillingModulePaymentIntents?.length
-        ? await billingModulePaymentIntentApi.find({
+        ? await this.billingModule.paymentIntent.find({
             params: {
               filters: {
                 and: [
@@ -518,16 +260,13 @@ export class Service {
                 ],
               },
             },
-            options: {
-              headers: this.getSdkHeaders(),
-            },
           })
         : [];
 
     const [paymentIntentsToCurrencies, paymentIntentsToInvoices] =
       await Promise.all([
         billingModulePaymentIntents?.length
-          ? billingModulePaymentIntentsToCurreciesApi.find({
+          ? this.billingModule.paymentIntentsToCurrencies.find({
               params: {
                 filters: {
                   and: [
@@ -538,14 +277,11 @@ export class Service {
                     },
                   ],
                 },
-              },
-              options: {
-                headers: this.getSdkHeaders(),
               },
             })
           : Promise.resolve([]),
         billingModulePaymentIntents?.length
-          ? billingModulePaymentIntentsToInvoicesApi.find({
+          ? this.billingModule.paymentIntentsToInvoices.find({
               params: {
                 filters: {
                   and: [
@@ -556,9 +292,6 @@ export class Service {
                     },
                   ],
                 },
-              },
-              options: {
-                headers: this.getSdkHeaders(),
               },
             })
           : Promise.resolve([]),
@@ -567,7 +300,7 @@ export class Service {
     const [paymentIntentsCurrencies, paymentIntentsInvoices] =
       await Promise.all([
         paymentIntentsToCurrencies?.length
-          ? billingModuleCurrencyApi.find({
+          ? this.billingModule.currency.find({
               params: {
                 filters: {
                   and: [
@@ -581,13 +314,10 @@ export class Service {
                   ],
                 },
               },
-              options: {
-                headers: this.getSdkHeaders(),
-              },
             })
           : Promise.resolve([]),
         paymentIntentsToInvoices?.length
-          ? billingModuleInvoiceApi.find({
+          ? this.billingModule.invoice.find({
               params: {
                 filters: {
                   and: [
@@ -600,9 +330,6 @@ export class Service {
                     },
                   ],
                 },
-              },
-              options: {
-                headers: this.getSdkHeaders(),
               },
             })
           : Promise.resolve([]),

@@ -29,7 +29,7 @@ export class Handler {
         throw new Error("Not Found error. Order not found");
       }
 
-      const quantity = await this.service.getQuantity({ id });
+      const quantity = await this.service.findByIdQuantity({ id });
 
       return c.json({
         data: quantity,

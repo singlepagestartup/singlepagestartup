@@ -25,10 +25,14 @@ export class Handler {
 
       const billingModuleCurrencyId = c.req.param("billingModuleCurrencyId");
 
-      const attributes = await this.service.getCheckoutAttributes({
-        id: uuid,
-        billingModuleCurrencyId,
-      });
+      const attributes = billingModuleCurrencyId
+        ? await this.service.findByIdCheckoutAttributesByCurrency({
+            id: uuid,
+            billingModuleCurrencyId,
+          })
+        : await this.service.findByIdCheckoutAttributes({
+            id: uuid,
+          });
 
       return c.json({
         data: attributes,

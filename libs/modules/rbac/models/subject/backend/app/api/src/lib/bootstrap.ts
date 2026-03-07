@@ -80,9 +80,9 @@ import { Configuration as EcommerceStoreConfiguration } from "@sps/ecommerce/mod
 import { Repository as EcommerceOrderRepository } from "@sps/ecommerce/models/order/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceOrderConfiguration } from "@sps/ecommerce/models/order/backend/app/api/src/lib/configuration";
 import { Service as EcommerceOrderService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service";
-import { Service as EcommerceOrderCheckoutAttributesService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/checkout-attributes";
-import { Service as EcommerceOrderGetTotalService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/get-total";
-import { Service as EcommerceOrderGetQuantityService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/get-quantity";
+import { Service as EcommerceOrderFindByIdCheckoutAttributesService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/checkout-attributes";
+import { Service as EcommerceOrderFindByIdTotalService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/total";
+import { Service as EcommerceOrderFindByIdQuantityService } from "@sps/ecommerce/models/order/backend/app/api/src/lib/service/singlepage/find-by-id/quantity";
 import { Service as EcommerceProductService } from "@sps/ecommerce/models/product/backend/app/api/src/lib/service";
 import { Repository as EcommerceProductRepository } from "@sps/ecommerce/models/product/backend/app/api/src/lib/repository";
 import { Configuration as EcommerceProductConfiguration } from "@sps/ecommerce/models/product/backend/app/api/src/lib/configuration";
@@ -110,14 +110,19 @@ import { Repository as EcommerceAttributeKeysToAttributesRepository } from "@sps
 import { Configuration as EcommerceAttributeKeysToAttributesConfiguration } from "@sps/ecommerce/relations/attribute-keys-to-attributes/backend/app/api/src/lib/configuration";
 import { Repository as BillingCurrencyRepository } from "@sps/billing/models/currency/backend/app/api/src/lib/repository";
 import { Configuration as BillingCurrencyConfiguration } from "@sps/billing/models/currency/backend/app/api/src/lib/configuration";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentRepository } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentConfiguration } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentService } from "@sps/billing/models/payment-intent/backend/app/api/src/lib/service";
 import { Repository as BillingInvoiceRepository } from "@sps/billing/models/invoice/backend/app/api/src/lib/repository";
 import { Configuration as BillingInvoiceConfiguration } from "@sps/billing/models/invoice/backend/app/api/src/lib/configuration";
+import { Service as BillingInvoiceService } from "@sps/billing/models/invoice/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentsToCurrenciesRepository } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToCurrenciesConfiguration } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToCurrenciesService } from "@sps/billing/relations/payment-intents-to-currencies/backend/app/api/src/lib/service";
 import { Repository as BillingPaymentIntentsToInvoicesRepository } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/repository";
 import { Configuration as BillingPaymentIntentsToInvoicesConfiguration } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/configuration";
+import { Service as BillingPaymentIntentsToInvoicesService } from "@sps/billing/relations/payment-intents-to-invoices/backend/app/api/src/lib/service";
 import { Repository as NotificationTopicRepository } from "@sps/notification/models/topic/backend/app/api/src/lib/repository";
 import { Configuration as NotificationTopicConfiguration } from "@sps/notification/models/topic/backend/app/api/src/lib/configuration";
 import { Repository as NotificationNotificationRepository } from "@sps/notification/models/notification/backend/app/api/src/lib/repository";
@@ -130,6 +135,7 @@ import { Repository as NotificationNotificationsToTemplatesRepository } from "@s
 import { Configuration as NotificationNotificationsToTemplatesConfiguration } from "@sps/notification/relations/notifications-to-templates/backend/app/api/src/lib/configuration";
 import { Repository as FileStorageFileRepository } from "@sps/file-storage/models/file/backend/app/api/src/lib/repository";
 import { Configuration as FileStorageFileConfiguration } from "@sps/file-storage/models/file/backend/app/api/src/lib/configuration";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import { Repository as CrmFormRepository } from "@sps/crm/models/form/backend/app/api/src/lib/repository";
 import { Configuration as CrmFormConfiguration } from "@sps/crm/models/form/backend/app/api/src/lib/configuration";
 import { Repository as CrmRequestRepository } from "@sps/crm/models/request/backend/app/api/src/lib/repository";
@@ -278,10 +284,16 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         attributeKey as any,
         attributesToBillingModuleCurrencies as any,
         productsToFileStorageModuleFiles as any,
+        new BillingCurrencyService(
+          new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+        ),
+        new FileStorageFileService(
+          new FileStorageFileRepository(new FileStorageFileConfiguration()),
+        ),
       );
 
-      const checkoutAttributesService =
-        new EcommerceOrderCheckoutAttributesService(
+      const findByIdCheckoutAttributesService =
+        new EcommerceOrderFindByIdCheckoutAttributesService(
           attributeKey as any,
           ordersToProducts as any,
           product as any,
@@ -290,29 +302,55 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
           attribute as any,
           attributesToBillingModuleCurrencies as any,
         );
-      const getTotalService = new EcommerceOrderGetTotalService(
+      const findByIdTotalService = new EcommerceOrderFindByIdTotalService(
         attributeKey as any,
         ordersToProducts as any,
       );
-      const getQuantityService = new EcommerceOrderGetQuantityService(
+      const findByIdQuantityService = new EcommerceOrderFindByIdQuantityService(
         ordersToProducts as any,
+      );
+      const billingPaymentIntent = new BillingPaymentIntentService(
+        new BillingPaymentIntentRepository(
+          new BillingPaymentIntentConfiguration(),
+        ),
+      );
+      const billingCurrency = new BillingCurrencyService(
+        new BillingCurrencyRepository(new BillingCurrencyConfiguration()),
+      );
+      const billingPaymentIntentsToCurrencies =
+        new BillingPaymentIntentsToCurrenciesService(
+          new BillingPaymentIntentsToCurrenciesRepository(
+            new BillingPaymentIntentsToCurrenciesConfiguration(),
+          ),
+        );
+      const billingPaymentIntentsToInvoices =
+        new BillingPaymentIntentsToInvoicesService(
+          new BillingPaymentIntentsToInvoicesRepository(
+            new BillingPaymentIntentsToInvoicesConfiguration(),
+          ),
+        );
+      const billingInvoice = new BillingInvoiceService(
+        new BillingInvoiceRepository(new BillingInvoiceConfiguration()),
       );
       const order = new EcommerceOrderService(
         new EcommerceOrderRepository(new EcommerceOrderConfiguration()),
-        checkoutAttributesService,
-        getTotalService,
-        getQuantityService,
+        findByIdCheckoutAttributesService,
+        findByIdTotalService,
+        findByIdQuantityService,
         product as any,
-        attribute as any,
-        attributeKey as any,
         ordersToProducts as any,
-        productsToAttributes as any,
-        attributeKeysToAttributes as any,
-        attributesToBillingModuleCurrencies as any,
         ordersToBillingModuleCurrencies as any,
         ordersToFileStorageModuleFiles as any,
         productsToFileStorageModuleFiles as any,
         ordersToBillingModulePaymentIntents as any,
+        billingCurrency,
+        billingPaymentIntent,
+        billingPaymentIntentsToCurrencies,
+        billingPaymentIntentsToInvoices,
+        billingInvoice,
+        new FileStorageFileService(
+          new FileStorageFileRepository(new FileStorageFileConfiguration()),
+        ),
       );
 
       return {

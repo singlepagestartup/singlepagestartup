@@ -9,7 +9,7 @@ import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/rela
 import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as OrdersToProductsService } from "@sps/ecommerce/relations/orders-to-products/backend/app/api/src/lib/service";
 import { Service as ProductsToAttributesService } from "@sps/ecommerce/relations/products-to-attributes/backend/app/api/src/lib/service";
-import { OrderDI } from "../../di";
+import { OrderDI } from "../../../di";
 
 export type IExecuteProps = {
   id: string;

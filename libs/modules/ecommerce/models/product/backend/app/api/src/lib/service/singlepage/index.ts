@@ -10,13 +10,15 @@ import { Service as AttributeKeysToAttributesService } from "@sps/ecommerce/rela
 import { Service as AttributeKeyService } from "@sps/ecommerce/models/attribute-key/backend/app/api/src/lib/service";
 import { Service as AttributesToBillingModuleCurrenciesService } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Service as ProductsToFileStorageModuleFilesService } from "@sps/ecommerce/relations/products-to-file-storage-module-files/backend/app/api/src/lib/service";
+import { Service as BillingCurrencyService } from "@sps/billing/models/currency/backend/app/api/src/lib/service";
+import { Service as FileStorageFileService } from "@sps/file-storage/models/file/backend/app/api/src/lib/service";
 import {
   Service as GetExtendedService,
-  type IExecuteProps as IGetExtendedExecuteProps,
-  type IResult as IGetExtendedResult,
+  type IExecuteProps as IFindByIdExtendedExecuteProps,
+  type IResult as IFindByIdExtendedResult,
 } from "./get-extended";
 
-export type IExtendedEcommerceModuleProduct = IGetExtendedResult;
+export type IExtendedEcommerceModuleProduct = IFindByIdExtendedResult;
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -26,6 +28,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   attributeKey: AttributeKeyService;
   attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService;
   productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService;
+  billingModule: {
+    currency: BillingCurrencyService;
+  };
+  fileStorageModule: {
+    file: FileStorageFileService;
+  };
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -39,6 +47,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     attributesToBillingModuleCurrencies: AttributesToBillingModuleCurrenciesService,
     @inject(ProductDI.IProductsToFileStorageModuleFilesService)
     productsToFileStorageModuleFiles: ProductsToFileStorageModuleFilesService,
+    @inject(ProductDI.IBillingModuleCurrencyService)
+    billingModuleCurrency: BillingCurrencyService,
+    @inject(ProductDI.IFileStorageModuleFileService)
+    fileStorageModuleFile: FileStorageFileService,
   ) {
     super(repository);
     this.productsToAttributes = productsToAttributes;
@@ -48,9 +60,17 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.attributesToBillingModuleCurrencies =
       attributesToBillingModuleCurrencies;
     this.productsToFileStorageModuleFiles = productsToFileStorageModuleFiles;
+    this.billingModule = {
+      currency: billingModuleCurrency,
+    };
+    this.fileStorageModule = {
+      file: fileStorageModuleFile,
+    };
   }
 
-  async extended(props: IGetExtendedExecuteProps): Promise<IGetExtendedResult> {
+  async findByIdExtended(
+    props: IFindByIdExtendedExecuteProps,
+  ): Promise<IFindByIdExtendedResult> {
     return new GetExtendedService({
       findById: ({ id }) => this.findById({ id }),
       productsToAttributes: this.productsToAttributes,
@@ -60,6 +80,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       attributesToBillingModuleCurrencies:
         this.attributesToBillingModuleCurrencies,
       productsToFileStorageModuleFiles: this.productsToFileStorageModuleFiles,
+      billingModule: this.billingModule,
+      fileStorageModule: this.fileStorageModule,
     }).execute(props);
   }
 }
