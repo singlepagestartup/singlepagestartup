@@ -21,6 +21,8 @@ if [[ "$CURRENT_STATUS" != "Ready for Dev" && "$CURRENT_STATUS" != "In Dev" ]]; 
 fi
 ```
 
+**HARD GATE — no exceptions.** Do NOT proceed if the status check fails, even if the user explicitly invoked this command. The status gate exists to prevent implementing unreviewed plans. If the status is wrong, stop immediately and tell the user which status is required and how to advance the issue.
+
 ## Process
 
 1. **Update status to "In Dev"**:
