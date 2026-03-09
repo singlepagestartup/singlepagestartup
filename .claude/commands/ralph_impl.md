@@ -1,82 +1,33 @@
 ---
-description: Implement highest priority small GitHub Project issue
+description: Legacy wrapper for implementation flow (delegates to core/30-implement with the same quality gates)
 model: sonnet
 ---
 
-## PART I - IF AN ISSUE IS MENTIONED
+# Ralph Implement (Legacy Wrapper)
 
-0b. **CRITICAL: Check issue status in GitHub Project** — only proceed if status is "Ready for Dev"
+This command is kept for backward compatibility.
+Use it to run the same workflow and quality gates as `core/30-implement.md`.
+
+## Behavior
+
+1. Resolve `ISSUE_NUMBER`:
+   - If an issue number is passed, use it.
+   - If not passed, select highest-priority `size:xs`/`size:small` issue in `Ready for Dev`.
+2. Read and follow `.claude/commands/core/30-implement.md` directly.
+3. Do not apply custom legacy logic that bypasses `core/30-implement.md` guards.
+
+## Issue Auto-Selection (when ISSUE_NUMBER is omitted)
 
 ```bash
-CURRENT_STATUS=$(.claude/helpers/get_issue_status.sh ISSUE_NUMBER)
-
-if [ "$CURRENT_STATUS" != "Ready for Dev" ]; then
-  echo "❌ Cannot proceed: Issue #ISSUE_NUMBER has status '$CURRENT_STATUS'"
-  echo "This command requires status: 'Ready for Dev'"
-  echo "Please move the issue to 'Ready for Dev' first, or use:"
-  echo "  .claude/helpers/update_issue_status.sh ISSUE_NUMBER \"Ready for Dev\""
-  exit 1
-fi
+source .claude/.env
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_OWNER" --format json | \
+  jq '[.items[] | select(.status == "Ready for Dev") | select((.labels // []) | any(.name == "size:xs" or .name == "size:small"))] | sort_by(.priority // 999) | .[0]'
 ```
 
-0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`. **NOTE: If the ticket file already exists, DO NOT recreate it - just read it directly.** The Markdown format must include:
+If no suitable issue exists, exit and report that no `size:xs`/`size:small` issue is ready.
 
-- Header: `# Issue #XXX: [title]`
-- Metadata: URL, status (from labels), created date
-- Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments
-- All comments formatted as subsections with author and date
-  0d. read the issue and all comments to understand the implementation plan and any concerns
+## Notes
 
-## PART I - IF NO ISSUE IS MENTIONED
-
-0.  read `.claude/commands/github.md`
-    0a. fetch issues from the GitHub Project in status "Ready for Dev":
-    `bash
-gh project item-list PROJECT_NUMBER --owner PROJECT_OWNER --format json | \
-  jq '[.items[] | select(.status == "Ready for Dev")] | sort_by(.priority // 999) | .[0:10]'
-`
-    If that doesn't work, try: `gh issue list --label "status:ready-for-dev" --json number,title,labels,url`
-    0b. select the highest priority issue with size label `xs` or `small` (if none exist, EXIT IMMEDIATELY and inform the user)
-    0c. run `gh repo view --json name -q '.name'` to get REPO_NAME, then fetch the issue data and format it as readable Markdown before saving to `thoughts/shared/tickets/REPO_NAME/ISSUE-NUM.md`. **NOTE: If the ticket file already exists, DO NOT recreate it - just read it directly.** The Markdown format must include: - Header: `# Issue #XXX: [title]` - Metadata: URL, status (from labels), created date - Sections: Problem to solve, Key details, Implementation notes (if applicable), References, Comments - All comments formatted as subsections with author and date
-    0d. read the issue and all comments to understand the implementation plan and any concerns
-
-## PART II - NEXT STEPS
-
-think deeply
-
-1. move the item to "In Dev" status:
-   ```bash
-   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "In Dev"
-   ```
-   1a. find the linked implementation plan document from the issue comments or description
-   1b. if no plan exists, move the issue back to "Ready for Plan" and EXIT with an explanation:
-   `bash
-gh issue comment ISSUE_NUMBER --body "No implementation plan found. Moving back to Ready for Plan."
-`
-
-think deeply about the implementation
-
-2.  implement the plan:
-    2a. run `gh repo view --json name -q '.name'` to get REPO_NAME, then read the plan document completely: `thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md`
-    2b. read `.claude/commands/implement_plan.md` and follow its instructions
-    2c. implement each phase, verifying success criteria before proceeding
-
-3.  when implementation is complete:
-    3a. create a commit following `.claude/commands/commit.md`
-    3b. create a PR following `.claude/commands/describe_pr.md`
-    3c. add a comment to the issue with the PR link:
-
-    ````bash
-    gh issue comment ISSUE_NUMBER --body "PR submitted: [PR_URL]
-
-        Implementation summary:
-        - [Key change 1]
-        - [Key change 2]"
-        ```
-
-    3d. move the item to "Code Review" status:
-    ```bash
-    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Code Review"
-    ````
-
-think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE — specifically the highest priority xs or small sized issue.
+- Single source of truth for quality gates: `core/30-implement.md`.
+- Utility command paths are resolved from `core/30-implement.md` (`.claude/commands/utilities/*`).
+- This wrapper exists only to preserve old command entry points.

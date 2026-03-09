@@ -36,11 +36,13 @@ The admin panel V2 migration has significant infrastructure already in place:
 
 2. **Shared Admin-V2 Infrastructure**: 54 files in `libs/shared/frontend/components/src/lib/singlepage/admin-v2/` providing reusable components: `panel`, `form`, `table`, `table-row`, `table-controller`, `select-input`, `model-header`. Uses Sheet-based forms (side panel) instead of Dialog-based forms from V1.
 
-3. **Ecommerce Pilot Implementation**: The ecommerce module has complete admin-v2 variants for:
+3. **Ecommerce Pilot Implementation (partially implemented, needs verification and fixes)**: The ecommerce module has admin-v2 variant files created for:
 
    - Product model: 6 variants (`table`, `table-row`, `form`, `select-input`, `model-header`, `module-overview-card`)
    - Attribute model: 6 variants (same as Product)
    - Products-to-attributes relation: 4 variants (`table`, `table-row`, `form`, `select-input`)
+
+   These files exist but correctness and functionality have not been verified. The implementation may contain bugs or incomplete logic.
 
 4. **WIP Host Integration**: `apps/host/src/components/admin-panel-draft/ClientComponent.tsx` integrates ecommerce admin-v2 with settings pages.
 
@@ -270,9 +272,12 @@ async function onSubmit(data) {
 **Completed**:
 
 - Shared admin-v2 component infrastructure (54 files)
-- Ecommerce module admin-v2 implementation (product, attribute, products-to-attributes)
-- Host integration for ecommerce admin panel
-- Settings and account settings pages
+
+**Partially Implemented — Needs Verification and Fixes**:
+
+- Ecommerce module admin-v2 component files exist (product, attribute, products-to-attributes) but have not been tested or confirmed to work correctly
+- Host integration for ecommerce admin panel (`apps/host/src/components/admin-panel-draft/`) exists but needs verification
+- Settings and account settings pages exist but need verification
 
 **Not Started** (based on draft having 15 modules):
 

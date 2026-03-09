@@ -1,186 +1,145 @@
 ---
-description: Validate implementation against plan, verify success criteria, identify issues
+description: Validate plan quality or implementation execution with explicit audit modes
 ---
 
 # Validate Plan
 
-You are tasked with validating that an implementation plan was correctly executed, verifying all success criteria and identifying any deviations or issues.
+Use this command to run one of two validation modes:
 
-## Initial Setup
+1. **Pre-Implementation Audit** (before coding starts)
+2. **Post-Implementation Validation** (after coding is done)
 
-When invoked:
+If mode is not specified, default to **Pre-Implementation Audit**.
 
-1. **Determine context** - Are you in an existing conversation or starting fresh?
+## Modes
 
-   - If existing: Review what was implemented in this session
-   - If fresh: Need to discover what was done through git and codebase analysis
+### Mode A: Pre-Implementation Audit (blocking gate)
 
-2. **Locate the plan**:
+Goal: prove that ticket, research, and plan are consistent and executable.
 
-   - If plan path provided, use it
-   - Otherwise, search recent commits for plan references or ask user
+#### Required Inputs
 
-3. **Gather implementation evidence**:
+- Ticket: `thoughts/shared/tickets/REPO_NAME/ISSUE-{NUMBER}.md`
+- Research: `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md` (or latest linked research)
+- Plan: `thoughts/shared/plans/REPO_NAME/*ISSUE-{NUMBER}*.md`
 
-   ```bash
-   # Check recent commits
-   git log --oneline -n 20
-   git diff HEAD~N..HEAD  # Where N covers implementation commits
+#### Audit Checks (all mandatory)
 
-   # Run comprehensive checks
-   cd $(git rev-parse --show-toplevel) && make check test
-   ```
+1. **Ticket vs Research vs Plan consistency**
 
-## Validation Process
+   - Verify critical claims are aligned across all three artifacts.
+   - Highlight contradictions explicitly with evidence (`file:line`).
 
-### Step 1: Context Discovery
+2. **Path validity**
 
-If starting fresh or need more context:
+   - Every referenced file/directory in plan/research must exist.
+   - Report missing/renamed paths as blocking findings.
 
-1. **Read the implementation plan** completely
-2. **Identify what should have changed**:
+3. **Command/target validity**
 
-   - List all files that should be modified
-   - Note all success criteria (automated and manual)
-   - Identify key functionality to verify
+   - Every verification command in the plan must exist in repo config.
+   - For Nx commands, verify project target exists in `project.json`.
+   - Reject guessed commands.
 
-3. **Spawn parallel research tasks** to discover implementation:
+4. **Assumption quality**
 
-   ```
-   Task 1 - Verify database changes:
-   Research if migration [N] was added and schema changes match plan.
-   Check: migration files, schema version, table structure
-   Return: What was implemented vs what plan specified
+   - Classify assumptions as:
+     - `verified` (backed by code/docs)
+     - `unsupported` (no evidence)
+     - `stale` (conflicts with current code)
+   - Unsupported/stale assumptions are blockers unless explicitly accepted by user.
 
-   Task 2 - Verify code changes:
-   Find all modified files related to [feature].
-   Compare actual changes to plan specifications.
-   Return: File-by-file comparison of planned vs actual
+5. **Blocking section enforcement**
+   - Ensure unresolved contradictions are listed in `Open Questions (Blocking)`.
+   - If blocking questions are unresolved, audit must fail.
 
-   Task 3 - Verify test coverage:
-   Check if tests were added/modified as specified.
-   Run test commands and capture results.
-   Return: Test status and any missing coverage
-   ```
-
-### Step 2: Systematic Validation
-
-For each phase in the plan:
-
-1. **Check completion status**:
-
-   - Look for checkmarks in the plan (- [x])
-   - Verify the actual code matches claimed completion
-
-2. **Run automated verification**:
-
-   - Execute each command from "Automated Verification"
-   - Document pass/fail status
-   - If failures, investigate root cause
-
-3. **Assess manual criteria**:
-
-   - List what needs manual testing
-   - Provide clear steps for user verification
-
-4. **Think deeply about edge cases**:
-   - Were error conditions handled?
-   - Are there missing validations?
-   - Could the implementation break existing functionality?
-
-### Step 3: Generate Validation Report
-
-Create comprehensive validation summary:
+#### Pre-Implementation Audit Output
 
 ```markdown
-## Validation Report: [Plan Name]
+## Pre-Implementation Audit Report
 
-### Implementation Status
+### Overall Result
 
-✓ Phase 1: [Name] - Fully implemented
-✓ Phase 2: [Name] - Fully implemented
-⚠️ Phase 3: [Name] - Partially implemented (see issues)
+- PASS | FAIL
 
-### Automated Verification Results
+### Consistency Matrix
 
-✓ Build passes: `make build`
-✓ Tests pass: `make test`
-✗ Linting issues: `make lint` (3 warnings)
+| claim | ticket | research | plan | status | evidence |
 
-### Code Review Findings
+### Missing Paths
 
-#### Matches Plan:
+- path + source reference
 
-- Database migration correctly adds [table]
-- API endpoints implement specified methods
-- Error handling follows plan
+### Invalid or Unverified Commands
 
-#### Deviations from Plan:
+- command + why invalid + where referenced
 
-- Used different variable names in [file:line]
-- Added extra validation in [file:line] (improvement)
+### Unsupported / Stale Assumptions
 
-#### Potential Issues:
+- assumption + status + evidence
 
-- Missing index on foreign key could impact performance
-- No rollback handling in migration
+### Blocking Contradictions
 
-### Manual Testing Required:
+- contradiction + required clarification
 
-1. UI functionality:
+### Required Actions Before Implementation
 
-   - [ ] Verify [feature] appears correctly
-   - [ ] Test error states with invalid input
-
-2. Integration:
-   - [ ] Confirm works with existing [component]
-   - [ ] Check performance with large datasets
-
-### Recommendations:
-
-- Address linting warnings before merge
-- Consider adding integration test for [scenario]
-- Document new API endpoints
+1. ...
+2. ...
 ```
 
-## Working with Existing Context
+If result is `FAIL`, do not proceed to implementation.
 
-If you were part of the implementation:
+---
 
-- Review the conversation history
-- Check your todo list for what was completed
-- Focus validation on work done in this session
-- Be honest about any shortcuts or incomplete items
+### Mode B: Post-Implementation Validation
 
-## Important Guidelines
+Goal: verify implementation matches approved plan and success criteria.
 
-1. **Be thorough but practical** - Focus on what matters
-2. **Run all automated checks** - Don't skip verification commands
-3. **Document everything** - Both successes and issues
-4. **Think critically** - Question if the implementation truly solves the problem
-5. **Consider maintenance** - Will this be maintainable long-term?
+#### Checks
 
-## Validation Checklist
+1. Compare plan phases vs actual code changes.
+2. Run automated verification commands from the plan.
+3. Report deviations (intentional/unintentional).
+4. List manual checks still required from reviewer.
 
-Always verify:
+#### Post-Implementation Output
 
-- [ ] All phases marked complete are actually done
-- [ ] Automated tests pass
-- [ ] Code follows existing patterns
-- [ ] No regressions introduced
-- [ ] Error handling is robust
-- [ ] Documentation updated if needed
-- [ ] Manual test steps are clear
+```markdown
+## Post-Implementation Validation Report
 
-## Relationship to Other Commands
+### Phase Completion
 
-Recommended workflow:
+- Phase N: complete / partial / missing
 
-1. `/implement_plan` - Execute the implementation
-2. `/commit` - Create atomic commits for changes
-3. `/validate_plan` - Verify implementation correctness
-4. `/describe_pr` - Generate PR description
+### Automated Verification
 
-The validation works best after commits are made, as it can analyze the git history to understand what was implemented.
+- command: pass/fail
 
-Remember: Good validation catches issues before they reach production. Be constructive but thorough in identifying gaps or improvements.
+### Deviations from Plan
+
+- file:line + explanation
+
+### Residual Risks
+
+- risk description
+
+### Manual Verification Checklist
+
+- [ ] item
+```
+
+## Process
+
+1. Resolve issue number and repository namespace.
+2. Locate ticket/research/plan artifacts.
+3. Run selected mode checks.
+4. Emit structured report with explicit PASS/FAIL.
+5. If FAIL in pre-implementation audit, stop and request clarification/update.
+
+## Rules
+
+- Do not invent missing evidence.
+- Do not mark assumptions as facts without proof.
+- Prefer explicit blockers over optimistic guesses.
+- Keep findings evidence-based (`file:line`, command source, config path).
