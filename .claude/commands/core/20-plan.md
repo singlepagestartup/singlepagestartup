@@ -84,7 +84,7 @@ fi
    Does this phasing make sense?
    ```
 
-   e. **Write the full plan** to `thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md`:
+   e. **Write the full plan** to `thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md`:
 
    ```markdown
    # [Feature/Task Name] Implementation Plan
@@ -260,7 +260,7 @@ fi
 
 ## Exit
 
-- [ ] Implementation plan created or updated at `thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md`
+- [ ] Implementation plan created or updated at `thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md`
 - [ ] Sync marker updated in plan file (if plan was updated)
 - [ ] Plan referenced in GitHub issue comment
 - [ ] If existing plan was updated: commit created and reply posted in GitHub
@@ -295,7 +295,7 @@ Approach: [selected approach description]
 
 The plan has been:
 
-Created at thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-NUM-description.md
+Created at thoughts/shared/plans/REPO_NAME/ISSUE-NUM.md
 Attached to the GitHub issue as a comment
 Issue moved to "Plan in Review" status
 

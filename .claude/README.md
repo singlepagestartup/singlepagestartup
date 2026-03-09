@@ -14,16 +14,23 @@ This directory contains Claude Code agents, commands (skills), and local configu
 │   ├── thoughts-locator.md
 │   └── web-search-researcher.md
 ├── commands/            # Slash commands (skills) available in Claude Code
+│   ├── core/            # Primary linear workflow
+│   │   ├── 00-create.md
+│   │   ├── 10-research.md
+│   │   ├── 20-plan.md
+│   │   ├── 30-implement.md
+│   │   └── next.md
 │   ├── github.md        # GitHub Project issue management
-│   ├── ralph_plan.md    # Create plan for highest priority issue
-│   ├── ralph_research.md
-│   ├── ralph_impl.md
-│   ├── iterate_plan.md    # Update plan with local edits
-│   ├── iterate_plan_external.md  # Sync GitHub comments to plan
-│   ├── oneshot.md
-│   ├── oneshot_plan.md
-│   ├── create_plan_generic.md
-│   ├── implement_plan.md
+│   ├── ralph_plan.md    # Legacy wrapper (delegates to core/20-plan)
+│   ├── ralph_research.md # Legacy wrapper (delegates to core/10-research)
+│   ├── ralph_impl.md     # Legacy wrapper (delegates to core/30-implement)
+│   ├── oneshot.md        # Combined shortcut workflow
+│   ├── oneshot_plan.md   # Combined shortcut workflow
+│   ├── implement_plan.md # Manual implementation from an existing plan file
+│   ├── validate_plan.md  # Plan/implementation validation (pre/post implementation audit)
+│   ├── utilities/
+│   │   ├── commit.md
+│   │   └── describe_pr.md
 │   └── ...
 ├── .env          # ⚠ Gitignored — per-project config (you must create this)
 ├── settings.local.json  # Local Claude Code settings
@@ -89,20 +96,20 @@ The commands expect a GitHub Project (v2) with a **single-select "Status" field*
 
 ### Required Status Options
 
-| Status name            | When an issue has this status                                                       |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `Triage`               | Newly created — needs initial review and categorization                             |
-| `Spec Needed`          | The problem or solution is unclear — more detail required before research can begin |
-| `Research Needed`      | Needs investigation before a plan can be written                                    |
-| `Research in Progress` | Active research underway (set automatically by `/ralph_research`)                   |
-| `Research in Review`   | Research findings complete, awaiting review                                         |
-| `Ready for Plan`       | Research approved, needs an implementation plan                                     |
-| `Plan in Progress`     | Actively writing the plan (set automatically by `/ralph_plan`)                      |
-| `Plan in Review`       | Plan written, awaiting approval                                                     |
-| `Ready for Dev`        | Plan approved, ready for implementation                                             |
-| `In Dev`               | Active development (set automatically by `/ralph_impl`)                             |
-| `Code Review`          | PR submitted                                                                        |
-| `Done`                 | Completed                                                                           |
+| Status name            | When an issue has this status                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `Triage`               | Newly created — needs initial review and categorization                                  |
+| `Spec Needed`          | The problem or solution is unclear — more detail required before research can begin      |
+| `Research Needed`      | Needs investigation before a plan can be written                                         |
+| `Research in Progress` | Active research underway (set automatically by `/core/10-research` or `/ralph_research`) |
+| `Research in Review`   | Research findings complete, awaiting review                                              |
+| `Ready for Plan`       | Research approved, needs an implementation plan                                          |
+| `Plan in Progress`     | Actively writing the plan (set automatically by `/core/20-plan` or `/ralph_plan`)        |
+| `Plan in Review`       | Plan written, awaiting approval                                                          |
+| `Ready for Dev`        | Plan approved, ready for implementation                                                  |
+| `In Dev`               | Active development (set automatically by `/core/30-implement` or `/ralph_impl`)          |
+| `Code Review`          | PR submitted                                                                             |
+| `Done`                 | Completed                                                                                |
 
 > **Names must match exactly** (case-sensitive). The commands resolve status UUIDs by name at runtime — if the name differs, the status update will silently fail.
 
@@ -117,7 +124,8 @@ The commands filter issues by size label to pick the right scope of work. Create
 | `size:medium` | 1–2 days                      |
 | `size:large`  | Multiple days or more         |
 
-`/ralph_plan` and `/ralph_impl` only pick up `size:xs` and `size:small` issues — larger issues require manual planning.
+When no issue number is provided, `ralph_*` wrappers auto-pick `size:xs`/`size:small` issues.
+For medium/large issues, pass the issue number explicitly (recommended via `core/*` commands).
 
 ### How to Create the Project
 
@@ -134,6 +142,29 @@ The command will:
 3. Create all `size:*` and `area:*` labels in the repo
 
 After it runs, set the project number in `.claude/.env` if it wasn't already saved.
+
+---
+
+## Mandatory Quality Gates
+
+These gates are now required for all tasks (task-agnostic):
+
+1. **Research gate (`core/10-research`)**
+   - Must include `Verified Facts`, `Unverified Assumptions`, `Contradictions`, `Confidence`.
+2. **Planning gate (`core/20-plan`)**
+   - Must run preflight checks:
+     - critical claims vs live code,
+     - referenced file existence,
+     - command/target existence,
+     - contradiction resolution.
+3. **Implementation gate (`core/30-implement`)**
+   - Must stop if `Open Questions (Blocking)` has unresolved contradictions/blockers.
+4. **Validation gate (`validate_plan`)**
+   - Supports explicit pre-implementation audit mode and post-implementation validation mode.
+5. **Root-cause requirement**
+   - If plan/research inaccuracies are found, updated plans must include root-cause analysis + preventive controls.
+
+`ralph_*` commands must keep behavior parity with `core/*` (single source of truth).
 
 ---
 
@@ -159,10 +190,10 @@ thoughts/
 │   │       └── ISSUE-42.md
 │   ├── research/
 │   │   └── REPO_NAME/       ← namespaced by repo
-│   │       └── YYYY-MM-DD-ISSUE-42-description.md
+│   │       └── ISSUE-42.md
 │   ├── plans/
 │   │   └── REPO_NAME/       ← namespaced by repo
-│   │       └── YYYY-MM-DD-ISSUE-42-description.md
+│   │       └── ISSUE-42.md
 │   └── handoffs/
 │       └── REPO_NAME/       ← namespaced by repo
 │           └── ISSUE-42/
@@ -253,7 +284,8 @@ issue    (agent)   research   (agent)   plan       (agent)     (manual)
 
 **Your decision:** Move the issue to `Research Needed` when ready (manually in the GitHub Project UI or via `/github`).
 
-**Note:** Only `size:xs` and `size:small` issues are processed by automated commands (`/ralph_research`, `/ralph_plan`, `/ralph_impl`). For `size:medium` and `size:large`, use manual planning commands.
+**Note:** `ralph_*` auto-selection targets `size:xs` and `size:small` when no issue number is passed.
+For `size:medium` and `size:large`, pass the issue number explicitly and use `core/*` flow.
 
 ---
 
@@ -261,7 +293,9 @@ issue    (agent)   research   (agent)   plan       (agent)     (manual)
 
 **Purpose:** Investigate the codebase to understand the problem and identify implementation approaches.
 
-**Command:** `/ralph_research 42` (replace `42` with the issue number, or omit to auto-pick)
+**Command:** `/core/10-research 42` (replace `42` with the issue number, or omit to auto-pick)
+
+Legacy wrapper equivalent: `/ralph_research 42`
 
 **What the agent does:**
 
@@ -275,7 +309,7 @@ issue    (agent)   research   (agent)   plan       (agent)     (manual)
    - **thoughts-locator** — searches for existing notes on the topic
    - **thoughts-analyzer** — extracts research context from thoughts documents
    - **web-search-researcher** — searches for external docs, APIs, or best practices (if needed)
-5. Writes findings to `thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md`
+5. Writes findings to `thoughts/shared/research/ISSUE-42.md`
 6. Posts a summary comment on the GitHub issue
 7. Sets the issue status to `Research in Review`
 
@@ -290,7 +324,7 @@ issue    (agent)   research   (agent)   plan       (agent)     (manual)
 **Action:** Open the research file:
 
 ```
-thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
+thoughts/shared/research/ISSUE-42.md
 ```
 
 **Verify:**
@@ -302,12 +336,12 @@ thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
 
 **Your decision:**
 
-| Outcome                   | Action                                                                                            | Next Step      |
-| ------------------------- | ------------------------------------------------------------------------------------------------- | -------------- |
-| Research looks good       | Move issue to `Ready for Plan` (via GitHub Project UI or `/github`)                               | Step 4         |
-| Research needs correction | Add a comment to the GitHub issue explaining what was missed, then run `/ralph_research 42` again | Back to Step 2 |
+| Outcome                   | Action                                                                                                                        | Next Step      |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Research looks good       | Move issue to `Ready for Plan` (via GitHub Project UI or `/github`)                                                           | Step 4         |
+| Research needs correction | Add a comment to the GitHub issue explaining what was missed, then run `/core/10-research 42` (or `/ralph_research 42`) again | Back to Step 2 |
 
-**Loop within Step 3:** If the research needs correction, the command `/ralph_research` reads the previous research and your new comment before starting again. This loop repeats until the research is approved. You cannot skip to Step 4 without passing this gate.
+**Loop within Step 3:** If research needs correction, re-run `/core/10-research` (or legacy `/ralph_research`). The loop repeats until research is approved. You cannot skip to Step 4 without passing this gate.
 
 ---
 
@@ -317,7 +351,9 @@ thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
 
 **Prerequisite:** Issue must be in `Ready for Plan` status.
 
-**Command:** `/ralph_plan 42`
+**Command:** `/core/20-plan 42`
+
+Legacy wrapper equivalent: `/ralph_plan 42`
 
 **What the agent does:**
 
@@ -330,7 +366,7 @@ thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
    - **codebase-pattern-finder** — finds similar implementations to follow
    - **thoughts-locator** — searches for related decisions or patterns
    - **thoughts-analyzer** — extracts relevant context from existing plans
-5. Writes a detailed implementation plan to `thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md`
+5. Writes a detailed implementation plan to `thoughts/shared/plans/ISSUE-42.md`
 6. Posts a summary comment on the GitHub issue linking to the plan
 7. Sets the issue status to `Plan in Review`
 
@@ -345,7 +381,7 @@ thoughts/shared/research/YYYY-MM-DD-ISSUE-42-description.md
 **Action:** Open the plan file:
 
 ```
-thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
+thoughts/shared/plans/ISSUE-42.md
 ```
 
 **Verify the plan contains:**
@@ -367,32 +403,25 @@ thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
 | Outcome            | Action                                                             | Next Step     |
 | ------------------ | ------------------------------------------------------------------ | ------------- |
 | Plan looks good    | Move issue to `Ready for Dev` (via GitHub Project UI or `/github`) | Step 6        |
-| Plan needs changes | Choose local or external iteration (see below)                     | Repeat Step 5 |
+| Plan needs changes | Add concrete correction notes and re-run planning                  | Repeat Step 5 |
 
-**Loop within Step 5:** If the plan needs changes, you have two iteration options:
+**Loop within Step 5:** If the plan needs changes, iterate through the same planning command with clearer constraints:
 
-**Option A: Local iteration (direct conversation)**
+1. Add precise feedback in GitHub issue comments or in-chat (what is wrong, what must change, what must stay).
+2. Re-run planning:
 
 ```
-/iterate_plan thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
+/core/20-plan 42
 ```
 
-Tell the agent what needs to change: "Phase 2 should use the existing `X` utility instead of creating a new one" or "The plan doesn't cover error handling for Y case." The agent will update the plan file. Review again and repeat until satisfied.
+Legacy wrapper equivalent:
 
-**Option B: External iteration (GitHub issue discussion)**
+```
+/ralph_plan 42
+```
 
-1. Add comments to the GitHub issue describing what needs to change
-2. Run `/iterate_plan_external 42` to sync those comments to the plan
-3. The command is fully autonomous — it reads comments, updates the plan, creates a commit, and posts a reply
-4. Review the updated plan and repeat if needed
-
-Use external iteration when:
-
-- Multiple people need to collaborate on plan changes
-- You want a full audit trail in GitHub issue comments
-- You prefer the "cloud" system for discussions and local CLI for final execution
-
-**Important:** You cannot proceed to Step 6 without passing this gate. The loop repeats until the plan is approved.
+3. Review updated plan and repeat until gate passes.
+4. Do not move to implementation while `Open Questions (Blocking)` contains unresolved items.
 
 ---
 
@@ -402,7 +431,9 @@ Use external iteration when:
 
 **Prerequisite:** Issue must be in `Ready for Dev` status.
 
-**Command:** `/ralph_impl 42`
+**Command:** `/core/30-implement 42`
+
+Legacy wrapper equivalent: `/ralph_impl 42`
 
 **What the agent does:**
 
@@ -431,19 +462,19 @@ Use external iteration when:
 **To verify the implementation thoroughly:**
 
 ```
-/validate_plan thoughts/shared/plans/YYYY-MM-DD-ISSUE-42-description.md
+/validate_plan thoughts/shared/plans/ISSUE-42.md
 ```
 
 This command reads both the plan and the actual changed files, then reports which success criteria passed and which didn't.
 
 **Your decision:**
 
-| Outcome                | Action                                                                                 | Final Step     |
-| ---------------------- | -------------------------------------------------------------------------------------- | -------------- |
-| Everything looks good  | Merge the PR and move the issue to `Done` (via `/github`)                              | Complete       |
-| Something needs fixing | Comment on the PR or issue with specific instructions, then run `/ralph_impl 42` again | Back to Step 6 |
+| Outcome                | Action                                                                                                              | Final Step     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Everything looks good  | Merge the PR and move the issue to `Done` (via `/github`)                                                           | Complete       |
+| Something needs fixing | Comment on the PR or issue with specific instructions, then run `/core/30-implement 42` (or `/ralph_impl 42`) again | Back to Step 6 |
 
-**Loop within Step 6/7:** If the implementation needs fixes, `/ralph_impl` reads all prior comments before re-implementing. This loop repeats until the PR is approved and merged.
+**Loop within Step 6/7:** If implementation needs fixes, re-run `/core/30-implement` (or legacy `/ralph_impl`) after clarifying comments. The loop repeats until the PR is approved and merged.
 
 ---
 
@@ -461,21 +492,29 @@ This runs `/ralph_research` then `/ralph_plan` in sequence. You still review the
 
 ### Larger Issues (medium / large)
 
-For `size:medium` and `size:large` issues, use the interactive planning flow instead. These issues are too complex for fully automated handling.
+For `size:medium` and `size:large` issues, use the same gated workflow but always pass issue number explicitly and keep tighter review loops.
 
-#### Interactive planning
+#### Recommended planning flow
 
 ```
-/create_plan thoughts/shared/tickets/REPO_NAME/ISSUE-42.md
+/core/10-research 42
+/core/20-plan 42
 ```
 
-Claude will ask you questions, research the codebase, and iterate on the plan with you in real time. This is a back-and-forth conversation — you guide it toward the right approach. The result is saved to `thoughts/shared/plans/`.
+Legacy wrapper equivalent:
+
+```
+/ralph_research 42
+/ralph_plan 42
+```
+
+Iterate by adding focused corrections and re-running the planning command until review gate passes.
 
 Once the plan is finalized:
 
 1. Move the issue to `Ready for Dev`
-2. Run `/ralph_impl 42` (the agent follows the plan exactly)
-3. Or open a new session and use `/implement_plan` to implement it manually
+2. Run `/core/30-implement 42` (or `/ralph_impl 42`)
+3. Or open a new session and use `/implement_plan [plan-file]`
 
 ---
 
@@ -531,27 +570,34 @@ When you run `/ralph_plan`, for example, the command spawns several of these in 
 ## Command Reference
 
 ```
-/github                → create/update/comment on issues; update statuses
-/ralph_research [#]    → research a "Research Needed" issue (auto-picks highest priority if no # given)
-/ralph_plan [#]        → plan a "Ready for Plan" issue
-/ralph_impl [#]        → implement a "Ready for Dev" issue
-/oneshot [#]           → research + plan in sequence
-/oneshot_plan [#]      → plan + implement in sequence
-/create_plan [file]    → interactive plan creation (for medium/large issues)
-/iterate_plan [file]   → update an existing plan with local edits (you specify changes)
-/iterate_plan_external → sync GitHub issue comments to plan (discussions happen in GitHub)
-/implement_plan [file] → implement a plan file manually
-/validate_plan [file]  → verify implementation against a plan's success criteria
-/research_codebase     → deep codebase research — asks what to investigate, then runs parallel agents
-/commit                → create a commit with a clear message
-/describe_pr           → generate a PR description from the current branch
-/debug                 → investigate logs, DB state, and git history without editing files
-/create_handoff        → write a handoff document for the next session
-/resume_handoff [file] → resume work from a handoff document
-/create_worktree       → create an isolated git worktree for implementation
-/local_review          → set up a worktree to review a colleague's branch
-/setup_github_project  → one-time: create the GitHub Project with statuses and labels
+/core/next [#]          → auto-dispatch to correct phase by issue status
+/core/00-create         → create issue in workflow
+/core/10-research [#]   → research phase with quality gates
+/core/20-plan [#]       → planning phase with preflight checks
+/core/30-implement [#]  → implementation phase with blockers guard
+/github                 → create/update/comment on issues; update statuses
+/github_status          → inspect GitHub issue status
+/ralph_research [#]     → legacy wrapper for core/10-research
+/ralph_plan [#]         → legacy wrapper for core/20-plan
+/ralph_impl [#]         → legacy wrapper for core/30-implement
+/oneshot [#]            → combined flow shortcut
+/oneshot_plan [#]       → combined flow shortcut
+/implement_plan [file]  → implement a plan file manually
+/validate_plan [file]   → pre/post implementation validation
+/debug                  → investigate logs, DB state, and git history without editing files
+/create_handoff         → write a handoff document for the next session
+/resume_handoff [file]  → resume work from a handoff document
+/create_worktree        → create an isolated git worktree for implementation
+/local_review           → set up a worktree to review a colleague's branch
+/setup_github_project   → one-time: create the GitHub Project with statuses and labels
+/linear                 → linear ticket/project utilities
+/founder_mode           → post-hoc workflow for experimental features
 ```
+
+Utility files used internally by implementation flow:
+
+- `.claude/commands/utilities/commit.md`
+- `.claude/commands/utilities/describe_pr.md`
 
 ---
 

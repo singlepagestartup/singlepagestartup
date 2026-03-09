@@ -73,14 +73,14 @@ fi
    issue_number: ISSUE_NUMBER
    issue_title: "Issue Title"
    start_date: YYYY-MM-DDTHH:MM:SSZ
-   plan_file: thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md
+   plan_file: thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md
    status: in_progress
    ---
 
    # Implementation Progress: ISSUE-{NUMBER} - Issue Title
 
    **Started**: YYYY-MM-DD
-   **Plan**: `thoughts/shared/plans/REPO_NAME/YYYY-MM-DD-ISSUE-{NUMBER}-description.md`
+   **Plan**: `thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md`
 
    ## Phase Progress
 

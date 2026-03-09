@@ -36,7 +36,7 @@ The admin panel at `/admin` renders correctly with:
 
 ### Verification:
 
-- `npx nx run host:build` succeeds without type errors
+- `npx nx run host:next:build` succeeds without type errors
 - Navigate to `/admin` → see ecommerce module dashboard
 - Navigate to `/admin/ecommerce/product` → see product table with working CRUD
 - Edit a product → Relations tab shows products-to-attributes with working CRUD
@@ -56,6 +56,44 @@ The admin panel at `/admin` renders correctly with:
 
 Work bottom-up: fix shared components first, then model-specific components, then host integration, so each layer is correct before the next layer consumes it.
 
+## Mandatory Validation Commands (Verified Only)
+
+Only commands/targets verified in repository config are allowed in this plan:
+
+- `npm run host:build` (from `/package.json`)
+- `npx nx run host:next:build` (from `/apps/host/project.json`)
+- `npx nx run host:eslint:lint` (from `/apps/host/project.json`)
+- `npx nx run @sps/ecommerce:jest:test` (from `/libs/modules/ecommerce/project.json`)
+- `npx nx run @sps/shared-frontend-components:tsc:build` (from `/libs/shared/frontend/components/project.json`)
+
+## Phase 0 — Root Cause Investigation
+
+### Overview
+
+Before implementation, identify why current admin-v2 pilot drifted from draft behavior and why the previous plan allowed invalid assumptions.
+
+### Cause Matrix
+
+| symptom                                                                 | evidence (file:line)                                                                                                               | process/tool cause                                                                                 | impact                                              | preventive control                                                                             |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Admin pages overlap (ecommerce + settings + account render together)    | `apps/host/src/components/admin-panel-draft/ClientComponent.tsx:23-29`                                                             | Route-state validation was skipped in planning preflight; assumption that each page had URL guards | `/admin` renders mixed content, manual QA confusion | Add mandatory route-guard verification step in planning preflight and implementation checklist |
+| Sidebar settings action missing in live panel                           | `libs/shared/frontend/components/src/lib/singlepage/admin-v2/panel/ClientComponent.tsx:66-106`                                     | Draft parity was assumed from file presence, not behavior-level verification                       | Cannot navigate to settings from sidebar            | Require behavior parity checks against draft for critical navigation actions                   |
+| Product dashboard card count not shown                                  | `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/module-overview-card/ClientComponent.tsx:31` | Component existence interpreted as completion; no UI-state verification                            | Pilot dashboard appears incomplete/misleading       | Add "visible data signals" check (badges/counters/status) to preflight and manual criteria     |
+| Attribute relations tab effectively disabled by missing relation props  | `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/table/index.tsx:17-27`                     | Cross-model contract verification not performed (table -> form relation props)                     | Attribute admin cannot manage key relations         | Require contract checks for render-prop wiring in audit mode                                   |
+| Plan used unverifiable/guessed validation commands in earlier iteration | Existing plan references `host:typecheck`, `shared-frontend-components:typecheck` (no matching targets in project configs)         | Command target existence check was not enforced before plan publication                            | Validation steps fail or mislead implementation     | Restrict plan to preflight-verified Nx targets/scripts only                                    |
+
+### Ticket ↔ Research ↔ Plan Reconciliation (Blocking Checklist)
+
+- [ ] `ecommerce.product`: ticket scope, research findings, and implementation phases refer to the same admin-v2 variants and files.
+- [ ] `ecommerce.attribute`: ticket scope, research findings, and implementation phases refer to the same admin-v2 variants and files.
+- [ ] `ecommerce.products-to-attributes`: ticket scope, research findings, and implementation phases refer to the same admin-v2 variants and files.
+- [ ] Any contradiction between ticket/research/plan is recorded in `Open Questions (Blocking)` before implementation starts.
+
+### Blocking Rule
+
+Implementation phases must not begin while unresolved contradictions exist.
+Every unresolved contradiction must be listed in `Open Questions (Blocking)` with owner + required clarification.
+
 ## Phase 1: Fix Shared Panel Component
 
 ### Overview
@@ -74,7 +112,7 @@ Uncomment and properly wire the settings button in the sidebar so users can navi
 
 #### Automated Verification:
 
-- [ ] Type checking passes: `npx nx run shared-frontend-components:typecheck` (or equivalent)
+- [ ] Shared components compile: `npx nx run @sps/shared-frontend-components:tsc:build`
 
 #### Manual Verification:
 
@@ -113,7 +151,7 @@ Fix bugs in product and attribute admin-v2 variants — count badge, relation pr
 
 #### Automated Verification:
 
-- [ ] Type checking passes for ecommerce module components
+- [ ] Ecommerce module TypeScript build succeeds: `npx nx run @sps/ecommerce:tsc:build`
 
 #### Manual Verification:
 
@@ -153,7 +191,7 @@ Fix bugs in products-to-attributes relation variants — React keys, productId p
 
 #### Automated Verification:
 
-- [ ] Type checking passes for products-to-attributes relation components
+- [ ] Ecommerce module TypeScript build succeeds after relation fixes: `npx nx run @sps/ecommerce:tsc:build`
 
 #### Manual Verification:
 
@@ -193,8 +231,8 @@ The `PanelComponent` (sidebar) should wrap all pages so the sidebar is always vi
 
 #### Automated Verification:
 
-- [ ] `npx nx run host:build` succeeds
-- [ ] Type checking passes: `npx nx run host:typecheck`
+- [ ] Host production build succeeds: `npm run host:build`
+- [ ] Host lint target succeeds: `npx nx run host:eslint:lint`
 
 #### Manual Verification:
 
@@ -244,5 +282,9 @@ No data migration needed. All changes are frontend-only.
 - Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-145.md`
 - Related research: `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
 - Draft reference: `apps/drafts/incoming/admin-v2/`
+
+## Open Questions (Blocking)
+
+- None currently. If a contradiction appears during implementation preflight, add it here and pause implementation.
 
 <!-- Last synced at: 2026-03-09T16:40:00Z -->
