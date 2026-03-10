@@ -11,6 +11,19 @@ export function Component(props: IComponentProps) {
   const pathname = usePathname();
   const adminBasePath = useAdminBasePath(pathname || "");
 
+  // URL-based visibility guards
+  const isAdminRoot = pathname === adminBasePath;
+  const isAdminEcommerce =
+    pathname === `${adminBasePath}/ecommerce` ||
+    pathname?.startsWith(`${adminBasePath}/ecommerce/`);
+  const isAdminSettings = pathname === `${adminBasePath}/settings`;
+  const isAdminAccountSettings =
+    pathname === `${adminBasePath}/settings/account`;
+
+  const showEcommercePanel = isAdminRoot || isAdminEcommerce;
+  const showSettingsPage = isAdminSettings && !isAdminAccountSettings;
+  const showAccountPage = isAdminAccountSettings;
+
   return (
     <section
       data-variant="admin-panel-draft"
@@ -20,13 +33,22 @@ export function Component(props: IComponentProps) {
         props.className,
       )}
     >
-      <EcommerceAdminV2Component adminBasePath={adminBasePath} />
-      <SettingsPageClientComponent adminBasePath={adminBasePath} />
-      <AccountSettingsPageClientComponent
-        adminBasePath={adminBasePath}
-        onIdentityAction={() => {}}
-        onLogout={() => {}}
-      />
+      {showEcommercePanel && (
+        <EcommerceAdminV2Component
+          adminBasePath={adminBasePath}
+          settingsHref={`${adminBasePath}/settings`}
+        />
+      )}
+      {showSettingsPage && (
+        <SettingsPageClientComponent adminBasePath={adminBasePath} />
+      )}
+      {showAccountPage && (
+        <AccountSettingsPageClientComponent
+          adminBasePath={adminBasePath}
+          onIdentityAction={() => {}}
+          onLogout={() => {}}
+        />
+      )}
     </section>
   );
 }

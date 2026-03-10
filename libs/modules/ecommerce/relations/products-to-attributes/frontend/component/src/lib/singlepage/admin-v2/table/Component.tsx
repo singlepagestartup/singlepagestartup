@@ -7,7 +7,7 @@ export function Component(props: IComponentPropsExtended) {
       {props.data.map((entity, index) => {
         return (
           <AdminTableRow
-            key={index}
+            key={String(entity.id || index)}
             module="ecommerce"
             name="products-to-attributes"
             isServer={props.isServer}

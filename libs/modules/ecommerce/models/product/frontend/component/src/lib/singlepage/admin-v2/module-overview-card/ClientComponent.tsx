@@ -28,7 +28,7 @@ function Content(props: IComponentPropsExtended) {
           <p className="mt-1 text-sm text-slate-600">product</p>
         </div>
         <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-          {/* {isLoading ? "..." : data?.length || 0} */}
+          {isLoading ? "..." : data?.length || 0}
         </span>
       </div>
 

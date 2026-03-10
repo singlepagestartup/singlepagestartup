@@ -9,6 +9,8 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 import { Component as ChildComponent } from "./Component";
 import { Component as ProductAdminFormComponent } from "../form/Component";
 import { Component as ProductsToAttributesComponent } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
+import { Component as ProductsToAttributesAdminFormComponent } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
+import { type IModel as IProductsToAttributesModel } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 
 function renderProductsToAttributes(
@@ -19,6 +21,23 @@ function renderProductsToAttributes(
   if (!productId) {
     return null;
   }
+
+  const customAdminForm = (
+    formProps: ISpsComponentBase & { data?: { id?: string } },
+  ) => {
+    return (
+      <ProductsToAttributesAdminFormComponent
+        isServer={formProps.isServer}
+        variant="admin-v2-form"
+        data={
+          {
+            ...formProps.data,
+            productId,
+          } as unknown as IProductsToAttributesModel
+        }
+      />
+    );
+  };
 
   return (
     <ProductsToAttributesComponent
@@ -37,6 +56,7 @@ function renderProductsToAttributes(
           },
         },
       }}
+      adminForm={customAdminForm}
     />
   );
 }

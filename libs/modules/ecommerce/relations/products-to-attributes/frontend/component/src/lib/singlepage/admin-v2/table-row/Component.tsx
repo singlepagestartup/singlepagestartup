@@ -8,6 +8,7 @@ import {
 import { Component as AdminForm } from "../form";
 import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
+import { type IModel as IAttributeModel } from "@sps/ecommerce/models/attribute/sdk/model";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -37,7 +38,9 @@ export function Component(props: IComponentPropsExtended) {
             <Attribute
               isServer={false}
               variant="admin-v2-form"
-              data={{ id: props.data.attributeId } as any}
+              data={
+                { id: props.data.attributeId } as unknown as IAttributeModel
+              }
             />
           );
         }}
