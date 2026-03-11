@@ -4,21 +4,19 @@ import { cn, useAdminBasePath } from "@sps/shared-frontend-client-utils";
 import { AdminV2Component as EcommerceAdminV2Component } from "@sps/ecommerce/frontend/component";
 import { SettingsPageClientComponent } from "./settings-page";
 import { AccountSettingsPageClientComponent } from "./account-settings-page";
-import { usePathname } from "next/navigation";
 import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
-  const pathname = usePathname();
-  const adminBasePath = useAdminBasePath(pathname || "");
+  const adminBasePath = useAdminBasePath(props.url);
 
-  // URL-based visibility guards
-  const isAdminRoot = pathname === adminBasePath;
+  // URL-based visibility guards using props.url (passed from server component)
+  const isAdminRoot = props.url === adminBasePath;
   const isAdminEcommerce =
-    pathname === `${adminBasePath}/ecommerce` ||
-    pathname?.startsWith(`${adminBasePath}/ecommerce/`);
-  const isAdminSettings = pathname === `${adminBasePath}/settings`;
+    props.url === `${adminBasePath}/ecommerce` ||
+    props.url.startsWith(`${adminBasePath}/ecommerce/`);
+  const isAdminSettings = props.url === `${adminBasePath}/settings`;
   const isAdminAccountSettings =
-    pathname === `${adminBasePath}/settings/account`;
+    props.url === `${adminBasePath}/settings/account`;
 
   const showEcommercePanel = isAdminRoot || isAdminEcommerce;
   const showSettingsPage = isAdminSettings && !isAdminAccountSettings;
@@ -34,10 +32,7 @@ export function Component(props: IComponentProps) {
       )}
     >
       {showEcommercePanel && (
-        <EcommerceAdminV2Component
-          adminBasePath={adminBasePath}
-          settingsHref={`${adminBasePath}/settings`}
-        />
+        <EcommerceAdminV2Component adminBasePath={adminBasePath} />
       )}
       {showSettingsPage && (
         <SettingsPageClientComponent adminBasePath={adminBasePath} />
