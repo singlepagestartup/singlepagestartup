@@ -54,8 +54,8 @@ export function Component(props: IComponentProps) {
 
       {isCurrentModule ? (
         <div className="mt-2 space-y-1 pl-3">
-          <Product isServer={false} url={props.url} />
-          <Attribute isServer={false} url={props.url} />
+          <Product isServer={props.isServer} url={props.url} />
+          <Attribute isServer={props.isServer} url={props.url} />
         </div>
       ) : null}
     </div>

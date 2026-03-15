@@ -26,7 +26,7 @@ export function Component<M extends { id?: string }, V>(
   const Provider = props.Provider;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} api={api} />

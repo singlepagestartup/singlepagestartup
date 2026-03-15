@@ -3,8 +3,8 @@ import {
   AdminV2Overview as EcommerceAdminV2Overview,
   AdminV2SidebarModuleItem as EcommerceAdminV2SidebarModuleItem,
 } from "@sps/ecommerce/frontend/component";
-import { SettingsPageClientComponent } from "./settings-page";
-import { AccountSettingsPageClientComponent } from "./account-settings-page";
+// import { SettingsPageClientComponent } from "./settings-page";
+// import { AccountSettingsPageClientComponent } from "./account-settings-page";
 import { IComponentProps } from "./interface";
 import { Button } from "@sps/shared-ui-shadcn";
 import { Component as PanelComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/panel/Component";
@@ -23,7 +23,10 @@ export function Component(props: IComponentProps) {
     >
       <div className="flex h-screen" data-testid="admin-prototype-root">
         <PanelComponent settingsHref={"/admin/settings"}>
-          <EcommerceAdminV2SidebarModuleItem isServer={false} url={props.url} />
+          <EcommerceAdminV2SidebarModuleItem
+            isServer={props.isServer}
+            url={props.url}
+          />
         </PanelComponent>
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <header className="flex h-16 items-center border-b border-border bg-card px-6">
@@ -52,7 +55,7 @@ export function Component(props: IComponentProps) {
               </Button>
             </div>
           </header>
-          <EcommerceAdminV2Overview url={props.url} />
+          <EcommerceAdminV2Overview url={props.url} isServer={props.isServer} />
           {/* <SettingsPageClientComponent adminBasePath={adminBasePath} />
       <AccountSettingsPageClientComponent
         adminBasePath={adminBasePath}

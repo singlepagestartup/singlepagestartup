@@ -11,7 +11,7 @@ export function Component(props: IComponentProps) {
   const Comp: any = props.isServer ? Server : Client;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary fallback={<Error />}>
       <Suspense fallback={<Skeleton />}>
         <Provider>
           <Comp {...props} />

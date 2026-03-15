@@ -1,22 +1,22 @@
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/ecommerce/models/product/sdk/client";
+import { api as serverApi } from "@sps/ecommerce/models/product/sdk/server";
 import { IComponentProps } from "./interface";
-import Client from "./client";
-import Server from "./server";
-import { Provider } from "@sps/ecommerce/models/product/sdk/client";
-import { ErrorBoundary } from "@sps/ui-adapter";
-import { Error } from "./Error";
-import { Suspense } from "react";
-import { Skeleton } from "./Skeleton";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/sidebar-item";
+import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {
-  const Comp: any = props.isServer ? Server : Client;
-
   return (
-    <ErrorBoundary fallback={Error}>
-      <Suspense fallback={<Skeleton />}>
-        <Provider>
-          <Comp {...props} />
-        </Provider>
-      </Suspense>
-    </ErrorBoundary>
+    <ParentComponent
+      Component={ChildComponent}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      module="ecommerce"
+      name="product"
+      {...props}
+    />
   );
 }

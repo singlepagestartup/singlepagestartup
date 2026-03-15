@@ -12,7 +12,7 @@ export function Component(props: IComponentProps) {
   const skeleton = props.skeleton || <Skeleton />;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary>
       <Suspense fallback={skeleton}>
         <Provider>
           <Comp {...props} />

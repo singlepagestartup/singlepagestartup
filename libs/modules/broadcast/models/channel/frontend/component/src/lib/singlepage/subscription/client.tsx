@@ -19,7 +19,7 @@ export function Component(props: IComponentProps) {
   }
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary>
       <ChildComponent {...props} data={data} />
     </ErrorBoundary>
   );

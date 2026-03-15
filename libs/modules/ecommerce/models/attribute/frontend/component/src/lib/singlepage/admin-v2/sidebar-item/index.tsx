@@ -1,11 +1,22 @@
+import {
+  Provider,
+  api as clientApi,
+} from "@sps/ecommerce/models/attribute/sdk/client";
+import { api as serverApi } from "@sps/ecommerce/models/attribute/sdk/server";
 import { IComponentProps } from "./interface";
-import { Provider } from "@sps/ecommerce/models/attribute/sdk/client";
-import { Component as Comp } from "./Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/sidebar-item";
+import { Component as ChildComponent } from "./Component";
 
 export function Component(props: IComponentProps) {
   return (
-    <Provider>
-      <Comp {...props} />
-    </Provider>
+    <ParentComponent
+      Component={ChildComponent}
+      Provider={Provider}
+      clientApi={clientApi}
+      serverApi={serverApi}
+      module="ecommerce"
+      name="attribute"
+      {...props}
+    />
   );
 }

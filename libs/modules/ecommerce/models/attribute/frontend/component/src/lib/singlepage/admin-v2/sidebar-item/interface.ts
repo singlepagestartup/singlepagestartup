@@ -1,12 +1,18 @@
 export { type IModel } from "@sps/ecommerce/models/attribute/sdk/model";
-import { ISpsComponentBase } from "@sps/ui-adapter";
+import { IModel } from "@sps/ecommerce/models/attribute/sdk/model";
+import {
+  IComponentProps as IParentComponentProps,
+  IComponentPropsExtended as IParentComponentPropsExtended,
+} from "@sps/shared-frontend-components/singlepage/admin-v2/sidebar-item/interface";
 
 export const variant = "admin-v2-sidebar-item" as const;
 
-export interface IComponentProps extends ISpsComponentBase {
-  variant: typeof variant;
-  className?: string;
-  isActive?: boolean;
-}
+export interface IComponentProps
+  extends IParentComponentProps<IModel, typeof variant> {}
 
-export interface IComponentPropsExtended extends IComponentProps {}
+export interface IComponentPropsExtended
+  extends IParentComponentPropsExtended<
+    IModel,
+    typeof variant,
+    IComponentProps
+  > {}

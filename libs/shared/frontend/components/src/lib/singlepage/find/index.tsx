@@ -27,7 +27,7 @@ export function Component<M, V>(
   const Provider = props.Provider;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} api={api} />

@@ -12,7 +12,7 @@ export function Component(
   const Comp: any = props.isServer ? Server : Client;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary fallback={<Error />}>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Comp {...props} />
       </Suspense>

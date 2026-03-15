@@ -10,7 +10,7 @@ export function Component(props: IComponentProps) {
   const Comp: any = props.isServer ? Server : Client;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary>
       <Suspense fallback={props.skeleton ?? <Skeleton />}>
         <Provider>
           <Comp {...props} />

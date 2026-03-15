@@ -5,7 +5,7 @@ import ErrorComponent from "./error";
 
 interface Props {
   children?: ReactNode;
-  fallback?: any;
+  fallback?: ReactNode;
 }
 
 export interface ErrorBoundaryState {
@@ -44,13 +44,11 @@ export class ErrorBoundary extends Component<Props, ErrorBoundaryState> {
     }
 
     if (this.state.hasError) {
-      const Comp = this.props.fallback;
-
-      if (!Comp) {
+      if (!this.props.fallback) {
         return <ErrorComponent {...this.state} variant="simple" />;
       }
 
-      return <Comp {...this.state} />;
+      return this.props.fallback as React.ReactElement;
     }
 
     return this.props.children as any;

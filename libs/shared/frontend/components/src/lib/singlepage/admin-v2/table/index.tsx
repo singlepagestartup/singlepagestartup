@@ -34,7 +34,7 @@ export function Component<M extends { id?: string }, V>(
   const Provider = props.Provider;
 
   return (
-    <ErrorBoundary fallback={Error}>
+    <ErrorBoundary fallback={<Error />}>
       <Suspense fallback={props.Skeleton ?? <Skeleton />}>
         <Provider>
           <TableController {...props}>
