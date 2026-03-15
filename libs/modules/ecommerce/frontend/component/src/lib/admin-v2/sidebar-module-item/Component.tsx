@@ -32,7 +32,7 @@ export function Component(props: IComponentProps) {
         className={cn(
           "!w-full justify-between rounded-md border px-3 py-2 text-left text-sm",
           isCurrentModule
-            ? "border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900"
+            ? "border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900 hover:text-white"
             : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white",
         )}
       >

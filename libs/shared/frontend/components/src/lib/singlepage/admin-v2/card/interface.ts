@@ -12,8 +12,8 @@ export interface IComponentProps<M extends { id?: string }, V>
   type?: "model" | "relation";
   module?: string;
   name?: string;
-  apiRoute: string;
-  href: string;
+  apiRoute?: string;
+  href?: string;
 }
 
 export type IComponentPropsExtended<

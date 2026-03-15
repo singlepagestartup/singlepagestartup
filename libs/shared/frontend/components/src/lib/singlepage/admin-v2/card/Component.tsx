@@ -32,7 +32,7 @@ export function Component<M extends { id: string }, V>(
           type="button"
           className="!w-full rounded-md border border-slate-400 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-slate-500 hover:bg-slate-800"
         >
-          <Link href={props.href}>Open model</Link>
+          {props.href ? <Link href={props.href}>Open model</Link> : ""}
         </Button>
       </div>
     </Card>
