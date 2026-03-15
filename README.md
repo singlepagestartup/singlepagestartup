@@ -352,6 +352,21 @@ Example:
  */
 ```
 
+### E2E execution principle (Host, reuse-first)
+
+Host E2E tests are run in reuse mode by default to avoid slow cold-start on every run.
+
+1. Start Host once:
+   - `npm run host:dev`
+2. Run Playwright tests in reuse mode:
+   - `npm run test:e2e:singlepage`
+   - `npm run test:e2e:startup`
+
+If you explicitly need Playwright to manage Host webServer, use:
+
+- `npm run test:e2e:singlepage:with-webserver`
+- `npm run test:e2e:startup:with-webserver`
+
 ## Attaching Upstream
 
 After creating repository based on singlepagestartup template, call command:

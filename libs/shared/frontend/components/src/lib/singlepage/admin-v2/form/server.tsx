@@ -38,7 +38,7 @@ export async function Component<
     <Child
       variant={typedProps.variant}
       isServer={typedProps.isServer}
-      data={undefined}
+      data={typedProps.data}
     />
   );
 }

@@ -14,6 +14,8 @@ import { Component as Default } from "./default";
 import { Component as OverviewDefault } from "./overview-default";
 import { Component as PriceDefault } from "./price-default";
 import { Component as CurrencyToggleGroupDefault } from "./currency/toggle-group-default";
+import { Component as AdminV2SidebarItem } from "./admin-v2/sidebar-item";
+import { Component as AdminV2Card } from "./admin-v2/card";
 
 export const variants = {
   "cart-default": CartDefault,
@@ -32,4 +34,6 @@ export const variants = {
   "overview-default": OverviewDefault,
   "price-default": PriceDefault,
   "currency-toggle-group-default": CurrencyToggleGroupDefault,
+  "admin-v2-sidebar-item": AdminV2SidebarItem,
+  "admin-v2-card": AdminV2Card,
 };

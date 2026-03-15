@@ -34,5 +34,5 @@ export function Component<
     return <Child {...typedProps} isServer={false} data={data} />;
   }
 
-  return <Child {...typedProps} isServer={false} data={undefined} />;
+  return <Child {...typedProps} isServer={false} data={typedProps.data} />;
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { Button, Card } from "@sps/shared-ui-shadcn";
-import { api, Provider } from "@sps/ecommerce/models/attribute/sdk/client";
+import { api } from "@sps/ecommerce/models/attribute/sdk/client";
 import Link from "next/link";
 import { IComponentPropsExtended } from "./interface";
 
-function Content(props: IComponentPropsExtended) {
+export function Component(props: IComponentPropsExtended) {
   const { data, isLoading } = api.find({
     params: {
       offset: 0,
@@ -51,13 +51,5 @@ function Content(props: IComponentPropsExtended) {
         </Button>
       </div>
     </Card>
-  );
-}
-
-export function Component(props: IComponentPropsExtended) {
-  return (
-    <Provider>
-      <Content {...props} />
-    </Provider>
   );
 }

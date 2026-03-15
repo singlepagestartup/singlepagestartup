@@ -12,7 +12,7 @@
 
 import { createRoot, Root } from "react-dom/client";
 import { act } from "react";
-import { Component } from "./ClientComponent";
+import { Component } from "./Component";
 
 let pathname = "/admin";
 

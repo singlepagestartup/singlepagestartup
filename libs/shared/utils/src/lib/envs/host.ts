@@ -87,3 +87,5 @@ export const BUG_SERVICE_TELEGRAM_BOT_TOKEN =
 export const BUG_SERVICE_TELEGRAM_CHAT_ID =
   process.env["BUG_SERVICE_TELEGRAM_CHAT_ID"];
 export const BUG_SERVICE_PROJECT = process.env["BUG_SERVICE_PROJECT"];
+
+export const ADMIN_BASE_PATH = process.env["ADMIN_BASE_PATH"] || "/admin";

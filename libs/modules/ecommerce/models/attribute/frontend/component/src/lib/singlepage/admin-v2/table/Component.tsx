@@ -10,20 +10,15 @@ export function Component(props: IComponentPropsExtended) {
         </div>
       ) : null}
       {props.data.map((entity) => {
-        const defaultTitle =
-          entity.string && typeof entity.string === "object"
-            ? String((entity.string as Record<string, unknown>).en || "")
-            : "";
-
         return (
           <AdminTableRow
-            key={entity.id || defaultTitle}
+            key={entity.id}
             module="ecommerce"
             name="attribute"
             isServer={props.isServer}
             variant="admin-v2-table-row"
             adminForm={props.adminForm}
-            data={{ id: String(entity.id || "") }}
+            data={entity}
           />
         );
       })}

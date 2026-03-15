@@ -12,8 +12,10 @@ const hostWebServer = {
   timeout: 320_000,
 };
 
-const useExternalHost = process.env.PW_SKIP_WEBSERVER === "1";
-const webServer = useExternalHost ? undefined : hostWebServer;
+const useManagedHost = process.env.PW_USE_WEBSERVER === "1";
+const skipManagedHost = process.env.PW_SKIP_WEBSERVER === "1";
+const webServer =
+  useManagedHost && !skipManagedHost ? hostWebServer : undefined;
 
 export default defineConfig({
   testDir: "./e2e",

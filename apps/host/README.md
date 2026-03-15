@@ -58,22 +58,28 @@ Example:
 ### How Host E2E works
 
 - `nx run host:e2e` starts Playwright against the Host app.
-- By default, Playwright starts Host on `http://127.0.0.1:3000` using `apps/host/playwright.config.ts`.
-- If `PW_SKIP_WEBSERVER=1` is set, Playwright reuses an already running Host process and does not restart it.
+- By default, Playwright runs in **reuse mode** and does **not** start Host automatically.
+- Reuse mode expects Host to already run on `http://127.0.0.1:3000`.
+- To explicitly allow Playwright to start Host (fallback only), set `PW_USE_WEBSERVER=1`.
+- `PW_SKIP_WEBSERVER=1` always forces reuse mode.
 - Playwright projects are split by ownership:
   - `singlepage` for framework-maintained business flows
   - `startup` for customer-maintained business flows
 - Current `singlepage` smoke scenarios use browser-level API mocks from `apps/host/e2e/support`.
 
-### Running Playwright without Host cold-start
+### Reuse-first E2E principle
 
-To avoid restarting the Host app for each Playwright run:
+This project uses a reuse-first E2E workflow to avoid expensive Host cold-starts (typically around 2 minutes in local dev):
 
-1. Start Host manually:
-   - `npm run host:dev` (recommended for local iteration), or
+1. Start Host once:
+   - `npm run host:dev` (recommended), or
    - `npm run host:start` (after build).
-2. Run Playwright in reuse mode:
-   - `npm run test:e2e:singlepage:reuse -- --testFiles=apps/host/e2e/singlepage/<your-test>.e2e.ts`
+2. Run E2E tests (reuse mode by default):
+   - `npm run test:e2e:singlepage`
+   - `npm run test:e2e:startup`
+3. Optional fallback (let Playwright manage Host webServer):
+   - `npm run test:e2e:singlepage:with-webserver`
+   - `npm run test:e2e:startup:with-webserver`
 
 For the current `apps/host/e2e/singlepage` suite, backend startup is not required. These tests use browser-level mocks from `apps/host/e2e/support/mock-ecommerce-api.ts`.
 
@@ -81,9 +87,12 @@ For the current `apps/host/e2e/singlepage` suite, backend startup is not require
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
-- `npm run test:e2e:singlepage`
-- `npm run test:e2e:singlepage:reuse` (reuse already running Host server, no Host cold-start)
-- `npm run test:e2e:startup`
+- `npm run host:dev` (start once before E2E runs)
+- `npm run test:e2e:singlepage` (reuse mode by default)
+- `npm run test:e2e:singlepage:reuse` (explicit alias for reuse mode)
+- `npm run test:e2e:startup` (reuse mode by default)
+- `npm run test:e2e:singlepage:with-webserver` (optional fallback)
+- `npm run test:e2e:startup:with-webserver` (optional fallback)
 - `npm run test:e2e:scoped` (alias for `singlepage`)
 - `npm run test:all:scoped`
 
