@@ -8,8 +8,10 @@
 import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
-test.describe("product actions smoke", () => {
-  test("creates and deletes product using mocked api", async ({ page }) => {
+test.describe("GIVEN: product API endpoints are mocked with create/delete tracking", () => {
+  test("WHEN: user creates and deletes a product from admin list THEN: API counters increment exactly once per action", async ({
+    page,
+  }) => {
     const apiState = await setupEcommerceApiMocks(page);
 
     await page.goto("/admin/ecommerce/product");

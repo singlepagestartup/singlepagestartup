@@ -1,21 +1,25 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
 import { Component as AdminTableRow } from "../table-row";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
-    <>
+    <ParentComponent<IModel, typeof variant> {...props}>
       {props.data.map((entity, index) => {
         return (
           <AdminTableRow
-            key={String(entity.id || index)}
+            key={entity.id || String(index)}
             module="ecommerce"
             name="products-to-attributes"
             isServer={props.isServer}
             variant="admin-v2-table-row"
-            data={{ id: String(entity.id || "") }}
+            data={entity}
+            apiProps={props.apiProps}
+            relatedContext={props.relatedContext}
+            relatedAdminForm={props.relatedAdminForm}
           />
         );
       })}
-    </>
+    </ParentComponent>
   );
 }

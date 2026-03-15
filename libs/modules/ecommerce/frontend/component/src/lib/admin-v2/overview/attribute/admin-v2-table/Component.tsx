@@ -3,6 +3,10 @@ import { IComponentProps } from "./interface";
 
 export function Component(props: IComponentProps) {
   return (
-    <ClientComponent isServer={false} url={props.url} variant={props.variant} />
+    <ClientComponent
+      isServer={props.isServer}
+      url={props.url}
+      variant={props.variant}
+    />
   );
 }

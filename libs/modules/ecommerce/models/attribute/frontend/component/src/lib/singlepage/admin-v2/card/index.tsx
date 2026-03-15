@@ -19,7 +19,7 @@ export function Component(props: IComponentProps) {
       name="attribute"
       {...props}
       apiRoute="/api/ecommerce/attributes"
-      href={`${ADMIN_BASE_PATH}/ecommerce/attribute`}
+      href={props.href || ADMIN_BASE_PATH + "/ecommerce/attribute"}
     />
   );
 }

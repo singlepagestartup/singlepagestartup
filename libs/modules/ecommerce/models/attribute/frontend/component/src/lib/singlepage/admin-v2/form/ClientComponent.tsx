@@ -11,7 +11,7 @@ import {
   insertSchema,
 } from "@sps/ecommerce/models/attribute/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-v2/form/Component";
-import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin/agregated-input/Component";
+import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin-v2/agregated-input/Component";
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { randomWordsGenerator } from "@sps/shared-utils";

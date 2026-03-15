@@ -7,7 +7,7 @@
  */
 
 jest.mock(
-  "@sps/shared-frontend-components/singlepage/admin/select-input/Component",
+  "@sps/shared-frontend-components/singlepage/admin-v2/select-input/Component",
   () => ({
     Component: "MockAdminSelectInput",
   }),

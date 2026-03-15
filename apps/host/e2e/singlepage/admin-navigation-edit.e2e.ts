@@ -8,8 +8,8 @@
 import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
-test.describe("admin navigation and edit flow", () => {
-  test("navigates from sidebar to product table and opens edit form", async ({
+test.describe("GIVEN: admin shell and ecommerce API mocks are available", () => {
+  test("WHEN: user navigates from sidebar to product table and opens edit THEN: route transitions and update form rendering succeed", async ({
     page,
   }) => {
     await setupEcommerceApiMocks(page);

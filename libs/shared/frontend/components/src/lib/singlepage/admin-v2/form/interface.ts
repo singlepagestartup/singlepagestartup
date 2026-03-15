@@ -13,6 +13,10 @@ export interface IComponentProps<
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];
   };
+  relatedContext?: {
+    model?: string;
+    field?: string;
+  };
   className?: string;
 
   // Admin-v2 form layout props.

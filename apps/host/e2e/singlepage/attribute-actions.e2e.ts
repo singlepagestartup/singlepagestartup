@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
 test.describe("GIVEN: attribute API endpoints are mocked with create/delete tracking", () => {
-  test("WHEN: user creates and deletes an attribute from admin list", async ({
+  test("WHEN: user creates and deletes an attribute from admin list THEN: API counters increment exactly once per action", async ({
     page,
   }) => {
     const apiState = await setupEcommerceApiMocks(page);

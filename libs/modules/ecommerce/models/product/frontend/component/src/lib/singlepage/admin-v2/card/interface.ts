@@ -1,5 +1,5 @@
-export { type IModel } from "@sps/ecommerce/models/attribute/sdk/model";
-import { IModel } from "@sps/ecommerce/models/attribute/sdk/model";
+export { type IModel } from "@sps/ecommerce/models/product/sdk/model";
+import { IModel } from "@sps/ecommerce/models/product/sdk/model";
 import {
   IComponentProps as IParentComponentProps,
   IComponentPropsExtended as IParentComponentPropsExtended,

@@ -1,14 +1,19 @@
 import type { Page, Request, Route } from "@playwright/test";
 
+type TLocalizedText = {
+  en: string;
+  ru: string;
+};
+
 type TProduct = {
   id: string;
   adminTitle: string;
-  title: { en: string; ru: string };
+  title: TLocalizedText;
   slug: string;
   variant: string;
   type: string;
-  shortDescription: { en: string; ru: string };
-  description: { en: string; ru: string };
+  shortDescription: TLocalizedText;
+  description: TLocalizedText;
 };
 
 type TAttribute = {
@@ -16,10 +21,58 @@ type TAttribute = {
   adminTitle: string;
   slug: string;
   variant: string;
-  string: { en: string; ru: string };
+  string: TLocalizedText;
   number: number;
   boolean: boolean;
   datetime: string;
+};
+
+type TAttributeKey = {
+  id: string;
+  title: TLocalizedText;
+  slug: string;
+  variant: string;
+  prefix: TLocalizedText;
+  suffix: TLocalizedText;
+  type: string;
+  field: string;
+};
+
+type TCategory = {
+  id: string;
+  adminTitle: string;
+  title: TLocalizedText;
+  slug: string;
+  variant: string;
+  className: string;
+  description: TLocalizedText;
+};
+
+type TOrder = {
+  id: string;
+  variant: string;
+  status: string;
+  type: string;
+  comment: string;
+};
+
+type TStore = {
+  id: string;
+  adminTitle: string;
+  title: TLocalizedText;
+  slug: string;
+  variant: string;
+  shortDescription: TLocalizedText;
+  description: TLocalizedText;
+};
+
+type TWidget = {
+  id: string;
+  adminTitle: string;
+  title: TLocalizedText;
+  slug: string;
+  variant: string;
+  className: string;
 };
 
 type TProductsToAttributes = {
@@ -29,10 +82,75 @@ type TProductsToAttributes = {
   variant: string;
 };
 
+type TCategoriesToProducts = {
+  id: string;
+  categoryId: string;
+  productId: string;
+  variant: string;
+};
+
+type TOrdersToBillingModuleCurrencies = {
+  id: string;
+  orderId: string;
+  billingModuleCurrencyId: string;
+  variant: string;
+};
+
+type TBillingCurrency = {
+  id: string;
+  title: string;
+  slug: string;
+  symbol: string;
+  variant: string;
+  isDefault: boolean;
+};
+
+type TPaymentIntent = {
+  id: string;
+  amount: number;
+  status: string;
+  type: string;
+  interval: string;
+  variant: string;
+};
+
+type TFile = {
+  id: string;
+  adminTitle: string;
+  slug: string;
+  variant: string;
+  file: string;
+  className: string;
+  containerClassName: string;
+};
+
+type TWebsiteBuilderWidget = {
+  id: string;
+  adminTitle: string;
+  slug: string;
+  variant: string;
+  title: TLocalizedText;
+  subtitle: TLocalizedText;
+  description: TLocalizedText;
+  anchor: string;
+  className: string;
+};
+
 export type TEcommerceMockState = {
   products: TProduct[];
   attributes: TAttribute[];
+  attributeKeys: TAttributeKey[];
+  categories: TCategory[];
+  orders: TOrder[];
+  stores: TStore[];
+  widgets: TWidget[];
   productsToAttributes: TProductsToAttributes[];
+  categoriesToProducts: TCategoriesToProducts[];
+  ordersToBillingModuleCurrencies: TOrdersToBillingModuleCurrencies[];
+  billingCurrencies: TBillingCurrency[];
+  paymentIntents: TPaymentIntent[];
+  files: TFile[];
+  websiteBuilderWidgets: TWebsiteBuilderWidget[];
   createProductCalls: number;
   deleteProductCalls: number;
   createAttributeCalls: number;
@@ -129,6 +247,25 @@ function extractDataPayload(
   return payload;
 }
 
+function withEntityGetById<T extends { id: string }>(
+  collection: T[],
+  path: string,
+  pattern: RegExp,
+) {
+  if (!pattern.test(path)) {
+    return null;
+  }
+
+  const id = path.split("/").at(-1) || "";
+  const found = collection.find((item) => item.id === id);
+
+  if (!found) {
+    return { status: 404, data: { error: "Not found" } };
+  }
+
+  return { status: 200, data: { data: found } };
+}
+
 export async function setupEcommerceApiMocks(
   page: Page,
 ): Promise<TEcommerceMockState> {
@@ -163,12 +300,125 @@ export async function setupEcommerceApiMocks(
         datetime: "2026-01-01T00:00:00.000Z",
       },
     ],
+    attributeKeys: [
+      {
+        id: "66666666-6666-6666-6666-666666666666",
+        title: { en: "Color", ru: "Color" },
+        slug: "color",
+        variant: "default",
+        prefix: { en: "", ru: "" },
+        suffix: { en: "", ru: "" },
+        type: "string",
+        field: "string",
+      },
+    ],
+    categories: [
+      {
+        id: "77777777-7777-7777-7777-777777777777",
+        adminTitle: "Mock Category Main",
+        title: { en: "Main", ru: "Main" },
+        slug: "main-category",
+        variant: "default",
+        className: "mock-category",
+        description: { en: "Category", ru: "Category" },
+      },
+    ],
+    orders: [
+      {
+        id: "88888888-8888-8888-8888-888888888888",
+        variant: "default",
+        status: "new",
+        type: "cart",
+        comment: "Mock order",
+      },
+    ],
+    stores: [
+      {
+        id: "99999999-9999-9999-9999-999999999999",
+        adminTitle: "Mock Store",
+        title: { en: "Mock Store", ru: "Mock Store" },
+        slug: "mock-store",
+        variant: "default",
+        shortDescription: { en: "Short", ru: "Short" },
+        description: { en: "Description", ru: "Description" },
+      },
+    ],
+    widgets: [
+      {
+        id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        adminTitle: "Mock Widget",
+        title: { en: "Widget", ru: "Widget" },
+        slug: "mock-widget",
+        variant: "default",
+        className: "mock-widget",
+      },
+    ],
     productsToAttributes: [
       {
         id: "33333333-3333-3333-3333-333333333333",
         productId: "11111111-1111-1111-1111-111111111111",
         attributeId: "22222222-2222-2222-2222-222222222222",
         variant: "default",
+      },
+    ],
+    categoriesToProducts: [
+      {
+        id: "44444444-4444-4444-4444-444444444444",
+        categoryId: "77777777-7777-7777-7777-777777777777",
+        productId: "11111111-1111-1111-1111-111111111111",
+        variant: "default",
+      },
+    ],
+    ordersToBillingModuleCurrencies: [
+      {
+        id: "55555555-5555-5555-5555-555555555555",
+        orderId: "88888888-8888-8888-8888-888888888888",
+        billingModuleCurrencyId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        variant: "default",
+      },
+    ],
+    billingCurrencies: [
+      {
+        id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        title: "USD",
+        slug: "usd",
+        symbol: "$",
+        variant: "default",
+        isDefault: true,
+      },
+    ],
+    paymentIntents: [
+      {
+        id: "cccccccc-cccc-cccc-cccc-cccccccccccc",
+        amount: 100,
+        status: "requires_payment_method",
+        type: "one_off",
+        interval: "month",
+        variant: "default",
+      },
+    ],
+    files: [
+      {
+        id: "dddddddd-dddd-dddd-dddd-dddddddddddd",
+        adminTitle: "Mock File",
+        slug: "mock-file",
+        variant: "default",
+        file: "/mock-file.png",
+        className: "",
+        containerClassName: "",
+      },
+    ],
+    websiteBuilderWidgets: [
+      {
+        id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+        adminTitle: "Mock Website Widget",
+        slug: "mock-website-widget",
+        variant: "default",
+        title: { en: "Website Widget", ru: "Website Widget" },
+        subtitle: { en: "", ru: "" },
+        description: { en: "", ru: "" },
+        anchor: "",
+        className: "",
       },
     ],
     createProductCalls: 0,
@@ -219,17 +469,6 @@ export async function setupEcommerceApiMocks(
       return jsonResponse(route, 200, { data: created });
     }
 
-    if (/^\/api\/ecommerce\/products\/[^/]+$/.test(path) && method === "GET") {
-      const id = path.split("/").at(-1) || "";
-      const found = state.products.find((item) => item.id === id);
-
-      if (!found) {
-        return jsonResponse(route, 404, { error: "Not found" });
-      }
-
-      return jsonResponse(route, 200, { data: found });
-    }
-
     if (
       /^\/api\/ecommerce\/products\/[^/]+$/.test(path) &&
       method === "DELETE"
@@ -264,7 +503,7 @@ export async function setupEcommerceApiMocks(
         variant: typeof data.variant === "string" ? data.variant : "default",
         string:
           data.string && typeof data.string === "object"
-            ? (data.string as { en: string; ru: string })
+            ? (data.string as TLocalizedText)
             : { en: "", ru: "" },
         number: typeof data.number === "number" ? data.number : 0,
         boolean: typeof data.boolean === "boolean" ? data.boolean : false,
@@ -281,20 +520,6 @@ export async function setupEcommerceApiMocks(
 
     if (
       /^\/api\/ecommerce\/attributes\/[^/]+$/.test(path) &&
-      method === "GET"
-    ) {
-      const id = path.split("/").at(-1) || "";
-      const found = state.attributes.find((item) => item.id === id);
-
-      if (!found) {
-        return jsonResponse(route, 404, { error: "Not found" });
-      }
-
-      return jsonResponse(route, 200, { data: found });
-    }
-
-    if (
-      /^\/api\/ecommerce\/attributes\/[^/]+$/.test(path) &&
       method === "DELETE"
     ) {
       state.deleteAttributeCalls += 1;
@@ -307,6 +532,26 @@ export async function setupEcommerceApiMocks(
       );
 
       return jsonResponse(route, 200, { data: { id } });
+    }
+
+    if (path === "/api/ecommerce/attribute-keys" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.attributeKeys });
+    }
+
+    if (path === "/api/ecommerce/categories" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.categories });
+    }
+
+    if (path === "/api/ecommerce/orders" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.orders });
+    }
+
+    if (path === "/api/ecommerce/stores" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.stores });
+    }
+
+    if (path === "/api/ecommerce/widgets" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.widgets });
     }
 
     if (path === "/api/ecommerce/products-to-attributes" && method === "GET") {
@@ -340,20 +585,6 @@ export async function setupEcommerceApiMocks(
 
     if (
       /^\/api\/ecommerce\/products-to-attributes\/[^/]+$/.test(path) &&
-      method === "GET"
-    ) {
-      const id = path.split("/").at(-1) || "";
-      const found = state.productsToAttributes.find((item) => item.id === id);
-
-      if (!found) {
-        return jsonResponse(route, 404, { error: "Not found" });
-      }
-
-      return jsonResponse(route, 200, { data: found });
-    }
-
-    if (
-      /^\/api\/ecommerce\/products-to-attributes\/[^/]+$/.test(path) &&
       method === "DELETE"
     ) {
       state.deleteProductsToAttributesCalls += 1;
@@ -365,6 +596,220 @@ export async function setupEcommerceApiMocks(
       );
 
       return jsonResponse(route, 200, { data: { id } });
+    }
+
+    if (path === "/api/ecommerce/categories-to-products" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.categoriesToProducts });
+    }
+
+    if (
+      path === "/api/ecommerce/orders-to-billing-module-currencies" &&
+      method === "GET"
+    ) {
+      return jsonResponse(route, 200, {
+        data: state.ordersToBillingModuleCurrencies,
+      });
+    }
+
+    const productsById = withEntityGetById(
+      state.products,
+      path,
+      /^\/api\/ecommerce\/products\/[^/]+$/,
+    );
+    if (productsById && method === "GET") {
+      return jsonResponse(route, productsById.status, productsById.data);
+    }
+
+    const attributesById = withEntityGetById(
+      state.attributes,
+      path,
+      /^\/api\/ecommerce\/attributes\/[^/]+$/,
+    );
+    if (attributesById && method === "GET") {
+      return jsonResponse(route, attributesById.status, attributesById.data);
+    }
+
+    const attributeKeysById = withEntityGetById(
+      state.attributeKeys,
+      path,
+      /^\/api\/ecommerce\/attribute-keys\/[^/]+$/,
+    );
+    if (attributeKeysById && method === "GET") {
+      return jsonResponse(
+        route,
+        attributeKeysById.status,
+        attributeKeysById.data,
+      );
+    }
+
+    const categoriesById = withEntityGetById(
+      state.categories,
+      path,
+      /^\/api\/ecommerce\/categories\/[^/]+$/,
+    );
+    if (categoriesById && method === "GET") {
+      return jsonResponse(route, categoriesById.status, categoriesById.data);
+    }
+
+    const ordersById = withEntityGetById(
+      state.orders,
+      path,
+      /^\/api\/ecommerce\/orders\/[^/]+$/,
+    );
+    if (ordersById && method === "GET") {
+      return jsonResponse(route, ordersById.status, ordersById.data);
+    }
+
+    const storesById = withEntityGetById(
+      state.stores,
+      path,
+      /^\/api\/ecommerce\/stores\/[^/]+$/,
+    );
+    if (storesById && method === "GET") {
+      return jsonResponse(route, storesById.status, storesById.data);
+    }
+
+    const widgetsById = withEntityGetById(
+      state.widgets,
+      path,
+      /^\/api\/ecommerce\/widgets\/[^/]+$/,
+    );
+    if (widgetsById && method === "GET") {
+      return jsonResponse(route, widgetsById.status, widgetsById.data);
+    }
+
+    const productsToAttributesById = withEntityGetById(
+      state.productsToAttributes,
+      path,
+      /^\/api\/ecommerce\/products-to-attributes\/[^/]+$/,
+    );
+    if (productsToAttributesById && method === "GET") {
+      return jsonResponse(
+        route,
+        productsToAttributesById.status,
+        productsToAttributesById.data,
+      );
+    }
+
+    const categoriesToProductsById = withEntityGetById(
+      state.categoriesToProducts,
+      path,
+      /^\/api\/ecommerce\/categories-to-products\/[^/]+$/,
+    );
+    if (categoriesToProductsById && method === "GET") {
+      return jsonResponse(
+        route,
+        categoriesToProductsById.status,
+        categoriesToProductsById.data,
+      );
+    }
+
+    const ordersToBillingCurrenciesById = withEntityGetById(
+      state.ordersToBillingModuleCurrencies,
+      path,
+      /^\/api\/ecommerce\/orders-to-billing-module-currencies\/[^/]+$/,
+    );
+    if (ordersToBillingCurrenciesById && method === "GET") {
+      return jsonResponse(
+        route,
+        ordersToBillingCurrenciesById.status,
+        ordersToBillingCurrenciesById.data,
+      );
+    }
+
+    return jsonResponse(route, 200, { data: [] });
+  });
+
+  await page.route("**/api/billing/**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const path = normalizePath(url.pathname);
+    const method = request.method();
+
+    if (method === "OPTIONS") {
+      return jsonResponse(route, 204, {});
+    }
+
+    if (path === "/api/billing/currencies" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.billingCurrencies });
+    }
+
+    if (path === "/api/billing/payment-intents" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.paymentIntents });
+    }
+
+    const currencyById = withEntityGetById(
+      state.billingCurrencies,
+      path,
+      /^\/api\/billing\/currencies\/[^/]+$/,
+    );
+    if (currencyById && method === "GET") {
+      return jsonResponse(route, currencyById.status, currencyById.data);
+    }
+
+    const paymentIntentById = withEntityGetById(
+      state.paymentIntents,
+      path,
+      /^\/api\/billing\/payment-intents\/[^/]+$/,
+    );
+    if (paymentIntentById && method === "GET") {
+      return jsonResponse(
+        route,
+        paymentIntentById.status,
+        paymentIntentById.data,
+      );
+    }
+
+    return jsonResponse(route, 200, { data: [] });
+  });
+
+  await page.route("**/api/file-storage/**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const path = normalizePath(url.pathname);
+    const method = request.method();
+
+    if (method === "OPTIONS") {
+      return jsonResponse(route, 204, {});
+    }
+
+    if (path === "/api/file-storage/files" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.files });
+    }
+
+    const fileById = withEntityGetById(
+      state.files,
+      path,
+      /^\/api\/file-storage\/files\/[^/]+$/,
+    );
+    if (fileById && method === "GET") {
+      return jsonResponse(route, fileById.status, fileById.data);
+    }
+
+    return jsonResponse(route, 200, { data: [] });
+  });
+
+  await page.route("**/api/website-builder/**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const path = normalizePath(url.pathname);
+    const method = request.method();
+
+    if (method === "OPTIONS") {
+      return jsonResponse(route, 204, {});
+    }
+
+    if (path === "/api/website-builder/widgets" && method === "GET") {
+      return jsonResponse(route, 200, { data: state.websiteBuilderWidgets });
+    }
+
+    const widgetById = withEntityGetById(
+      state.websiteBuilderWidgets,
+      path,
+      /^\/api\/website-builder\/widgets\/[^/]+$/,
+    );
+    if (widgetById && method === "GET") {
+      return jsonResponse(route, widgetById.status, widgetById.data);
     }
 
     return jsonResponse(route, 200, { data: [] });

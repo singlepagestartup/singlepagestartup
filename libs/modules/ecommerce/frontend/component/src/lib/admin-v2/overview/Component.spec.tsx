@@ -3,65 +3,71 @@
  */
 
 /**
- * BDD Suite: ecommerce admin-v2 route integration.
+ * BDD Suite: ecommerce admin-v2 overview rendering.
  *
- * Given: suite fixtures and test doubles are prepared for deterministic behavior.
- * When: a scenario action from this suite is executed.
- * Then: assertions verify expected observable behavior and contracts.
+ * Given: overview receives module route and registry-driven model entries.
+ * When: user opens overview or model route in admin-v2.
+ * Then: cards and tables are rendered according to current URL scope.
  */
 
-import { createRoot, Root } from "react-dom/client";
 import { act } from "react";
+import { createRoot, Root } from "react-dom/client";
 import { Component } from "./Component";
 
-let pathname = "/admin";
+const modelMock = jest.fn();
+const tableMock = jest.fn();
 
-const productComponentMock = jest.fn();
-const attributeComponentMock = jest.fn();
+jest.mock("../registry", () => ({
+  ecommerceAdminV2Models: [
+    {
+      id: "product",
+      title: "Product",
+      Model: (props: any) => {
+        modelMock(props);
+        return <div data-testid={`card:${props.variant}:product`} />;
+      },
+      Table: (props: any) => {
+        tableMock(props);
+        if (!props.url.includes("/product")) {
+          return null;
+        }
 
-jest.mock("next/navigation", () => ({
-  usePathname: () => pathname,
+        return <div data-testid="table:product" />;
+      },
+    },
+    {
+      id: "attribute",
+      title: "Attribute",
+      Model: (props: any) => {
+        modelMock(props);
+        return <div data-testid={`card:${props.variant}:attribute`} />;
+      },
+      Table: (props: any) => {
+        tableMock(props);
+        if (!props.url.includes("/attribute")) {
+          return null;
+        }
+
+        return <div data-testid="table:attribute" />;
+      },
+    },
+  ],
 }));
 
-jest.mock("@sps/shared-ui-shadcn", () => ({
-  Button: ({ children, asChild, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-}));
-
-jest.mock(
-  "@sps/shared-frontend-components/singlepage/admin-v2/panel/Component",
-  () => ({
-    Component: ({ children }: any) => <div data-testid="panel">{children}</div>,
-  }),
-);
-
-jest.mock("./sidebar-module-item", () => ({
-  Component: () => <div data-testid="sidebar-module-item" />,
-}));
-
-jest.mock("@sps/ecommerce/models/product/frontend/component", () => ({
-  Component: (props: any) => {
-    productComponentMock(props);
-    return <div data-testid={`product:${props.variant}`} />;
-  },
-}));
-
-jest.mock("@sps/ecommerce/models/attribute/frontend/component", () => ({
-  Component: (props: any) => {
-    attributeComponentMock(props);
-    return <div data-testid={`attribute:${props.variant}`} />;
-  },
-}));
-
-describe("ecommerce admin-v2 route integration", () => {
+describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
   let container: HTMLDivElement;
   let root: Root;
+
+  beforeAll(() => {
+    (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+  });
 
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    modelMock.mockClear();
+    tableMock.mockClear();
   });
 
   afterEach(() => {
@@ -71,117 +77,46 @@ describe("ecommerce admin-v2 route integration", () => {
     container.remove();
   });
 
-  beforeEach(() => {
-    pathname = "/admin";
-    productComponentMock.mockClear();
-    attributeComponentMock.mockClear();
-  });
-
-  it("renders product table route for /admin/ecommerce/product", () => {
-    pathname = "/admin/ecommerce/product";
-
+  test("WHEN: url points to /admin/ecommerce THEN: overview cards are rendered", () => {
     act(() => {
-      root.render(<Component adminBasePath="/admin" isServer={false} />);
-    });
-
-    const variants = productComponentMock.mock.calls.map(
-      (call) => call[0].variant,
-    );
-
-    expect(variants).toContain("admin-v2-table");
-    expect(productComponentMock.mock.calls[0][0].header?.props?.variant).toBe(
-      "admin-v2-model-header",
-    );
-  });
-
-  it("renders attribute table route for /admin/ecommerce/attribute", () => {
-    pathname = "/admin/ecommerce/attribute";
-
-    act(() => {
-      root.render(<Component adminBasePath="/admin" isServer={false} />);
-    });
-
-    const variants = attributeComponentMock.mock.calls.map(
-      (call) => call[0].variant,
-    );
-
-    expect(variants).toContain("admin-v2-table");
-    expect(attributeComponentMock.mock.calls[0][0].header?.props?.variant).toBe(
-      "admin-v2-model-header",
-    );
-  });
-
-  it("renders module overview cards for /admin/ecommerce", () => {
-    pathname = "/admin/ecommerce";
-
-    act(() => {
-      root.render(<Component adminBasePath="/admin" isServer={false} />);
+      root.render(<Component isServer={false} url="/admin/ecommerce" />);
     });
 
     expect(
-      productComponentMock.mock.calls.some(
-        (call) => call[0].variant === "admin-v2-module-overview-card",
-      ),
-    ).toBe(true);
+      container.querySelector("[data-testid='card:admin-v2-card:product']"),
+    ).not.toBeNull();
     expect(
-      attributeComponentMock.mock.calls.some(
-        (call) => call[0].variant === "admin-v2-module-overview-card",
-      ),
-    ).toBe(true);
+      container.querySelector('[data-testid="card:admin-v2-card:attribute"]'),
+    ).not.toBeNull();
+    expect(container.querySelector('[data-testid="table:product"]')).toBeNull();
+    expect(
+      container.querySelector("[data-testid='table:attribute']"),
+    ).toBeNull();
   });
 
-  it("does not render module overview cards for /admin root", () => {
-    pathname = "/admin";
-
-    act(() => {
-      root.render(<Component adminBasePath="/admin" isServer={false} />);
-    });
-
-    expect(
-      productComponentMock.mock.calls.some(
-        (call) => call[0].variant === "admin-v2-module-overview-card",
-      ),
-    ).toBe(false);
-    expect(
-      attributeComponentMock.mock.calls.some(
-        (call) => call[0].variant === "admin-v2-module-overview-card",
-      ),
-    ).toBe(false);
-  });
-
-  it("returns null when route points to a different module", () => {
-    pathname = "/admin/blog/article";
-
-    act(() => {
-      root.render(<Component adminBasePath="/admin" isServer={false} />);
-    });
-
-    expect(container.firstChild).toBeNull();
-    expect(productComponentMock).not.toHaveBeenCalled();
-    expect(attributeComponentMock).not.toHaveBeenCalled();
-  });
-
-  it("renders provided children instead of default content", () => {
-    pathname = "/admin/ecommerce/product";
-
+  test("WHEN: url points to model route THEN: model table is rendered without overview cards", () => {
     act(() => {
       root.render(
-        <Component adminBasePath="/admin" isServer={false}>
-          <div data-testid="custom-child">Custom child content</div>
-        </Component>,
+        <Component isServer={false} url="/admin/ecommerce/product" />,
       );
     });
 
     expect(
-      container.querySelector('[data-testid="custom-child"]'),
+      container.querySelector("[data-testid='table:product']"),
     ).not.toBeNull();
     expect(
-      productComponentMock.mock.calls.some(
-        (call) => call[0].variant === "admin-v2-table",
-      ),
-    ).toBe(false);
+      container.querySelector("[data-testid='table:attribute']"),
+    ).toBeNull();
+    expect(container.querySelector('[data-testid^="card:"]')).toBeNull();
   });
-});
-beforeAll(() => {
-  (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+
+  test("WHEN: url points to another module THEN: component returns null", () => {
+    act(() => {
+      root.render(<Component isServer={false} url="/admin/social/post" />);
+    });
+
+    expect(container.firstChild).toBeNull();
+    expect(modelMock).not.toHaveBeenCalled();
+    expect(tableMock).not.toHaveBeenCalled();
+  });
 });

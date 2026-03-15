@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
 test.describe("GIVEN: product, attribute, and relation APIs are mocked with deterministic fixtures", () => {
-  test("WHEN: user manages relations from product and attribute admin-v2 forms", async ({
+  test("WHEN: user manages relations from product and attribute admin-v2 forms THEN: relation UI, open-related flow, and prefill payload are correct", async ({
     page,
   }) => {
     const apiState = await setupEcommerceApiMocks(page);

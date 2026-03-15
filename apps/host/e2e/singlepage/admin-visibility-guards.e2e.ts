@@ -8,8 +8,10 @@
 import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
-test.describe("admin visibility guards", () => {
-  test("shows ecommerce panel at /admin root", async ({ page }) => {
+test.describe("GIVEN: admin URL visibility guards are active with mocked ecommerce API", () => {
+  test("WHEN: user opens /admin THEN: ecommerce panel is visible and settings/account pages are hidden", async ({
+    page,
+  }) => {
     await setupEcommerceApiMocks(page);
 
     await page.goto("/admin");
@@ -25,7 +27,9 @@ test.describe("admin visibility guards", () => {
     await expect(page.getByTestId("account-settings-page")).not.toBeVisible();
   });
 
-  test("shows ecommerce panel at /admin/ecommerce", async ({ page }) => {
+  test("WHEN: user opens /admin/ecommerce THEN: ecommerce panel is visible and settings page is hidden", async ({
+    page,
+  }) => {
     await setupEcommerceApiMocks(page);
 
     await page.goto("/admin/ecommerce");
@@ -38,7 +42,7 @@ test.describe("admin visibility guards", () => {
     await expect(page.getByTestId("settings-page")).not.toBeVisible();
   });
 
-  test("shows ecommerce panel at /admin/ecommerce/product", async ({
+  test("WHEN: user opens /admin/ecommerce/product THEN: ecommerce panel is visible and settings page is hidden", async ({
     page,
   }) => {
     await setupEcommerceApiMocks(page);
@@ -53,7 +57,9 @@ test.describe("admin visibility guards", () => {
     await expect(page.getByTestId("settings-page")).not.toBeVisible();
   });
 
-  test("shows settings page at /admin/settings", async ({ page }) => {
+  test("WHEN: user opens /admin/settings THEN: settings page is visible and ecommerce/account pages are hidden", async ({
+    page,
+  }) => {
     await setupEcommerceApiMocks(page);
 
     await page.goto("/admin/settings");
@@ -69,7 +75,7 @@ test.describe("admin visibility guards", () => {
     await expect(page.getByTestId("account-settings-page")).not.toBeVisible();
   });
 
-  test("shows account settings page at /admin/settings/account", async ({
+  test("WHEN: user opens /admin/settings/account THEN: account page is visible and ecommerce/settings pages are hidden", async ({
     page,
   }) => {
     await setupEcommerceApiMocks(page);

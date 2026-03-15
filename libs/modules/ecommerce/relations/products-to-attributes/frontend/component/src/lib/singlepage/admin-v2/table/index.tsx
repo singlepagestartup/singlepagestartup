@@ -20,8 +20,15 @@ export function Component(props: IComponentProps) {
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}
-      adminForm={(props) => {
-        return <AdminForm isServer={props.isServer} variant="admin-v2-form" />;
+      adminForm={(adminFormProps) => {
+        return (
+          <AdminForm
+            isServer={adminFormProps.isServer}
+            variant="admin-v2-form"
+            apiProps={props.apiProps}
+            relatedContext={props.relatedContext}
+          />
+        );
       }}
       {...props}
     />

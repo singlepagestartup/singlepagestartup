@@ -1,8 +1,8 @@
 import {
   Provider,
   api as clientApi,
-} from "@sps/ecommerce/models/attribute/sdk/client";
-import { api as serverApi } from "@sps/ecommerce/models/attribute/sdk/server";
+} from "@sps/ecommerce/models/product/sdk/client";
+import { api as serverApi } from "@sps/ecommerce/models/product/sdk/server";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/card";
 import { Component as ChildComponent } from "./Component";
@@ -19,7 +19,7 @@ export function Component(props: IComponentProps) {
       name="product"
       {...props}
       apiRoute="/api/ecommerce/products"
-      href={`${ADMIN_BASE_PATH}/ecommerce/product`}
+      href={props.href || ADMIN_BASE_PATH + "/ecommerce/product"}
     />
   );
 }

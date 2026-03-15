@@ -13,11 +13,16 @@ export interface IComponentProps<
   };
   className?: string;
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
+  relatedAdminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
   page?: number;
   limit?: number;
   debouncedSearch?: string;
   offset?: number;
   children?: ReactNode;
+  relatedContext?: {
+    model?: string;
+    field?: string;
+  };
 }
 
 export type IComponentPropsExtended<

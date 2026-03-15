@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
 
 test.describe("GIVEN: ecommerce API responses are mocked and admin shell is available", () => {
-  test("WHEN: user validates dashboard, settings entrypoint, and model navigation", async ({
+  test("WHEN: user validates dashboard, settings entrypoint, and model navigation THEN: counts, routes, and table data are rendered as expected", async ({
     page,
   }) => {
     await setupEcommerceApiMocks(page);

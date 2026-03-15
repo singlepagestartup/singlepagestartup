@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { IComponentPropsExtended, variant, IModel } from "./interface";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/select-input/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/select-input/Component";
 import { internationalization } from "@sps/shared-configuration";
 
 export function Component(props: IComponentPropsExtended) {
