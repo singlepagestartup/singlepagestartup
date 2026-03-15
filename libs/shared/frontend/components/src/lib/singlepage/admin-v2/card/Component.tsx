@@ -1,16 +1,18 @@
 import { Button, Card } from "@sps/shared-ui-shadcn";
 import Link from "next/link";
-import { IComponentPropsExtended } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 
-export function Component(props: IComponentPropsExtended) {
+export function Component<M extends { id: string }, V>(
+  props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {},
+) {
   return (
     <Card className="rounded-lg border-slate-300 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-lg font-semibold capitalize">
-            {props.modelName}
+            {props.name}
           </h3>
-          <p className="mt-1 text-sm text-slate-600">{props.modelName}</p>
+          <p className="mt-1 text-sm text-slate-600">{props.name}</p>
         </div>
         <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
           0

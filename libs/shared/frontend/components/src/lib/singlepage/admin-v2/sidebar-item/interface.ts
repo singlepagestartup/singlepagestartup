@@ -1,12 +1,12 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindByIdProps } from "@sps/shared-frontend-api";
+import { IFindProps } from "@sps/shared-frontend-api";
 
 export interface IComponentProps<M extends { id?: string }, V>
   extends ISpsComponentBase {
   variant: V;
   apiProps?: {
-    params?: IFindByIdProps["params"];
-    options?: IFindByIdProps["options"];
+    params?: IFindProps["params"];
+    options?: IFindProps["options"];
   };
   className?: string;
   type?: "model" | "relation";
