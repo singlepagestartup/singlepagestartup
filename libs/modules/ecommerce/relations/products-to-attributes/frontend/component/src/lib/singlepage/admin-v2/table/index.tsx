@@ -10,6 +10,7 @@ import { Component as ChildComponent } from "./Component";
 import { Component as AdminForm } from "../form";
 
 export function Component(props: IComponentProps) {
+  // return <></>;
   return (
     <ParentComponent
       module="ecommerce"

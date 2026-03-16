@@ -65,36 +65,36 @@ export function Component(props: IComponentPropsExtended) {
         title: "Attributes",
         render: props.productsToAttributes,
       },
-      {
-        id: "orders-to-products",
-        title: "Orders",
-        render: props.ordersToProducts,
-      },
-      {
-        id: "categories-to-products",
-        title: "Categories",
-        render: props.categoriesToProducts,
-      },
-      {
-        id: "stores-to-products",
-        title: "Stores",
-        render: props.storesToProducts,
-      },
-      {
-        id: "widgets-to-products",
-        title: "Widgets",
-        render: props.widgetsToProducts,
-      },
-      {
-        id: "products-to-file-storage-module-widgets",
-        title: "Files",
-        render: props.productsToFileStorageModuleWidgets,
-      },
-      {
-        id: "products-to-website-builder-module-widgets",
-        title: "Website Widgets",
-        render: props.productsToWebsiteBuilderModuleWidgets,
-      },
+      // {
+      //   id: "orders-to-products",
+      //   title: "Orders",
+      //   render: props.ordersToProducts,
+      // },
+      // {
+      //   id: "categories-to-products",
+      //   title: "Categories",
+      //   render: props.categoriesToProducts,
+      // },
+      // {
+      //   id: "stores-to-products",
+      //   title: "Stores",
+      //   render: props.storesToProducts,
+      // },
+      // {
+      //   id: "widgets-to-products",
+      //   title: "Widgets",
+      //   render: props.widgetsToProducts,
+      // },
+      // {
+      //   id: "products-to-file-storage-module-widgets",
+      //   title: "Files",
+      //   render: props.productsToFileStorageModuleWidgets,
+      // },
+      // {
+      //   id: "products-to-website-builder-module-widgets",
+      //   title: "Website Widgets",
+      //   render: props.productsToWebsiteBuilderModuleWidgets,
+      // },
     ].filter(
       (
         section,
@@ -288,7 +288,7 @@ export function Component(props: IComponentPropsExtended) {
                   <div className="rounded-xl border border-slate-300 bg-slate-100 p-5">
                     {section.render({
                       data: props.data,
-                      isServer: props.isServer,
+                      isServer: false,
                     })}
                   </div>
                 </TabsContent>
