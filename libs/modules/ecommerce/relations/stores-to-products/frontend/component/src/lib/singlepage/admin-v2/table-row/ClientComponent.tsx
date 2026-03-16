@@ -3,7 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { Component as AdminForm } from "../form";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
 import { Component as StoresToProductsToAttributes } from "@sps/ecommerce/relations/stores-to-products-to-attributes/frontend/component";
 import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 
