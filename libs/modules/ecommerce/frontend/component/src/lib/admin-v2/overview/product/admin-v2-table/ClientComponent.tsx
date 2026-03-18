@@ -17,22 +17,22 @@ export function Component(props: IComponentProps) {
       <h1 className="text-3xl font-bold tracking-tight capitalize">Product</h1>
 
       <ParentComponent
-        isServer={props.isServer}
+        isServer={false}
         variant="admin-v2-table"
         adminForm={(props) => {
           return (
             <ParentComponent
-              isServer={props.isServer}
+              isServer={false}
               data={props.data}
               variant="admin-v2-form"
-              productsToAttributes={({ data, isServer }) => {
+              productsToAttributes={({ data }) => {
                 if (!data) {
                   return;
                 }
 
                 return (
                   <ProductsToAttributes
-                    isServer={isServer}
+                    isServer={false}
                     variant="admin-v2-table"
                     apiProps={{
                       params: {

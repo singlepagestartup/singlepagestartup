@@ -15,8 +15,6 @@ export function Component(props: IComponentPropsExtended) {
             variant="admin-v2-table-row"
             data={entity}
             apiProps={props.apiProps}
-            relatedContext={props.relatedContext}
-            relatedAdminForm={props.relatedAdminForm}
           />
         );
       })}

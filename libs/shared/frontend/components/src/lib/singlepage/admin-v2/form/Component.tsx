@@ -1,8 +1,8 @@
-import { IComponentProps } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { Component as ClientComponent } from "./ClientComponent";
 
-export function Component<M extends { id?: string }, V>(
-  props: IComponentProps<M, V>,
+export function Component<M extends { id: string }, V>(
+  props: IComponentPropsExtended<M, V, IComponentProps<M, V>>,
 ) {
-  return <ClientComponent {...(props as IComponentProps)} />;
+  return <ClientComponent {...props} />;
 }

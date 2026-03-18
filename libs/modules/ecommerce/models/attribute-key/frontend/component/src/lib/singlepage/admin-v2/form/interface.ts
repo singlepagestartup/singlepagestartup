@@ -9,16 +9,14 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 
 export const variant = "admin-v2-form" as const;
 
-export interface IComponentProps
-  extends IParentComponentProps<IModel, typeof variant> {
+export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
   attributeKeysToAttributes?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
-}
+};
 
-export interface IComponentPropsExtended
-  extends IParentComponentPropsExtended<
-    IModel,
-    typeof variant,
-    IComponentProps
-  > {}
+export type IComponentPropsExtended = IParentComponentPropsExtended<
+  IModel,
+  typeof variant,
+  IComponentProps
+>;

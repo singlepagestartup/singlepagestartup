@@ -3,7 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { Component as AdminForm } from "../form";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
 import { Component as StoresToProductsToAttributes } from "@sps/ecommerce/relations/stores-to-products-to-attributes/frontend/component";
 import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 
@@ -22,19 +22,15 @@ export function Component(props: IComponentPropsExtended) {
             isServer={props.isServer}
             variant="admin-v2-form"
             data={props.data}
-            storesToProductsToAttributes={({ data, isServer }) => {
+            storesToProductsToAttributes={({ data }) => {
               if (!data?.id) {
                 return null;
               }
 
               return (
                 <StoresToProductsToAttributes
-                  isServer={isServer}
+                  isServer={false}
                   variant="admin-v2-table"
-                  relatedContext={{
-                    model: "stores-to-products",
-                    field: "storesToProductsId",
-                  }}
                   relatedAdminForm={({ data, isServer }) => {
                     const attributeId = data?.attributeId;
 

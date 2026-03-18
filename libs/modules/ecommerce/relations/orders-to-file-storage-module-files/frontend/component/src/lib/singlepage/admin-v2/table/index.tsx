@@ -26,7 +26,6 @@ export function Component(props: IComponentProps) {
             isServer={adminFormProps.isServer}
             variant="admin-v2-form"
             apiProps={props.apiProps}
-            relatedContext={props.relatedContext}
           />
         );
       }}

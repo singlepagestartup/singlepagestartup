@@ -1,6 +1,6 @@
 import { IComponentPropsExtended, IModel, variant } from "./interface";
 import { Component as AdminTableRow } from "../table-row";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table/Component";
 
 export function Component(props: IComponentPropsExtended) {
   return (
@@ -15,7 +15,6 @@ export function Component(props: IComponentPropsExtended) {
             variant="admin-v2-table-row"
             data={entity}
             apiProps={props.apiProps}
-            relatedContext={props.relatedContext}
             relatedAdminForm={props.relatedAdminForm}
           />
         );

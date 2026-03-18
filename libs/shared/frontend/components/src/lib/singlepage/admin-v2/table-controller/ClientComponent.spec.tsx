@@ -105,7 +105,12 @@ describe("admin-v2 table-controller integration", () => {
   it("updates search and debounced search value", () => {
     act(() => {
       root.render(
-        <Component module="ecommerce" name="product" variant="admin-v2-table">
+        <Component
+          isServer={false}
+          module="ecommerce"
+          name="product"
+          variant="admin-v2-table"
+        >
           <Probe />
           <SearchSetter />
         </Component>,
@@ -131,7 +136,12 @@ describe("admin-v2 table-controller integration", () => {
   it("changes pagination when next button is clicked", () => {
     act(() => {
       root.render(
-        <Component module="ecommerce" name="product" variant="admin-v2-table">
+        <Component
+          isServer={false}
+          module="ecommerce"
+          name="product"
+          variant="admin-v2-table"
+        >
           <Probe />
         </Component>,
       );

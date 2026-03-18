@@ -1,7 +1,7 @@
-import { IComponentProps } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 
 export function Component<M extends { id?: string }, V>(
-  props: IComponentProps<M, V>,
+  props: IComponentPropsExtended<M, V, IComponentProps<M, V>>,
 ) {
   return props.children;
 }

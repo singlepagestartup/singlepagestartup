@@ -2,6 +2,8 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 import { ReactNode } from "react";
 
 interface ITableControllerProps<M extends { id?: string } = { id?: string }> {
+  // only client component should be, because of passing adminForm
+  isServer: false;
   children: ReactNode;
   searchField?: string;
   searchableFields?: string[];
@@ -13,7 +15,6 @@ interface ITableControllerProps<M extends { id?: string } = { id?: string }> {
   variant?: string;
   type?: "model" | "relation";
   className?: string;
-  isServer?: boolean;
 }
 
 export interface IComponentProps<M extends { id?: string } = { id?: string }>

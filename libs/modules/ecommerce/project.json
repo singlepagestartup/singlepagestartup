@@ -8,8 +8,12 @@
     "jest:test": {},
     "jest:integration": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/coverage"],
-      "inputs": ["{projectRoot}"],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}"
+      ],
       "options": {
         "jestConfig": "libs/modules/ecommerce/jest.integration.config.ts",
         "passWithNoTests": true

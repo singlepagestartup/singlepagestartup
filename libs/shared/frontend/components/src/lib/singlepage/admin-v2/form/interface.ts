@@ -1,24 +1,29 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { IFindByIdProps } from "@sps/shared-frontend-api";
-import { CSSProperties, ReactNode } from "react";
+import { ReactNode } from "react";
 import { UseFormReturn } from "react-hook-form";
 
-export interface IComponentProps<
+type IClientSubmitMode = {
+  isServer: false;
+  onSubmit: (data: any) => void;
+};
+
+type IAnySubmitMode = {
+  isServer: boolean;
+  onSubmit?: undefined;
+};
+
+type IComponentBaseProps<
   M extends { id?: string } = { id?: string },
   V = string,
-> extends ISpsComponentBase {
+> = Omit<ISpsComponentBase, "isServer"> & {
   variant: V;
   data?: M;
   apiProps?: {
     params?: IFindByIdProps["params"];
     options?: IFindByIdProps["options"];
   };
-  relatedContext?: {
-    model?: string;
-    field?: string;
-  };
   className?: string;
-
   // Admin-v2 form layout props.
   id?: string;
   module?: string;
@@ -26,12 +31,15 @@ export interface IComponentProps<
   type?: "model" | "relation";
   status?: "idle" | "pending" | "success" | "error";
   form?: UseFormReturn<any>;
-  onSubmit?: (data: any) => void;
-  style?: CSSProperties;
   panelDepth?: number;
   isTop?: boolean;
   children?: ReactNode;
-}
+};
+
+export type IComponentProps<
+  M extends { id?: string } = { id?: string },
+  V = string,
+> = IComponentBaseProps<M, V> & (IClientSubmitMode | IAnySubmitMode);
 
 export type IComponentPropsExtended<
   M extends { id?: string } = { id?: string },

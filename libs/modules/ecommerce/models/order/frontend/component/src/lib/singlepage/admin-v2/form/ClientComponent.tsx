@@ -102,6 +102,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
+      isServer={false}
       module="ecommerce"
       form={form}
       id={props.data?.id}

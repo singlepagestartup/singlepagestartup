@@ -3,7 +3,7 @@
 import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/sdk/client";
 import { Component as AdminForm } from "../form";
-import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/table-row/Component";
+import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent
       {...props}
+      isServer={false}
       module="ecommerce"
       name="categories-to-file-storage-module-files"
       type="relation"

@@ -4,6 +4,7 @@ import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/products-to-attributes/sdk/client";
 import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
+import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -17,13 +18,25 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={() => {
         return (
           <AdminForm
-            isServer={props.isServer}
+            isServer={false}
             variant="admin-v2-form"
             data={props.data}
           />
         );
       }}
-      relatedAdminForm={props.relatedAdminForm}
+      relatedAdminForm={() => {
+        if (!props.data?.attributeId) {
+          return null;
+        }
+
+        return (
+          <Attribute
+            isServer={false}
+            variant="admin-v2-form"
+            data={{ id: props.data.attributeId } as any}
+          />
+        );
+      }}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });

@@ -6,6 +6,8 @@ export interface IComponentProps<
   M extends { id?: string } = { id?: string },
   V = string,
 > extends ISpsComponentBase {
+  // only client compinent should be, bacause of passing adminForm and relatedAdminForm
+  isServer: false;
   variant: V;
   apiProps?: {
     params?: IFindProps["params"];
@@ -19,10 +21,6 @@ export interface IComponentProps<
   debouncedSearch?: string;
   offset?: number;
   children?: ReactNode;
-  relatedContext?: {
-    model?: string;
-    field?: string;
-  };
 }
 
 export type IComponentPropsExtended<

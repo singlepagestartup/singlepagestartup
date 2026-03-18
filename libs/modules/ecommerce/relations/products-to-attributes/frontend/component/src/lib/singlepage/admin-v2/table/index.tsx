@@ -10,7 +10,6 @@ import { Component as ChildComponent } from "./Component";
 import { Component as AdminForm } from "../form";
 
 export function Component(props: IComponentProps) {
-  // return <></>;
   return (
     <ParentComponent
       module="ecommerce"
@@ -27,7 +26,6 @@ export function Component(props: IComponentProps) {
             isServer={adminFormProps.isServer}
             variant="admin-v2-form"
             apiProps={props.apiProps}
-            relatedContext={props.relatedContext}
           />
         );
       }}

@@ -3,7 +3,7 @@
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Button, Form } from "@sps/shared-ui-shadcn";
 import { Save } from "lucide-react";
-import { IComponentProps } from "./interface";
+import { IComponentProps, IComponentPropsExtended } from "./interface";
 
 function formatLabel(value?: string) {
   return String(value || "")
@@ -13,7 +13,9 @@ function formatLabel(value?: string) {
     .join(" ");
 }
 
-export function Component(props: IComponentProps) {
+export function Component<M extends { id: string }, V>(
+  props: IComponentPropsExtended<M, V, IComponentProps<M, V>>,
+) {
   const title = props.id
     ? `Update ${formatLabel(props.name)}`
     : `Create ${formatLabel(props.name)}`;

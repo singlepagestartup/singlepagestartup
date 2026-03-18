@@ -1,4 +1,4 @@
-import { IComponentPropsExtended, IModel, variant } from "./interface";
+import { IComponentPropsExtended } from "./interface";
 import { Component as AdminTableRow } from "../table-row";
 
 export function Component(props: IComponentPropsExtended) {

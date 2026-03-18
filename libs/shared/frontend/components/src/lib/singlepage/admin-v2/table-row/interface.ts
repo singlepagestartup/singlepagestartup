@@ -6,6 +6,8 @@ export interface IComponentProps<
   M extends { id: string } = { id: string },
   V = string,
 > extends ISpsComponentBase {
+  // only client component, because of passing adminForm and relatedAdminForm
+  isServer: false;
   variant: V;
   data: Pick<M, "id">;
   apiProps?: {
@@ -16,10 +18,6 @@ export interface IComponentProps<
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
   relatedAdminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
   type?: "model" | "relation";
-  relatedContext?: {
-    model?: string;
-    field?: string;
-  };
   module: string;
   name: string;
 }
