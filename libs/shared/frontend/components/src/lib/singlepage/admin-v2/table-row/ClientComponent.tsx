@@ -20,7 +20,14 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@sps/shared-ui-shadcn";
-import { Monitor, Pencil, SquareArrowOutUpRight, Trash2 } from "lucide-react";
+import {
+  ArrowLeftFromLine,
+  ArrowRightFromLine,
+  Monitor,
+  Pencil,
+  SquareArrowOutUpRight,
+  Trash2,
+} from "lucide-react";
 import { ReactNode, useState } from "react";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
 
@@ -33,6 +40,10 @@ export function Component<M extends { id: string }, V>(
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isRelatedOpen, setIsRelatedOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isLeftModelAdminFormOpen, setIsLeftModelAdminFormOpen] =
+    useState(false);
+  const [isRightModelAdminFormOpen, setIsRightModelAdminFormOpen] =
+    useState(false);
   const isRelation = props.type === "relation";
 
   const payload = props.data as {
@@ -154,13 +165,73 @@ export function Component<M extends { id: string }, V>(
                   </SheetDescription>
                   {props.adminForm({
                     data: props.data,
-                    isServer: props.isServer,
+                    isServer: false,
                   })}
                 </SheetContent>
               </Sheet>
             ) : null}
 
-            {isRelation && props.relatedAdminForm ? (
+            {props.leftModelAdminForm ? (
+              <Sheet
+                open={isLeftModelAdminFormOpen}
+                onOpenChange={setIsLeftModelAdminFormOpen}
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={cn("gap-2", isRelation ? "px-2" : undefined)}
+                  onClick={() => setIsLeftModelAdminFormOpen(true)}
+                >
+                  <ArrowLeftFromLine className="h-3 w-3" />
+                </Button>
+                <SheetContent
+                  side="right"
+                  className="h-screen w-full max-w-3xl overflow-y-auto p-0 sm:max-w-3xl"
+                >
+                  <SheetTitle className="sr-only">Edit</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Edit left model form
+                  </SheetDescription>
+                  {props.leftModelAdminForm({
+                    data: props.data,
+                    isServer: false,
+                  })}
+                </SheetContent>
+              </Sheet>
+            ) : null}
+
+            {props.rightModelAdminForm ? (
+              <Sheet
+                open={isRightModelAdminFormOpen}
+                onOpenChange={setIsRightModelAdminFormOpen}
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={cn("gap-2", isRelation ? "px-2" : undefined)}
+                  onClick={() => setIsRightModelAdminFormOpen(true)}
+                >
+                  <ArrowRightFromLine className="h-3 w-3" />
+                </Button>
+                <SheetContent
+                  side="right"
+                  className="h-screen w-full max-w-3xl overflow-y-auto p-0 sm:max-w-3xl"
+                >
+                  <SheetTitle className="sr-only">Edit</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Edit right model form
+                  </SheetDescription>
+                  {props.rightModelAdminForm({
+                    data: props.data,
+                    isServer: false,
+                  })}
+                </SheetContent>
+              </Sheet>
+            ) : null}
+
+            {/* {isRelation && props.relatedAdminForm ? (
               <Sheet open={isRelatedOpen} onOpenChange={setIsRelatedOpen}>
                 <Button
                   type="button"
@@ -181,11 +252,11 @@ export function Component<M extends { id: string }, V>(
                   </SheetDescription>
                   {props.relatedAdminForm({
                     data: props.data,
-                    isServer: props.isServer,
+                    isServer: false,
                   })}
                 </SheetContent>
               </Sheet>
-            ) : null}
+            ) : null} */}
 
             <AlertDialog>
               <AlertDialogTrigger asChild>

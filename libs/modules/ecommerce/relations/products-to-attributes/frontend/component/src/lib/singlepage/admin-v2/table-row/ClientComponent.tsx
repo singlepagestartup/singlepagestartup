@@ -42,6 +42,8 @@ export function Component(props: IComponentPropsExtended) {
           deleteEntity.mutate({ id: props.data.id });
         }
       }}
+      leftModelAdminForm={props.leftModelAdminForm}
+      rightModelAdminForm={props.rightModelAdminForm}
     >
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="flex flex-col gap-0.5 overflow-hidden">

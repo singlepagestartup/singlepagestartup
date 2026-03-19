@@ -1,9 +1,9 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/product/frontend/component";
-import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
 import { IComponentProps } from "./interface";
+import { Component as AdminForm } from "../admin-v2-form";
 
 export function Component(props: IComponentProps) {
   const isActive = props.url.startsWith(`${ADMIN_BASE_PATH}/ecommerce/product`);
@@ -21,35 +21,10 @@ export function Component(props: IComponentProps) {
         variant="admin-v2-table"
         adminForm={(props) => {
           return (
-            <ParentComponent
+            <AdminForm
               isServer={false}
               data={props.data}
               variant="admin-v2-form"
-              productsToAttributes={({ data }) => {
-                if (!data) {
-                  return;
-                }
-
-                return (
-                  <ProductsToAttributes
-                    isServer={false}
-                    variant="admin-v2-table"
-                    apiProps={{
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "productId",
-                              method: "eq",
-                              value: data.id,
-                            },
-                          ],
-                        },
-                      },
-                    }}
-                  />
-                );
-              }}
             />
           );
         }}

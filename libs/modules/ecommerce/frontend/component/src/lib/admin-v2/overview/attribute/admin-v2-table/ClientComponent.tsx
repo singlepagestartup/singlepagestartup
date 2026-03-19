@@ -5,6 +5,8 @@ import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations
 import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
 import { IComponentProps } from "./interface";
+import { Component as Product } from "../../product";
+import { Component as AdminForm } from "../admin-v2-form";
 
 export function Component(props: IComponentProps) {
   const isActive = props.url.startsWith(
@@ -24,62 +26,12 @@ export function Component(props: IComponentProps) {
       <ParentComponent
         isServer={false}
         variant="admin-v2-table"
-        adminForm={(formProps) => {
+        adminForm={(props) => {
           return (
-            <ParentComponent
+            <AdminForm
               isServer={false}
-              data={formProps.data}
+              data={props.data}
               variant="admin-v2-form"
-              attributeKeysToAttributes={({ data, isServer }) => {
-                if (!data) {
-                  return;
-                }
-
-                return (
-                  <AttributeKeysToAttributes
-                    isServer={isServer}
-                    variant="admin-table"
-                    apiProps={{
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "attributeId",
-                              method: "eq",
-                              value: data.id,
-                            },
-                          ],
-                        },
-                      },
-                    }}
-                  />
-                );
-              }}
-              productsToAttributes={({ data }) => {
-                if (!data) {
-                  return;
-                }
-
-                return (
-                  <ProductsToAttributes
-                    isServer={false}
-                    variant="admin-v2-table"
-                    apiProps={{
-                      params: {
-                        filters: {
-                          and: [
-                            {
-                              column: "attributeId",
-                              method: "eq",
-                              value: data.id,
-                            },
-                          ],
-                        },
-                      },
-                    }}
-                  />
-                );
-              }}
             />
           );
         }}

@@ -17,6 +17,8 @@ export interface IComponentProps<
   className?: string;
   adminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
   relatedAdminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
+  leftModelAdminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
+  rightModelAdminForm?: (props: ISpsComponentBase & { data?: M }) => ReactNode;
   type?: "model" | "relation";
   module: string;
   name: string;
