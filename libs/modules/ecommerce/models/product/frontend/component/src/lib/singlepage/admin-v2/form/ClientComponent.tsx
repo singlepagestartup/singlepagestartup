@@ -62,7 +62,7 @@ export function Component(props: IComponentPropsExtended) {
     return [
       {
         id: "products-to-attributes",
-        title: "Attributes",
+        title: "products-to-attributes",
         render: props.productsToAttributes,
       },
       // {
