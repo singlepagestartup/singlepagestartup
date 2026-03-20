@@ -1,11 +1,8 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/attribute/frontend/component";
-import { Component as AttributeKeysToAttributes } from "@sps/ecommerce/relations/attribute-keys-to-attributes/frontend/component";
-import { Component as ProductsToAttributes } from "@sps/ecommerce/relations/products-to-attributes/frontend/component";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
 import { IComponentProps } from "./interface";
-import { Component as Product } from "../../product";
 import { Component as AdminForm } from "../admin-v2-form";
 
 export function Component(props: IComponentProps) {

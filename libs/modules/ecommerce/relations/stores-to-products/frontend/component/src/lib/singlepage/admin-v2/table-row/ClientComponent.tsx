@@ -19,7 +19,7 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={() => {
         return (
           <AdminForm
-            isServer={props.isServer}
+            isServer={false}
             variant="admin-v2-form"
             data={props.data}
             storesToProductsToAttributes={({ data }) => {
@@ -31,7 +31,7 @@ export function Component(props: IComponentPropsExtended) {
                 <StoresToProductsToAttributes
                   isServer={false}
                   variant="admin-v2-table"
-                  relatedAdminForm={({ data, isServer }) => {
+                  rightModelAdminForm={({ data }) => {
                     const attributeId = data?.attributeId;
 
                     if (!attributeId) {
@@ -40,7 +40,7 @@ export function Component(props: IComponentPropsExtended) {
 
                     return (
                       <Attribute
-                        isServer={isServer}
+                        isServer={false}
                         variant="admin-v2-form"
                         data={{ id: attributeId } as any}
                       />
@@ -65,7 +65,10 @@ export function Component(props: IComponentPropsExtended) {
           />
         );
       }}
-      relatedAdminForm={props.relatedAdminForm}
+      leftModelAdminForm={props.leftModelAdminForm}
+      rightModelAdminForm={props.rightModelAdminForm}
+      leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+      rightModelAdminFormLabel={props.rightModelAdminFormLabel}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });

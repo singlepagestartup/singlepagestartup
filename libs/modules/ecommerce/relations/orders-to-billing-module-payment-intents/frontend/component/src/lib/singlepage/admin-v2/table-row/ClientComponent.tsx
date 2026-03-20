@@ -18,13 +18,16 @@ export function Component(props: IComponentPropsExtended) {
       adminForm={() => {
         return (
           <AdminForm
-            isServer={props.isServer}
+            isServer={false}
             variant="admin-v2-form"
             data={props.data}
           />
         );
       }}
-      relatedAdminForm={props.relatedAdminForm}
+      leftModelAdminForm={props.leftModelAdminForm}
+      rightModelAdminForm={props.rightModelAdminForm}
+      leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+      rightModelAdminFormLabel={props.rightModelAdminFormLabel}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });

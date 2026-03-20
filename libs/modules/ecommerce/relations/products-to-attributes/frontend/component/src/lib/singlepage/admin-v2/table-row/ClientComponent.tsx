@@ -4,7 +4,6 @@ import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/products-to-attributes/sdk/client";
 import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
-import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -24,19 +23,6 @@ export function Component(props: IComponentPropsExtended) {
           />
         );
       }}
-      relatedAdminForm={() => {
-        if (!props.data?.attributeId) {
-          return null;
-        }
-
-        return (
-          <Attribute
-            isServer={false}
-            variant="admin-v2-form"
-            data={{ id: props.data.attributeId } as any}
-          />
-        );
-      }}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });
@@ -44,6 +30,8 @@ export function Component(props: IComponentPropsExtended) {
       }}
       leftModelAdminForm={props.leftModelAdminForm}
       rightModelAdminForm={props.rightModelAdminForm}
+      leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+      rightModelAdminFormLabel={props.rightModelAdminFormLabel}
     >
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="flex flex-col gap-0.5 overflow-hidden">

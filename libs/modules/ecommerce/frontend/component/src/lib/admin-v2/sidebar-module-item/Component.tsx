@@ -6,6 +6,11 @@ import { IComponentProps } from "./interface";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
 import { Component as Product } from "./product/Component";
 import { Component as Attribute } from "./attribute/Component";
+import { Component as AttributeKey } from "./attribute-key/Component";
+import { Component as Category } from "./category/Component";
+import { Component as Order } from "./order/Component";
+import { Component as Store } from "./store/Component";
+import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentProps) {
   const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/ecommerce`);
@@ -51,6 +56,11 @@ export function Component(props: IComponentProps) {
         <div className="mt-2 space-y-1 pl-3">
           <Product isServer={props.isServer} url={props.url} />
           <Attribute isServer={props.isServer} url={props.url} />
+          <AttributeKey isServer={props.isServer} url={props.url} />
+          <Category isServer={props.isServer} url={props.url} />
+          <Order isServer={props.isServer} url={props.url} />
+          <Store isServer={props.isServer} url={props.url} />
+          <Widget isServer={props.isServer} url={props.url} />
         </div>
       ) : null}
     </div>

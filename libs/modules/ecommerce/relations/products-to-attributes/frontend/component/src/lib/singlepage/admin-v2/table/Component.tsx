@@ -17,6 +17,8 @@ export function Component(props: IComponentPropsExtended) {
             apiProps={props.apiProps}
             leftModelAdminForm={props.leftModelAdminForm}
             rightModelAdminForm={props.rightModelAdminForm}
+            leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+            rightModelAdminFormLabel={props.rightModelAdminFormLabel}
           />
         );
       })}

@@ -184,6 +184,11 @@ export function Component<M extends { id: string }, V>(
                   onClick={() => setIsLeftModelAdminFormOpen(true)}
                 >
                   <ArrowLeftFromLine className="h-3 w-3" />
+                  {props.leftModelAdminFormLabel ? (
+                    <span className="max-w-[7rem] truncate text-xs">
+                      {props.leftModelAdminFormLabel}
+                    </span>
+                  ) : null}
                 </Button>
                 <SheetContent
                   side="right"
@@ -214,6 +219,11 @@ export function Component<M extends { id: string }, V>(
                   onClick={() => setIsRightModelAdminFormOpen(true)}
                 >
                   <ArrowRightFromLine className="h-3 w-3" />
+                  {props.rightModelAdminFormLabel ? (
+                    <span className="max-w-[7rem] truncate text-xs">
+                      {props.rightModelAdminFormLabel}
+                    </span>
+                  ) : null}
                 </Button>
                 <SheetContent
                   side="right"
