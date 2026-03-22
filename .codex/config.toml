@@ -1,0 +1,18 @@
+# Project-local Codex configuration for SPS
+# Phase 1 goal: run Codex workflow in parallel with existing .claude workflow.
+
+[agents]
+max_threads = 6
+max_depth = 2
+
+[profiles.sps-safe]
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[profiles.sps-auto]
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[profiles.sps-readonly]
+approval_policy = "never"
+sandbox_mode = "read-only"
