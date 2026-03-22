@@ -17,6 +17,9 @@ export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
   storesToOrders?: (props: ISpsComponentBase & { data?: IModel }) => ReactNode;
+  storesToProductsToAttributes?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
 };
 
 export type IComponentPropsExtended = IParentComponentPropsExtended<

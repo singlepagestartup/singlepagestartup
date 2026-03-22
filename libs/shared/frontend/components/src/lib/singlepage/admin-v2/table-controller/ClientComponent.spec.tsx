@@ -10,36 +10,20 @@
  * Then: assertions verify expected observable behavior and contracts.
  */
 
-import { createRoot, Root } from "react-dom/client";
 import { useEffect, act } from "react";
 import { Component } from "./ClientComponent";
 import { useTableContext } from "./Context";
+import {
+  cleanupHarness,
+  createDomHarness,
+  enableReactActEnvironment,
+  renderInHarness,
+  TDomHarness,
+} from "../test-utils/dom-harness";
 
-jest.mock("@sps/shared-ui-shadcn", () => ({
-  Input: (props: any) => <input {...props} />,
-  Button: ({ children, asChild, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-  Select: ({ children, value, onValueChange }: any) => (
-    <select
-      value={value}
-      onChange={(event) => onValueChange?.(event.target.value)}
-    >
-      {children}
-    </select>
-  ),
-  SelectTrigger: ({ children }: any) => <>{children}</>,
-  SelectContent: ({ children }: any) => <>{children}</>,
-  SelectItem: ({ value, children }: any) => (
-    <option value={value}>{children}</option>
-  ),
-  SelectValue: () => null,
-  Sheet: ({ children }: any) => <div>{children}</div>,
-  SheetTrigger: ({ children }: any) => <>{children}</>,
-  SheetContent: ({ children }: any) => <div>{children}</div>,
-  SheetTitle: ({ children }: any) => <>{children}</>,
-  SheetDescription: ({ children }: any) => <>{children}</>,
-}));
+jest.mock("@sps/shared-ui-shadcn", () => {
+  return jest.requireActual("../test-utils/shadcn-mocks").adminV2ShadcnMocks;
+});
 
 function Probe() {
   const ctx = useTableContext();
@@ -83,45 +67,39 @@ function SearchSetter() {
   return null;
 }
 
-describe("admin-v2 table-controller integration", () => {
-  let container: HTMLDivElement;
-  let root: Root;
+describe("GIVEN: admin-v2 table-controller integration", () => {
+  let harness: TDomHarness;
 
   beforeEach(() => {
     jest.useFakeTimers();
-    container = document.createElement("div");
-    document.body.appendChild(container);
-    root = createRoot(container);
+    harness = createDomHarness();
   });
 
   afterEach(() => {
-    act(() => {
-      root.unmount();
-    });
-    container.remove();
+    cleanupHarness(harness);
     jest.useRealTimers();
   });
 
-  it("updates search and debounced search value", () => {
-    act(() => {
-      root.render(
-        <Component
-          isServer={false}
-          module="ecommerce"
-          name="product"
-          variant="admin-v2-table"
-        >
-          <Probe />
-          <SearchSetter />
-        </Component>,
-      );
-    });
-
-    expect(container.querySelector('[data-testid="search"]')?.textContent).toBe(
-      "chair",
+  it("WHEN search state changes THEN debounced search value is updated after debounce delay", () => {
+    renderInHarness(
+      harness,
+      <Component
+        isServer={false}
+        module="ecommerce"
+        name="product"
+        variant="admin-v2-table"
+      >
+        <Probe />
+        <SearchSetter />
+      </Component>,
     );
+
     expect(
-      container.querySelector('[data-testid="debounced-search"]')?.textContent,
+      harness.container.querySelector('[data-testid="search"]')?.textContent,
+    ).toBe("chair");
+    expect(
+      harness.container.querySelector('[data-testid="debounced-search"]')
+        ?.textContent,
     ).toBe("");
 
     act(() => {
@@ -129,30 +107,30 @@ describe("admin-v2 table-controller integration", () => {
     });
 
     expect(
-      container.querySelector('[data-testid="debounced-search"]')?.textContent,
+      harness.container.querySelector('[data-testid="debounced-search"]')
+        ?.textContent,
     ).toBe("chair");
   });
 
-  it("changes pagination when next button is clicked", () => {
-    act(() => {
-      root.render(
-        <Component
-          isServer={false}
-          module="ecommerce"
-          name="product"
-          variant="admin-v2-table"
-        >
-          <Probe />
-        </Component>,
-      );
-    });
-
-    expect(container.textContent).toContain("Page 1 of 3 (250 total)");
-    expect(container.querySelector('[data-testid="offset"]')?.textContent).toBe(
-      "0",
+  it("WHEN next page button is clicked THEN offset and visible page metadata are updated", () => {
+    renderInHarness(
+      harness,
+      <Component
+        isServer={false}
+        module="ecommerce"
+        name="product"
+        variant="admin-v2-table"
+      >
+        <Probe />
+      </Component>,
     );
 
-    const nextButton = container.querySelector(
+    expect(harness.container.textContent).toContain("Page 1 of 3 (250 total)");
+    expect(
+      harness.container.querySelector('[data-testid="offset"]')?.textContent,
+    ).toBe("0");
+
+    const nextButton = harness.container.querySelector(
       'button[aria-label="Next page"]',
     ) as HTMLButtonElement | null;
 
@@ -162,12 +140,12 @@ describe("admin-v2 table-controller integration", () => {
       nextButton?.click();
     });
 
-    expect(container.textContent).toContain("Page 2 of 3 (250 total)");
-    expect(container.querySelector('[data-testid="offset"]')?.textContent).toBe(
-      "100",
-    );
+    expect(harness.container.textContent).toContain("Page 2 of 3 (250 total)");
+    expect(
+      harness.container.querySelector('[data-testid="offset"]')?.textContent,
+    ).toBe("100");
   });
 });
 beforeAll(() => {
-  (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+  enableReactActEnvironment();
 });

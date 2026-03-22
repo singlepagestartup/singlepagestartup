@@ -24,6 +24,10 @@ type IFrameworkModeProps<M extends { id?: string }, V> = IComponentProps<
   serverApi: ReturnType<typeof serverFactory<M>>;
 };
 
+/**
+ * Framework wrapper that renders the form inside
+ * `ErrorBoundary`, `Suspense`, and the data `Provider`.
+ */
 export function Component<M extends { id?: string }, V>(
   props: IFrameworkModeProps<M, V>,
 ) {

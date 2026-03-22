@@ -4,8 +4,6 @@ import { IComponentPropsExtended } from "./interface";
 import { api } from "@sps/ecommerce/relations/stores-to-products/sdk/client";
 import { Component as AdminForm } from "../form";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/table-row/Component";
-import { Component as StoresToProductsToAttributes } from "@sps/ecommerce/relations/stores-to-products-to-attributes/frontend/component";
-import { Component as Attribute } from "@sps/ecommerce/models/attribute/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
@@ -22,46 +20,6 @@ export function Component(props: IComponentPropsExtended) {
             isServer={false}
             variant="admin-v2-form"
             data={props.data}
-            storesToProductsToAttributes={({ data }) => {
-              if (!data?.id) {
-                return null;
-              }
-
-              return (
-                <StoresToProductsToAttributes
-                  isServer={false}
-                  variant="admin-v2-table"
-                  rightModelAdminForm={({ data }) => {
-                    const attributeId = data?.attributeId;
-
-                    if (!attributeId) {
-                      return null;
-                    }
-
-                    return (
-                      <Attribute
-                        isServer={false}
-                        variant="admin-v2-form"
-                        data={{ id: attributeId } as any}
-                      />
-                    );
-                  }}
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "storesToProductsId",
-                            method: "eq",
-                            value: data.id,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                />
-              );
-            }}
           />
         );
       }}

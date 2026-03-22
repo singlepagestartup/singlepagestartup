@@ -21,7 +21,7 @@ type TEntity = {
   slug?: string;
 };
 
-describe("getAdminV2ModelTablePage", () => {
+describe("GIVEN: getAdminV2ModelTablePage helper", () => {
   const entities: TEntity[] = [
     {
       id: "10000000-0000-0000-0000-000000000000",
@@ -42,7 +42,7 @@ describe("getAdminV2ModelTablePage", () => {
     },
   ];
 
-  it("filters by adminTitle with case-insensitive search", () => {
+  it("WHEN searching by text THEN it filters entities by case-insensitive adminTitle match", () => {
     const result = getAdminV2ModelTablePage(entities, {
       search: "app",
       sortBy: "id",
@@ -56,7 +56,7 @@ describe("getAdminV2ModelTablePage", () => {
     expect(result.totalPages).toBe(1);
   });
 
-  it("uses exact id matching when search value looks like uuid", () => {
+  it("WHEN search value matches UUID shape THEN it applies exact id matching", () => {
     const result = getAdminV2ModelTablePage(entities, {
       search: "30000000-0000-0000-0000-000000000000",
       sortBy: "id",
@@ -69,7 +69,7 @@ describe("getAdminV2ModelTablePage", () => {
     ]);
   });
 
-  it("sorts by title and falls back to title object when adminTitle is absent", () => {
+  it("WHEN sorting by title THEN it falls back to localized title when adminTitle is missing", () => {
     const result = getAdminV2ModelTablePage(entities, {
       search: "",
       sortBy: "title",
@@ -84,7 +84,7 @@ describe("getAdminV2ModelTablePage", () => {
     ]);
   });
 
-  it("clamps page number and returns paged subset", () => {
+  it("WHEN requested page is out of range THEN it clamps page and returns the correct subset", () => {
     const result = getAdminV2ModelTablePage(entities, {
       search: "",
       sortBy: "slug",
