@@ -1,261 +1,228 @@
-# Admin Panel V2 — Ecommerce Pilot Fix & Complete
+# Admin Panel V2 — Global Rollout Master Plan (All Modules)
 
 ## Overview
 
-Fix and complete the ecommerce admin-v2 pilot implementation. The shared admin-v2 infrastructure and ecommerce variant files exist but contain several bugs and incomplete logic that prevent the admin panel from working correctly. This plan addresses all identified issues in the host integration, shared components, and ecommerce-specific variants.
+ISSUE-145 is no longer treated as an ecommerce-only pilot fix.  
+It is now the master rollout plan for migrating the full SPS module set to `admin-v2`.
+
+Current strategy:
+
+- Keep `ecommerce` as the completed reference implementation.
+- Migrate `agent` next.
+- Continue module-by-module in alphabetical order.
+- Preserve reuse-first architecture (`shared/admin-v2` + model/relations variants + module shell wiring).
 
 ## Current State Analysis
 
-The admin-v2 migration has three layers in place:
+The codebase currently has 15 modules in `libs/modules/*`:
 
-1. **Draft reference** (`apps/drafts/incoming/admin-v2/`) — Complete React prototype with mock data for all 15 modules
-2. **Shared infrastructure** (`libs/shared/frontend/components/src/lib/singlepage/admin-v2/`) — 54 files providing panel, table, table-row, table-controller, form, select-input, model-header components
-3. **Ecommerce pilot** — Product (6 variants), Attribute (6 variants), Products-to-attributes (4 variants) files exist but have bugs
+- `agent`, `analytic`, `billing`, `blog`, `broadcast`, `crm`, `ecommerce`, `file-storage`, `host`, `notification`, `rbac`, `social`, `startup`, `telegram`, `website-builder`.
 
-### Key Discoveries:
+Admin-v2 status today:
 
-- `apps/host/src/components/admin-panel-draft/ClientComponent.tsx:23-29`: All three page components (ecommerce, settings, account) render simultaneously with no URL-based visibility guard
-- `libs/shared/frontend/components/src/lib/singlepage/admin-v2/panel/ClientComponent.tsx:66-106`: Settings button block is fully commented out
-- `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/module-overview-card/ClientComponent.tsx:31`: Count badge is commented out despite data being fetched
-- `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/table/index.tsx:17-27`: `defaultAdminForm` passes no relation props, making Relations tab permanently disabled
-- `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/select-input/interface.ts:6`: Imports from old `admin/select-input/interface` instead of `admin-v2`
-- `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/table/Component.tsx:10`: Uses `index` as React key instead of `entity.id`
-- `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/table-row/Component.tsx:40`: Passes `{ id: props.data.attributeId } as any` — incomplete model type cast
+- Shared infrastructure exists in `libs/shared/frontend/components/src/lib/singlepage/admin-v2` (85 files).
+- Full module-level `admin-v2` implementation currently exists only for `ecommerce`.
+- `agent` currently has:
+  - models: 2 (`agent`, `widget`);
+  - relations: 0.
+- Host admin-v2 shell entrypoint is `apps/host/src/components/admin-panel-draft/Component.tsx`, routed from `apps/host/app/[[...url]]/page.tsx`.
+
+Module inventory (models / relations):
+
+| Module          | Models | Relations | Current Admin-v2 Status     |
+| --------------- | -----: | --------: | --------------------------- |
+| ecommerce       |      7 |        19 | Completed (reference stage) |
+| agent           |      2 |         0 | Next in progress            |
+| analytic        |      2 |         0 | Pending                     |
+| billing         |      4 |         2 | Pending                     |
+| blog            |      3 |         7 | Pending                     |
+| broadcast       |      2 |         1 | Pending                     |
+| crm             |      6 |         7 | Pending                     |
+| file-storage    |      2 |         1 | Pending                     |
+| host            |      4 |         5 | Pending                     |
+| notification    |      4 |         2 | Pending                     |
+| rbac            |      6 |        13 | Pending                     |
+| social          |      8 |        14 | Pending                     |
+| startup         |      1 |         0 | Pending                     |
+| telegram        |      2 |         2 | Pending                     |
+| website-builder |      7 |        13 | Pending                     |
+
+### Key Discoveries
+
+- `ecommerce` is the only module with end-to-end `admin-v2` shell + model + relation wiring.
+- The stable runtime pattern is now:
+  - model-level `singlepage/admin-v2/*` variants;
+  - module-level `admin-v2/overview/*` and `admin-v2/sidebar-module-item/*`;
+  - host-level composition in `admin-panel-draft`.
+- The previous pilot assumptions and file paths in this plan were outdated (for example, references to old `ClientComponent.tsx` paths and old pilot-only scope).
 
 ## Desired End State
 
-The admin panel at `/admin` renders correctly with:
+All modules have `admin-v2` parity with existing admin behavior at model/relation CRUD level, using consistent reusable architecture.
 
-- Proper URL-based page routing (ecommerce panel, settings, account settings)
-- Collapsible sidebar with settings link
-- Ecommerce module dashboard showing product and attribute cards with counts
-- Product and attribute tables with working search, pagination, create, edit, delete
-- Product form with working Relations tab showing products-to-attributes
-- Attribute form with working Relations tab showing its relations
-- Relation create form pre-fills foreign key when accessed from parent context
+Target state requirements:
 
-### Verification:
+- Every model has `admin-v2` variants:
+  - `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`, `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`.
+- Every relation (where present) has `admin-v2` variants:
+  - `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`, `admin-v2-form`.
+- Every module has module shell components:
+  - `admin-v2/overview`;
+  - `admin-v2/sidebar-module-item`.
+- Host draft integrates modules in rollout order without breaking existing `ecommerce`.
 
-- `npx nx run host:next:build` succeeds without type errors
-- Navigate to `/admin` → see ecommerce module dashboard
-- Navigate to `/admin/ecommerce/product` → see product table with working CRUD
-- Edit a product → Relations tab shows products-to-attributes with working CRUD
-- Adding TipTap rich text editor for multilingual fields (check current admin-form component)
-- Navigate to `/admin/settings` with current settings mocked cards
+### Verification
+
+- `ecommerce` remains working and serves as reference.
+- `agent` becomes first non-ecommerce module fully migrated.
+- Remaining modules progress in alphabetical waves with repeatable DoD and test matrix.
 
 ## What We're NOT Doing
 
-- Migrating other 14 modules to admin-v2 (separate issue)
-- Implementing the full navigation sidebar with all 15 modules
-- Replacing static mock data in AccountSettingsPage with live API calls
-- Implementing the PreviewDialog component from the draft
-- Adding dark mode or theme switching
+- Rewriting `admin` v1 runtime behavior or removing v1 in this issue.
+- Backend schema refactors unrelated to admin-v2 migration.
+- Visual redesign beyond existing admin-v2 style system.
+- One-shot migration of all modules in a single change set.
 
 ## Implementation Approach
 
-Work bottom-up: fix shared components first, then model-specific components, then host integration, so each layer is correct before the next layer consumes it.
+Use wave-based migration with strict reuse and parity rules.
+
+### Wave Strategy
+
+- Wave 0: Baseline rules and reusable migration template (global).
+- Wave 1: `ecommerce` (completed; reference stage).
+- Wave 2: `agent` (current active stage).
+- Wave 3+: alphabetical module rollout:
+  - `analytic`, `billing`, `blog`, `broadcast`, `crm`, `file-storage`, `host`, `notification`, `rbac`, `social`, `startup`, `telegram`, `website-builder`.
+
+### Definition of Done (per module)
+
+Each migrated module must satisfy all points:
+
+1. All models have model-level `admin-v2-*` variants.
+2. All module relations (if any) have relation-level `admin-v2-*` variants.
+3. Module has working `admin-v2/overview` and `admin-v2/sidebar-module-item`.
+4. Host draft routing/navigation includes module without regressions to existing modules.
+5. BDD tests (unit + e2e smoke) exist and pass for module-level critical flows.
+
+### Relation Migration Blueprint (Required for modules with relations)
+
+For any module with relations, relation migration follows this single pattern:
+
+1. Add `singlepage/admin-v2/{table,table-row,form,select-input}` in each relation component.
+2. Add `admin-v2-*` entries in relation `singlepage/variants.ts` and `singlepage/interface.ts`.
+3. In relation `table`, pass to row:
+   - `leftModelAdminForm`, `rightModelAdminForm`;
+   - `leftModelAdminFormLabel`, `rightModelAdminFormLabel`;
+   - `apiProps` filters.
+4. In relation `table-row` client component:
+   - set `type="relation"`;
+   - wire `adminForm` for relation edit/create flow;
+   - wire `onDelete` using relation SDK delete;
+   - expose left/right model actions through shared admin-v2 row.
+5. In owner model form, include relation table with `apiProps.params.filters.and` by owner FK (v1 parity).
+6. Use target form policy:
+   - internal SPS entity: `admin-v2-form`;
+   - external module fallback: `admin-form`.
+7. For nested opens, pass minimal `{ id }` payload; rely on hydration in form/table-row data loaders.
+8. Never pass callback functions through server boundaries; all callback wiring must live in `"use client"` components.
 
 ## Mandatory Validation Commands (Verified Only)
 
-Only commands/targets verified in repository config are allowed in this plan:
+Use verified repository commands/targets for migration work:
 
-- `npm run host:build` (from `/package.json`)
-- `npx nx run host:next:build` (from `/apps/host/project.json`)
-- `npx nx run host:eslint:lint` (from `/apps/host/project.json`)
-- `npx nx run @sps/ecommerce:jest:test` (from `/libs/modules/ecommerce/project.json`)
-- `npx nx run @sps/shared-frontend-components:tsc:build` (from `/libs/shared/frontend/components/project.json`)
+- `npm run host:dev` (manual start; long-lived process for reuse)
+- `npm run test:e2e:singlepage` (reuse mode; does not auto-start host)
+- `npx nx run host:e2e -- --project=singlepage --list`
+- `npx nx run host:next:build`
+- `npx nx run host:eslint:lint`
+- `npx nx run @sps/shared-frontend-components:jest:test`
+- `npx nx run @sps/ecommerce:jest:test`
 
-## Phase 1: Fix Shared Panel Component
+## Phases
 
-### Overview
+### Phase 0: Baseline Rules + Migration Template
 
-Uncomment and properly wire the settings button in the sidebar so users can navigate to settings.
+- Lock reusable module migration template (model-level, relation-level, module shell, host integration, tests).
+- Lock incident checklist for server/client boundaries and callback wiring.
 
-### Changes Required:
+### Phase 1: Ecommerce (Completed Reference Stage)
 
-#### 1. Panel ClientComponent — uncomment settings button
+- Keep as canonical implementation baseline for the remaining modules.
+- Use it as source of truth for `admin-v2` component composition and relation wiring pattern.
 
-**File**: `libs/shared/frontend/components/src/lib/singlepage/admin-v2/panel/ClientComponent.tsx`
-**Why**: The settings button (lines 66-106) is fully commented out. The draft shows a settings button at the bottom of the sidebar that navigates to `/admin/settings`.
-**Changes**: Uncomment the settings button JSX block. Wire it to use `settingsHref` prop (already in the interface) for navigation via Next.js `Link`.
+### Phase 2: Agent (Current In Progress Stage)
 
-### Success Criteria:
+Scope:
 
-#### Automated Verification:
+- Migrate `agent` module models (`agent`, `widget`) to full `admin-v2` model variants.
+- Add module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
+- Integrate in host draft shell.
+- Add BDD smoke tests and API mocks for `agent` module.
 
-- [ ] Shared components compile: `npx nx run @sps/shared-frontend-components:tsc:build`
+Expected outcome:
 
-#### Manual Verification:
+- Working routes: `/admin/agent`, `/admin/agent/agent`, `/admin/agent/widget`.
 
-- [ ] Settings button visible at bottom of admin sidebar
-- [ ] Clicking settings navigates to `/admin/settings`
+### Phase 3+: Remaining Modules (Alphabetical Waves)
 
----
-
-## Phase 2: Fix Ecommerce Model Components
-
-### Overview
-
-Fix bugs in product and attribute admin-v2 variants — count badge, relation props, select-input consistency.
-
-### Changes Required:
-
-#### 1. Product module-overview-card — uncomment count badge
-
-**File**: `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/module-overview-card/ClientComponent.tsx`
-**Why**: Line 31 has the count badge commented out (`{/* {isLoading ? "..." : data?.length || 0} */}`) despite `api.find()` being called and data available. The draft shows a count badge on each model card.
-**Changes**: Uncomment the count badge rendering to display entity count on the dashboard card.
-
-#### 2. Attribute table — pass relation render props to form
-
-**File**: `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/table/index.tsx`
-**Why**: Lines 17-27 define `defaultAdminForm` that passes no relation props to `AttributeAdminFormComponent`. This makes the Relations tab permanently disabled for attributes. The product table correctly injects `productsToAttributes` render prop.
-**Changes**: Import the relevant relation components and pass them as render props to `AttributeAdminFormComponent` in `defaultAdminForm`. At minimum, wire `attributeKeysToAttributes` and `productsToAttributes` (the two most important attribute relations).
-
-#### 3. Attribute select-input interface — fix import path
-
-**File**: `libs/modules/ecommerce/models/attribute/frontend/component/src/lib/singlepage/admin-v2/select-input/interface.ts`
-**Why**: Line 6 imports from `singlepage/admin/select-input/interface` (old V1) while product and products-to-attributes import from `singlepage/admin-v2/select-input/interface`. This inconsistency can cause type mismatches.
-**Changes**: Change the import to use `@sps/shared-frontend-components/singlepage/admin-v2/select-input/interface`.
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- [ ] Ecommerce module TypeScript build succeeds: `npx nx run @sps/ecommerce:tsc:build`
-
-#### Manual Verification:
-
-- [ ] Product dashboard card shows entity count badge
-- [ ] Editing an attribute shows Relations tab with available relations
-- [ ] Attribute select-input works in relation forms without type errors
-
----
-
-## Phase 3: Fix Relation Components
-
-### Overview
-
-Fix bugs in products-to-attributes relation variants — React keys, productId pre-fill, type safety.
-
-### Changes Required:
-
-#### 1. Products-to-attributes table — fix React key
-
-**File**: `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/table/Component.tsx`
-**Why**: Line 10 uses `index` as React key instead of `entity.id`. If items are reordered or deleted, React will incorrectly reuse DOM nodes by position.
-**Changes**: Change `key={index}` to `key={entity.id}` (or `key={String(entity.id || index)}` for safety).
-
-#### 2. Products-to-attributes table-row — fix type cast
-
-**File**: `libs/modules/ecommerce/relations/products-to-attributes/frontend/component/src/lib/singlepage/admin-v2/table-row/Component.tsx`
-**Why**: Line 40 passes `data={{ id: props.data.attributeId } as any}` — an incomplete model object with only `id`. The form/client.tsx will use this id to call `api.findById()`, so only the `id` is needed at the entry point. The `as any` cast can be narrowed.
-**Changes**: Keep the `{ id: props.data.attributeId }` pattern (since `form/client.tsx` fetches the full entity by id) but remove the `as any` by using proper typing or a more specific cast.
-
-#### 3. Products-to-attributes create form — pre-fill foreign key from context
-
-**File**: `libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/admin-v2/table/index.tsx`
-**Why**: When creating a new products-to-attributes relation from the product's Relations tab, the `adminForm` in `products-to-attributes/table/index.tsx:23-25` renders the form with no `data` prop. The `productId` field starts empty even though the user is already viewing a specific product.
-**Changes**: In the product table's `renderProductsToAttributes` function (lines 14-42), pass a custom `adminForm` prop to `ProductsToAttributesComponent` that pre-fills `productId` with the current product's id. This requires adding an `adminForm` prop override to the relation table component call.
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- [ ] Ecommerce module TypeScript build succeeds after relation fixes: `npx nx run @sps/ecommerce:tsc:build`
-
-#### Manual Verification:
-
-- [ ] Relation table items maintain correct state when items are deleted/reordered
-- [ ] Opening "related entity" from a relation row shows the correct attribute form
-- [ ] Creating a new relation from a product's Relations tab has productId pre-filled
-
----
-
-## Phase 4: Fix Host Integration
-
-### Overview
-
-Add URL-based visibility guards so each admin page (ecommerce, settings, account) renders only when its URL is active.
-
-### Changes Required:
-
-#### 1. Admin panel draft ClientComponent — add URL routing
-
-**File**: `apps/host/src/components/admin-panel-draft/ClientComponent.tsx`
-**Why**: Lines 23-29 render `EcommerceAdminV2Component`, `SettingsPageClientComponent`, and `AccountSettingsPageClientComponent` simultaneously with no URL guard. All three always render, causing overlapping content.
-**Changes**: Read the current pathname and conditionally render the correct component:
-
-- `/admin/settings/account` → render only `AccountSettingsPageClientComponent`
-- `/admin/settings` → render only `SettingsPageClientComponent`
-- `/admin` or `/admin/ecommerce/**` → render only `EcommerceAdminV2Component`
-
-The `PanelComponent` (sidebar) should wrap all pages so the sidebar is always visible regardless of which page is active.
-
-#### 2. Wire settingsHref to panel
-
-**File**: `apps/host/src/components/admin-panel-draft/ClientComponent.tsx`
-**Why**: The `EcommerceAdminV2Component` renders `PanelComponent` internally, but the settings link needs a proper href.
-**Changes**: Ensure `settingsHref` is passed through the component chain so the sidebar settings button navigates to `/admin/settings`. The ecommerce `ClientComponent.tsx` already passes `settingsHref` to `PanelComponent` at line 148 — verify this is working correctly after uncommenting the button.
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- [ ] Host production build succeeds: `npm run host:build`
-- [ ] Host lint target succeeds: `npx nx run host:eslint:lint`
-
-#### Manual Verification:
-
-- [ ] `/admin` shows only the ecommerce module dashboard (no settings content visible)
-- [ ] `/admin/settings` shows only the settings page with sidebar
-- [ ] `/admin/settings/account` shows only the account page with sidebar
-- [ ] Sidebar is visible and functional on all admin pages
-- [ ] Settings button in sidebar navigates to settings page
-
----
+- Migrate modules in this exact order:
+  - `analytic`, `billing`, `blog`, `broadcast`, `crm`, `file-storage`, `host`, `notification`, `rbac`, `social`, `startup`, `telegram`, `website-builder`.
+- For relation-heavy modules, apply Relation Migration Blueprint unchanged.
 
 ## Testing Strategy
 
-### Unit Tests:
+### Unit Tests (Reusable Matrix)
 
-- No new unit tests needed for this phase — changes are primarily bug fixes to existing components
+- Module overview smoke:
+  - overview route renders cards;
+  - model route renders only active model table;
+  - out-of-module route returns null.
+- Sidebar module item smoke:
+  - active/inactive branches;
+  - module/model href composition;
+  - required data attributes.
 
-### Integration Tests:
+### Integration/E2E Tests (Reusable Matrix)
 
-- Not applicable for this phase
+- Per module smoke:
+  - navigation to module root and each model route;
+  - opening create/edit sheets;
+  - create/delete sanity for at least one model.
+- Relation e2e (only modules with relations):
+  - owner-side relation visibility;
+  - relation create/delete;
+  - left/right model open actions;
+  - fallback behavior for external targets.
 
-### Manual Testing Steps:
+### Manual Testing Steps
 
-1. Start the host dev server (`npm run host:dev`)
-2. Navigate to `/admin` — verify ecommerce dashboard renders with model cards showing counts
-3. Click "Product" → verify product table with search/pagination
-4. Click "Add new" → verify create form opens in Sheet
-5. Edit a product → verify Details tab with form fields
-6. Switch to Relations tab → verify products-to-attributes table renders
-7. Click "Add new" in relations → verify productId is pre-filled
-8. Navigate to `/admin/ecommerce/attribute` → verify attribute table
-9. Edit an attribute → verify Relations tab is enabled (not permanently disabled)
-10. Click settings in sidebar → verify navigation to `/admin/settings`
-11. Verify settings page shows maintenance operations
-12. Click user icon → verify account settings page
+1. Start host once (`npm run host:dev`) and keep it running.
+2. Run targeted e2e suites in reuse mode.
+3. Validate routes, table render, forms, relation tabs/actions per migrated module.
+4. Confirm previously migrated modules still work before moving to next wave.
 
 ## Performance Considerations
 
-No performance impact expected — all changes are bug fixes to existing rendering logic, not new data fetching or computation.
+- Reuse long-running host process to avoid repeated startup cost.
+- Prefer targeted suites per active module wave over full-matrix reruns on every small change.
 
 ## Migration Notes
 
-No data migration needed. All changes are frontend-only.
+- This issue now tracks a long-running multi-module migration.
+- `ecommerce` historical completion is retained as reference, not as final completion of ISSUE-145.
+- Every stage must update handoff progress with incidents and reusable fixes for subagent continuity.
 
 ## References
 
-- Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-145.md`
-- Related research: `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
-- Draft reference: `apps/drafts/incoming/admin-v2/`
+- Ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-145.md`
+- Research: `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
+- Progress log: `thoughts/shared/handoffs/singlepagestartup/ISSUE-145-progress.md`
+- Host entrypoint: `apps/host/app/[[...url]]/page.tsx`
+- Host admin-v2 shell: `apps/host/src/components/admin-panel-draft/Component.tsx`
 
 ## Open Questions (Blocking)
 
-- None currently. If a contradiction appears during implementation preflight, add it here and pause implementation.
-
-<!-- Last synced at: 2026-03-09T16:40:00Z -->
+- None currently.  
+  If a module-specific ambiguity appears during a wave, it must be recorded in `ISSUE-145-progress.md` before implementation continues.

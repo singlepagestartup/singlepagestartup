@@ -1,117 +1,152 @@
 ---
 issue_number: 145
-issue_title: "Admin Panel V2 - Migrate redesigned admin panel from drafts"
+issue_title: "Admin Panel V2 - Global rollout across all modules"
 start_date: 2026-03-10T00:00:00Z
-completed_date: 2026-03-10T15:15:00Z
+resumed_date: 2026-03-22T00:00:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-145.md
-status: complete
+status: in_progress
+current_epoch: 2
+current_stage: "Phase 2 - agent module migration"
+last_updated: 2026-03-22T10:45:00+03:00
 ---
 
-# Implementation Progress: ISSUE-145 - Admin Panel V2
+# Implementation Progress: ISSUE-145 - Admin Panel V2 Global Rollout
 
-**Started**: 2026-03-10
+**Started**: 2026-03-10  
+**Rescoped to global rollout**: 2026-03-22  
 **Plan**: `thoughts/shared/plans/singlepagestartup/ISSUE-145.md`
 
-## Phase Progress
+## Epoch-1 (Ecommerce Completed) — Historical Archive
 
-### Phase 1: Fix Shared Panel Component
+This epoch represents the previous scope (ecommerce-focused migration/fixes) and is preserved as reference context.
 
-- [x] Started: 2026-03-10T13:12:21.31Z
-- [x] Completed: 2026-03-10T13:25:00Z
-- [x] Automated verification: PASSED (2026-03-10T13:25:00Z)
+### Phase Summary (historical)
 
-**Notes**:
+- Phase 1: shared panel/settings wiring fixes — completed.
+- Phase 2: ecommerce model fixes — completed.
+- Phase 3: ecommerce relation fixes — completed.
+- Phase 4: host integration fixes — completed.
 
-- Uncommented settings button block in ClientComponent.tsx (lines 66-106)
-- Added `isSettingsView` property to interface.ts (was missing)
-- Fixed syntax error (extra closing brace)
-- Build command: `npx nx run @sps/shared-frontend-components:tsc:build`
+Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 
-### Phase 2: Fix Ecommerce Model Components
+### Why this is now archived
 
-- [x] Started: 2026-03-10T13:27:00Z
-- [x] Completed: 2026-03-10T14:15:00Z
-- [x] Automated verification: PASSED (2026-03-10T14:15:00Z)
+- ISSUE-145 was respecified from pilot-fix to full multi-module rollout.
+- Therefore, epoch-1 completion does **not** mean full issue completion.
+- `ecommerce` remains a completed **reference stage**, not final delivery of ISSUE-145.
 
-**Notes**:
+## Epoch-2 (Global Rollout) — Active
 
-- Product module-overview-card: Uncommented count badge on line 31
-- Attribute table: Added `renderAttributeKeysToAttributes` and `renderProductsToAttributes` functions, imported relation components, passed render props to `AttributeAdminFormComponent`
-- Attribute select-input interface: Fixed import path from `admin/select-input/interface` to `admin-v2/select-input/interface`
-- Build command: `npx nx run @sps/ecommerce:tsc:build`
+### Module Board
 
-### Phase 3: Fix Relation Components
+| Module          | Status      | Notes                                                    |
+| --------------- | ----------- | -------------------------------------------------------- |
+| ecommerce       | completed   | Canonical reference implementation for admin-v2 patterns |
+| agent           | in_progress | Current active migration stage                           |
+| analytic        | pending     | Scheduled after agent                                    |
+| billing         | pending     | Relation-bearing module                                  |
+| blog            | pending     | Relation-bearing module                                  |
+| broadcast       | pending     | Relation-bearing module                                  |
+| crm             | pending     | Relation-bearing module                                  |
+| file-storage    | pending     | Relation-bearing module                                  |
+| host            | pending     | Relation-bearing module                                  |
+| notification    | pending     | Relation-bearing module                                  |
+| rbac            | pending     | Heavy relation module                                    |
+| social          | pending     | Heavy relation module                                    |
+| startup         | pending     | Model-only module                                        |
+| telegram        | pending     | Relation-bearing module                                  |
+| website-builder | pending     | Heavy relation module                                    |
 
-- [x] Started: 2026-03-10T14:30:00Z
-- [x] Completed: 2026-03-10T14:55:00Z
-- [x] Automated verification: PASSED (2026-03-10T14:55:00Z)
+### Current Stage
 
-**Notes**:
+**Phase 2 - `agent`**
 
-- products-to-attributes table/Component.tsx: Changed `key={index}` to `key={String(entity.id || index)}` for proper React keys
-- products-to-attributes table-row/Component.tsx: Replaced `as any` with `as unknown as IAttributeModel` for safer type casting, added IAttributeModel import
-- product table/index.tsx: Added `renderProductsToAttributes` function with custom `adminForm` prop that pre-fills `productId` from context
-- Added type assertion `as unknown as IProductsToAttributesModel` to satisfy TypeScript
-- Build command: `npx nx run @sps/ecommerce:tsc:build`
+Target outcomes:
 
-### Phase 4: Fix Host Integration
+- Add full model-level `admin-v2-*` variants for `agent` and `widget`.
+- Add module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
+- Integrate `agent` in host admin draft shell.
+- Add BDD smoke tests + agent API mocks.
 
-- [x] Started: 2026-03-10T15:00:00Z
-- [x] Completed: 2026-03-10T15:10:00Z
-- [x] Automated verification: PASSED (2026-03-10T15:10:00Z)
+## Incident Log (Subagent Knowledge Base)
 
-**Notes**:
+Use this section as source of truth before starting any subagent task.
 
-- ClientComponent.tsx: Added `settingsHref={`${adminBasePath}/settings`}` prop to `EcommerceAdminV2Component`
-- ClientComponent.tsx: Added URL-based visibility guards for page routing
-  - `showEcommercePanel`: true when `/admin` or `/admin/ecommerce/*`
-  - `showSettingsPage`: true when `/admin/settings` (not account)
-  - `showAccountPage`: true when `/admin/settings/account`
-- Build command: `npx nx run @sps/host:tsc:build`
+### Incident 1
 
-## Summary
+- **Stage**: Ecommerce admin-v2 relation wiring
+- **Symptom**: Runtime error `Functions cannot be passed directly to Client Components`.
+- **Root Cause**: Callback props defined/forwarded from server components into client-only chains.
+- **Action Taken**: Moved callback wiring to `"use client"` components and removed server-side callback forwarding.
+- **Reusable Fix Pattern**: Any `adminForm`/relation callback must originate in a client component.
+- **Follow-up**: During new module migration, audit all callback origins before wiring relations.
 
-### Changes Made
+### Incident 2
 
-**Phase 1: Fix Shared Panel Component**
+- **Stage**: Edit -> Relations interaction
+- **Symptom**: Frontend freeze and unresponsive UI when opening relation sidebars.
+- **Root Cause**: Over-coupled relation-target logic and unstable component wiring loops.
+- **Action Taken**: Simplified relation decomposition and aligned row actions with shared admin-v2 row contract.
+- **Reusable Fix Pattern**: Keep strict layering (model form mounts table; relation row handles row actions; shared row handles generic UI state).
+- **Follow-up**: Avoid introducing ad-hoc resolver chains in module shell unless strictly necessary.
 
-- Uncommented settings button block in ClientComponent.tsx (lines 66-106)
-- Added `isSettingsView` property to interface.ts (was missing)
-- Fixed syntax error (extra closing brace)
+### Incident 3
 
-**Phase 2: Fix Ecommerce Model Components**
+- **Stage**: Client form wiring
+- **Symptom**: Hydration/runtime inconsistencies in forms.
+- **Root Cause**: Passing `isServer={props.isServer}` from client components.
+- **Action Taken**: In client files, explicitly pass `isServer={false}`.
+- **Reusable Fix Pattern**: In `"use client"` context, never propagate dynamic server flag.
+- **Follow-up**: Add review checklist item for `isServer` correctness during all module waves.
 
-- Product module-overview-card: Uncommented count badge on line 31
-- Attribute table: Added `renderAttributeKeysToAttributes` and `renderProductsToAttributes` functions, imported relation components, passed render props to `AttributeAdminFormComponent`
-- Attribute select-input interface: Fixed import path from `admin/select-input/interface` to `admin-v2/select-input/interface`
+### Incident 4
 
-**Phase 3: Fix Relation Components**
+- **Stage**: Shared/admin-v2 contract drift
+- **Symptom**: Extra prop drilling and type conflicts (`relatedContext`/legacy fields).
+- **Root Cause**: Carrying unused legacy props through relation tables/rows.
+- **Action Taken**: Keep legacy only where required by shared interfaces; avoid extending it in new modules.
+- **Reusable Fix Pattern**: New migrations should use only props that are actively consumed.
+- **Follow-up**: Validate prop usage before introducing new contract extensions.
 
-- products-to-attributes table/Component.tsx: Changed `key={index}` to `key={String(entity.id || index)}` for proper React keys
-- products-to-attributes table-row/Component.tsx: Replaced `as any` with `as unknown as IAttributeModel` for safer type casting, added IAttributeModel import
-- Product table/index.tsx: Added `customAdminForm` function that pre-fills `productId` when creating new products-to-attributes relation from product context
+## Stage Log (Epoch-2)
 
-**Phase 4: Fix Host Integration**
+### 2026-03-22 — Rescope + Documentation Realignment
 
-- ClientComponent.tsx: Added `settingsHref={`${adminBasePath}/settings`}` prop to `EcommerceAdminV2Component`
-- ClientComponent.tsx: Added URL-based visibility guards for page routing
-  - `showEcommercePanel`: true when `/admin` or `/admin/ecommerce/*`
-  - `showSettingsPage`: true when `/admin/settings` (not account)
-  - `showAccountPage`: true when `/admin/settings/account`
+- Reclassified ISSUE-145 as global rollout tracker.
+- Updated plan/research/progress docs to:
+  - preserve ecommerce as completed reference stage;
+  - set `agent` as active stage;
+  - define relation migration blueprint for future relation-bearing modules;
+  - add subagent-friendly incident format.
 
-### Pull Request
+## Next Actions
 
-- [x] PR created: Changes pushed directly to main
-- [x] Commit: https://github.com/singlepagestartup/singlepagestartup/commit/e330a0faac
+1. Implement `agent` model-level `admin-v2-*` variants (`agent`, `widget`).
+2. Implement `agent` module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
+3. Export new module-level admin-v2 entrypoints from `@sps/agent/frontend/component`.
+4. Integrate `agent` in `apps/host/src/components/admin-panel-draft/Component.tsx`.
+5. Add `agent` e2e mock fixture and BDD smoke scenarios.
+6. Run targeted validation for `agent` stage and update module board status.
 
-### Final Status
+## Blocking Risks
 
-- [x] All phases completed
-- [x] All automated verification passed
-- [x] Issue commented with implementation summary
-- [x] Status updated to Code Review
-- [ ] Issue marked as Done (pending PR merge)
+1. **Server/client callback boundary regressions**
+
+- Risk: runtime errors on relation/model actions.
+- Mitigation: enforce client-only callback wiring review.
+
+2. **Host shell regressions while adding new module blocks**
+
+- Risk: incorrect URL gating or simultaneous render side effects.
+- Mitigation: keep module components route-guarded and add smoke checks per route.
+
+3. **Relation modules after agent**
+
+- Risk: repeated re-discovery of known pitfalls.
+- Mitigation: require Incident Log review before each new relation-heavy module stage.
 
 ---
 
-**Last updated**: 2026-03-10T15:15:00Z
+**Status**: `in_progress`  
+**Current owner stage**: `agent` migration  
+**Last updated**: 2026-03-22

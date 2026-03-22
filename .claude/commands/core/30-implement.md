@@ -53,6 +53,7 @@ fi
 
    - If file exists and `status: in_progress` → read it, identify the last completed phase, continue from the next phase
    - If file does not exist → create it and start from Phase 1 (see progress file format below)
+   - **Always read the `## Incident Log` section before writing any code.** If incidents are already recorded, treat them as known pitfalls — do not re-debug them from scratch. This is especially critical when multiple agents are working in parallel on the same issue.
 
 4. **Sync GitHub comments** (before starting any code changes):
 
@@ -96,6 +97,13 @@ fi
 
    [Additional phases from the plan...]
 
+   ## Incident Log
+
+   > Read this section FIRST before starting any implementation work.
+   > Parallel agents: check here for known pitfalls before debugging independently.
+
+   <!-- incident-count: 0 -->
+
    ## Summary
 
    ### Changes Made
@@ -117,6 +125,21 @@ fi
 
    **Last updated**: YYYY-MM-DDTHH:MM:SSZ
    ```
+
+   **Incident Log format** (reference for recording incidents during implementation):
+
+   ```markdown
+   ### Incident N — [Short title]
+
+   - **Occurrences**: 1
+   - **Stage**: Phase N - [Phase Name]
+   - **Symptom**: [Observable error or behavior]
+   - **Root Cause**: [What actually caused it]
+   - **Fix**: [Exact action taken to resolve it]
+   - **Reusable Pattern**: [How to avoid or instantly fix this in future phases/modules]
+   ```
+
+   When the **same root cause** appears again in a later phase, do NOT create a duplicate — instead increment `Occurrences` on the existing incident entry and add a short note about the new occurrence context.
 
 6. **Create a TodoWrite list** to track implementation phases from the plan
 
@@ -142,6 +165,8 @@ fi
      How should I proceed?
      ```
 
+   - **Record incidents while implementing**: whenever you hit an unexpected error, type error, runtime failure, or wrong assumption that required debugging — after resolving it, append an entry to `## Incident Log` in the progress file using the format defined in step 5. Check first if the same root cause is already logged; if so, increment `Occurrences` instead of adding a duplicate. Update the `<!-- incident-count: N -->` counter accordingly.
+
    c. Run automated verification (as specified in the phase's Success Criteria):
 
    - Type checking: `npm run typecheck`
@@ -150,7 +175,7 @@ fi
    - Other checks specified in the plan
    - Fix any issues before proceeding
 
-   d. Update progress file with verification results (PASSED/FAILED) and notes
+   d. Update progress file with verification results (PASSED/FAILED) and notes. If verification failed and required a fix, record the failure as an incident in `## Incident Log` (same format as step 7b — increment `Occurrences` if it is a recurrence of a known issue).
 
    e. **Pause for manual verification** (after automated checks pass):
 
@@ -200,6 +225,7 @@ fi
    - Add PR link
    - Add summary of changes
    - Update `status: complete` and `completed_date: CURRENT_DATE` in YAML frontmatter
+   - **Promote recurring incidents to research**: review `## Incident Log`. For every incident with `Occurrences >= 2`, append it to `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md` under a `## Known Pitfalls (from implementation)` section (create the section if absent). Use the same incident format. This makes the knowledge permanent and visible to future agents working on related issues.
 
    d. **Comment on issue with PR link**:
 
@@ -241,6 +267,8 @@ git add -A && git commit -m "chore: clean up handoff file for #ISSUE_NUMBER (mer
 ```
 
 The progress file is deleted because its operational tracking content is already captured in git history. The ticket, research, and plan files are kept permanently.
+
+**Before deleting**: if the progress file contains any incidents with `Occurrences >= 2` that were not yet promoted to the research file during step 8c, promote them now. Single-occurrence incidents (Occurrences = 1) are considered one-off and do not need preservation.
 
 ## Important Notes
 
