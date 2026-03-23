@@ -6,8 +6,8 @@ resumed_date: 2026-03-22T00:00:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-145.md
 status: in_progress
 current_epoch: 2
-current_stage: "Phase 2 - agent module migration (implemented, pending manual verification)"
-last_updated: 2026-03-23T23:51:50+03:00
+current_stage: "Phase 3 - analytic module migration (implemented, pending manual verification)"
+last_updated: 2026-03-24T00:44:55+03:00
 ---
 
 # Implementation Progress: ISSUE-145 - Admin Panel V2 Global Rollout
@@ -43,7 +43,7 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 | --------------- | --------- | -------------------------------------------------------- |
 | ecommerce       | completed | Canonical reference implementation for admin-v2 patterns |
 | agent           | completed | Awaiting manual verification and stable e2e execution    |
-| analytic        | pending   | Scheduled after agent                                    |
+| analytic        | completed | Implemented; awaiting manual verification and full e2e   |
 | billing         | pending   | Relation-bearing module                                  |
 | blog            | pending   | Relation-bearing module                                  |
 | broadcast       | pending   | Relation-bearing module                                  |
@@ -59,14 +59,14 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 
 ### Current Stage
 
-**Phase 2 - `agent`**
+**Phase 3 - `analytic`**
 
 Target outcomes:
 
-- Add full model-level `admin-v2-*` variants for `agent` and `widget`.
+- Add full model-level `admin-v2-*` variants for `metric` and `widget`.
 - Add module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
-- Integrate `agent` in host admin draft shell.
-- Add BDD smoke tests + agent API mocks.
+- Integrate `analytic` in host admin draft shell.
+- Add BDD smoke tests + analytic API mocks.
 
 ## Incident Log (Subagent Knowledge Base)
 
@@ -99,6 +99,7 @@ Use this section as source of truth before starting any subagent task.
 - **Reusable Fix Pattern**: In `"use client"` context, never propagate dynamic server flag.
 - **Follow-up**: Add review checklist item for `isServer` correctness during all module waves.
 - **2026-03-23 recurrence**: Agent admin-v2 form wrappers hit strict `isServer` typing and optional callback payload issues; fixed by forcing `isServer={false}` and guarding empty callback `data`.
+- **2026-03-24 recurrence**: Analytic overview `adminForm` callbacks hit the same create-flow typing edge (`data` may be empty); fixed by explicit create/edit branches and `isServer={false}` in form wrappers.
 
 ### Incident 4
 
@@ -109,7 +110,42 @@ Use this section as source of truth before starting any subagent task.
 - **Reusable Fix Pattern**: New migrations should use only props that are actively consumed.
 - **Follow-up**: Validate prop usage before introducing new contract extensions.
 
+### Incident 5
+
+- **Stage**: Analytic admin-v2 model variant wiring
+- **Symptom**: Type errors in admin-v2 form wrappers (`props.variant`/form contract fields missing).
+- **Root Cause**: Copied legacy `admin` form interface pattern (`interface extends ...`) into `admin-v2`, while shared `admin-v2/form` contract expects the type-alias pattern used in reference modules.
+- **Action Taken**: Switched analytic `admin-v2/form/interface.ts` to type-alias declarations mirroring `agent`/`ecommerce` (`IComponentProps` + `IComponentPropsExtended`).
+- **Reusable Fix Pattern**: For any new `admin-v2/form` in module migrations, copy interface structure from a known-good `admin-v2` module, not from legacy `admin`.
+- **Follow-up**: Add migration checklist item to verify `admin-v2/form/interface.ts` shape before running full host build.
+
 ## Stage Log (Epoch-2)
+
+### 2026-03-24 — Phase 3 implementation delivered (`analytic`)
+
+- Re-ran `core-30-implement` gate for ISSUE-145:
+  - status confirmed as `In Dev`;
+  - synced issue comments before implementation.
+- Implemented full model-level `admin-v2` variants for `analytic` models:
+  - `metric`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `widget`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`.
+- Implemented module-level `admin-v2` shell for `analytic`:
+  - `libs/modules/analytic/frontend/component/src/lib/admin-v2/overview/*`;
+  - `libs/modules/analytic/frontend/component/src/lib/admin-v2/sidebar-module-item/*`.
+- Exported module-level entrypoints from `@sps/analytic/frontend/component`:
+  - `AdminV2Overview`;
+  - `AdminV2SidebarModuleItem`.
+- Integrated `analytic` into host admin draft shell:
+  - `apps/host/src/components/admin-panel-draft/Component.tsx`.
+- Added analytic e2e support:
+  - API mocks: `apps/host/e2e/support/mock-analytic-api.ts`;
+  - BDD smoke scenario: `apps/host/e2e/singlepage/analytic-admin-v2-smoke.e2e.ts`.
+- Automated verification summary:
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:e2e -- --project=singlepage --testFiles=apps/host/e2e/singlepage/analytic-admin-v2-smoke.e2e.ts --list`
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint` (warnings exist in unrelated legacy e2e files; no lint errors from analytic rollout changes)
 
 ### 2026-03-23 — Phase 2 session resumed (agent implementation)
 
@@ -171,11 +207,11 @@ Use this section as source of truth before starting any subagent task.
 
 ## Next Actions
 
-1. Run manual verification for `agent` routes:
-   `/admin/agent`, `/admin/agent/agent`, `/admin/agent/widget`.
-2. Re-run full Playwright execution for
-   `agent-admin-v2-smoke.e2e.ts` in a stable webserver environment.
-3. After manual approval, move to Phase 3 (`analytic`) rollout wave.
+1. Run manual verification for `analytic` routes:
+   `/admin/analytic`, `/admin/analytic/metric`, `/admin/analytic/widget`.
+2. Run full Playwright execution for
+   `analytic-admin-v2-smoke.e2e.ts` in a stable webserver environment.
+3. After manual approval, proceed to next rollout module in order: `billing`.
 
 ## Blocking Risks
 
@@ -197,5 +233,5 @@ Use this section as source of truth before starting any subagent task.
 ---
 
 **Status**: `in_progress`  
-**Current owner stage**: `agent` verification  
-**Last updated**: 2026-03-23
+**Current owner stage**: `analytic` verification  
+**Last updated**: 2026-03-24
