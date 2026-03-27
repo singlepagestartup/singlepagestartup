@@ -5,12 +5,11 @@
 ISSUE-145 is no longer treated as an ecommerce-only pilot fix.  
 It is now the master rollout plan for migrating the full SPS module set to `admin-v2`.
 
-Current strategy:
+Execution status (2026-03-28):
 
-- Keep `ecommerce` as the completed reference implementation.
-- Migrate `agent` next.
-- Continue module-by-module in alphabetical order.
-- Preserve reuse-first architecture (`shared/admin-v2` + model/relations variants + module shell wiring).
+- Rollout completed for all 15 modules.
+- `ecommerce` remains the canonical reference implementation for new admin-v2 patterns.
+- ISSUE-145 is ready for `Code Review`.
 
 ## Current State Analysis
 
@@ -21,40 +20,40 @@ The codebase currently has 15 modules in `libs/modules/*`:
 Admin-v2 status today:
 
 - Shared infrastructure exists in `libs/shared/frontend/components/src/lib/singlepage/admin-v2` (85 files).
-- Full module-level `admin-v2` implementation currently exists only for `ecommerce`.
-- `agent` currently has:
-  - models: 2 (`agent`, `widget`);
-  - relations: 0.
+- Full module-level `admin-v2` implementation exists for all modules in `libs/modules/*`.
 - Host admin-v2 shell entrypoint is `apps/host/src/components/admin-panel-draft/Component.tsx`, routed from `apps/host/app/[[...url]]/page.tsx`.
 
 Module inventory (models / relations):
 
-| Module          | Models | Relations | Current Admin-v2 Status     |
-| --------------- | -----: | --------: | --------------------------- |
-| ecommerce       |      7 |        19 | Completed (reference stage) |
-| agent           |      2 |         0 | Next in progress            |
-| analytic        |      2 |         0 | Pending                     |
-| billing         |      4 |         2 | Pending                     |
-| blog            |      3 |         7 | Pending                     |
-| broadcast       |      2 |         1 | Pending                     |
-| crm             |      6 |         7 | Pending                     |
-| file-storage    |      2 |         1 | Pending                     |
-| host            |      4 |         5 | Pending                     |
-| notification    |      4 |         2 | Pending                     |
-| rbac            |      6 |        13 | Pending                     |
-| social          |      8 |        14 | Pending                     |
-| startup         |      1 |         0 | Pending                     |
-| telegram        |      2 |         2 | Pending                     |
-| website-builder |      7 |        13 | Pending                     |
+| Module          | Models | Relations | Current Admin-v2 Status            |
+| --------------- | -----: | --------: | ---------------------------------- |
+| ecommerce       |      7 |        19 | Completed (reference + production) |
+| agent           |      2 |         0 | Completed                          |
+| analytic        |      2 |         0 | Completed                          |
+| billing         |      4 |         2 | Completed                          |
+| blog            |      3 |         7 | Completed                          |
+| broadcast       |      2 |         1 | Completed                          |
+| crm             |      6 |         7 | Completed                          |
+| file-storage    |      2 |         1 | Completed                          |
+| host            |      4 |         5 | Completed                          |
+| notification    |      4 |         2 | Completed                          |
+| rbac            |      6 |        13 | Completed                          |
+| social          |      8 |        14 | Completed                          |
+| startup         |      1 |         0 | Completed                          |
+| telegram        |      2 |         2 | Completed                          |
+| website-builder |      7 |        13 | Completed                          |
 
 ### Key Discoveries
 
-- `ecommerce` is the only module with end-to-end `admin-v2` shell + model + relation wiring.
+- Module-by-module rollout is now complete for all modules; no module remains on legacy-only layout.
 - The stable runtime pattern is now:
   - model-level `singlepage/admin-v2/*` variants;
   - module-level `admin-v2/overview/*` and `admin-v2/sidebar-module-item/*`;
   - host-level composition in `admin-panel-draft`.
-- The previous pilot assumptions and file paths in this plan were outdated (for example, references to old `ClientComponent.tsx` paths and old pilot-only scope).
+- Final parity fixes were required after migration:
+  - relation-bearing forms must render relation tables only in `Relations` tab;
+  - table and relation row visual layout must match `ecommerce`;
+  - sidebar modules should be alphabetically ordered and module headers must be text-only (no emoji).
 
 ## Desired End State
 
@@ -73,9 +72,9 @@ Target state requirements:
 
 ### Verification
 
-- `ecommerce` remains working and serves as reference.
-- `agent` becomes first non-ecommerce module fully migrated.
-- Remaining modules progress in alphabetical waves with repeatable DoD and test matrix.
+- All modules are migrated and reachable through admin-v2 host shell.
+- `ecommerce` remains working and serves as reference for future adjustments.
+- Shared patterns from playbook are applied across relation-bearing forms and overview structure.
 
 ## What We're NOT Doing
 
@@ -92,12 +91,12 @@ Mandatory reference before implementing any module wave:
 
 - `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
 
-### Wave Strategy
+### Wave Strategy (Historical, Completed)
 
 - Wave 0: Baseline rules and reusable migration template (global).
 - Wave 1: `ecommerce` (completed; reference stage).
-- Wave 2: `agent` (current active stage).
-- Wave 3+: alphabetical module rollout:
+- Wave 2: `agent` (completed).
+- Wave 3+: alphabetical module rollout (completed):
   - `analytic`, `billing`, `blog`, `broadcast`, `crm`, `file-storage`, `host`, `notification`, `rbac`, `social`, `startup`, `telegram`, `website-builder`.
 
 ### Definition of Done (per module)
@@ -173,7 +172,7 @@ Use verified repository commands/targets for migration work:
 - `npx nx run @sps/shared-frontend-components:jest:test`
 - `npx nx run @sps/ecommerce:jest:test`
 
-## Phases
+## Phases (Execution History)
 
 ### Phase 0: Baseline Rules + Migration Template
 
@@ -185,7 +184,7 @@ Use verified repository commands/targets for migration work:
 - Keep as canonical implementation baseline for the remaining modules.
 - Use it as source of truth for `admin-v2` component composition and relation wiring pattern.
 
-### Phase 2: Agent (Current In Progress Stage)
+### Phase 2: Agent (Completed)
 
 Scope:
 
@@ -198,7 +197,7 @@ Expected outcome:
 
 - Working routes: `/admin/agent`, `/admin/agent/agent`, `/admin/agent/widget`.
 
-### Phase 3+: Remaining Modules (Alphabetical Waves)
+### Phase 3+: Remaining Modules (Alphabetical Waves, Completed)
 
 - Migrate modules in this exact order:
   - `analytic`, `billing`, `blog`, `broadcast`, `crm`, `file-storage`, `host`, `notification`, `rbac`, `social`, `startup`, `telegram`, `website-builder`.
@@ -258,5 +257,4 @@ Expected outcome:
 
 ## Open Questions (Blocking)
 
-- None currently.  
-  If a module-specific ambiguity appears during a wave, it must be recorded in `ISSUE-145-progress.md` before implementation continues.
+- None. Issue is ready for `Code Review`.

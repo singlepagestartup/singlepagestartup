@@ -4,12 +4,14 @@ author: codex
 repository: singlepagestartup
 issue: 145
 topic: "Admin-v2 rollout playbook: overview structure and relation rendering parity"
-status: active
+status: adopted
 ---
 
 # ISSUE-145 Admin-v2 Rollout Playbook
 
 This playbook is a mandatory implementation contract for all module migrations in ISSUE-145.
+
+Rollout note (2026-03-28): the contract in this playbook has been applied across all migrated modules and remains the default standard for future admin-v2 work.
 
 ## 1. Canonical `admin-v2/overview` Structure
 

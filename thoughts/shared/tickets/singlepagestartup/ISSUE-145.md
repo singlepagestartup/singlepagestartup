@@ -4,7 +4,7 @@
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/145
 **Issue**: #145
-**Status**: Research Needed
+**Status**: Code Review
 **Created**: 2026-03-04
 **Priority**: Medium
 **Size**: medium
@@ -21,8 +21,8 @@ Migrate the redesigned admin panel (V2) from drafts to the production codebase. 
 - Draft sources located in `apps/drafts/incoming/admin-v2` (HTML+CSS and React versions)
 - Partial migration already started based on `admin-panel-redesign-html` variant
 - Work-in-progress code exists in `apps/host/src/components/admin-panel-draft`
-- Pilot module: **ecommerce** (models: `product`, `attribute`; relation: `products-to-attributes`)
-- Pilot module WIP code: `libs/modules/ecommerce/frontend/component/src/lib/admin-v2`
+- Rollout completion: all modules migrated to `admin-v2` (2026-03-28)
+- Canonical reference module: `ecommerce`
 - Updates are primarily visual and minor display functionality; core business logic remains unchanged
 
 ## Implementation Notes

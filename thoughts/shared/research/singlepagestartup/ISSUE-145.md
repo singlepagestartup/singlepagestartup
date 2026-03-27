@@ -7,7 +7,7 @@ repository: singlepagestartup
 topic: "Admin Panel V2 - Global rollout status and migration pattern"
 tags: [research, codebase, admin-v2, global-rollout, migration, frontend]
 status: complete
-last_updated: 2026-03-22
+last_updated: 2026-03-28
 last_updated_by: codex
 ---
 
@@ -26,8 +26,8 @@ What is the current real state of `admin-v2` in the repository, and what canonic
 ## Summary
 
 1. `admin-v2` shared infrastructure is present and actively used (85 files in `libs/shared/frontend/components/src/lib/singlepage/admin-v2`).
-2. Full module-level `admin-v2` implementation is currently available only in `ecommerce`.
-3. `agent` has no `admin-v2` yet (2 models, 0 relations) and is the next rollout stage.
+2. Full module-level `admin-v2` implementation is now completed for all modules in `libs/modules/*`.
+3. `ecommerce` remains the canonical reference implementation for migration parity checks.
 4. Host runtime admin path `/admin*` is served by `apps/host/app/[[...url]]/page.tsx`, which mounts `apps/host/src/components/admin-panel-draft/Component.tsx`.
 5. Current implementation pattern is model-level variants + module-level overview/sidebar composition + host shell integration.
 6. Relation-bearing forms must follow ecommerce parity: `Details/Relations` tabs with nested relation tabs (no inline relation tables in `Details`).
@@ -79,25 +79,25 @@ This module currently defines the target architecture and reuse conventions for 
 
 Repository module inventory (`libs/modules/*`):
 
-| Module          | Models | Relations | Admin-v2 status     |
-| --------------- | -----: | --------: | ------------------- |
-| ecommerce       |      7 |        19 | Completed reference |
-| agent           |      2 |         0 | Next target         |
-| analytic        |      2 |         0 | Pending             |
-| billing         |      4 |         2 | Pending             |
-| blog            |      3 |         7 | Pending             |
-| broadcast       |      2 |         1 | Pending             |
-| crm             |      6 |         7 | Pending             |
-| file-storage    |      2 |         1 | Pending             |
-| host            |      4 |         5 | Pending             |
-| notification    |      4 |         2 | Pending             |
-| rbac            |      6 |        13 | Pending             |
-| social          |      8 |        14 | Pending             |
-| startup         |      1 |         0 | Pending             |
-| telegram        |      2 |         2 | Pending             |
-| website-builder |      7 |        13 | Pending             |
+| Module          | Models | Relations | Admin-v2 status       |
+| --------------- | -----: | --------: | --------------------- |
+| ecommerce       |      7 |        19 | Completed (reference) |
+| agent           |      2 |         0 | Completed             |
+| analytic        |      2 |         0 | Completed             |
+| billing         |      4 |         2 | Completed             |
+| blog            |      3 |         7 | Completed             |
+| broadcast       |      2 |         1 | Completed             |
+| crm             |      6 |         7 | Completed             |
+| file-storage    |      2 |         1 | Completed             |
+| host            |      4 |         5 | Completed             |
+| notification    |      4 |         2 | Completed             |
+| rbac            |      6 |        13 | Completed             |
+| social          |      8 |        14 | Completed             |
+| startup         |      1 |         0 | Completed             |
+| telegram        |      2 |         2 | Completed             |
+| website-builder |      7 |        13 | Completed             |
 
-Rollout order after `agent` should remain alphabetical for predictability and tracking.
+Rollout sequence (alphabetical after `agent`) was executed fully.
 
 ### 5. Canonical pattern for model migration (`admin-v2`)
 
@@ -196,6 +196,16 @@ Canonical fix pattern for all next relation-bearing modules:
 3. Render relation tables only in `Relations` tab; keep fields only in `Details`.
 4. Pass `isServer: false` in all client-side relation render callbacks.
 
+### 10. Rollout completion update (2026-03-28)
+
+- Admin-v2 migration finished across all modules in scope of ISSUE-145.
+- Sidebar module ordering is normalized to alphabetical order.
+- Module headers in sidebar are normalized to text-only labels (emoji removed).
+- Table rows and relation rows are aligned to the `ecommerce` visual structure:
+  - unified row grid layout;
+  - row-level `ID` block consistency;
+  - relation rows expose left/right model open actions.
+
 ## Code References
 
 - Host admin routing: `apps/host/app/[[...url]]/page.tsx`
@@ -251,5 +261,4 @@ Model Form (owner)
 
 ## Open Questions
 
-1. Should host admin draft integrate each module immediately after migration, or in batched waves?
-2. Should a lightweight registry convention be standardized for non-ecommerce module shells to reduce repetitive wiring?
+None. ISSUE-145 rollout is complete and ready for code review.
