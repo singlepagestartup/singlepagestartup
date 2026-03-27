@@ -1,9 +1,7 @@
 import { IComponentProps } from "./interface";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
-import { Component as AgentCard } from "./agent-card/Component";
-import { Component as WidgetCard } from "./widget-card/Component";
-import { Component as AgentTable } from "./agent-table/Component";
-import { Component as WidgetTable } from "./widget-table/Component";
+import { Component as Agent } from "./agent";
+import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
   const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/agent`);
@@ -18,13 +16,21 @@ export function Component(props: IComponentProps) {
       <div className="mx-auto max-w-7xl space-y-4">
         {isOverviewRoute ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <AgentCard isServer={props.isServer} />
-            <WidgetCard isServer={props.isServer} />
+            <Agent variant="admin-v2-card" isServer={props.isServer} />
+            <Widget variant="admin-v2-card" isServer={props.isServer} />
           </div>
         ) : null}
 
-        <AgentTable isServer={props.isServer} url={props.url} />
-        <WidgetTable isServer={props.isServer} url={props.url} />
+        <Agent
+          variant="admin-v2-table"
+          isServer={props.isServer}
+          url={props.url}
+        />
+        <Widget
+          variant="admin-v2-table"
+          isServer={props.isServer}
+          url={props.url}
+        />
       </div>
     </main>
   );

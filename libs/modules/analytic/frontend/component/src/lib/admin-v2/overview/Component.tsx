@@ -1,9 +1,7 @@
 import { IComponentProps } from "./interface";
 import { ADMIN_BASE_PATH } from "@sps/shared-utils";
-import { Component as MetricCard } from "./metric-card/Component";
-import { Component as WidgetCard } from "./widget-card/Component";
-import { Component as MetricTable } from "./metric-table/Component";
-import { Component as WidgetTable } from "./widget-table/Component";
+import { Component as Metric } from "./metric";
+import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
   const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/analytic`);
@@ -18,13 +16,21 @@ export function Component(props: IComponentProps) {
       <div className="mx-auto max-w-7xl space-y-4">
         {isOverviewRoute ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <MetricCard isServer={props.isServer} />
-            <WidgetCard isServer={props.isServer} />
+            <Metric variant="admin-v2-card" isServer={props.isServer} />
+            <Widget variant="admin-v2-card" isServer={props.isServer} />
           </div>
         ) : null}
 
-        <MetricTable isServer={props.isServer} url={props.url} />
-        <WidgetTable isServer={props.isServer} url={props.url} />
+        <Metric
+          variant="admin-v2-table"
+          isServer={props.isServer}
+          url={props.url}
+        />
+        <Widget
+          variant="admin-v2-table"
+          isServer={props.isServer}
+          url={props.url}
+        />
       </div>
     </main>
   );

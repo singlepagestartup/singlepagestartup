@@ -88,6 +88,10 @@ Target state requirements:
 
 Use wave-based migration with strict reuse and parity rules.
 
+Mandatory reference before implementing any module wave:
+
+- `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
+
 ### Wave Strategy
 
 - Wave 0: Baseline rules and reusable migration template (global).
@@ -127,6 +131,35 @@ For any module with relations, relation migration follows this single pattern:
    - external module fallback: `admin-form`.
 7. For nested opens, pass minimal `{ id }` payload; rely on hydration in form/table-row data loaders.
 8. Never pass callback functions through server boundaries; all callback wiring must live in `"use client"` components.
+9. Owner model `singlepage/admin-v2/form/ClientComponent.tsx` must render `Details/Relations` tabs:
+   - relation tables are rendered only in `Relations`;
+   - relation count badge equals number of configured relation sections;
+   - nested relation tabs are required for relation-bearing models.
+
+### Canonical Overview Structure (Required for all modules)
+
+Every migrated module overview must follow the same structure used in `ecommerce`:
+
+```text
+frontend/component/src/lib/admin-v2/overview/
+  Component.tsx
+  interface.ts
+  index.ts
+  <model>/
+    index.tsx
+    interface.ts
+    variants.ts
+    admin-v2-card/
+    admin-v2-table/
+    admin-v2-form/
+```
+
+Rules:
+
+1. `overview/Component.tsx` is variant-driven by model components (`admin-v2-card` / `admin-v2-table`).
+2. `overview/<model>/admin-v2-table` handles route gate and table wiring only.
+3. `overview/<model>/admin-v2-form` handles relation wiring only.
+4. Flat overview layouts like `*-card` / `*-table` at top level are not allowed for new migrations.
 
 ## Mandatory Validation Commands (Verified Only)
 
@@ -218,6 +251,7 @@ Expected outcome:
 
 - Ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-145.md`
 - Research: `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
+- Playbook: `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
 - Progress log: `thoughts/shared/handoffs/singlepagestartup/ISSUE-145-progress.md`
 - Host entrypoint: `apps/host/app/[[...url]]/page.tsx`
 - Host admin-v2 shell: `apps/host/src/components/admin-panel-draft/Component.tsx`

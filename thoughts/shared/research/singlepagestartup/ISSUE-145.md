@@ -30,6 +30,7 @@ What is the current real state of `admin-v2` in the repository, and what canonic
 3. `agent` has no `admin-v2` yet (2 models, 0 relations) and is the next rollout stage.
 4. Host runtime admin path `/admin*` is served by `apps/host/app/[[...url]]/page.tsx`, which mounts `apps/host/src/components/admin-panel-draft/Component.tsx`.
 5. Current implementation pattern is model-level variants + module-level overview/sidebar composition + host shell integration.
+6. Relation-bearing forms must follow ecommerce parity: `Details/Relations` tabs with nested relation tabs (no inline relation tables in `Details`).
 
 ## Detailed Findings
 
@@ -173,11 +174,27 @@ Required reusable checks for every migrated module:
 - Unit smoke: overview/sidebar behavior by URL and active states.
 - E2E smoke: model routes + table render + create/edit/delete sheet flow.
 - Relation modules only: relation-table visibility + relation CRUD + left/right model opens.
+- Relation-bearing forms: `Details/Relations` tabs, relation-count badge, nested relation tabs.
 
 For runtime speed and determinism:
 
 - keep host dev server running once;
 - run e2e in reuse mode.
+
+### 9. Billing relation UI parity regression (2026-03-27)
+
+Observed mismatch after the initial billing migration:
+
+- `payment-intent`, `invoice`, and `currency` forms rendered relation tables directly in details content.
+- This diverged from canonical ecommerce UX where relation content is rendered under
+  `Details/Relations` main tabs with nested relation tabs.
+
+Canonical fix pattern for all next relation-bearing modules:
+
+1. Keep relation wiring in `overview/<model>/admin-v2-form/ClientComponent.tsx`.
+2. Keep relation presentation in model form `singlepage/admin-v2/form/ClientComponent.tsx`.
+3. Render relation tables only in `Relations` tab; keep fields only in `Details`.
+4. Pass `isServer: false` in all client-side relation render callbacks.
 
 ## Code References
 
@@ -229,6 +246,7 @@ Model Form (owner)
 ## Related Research
 
 - `thoughts/shared/research/singlepagestartup/ISSUE-142.md`
+- `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
 - `thoughts/shared/plans/singlepagestartup/ISSUE-145.md`
 
 ## Open Questions

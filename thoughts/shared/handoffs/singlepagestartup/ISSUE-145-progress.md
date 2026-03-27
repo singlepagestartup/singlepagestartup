@@ -6,8 +6,8 @@ resumed_date: 2026-03-22T00:00:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-145.md
 status: in_progress
 current_epoch: 2
-current_stage: "Phase 3 - analytic module migration (implemented, pending manual verification)"
-last_updated: 2026-03-24T00:44:55+03:00
+current_stage: "Phase 4 - billing module migration rework (relations parity fix implemented, pending manual verification)"
+last_updated: 2026-03-27T17:05:00+03:00
 ---
 
 # Implementation Progress: ISSUE-145 - Admin Panel V2 Global Rollout
@@ -44,7 +44,7 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 | ecommerce       | completed | Canonical reference implementation for admin-v2 patterns |
 | agent           | completed | Awaiting manual verification and stable e2e execution    |
 | analytic        | completed | Implemented; awaiting manual verification and full e2e   |
-| billing         | pending   | Relation-bearing module                                  |
+| billing         | completed | Implemented; awaiting manual verification and full e2e   |
 | blog            | pending   | Relation-bearing module                                  |
 | broadcast       | pending   | Relation-bearing module                                  |
 | crm             | pending   | Relation-bearing module                                  |
@@ -59,14 +59,17 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 
 ### Current Stage
 
-**Phase 3 - `analytic`**
+**Phase 4 - `billing`**
 
 Target outcomes:
 
-- Add full model-level `admin-v2-*` variants for `metric` and `widget`.
+- Add full model-level `admin-v2-*` variants for `payment-intent`, `invoice`, `currency`, and `widget`.
+- Add relation-level `admin-v2-*` variants for:
+  - `payment-intents-to-currencies`;
+  - `payment-intents-to-invoices`.
 - Add module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
-- Integrate `analytic` in host admin draft shell.
-- Add BDD smoke tests + analytic API mocks.
+- Integrate `billing` in host admin draft shell.
+- Add BDD smoke tests + billing API mocks.
 
 ## Incident Log (Subagent Knowledge Base)
 
@@ -118,8 +121,73 @@ Use this section as source of truth before starting any subagent task.
 - **Action Taken**: Switched analytic `admin-v2/form/interface.ts` to type-alias declarations mirroring `agent`/`ecommerce` (`IComponentProps` + `IComponentPropsExtended`).
 - **Reusable Fix Pattern**: For any new `admin-v2/form` in module migrations, copy interface structure from a known-good `admin-v2` module, not from legacy `admin`.
 - **Follow-up**: Add migration checklist item to verify `admin-v2/form/interface.ts` shape before running full host build.
+- **2026-03-27 recurrence**: Billing relation `admin-v2/form` wrappers hit the same contract mismatch when copied from legacy `admin` interface style; fixed by switching to the `admin-v2` type-alias pattern used in `agent`/`analytic`.
+
+### Incident 6
+
+- **Stage**: Billing relation UI parity
+- **Symptom**: Relation tables rendered directly inside details fields in billing forms (`payment-intent`, `invoice`, `currency`), unlike ecommerce behavior.
+- **Root Cause**: Overview relation wiring was correct, but model-level admin-v2 forms did not implement `Details/Relations` container contract and rendered relation sections inline in details content.
+- **Action Taken**: Implemented `Details/Relations` main tabs + nested relation tabs in relation-bearing billing model forms; relation tables now render only in `Relations`.
+- **Reusable Fix Pattern**: Relation-bearing model forms must own tabbed presentation (`Details/Relations`), while overview `admin-v2-form` owns relation wiring only.
+- **Follow-up**: Treat `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md` as mandatory reference before migrating any next relation-bearing module.
 
 ## Stage Log (Epoch-2)
+
+### 2026-03-27 — Phase 4 rework delivered (`billing`, `agent`, `analytic` overview parity)
+
+- Root-cause analysis from screenshots confirmed billing relation UX regression versus ecommerce:
+  - relation tables were rendered in details content, not under `Relations` tab.
+- Billing fixes implemented:
+  - relation-bearing model forms now follow ecommerce contract with `Details/Relations` tabs and nested relation tabs:
+    - `payment-intent`: `Invoices`, `Currencies` (badge `2`);
+    - `invoice`: `Payment intents` (badge `1`);
+    - `currency`: `Payment intents` (badge `1`);
+  - relation section rendering in client callbacks standardized to `isServer: false`.
+- Structural parity refactor implemented for module overviews:
+  - `billing`, `agent`, `analytic` overviews now use model-scoped folders:
+    `overview/<model>/{index,interface,variants,admin-v2-card,admin-v2-table,admin-v2-form}`.
+  - Removed flat overview layout (`*-card`, `*-table`) for these modules.
+- Documentation hardening:
+  - Added rollout playbook:
+    `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`.
+  - Linked playbook and updated migration rules in ISSUE-145 plan/research docs.
+
+### 2026-03-27 — Phase 4 implementation delivered (`billing`)
+
+- Re-ran `core-30-implement` gate for ISSUE-145:
+  - status confirmed as `In Dev`;
+  - synced issue comments before implementation (no new scope changes).
+- Implemented full model-level `admin-v2` variants for `billing` models:
+  - `payment-intent`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `invoice`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `currency`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `widget`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`.
+- Implemented relation-level `admin-v2` variants for:
+  - `payment-intents-to-currencies`: `admin-v2-table-row`, `admin-v2-table`,
+    `admin-v2-select-input`, `admin-v2-form`;
+  - `payment-intents-to-invoices`: `admin-v2-table-row`, `admin-v2-table`,
+    `admin-v2-select-input`, `admin-v2-form`.
+- Implemented module-level `admin-v2` shell for `billing`:
+  - `libs/modules/billing/frontend/component/src/lib/admin-v2/overview/*`;
+  - `libs/modules/billing/frontend/component/src/lib/admin-v2/sidebar-module-item/*`.
+- Exported new module-level entrypoints from `@sps/billing/frontend/component`:
+  - `AdminV2Overview`;
+  - `AdminV2SidebarModuleItem`.
+- Integrated `billing` into host admin draft shell:
+  - `apps/host/src/components/admin-panel-draft/Component.tsx`.
+- Added billing e2e support:
+  - API mocks: `apps/host/e2e/support/mock-billing-api.ts`;
+  - BDD smoke scenario: `apps/host/e2e/singlepage/billing-admin-v2-smoke.e2e.ts`.
+- Automated verification summary:
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:e2e -- --project=singlepage --testFiles=apps/host/e2e/singlepage/billing-admin-v2-smoke.e2e.ts --list`
+  - ✅ `PW_USE_WEBSERVER=1 NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:e2e -- --project=singlepage --testFiles=apps/host/e2e/singlepage/billing-admin-v2-smoke.e2e.ts`
 
 ### 2026-03-24 — Phase 3 implementation delivered (`analytic`)
 
@@ -207,11 +275,14 @@ Use this section as source of truth before starting any subagent task.
 
 ## Next Actions
 
+0. Before implementing the next module, read mandatory playbook:
+   `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`.
 1. Run manual verification for `analytic` routes:
    `/admin/analytic`, `/admin/analytic/metric`, `/admin/analytic/widget`.
-2. Run full Playwright execution for
-   `analytic-admin-v2-smoke.e2e.ts` in a stable webserver environment.
-3. After manual approval, proceed to next rollout module in order: `billing`.
+2. Run manual verification for `billing` routes:
+   `/admin/billing`, `/admin/billing/payment-intent`, `/admin/billing/invoice`,
+   `/admin/billing/currency`, `/admin/billing/widget`.
+3. After manual approval, proceed to next rollout module in order: `blog`.
 
 ## Blocking Risks
 
@@ -233,5 +304,5 @@ Use this section as source of truth before starting any subagent task.
 ---
 
 **Status**: `in_progress`  
-**Current owner stage**: `analytic` verification  
-**Last updated**: 2026-03-24
+**Current owner stage**: `billing rework verification`  
+**Last updated**: 2026-03-27

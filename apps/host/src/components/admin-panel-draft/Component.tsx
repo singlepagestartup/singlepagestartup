@@ -11,6 +11,10 @@ import {
   AdminV2Overview as AnalyticAdminV2Overview,
   AdminV2SidebarModuleItem as AnalyticAdminV2SidebarModuleItem,
 } from "@sps/analytic/frontend/component";
+import {
+  AdminV2Overview as BillingAdminV2Overview,
+  AdminV2SidebarModuleItem as BillingAdminV2SidebarModuleItem,
+} from "@sps/billing/frontend/component";
 // import { SettingsPageClientComponent } from "./settings-page";
 // import { AccountSettingsPageClientComponent } from "./account-settings-page";
 import { IComponentProps } from "./interface";
@@ -40,6 +44,10 @@ export function Component(props: IComponentProps) {
             url={props.url}
           />
           <AnalyticAdminV2SidebarModuleItem
+            isServer={props.isServer}
+            url={props.url}
+          />
+          <BillingAdminV2SidebarModuleItem
             isServer={props.isServer}
             url={props.url}
           />
@@ -74,6 +82,7 @@ export function Component(props: IComponentProps) {
           <EcommerceAdminV2Overview url={props.url} isServer={props.isServer} />
           <AgentAdminV2Overview url={props.url} isServer={props.isServer} />
           <AnalyticAdminV2Overview url={props.url} isServer={props.isServer} />
+          <BillingAdminV2Overview url={props.url} isServer={props.isServer} />
           {/* <SettingsPageClientComponent adminBasePath={adminBasePath} />
       <AccountSettingsPageClientComponent
         adminBasePath={adminBasePath}
