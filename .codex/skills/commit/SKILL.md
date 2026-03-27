@@ -19,6 +19,8 @@ Codex wrapper for `.claude/commands/utilities/commit.md`.
 - When the source mentions Claude-specific slash invocation mechanics, execute the referenced workflow in the current Codex thread.
 - For delegated research tasks, use Codex subagents defined in `.codex/agents/*.toml`.
 - Do not rewrite process policy in this phase; preserve behavior parity with the source command.
+- Keep git write operations (`git add`, `git commit`) in one consistent execution context.
+- In sandboxed sessions, if `.git/index.lock` permission errors occur, immediately retry git write commands with elevated permissions.
 
 ## Inputs
 
