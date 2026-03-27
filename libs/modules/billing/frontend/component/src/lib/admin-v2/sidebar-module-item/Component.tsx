@@ -35,7 +35,6 @@ export function Component(props: IComponentProps) {
       >
         <Link href={`${ADMIN_BASE_PATH}/billing`}>
           <span className="inline-flex min-w-0 items-center gap-2">
-            <span className="text-base">💳</span>
             <span className="truncate">Billing</span>
           </span>
 

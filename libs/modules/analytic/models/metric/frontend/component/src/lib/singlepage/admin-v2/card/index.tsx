@@ -3,6 +3,7 @@ import {
   api as clientApi,
 } from "@sps/analytic/models/metric/sdk/client";
 import { api as serverApi } from "@sps/analytic/models/metric/sdk/server";
+import { route as apiRoute } from "@sps/analytic/models/metric/sdk/model";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/card";
 import { Component as ChildComponent } from "./Component";
@@ -18,7 +19,7 @@ export function Component(props: IComponentProps) {
       module="analytic"
       name="metric"
       {...props}
-      apiRoute="/api/analytic/metrics"
+      apiRoute={apiRoute}
       href={props.href || ADMIN_BASE_PATH + "/analytic/metric"}
     />
   );

@@ -18,7 +18,11 @@ export function Component(props: IComponentPropsExtended) {
         }
       }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-4 pt-6">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <p className="text-xs text-muted-foreground">ID</p>
+          <p className="truncate font-mono text-xs">{props.data.id}</p>
+        </div>
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <p className="text-xs text-muted-foreground">Type</p>
           <p className="truncate">{props.data.type}</p>

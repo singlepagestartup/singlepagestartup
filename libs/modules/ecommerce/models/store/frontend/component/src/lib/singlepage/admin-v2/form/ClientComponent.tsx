@@ -74,14 +74,6 @@ export function Component(props: IComponentPropsExtended) {
           isServer: props.isServer,
         }),
       },
-      {
-        id: "stores-to-products-to-attributes",
-        title: "Products to Attributes",
-        content: props.storesToProductsToAttributes?.({
-          data: props.data,
-          isServer: props.isServer,
-        }),
-      },
     ].filter(
       (
         section,
@@ -95,7 +87,6 @@ export function Component(props: IComponentPropsExtended) {
     props.storesToAttributes,
     props.storesToProducts,
     props.storesToOrders,
-    props.storesToProductsToAttributes,
     props.data,
     props.isServer,
   ]);

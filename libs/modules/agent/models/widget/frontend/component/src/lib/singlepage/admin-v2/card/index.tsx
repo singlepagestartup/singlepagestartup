@@ -3,6 +3,7 @@ import {
   api as clientApi,
 } from "@sps/agent/models/widget/sdk/client";
 import { api as serverApi } from "@sps/agent/models/widget/sdk/server";
+import { route as apiRoute } from "@sps/agent/models/widget/sdk/model";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/card";
 import { Component as ChildComponent } from "./Component";
@@ -18,7 +19,7 @@ export function Component(props: IComponentProps) {
       module="agent"
       name="widget"
       {...props}
-      apiRoute="/api/agent/widgets"
+      apiRoute={apiRoute}
       href={props.href || ADMIN_BASE_PATH + "/agent/widget"}
     />
   );

@@ -1,0 +1,71 @@
+import { cn } from "@sps/shared-frontend-client-utils";
+import { Button } from "@sps/shared-ui-shadcn";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { IComponentProps } from "./interface";
+import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { Component as Action } from "./action/Component";
+import { Component as Attribute } from "./attribute/Component";
+import { Component as AttributeKey } from "./attribute-key/Component";
+import { Component as Chat } from "./chat/Component";
+import { Component as Message } from "./message/Component";
+import { Component as Profile } from "./profile/Component";
+import { Component as Thread } from "./thread/Component";
+import { Component as Widget } from "./widget/Component";
+
+export function Component(props: IComponentProps) {
+  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/social");
+
+  return (
+    <div
+      className={cn(
+        "rounded-md",
+        props.className,
+        isCurrentModule &&
+          "bg-slate-50 border " +
+            (isCurrentModule ? "border-black" : "border-slate-200") +
+            " p-1.5",
+      )}
+    >
+      <Button
+        asChild
+        type="button"
+        variant="outline"
+        data-module="social"
+        className={cn(
+          "!w-full justify-between rounded-md border px-3 py-2 text-left text-sm",
+          isCurrentModule
+            ? "border-black bg-slate-900 text-white shadow-sm hover:bg-slate-900 hover:text-white"
+            : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white",
+        )}
+      >
+        <Link href={ADMIN_BASE_PATH + "/social"}>
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <span className="truncate">Social</span>
+          </span>
+
+          <span className="inline-flex items-center gap-1.5">
+            {isCurrentModule ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </span>
+        </Link>
+      </Button>
+
+      {isCurrentModule ? (
+        <div className="mt-2 space-y-1 pl-3">
+          <Action isServer={props.isServer} url={props.url} />
+          <Attribute isServer={props.isServer} url={props.url} />
+          <AttributeKey isServer={props.isServer} url={props.url} />
+          <Chat isServer={props.isServer} url={props.url} />
+          <Message isServer={props.isServer} url={props.url} />
+          <Profile isServer={props.isServer} url={props.url} />
+          <Thread isServer={props.isServer} url={props.url} />
+          <Widget isServer={props.isServer} url={props.url} />
+        </div>
+      ) : null}
+    </div>
+  );
+}

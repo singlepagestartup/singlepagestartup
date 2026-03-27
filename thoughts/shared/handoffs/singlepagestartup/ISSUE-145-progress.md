@@ -6,8 +6,8 @@ resumed_date: 2026-03-22T00:00:00Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-145.md
 status: in_progress
 current_epoch: 2
-current_stage: "Phase 4 - billing module migration rework (relations parity fix implemented, pending manual verification)"
-last_updated: 2026-03-27T17:05:00+03:00
+current_stage: "Phase 5 - blog module migration (implemented, pending manual verification)"
+last_updated: 2026-03-27T19:01:06+03:00
 ---
 
 # Implementation Progress: ISSUE-145 - Admin Panel V2 Global Rollout
@@ -45,7 +45,7 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 | agent           | completed | Awaiting manual verification and stable e2e execution    |
 | analytic        | completed | Implemented; awaiting manual verification and full e2e   |
 | billing         | completed | Implemented; awaiting manual verification and full e2e   |
-| blog            | pending   | Relation-bearing module                                  |
+| blog            | completed | Implemented; awaiting manual verification (e2e skipped)  |
 | broadcast       | pending   | Relation-bearing module                                  |
 | crm             | pending   | Relation-bearing module                                  |
 | file-storage    | pending   | Relation-bearing module                                  |
@@ -59,17 +59,21 @@ Historical completion timestamp from previous tracking: `2026-03-10T15:15:00Z`.
 
 ### Current Stage
 
-**Phase 4 - `billing`**
+**Phase 5 - `blog`**
 
 Target outcomes:
 
-- Add full model-level `admin-v2-*` variants for `payment-intent`, `invoice`, `currency`, and `widget`.
+- Add full model-level `admin-v2-*` variants for `article`, `category`, and `widget`.
 - Add relation-level `admin-v2-*` variants for:
-  - `payment-intents-to-currencies`;
-  - `payment-intents-to-invoices`.
+  - `articles-to-ecommerce-module-products`;
+  - `articles-to-file-storage-module-files`;
+  - `articles-to-website-builder-module-widgets`;
+  - `categories-to-articles`;
+  - `categories-to-website-builder-module-widgets`;
+  - `widgets-to-articles`;
+  - `widgets-to-categories`.
 - Add module-level `admin-v2/overview` and `admin-v2/sidebar-module-item`.
-- Integrate `billing` in host admin draft shell.
-- Add BDD smoke tests + billing API mocks.
+- Integrate `blog` in host admin draft shell.
 
 ## Incident Log (Subagent Knowledge Base)
 
@@ -133,6 +137,36 @@ Use this section as source of truth before starting any subagent task.
 - **Follow-up**: Treat `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md` as mandatory reference before migrating any next relation-bearing module.
 
 ## Stage Log (Epoch-2)
+
+### 2026-03-27 — Phase 5 implementation delivered (`blog`)
+
+- Implemented full model-level `admin-v2` variants for `blog` models:
+  - `article`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `category`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`;
+  - `widget`: `admin-v2-table-row`, `admin-v2-table`, `admin-v2-select-input`,
+    `admin-v2-form`, `admin-v2-card`, `admin-v2-sidebar-item`.
+- Implemented relation-level `admin-v2` variants for all 7 `blog` relations:
+  - `articles-to-ecommerce-module-products`;
+  - `articles-to-file-storage-module-files`;
+  - `articles-to-website-builder-module-widgets`;
+  - `categories-to-articles`;
+  - `categories-to-website-builder-module-widgets`;
+  - `widgets-to-articles`;
+  - `widgets-to-categories`.
+- Implemented module-level `admin-v2` shell for `blog`:
+  - `libs/modules/blog/frontend/component/src/lib/admin-v2/overview/*`;
+  - `libs/modules/blog/frontend/component/src/lib/admin-v2/sidebar-module-item/*`.
+- Exported module-level entrypoints from `@sps/blog/frontend/component`:
+  - `AdminV2Overview`;
+  - `AdminV2SidebarModuleItem`.
+- Integrated `blog` into host admin draft shell:
+  - `apps/host/src/components/admin-panel-draft/Component.tsx`.
+- Automated verification summary:
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
+  - ✅ `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
+  - ⏭️ `host:e2e` skipped by explicit instruction in this session.
 
 ### 2026-03-27 — Phase 4 rework delivered (`billing`, `agent`, `analytic` overview parity)
 

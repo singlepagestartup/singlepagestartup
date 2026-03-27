@@ -3,6 +3,7 @@ import {
   api as clientApi,
 } from "@sps/billing/models/payment-intent/sdk/client";
 import { api as serverApi } from "@sps/billing/models/payment-intent/sdk/server";
+import { route as apiRoute } from "@sps/billing/models/payment-intent/sdk/model";
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin-v2/card";
 import { Component as ChildComponent } from "./Component";
@@ -18,7 +19,7 @@ export function Component(props: IComponentProps) {
       module="billing"
       name="payment-intent"
       {...props}
-      apiRoute="/api/billing/payment-intents"
+      apiRoute={apiRoute}
       href={props.href || ADMIN_BASE_PATH + "/billing/payment-intent"}
     />
   );
