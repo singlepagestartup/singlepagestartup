@@ -38,6 +38,12 @@ fi
    - Read any linked documents from issue comments or description
    - **IMPORTANT**: Use Read tool WITHOUT limit/offset parameters to read entire files
 
+2.5 **Intent clarification checkpoint (before drafting):**
+
+- If ticket language is potentially ambiguous (for example: "close", "replace", "align", "migrate", "decommission"), explicitly summarize your interpretation in 1-2 lines and ask for confirmation.
+- Do not write or overwrite the plan file until this interpretation is confirmed by the user.
+- If issue comments contain a newer explicit direction, use the newest direction and state that in your summary.
+
 3. **Check whether a plan already exists**:
 
    ```bash
@@ -84,7 +90,10 @@ fi
    Does this phasing make sense?
    ```
 
-   e. **Write the full plan** to `thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md`:
+   e. **Write the full plan only after explicit approval** to `thoughts/shared/plans/REPO_NAME/ISSUE-{NUMBER}.md`:
+
+   - Require an explicit confirmation response (for example: "yes", "approved", "looks good") after step 4d.
+   - If confirmation is not explicit, pause and clarify before writing.
 
    ```markdown
    # [Feature/Task Name] Implementation Plan
@@ -192,7 +201,9 @@ fi
    b. **Fetch GitHub issue comments** newer than the marker:
 
    ```bash
-   gh issue view ISSUE_NUMBER --json comments | jq -r '.comments'
+   source .claude/helpers/gh_retry.sh
+   ensure_gh_ready
+   gh_retry issue view ISSUE_NUMBER --json comments | jq -r '.comments'
    ```
 
    Filter to only those newer than the last sync timestamp.
@@ -233,7 +244,9 @@ fi
    g. **Post a reply comment** on the GitHub issue:
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "Plan updated based on discussion.
+   source .claude/helpers/gh_retry.sh
+   ensure_gh_ready
+   gh_retry issue comment ISSUE_NUMBER --body "Plan updated based on discussion.
 
    **Changes made:**
    - [Change 1]
@@ -245,7 +258,9 @@ fi
 6. **Attach plan to GitHub issue** (always — whether newly created or updated):
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "Implementation plan: \`thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md\`
+   source .claude/helpers/gh_retry.sh
+   ensure_gh_ready
+   gh_retry issue comment ISSUE_NUMBER --body "Implementation plan: \`thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md\`
 
    [Brief summary of approach and phases]"
    ```
@@ -283,8 +298,13 @@ If a reviewer requests changes while the issue is in "Plan in Review", manually 
 5. **No Open Questions in Final Plan**: If you encounter open questions during planning, STOP. Research or ask for clarification immediately. Do NOT write the plan with unresolved questions.
 
 6. **Separate Success Criteria**:
+
    - **Automated Verification**: Commands that can be run (make, npm, etc.)
    - **Manual Verification**: UI/UX, performance under real conditions, edge cases
+
+7. **Shell Path Safety**:
+   - Quote file paths that include shell glob characters (such as `[]`, `*`, `?`) in command examples and executions.
+   - Example: use `"apps/host/app/[[...url]]/page.tsx"` instead of an unquoted path.
 
 ## Completion Message
 

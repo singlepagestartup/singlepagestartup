@@ -14,6 +14,7 @@ You are tasked with creating git commits for the changes made during this sessio
    - Run `git status` to see current changes
    - Run `git diff` to understand tracked modifications
    - For untracked files, inspect content with `git diff --no-index /dev/null <path>` (or stage and use `git diff --cached -- <path>`)
+   - Quote paths that contain shell glob characters (`[]`, `*`, `?`) when running commands
    - Consider whether changes should be one commit or multiple logical commits
 
 2. **Plan your commit(s):**
@@ -34,6 +35,7 @@ You are tasked with creating git commits for the changes made during this sessio
    - In sandboxed Codex environments, run `git add`/`git commit` with elevated permissions when required for `.git` writes
    - If a command fails with `fatal: Unable to create '.git/index.lock': Operation not permitted`, retry the same command immediately in elevated mode
    - Use `git add` with specific files (never use `-A` or `.`)
+   - Quote each file path in git commands when needed to avoid shell glob expansion
    - Create commits with your planned messages
    - Show the result with `git log --oneline -n [number]`
 
