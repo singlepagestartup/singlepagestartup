@@ -17,18 +17,15 @@ description: Manage GitHub Project issues - create, update, comment, and follow 
 At the start of every session, load config and fetch the project structure:
 
 ````bash
-# Auto-detect repo context from gh CLI
+# Load project config from .env using helper
+source .claude/helpers/load_config.sh
+
+# Optional repo context
 GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
-GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
 
-# Load project config from .env
-source .claude/.env
-
-# Determine project owner and entity type
-# GITHUB_PROJECT_OWNER defaults to repo owner if not set
-# GITHUB_PROJECT_OWNER_TYPE defaults to "user" if not set
-PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
-PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
+# Use helper-exported owner/type
+PROJECT_OWNER="$GITHUB_OWNER"
+PROJECT_OWNER_TYPE="$GITHUB_PROJECT_OWNER_TYPE"
 
 # Fetch project structure — resolves all IDs from status names
 # Use organization(...) or user(...) depending on PROJECT_OWNER_TYPE
@@ -157,6 +154,7 @@ Use these scripts instead of GraphQL queries for simpler operations:
 - `.claude/helpers/get_issue_status.sh ISSUE_NUMBER` — Get issue status
 - `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
 - `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
+- `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.claude/.env` owner/type, with GraphQL fallback
 
 ### Updating Status Field
 
@@ -186,7 +184,7 @@ Available status names:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_LOGIN --format json | \
+gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
   jq '[.items[] | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
 ```
 
@@ -263,8 +261,8 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
 6. **Add to GitHub Project and set status to Triage:**
 
    ```bash
-   # Add issue to project
-   gh project item-add PROJECT_NUMBER --owner GITHUB_LOGIN --url ISSUE_URL
+   # Add issue to project (helper resolves owner from .claude/.env and falls back to GraphQL)
+   .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL
 
    # Then update status field to Triage (use helper script)
    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
@@ -317,7 +315,7 @@ When the user wants to add a comment to an issue:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_LOGIN --format json | \
+gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
   jq '[.items[] | select(.status == "Research Needed")]'
 
 # Via labels (if using label-based status)

@@ -56,8 +56,15 @@ You create a new development issue with local documentation and GitHub issue cre
 
 3. **Create GitHub issue** (ask user to confirm first):
 
+   - Load project config once before all `gh` project operations:
+     ```bash
+     source .claude/helpers/load_config.sh
+     ```
    - Create issue via `gh issue create --title "..." --body "..." --label "size:[size]"`
-   - Add to GitHub Project: `gh project item-add PROJECT_NUMBER --owner PROJECT_OWNER --url ISSUE_URL`
+   - Add to GitHub Project via helper (uses `.claude/.env` owner and GraphQL fallback):
+     ```bash
+     .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL
+     ```
    - Set initial status to "Triage":
      ```bash
      .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
