@@ -222,4 +222,5 @@ View the issue: [ISSUE_URL]
 - **CRITICAL**: You and all sub-agents are documentarians, not evaluators — document what IS, not what SHOULD BE
 - **NO RECOMMENDATIONS**: Only describe the current state of the codebase
 - **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
+- **Path quoting**: In zsh, always wrap paths containing glob characters (`[`, `]`, `*`, `?`) in single quotes (for example `'apps/host/app/[[...url]]/page.tsx'`) to avoid shell expansion errors
 - Be unbiased — document all related files and how systems work today, don't jump to implementation ideas

@@ -21,16 +21,16 @@ if [ -z "${GITHUB_PROJECT_NUMBER:-}" ]; then
   exit 1
 fi
 
-REPO_FULL_NAME=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
-REPO_OWNER=$(gh repo view --json owner -q '.owner.login')
-REPO_NAME=$(gh repo view --json name -q '.name')
+REPO_FULL_NAME=$(gh_retry repo view --json nameWithOwner -q '.nameWithOwner')
+REPO_OWNER=$(gh_retry repo view --json owner -q '.owner.login')
+REPO_NAME=$(gh_retry repo view --json name -q '.name')
 
 if [ -z "$ISSUE_URL" ]; then
   ISSUE_URL="https://github.com/$REPO_FULL_NAME/issues/$ISSUE_NUMBER"
 fi
 
 ITEM_ADD_ERROR_FILE="$(mktemp)"
-if gh project item-add "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --url "$ISSUE_URL" >/dev/null 2>"$ITEM_ADD_ERROR_FILE"; then
+if gh_retry project item-add "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --url "$ISSUE_URL" >/dev/null 2>"$ITEM_ADD_ERROR_FILE"; then
   rm -f "$ITEM_ADD_ERROR_FILE"
   echo "Added issue #$ISSUE_NUMBER to project #$GITHUB_PROJECT_NUMBER via gh project item-add"
   exit 0
@@ -41,7 +41,7 @@ rm -f "$ITEM_ADD_ERROR_FILE"
 
 # Fallback for gh project item-add owner/type edge cases.
 if [ "$GITHUB_PROJECT_OWNER_TYPE" = "organization" ]; then
-  PROJECT_NODE_ID=$(gh api graphql -f query='
+  PROJECT_NODE_ID=$(gh_retry api graphql -f query='
     query($login: String!, $number: Int!) {
       organization(login: $login) {
         projectV2(number: $number) { id }
@@ -49,7 +49,7 @@ if [ "$GITHUB_PROJECT_OWNER_TYPE" = "organization" ]; then
     }
   ' -f login="$GITHUB_OWNER" -F number="$GITHUB_PROJECT_NUMBER" | jq -r '.data.organization.projectV2.id')
 else
-  PROJECT_NODE_ID=$(gh api graphql -f query='
+  PROJECT_NODE_ID=$(gh_retry api graphql -f query='
     query($login: String!, $number: Int!) {
       user(login: $login) {
         projectV2(number: $number) { id }
@@ -64,7 +64,7 @@ if [ -z "$PROJECT_NODE_ID" ] || [ "$PROJECT_NODE_ID" = "null" ]; then
   exit 1
 fi
 
-ISSUE_NODE_ID=$(gh api graphql -f query='
+ISSUE_NODE_ID=$(gh_retry api graphql -f query='
   query($owner: String!, $name: String!, $number: Int!) {
     repository(owner: $owner, name: $name) {
       issue(number: $number) { id }
@@ -77,7 +77,7 @@ if [ -z "$ISSUE_NODE_ID" ] || [ "$ISSUE_NODE_ID" = "null" ]; then
   exit 1
 fi
 
-gh api graphql -f query='
+gh_retry api graphql -f query='
   mutation($projectId: ID!, $contentId: ID!) {
     addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
       item { id }

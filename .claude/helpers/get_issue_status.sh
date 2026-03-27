@@ -17,7 +17,8 @@ source "$SCRIPT_DIR/load_config.sh"
 
 # Get issue status using gh project item-list (REST API)
 # This is simpler and more reliable than GraphQL for this use case
-CURRENT_STATUS=$(gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --format json 2>/dev/null | \
+PROJECT_ITEMS_JSON=$(gh_retry project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --format json)
+CURRENT_STATUS=$(echo "$PROJECT_ITEMS_JSON" | \
   jq -r --arg num "$ISSUE_NUMBER" '.items[] | select(.content.number == ($num | tonumber)) | .status')
 
 echo "$CURRENT_STATUS"

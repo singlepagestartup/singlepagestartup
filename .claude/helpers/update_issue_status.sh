@@ -14,12 +14,12 @@ if [ -z "$ISSUE_NUMBER" ] || [ -z "$NEW_STATUS" ]; then
   exit 1
 fi
 
-# Load config (source .env directly to avoid subshell issues)
+# Load config
 SCRIPT_DIR="$(dirname "$0")"
-source "$SCRIPT_DIR/../.env"
+source "$SCRIPT_DIR/load_config.sh"
 
 # Get repo owner from gh
-REPO_OWNER=$(gh repo view --json owner -q '.owner.login')
+REPO_OWNER=$(gh_retry repo view --json owner -q '.owner.login')
 GITHUB_OWNER="${GITHUB_PROJECT_OWNER:-$REPO_OWNER}"
 GITHUB_PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
 
@@ -28,7 +28,7 @@ PROJECT_ITEM_ID=$("$SCRIPT_DIR/get_project_item_id.sh" "$ISSUE_NUMBER")
 
 # Get project fields to resolve status ID
 if [ "$GITHUB_PROJECT_OWNER_TYPE" = "organization" ]; then
-  PROJECT_DATA=$(gh api graphql -f query='
+  PROJECT_DATA=$(gh_retry api graphql -f query='
     query($login: String!, $number: Int!) {
       organization(login: $login) {
         projectV2(number: $number) {
@@ -51,7 +51,7 @@ if [ "$GITHUB_PROJECT_OWNER_TYPE" = "organization" ]; then
   STATUS_OPTION_ID=$(echo "$PROJECT_DATA" | jq -r --arg status "$NEW_STATUS" '.data.organization.projectV2.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == $status) | .id')
   PROJECT_NODE_ID=$(echo "$PROJECT_DATA" | jq -r '.data.organization.projectV2.id')
 else
-  PROJECT_DATA=$(gh api graphql -f query='
+  PROJECT_DATA=$(gh_retry api graphql -f query='
     query($login: String!, $number: Int!) {
       user(login: $login) {
         projectV2(number: $number) {
@@ -81,7 +81,7 @@ if [ -z "$STATUS_OPTION_ID" ]; then
 fi
 
 # Update status
-gh project item-edit \
+gh_retry project item-edit \
   --id "$PROJECT_ITEM_ID" \
   --project-id "$PROJECT_NODE_ID" \
   --field-id "$STATUS_FIELD_ID" \
