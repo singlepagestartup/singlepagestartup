@@ -1,23 +1,39 @@
 /**
  * BDD Scenario: Admin shell navigation between ecommerce models.
  *
- * Given: ecommerce API responses are mocked for deterministic data.
+ * Given: admin RBAC subject lifecycle is provisioned and ecommerce API responses are mocked for deterministic data.
  * When: user opens /admin, checks dashboard cards, uses settings entrypoint, and navigates via sidebar.
  * Then: dashboard counts, settings navigation, URLs, headings, and mocked model data are rendered correctly.
  */
 import { expect, test } from "@playwright/test";
 import { setupEcommerceApiMocks } from "../support/mock-ecommerce-api";
+import {
+  authenticateAdminRbacSession,
+  cleanupAdminRbacSubjectForE2E,
+  provisionAdminRbacSubjectForE2E,
+} from "../support/rbac-admin-lifecycle";
 
 test.describe("GIVEN: ecommerce API responses are mocked and admin shell is available", () => {
+  test.beforeAll(() => {
+    provisionAdminRbacSubjectForE2E();
+  });
+
+  test.afterAll(() => {
+    cleanupAdminRbacSubjectForE2E();
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await setupEcommerceApiMocks(page);
+    await authenticateAdminRbacSession(page);
+  });
+
   test("WHEN: user validates dashboard, settings entrypoint, and model navigation THEN: counts, routes, and table data are rendered as expected", async ({
     page,
   }) => {
-    await setupEcommerceApiMocks(page);
-
     await test.step("THEN: admin root and ecommerce shell are rendered", async () => {
       await page.goto("/admin");
-      await expect(page.getByTestId("admin-prototype-body")).toBeVisible();
-      await expect(page.getByTestId("admin-prototype-root")).toBeVisible();
+      await expect(page.getByTestId("admin-v2-body")).toBeVisible();
+      await expect(page.getByTestId("admin-v2-root")).toBeVisible();
     });
 
     await test.step("THEN: ecommerce dashboard cards show expected entity counters", async () => {
@@ -48,7 +64,7 @@ test.describe("GIVEN: ecommerce API responses are mocked and admin shell is avai
 
     await test.step("THEN: sidebar navigation opens product and attribute model routes", async () => {
       await page.goto("/admin");
-      await expect(page.getByTestId("admin-prototype-root")).toBeVisible();
+      await expect(page.getByTestId("admin-v2-root")).toBeVisible();
 
       await page.locator('[data-module-item="ecommerce"]').click();
       await expect(page).toHaveURL(/\/admin\/ecommerce$/);

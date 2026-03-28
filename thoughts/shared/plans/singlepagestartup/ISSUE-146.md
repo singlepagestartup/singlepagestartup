@@ -95,8 +95,8 @@ Promote draft naming to production naming without changing intended admin-v2 fea
 
 #### Automated Verification
 
-- [ ] Build passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
-- [ ] Lint passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
+- [x] Build passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
+- [x] Lint passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
 
 #### Manual Verification
 
@@ -166,7 +166,7 @@ Avoid duplicate admin rendering by consolidating ownership in route-level admin-
 
 #### Automated Verification
 
-- [ ] Host build/lint remain green after mount consolidation.
+- [x] Host build/lint remain green after mount consolidation.
 
 #### Manual Verification
 

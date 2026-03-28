@@ -70,14 +70,14 @@ import Link from "next/link";
 export function Component(props: IComponentProps) {
   return (
     <section
-      data-variant="admin-panel-draft"
-      data-testid="admin-prototype-body"
+      data-variant="admin-v2"
+      data-testid="admin-v2-body"
       className={cn(
         "h-screen overflow-hidden bg-background text-foreground antialiased",
         props.className,
       )}
     >
-      <div className="flex h-screen" data-testid="admin-prototype-root">
+      <div className="flex h-screen" data-testid="admin-v2-root">
         <PanelComponent settingsHref={"/admin/settings"}>
           <AgentAdminV2SidebarModuleItem
             isServer={props.isServer}

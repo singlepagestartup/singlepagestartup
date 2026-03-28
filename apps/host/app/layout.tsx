@@ -8,7 +8,6 @@ import "../styles/tailwind.css";
 import { fonts } from "./fonts";
 import React, { Suspense } from "react";
 import { Toaster } from "@sps/shared-ui-shadcn";
-import { Component as Admin } from "../src/components/admin";
 import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
@@ -42,7 +41,6 @@ export default async function RootLayout({
         <Suspense fallback={<Loading />}>
           <RbacSubject isServer={false} variant="authentication-init-default" />
           <Revalidation isServer={true} />
-          <Admin isServer={true} />
           <div className="relative">
             {children}
             <Toaster />
