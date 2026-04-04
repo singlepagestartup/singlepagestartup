@@ -1,11 +1,12 @@
-# Issue: Close `admin-panel-draft` and align with `admin` implementation + e2e coverage
+# Issue: Protect admin-v2 with RBAC authentication (align with admin)
 
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/146
 **Issue**: #146
-**Status**: Research Needed
+**Status**: Research in Review
 **Created**: 2026-03-28
+**Updated**: 2026-04-04
 **Priority**: Medium
 **Size**: medium
 **Type**: refactoring
@@ -14,25 +15,17 @@
 
 ## Problem to Solve
 
-`apps/host/src/components/admin-panel-draft` must be closed/decommissioned and brought to the same implementation behavior as `apps/host/src/components/admin`.
-
-The migration is not complete until behavior parity is verified by an end-to-end test.
+Protect `apps/host/src/components/admin-v2` with user authentication check, same as done in `apps/host/src/components/admin`. The old `admin-panel-draft` has been renamed to `admin-v2`.
 
 ## Key Details
 
-- Reference implementation to match: `apps/host/src/components/admin`.
-- Draft implementation to close/migrate: `apps/host/src/components/admin-panel-draft`.
-- The issue must include e2e validation that confirms the final implementation behavior.
-- For e2e execution, an `admin` role user must be created via `apps/api/create_rbac_subject.sh`.
-- After e2e execution, the created test user must be removed automatically.
-- A dedicated cleanup command/script `apps/api/delete_rbac_subject.sh` for removing that test user is required as part of this scope.
+- Reference implementation: `apps/host/src/components/admin` (RBAC 3-step auth guard)
+- Target implementation: `apps/host/src/components/admin-v2`
+- **Note**: As of 2026-04-04 research, admin-v2 already has an identical auth guard in `ClientComponent.tsx`
+- Routing: `/admin` URLs go to admin-v2 via `apps/host/app/[[...url]]/page.tsx:55`
 
 ## Implementation Notes
 
-- Do not introduce ad-hoc CSS; Tailwind-only frontend styling rules remain in force.
-- Keep all data access through SDK providers, per repository conventions.
-- Extend e2e flow to cover:
-  - creation of test admin subject,
-  - implementation parity checks,
-  - guaranteed cleanup/deletion of the created subject.
-- The cleanup command `apps/api/delete_rbac_subject.sh` should be reusable and safe for repeated CI/local runs.
+- The RBAC auth guard pattern: `RbacSubject(authentication-me-default)` → `RbacRole(find, slug=admin)` → `RbacSubjectsToRoles(find, subjectId+roleId)`
+- Guard runs client-side only (`isServer={false}`)
+- Unauthenticated users see nothing (null render, no redirect)

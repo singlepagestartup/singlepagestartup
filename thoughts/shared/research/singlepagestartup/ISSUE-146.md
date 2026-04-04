@@ -1,129 +1,137 @@
 ---
-date: 2026-03-28T01:43:35+03:00
+date: 2026-04-04T12:00:00+03:00
 researcher: flakecode
-git_commit: 77adb3b3192c29a77b9e3cde32bd3ea9533d8b3c
+git_commit: 3aad4ae1f0631186bd0fdd2c1f4825666a9f3d26
 branch: main
 repository: singlepagestartup
-topic: "Close admin-panel-draft and align with admin implementation + e2e admin lifecycle"
-tags: [research, codebase, admin, admin-panel-draft, e2e, rbac]
+topic: "Protect admin-v2 with RBAC authentication guard identical to admin"
+tags: [research, codebase, admin-v2, admin, rbac, authentication]
 status: complete
-last_updated: 2026-03-28
+last_updated: 2026-04-04
 last_updated_by: flakecode
 ---
 
-# Research: Close admin-panel-draft and align with admin implementation + e2e admin lifecycle
+# Research: Protect admin-v2 with RBAC authentication guard identical to admin
 
-**Date**: 2026-03-28T01:43:35+03:00  
-**Researcher**: flakecode  
-**Git Commit**: 77adb3b3192c29a77b9e3cde32bd3ea9533d8b3c  
-**Branch**: main  
+**Date**: 2026-04-04T12:00:00+03:00
+**Researcher**: flakecode
+**Git Commit**: 3aad4ae1f0631186bd0fdd2c1f4825666a9f3d26
+**Branch**: main
 **Repository**: singlepagestartup
 
 ## Research Question
 
-What is the current implementation split between `apps/host/src/components/admin` and `apps/host/src/components/admin-panel-draft`, how current `/admin` e2e coverage is wired, and what RBAC subject lifecycle automation already exists for create/delete in `apps/api`?
+How does the existing `admin` component protect access via user authentication, and how does the current `admin-v2` compare — what is needed to align them?
 
 ## Summary
 
-- URLs under `/admin` are routed to `admin-panel-draft` at page level.
-- The legacy `admin` component is still mounted globally in `app/layout.tsx` and is RBAC-gated by current subject + `admin` role relation.
-- Existing Host singlepage e2e scenarios for admin shell/navigation/visibility currently assert `admin-panel-draft` test IDs and run with browser-level API mocks.
-- `apps/api/create_rbac_subject.sh` exists and performs registration, authentication, role lookup, and `subjects-to-roles` patch to `admin`.
-- `apps/api/delete_rbac_subject.sh` is not present in the repository at the time of this research.
+- **admin-v2 already has the RBAC authentication guard** in `apps/host/src/components/admin-v2/ClientComponent.tsx`. It is structurally identical to the old admin guard in `apps/host/src/components/admin/ClientComponent.tsx`.
+- The guard chain is: `RbacSubject(authentication-me-default)` → `RbacRole(find)` → `RbacSubjectsToRoles(find)` — only renders children when the current user has the `admin` role.
+- The `admin-v2/index.tsx` already wraps `Component` inside `ClientComponent`, so the guard is active.
+- The old admin component is **no longer mounted** in `layout.tsx` (it was previously mounted globally as an overlay). Only admin-v2 is used now.
+- `/admin` routing goes directly to admin-v2 via `apps/host/app/[[...url]]/page.tsx:55`.
 
 ## Detailed Findings
 
-### 1. Host admin routing and render entrypoints
+### 1. Routing: How `/admin` URLs reach admin-v2
 
-- Catch-all Host page routes any URL starting with `/admin` to `AdminPanelDraft` (`apps/host/app/[[...url]]/page.tsx:55`).
-- The same file imports `AdminPanelDraft` from `../../src/components/admin-panel-draft` (`apps/host/app/[[...url]]/page.tsx:7`).
-- Root layout independently mounts `Admin` from `../src/components/admin` before page children (`apps/host/app/layout.tsx:11`, `apps/host/app/layout.tsx:45`).
+The catch-all route `apps/host/app/[[...url]]/page.tsx:55-56` checks if the URL starts with `/admin` and renders admin-v2:
 
-### 2. Current `admin` component behavior (legacy overlay path)
+```tsx
+if (slashedUrl.startsWith("/admin")) {
+  return <AdminV2 isServer={true} url={slashedUrl} language={language} />;
+}
+```
 
-- `admin/ClientComponent.tsx` fetches authenticated subject via RBAC subject variant `authentication-me-default` (`apps/host/src/components/admin/ClientComponent.tsx:10`).
-- It then loads RBAC roles with `variant="find"`, resolves `slug === "admin"`, and filters `subjects-to-roles` by `subjectId` and `roleId` (`apps/host/src/components/admin/ClientComponent.tsx:17`, `apps/host/src/components/admin/ClientComponent.tsx:19`, `apps/host/src/components/admin/ClientComponent.tsx:28`).
-- Dashboard rendering occurs only when matching `subjects-to-roles` records exist (`apps/host/src/components/admin/ClientComponent.tsx:50`, `apps/host/src/components/admin/ClientComponent.tsx:55`).
-- Dashboard UX is a floating `Admin` button that toggles an in-page section and module widget switcher (`apps/host/src/components/admin/assets/Dashboard.tsx:28`, `apps/host/src/components/admin/assets/Dashboard.tsx:38`, `apps/host/src/components/admin/assets/Dashboard.tsx:148`).
+Import at `page.tsx:7`: `import { Component as AdminV2 } from "../../src/components/admin-v2";`
 
-### 3. Current `admin-panel-draft` behavior (active `/admin` page path)
+### 2. admin-v2 entry point wraps Component in auth guard
 
-- `admin-panel-draft` root renders with `data-variant="admin-panel-draft"`, `data-testid="admin-prototype-body"`, and nested `data-testid="admin-prototype-root"` (`apps/host/src/components/admin-panel-draft/Component.tsx:73`, `apps/host/src/components/admin-panel-draft/Component.tsx:74`, `apps/host/src/components/admin-panel-draft/Component.tsx:80`).
-- Sidebar shell uses shared admin-v2 panel with `settingsHref="/admin/settings"` (`apps/host/src/components/admin-panel-draft/Component.tsx:66`, `apps/host/src/components/admin-panel-draft/Component.tsx:81`).
-- Header account action links to `/admin/profile` (`apps/host/src/components/admin-panel-draft/Component.tsx:164`).
-- Module overview/sidebar items from all listed modules are mounted through `AdminV2Overview`/`AdminV2SidebarModuleItem` component imports (`apps/host/src/components/admin-panel-draft/Component.tsx:2` through `apps/host/src/components/admin-panel-draft/Component.tsx:61`).
-- Settings and account page component imports exist but are commented out in this component file (`apps/host/src/components/admin-panel-draft/Component.tsx:62`, `apps/host/src/components/admin-panel-draft/Component.tsx:63`, `apps/host/src/components/admin-panel-draft/Component.tsx:197`).
+`apps/host/src/components/admin-v2/index.tsx:5-10`:
 
-### 4. Settings/account draft subcomponents that exist in codebase
+```tsx
+export function Component(props: IComponentProps) {
+  return (
+    <ClientComponent>
+      <ChildComponent {...props} />
+    </ClientComponent>
+  );
+}
+```
 
-- Settings page client component defines `data-testid="settings-page"` and operation actions for `/api/http-cache/clear` and `/api/revalidate?path=/&type=layout` (`apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx:114`, `apps/host/src/components/admin-panel-draft/settings-page/data.ts:15`, `apps/host/src/components/admin-panel-draft/settings-page/data.ts:24`).
-- Account settings page client component defines `data-testid="account-settings-page"` and renders typed sample data from local `data.ts` exports (`apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx:115`, `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts:49`, `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts:57`).
+`ClientComponent` is the auth guard. `ChildComponent` is the actual admin panel UI. The guard wraps the UI — children only render when authentication passes.
 
-### 5. Existing admin e2e coverage wiring
+### 3. admin-v2 auth guard (ClientComponent.tsx)
 
-- `admin-shell.e2e.ts` navigates `/admin`, checks `admin-prototype-*` test IDs, uses settings button route assertions, and navigates ecommerce model links (`apps/host/e2e/singlepage/admin-shell.e2e.ts:18`, `apps/host/e2e/singlepage/admin-shell.e2e.ts:19`, `apps/host/e2e/singlepage/admin-shell.e2e.ts:42`, `apps/host/e2e/singlepage/admin-shell.e2e.ts:56`).
-- `admin-visibility-guards.e2e.ts` asserts visibility/hidden states between `admin-prototype-root`, `settings-page`, and `account-settings-page` for `/admin`, `/admin/settings`, and `/admin/settings/account` paths (`apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts:17`, `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts:69`, `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts:87`).
-- These tests currently call `setupEcommerceApiMocks(page)` (browser request interception) rather than provisioning real API-side RBAC users (`apps/host/e2e/singlepage/admin-shell.e2e.ts:15`, `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts:15`, `apps/host/e2e/support/mock-ecommerce-api.ts:269`).
-- Playwright config defaults to reuse-first mode with optional managed webserver (`apps/host/playwright.config.ts:15`, `apps/host/playwright.config.ts:17`, `apps/host/playwright.config.ts:49`).
-- Root npm scripts for singlepage e2e set `PW_SKIP_WEBSERVER=1` by default (`package.json:21`, `package.json:22`).
+`apps/host/src/components/admin-v2/ClientComponent.tsx:1-65`:
 
-### 6. RBAC subject lifecycle scripts in `apps/api`
+- `"use client"` component
+- Step 1: `RbacSubject` with `variant="authentication-me-default"` — reads JWT from cookie, decodes to get current user. Returns `null` if no user.
+- Step 2: `RbacRole` with `variant="find"` — fetches all roles, finds the one with `slug === "admin"`. Returns `null` if no admin role exists.
+- Step 3: `RbacSubjectsToRoles` with `variant="find"` — queries junction table filtered by `subjectId === me.id` AND `roleId === adminRole.id`. Returns `null` if no matching relation found.
+- Only renders `props.children` when all three checks pass.
 
-- `create_rbac_subject.sh` reads `RBAC_SUBJECT_IDENTITY_EMAIL`, `RBAC_SUBJECT_IDENTITY_PASSWORD`, and `RBAC_SECRET_KEY` from env (`apps/api/create_rbac_subject.sh:8`, `apps/api/create_rbac_subject.sh:9`, `apps/api/create_rbac_subject.sh:10`).
-- It calls registration and authentication endpoints, extracts JWT, loads current subject via `/authentication/me`, loads `/subjects-to-roles`, resolves admin role from `/roles`, and patches subject-role relation (`apps/api/create_rbac_subject.sh:29`, `apps/api/create_rbac_subject.sh:34`, `apps/api/create_rbac_subject.sh:52`, `apps/api/create_rbac_subject.sh:70`, `apps/api/create_rbac_subject.sh:92`, `apps/api/create_rbac_subject.sh:116`).
-- `create_env.sh` seeds default RBAC subject email/password values into API `.env` (`apps/api/create_env.sh:92`, `apps/api/create_env.sh:93`).
-- `apps/api/delete_rbac_subject.sh` is currently absent (`missing apps/api/delete_rbac_subject.sh`, filesystem check during this research).
+### 4. Old admin auth guard (for comparison)
+
+`apps/host/src/components/admin/ClientComponent.tsx:1-65`:
+
+- Identical 3-step chain: `RbacSubject(authentication-me-default)` → `RbacRole(find)` → `RbacSubjectsToRoles(find)`
+- Minor differences:
+  - Old admin returns `undefined` on auth failure; admin-v2 returns `null` (both render nothing)
+  - Old admin renders `<Dashboard isServer={false} />` directly; admin-v2 renders `props.children`
+
+### 5. Authentication mechanism details
+
+**Client-side (used by both admin and admin-v2):**
+
+- `authentication-me-default` with `isServer={false}` reads `rbac.subject.jwt` cookie via `react-cookie`
+- Decodes JWT locally with `react-jwt` — no HTTP call needed
+- JWT contains `{ subject: IModel }` where IModel has `id`, `slug`, `variant`, `createdAt`, `updatedAt`
+- Key file: `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/me-default/client.tsx`
+
+**JWT initialization:**
+
+- Root layout `apps/host/app/layout.tsx:42` mounts `<RbacSubject isServer={false} variant="authentication-init-default" />` which initializes the JWT cookie from the auth flow
+
+**Role lookup:**
+
+- `variant="find"` calls `GET /api/rbac/roles` to fetch all roles
+- Client factory injects `Authorization: Bearer <jwt>` from cookie into all requests via `saturateHeaders`
+- Key file: `libs/shared/frontend/client/utils/src/lib/saturate-headers/index.ts`
+
+**Subject-to-role check:**
+
+- `variant="find"` with filters calls `GET /api/rbac/subjects-to-roles?filters[and][0][column]=subjectId&...`
+- Returns junction records; empty array means user does not have the admin role
+
+### 6. Old admin component status
+
+- `apps/host/src/components/admin/` directory still exists with all files
+- It is **not imported or mounted anywhere** in the current routing or layout
+- Previously it was mounted in `layout.tsx` as a global overlay with a floating "Admin" toggle button
+- That import has been removed — layout.tsx no longer references it
 
 ## Code References
 
-- `apps/host/app/[[...url]]/page.tsx:7`
-- `apps/host/app/[[...url]]/page.tsx:55`
-- `apps/host/app/layout.tsx:11`
-- `apps/host/app/layout.tsx:45`
-- `apps/host/src/components/admin/ClientComponent.tsx:10`
-- `apps/host/src/components/admin/ClientComponent.tsx:28`
-- `apps/host/src/components/admin/assets/Dashboard.tsx:28`
-- `apps/host/src/components/admin/assets/Dashboard.tsx:38`
-- `apps/host/src/components/admin-panel-draft/Component.tsx:73`
-- `apps/host/src/components/admin-panel-draft/Component.tsx:81`
-- `apps/host/src/components/admin-panel-draft/Component.tsx:164`
-- `apps/host/src/components/admin-panel-draft/Component.tsx:197`
-- `apps/host/src/components/admin-panel-draft/settings-page/ClientComponent.tsx:114`
-- `apps/host/src/components/admin-panel-draft/settings-page/data.ts:15`
-- `apps/host/src/components/admin-panel-draft/account-settings-page/ClientComponent.tsx:115`
-- `apps/host/src/components/admin-panel-draft/account-settings-page/data.ts:49`
-- `apps/host/e2e/singlepage/admin-shell.e2e.ts:18`
-- `apps/host/e2e/singlepage/admin-shell.e2e.ts:42`
-- `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts:69`
-- `apps/host/e2e/support/mock-ecommerce-api.ts:269`
-- `apps/host/playwright.config.ts:15`
-- `package.json:21`
-- `apps/api/create_rbac_subject.sh:29`
-- `apps/api/create_rbac_subject.sh:116`
-- `apps/api/create_env.sh:92`
+- `apps/host/app/[[...url]]/page.tsx:7` — AdminV2 import
+- `apps/host/app/[[...url]]/page.tsx:55-56` — `/admin` routing to AdminV2
+- `apps/host/app/layout.tsx:42` — RBAC auth init in root layout
+- `apps/host/src/components/admin-v2/index.tsx:5-10` — entry point wrapping Component in ClientComponent
+- `apps/host/src/components/admin-v2/ClientComponent.tsx:1-65` — RBAC auth guard (3-step chain)
+- `apps/host/src/components/admin-v2/Component.tsx:70-207` — admin panel UI
+- `apps/host/src/components/admin-v2/interface.ts:1-8` — IComponentProps
+- `apps/host/src/components/admin/ClientComponent.tsx:1-65` — old admin auth guard (same pattern)
+- `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/me-default/client.tsx` — JWT decode on client
+- `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/me-default/server.tsx` — server auth via API call
+- `libs/shared/frontend/client/utils/src/lib/saturate-headers/index.ts` — JWT header injection
 
 ## Architecture Documentation
 
-- Current host-level admin rendering has two coexisting paths:
-  - Route-level `/admin` rendering through `admin-panel-draft` (`apps/host/app/[[...url]]/page.tsx:55`).
-  - Layout-level RBAC-gated `admin` overlay component (`apps/host/app/layout.tsx:45`, `apps/host/src/components/admin/ClientComponent.tsx:10`).
-- Current singlepage e2e tests for admin shell behavior are implemented around route/UI contracts and API mocking helpers, not API-side RBAC subject provisioning scripts.
-
-## Historical Context (from thoughts/)
-
-- `thoughts/shared/research/singlepagestartup/ISSUE-142.md` documents earlier pilot context where `/admin` was routed to `admin-panel-draft` and settings/account scope boundaries were recorded at that stage.
-- `thoughts/shared/research/singlepagestartup/ISSUE-145.md` records the broader admin-v2 rollout context and identifies host `/admin*` mounting through `admin-panel-draft`.
-- `thoughts/shared/handoffs/singlepagestartup/ISSUE-145-progress.md` tracks global rollout completion status and admin-v2 parity incidents/fixes across modules.
-- `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md` captures the adopted migration contract for overview structure and relation-rendering behavior.
-
-## Related Research
-
-- `thoughts/shared/research/singlepagestartup/ISSUE-142.md`
-- `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
-- `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
-- `thoughts/shared/handoffs/singlepagestartup/ISSUE-145-progress.md`
+- admin-v2 auth guard follows the established SPS pattern: render-prop chain of RBAC SDK components with `isServer={false}`, each step gating the next.
+- The guard runs client-side only (all three RBAC components use `isServer={false}`). Server-side rendering of the page returns no admin content until the client hydrates and the JWT check completes.
+- The pattern is: unauthenticated users see nothing (blank render); there is no redirect to a login page or explicit "access denied" message.
 
 ## Open Questions
 
-- Which specific e2e scenario in `apps/host/e2e/singlepage/` will own the real RBAC admin user lifecycle contract (`create_rbac_subject.sh` + cleanup) instead of mock-only setup?
-- Where should `delete_rbac_subject.sh` be integrated in test orchestration (per-test teardown hook, suite teardown, or wrapper script) once added?
+- The auth guard already exists in admin-v2. Is the issue actually about something else — e.g., adding a redirect to login, showing an access denied message, or adding unit/integration test coverage for the auth flow?
+- Should the old `admin` component directory be removed since it is no longer mounted anywhere?

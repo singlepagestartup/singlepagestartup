@@ -161,7 +161,9 @@ describe("GIVEN: admin-v2 select-input client component", () => {
       isLoading: false,
       isFetching: false,
     });
-    const childSpy = jest.fn(() => <div data-testid="merged-data" />);
+    const childSpy = jest.fn((_props: any) => (
+      <div data-testid="merged-data" />
+    ));
 
     renderInHarness(
       harness,
