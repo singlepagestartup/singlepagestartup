@@ -6,6 +6,20 @@
   "tags": [],
   "targets": {
     "eslint:lint": {},
+    "jest:test": {},
+    "jest:integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "libs/modules/billing/jest.integration.config.ts",
+        "passWithNoTests": true
+      }
+    },
     "tsc:build": {},
     "repository-generate": {
       "executor": "nx:run-commands",

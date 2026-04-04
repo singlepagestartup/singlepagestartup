@@ -17,7 +17,6 @@ This repository uses a layered test strategy so developers can validate changes 
 
 - `Unit` tests validate isolated logic (utilities, adapters, component state helpers).
 - `Integration` tests validate module contracts and orchestration (mounting, route/type registry consistency).
-- `E2E` tests validate real user flows in the Host admin UI.
 
 ### BDD format (required)
 
@@ -44,64 +43,23 @@ Example:
 
 ### Where tests live
 
-- Unit (shared + ecommerce scope): colocated with source files as `*.spec.ts` / `*.spec.tsx`.
+- Unit: colocated with source files as `*.spec.ts` / `*.spec.tsx` across API, shared packages, and all 15 modules.
 - Integration:
   - `apps/api/specs/integration/*.integration.spec.ts`
-  - `libs/modules/ecommerce/**/**/*.integration.spec.ts`
-- Host E2E:
-  - `apps/host/e2e/singlepage/*.e2e.ts` (framework team owned)
-  - `apps/host/e2e/startup/*.e2e.ts` (customer/startup owned)
-  - `apps/host/e2e/support/*.ts`
-  - config: `apps/host/playwright.config.ts`
-  - e2e TypeScript config: `apps/host/tsconfig.spec.json`
-
-### How Host E2E works
-
-- `nx run host:e2e` starts Playwright against the Host app.
-- By default, Playwright runs in **reuse mode** and does **not** start Host automatically.
-- Reuse mode expects Host to already run on `http://127.0.0.1:3000`.
-- To explicitly allow Playwright to start Host (fallback only), set `PW_USE_WEBSERVER=1`.
-- `PW_SKIP_WEBSERVER=1` always forces reuse mode.
-- Playwright projects are split by ownership:
-  - `singlepage` for framework-maintained business flows
-  - `startup` for customer-maintained business flows
-- Current `singlepage` smoke scenarios use browser-level API mocks from `apps/host/e2e/support`.
-
-### Reuse-first E2E principle
-
-This project uses a reuse-first E2E workflow to avoid expensive Host cold-starts (typically around 2 minutes in local dev):
-
-1. Start Host once:
-   - `npm run host:dev` (recommended), or
-   - `npm run host:start` (after build).
-2. Run E2E tests (reuse mode by default):
-   - `npm run test:e2e:singlepage`
-   - `npm run test:e2e:startup`
-3. Optional fallback (let Playwright manage Host webServer):
-   - `npm run test:e2e:singlepage:with-webserver`
-   - `npm run test:e2e:startup:with-webserver`
-
-For the current `apps/host/e2e/singlepage` suite, backend startup is not required. These tests use browser-level mocks from `apps/host/e2e/support/mock-ecommerce-api.ts`.
+  - `libs/modules/*/backend/app/api/src/lib/*.integration.spec.ts`
 
 ### Run commands (from repository root)
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
-- `npm run host:dev` (start once before E2E runs)
-- `npm run test:e2e:singlepage` (reuse mode by default)
-- `npm run test:e2e:singlepage:reuse` (explicit alias for reuse mode)
-- `npm run test:e2e:startup` (reuse mode by default)
-- `npm run test:e2e:singlepage:with-webserver` (optional fallback)
-- `npm run test:e2e:startup:with-webserver` (optional fallback)
-- `npm run test:e2e:scoped` (alias for `singlepage`)
 - `npm run test:all:scoped`
 
 ### Why this structure
 
 - Fast local feedback with clear test boundaries.
 - Modular ownership: each layer has a dedicated purpose and location.
-- Lower maintenance cost: reusable e2e fixtures and isolated configs reduce flaky cross-coupling.
-- Safer upstream pulls: framework changes stay in `singlepage`, customer scenarios stay in `startup`.
+- Lower maintenance cost: deterministic unit + integration contracts reduce flaky cross-coupling.
+- Safer upstream pulls: contract-focused tests reduce coupling to environment-specific UI flows.
 
 ## Patterns
 

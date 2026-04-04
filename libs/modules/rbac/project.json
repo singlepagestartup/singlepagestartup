@@ -6,6 +6,19 @@
   "tags": [],
   "targets": {
     "jest:test": {},
+    "jest:integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "inputs": [
+        "{projectRoot}"
+      ],
+      "options": {
+        "jestConfig": "libs/modules/rbac/jest.integration.config.ts",
+        "passWithNoTests": true
+      }
+    },
     "eslint:lint": {},
     "tsc:build": {},
     "repository-generate": {
