@@ -331,7 +331,7 @@ npm run host:dev
 
 ## Testing Convention (BDD Required)
 
-All test files in SPS follow a BDD-oriented format (`unit`, `integration`, `e2e`).
+All test files in SPS follow a BDD-oriented format (`unit`, `integration`).
 
 ### Required pattern
 
@@ -352,20 +352,13 @@ Example:
  */
 ```
 
-### E2E execution principle (Host, reuse-first)
+### Scoped testing lanes
 
-Host E2E tests are run in reuse mode by default to avoid slow cold-start on every run.
+Use only the scoped unit and integration lanes:
 
-1. Start Host once:
-   - `npm run host:dev`
-2. Run Playwright tests in reuse mode:
-   - `npm run test:e2e:singlepage`
-   - `npm run test:e2e:startup`
-
-If you explicitly need Playwright to manage Host webServer, use:
-
-- `npm run test:e2e:singlepage:with-webserver`
-- `npm run test:e2e:startup:with-webserver`
+- `npm run test:unit:scoped`
+- `npm run test:integration:scoped`
+- `npm run test:all:scoped`
 
 ## Attaching Upstream
 

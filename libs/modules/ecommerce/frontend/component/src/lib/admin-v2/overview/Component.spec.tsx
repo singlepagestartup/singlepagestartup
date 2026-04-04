@@ -17,42 +17,35 @@ import { Component } from "./Component";
 const modelMock = jest.fn();
 const tableMock = jest.fn();
 
-jest.mock("../registry", () => ({
-  ecommerceAdminV2Models: [
-    {
-      id: "product",
-      title: "Product",
-      Model: (props: any) => {
-        modelMock(props);
-        return <div data-testid={`card:${props.variant}:product`} />;
-      },
-      Table: (props: any) => {
-        tableMock(props);
-        if (!props.url.includes("/product")) {
+function createOverviewModelMock(modelId: string) {
+  return {
+    Component: (props: any) => {
+      if (props.variant === "admin-v2-card") {
+        modelMock({ modelId, ...props });
+        return <div data-testid={`card:${modelId}`} />;
+      }
+
+      if (props.variant === "admin-v2-table") {
+        tableMock({ modelId, ...props });
+        if (!props.url.includes(`/${modelId}`)) {
           return null;
         }
 
-        return <div data-testid="table:product" />;
-      },
-    },
-    {
-      id: "attribute",
-      title: "Attribute",
-      Model: (props: any) => {
-        modelMock(props);
-        return <div data-testid={`card:${props.variant}:attribute`} />;
-      },
-      Table: (props: any) => {
-        tableMock(props);
-        if (!props.url.includes("/attribute")) {
-          return null;
-        }
+        return <div data-testid={`table:${modelId}`} />;
+      }
 
-        return <div data-testid="table:attribute" />;
-      },
+      return null;
     },
-  ],
-}));
+  };
+}
+
+jest.mock("./product", () => createOverviewModelMock("product"));
+jest.mock("./attribute", () => createOverviewModelMock("attribute"));
+jest.mock("./attribute-key", () => createOverviewModelMock("attribute-key"));
+jest.mock("./category", () => createOverviewModelMock("category"));
+jest.mock("./order", () => createOverviewModelMock("order"));
+jest.mock("./store", () => createOverviewModelMock("store"));
+jest.mock("./widget", () => createOverviewModelMock("widget"));
 
 describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
   let container: HTMLDivElement;
@@ -83,10 +76,25 @@ describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
     });
 
     expect(
-      container.querySelector("[data-testid='card:admin-v2-card:product']"),
+      container.querySelector('[data-testid="card:product"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector('[data-testid="card:admin-v2-card:attribute"]'),
+      container.querySelector('[data-testid="card:attribute"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="card:attribute-key"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="card:category"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="card:order"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="card:store"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="card:widget"]'),
     ).not.toBeNull();
     expect(container.querySelector('[data-testid="table:product"]')).toBeNull();
     expect(
