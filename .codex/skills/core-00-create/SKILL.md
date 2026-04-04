@@ -15,6 +15,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 4. Write/update artifacts in the exact same repository paths.
 5. Use `.claude/helpers/*.sh` for project/status operations.
 6. For project item creation, use `.claude/helpers/add_issue_to_project.sh` (do not call raw `gh project item-add` directly).
+7. For issue bodies/comments that may include markdown or shell-sensitive characters, prefer `--body-file` and `.claude/helpers/gh_issue_comment.sh` over inline `--body "..."`.
 
 ## Codex Adaptation Rules
 

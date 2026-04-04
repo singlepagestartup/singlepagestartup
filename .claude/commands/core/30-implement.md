@@ -38,7 +38,12 @@ fi
    - Find the implementation plan from issue comments or `thoughts/shared/plans/REPO_NAME/`
    - If no plan exists, move the issue back to "Ready for Plan" and EXIT:
      ```bash
-     gh issue comment ISSUE_NUMBER --body "No implementation plan found. Moving back to Ready for Plan."
+     COMMENT_FILE="$(mktemp)"
+     cat > "$COMMENT_FILE" <<'EOF'
+     No implementation plan found. Moving back to Ready for Plan.
+     EOF
+     .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+     rm -f "$COMMENT_FILE"
      .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Ready for Plan"
      ```
    - Read the plan document COMPLETELY: `thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md`
@@ -230,11 +235,16 @@ fi
    d. **Comment on issue with PR link**:
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "PR submitted: [PR_URL]
+   COMMENT_FILE="$(mktemp)"
+   cat > "$COMMENT_FILE" <<'EOF'
+   PR submitted: [PR_URL]
 
    Implementation summary:
    - [Key change 1]
-   - [Key change 2]"
+   - [Key change 2]
+   EOF
+   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+   rm -f "$COMMENT_FILE"
    ```
 
 9. **Update status to "Code Review"**:
@@ -278,3 +288,4 @@ The progress file is deleted because its operational tracking content is already
 - Never skip manual verification pauses without explicit instruction
 - Group related changes together for atomic commits
 - If you get stuck: make sure you've read all relevant code, consider if the codebase evolved since the plan was written, present the mismatch clearly
+- GitHub markdown comments must use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin), not inline `--body "..."` when text may include shell-sensitive content

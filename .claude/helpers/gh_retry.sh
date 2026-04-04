@@ -13,7 +13,8 @@ gh_retry() {
   local base_delay_seconds="${GH_RETRY_BASE_DELAY_SECONDS:-1}"
   local attempt=1
   local output
-  local status=0
+  # Use a non-reserved name: in zsh, "status" is readonly.
+  local exit_code=0
 
   while true; do
     if output=$(gh "$@" 2>&1); then
@@ -21,16 +22,16 @@ gh_retry() {
       return 0
     fi
 
-    status=$?
+    exit_code=$?
 
     if ! is_gh_retryable_error "$output"; then
       printf "%s\n" "$output" >&2
-      return "$status"
+      return "$exit_code"
     fi
 
     if [ "$attempt" -ge "$max_attempts" ]; then
       printf "%s\n" "$output" >&2
-      return "$status"
+      return "$exit_code"
     fi
 
     local sleep_seconds=$((base_delay_seconds * (2 ** (attempt - 1))))

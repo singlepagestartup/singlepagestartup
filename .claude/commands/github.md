@@ -155,6 +155,7 @@ Use these scripts instead of GraphQL queries for simpler operations:
 - `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
 - `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
 - `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.claude/.env` owner/type, with GraphQL fallback
+- `.claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file PATH` — Safely create/edit issue comments from markdown body files (prevents shell interpolation issues)
 
 ### Updating Status Field
 
@@ -252,10 +253,15 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
 5. **Create the GitHub issue:**
 
    ```bash
+   ISSUE_BODY_FILE="$(mktemp)"
+   cat > "$ISSUE_BODY_FILE" <<'EOF'
+   DESCRIPTION
+   EOF
    gh issue create \
      --title "TITLE" \
-     --body "DESCRIPTION" \
+     --body-file "$ISSUE_BODY_FILE" \
      --label "size:small,status:triage"
+   rm -f "$ISSUE_BODY_FILE"
    ```
 
 6. **Add to GitHub Project and set status to Triage:**
@@ -308,7 +314,12 @@ When the user wants to add a comment to an issue:
 4. **Add the comment:**
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "COMMENT_BODY"
+   COMMENT_FILE="$(mktemp)"
+   cat > "$COMMENT_FILE" <<'EOF'
+   COMMENT_BODY
+   EOF
+   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+   rm -f "$COMMENT_FILE"
    ```
 
 ### 3. Searching for Issues by Status
@@ -371,3 +382,4 @@ Avoid:
 - Mechanical lists of changes without context
 - Restating what's obvious from code diffs
 - Generic summaries that don't add value
+- Passing markdown with backticks directly to `--body "..."`; prefer `--body-file` or `.claude/helpers/gh_issue_comment.sh`

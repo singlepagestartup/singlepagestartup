@@ -60,7 +60,15 @@ You create a new development issue with local documentation and GitHub issue cre
      ```bash
      source .claude/helpers/load_config.sh
      ```
-   - Create issue via `gh issue create --title "..." --body "..." --label "size:[size]"`
+   - Create issue via `gh issue create --title "..." --body-file ISSUE_BODY_FILE --label "size:[size]"`:
+     ```bash
+     ISSUE_BODY_FILE="$(mktemp)"
+     cat > "$ISSUE_BODY_FILE" <<'EOF'
+     [Issue description markdown]
+     EOF
+     gh issue create --title "..." --body-file "$ISSUE_BODY_FILE" --label "size:[size]"
+     rm -f "$ISSUE_BODY_FILE"
+     ```
    - Add to GitHub Project via helper (uses `.claude/.env` owner and GraphQL fallback):
      ```bash
      .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL

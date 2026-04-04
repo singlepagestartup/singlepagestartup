@@ -244,25 +244,31 @@ fi
    g. **Post a reply comment** on the GitHub issue:
 
    ```bash
-   source .claude/helpers/gh_retry.sh
-   ensure_gh_ready
-   gh_retry issue comment ISSUE_NUMBER --body "Plan updated based on discussion.
+   COMMENT_FILE="$(mktemp)"
+   cat > "$COMMENT_FILE" <<'EOF'
+   Plan updated based on discussion.
 
    **Changes made:**
    - [Change 1]
    - [Change 2]
 
-   Commit: [COMMIT_HASH]"
+   Commit: [COMMIT_HASH]
+   EOF
+   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+   rm -f "$COMMENT_FILE"
    ```
 
 6. **Attach plan to GitHub issue** (always — whether newly created or updated):
 
    ```bash
-   source .claude/helpers/gh_retry.sh
-   ensure_gh_ready
-   gh_retry issue comment ISSUE_NUMBER --body "Implementation plan: \`thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md\`
+   COMMENT_FILE="$(mktemp)"
+   cat > "$COMMENT_FILE" <<'EOF'
+   Implementation plan: `thoughts/shared/plans/REPO_NAME/PLAN_FILENAME.md`
 
-   [Brief summary of approach and phases]"
+   [Brief summary of approach and phases]
+   EOF
+   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+   rm -f "$COMMENT_FILE"
    ```
 
    Skip this step if step 5g already posted a comment that references the plan.
@@ -305,6 +311,9 @@ If a reviewer requests changes while the issue is in "Plan in Review", manually 
 7. **Shell Path Safety**:
    - Quote file paths that include shell glob characters (such as `[]`, `*`, `?`) in command examples and executions.
    - Example: use `"apps/host/app/[[...url]]/page.tsx"` instead of an unquoted path.
+8. **GitHub Comment Body Safety**:
+   - Never pass markdown comment bodies with backticks directly via `--body "..."`; this risks shell command substitution.
+   - Use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) for all multiline issue comments.
 
 ## Completion Message
 
