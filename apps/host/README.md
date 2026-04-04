@@ -43,10 +43,10 @@ Example:
 
 ### Where tests live
 
-- Unit (shared + ecommerce scope): colocated with source files as `*.spec.ts` / `*.spec.tsx`.
+- Unit: colocated with source files as `*.spec.ts` / `*.spec.tsx` across API, shared packages, and all 15 modules.
 - Integration:
   - `apps/api/specs/integration/*.integration.spec.ts`
-  - `libs/modules/ecommerce/**/**/*.integration.spec.ts`
+  - `libs/modules/*/backend/app/api/src/lib/*.integration.spec.ts`
 
 ### Run commands (from repository root)
 

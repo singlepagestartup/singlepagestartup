@@ -104,8 +104,8 @@ Eliminate all runtime E2E execution paths and Playwright-specific toolchain depe
 
 #### Manual Verification:
 
-- [ ] Repository no longer exposes a runnable `host:e2e` path.
-- [ ] Developer onboarding steps no longer include browser/E2E bootstrapping.
+- [x] Repository no longer exposes a runnable `host:e2e` path.
+- [x] Developer onboarding steps no longer include browser/E2E bootstrapping.
 
 ---
 
@@ -145,13 +145,13 @@ Promote integration from a 2-project lane to a 15-module baseline with consisten
 
 #### Automated Verification:
 
-- [ ] `npm run test:integration:scoped` passes with all 15 modules included in scope.
-- [ ] Every module reports an available `jest:integration` target.
-- [ ] New integration specs conform to repository BDD header format requirements.
+- [x] `npm run test:integration:scoped` passes with all 15 modules included in scope.
+- [x] Every module reports an available `jest:integration` target.
+- [x] New integration specs conform to repository BDD header format requirements.
 
 #### Manual Verification:
 
-- [ ] Spot-check selected modules outside ecommerce/rbac to confirm integration lane now executes module contract assertions.
+- [x] Spot-check selected modules outside ecommerce/rbac to confirm integration lane now executes module contract assertions.
 
 ---
 
@@ -191,13 +191,13 @@ Establish initial, repeatable BDD unit contracts for all modules, prioritizing c
 
 #### Automated Verification:
 
-- [ ] `npm run test:unit:scoped` passes with all module projects in scope.
-- [ ] Every module has at least initial BDD unit contract coverage committed in module-owned test files.
-- [ ] Unit/integration split remains clean (integration specs excluded from unit lane where applicable).
+- [x] `npm run test:unit:scoped` passes with all module projects in scope.
+- [x] Every module has at least initial BDD unit contract coverage committed in module-owned test files.
+- [x] Unit/integration split remains clean (integration specs excluded from unit lane where applicable).
 
 #### Manual Verification:
 
-- [ ] Spot-check at least one newly covered module that previously had zero unit tests to confirm meaningful contract assertions (not placeholders).
+- [x] Spot-check at least one newly covered module that previously had zero unit tests to confirm meaningful contract assertions (not placeholders).
 
 ---
 
@@ -231,13 +231,13 @@ Lock in the new testing model operationally (scripts/docs/status references) and
 
 #### Automated Verification:
 
-- [ ] `npm run test:all:scoped` passes and executes only unit+integration lanes.
-- [ ] No active CI/local script path references E2E/Playwright for scoped validation.
+- [x] `npm run test:all:scoped` passes and executes only unit+integration lanes.
+- [x] No active CI/local script path references E2E/Playwright for scoped validation.
 
 #### Manual Verification:
 
-- [ ] Maintainers can follow docs/scripts without ambiguity about lane ownership.
-- [ ] Superseded relationship (#147 -> #150 direction) is visible in issue context.
+- [x] Maintainers can follow docs/scripts without ambiguity about lane ownership.
+- [x] Superseded relationship (#147 -> #150 direction) is visible in issue context.
 
 ---
 

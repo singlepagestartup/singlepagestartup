@@ -8,6 +8,16 @@ Start with `AI_GUIDE.md` for AI-specific onboarding and workflows.
 
 SinglePageStartup (SPS) is a modular framework designed to dramatically accelerate the development of web projects, from MVPs to full-scale business platforms. SPS enforces a unified architecture where every business entity is implemented as a separate model with its own REST API and frontend display components. The framework organizes all modules and their relationships into a clear folder structure, separating backend, frontend, models, and relations for maximum scalability and code reuse. The project root contains dedicated directories for applications (API, frontend, database, Redis, Telegram bot), business modules, shared utilities, providers, and infrastructure tools. By following a single, consistent pattern for all entities and modules, SPS helps developers save countless hours on setup, integration, and maintenance, letting them focus on building features that matter.
 
+## Scoped Testing Workflow
+
+The canonical scoped pipeline is module-wide `unit + integration` only:
+
+- `npm run test:unit:scoped`
+- `npm run test:integration:scoped`
+- `npm run test:all:scoped`
+
+All 15 business modules participate in both scoped lanes. Browser E2E/Playwright is not part of scoped validation.
+
 ### Key Principles:
 
 - Everything is based on Models, each having:
