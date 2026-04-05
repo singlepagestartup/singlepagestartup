@@ -41,7 +41,12 @@ fi
    - Read any linked documents or file references in the issue description/comments
    - If insufficient information to conduct research, add a comment asking for clarification:
      ```bash
-     gh issue comment ISSUE_NUMBER --body "Need clarification before research: [specific question]"
+     COMMENT_FILE="$(mktemp)"
+     cat > "$COMMENT_FILE" <<'EOF'
+     Need clarification before research: [specific question]
+     EOF
+     .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+     rm -f "$COMMENT_FILE"
      ```
      Then move back to "Research Needed" and EXIT
 
@@ -173,12 +178,17 @@ fi
 8. **Add GitHub issue comment with research summary**:
 
    ```bash
-   gh issue comment ISSUE_NUMBER --body "Research complete: \`thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md\`
+   COMMENT_FILE="$(mktemp)"
+   cat > "$COMMENT_FILE" <<'EOF'
+   Research complete: `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md`
 
    Key findings:
    - [Major finding 1]
    - [Major finding 2]
    - [Major finding 3]
+   EOF
+   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
+   rm -f "$COMMENT_FILE"
    ```
 
 9. **Update status to "Research in Review"**:
@@ -223,4 +233,5 @@ View the issue: [ISSUE_URL]
 - **NO RECOMMENDATIONS**: Only describe the current state of the codebase
 - **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
 - **Path quoting**: In zsh, always wrap paths containing glob characters (`[`, `]`, `*`, `?`) in single quotes (for example `'apps/host/app/[[...url]]/page.tsx'`) to avoid shell expansion errors
+- **GitHub Comment Body Safety**: never use markdown comment text with backticks directly in `--body "..."`; use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin)
 - Be unbiased — document all related files and how systems work today, don't jump to implementation ideas

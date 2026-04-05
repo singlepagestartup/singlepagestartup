@@ -14,12 +14,14 @@ Primary workflow skill. Canonical source: `.claude/commands/core/10-research.md`
 3. Preserve all required comments/checkpoints described by the source command.
 4. Write/update artifacts in the exact same repository paths.
 5. Use `.claude/helpers/*.sh` for status operations.
+6. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) instead of inline `--body "..."` markdown.
 
 ## Codex Adaptation Rules
 
 - If the source references Claude `SlashCommand()`, continue in the same Codex context by executing the referenced command logic directly.
 - For parallel research/planning tasks, use Codex subagents from `.codex/agents/*.toml`.
 - Keep failure handling and human-review gates equivalent to source behavior.
+- Prefer bash-compatible execution for helper flows that use heredoc/body-file patterns.
 
 ## Inputs
 

@@ -10,13 +10,17 @@ SinglePageStartup (SPS) is a modular framework designed to dramatically accelera
 
 ## Scoped Testing Workflow
 
-The canonical scoped pipeline is module-wide `unit + integration` only:
+The canonical scoped pipeline is `unit + integration + scenario`:
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
+- `npm run test:scenario:issue -- <project-namespace> <issue-number>`
+- `npm run test:scenario:issue-152`
 - `npm run test:all:scoped`
 
-All 15 business modules participate in both scoped lanes. Browser E2E/Playwright is not part of scoped validation.
+All 15 business modules participate in `unit + integration` lanes. DB-backed scenario lane is mandatory for critical end-to-end behavior checks without Playwright.
+Browser E2E/Playwright is not part of scoped validation.
+For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is applied only to subject cart counter routes (`/orders/quantity`, `/orders/total`).
 
 ### Key Principles:
 
@@ -154,6 +158,12 @@ Strict layered architecture: Repository → Service → Controller → App.
     }}
   </RelationComponent>
   ```
+
+### Cross-Module Layering Boundary
+
+- Cart/product behavior for authenticated users must be orchestrated through RBAC subject surfaces (`rbac > ecommerce`).
+- `ecommerce` provides domain models/relations and generic UI primitives, but must not import or depend on RBAC subject implementation.
+- Host/cart composition should route actions to RBAC wrappers (for example `me-ecommerce-module-*`) instead of wiring direct ecommerce mutations.
 
 ## Realtime Data Revalidation
 
@@ -349,26 +359,42 @@ All test files in SPS follow a BDD-oriented format (`unit`, `integration`).
 2. Include `Given`, `When`, `Then` lines in that block.
 3. Keep behavior intent in file header + test name; avoid inline `Given/When/Then` comments in test body.
 4. Prefer deterministic `Given` setup (fixtures/mocks) so scenarios are reproducible.
+5. Assertions must target observable behavior (status codes, response payloads, rendered UI, side effects).
+6. Do not test source-code text or implementation snippets.
+7. Forbidden anti-patterns in tests:
+   - `readFileSync(...)` for reading source files under test.
+   - `expect(source).toContain(...)` / `expect(source).toMatch(...)` for implementation fragments.
+8. For frontend behavior tests, import components via public package entrypoints (for example `@sps/.../frontend/component`) and drive behavior via `variant` props.
+9. Do not rely on deep source imports (`src/lib/...`) as primary test entrypoints; if a nested variant router is needed, keep public import contract and bridge with a local test adapter/mock.
+10. Behavior/scenario tests must use real product components and real SDK request flow; do not replace the target UI with fake harness components when a real variant exists.
 
 Example:
 
 ```ts
 /**
- * BDD Suite: API module mounting.
+ * BDD Suite: cart quantity endpoint behavior.
  *
- * Given: module apps are registered in API host source.
- * When: integration contract checks route mounts.
- * Then: required module routes are present and stable.
+ * Given: authenticated subject has two cart orders with known quantities.
+ * When: client requests quantity endpoint.
+ * Then: endpoint returns aggregated quantity for that subject.
  */
 ```
 
 ### Scoped testing lanes
 
-Use only the scoped unit and integration lanes:
+Use scoped unit/integration lanes plus DB-backed scenario lane:
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
+- `npm run test:scenario`
+- `npm run test:scenario:issue -- <project-namespace> <issue-number>`
+- `npm run test:scenario:issue-152`
 - `npm run test:all:scoped`
+
+Scenario tests are namespaced by project and issue:
+
+- `apps/api/specs/scenario/singlepagestartup/issue-<number>/...`
+- `apps/api/specs/scenario/startup/issue-<number>/...`
 
 ## Attaching Upstream
 

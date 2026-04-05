@@ -16,6 +16,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 5. Use `.claude/helpers/*.sh` for status operations.
 6. Enforce explicit intent confirmation on ambiguous ticket wording before writing a new/rewritten plan.
 7. Use `.claude/helpers/gh_retry.sh` for direct `gh` comment/view operations described by the source command.
+8. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) to avoid shell interpolation issues in markdown bodies.
 
 ## Codex Adaptation Rules
 
@@ -23,6 +24,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 - For parallel research/planning tasks, use Codex subagents from `.codex/agents/*.toml`.
 - Keep failure handling and human-review gates equivalent to source behavior.
 - Quote shell-sensitive paths containing glob characters (for example `[[...url]]`) in command execution.
+- Prefer bash-compatible execution for helper flows that use heredoc/body-file patterns.
 
 ## Inputs
 

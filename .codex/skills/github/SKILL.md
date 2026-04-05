@@ -13,6 +13,7 @@ Codex wrapper for `.claude/commands/github.md`.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.
+5. Use `.claude/helpers/gh_issue_comment.sh` for issue comments and `--body-file` patterns for multiline markdown bodies.
 
 ## Codex Adaptation Rules
 

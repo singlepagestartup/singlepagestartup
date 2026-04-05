@@ -169,6 +169,16 @@
         "jestConfig": "apps/api/jest.integration.config.ts",
         "passWithNoTests": true
       }
+    },
+    "jest:scenario": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/api/jest.scenario.config.ts",
+        "passWithNoTests": false,
+        "runInBand": true
+      }
     }
   }
 }

@@ -7,13 +7,18 @@ import prettier from "eslint-plugin-prettier";
 export default defineFlatConfig([
   ...parentConfig,
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
-        project: ["./tsconfig.json"],
+        project: [
+          "./tsconfig.json",
+          "./tsconfig.spec.json",
+          "./tsconfig.scenario.json",
+          "./specs/scenario/tsconfig.json",
+        ],
         ecmaFeatures: {
-          jsx: false,
+          jsx: true,
         },
       },
     },
