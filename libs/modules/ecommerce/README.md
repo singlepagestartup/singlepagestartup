@@ -4,6 +4,12 @@
 
 The Ecommerce module manages product catalogs, stores, orders, and shopping cart workflows. It defines product metadata, attributes, categories, and the relations that connect ecommerce data to billing, media, and website-builder content.
 
+## Layering Boundary
+
+- Ecommerce provides reusable domain models/relations and UI primitives for product/order/cart data.
+- Authenticated cart/product orchestration belongs to RBAC subject surfaces (`rbac > ecommerce`).
+- Ecommerce must not import RBAC subject implementation code (no reverse dependency from ecommerce to rbac).
+
 ### It solves the following tasks:
 
 - Stores product, category, and store metadata.

@@ -17,6 +17,7 @@ This repository uses a layered test strategy so developers can validate changes 
 
 - `Unit` tests validate isolated logic (utilities, adapters, component state helpers).
 - `Integration` tests validate module contracts and orchestration (mounting, route/type registry consistency).
+- `Scenario` tests validate real behavior through live API + database with deterministic setup/cleanup (Jest only, no Playwright).
 
 ### BDD format (required)
 
@@ -28,6 +29,16 @@ Rules:
 - The JSDoc block must include `Given`, `When`, `Then`.
 - Avoid inline `Given/When/Then` comments inside test bodies; keep intent in the top block and test names.
 - Test names should describe behavior (action + expected result), not implementation details.
+- Assertions must verify runtime behavior (rendered output, user-visible state, API payloads/calls), not source text.
+- Forbidden anti-patterns: `readFileSync(...)` on source files and `expect(source).toContain(...)`/`toMatch(...)` checks of implementation snippets.
+
+### Frontend component import policy in tests
+
+- In frontend tests, import module/relation components through public package entrypoints, for example `@sps/<module-or-relation>/frontend/component`.
+- Select concrete behavior using `variant` props instead of importing deep internal files from `src/lib/.../ClientComponent`.
+- For behavior/scenario coverage, render real product components (real variant chain + real SDK calls), not fake test harness replacements.
+- If a tested variant is routed by a nested dispatcher, keep the test import public and add a local adapter mock in the test that redirects to the nested dispatcher implementation.
+- The goal is to test the same public component contract used by product code (entrypoint + variant routing), not internal file layout.
 
 Example:
 
@@ -52,7 +63,15 @@ Example:
 
 - `npm run test:unit:scoped`
 - `npm run test:integration:scoped`
+- `npm run test:scenario`
+- `npm run test:scenario:issue -- <project-namespace> <issue-number>`
+- `npm run test:scenario:issue-152`
 - `npm run test:all:scoped`
+
+Scenario suite layout is project/issue namespaced:
+
+- `apps/api/specs/scenario/singlepagestartup/issue-<number>/...`
+- `apps/api/specs/scenario/startup/issue-<number>/...`
 
 ### Why this structure
 

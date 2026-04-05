@@ -66,6 +66,16 @@ export function Component(props: IComponentPropsExtended) {
       className={cn("w-full flex flex-col", props.className)}
     >
       <Form {...form}>
+        <input
+          type="hidden"
+          {...form.register("quantity", {
+            valueAsNumber: true,
+          })}
+        />
+        <input type="hidden" {...form.register("productId")} />
+        <input type="hidden" {...form.register("storeId")} />
+        <input type="hidden" {...form.register("billingModule.currency.id")} />
+
         <AttributeKey
           isServer={false}
           variant="find"

@@ -4,6 +4,12 @@
 
 Subjects represent authenticated users or actors, and connect identities, roles, and application-specific flows.
 
+## Layering Boundary
+
+- RBAC subject is the orchestration layer for authenticated ecommerce cart/product flows.
+- Frontend variants such as `me-ecommerce-module-product-cart-default`, `me-ecommerce-module-product-checkout-default`, and `me-ecommerce-module-cart-default` are the supported entry points for host/cart behavior.
+- Dependency direction is one-way: `rbac > ecommerce`. RBAC may compose ecommerce SDK/components; ecommerce must not import RBAC subject implementation.
+
 ## Authentication API
 
 - `GET /rbac/subjects/authentication/init`: initialize anonymous/authenticated session tokens.

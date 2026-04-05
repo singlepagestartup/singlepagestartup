@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.spec.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "types": ["jest", "node"]
+  },
+  "include": ["specs/scenario/**/*.ts", "specs/scenario/**/*.tsx", "**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

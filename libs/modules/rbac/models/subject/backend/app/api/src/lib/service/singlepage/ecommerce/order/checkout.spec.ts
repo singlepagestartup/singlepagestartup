@@ -65,18 +65,26 @@ import { Service } from "./checkout";
 function createTestContext(props?: {
   activeOrderProductId?: string;
   paymentIntentCreateError?: Error;
+  paymentIntentProviderError?: Error;
+  checkoutOrderIds?: string[];
+  currencyByOrderId?: Record<string, string>;
 }) {
   const activeOrderProductId = props?.activeOrderProductId ?? "product-target";
+  const checkoutOrderIds = props?.checkoutOrderIds ?? ["order-checkout-1"];
 
   const subject = {
     id: "subject-1",
   };
 
-  const checkoutOrder = {
-    id: "order-checkout-1",
+  const checkoutOrders = checkoutOrderIds.map((id) => ({
+    id,
     status: "new",
     comment: "",
-  };
+  }));
+
+  const checkoutOrderById = new Map(
+    checkoutOrders.map((checkoutOrder) => [checkoutOrder.id, checkoutOrder]),
+  );
 
   const activeSubscriptionOrder = {
     id: "order-active-1",
@@ -88,13 +96,22 @@ function createTestContext(props?: {
 
   const ecommerceModule = {
     order: {
-      find: jest.fn().mockResolvedValue([checkoutOrder]),
+      find: jest.fn().mockResolvedValue(checkoutOrders),
       findById: jest.fn().mockImplementation(({ id }: { id: string }) => {
         if (id === activeSubscriptionOrder.id) {
           return Promise.resolve(activeSubscriptionOrder);
         }
 
-        return Promise.resolve(checkoutOrder);
+        return Promise.resolve(checkoutOrderById.get(id));
+      }),
+      findByIdCheckoutAttributesByCurrency: jest.fn().mockResolvedValue({
+        amount: 100,
+        type: "subscription",
+        interval: "month",
+      }),
+      findByIdCheckoutAttributes: jest.fn().mockResolvedValue({
+        type: "subscription",
+        interval: "month",
       }),
     },
     ordersToProducts: {
@@ -108,14 +125,14 @@ function createTestContext(props?: {
         });
 
         if (inArrayOrderIds) {
-          return Promise.resolve([
-            {
-              id: "otp-checkout-1",
+          return Promise.resolve(
+            checkoutOrders.map((checkoutOrder, index) => ({
+              id: `otp-checkout-${index + 1}`,
               orderId: checkoutOrder.id,
               productId: "product-target",
               quantity: 1,
-            },
-          ]);
+            })),
+          );
         }
 
         if (eqOrderId?.value === activeSubscriptionOrder.id) {
@@ -178,13 +195,14 @@ function createTestContext(props?: {
       find: jest.fn().mockResolvedValue([]),
     },
     ordersToBillingModuleCurrencies: {
-      find: jest.fn().mockResolvedValue([
-        {
-          id: "otbc-1",
+      find: jest.fn().mockResolvedValue(
+        checkoutOrders.map((checkoutOrder, index) => ({
+          id: `otbc-${index + 1}`,
           orderId: checkoutOrder.id,
-          billingModuleCurrencyId: "currency-1",
-        },
-      ]),
+          billingModuleCurrencyId:
+            props?.currencyByOrderId?.[checkoutOrder.id] ?? "currency-1",
+        })),
+      ),
     },
     ordersToBillingModulePaymentIntents: {
       find: jest.fn().mockResolvedValue([]),
@@ -196,10 +214,21 @@ function createTestContext(props?: {
       find: jest.fn().mockResolvedValue([]),
     },
     paymentIntentsToInvoices: {
-      find: jest.fn().mockResolvedValue([]),
+      find: jest.fn().mockResolvedValue([
+        {
+          id: "pitin-1",
+          paymentIntentId: "payment-intent-1",
+          invoiceId: "invoice-1",
+        },
+      ]),
     },
     invoice: {
-      find: jest.fn().mockResolvedValue([]),
+      find: jest.fn().mockResolvedValue([
+        {
+          id: "invoice-1",
+          paymentUrl: "https://pay.test/invoice-1",
+        },
+      ]),
     },
   } as any;
 
@@ -246,11 +275,19 @@ function createTestContext(props?: {
 
   mockBillingModulePaymentIntentUpdate.mockResolvedValue({
     id: "payment-intent-1",
-    amount: 100,
+    amount: 200,
     interval: "month",
     type: "subscription",
   });
-  mockBillingModulePaymentIntentProvider.mockResolvedValue({});
+
+  if (props?.paymentIntentProviderError) {
+    mockBillingModulePaymentIntentProvider.mockRejectedValue(
+      props.paymentIntentProviderError,
+    );
+  } else {
+    mockBillingModulePaymentIntentProvider.mockResolvedValue({});
+  }
+
   mockOrdersToBillingModulePaymentIntentsCreate.mockResolvedValue({
     id: "otbmpi-1",
   });
@@ -259,13 +296,13 @@ function createTestContext(props?: {
   });
   mockBroadcastChannelPushMessage.mockResolvedValue({ ok: true });
   mockEcommerceOrderUpdate.mockResolvedValue({
-    id: checkoutOrder.id,
+    id: checkoutOrders[0]?.id ?? "order-checkout-1",
     status: "updated",
   });
 
   return {
     service,
-    checkoutOrder,
+    checkoutOrders,
     activeSubscriptionOrder,
   };
 }
@@ -282,7 +319,7 @@ describe("Given: subject starts checkout for a subscription product", () => {
 
   describe("When: active subscription has the same product", () => {
     it("Then: checkout is rejected with active subscription validation error", async () => {
-      const { service, checkoutOrder } = createTestContext({
+      const { service, checkoutOrders } = createTestContext({
         activeOrderProductId: "product-target",
       });
 
@@ -293,7 +330,7 @@ describe("Given: subject starts checkout for a subscription product", () => {
           provider: "stripe",
           comment: "",
           ecommerceModule: {
-            orders: [{ id: checkoutOrder.id }],
+            orders: [{ id: checkoutOrders[0].id }],
           },
         }),
       ).rejects.toThrow(
@@ -302,7 +339,7 @@ describe("Given: subject starts checkout for a subscription product", () => {
 
       expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: checkoutOrder.id,
+          id: checkoutOrders[0].id,
           data: expect.objectContaining({
             status: "canceled",
           }),
@@ -313,7 +350,7 @@ describe("Given: subject starts checkout for a subscription product", () => {
 
   describe("When: active subscription has another product", () => {
     it("Then: previous subscription moves to requested_cancelation and checkout continues", async () => {
-      const { service, checkoutOrder, activeSubscriptionOrder } =
+      const { service, checkoutOrders, activeSubscriptionOrder } =
         createTestContext({
           activeOrderProductId: "product-other",
           paymentIntentCreateError: new Error("stop-after-check"),
@@ -326,7 +363,7 @@ describe("Given: subject starts checkout for a subscription product", () => {
           provider: "stripe",
           comment: "",
           ecommerceModule: {
-            orders: [{ id: checkoutOrder.id }],
+            orders: [{ id: checkoutOrders[0].id }],
           },
         }),
       ).rejects.toThrow("stop-after-check");
@@ -339,6 +376,114 @@ describe("Given: subject starts checkout for a subscription product", () => {
           }),
         }),
       );
+    });
+  });
+
+  describe("When: provider integration fails", () => {
+    it("Then: checkout fails with provider error after payment-intent creation", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-other",
+        paymentIntentProviderError: new Error("provider-failure"),
+      });
+
+      await expect(
+        service.execute({
+          id: "subject-1",
+          email: "subject@example.com",
+          provider: "stripe",
+          comment: "",
+          ecommerceModule: {
+            orders: [{ id: checkoutOrders[0].id }],
+          },
+        }),
+      ).rejects.toThrow("provider-failure");
+
+      expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalled();
+      expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalled();
+    });
+  });
+
+  describe("When: multiple checkout orders share currency and attributes", () => {
+    it("Then: payment intents are aggregated via update instead of duplicate create", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-other",
+        checkoutOrderIds: ["order-checkout-1", "order-checkout-2"],
+      });
+
+      const result = await service.execute({
+        id: "subject-1",
+        email: "subject@example.com",
+        provider: "stripe",
+        comment: "",
+        ecommerceModule: {
+          orders: checkoutOrders.map((checkoutOrder) => ({
+            id: checkoutOrder.id,
+          })),
+        },
+      });
+
+      expect(result.billingModule.invoices).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "invoice-1",
+          }),
+        ]),
+      );
+      expect(mockBillingModulePaymentIntentCreate).toHaveBeenCalledTimes(1);
+      expect(mockBillingModulePaymentIntentUpdate).toHaveBeenCalledTimes(1);
+      expect(
+        mockOrdersToBillingModulePaymentIntentsCreate,
+      ).toHaveBeenCalledTimes(2);
+      expect(mockBillingModulePaymentIntentProvider).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("When: checkout completes successfully", () => {
+    it("Then: observer messages are scheduled for webhook check and RBAC subject recheck", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-other",
+      });
+
+      await service.execute({
+        id: "subject-1",
+        email: "subject@example.com",
+        provider: "stripe",
+        comment: "",
+        ecommerceModule: {
+          orders: [{ id: checkoutOrders[0].id }],
+        },
+      });
+
+      expect(mockBroadcastChannelPushMessage).toHaveBeenCalledTimes(2);
+
+      const firstMessagePayload = JSON.parse(
+        mockBroadcastChannelPushMessage.mock.calls[0]?.[0]?.data?.payload,
+      );
+      const secondMessagePayload = JSON.parse(
+        mockBroadcastChannelPushMessage.mock.calls[1]?.[0]?.data?.payload,
+      );
+
+      expect(firstMessagePayload.trigger.method).toBe("POST");
+      expect(firstMessagePayload.trigger.url).toContain(
+        "/api/billing/payment-intents/stripe/webhook",
+      );
+      expect(firstMessagePayload.pipe[0].url).toContain(
+        `/api/ecommerce/orders/${checkoutOrders[0].id}/check`,
+      );
+
+      expect(secondMessagePayload.trigger.method).toBe("PATCH");
+      expect(secondMessagePayload.trigger.url).toContain(
+        `/api/ecommerce/orders/${checkoutOrders[0].id}`,
+      );
+      expect(secondMessagePayload.pipe[0].url).toContain(
+        "/api/rbac/subjects/subject-1/check",
+      );
+
+      const hasPayingStatusUpdate = mockEcommerceOrderUpdate.mock.calls.some(
+        (call) => call?.[0]?.data?.status === "paying",
+      );
+
+      expect(hasPayingStatusUpdate).toBe(true);
     });
   });
 });

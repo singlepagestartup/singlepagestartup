@@ -57,6 +57,12 @@ export class Middleware {
     return createMiddleware(async (c, next) => {
       const params = c.req.url.split("?")?.[1] || "";
       const path = c.req.url.split("?")?.[0];
+      let pathname = c.req.path;
+      try {
+        pathname = new URL(c.req.url).pathname;
+      } catch {
+        pathname = c.req.path;
+      }
 
       const method = c.req.method;
       const cacheControl = c.req.header("Cache-Control");
@@ -81,6 +87,17 @@ export class Middleware {
         path.includes("rbac/subjects/authentication/me") ||
         path.includes("rbac/subjects/authentication/init") ||
         path.includes("rbac/subjects/authentication/is-authorized")
+      ) {
+        return await next();
+      }
+
+      // Temporary issue-152 stabilization:
+      // do not cache subject cart aggregate counters because exact-path cache
+      // invalidation may leave stale quantity/total after cart mutations.
+      if (
+        /^\/api\/rbac\/subjects\/[0-9a-f-]+\/ecommerce-module\/orders\/(quantity|total)$/i.test(
+          pathname,
+        )
       ) {
         return await next();
       }
