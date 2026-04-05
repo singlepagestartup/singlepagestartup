@@ -1,302 +1,157 @@
-# ISSUE-146 Implementation Plan - Rename `admin-panel-draft` to `admin-v2` and enforce admin RBAC access
+# ISSUE-146 Implementation Plan — Add auth redirect and test coverage for admin-v2 RBAC guard
 
 ## Overview
 
-`admin-panel-draft` is the new admin UI and must become the canonical `admin-v2` implementation.  
-This plan renames that component surface to `admin-v2`, keeps `/admin*` on the new panel, and adds admin-role access checks using the same RBAC contract currently used in `apps/host/src/components/admin`.
+Phases 1–3 of the original plan (rename to admin-v2, apply RBAC guard, remove legacy mount) are complete. This updated plan adds two remaining phases: redirect unauthenticated/unauthorized users to the login page, and add unit test coverage for the auth guard component.
 
 ## Current State Analysis
 
-Admin behavior is currently split across two implementations:
-
-- `/admin*` is routed to draft UI in `apps/host/app/[[...url]]/page.tsx` (`:7`, `:55`, `:57`).
-- Legacy `Admin` is mounted globally in `apps/host/app/layout.tsx` (`:11`, `:45`).
-
-RBAC access checking exists only in legacy admin:
-
-- `apps/host/src/components/admin/ClientComponent.tsx` loads current subject (`:10`), resolves admin role (`:17`), checks subject-role membership with `variant="find"` and filters (`:30`, `:50`), then renders dashboard only when role relation exists (`:55`).
-
-Draft admin (`admin-panel-draft`) currently has no equivalent RBAC gate:
-
-- Root section with `data-testid="admin-prototype-body"` is always rendered by route path (`apps/host/src/components/admin-panel-draft/Component.tsx:74`).
-- Settings/profile links are present (`:81`, `:164`), and settings/account page components exist in folder but are commented in root draft component (`:62`, `:63`, `:197`).
-
-E2E coverage currently validates draft selectors and uses API mocks:
-
-- `apps/host/e2e/singlepage/admin-shell.e2e.ts` and `admin-visibility-guards.e2e.ts` assert `admin-prototype-*`, `settings-page`, and `account-settings-page`.
-- Both suites rely on `setupEcommerceApiMocks(page)` instead of RBAC subject lifecycle provisioning.
-
-RBAC lifecycle scripts are incomplete:
-
-- `apps/api/create_rbac_subject.sh` exists and assigns admin role (`:29`, `:34`, `:52`, `:70`, `:92`, `:116`).
-- `apps/api/delete_rbac_subject.sh` is missing.
+- `apps/host/src/components/admin-v2/ClientComponent.tsx` already implements the 3-step RBAC guard: `RbacSubject(authentication-me-default)` → `RbacRole(find, slug=admin)` → `RbacSubjectsToRoles(find, subjectId+roleId)`.
+- On any failure (no user, no admin role, no subject-to-role link), the guard returns `null` — a blank screen with no feedback.
+- No redirect exists — users who navigate to `/admin` while unauthenticated see nothing.
+- No test coverage exists for this guard component. `apps/host/` has no jest config or test target.
+- Existing test infrastructure lives in `libs/shared/frontend/components/` with `dom-harness` and `shadcn-mocks` utilities.
+- The codebase uses `useRouter` from `next/navigation` with `router.replace()` for auth-related redirects (see `init-default/ClientComponent.tsx:113`, `select-method-default/ClientComponent.tsx:74`).
 
 ### Key Discoveries
 
-- The target UI to keep is the current draft shell; the required change is naming + RBAC gating, not decommissioning it.
-- Legacy `admin` already provides the exact role-check pattern to reuse.
-- OpenAPI contracts already expose delete operations for subject, identity, and RBAC relations, enabling safe cleanup script implementation.
+- `apps/host/src/components/admin-v2/ClientComponent.tsx:12-13` — first `null` return (no user)
+- `apps/host/src/components/admin-v2/ClientComponent.tsx:23-24` — second `null` return (no admin role)
+- `apps/host/src/components/admin-v2/ClientComponent.tsx:51-52` — third `null` return (no subject-to-role)
+- `libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/use-model-table-state.spec.ts:9-13` — canonical `next/navigation` mock pattern
+- `apps/host/project.json` — no `test` target exists; only `next:dev`, `next:build`, `next:start`, `next:export`, `eslint:lint`
+- `libs/shared/frontend/components/jest.config.ts` — uses `jest.client-preset.js` with `ts-jest`
 
 ## Desired End State
 
-- `admin-panel-draft` is renamed to `admin-v2` in host component paths and imports.
-- `/admin*` renders `admin-v2` as the canonical admin interface.
-- `admin-v2` visibility is gated by the same admin-role membership logic used by legacy `admin`.
-- Legacy global admin mount is removed or reduced so there is no duplicate admin rendering path.
-- E2E coverage validates admin behavior with real RBAC lifecycle:
-  - create admin subject before tests,
-  - authenticate/use that identity in browser context,
-  - always delete subject after tests.
-- `apps/api/delete_rbac_subject.sh` exists, is idempotent, and safe for local/CI reruns.
+- Unauthenticated or non-admin users navigating to `/admin*` are redirected to `/rbac/subject/authentication/select-method`.
+- The redirect uses `router.replace()` (no history entry for the failed admin page visit).
+- Unit tests cover all four branches of the guard: admin access granted, no user, no admin role, no subject-to-role link.
+- Tests run via `npx nx test shared-frontend-components` using the existing jest infrastructure.
 
 ## What We're NOT Doing
 
-- Reverting to old `admin` UI as the primary `/admin*` surface.
-- New visual redesign outside current admin-v2 scope.
-- Broad RBAC architecture refactors unrelated to admin-role gating and test lifecycle.
+- Adding jest infrastructure to `apps/host/` (tests go in shared lib alongside existing admin-v2 specs)
+- Changing the RBAC guard logic (3-step check remains the same)
+- E2E test changes (covered separately by phases 4-5 of the original plan)
+- Modifying the login page at `/rbac/subject/authentication/select-method`
 
 ## Implementation Approach
 
-Perform migration in five phases:
-
-1. Rename and rewire host admin-v2 component ownership.
-2. Apply legacy RBAC admin-role check to admin-v2 entrypoint.
-3. Remove duplicate legacy global mount and finalize routing ownership.
-4. Implement missing RBAC delete lifecycle script.
-5. Update e2e to validate final behavior with guaranteed create/cleanup flow.
-
-## Phase 1: Rename `admin-panel-draft` to `admin-v2`
-
-### Overview
-
-Promote draft naming to production naming without changing intended admin-v2 feature ownership.
-
-### Changes Required
-
-#### 1. Rename component directory and entrypoints
-
-**Files**: `apps/host/src/components/admin-panel-draft/*` -> `apps/host/src/components/admin-v2/*`  
-**Why**: Current name no longer reflects intended production role.  
-**Changes**: Rename folder/files and preserve exports/interfaces under new `admin-v2` path.
-
-#### 2. Update host route imports
-
-**File**: `apps/host/app/[[...url]]/page.tsx`  
-**Why**: `/admin*` route currently imports `admin-panel-draft`.  
-**Changes**: Repoint import/render to `admin-v2`.
-
-#### 3. Update impacted references/tests
-
-**Files**: affected host/e2e imports and selectors  
-**Why**: Existing tests and references use draft naming and prototype test IDs.  
-**Changes**: Rename references to `admin-v2` contracts.
-
-### Success Criteria
-
-#### Automated Verification
-
-- [x] Build passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
-- [x] Lint passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
-
-#### Manual Verification
-
-- [ ] `/admin` still opens the same functional admin-v2 shell after renaming.
+Two sequential phases: first add the redirect behavior to the production component, then add unit tests that verify all guard branches including the redirect.
 
 ---
 
-## Phase 2: Apply RBAC Admin-Role Gate to `admin-v2`
+## Phase 1: Add redirect on auth failure in admin-v2 guard
 
 ### Overview
 
-Make admin-v2 access conditional on admin-role membership, aligned with legacy admin behavior.
+Replace `return null` with `router.replace("/rbac/subject/authentication/select-method")` + `return null` on all three failure branches.
 
 ### Changes Required
 
-#### 1. Reuse legacy RBAC check pattern
+#### 1. Add `useRouter` and redirect logic to ClientComponent
 
-**Reference**: `apps/host/src/components/admin/ClientComponent.tsx`  
-**Why**: This is the existing proven gate logic.  
-**Changes**: Port/extract equivalent logic into admin-v2 entry flow:
+**File**: `apps/host/src/components/admin-v2/ClientComponent.tsx`
+**Why**: Users currently see a blank screen when not authenticated. Redirecting to the login page improves UX.
+**Changes**:
 
-- fetch current subject via `authentication-me-default`,
-- resolve `admin` role from roles `find`,
-- query `subjects-to-roles` with `subjectId` + `roleId`,
-- render admin-v2 only when relation exists.
+- Import `useRouter` from `next/navigation`
+- Call `useRouter()` at the component top level (before any render-prop nesting)
+- On each of the three failure branches (lines 12, 23, 51), call `router.replace("/rbac/subject/authentication/select-method")` before returning `null`
+- Use a `useEffect`-free approach: since the render-prop callbacks run synchronously during render, call `router.replace` inline (same pattern as the existing guard which calls `return null` inline). Alternatively, if React strict-mode double-render causes issues, wrap in a small `RedirectEffect` helper that calls `router.replace` inside a `useEffect`.
 
-#### 2. Guard settings/profile/admin-v2 routes under same access contract
-
-**Files**: `apps/host/src/components/admin-v2/*`  
-**Why**: New panel and its subroutes must not bypass admin role checks.  
-**Changes**: Ensure all admin-v2 route branches inherit the RBAC gate behavior.
+**Decision point**: The simplest approach is inline `router.replace()` in the render callback. If this causes issues (router calls during render), extract a tiny `<Redirect to="..." />` component that does the redirect in a `useEffect`. The codebase precedent (`init-default`, `select-method-default`) uses `useEffect` — follow that pattern for safety.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- [ ] Targeted admin e2e specs pass with RBAC-enabled visibility expectations.
+- [ ] Type checking passes: `npx nx run host:next:build`
+- [ ] Lint passes: `npx nx run host:eslint:lint`
 
 #### Manual Verification
 
-- [ ] Admin user sees admin-v2.
-- [ ] Non-admin/non-authenticated user cannot access admin-v2 content.
+- [ ] Navigate to `/admin` while unauthenticated → browser redirects to `/rbac/subject/authentication/select-method`
+- [ ] Navigate to `/admin` as authenticated non-admin user → browser redirects to `/rbac/subject/authentication/select-method`
+- [ ] Navigate to `/admin` as authenticated admin user → admin panel renders normally
 
 ---
 
-## Phase 3: Finalize Single Admin Ownership in Host Layout
+## Phase 2: Add unit tests for admin-v2 RBAC auth guard
 
 ### Overview
 
-Avoid duplicate admin rendering by consolidating ownership in route-level admin-v2.
+Create a spec file that tests the `ClientComponent` auth guard from `apps/host/src/components/admin-v2/`. Since `apps/host/` has no jest infrastructure, the test will live in `libs/shared/frontend/components/` alongside other admin-v2 specs, importing the component via the `@sps/*` path alias or by creating a thin wrapper that replicates the guard pattern.
+
+**Practical approach**: Since the component under test lives in `apps/host/` (not a lib with a jest target), and adding jest to `apps/host/` is out of scope, the test will mock all three RBAC components and `next/navigation`, then import the `ClientComponent` directly using the TypeScript path resolution (the `tsconfig.spec.json` chain resolves `@sps/*` paths, and the component file can be imported by relative path from within the monorepo since ts-jest handles the resolution).
 
 ### Changes Required
 
-#### 1. Remove/adjust global legacy mount
+#### 1. Create spec file for admin-v2 auth guard
 
-**File**: `apps/host/app/layout.tsx`  
-**Why**: Global `<Admin />` mount currently creates a parallel admin path outside `/admin*`.  
-**Changes**: Remove or neutralize global mount after admin-v2 gate is in place.
+**File**: `libs/shared/frontend/components/src/lib/singlepage/admin-v2/auth-guard/ClientComponent.spec.tsx`
+**Why**: No test coverage exists for the RBAC auth guard. This is the core security behavior of issue-146.
+**Changes**: Create a new spec file following the BDD + dom-harness pattern with these test scenarios:
 
-#### 2. Keep `/admin*` ownership in route file
+**Mocks needed**:
 
-**File**: `apps/host/app/[[...url]]/page.tsx`  
-**Why**: Admin surface should be owned by route-level admin-v2 flow only.  
-**Changes**: Ensure `/admin*` branch is the single host entrypoint for admin UI.
+- `@sps/rbac/models/subject/frontend/component` — mock `Component` to call `props.children({ data })` with controlled subject data
+- `@sps/rbac/models/role/frontend/component` — mock `Component` to call `props.children({ data })` with controlled role data
+- `@sps/rbac/relations/subjects-to-roles/frontend/component` — mock `Component` to call `props.children({ data })` with controlled relation data
+- `next/navigation` — mock `useRouter` returning `{ replace: jest.fn() }` to capture redirect calls
+
+**Test scenarios**:
+
+1. **WHEN user is authenticated and has admin role THEN children are rendered** — all three RBAC steps return valid data → `props.children` renders
+2. **WHEN user is not authenticated THEN redirect to select-method** — `RbacSubject` returns `{ data: undefined }` → `router.replace("/rbac/subject/authentication/select-method")` is called, children are NOT rendered
+3. **WHEN user is authenticated but no admin role exists THEN redirect to select-method** — `RbacSubject` returns valid user, `RbacRole` returns roles without `slug: "admin"` → redirect
+4. **WHEN user is authenticated and admin role exists but user lacks the role THEN redirect to select-method** — `RbacSubject` returns valid user, `RbacRole` returns admin role, `RbacSubjectsToRoles` returns empty array → redirect
+
+#### 2. Create the re-export or wrapper for testability (if needed)
+
+**File**: `libs/shared/frontend/components/src/lib/singlepage/admin-v2/auth-guard/ClientComponent.tsx` (optional)
+**Why**: If importing directly from `apps/host/` proves problematic for the jest runner, create a thin file that re-exports or copies the guard component pattern. This keeps tests colocated with the existing admin-v2 test infrastructure.
+**Changes**: Re-export or replicate the guard component so it's testable within the lib's jest scope.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- [x] Host build/lint remain green after mount consolidation.
+- [ ] Tests pass: `npx nx test shared-frontend-components -- --testPathPattern="auth-guard"`
+- [ ] All four scenarios (admin access, no user, no admin role, no subject-to-role) are covered
+- [ ] `router.replace` is called with exact path `"/rbac/subject/authentication/select-method"` in all three failure scenarios
 
 #### Manual Verification
 
-- [ ] Non-admin pages do not show any admin overlay/button.
-- [ ] `/admin*` behavior is consistent and non-duplicated.
-
----
-
-## Phase 4: Add `apps/api/delete_rbac_subject.sh`
-
-### Overview
-
-Implement missing cleanup command required by issue scope and e2e lifecycle.
-
-### Changes Required
-
-#### 1. Implement idempotent delete flow
-
-**File**: `apps/api/delete_rbac_subject.sh`  
-**Why**: Cleanup command is explicitly required and currently absent.  
-**Changes**: Implement safe cleanup for configured identity/subject:
-
-- locate subject for configured identity (by auth or direct lookup),
-- delete `subjects-to-roles` links for subject,
-- delete `subjects-to-identities` links for subject,
-- delete linked identity record(s),
-- delete subject record,
-- treat missing records as successful no-op.
-
-#### 2. Keep script contract aligned with existing env setup
-
-**Files**: `apps/api/create_env.sh`, `apps/api/create_rbac_subject.sh` (only if needed for alignment)  
-**Why**: lifecycle scripts should share same env keys and execution assumptions.  
-**Changes**: ensure same `RBAC_SUBJECT_IDENTITY_EMAIL`, `RBAC_SUBJECT_IDENTITY_PASSWORD`, and `RBAC_SECRET_KEY` contract.
-
-### Success Criteria
-
-#### Automated Verification
-
-- [ ] `bash apps/api/create_rbac_subject.sh` succeeds.
-- [ ] `bash apps/api/delete_rbac_subject.sh` succeeds.
-- [ ] repeated `delete_rbac_subject.sh` execution remains non-fatal.
-
-#### Manual Verification
-
-- [ ] Created admin test subject is removed after cleanup run.
-
----
-
-## Phase 5: Update E2E to Use RBAC Lifecycle + Admin-v2 Contracts
-
-### Overview
-
-Replace draft-only assumptions with tests that validate final admin-v2 + RBAC behavior.
-
-### Changes Required
-
-#### 1. Add lifecycle orchestration helper
-
-**Files**: `apps/host/e2e/support/*` (new helper)  
-**Why**: current e2e layer has no setup/teardown for shell scripts.  
-**Changes**: add helper(s) for:
-
-- running `create_rbac_subject.sh` in setup,
-- obtaining auth token/cookie context for browser session,
-- always running `delete_rbac_subject.sh` in teardown (`finally`/`afterAll`).
-
-#### 2. Update admin suites
-
-**Files**: `apps/host/e2e/singlepage/admin-shell.e2e.ts`, `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts` (or replacement suites)  
-**Why**: current suites are tied to draft/prototype naming and mock-only assumptions.  
-**Changes**: validate final admin-v2 selectors/routes and RBAC-gated visibility semantics.
-
-#### 3. Keep deterministic module data mocking where needed
-
-**File**: `apps/host/e2e/support/mock-ecommerce-api.ts`  
-**Why**: RBAC lifecycle should be real while module-table datasets can remain deterministic and fast.  
-**Changes**: continue targeted API mocks for non-RBAC data dependencies.
-
-### Success Criteria
-
-#### Automated Verification
-
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:e2e -- --project=singlepage --testFiles=apps/host/e2e/singlepage/<admin-spec>.e2e.ts --list`
-- [ ] `PW_USE_WEBSERVER=1 NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:e2e -- --project=singlepage --testFiles=apps/host/e2e/singlepage/<admin-spec>.e2e.ts`
-
-#### Manual Verification
-
-- [ ] test run logs show create step and guaranteed cleanup step.
-- [ ] rerun does not fail due to stale subject state.
+- [ ] Test output shows 4 passing test cases with BDD naming
 
 ---
 
 ## Testing Strategy
 
-### Automated
+### Unit Tests (Phase 2)
 
-- Host build + lint after routing/component ownership changes.
-- Targeted singlepage admin e2e suites with lifecycle orchestration.
+- Mock all external RBAC components to isolate the guard logic
+- Verify `router.replace` is called with the correct redirect URL on every failure path
+- Verify children render only when all three checks pass
+- Use `dom-harness` pattern consistent with existing admin-v2 specs
 
-### Manual
+### Manual Testing (Phase 1)
 
-1. Start infra/services (`./up.sh`, `npm run api:dev`, `npm run host:dev`).
-2. Verify `/admin*` opens `admin-v2` only for admin-role user.
-3. Verify non-admin state does not render admin-v2 content.
-4. Run updated admin e2e twice to validate idempotent cleanup.
-
-## Performance Considerations
-
-- Execute create/delete lifecycle once per relevant suite (`beforeAll`/`afterAll`) instead of per test.
-- Keep high-volume module API responses mocked for speed and determinism.
-
-## Migration Notes
-
-- Rename is semantic promotion (`draft` -> `v2`), not feature rollback.
-- RBAC gate behavior must stay equivalent to legacy admin role check.
-- Cleanup script must be CI-safe and non-interactive.
+1. Start services: `npm run api:dev`, `npm run host:dev`
+2. Open `/admin` in incognito → should redirect to login page
+3. Log in as non-admin user → navigate to `/admin` → should redirect
+4. Log in as admin user → navigate to `/admin` → should see admin panel
 
 ## References
 
 - Ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-146.md`
 - Research: `thoughts/shared/research/singlepagestartup/ISSUE-146.md`
-- Route entrypoint: `apps/host/app/[[...url]]/page.tsx`
-- Legacy admin RBAC gate: `apps/host/src/components/admin/ClientComponent.tsx`
-- Current draft shell: `apps/host/src/components/admin-panel-draft/Component.tsx`
-- Admin e2e suites:
-  - `apps/host/e2e/singlepage/admin-shell.e2e.ts`
-  - `apps/host/e2e/singlepage/admin-visibility-guards.e2e.ts`
-- RBAC create script: `apps/api/create_rbac_subject.sh`
+- Auth guard component: `apps/host/src/components/admin-v2/ClientComponent.tsx`
+- Redirect target page seed: `libs/modules/host/models/page/backend/repository/database/src/lib/data/67a7e8d8-5e05-4c25-b578-f0fb62ed6964.json`
+- Existing `next/navigation` mock pattern: `libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/use-model-table-state.spec.ts:9-13`
+- Existing dom-harness: `libs/shared/frontend/components/src/lib/singlepage/admin-v2/test-utils/dom-harness.tsx`
+- RBAC redirect precedent: `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/authentication/init-default/ClientComponent.tsx:109-115`
 
-## Open Questions
-
-None. Scope and implementation direction are clear with current codebase contracts.
+<!-- Last synced at: 2026-04-05T12:00:00Z -->
