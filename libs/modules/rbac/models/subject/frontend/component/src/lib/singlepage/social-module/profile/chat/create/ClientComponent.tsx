@@ -12,11 +12,9 @@ import { FormField } from "@sps/ui-adapter";
 const formSchema = socialModuleChatInsertSchema;
 
 export function Component(props: IComponentPropsExtended) {
-  const socialModuleProfileFindByIdChatCreate =
-    api.socialModuleProfileFindByIdChatCreate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-    });
+  const socialModuleChatCreate = api.socialModuleChatCreate({
+    id: props.data.id,
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -27,9 +25,8 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    socialModuleProfileFindByIdChatCreate.mutate({
+    socialModuleChatCreate.mutate({
       id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
       data,
     });
   }

@@ -1,9 +1,7 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
-import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
-import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -17,10 +15,6 @@ export class Handler {
     try {
       if (!RBAC_JWT_SECRET) {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
-      }
-
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
       }
 
       const id = c.req.param("id");
@@ -65,26 +59,15 @@ export class Handler {
         );
       }
 
-      const socialModuleChat = await socialModuleChatApi.create({
-        data,
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      const { socialModuleChat } =
+        await this.service.socialModuleChatLifecycleCreateChatWithDefaultThread(
+          {
+            subjectId: id,
+            requestedSocialModuleProfileId: socialModuleProfileId,
+            autoBootstrapProfile: false,
+            data,
           },
-        },
-      });
-
-      await socialModuleProfilesToChatsApi.create({
-        data: {
-          profileId: socialModuleProfileId,
-          chatId: socialModuleChat.id,
-        },
-        options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      });
+        );
 
       return c.json({
         data: {

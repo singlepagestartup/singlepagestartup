@@ -2,7 +2,6 @@ import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-  RBAC_SECRET_KEY,
   telegramBotServiceMessages,
 } from "@sps/shared-utils";
 import { Context } from "hono";
@@ -327,10 +326,6 @@ export class Handler {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY not set");
-      }
-
       const id = c.req.param("id");
 
       if (!id) {
@@ -417,15 +412,20 @@ export class Handler {
         );
       }
 
-      const socialModuleChatToMessages =
-        await this.service.socialModule.chatsToMessages.find({
+      const socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
+        socialModuleChatId,
+        socialModuleMessageId,
+      });
+
+      const socialModuleThreadToMessages =
+        await this.service.socialModule.threadsToMessages.find({
           params: {
             filters: {
               and: [
                 {
-                  column: "chatId",
+                  column: "threadId",
                   method: "eq",
-                  value: socialModuleChatId,
+                  value: socialModuleThreadId,
                 },
               ],
             },
@@ -451,7 +451,48 @@ export class Handler {
         );
       }
 
-      if (socialModuleChatToMessages?.length) {
+      if (socialModuleThreadToMessages?.length) {
+        const threadMessageIds = socialModuleThreadToMessages
+          .map((socialModuleThreadToMessage) => {
+            return socialModuleThreadToMessage.messageId;
+          })
+          .filter((messageId): messageId is string => Boolean(messageId));
+
+        const socialModuleChatToMessages = threadMessageIds.length
+          ? await this.service.socialModule.chatsToMessages.find({
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "chatId",
+                      method: "eq",
+                      value: socialModuleChatId,
+                    },
+                    {
+                      column: "messageId",
+                      method: "inArray",
+                      value: threadMessageIds,
+                    },
+                  ],
+                },
+              },
+            })
+          : [];
+
+        const chatThreadMessageIds =
+          socialModuleChatToMessages
+            ?.map((socialModuleChatToMessage) => {
+              return socialModuleChatToMessage.messageId;
+            })
+            .filter((messageId): messageId is string => Boolean(messageId)) ||
+          [];
+
+        if (!chatThreadMessageIds.length) {
+          throw new Error(
+            "Validation error. No thread messages found in the requested chat",
+          );
+        }
+
         const socialModuleMessages =
           await this.service.socialModule.message.find({
             params: {
@@ -460,10 +501,7 @@ export class Handler {
                   {
                     column: "id",
                     method: "inArray",
-                    value: socialModuleChatToMessages.map(
-                      (socialModuleChatToMessage) =>
-                        socialModuleChatToMessage.messageId,
-                    ),
+                    value: chatThreadMessageIds,
                   },
                 ],
               },
@@ -665,19 +703,22 @@ export class Handler {
       const openRouter = new OpenRouter();
 
       const statusMessage =
-        await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-          id: replyBySubject.id,
-          socialModuleProfileId: replyBySocialModuleProfile.id,
-          socialModuleChatId: socialModuleChatId,
-          data: {
-            description: this.statusMessages.openRouterStarted.ru,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + replyByJwt,
+        await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: replyBySubject.id,
+            socialModuleProfileId: replyBySocialModuleProfile.id,
+            socialModuleChatId: socialModuleChatId,
+            socialModuleThreadId,
+            data: {
+              description: this.statusMessages.openRouterStarted.ru,
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + replyByJwt,
+              },
             },
           },
-        });
+        );
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
         id: replyBySubject.id,
@@ -913,17 +954,20 @@ export class Handler {
       });
 
       const repliedSocialModuleMessage =
-        await api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
-          id: replyBySubject.id,
-          socialModuleProfileId: replyBySocialModuleProfile.id,
-          socialModuleChatId: socialModuleChatId,
-          data: replyMessageData,
-          options: {
-            headers: {
-              Authorization: "Bearer " + replyByJwt,
+        await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: replyBySubject.id,
+            socialModuleProfileId: replyBySocialModuleProfile.id,
+            socialModuleChatId: socialModuleChatId,
+            socialModuleThreadId,
+            data: replyMessageData,
+            options: {
+              headers: {
+                Authorization: "Bearer " + replyByJwt,
+              },
             },
           },
-        });
+        );
 
       return c.json({
         data: {
@@ -936,6 +980,113 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  async resolveThreadIdForMessageInChat(props: {
+    socialModuleChatId: string;
+    socialModuleMessageId: string;
+  }): Promise<string> {
+    const socialModuleChatsToThreads =
+      await this.service.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    const chatThreadIds =
+      socialModuleChatsToThreads
+        ?.map((socialModuleChatToThread) => {
+          return socialModuleChatToThread.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    const socialModuleThreadsToMessages =
+      await this.service.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessageId,
+              },
+            ],
+          },
+        },
+      });
+
+    const messageThreadIds =
+      socialModuleThreadsToMessages
+        ?.map((socialModuleThreadToMessage) => {
+          return socialModuleThreadToMessage.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    const chatThreadIdsSet = new Set(chatThreadIds);
+    const validMessageThreadIds = messageThreadIds.filter((threadId) =>
+      chatThreadIdsSet.has(threadId),
+    );
+
+    if (validMessageThreadIds.length > 1) {
+      throw new Error(
+        "Validation error. Requested message is linked to multiple chat threads",
+      );
+    }
+
+    if (validMessageThreadIds.length === 1) {
+      return validMessageThreadIds[0];
+    }
+
+    if (messageThreadIds.length) {
+      throw new Error(
+        "Validation error. Requested message thread is not linked to the requested chat",
+      );
+    }
+
+    const socialModuleDefaultThread =
+      await this.service.socialModuleChatLifecycleEnsureDefaultThreadForChat({
+        socialModuleChatId: props.socialModuleChatId,
+      });
+
+    const existingThreadToMessageLinks =
+      await this.service.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "eq",
+                value: socialModuleDefaultThread.id,
+              },
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessageId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      });
+
+    if (!existingThreadToMessageLinks?.length) {
+      await this.service.socialModule.threadsToMessages.create({
+        data: {
+          threadId: socialModuleDefaultThread.id,
+          messageId: props.socialModuleMessageId,
+        },
+      });
+    }
+
+    return socialModuleDefaultThread.id;
   }
 
   private detectInputModalitiesFromContext(

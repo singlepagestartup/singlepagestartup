@@ -21,6 +21,9 @@ import { IModel as ISocialModuleAction } from "@sps/social/models/action/sdk/mod
 import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
+import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
@@ -1249,10 +1252,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     socialModuleMessage: ISocialModuleMessage;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
+    let socialModuleThreadId: string | undefined;
+
     try {
       if (!RBAC_SECRET_KEY) {
         throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
       }
+
+      const secretKey = RBAC_SECRET_KEY;
 
       if (
         TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
@@ -1267,6 +1274,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       if (!props.socialModuleMessage.description) {
         throw new Error(
           "Validation error. 'props.socialModuleMessage.description' is empty.",
+        );
+      }
+
+      socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
+        socialModuleChatId: props.socialModuleChat.id,
+        socialModuleMessageId: props.socialModuleMessage.id,
+        secretKey,
+      });
+
+      if (!socialModuleThreadId) {
+        throw new Error(
+          "Validation error. Failed to resolve social module thread",
         );
       }
 
@@ -1331,11 +1350,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         requiredTelegramChannelSubscriptionRbacModuleRole &&
         !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
       ) {
-        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
+            socialModuleThreadId,
             data: {
               description:
                 this.statusMessages
@@ -1363,11 +1383,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       if (!rbacModuleSubjectToPayableRoles?.length) {
-        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
+            socialModuleThreadId,
             data: {
               description:
                 this.statusMessages.openRouterNotFoundSubscription.ru,
@@ -1436,21 +1457,40 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             "Validation error. You do not have access to this resource because you have not 'subjectsToBillingModuleCurrencies' for pay that route",
           )
         ) {
-          await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-            {
-              id: props.rbacModuleSubject.id,
-              socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-              socialModuleChatId: props.socialModuleChat.id,
-              data: {
-                description: this.statusMessages.openRouterNotEnoughTokens.ru,
-              },
-              options: {
-                headers: {
-                  Authorization: "Bearer " + props.jwtToken,
+          if (socialModuleThreadId) {
+            await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+              {
+                id: props.rbacModuleSubject.id,
+                socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+                socialModuleChatId: props.socialModuleChat.id,
+                socialModuleThreadId,
+                data: {
+                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
+                },
+                options: {
+                  headers: {
+                    Authorization: "Bearer " + props.jwtToken,
+                  },
                 },
               },
-            },
-          );
+            );
+          } else {
+            await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+              {
+                id: props.rbacModuleSubject.id,
+                socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+                socialModuleChatId: props.socialModuleChat.id,
+                data: {
+                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
+                },
+                options: {
+                  headers: {
+                    Authorization: "Bearer " + props.jwtToken,
+                  },
+                },
+              },
+            );
+          }
           await this.telegramBotPremiumMessageWithKeyboardCreate({
             jwtToken: props.jwtToken,
             messageFromSocialModuleProfile:
@@ -1466,28 +1506,352 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       }
 
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description:
-              this.statusMessages.openRouterError.ru +
-              "\n`" +
-              (error as Error).message +
-              "`",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
+      if (socialModuleThreadId) {
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            socialModuleThreadId,
+            data: {
+              description:
+                this.statusMessages.openRouterError.ru +
+                "\n`" +
+                (error as Error).message +
+                "`",
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + props.jwtToken,
+              },
             },
           },
-        },
-      );
+        );
+      } else {
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            data: {
+              description:
+                this.statusMessages.openRouterError.ru +
+                "\n`" +
+                (error as Error).message +
+                "`",
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + props.jwtToken,
+              },
+            },
+          },
+        );
+      }
 
       throw error;
     }
+  }
+
+  async resolveThreadIdForMessageInChat(props: {
+    socialModuleChatId: string;
+    socialModuleMessageId: string;
+    secretKey: string;
+  }): Promise<string> {
+    await this.normalizeChatThreadsAndMessageLinks({
+      socialModuleChatId: props.socialModuleChatId,
+      secretKey: props.secretKey,
+    });
+
+    const socialModuleChatsToThreads =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    const chatThreadIds =
+      socialModuleChatsToThreads
+        ?.map((socialModuleChatToThread) => {
+          return socialModuleChatToThread.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    const socialModuleThreadsToMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessageId,
+              },
+            ],
+          },
+        },
+      });
+
+    const messageThreadIds =
+      socialModuleThreadsToMessages
+        ?.map((socialModuleThreadToMessage) => {
+          return socialModuleThreadToMessage.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    const chatThreadIdsSet = new Set(chatThreadIds);
+    const validMessageThreadIds = messageThreadIds.filter((threadId) => {
+      return chatThreadIdsSet.has(threadId);
+    });
+
+    if (validMessageThreadIds.length > 1) {
+      throw new Error(
+        "Validation error. Requested message is linked to multiple chat threads",
+      );
+    }
+
+    if (validMessageThreadIds.length === 1) {
+      return validMessageThreadIds[0];
+    }
+
+    if (messageThreadIds.length) {
+      throw new Error(
+        "Validation error. Requested message thread is not linked to the requested chat",
+      );
+    }
+
+    const socialModuleDefaultThread = await this.ensureDefaultThreadForChat({
+      socialModuleChatId: props.socialModuleChatId,
+      secretKey: props.secretKey,
+    });
+
+    await socialModuleThreadsToMessagesApi.create({
+      data: {
+        threadId: socialModuleDefaultThread.id,
+        messageId: props.socialModuleMessageId,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": props.secretKey,
+        },
+      },
+    });
+
+    return socialModuleDefaultThread.id;
+  }
+
+  async normalizeChatThreadsAndMessageLinks(props: {
+    socialModuleChatId: string;
+    secretKey: string;
+  }) {
+    const socialModuleDefaultThread = await this.ensureDefaultThreadForChat({
+      socialModuleChatId: props.socialModuleChatId,
+      secretKey: props.secretKey,
+    });
+
+    const socialModuleChatsToMessages =
+      await this.socialModule.chatsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    if (!socialModuleChatsToMessages?.length) {
+      return socialModuleDefaultThread.id;
+    }
+
+    const socialModuleMessageIds = Array.from(
+      new Set(
+        socialModuleChatsToMessages
+          .map((socialModuleChatToMessage) => {
+            return socialModuleChatToMessage.messageId;
+          })
+          .filter((messageId): messageId is string => Boolean(messageId)),
+      ),
+    );
+
+    if (!socialModuleMessageIds.length) {
+      return socialModuleDefaultThread.id;
+    }
+
+    const socialModuleChatsToThreads =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    const chatThreadIdsSet = new Set(
+      socialModuleChatsToThreads
+        ?.map((socialModuleChatToThread) => {
+          return socialModuleChatToThread.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [],
+    );
+    chatThreadIdsSet.add(socialModuleDefaultThread.id);
+
+    const socialModuleThreadsToMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "messageId",
+                method: "inArray",
+                value: socialModuleMessageIds,
+              },
+            ],
+          },
+        },
+      });
+
+    const normalizedMessageIds = new Set(
+      socialModuleThreadsToMessages
+        ?.filter((socialModuleThreadToMessage) => {
+          if (!socialModuleThreadToMessage.messageId) {
+            return false;
+          }
+
+          if (!socialModuleThreadToMessage.threadId) {
+            return false;
+          }
+
+          return chatThreadIdsSet.has(socialModuleThreadToMessage.threadId);
+        })
+        .map((socialModuleThreadToMessage) => {
+          return socialModuleThreadToMessage.messageId;
+        }) || [],
+    );
+
+    const notNormalizedMessageIds = socialModuleMessageIds.filter(
+      (socialModuleMessageId) => {
+        return !normalizedMessageIds.has(socialModuleMessageId);
+      },
+    );
+
+    for (const socialModuleMessageId of notNormalizedMessageIds) {
+      await socialModuleThreadsToMessagesApi.create({
+        data: {
+          threadId: socialModuleDefaultThread.id,
+          messageId: socialModuleMessageId,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": props.secretKey,
+          },
+        },
+      });
+    }
+
+    return socialModuleDefaultThread.id;
+  }
+
+  async ensureDefaultThreadForChat(props: {
+    socialModuleChatId: string;
+    secretKey: string;
+  }) {
+    const socialModuleChatsToThreads =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    const threadIds =
+      socialModuleChatsToThreads
+        ?.map((socialModuleChatToThread) => {
+          return socialModuleChatToThread.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    if (threadIds.length) {
+      const socialModuleThreads = await this.socialModule.thread.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: threadIds,
+              },
+            ],
+          },
+        },
+      });
+
+      const defaultSocialModuleThreads =
+        socialModuleThreads?.filter((socialModuleThread) => {
+          return socialModuleThread.variant === "default";
+        }) || [];
+
+      if (defaultSocialModuleThreads.length > 1) {
+        throw new Error(
+          "Validation error. Requested social-module chat has multiple default threads",
+        );
+      }
+
+      if (defaultSocialModuleThreads.length === 1) {
+        return defaultSocialModuleThreads[0];
+      }
+    }
+
+    const socialModuleDefaultThread = await socialModuleThreadApi.create({
+      data: {
+        variant: "default",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": props.secretKey,
+        },
+      },
+    });
+
+    await socialModuleChatsToThreadsApi.create({
+      data: {
+        chatId: props.socialModuleChatId,
+        threadId: socialModuleDefaultThread.id,
+        variant: "default",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": props.secretKey,
+        },
+      },
+    });
+
+    return socialModuleDefaultThread;
   }
 
   async extendedEcommerceModuleProduct(props: {

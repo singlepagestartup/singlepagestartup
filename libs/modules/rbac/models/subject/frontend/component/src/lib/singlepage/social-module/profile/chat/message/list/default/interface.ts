@@ -13,17 +13,18 @@ export interface IComponentProps extends ISpsComponentBase {
   data: IModel;
   socialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThreadId: string;
   variant: typeof variant;
   className?: string;
 }
 
 export interface IComponentPropsExtended extends IComponentProps {
-  socialModuleMessages?: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"];
+  socialModuleMessages?: IResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"];
   socialModuleActions?: IResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
   socialModuleMessagesAndActionsQuery?: (
     | {
         type: "message";
-        data: IResult["ISocialModuleProfileFindByIdChatFindByIdMessageFindResult"][0];
+        data: IResult["ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult"][0];
       }
     | {
         type: "action";

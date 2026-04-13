@@ -3,6 +3,10 @@ export interface IReadService {
   findById: (props: { id: string }) => Promise<any>;
 }
 
+export interface ICreateService extends IReadService {
+  create: (props: { data: any }) => Promise<any>;
+}
+
 export interface IExtendedReadService extends IReadService {
   findByIdExtended: (props: { id: string }) => Promise<any>;
 }
@@ -23,6 +27,7 @@ export interface IEcommerceOrderReadService extends IExtendedReadService {
 export interface ISocialModule {
   profile: IReadService;
   chat: IReadService;
+  thread: IReadService;
   message: IReadService;
   action: IReadService;
   attribute: IReadService;
@@ -31,8 +36,10 @@ export interface ISocialModule {
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;
+  chatsToThreads: IReadService;
   chatsToMessages: IReadService;
   chatsToActions: IReadService;
+  threadsToMessages: ICreateService;
   messagesToFileStorageModuleFiles: IReadService;
   attributeKeysToAttributes: IReadService;
 }

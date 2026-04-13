@@ -27,51 +27,6 @@ export class Handler {
         throw new Error("Validation error. No id provided");
       }
 
-      const subjectsToRoles = await this.service.subjectsToRoles.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "subjectId",
-                method: "eq",
-                value: id,
-              },
-            ],
-          },
-        },
-      });
-
-      if (subjectsToRoles?.length) {
-        const roles = await this.service.role.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "id",
-                  method: "inArray",
-                  value: subjectsToRoles.map((e) => e.roleId),
-                },
-              ],
-            },
-          },
-        });
-
-        if (roles?.length) {
-          const hasAdminRole = roles.find((role) => role.slug === "admin");
-
-          if (hasAdminRole) {
-            const socialModuleChats =
-              await this.service.socialModule.chat.find();
-
-            return c.json({
-              data: socialModuleChats,
-            });
-          }
-        }
-      }
-
-      console.log("🚀 ~ execute ~ subjectsToRoles:", subjectsToRoles);
-
       const socialModuleProfileId = c.req.param("socialModuleProfileId");
 
       if (!socialModuleProfileId) {
@@ -89,10 +44,50 @@ export class Handler {
         );
       }
 
+      const subjectToSocialModuleProfiles =
+        await this.service.subjectsToSocialModuleProfiles.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: id,
+                },
+                {
+                  column: "socialModuleProfileId",
+                  method: "eq",
+                  value: socialModuleProfileId,
+                },
+              ],
+            },
+          },
+        });
+
+      if (!subjectToSocialModuleProfiles?.length) {
+        throw new Error(
+          "Authorization error. Requested social-module profile does not belong to subject",
+        );
+      }
+
       const parsedQuery = c.get("parsedQuery");
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
+
+      if (await this.isSubjectAdmin(id)) {
+        const socialModuleChats = await this.service.socialModule.chat.find({
+          params: {
+            limit,
+            offset,
+            orderBy,
+          },
+        });
+
+        return c.json({
+          data: socialModuleChats,
+        });
+      }
 
       const socialModuleProfilesToChats =
         await this.service.socialModule.profilesToChats.find({
@@ -143,5 +138,52 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  private async isSubjectAdmin(subjectId: string): Promise<boolean> {
+    const subjectsToRoles = await this.service.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: subjectId,
+            },
+          ],
+        },
+      },
+    });
+
+    const roleIds =
+      subjectsToRoles
+        ?.map((subjectToRole) => {
+          return subjectToRole.roleId;
+        })
+        .filter((roleId): roleId is string => Boolean(roleId)) || [];
+
+    if (!roleIds.length) {
+      return false;
+    }
+
+    const roles = await this.service.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: roleIds,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(
+      roles?.find((role) => {
+        return role.slug === "admin";
+      }),
+    );
   }
 }

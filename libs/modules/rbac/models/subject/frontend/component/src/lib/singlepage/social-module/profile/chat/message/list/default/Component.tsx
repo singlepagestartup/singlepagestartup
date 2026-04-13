@@ -11,6 +11,7 @@ export function Component(props: IComponentPropsExtended) {
       className={props.className}
       socialModuleProfile={props.socialModuleProfile}
       socialModuleChat={props.socialModuleChat}
+      socialModuleThreadId={props.socialModuleThreadId}
       socialModuleMessages={props.socialModuleMessages}
       socialModuleMessagesAndActionsQuery={
         props.socialModuleMessagesAndActionsQuery

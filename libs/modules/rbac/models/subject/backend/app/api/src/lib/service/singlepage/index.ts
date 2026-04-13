@@ -87,6 +87,9 @@ import {
   Service as TelegramCheckoutFreeSubscription,
   IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps,
 } from "./telegram/checkout-free-subscription";
+import { ChatLifecycleService } from "./social-module/chat-lifecycle";
+import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -231,6 +234,42 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  async socialModuleChatLifecycleCreateChatWithDefaultThread(props: {
+    subjectId: string;
+    data: Partial<ISocialModuleChat>;
+    requestedSocialModuleProfileId?: string;
+    autoBootstrapProfile: boolean;
+  }) {
+    return this.getChatLifecycleService().createChatWithDefaultThread(props);
+  }
+
+  async socialModuleChatLifecycleAssertSubjectOwnsChat(props: {
+    subjectId: string;
+    socialModuleChatId: string;
+  }) {
+    return this.getChatLifecycleService().assertSubjectOwnsChat(props);
+  }
+
+  async socialModuleChatLifecycleResolveSubjectProfileIdInChat(props: {
+    subjectId: string;
+    socialModuleChatId: string;
+  }) {
+    return this.getChatLifecycleService().resolveSubjectProfileIdInChat(props);
+  }
+
+  async socialModuleChatLifecycleAssertThreadBelongsToChat(props: {
+    socialModuleChatId: string;
+    socialModuleThreadId: string;
+  }) {
+    return this.getChatLifecycleService().assertThreadBelongsToChat(props);
+  }
+
+  async socialModuleChatLifecycleEnsureDefaultThreadForChat(props: {
+    socialModuleChatId: string;
+  }): Promise<ISocialModuleThread> {
+    return this.getChatLifecycleService().ensureDefaultThreadForChat(props);
+  }
+
   async billRoute(props: IBillRouteProps) {
     return this.billRouteService.execute(props);
   }
@@ -269,5 +308,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       billingModule: this.billingModule,
       subjectsToEcommerceModuleOrders: this.subjectsToEcommerceModuleOrders,
     }).execute(props);
+  }
+
+  private getChatLifecycleService() {
+    return new ChatLifecycleService(this);
   }
 }

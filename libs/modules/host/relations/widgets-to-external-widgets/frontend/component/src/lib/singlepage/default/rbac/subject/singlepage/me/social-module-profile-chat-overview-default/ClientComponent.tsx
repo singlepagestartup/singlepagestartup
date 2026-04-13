@@ -66,6 +66,9 @@ export function Component(props: IComponentProps) {
                                 language={props.language}
                                 socialModuleProfile={socialModuleProfile}
                                 socialModuleChatId={props.socialModuleChatId}
+                                socialModuleThreadId={
+                                  props.socialModuleThreadId
+                                }
                               />
                             );
                           },

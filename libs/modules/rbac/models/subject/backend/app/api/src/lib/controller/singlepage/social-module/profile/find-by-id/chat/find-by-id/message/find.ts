@@ -39,10 +39,73 @@ export class Handler {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
 
+      const socialModuleThreadId = c.req.param("socialModuleThreadId");
+
+      await this.assertProfileCanAccessChat({
+        subjectId: id,
+        socialModuleProfileId,
+        socialModuleChatId,
+      });
+
       const parsedQuery = c.get("parsedQuery");
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
+
+      if (socialModuleThreadId) {
+        await this.service.socialModuleChatLifecycleAssertThreadBelongsToChat({
+          socialModuleChatId,
+          socialModuleThreadId,
+        });
+
+        const socialModuleThreadsToMessages =
+          await this.service.socialModule.threadsToMessages.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "threadId",
+                    method: "eq",
+                    value: socialModuleThreadId,
+                  },
+                ],
+              },
+              limit,
+              offset,
+              orderBy,
+            },
+          });
+
+        if (!socialModuleThreadsToMessages?.length) {
+          return c.json({
+            data: [],
+          });
+        }
+
+        const socialModuleMessages =
+          await this.service.socialModule.message.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: socialModuleThreadsToMessages.map(
+                      (socialModuleThreadsToMessage) => {
+                        return socialModuleThreadsToMessage.messageId;
+                      },
+                    ),
+                  },
+                ],
+              },
+              orderBy,
+            },
+          });
+
+        return c.json({
+          data: socialModuleMessages,
+        });
+      }
 
       const socialModuleChatsToMessages =
         await this.service.socialModule.chatsToMessages.find({
@@ -96,5 +159,84 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  async assertProfileCanAccessChat(props: {
+    subjectId: string;
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }) {
+    const socialModuleProfilesToChats =
+      await this.service.socialModule.profilesToChats.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    if (socialModuleProfilesToChats?.length) {
+      return;
+    }
+
+    if (await this.isSubjectAdmin(props.subjectId)) {
+      return;
+    }
+
+    throw new Error(
+      "Authorization error. Requested social-module chat does not belong to profile",
+    );
+  }
+
+  async isSubjectAdmin(subjectId: string): Promise<boolean> {
+    const subjectsToRoles = await this.service.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: subjectId,
+            },
+          ],
+        },
+      },
+    });
+
+    const roleIds =
+      subjectsToRoles
+        ?.map((subjectToRole) => subjectToRole.roleId)
+        .filter((roleId): roleId is string => Boolean(roleId)) || [];
+
+    if (!roleIds.length) {
+      return false;
+    }
+
+    const roles = await this.service.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: roleIds,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(roles?.find((role) => role.slug === "admin"));
   }
 }

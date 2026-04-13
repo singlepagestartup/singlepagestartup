@@ -48,11 +48,12 @@ const messageEditFormSchema = z.object({
 });
 
 export function Component(props: IComponentPropsExtended) {
-  const socialModuleProfileFindByIdChatFindByIdMessageCreate =
-    api.socialModuleProfileFindByIdChatFindByIdMessageCreate({
+  const socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate =
+    api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
+      socialModuleThreadId: props.socialModuleThreadId,
     });
   const socialModuleProfileFindByIdChatFindByIdMessageDelete =
     api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
@@ -100,10 +101,11 @@ export function Component(props: IComponentPropsExtended) {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    socialModuleProfileFindByIdChatFindByIdMessageCreate.mutate({
+    socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate.mutate({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
+      socialModuleThreadId: props.socialModuleThreadId,
       data: {
         description: data.description,
         files: data.files,
@@ -143,10 +145,12 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   useEffect(() => {
-    if (socialModuleProfileFindByIdChatFindByIdMessageCreate.isSuccess) {
+    if (
+      socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate.isSuccess
+    ) {
       toast.success("Message created successfully");
     }
-  }, [socialModuleProfileFindByIdChatFindByIdMessageCreate]);
+  }, [socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate]);
 
   useEffect(() => {
     if (socialModuleProfileFindByIdChatFindByIdMessageUpdate.isSuccess) {

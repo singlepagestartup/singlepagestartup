@@ -4,7 +4,10 @@ import { DI, RESTController } from "@sps/shared-backend-api";
 import { Table } from "@sps/rbac/models/subject/backend/repository/database";
 import { Service } from "../../service";
 import { Context } from "hono";
-import { RequestProfileSubjectIdOwner } from "../../../../../middlewares";
+import {
+  RequestProfileSubjectIdOwner,
+  RequestSubjectIdOwner,
+} from "../../../../../middlewares";
 
 import { Handler as AuthenticationMe } from "./authentication/me";
 import { Handler as AuthenticationIsAuthorized } from "./authentication/is-authorized";
@@ -55,6 +58,9 @@ import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-modul
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionCreate } from "./social-module/profile/find-by-id/chat/find-by-id/action/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionFind } from "./social-module/profile/find-by-id/chat/find-by-id/action/find";
+import { Handler as SocialModuleChatCreate } from "./social-module/chat/create";
+import { Handler as SocialModuleChatFindByIdThreadFind } from "./social-module/chat/find-by-id/thread/find";
+import { Handler as SocialModuleChatFindByIdThreadCreate } from "./social-module/chat/find-by-id/thread/create";
 import { Handler as TelegramBootstrap } from "./telegram/bootstrap";
 import { Handler as TelegramSyncMembership } from "./telegram/sync-membership";
 import { Handler as TelegramCheckoutFreeSubscription } from "./telegram/checkout-free-subscription";
@@ -290,6 +296,24 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
+        method: "POST",
+        path: "/:id/social-module/chats",
+        handler: this.socialModuleChatCreate,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/chats/:socialModuleChatId/threads",
+        handler: this.socialModuleChatFindByIdThreadFind,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/chats/:socialModuleChatId/threads",
+        handler: this.socialModuleChatFindByIdThreadCreate,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageFind,
@@ -299,6 +323,21 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages",
         handler: this.socialModuleProfileFindByIdChatFindByIdMessageCreate,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
+        handler:
+          this.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages",
+        handler:
+          this
+            .socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
@@ -543,6 +582,30 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     );
   }
 
+  async socialModuleChatCreate(c: Context, next: any): Promise<Response> {
+    return new SocialModuleChatCreate(this.service).execute(c, next);
+  }
+
+  async socialModuleChatFindByIdThreadFind(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdThreadFind(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdThreadCreate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdThreadCreate(this.service).execute(
+      c,
+      next,
+    );
+  }
+
   async socialModuleProfileFindByIdChatFindByIdMessageFind(
     c: Context,
     next: any,
@@ -553,6 +616,24 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
   }
 
   async socialModuleProfileFindByIdChatFindByIdMessageCreate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageCreate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageFind(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
     c: Context,
     next: any,
   ): Promise<Response> {
