@@ -4,6 +4,10 @@
 
 Implement thread-scoped subject chat messaging so message create/read use the same chat-thread route, OpenRouter replies stay in the triggering thread, and historical data is normalized without DB migrations.
 
+Update (2026-04-13): thread message routing is hard-cut over to profile-scoped paths:
+`/rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/messages`.
+Legacy chat-thread message route/SDK methods are removed.
+
 ## Current State Analysis
 
 Subject chat message flow is currently chat-scoped: create/find handlers sit under chat routes and thread support is treated as optional context. OpenRouter reaction flow posts status/final replies through subject message create without guaranteed thread propagation. Frontend chat overview/message components are not aligned to canonical thread-in-path routing.
@@ -13,9 +17,9 @@ Subject chat message flow is currently chat-scoped: create/find handlers sit und
 After implementation:
 
 - message create/read are thread-scoped via canonical route:
-  - `POST /rbac/subjects/{subjectId}/social-module/chats/{chatId}/threads/{threadId}/messages`
-  - `GET /rbac/subjects/{subjectId}/social-module/chats/{chatId}/threads/{threadId}/messages`
-- RBAC subject SDK/server/client use full chat-thread path (`/subjects/<id>/social-module/chats/<id>/threads/<id>/...`) instead of optional `threadId` filter contracts;
+  - `POST /rbac/subjects/{subjectId}/social-module/profiles/{socialModuleProfileId}/chats/{chatId}/threads/{threadId}/messages`
+  - `GET /rbac/subjects/{subjectId}/social-module/profiles/{socialModuleProfileId}/chats/{chatId}/threads/{threadId}/messages`
+- RBAC subject SDK/server/client use full profile-thread path (`/subjects/<id>/social-module/profiles/<id>/chats/<id>/threads/<id>/...`) instead of optional `threadId` filter contracts;
 - chat creation guarantees a single default thread and valid chat-thread ownership checks;
 - OpenRouter status/final replies are always created in the same thread as the trigger message;
 - frontend thread selector/create/message components are synchronized to path-based chat/thread routing (no conflicting query-driven thread identity);
@@ -55,8 +59,8 @@ Define canonical chat-thread message routes and update subject routing + SDK/Ope
 **Changes**:
 
 - register canonical thread-scoped message routes under subject scope:
-  - `GET /:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages`
-  - `POST /:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages`
+  - `GET /:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages`
+  - `POST /:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/messages`
 - keep thread list/create under chat scope:
   - `GET /:id/social-module/chats/:socialModuleChatId/threads`
   - `POST /:id/social-module/chats/:socialModuleChatId/threads`

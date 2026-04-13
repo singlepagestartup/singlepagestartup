@@ -7,8 +7,8 @@ repository: singlepagestartup
 topic: "Social chat threads: default-thread routing, thread-aware replies, thread switch/create UI, and historical backfill"
 tags: [research, codebase, social, rbac, agent, telegram, thread]
 status: complete
-last_updated: 2026-04-09
-last_updated_by: flakecode
+last_updated: 2026-04-12
+last_updated_by: codex
 ---
 
 # Research: Social chat threads: default-thread routing, thread-aware replies, thread switch/create UI, and historical backfill
@@ -222,3 +222,95 @@ Thread entities and relations are available in social module architecture and ad
 - The issue ticket references new subject thread list/create endpoints under chat scope; these endpoint paths are not present in current subject controller or subject paths.yaml route definitions.
 - The ticket references `threadId` in subject message create/find contracts; this parameter is not present in current subject message handler parsing or subject paths.yaml parameter definitions.
 - Existing repository migration patterns include idempotent SQL and rerunnable cleanup scripts; no dedicated issue-154 backfill script was located in current code paths.
+
+## Implementation Pitfalls (2026-04-11 Addendum)
+
+### Pitfall: Optional env var type in headers (`string | undefined`)
+
+When `RBAC_SECRET_KEY` is typed as `string | undefined`, TypeScript can reject:
+
+`headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY }`
+
+with:
+
+`Type '{ "X-RBAC-SECRET-KEY": string | undefined; }' is not assignable to type 'HeadersInit | undefined'.`
+
+### Recommended Fix Pattern
+
+Guard the env variable before any header construction, then use it as a strict `string`.
+
+```ts
+if (!RBAC_SECRET_KEY) {
+  throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+}
+
+headers: {
+  "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+}
+```
+
+### Why this works
+
+- Runtime safety: fails fast if configuration is missing.
+- Type safety: after the guard, `RBAC_SECRET_KEY` is narrowed to `string`, removing `string | undefined` from header value.
+- Reuse: the same guard pattern can be used in `execute` and auxiliary methods (`assert*`, `findExisting*`, notification helpers).
+
+### Pitfall: Raw `fetch` for same-service model/relation writes
+
+For internal social model/relation writes (for example creating a default thread and creating `chats-to-threads` link), raw `fetch` bypasses SDK contracts and duplicates transport concerns.
+
+### Recommended Fix Pattern
+
+Use SDK factory with model metadata (`route/query/options`) and set `host` to the current request origin (`new URL(c.req.url).origin`) when runtime port must match the active API instance.
+
+```ts
+const socialModuleThreadApi = serverApiFactory<ISocialModuleThread>({
+  route: socialModuleThreadRoute,
+  host: props.apiBaseUrl,
+  params: socialModuleThreadQuery,
+  options: socialModuleThreadOptions,
+});
+
+await socialModuleThreadApi.create({
+  data: { variant: "default" },
+  options: { headers: { "X-RBAC-SECRET-KEY": props.secretKey } },
+});
+```
+
+### Why this works
+
+- Contract safety: keeps request shape aligned with generated SDK metadata.
+- Consistency: same API call conventions as the rest of SPS backend/controller code.
+- Port correctness: `host` can be bound to the active request origin without falling back to hardcoded env URL.
+
+## Controller Ownership Addendum (2026-04-12)
+
+### Problem Pattern
+
+Thread lifecycle responsibilities were spread across multiple controllers (`profile chat create`, `profile message create`, and `openrouter reaction`), while `chat/*` controllers had duplicated ownership checks (`assertSubjectOwnsChat`) with slightly different behavior. This made failures hard to reason about and introduced regressions during thread rollout.
+
+### Correct Ownership Boundary
+
+- Bootstrap (`subject -> social profile`) is allowed only in canonical chat creation flow.
+- Chat creation owns default-thread initialization.
+- Thread/message read-write routes must remain strict ownership checks (no implicit profile/chat bootstrap).
+
+### Canonical Chain
+
+`subject -> (auto-bootstrap profile only in create-chat) -> chat -> chat-scoped default thread`
+
+### Invariants
+
+- Every chat must have exactly one default thread (`variant="default"`).
+- Default thread selection must be chat-scoped through `chats-to-threads` by `chatId`.
+- Never use a global “first default thread”.
+- If legacy chat has no linked default thread, create and link one idempotently in shared chat lifecycle logic.
+
+### Operational Guardrails
+
+- Always fail fast when `RBAC_SECRET_KEY` is missing before building secret headers.
+- Keep thread ownership validation mandatory for thread-scoped routes (`chatId + threadId` pair).
+- Do not introduce SQL/migration side-effects in issue-154 implementation; data repair must happen via API/controller lifecycle logic.
+- Keep SDK host configuration centralized via environment (`API_SERVICE_URL` / SDK defaults); do not override host in individual controller/service SDK calls.
+- Do not pass `threadId` inside `data` to profile-scoped message SDK (`socialModuleProfileFindByIdChatFindByIdMessageCreate`): that payload follows `social-message` schema and rejects unknown fields in strict typing. Use the canonical profile-thread SDK route (`socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate`) for thread-targeted writes.
+- Temporary implementation-guard tests that assert source code strings/files are allowed only during local development and must be deleted before commit. Keep only behavior tests that validate runtime behavior and contracts.
