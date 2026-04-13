@@ -165,6 +165,16 @@ import {
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/create";
 import {
+  action as socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/message/find";
+import {
+  action as socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/message/create";
+import {
   action as socialModuleProfileFindByIdChatFindByIdMessageDelete,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult,
@@ -194,6 +204,21 @@ import {
   type IProps as ISocialModuleProfileFindByIdChatFindByIdActionFindProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdActionFindResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/action/find";
+import {
+  action as socialModuleChatCreate,
+  type IProps as ISocialModuleChatCreateProps,
+  type IResult as ISocialModuleChatCreateResult,
+} from "./social-module/chat/create";
+import {
+  action as socialModuleChatFindByIdThreadFind,
+  type IProps as ISocialModuleChatFindByIdThreadFindProps,
+  type IResult as ISocialModuleChatFindByIdThreadFindResult,
+} from "./social-module/chat/find-by-id/thread/find";
+import {
+  action as socialModuleChatFindByIdThreadCreate,
+  type IProps as ISocialModuleChatFindByIdThreadCreateProps,
+  type IResult as ISocialModuleChatFindByIdThreadCreateResult,
+} from "./social-module/chat/find-by-id/thread/create";
 
 export type IProps = {
   IAuthenticationInitProps: IAuthenticationInitProps;
@@ -230,12 +255,17 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdProps: ISocialModuleProfileFindByIdChatFindByIdProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdMessageCreateProps;
+  ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindProps: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindProps;
+  ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateProps: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps;
   ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateProps: ISocialModuleProfileFindByIdChatFindByIdActionCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdActionFindProps: ISocialModuleProfileFindByIdChatFindByIdActionFindProps;
+  ISocialModuleChatCreateProps: ISocialModuleChatCreateProps;
+  ISocialModuleChatFindByIdThreadFindProps: ISocialModuleChatFindByIdThreadFindProps;
+  ISocialModuleChatFindByIdThreadCreateProps: ISocialModuleChatFindByIdThreadCreateProps;
 };
 
 export type IResult = {
@@ -273,12 +303,17 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdResult: ISocialModuleProfileFindByIdChatFindByIdResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdMessageCreateResult;
+  ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFindResult;
+  ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateResult: ISocialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult;
   ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateResult: ISocialModuleProfileFindByIdChatFindByIdActionCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdActionFindResult: ISocialModuleProfileFindByIdChatFindByIdActionFindResult;
+  ISocialModuleChatCreateResult: ISocialModuleChatCreateResult;
+  ISocialModuleChatFindByIdThreadFindResult: ISocialModuleChatFindByIdThreadFindResult;
+  ISocialModuleChatFindByIdThreadCreateResult: ISocialModuleChatFindByIdThreadCreateResult;
 };
 
 export const api = {
@@ -323,10 +358,15 @@ export const api = {
   socialModuleProfileFindByIdChatFindById,
   socialModuleProfileFindByIdChatFindByIdMessageFind,
   socialModuleProfileFindByIdChatFindByIdMessageCreate,
+  socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind,
+  socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate,
   socialModuleProfileFindByIdChatFindByIdMessageDelete,
   socialModuleProfileFindByIdChatFindByIdMessageUpdate,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter,
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
   socialModuleProfileFindByIdChatFindByIdActionFind,
+  socialModuleChatCreate,
+  socialModuleChatFindByIdThreadFind,
+  socialModuleChatFindByIdThreadCreate,
 };

@@ -16,12 +16,24 @@ export function Component(props: IComponentProps) {
         }
 
         return (
-          <RbacSubject
+          <HostModulePage
             isServer={props.isServer}
-            language={props.language}
-            variant="me-social-module-profile-chat-overview-default"
-            socialModuleChatId={socialModuleChatId}
-          />
+            variant="url-segment-value"
+            segment="social.threads.id"
+            url={props.url}
+          >
+            {({ data: socialModuleThreadId }) => {
+              return (
+                <RbacSubject
+                  isServer={props.isServer}
+                  language={props.language}
+                  variant="me-social-module-profile-chat-overview-default"
+                  socialModuleChatId={socialModuleChatId}
+                  socialModuleThreadId={socialModuleThreadId}
+                />
+              );
+            }}
+          </HostModulePage>
         );
       }}
     </HostModulePage>

@@ -7,10 +7,11 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 
 export default async function Component(props: IComponentProps) {
   const socialModuleMessages =
-    await api.socialModuleProfileFindByIdChatFindByIdMessageFind({
+    await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind({
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
+      socialModuleThreadId: props.socialModuleThreadId,
       options: {
         headers: {
           "Cache-Control": "no-store",

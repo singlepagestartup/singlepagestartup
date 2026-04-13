@@ -121,7 +121,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -335,7 +335,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -370,7 +370,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1043,7 +1043,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1099,7 +1099,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1157,7 +1157,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1215,7 +1215,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1281,6 +1281,178 @@ paths:
               schema:
                 $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
 
+  /rbac/subjects/{id}/social-module/chats/{socialModuleChatId}/threads:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List threads
+      description: Retrieve threads for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of threads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create thread
+      description: Create custom thread for a chat
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+              required:
+                - data
+      responses:
+        "200":
+          description: Created thread
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/thread/sdk/model/src/lib/social-thread.yaml"
+
+  /rbac/subjects/{id}/social-module/chats:
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create chat
+      description: Create chat for subject with profile auto-bootstrap and default thread initialization
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+              required:
+                - data
+      responses:
+        "200":
+          description: Created chat
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/chat/sdk/model/src/lib/social-chat.yaml"
+
+  /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/threads/{socialModuleThreadId}/messages:
+    get:
+      tags:
+        - "rbac-subject"
+      summary: List thread messages
+      description: Retrieve messages for a profile chat thread
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleThreadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of thread messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+    post:
+      tags:
+        - "rbac-subject"
+      summary: Create thread message
+      description: Create message in a profile chat thread
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/id.yaml"
+        - name: socialModuleProfileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleChatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: socialModuleThreadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: JSON string
+                  example: "{}"
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - data
+      responses:
+        "200":
+          description: Created thread message
+          content:
+            application/json:
+              schema:
+                $ref: "../../../../../../../../../libs/modules/social/models/message/sdk/model/src/lib/social-message.yaml"
+
   /rbac/subjects/{id}/social-module/profiles/{socialModuleProfileId}/chats/{socialModuleChatId}/messages:
     get:
       tags:
@@ -1340,7 +1512,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
                 files:
                   type: array
                   items:
@@ -1394,7 +1566,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:
@@ -1464,7 +1636,7 @@ paths:
                 data:
                   type: string
                   description: JSON string
-                  example: '{}'
+                  example: "{}"
               required:
                 - data
       responses:

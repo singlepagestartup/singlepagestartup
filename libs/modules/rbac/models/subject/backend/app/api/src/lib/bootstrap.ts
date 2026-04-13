@@ -51,6 +51,8 @@ import { Repository as SocialProfileRepository } from "@sps/social/models/profil
 import { Configuration as SocialProfileConfiguration } from "@sps/social/models/profile/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatRepository } from "@sps/social/models/chat/backend/app/api/src/lib/repository";
 import { Configuration as SocialChatConfiguration } from "@sps/social/models/chat/backend/app/api/src/lib/configuration";
+import { Repository as SocialThreadRepository } from "@sps/social/models/thread/backend/app/api/src/lib/repository";
+import { Configuration as SocialThreadConfiguration } from "@sps/social/models/thread/backend/app/api/src/lib/configuration";
 import { Repository as SocialMessageRepository } from "@sps/social/models/message/backend/app/api/src/lib/repository";
 import { Configuration as SocialMessageConfiguration } from "@sps/social/models/message/backend/app/api/src/lib/configuration";
 import { Repository as SocialActionRepository } from "@sps/social/models/action/backend/app/api/src/lib/repository";
@@ -69,8 +71,12 @@ import { Repository as SocialProfilesToAttributesRepository } from "@sps/social/
 import { Configuration as SocialProfilesToAttributesConfiguration } from "@sps/social/relations/profiles-to-attributes/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatsToMessagesRepository } from "@sps/social/relations/chats-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialChatsToMessagesConfiguration } from "@sps/social/relations/chats-to-messages/backend/app/api/src/lib/configuration";
+import { Repository as SocialChatsToThreadsRepository } from "@sps/social/relations/chats-to-threads/backend/app/api/src/lib/repository";
+import { Configuration as SocialChatsToThreadsConfiguration } from "@sps/social/relations/chats-to-threads/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatsToActionsRepository } from "@sps/social/relations/chats-to-actions/backend/app/api/src/lib/repository";
 import { Configuration as SocialChatsToActionsConfiguration } from "@sps/social/relations/chats-to-actions/backend/app/api/src/lib/configuration";
+import { Repository as SocialThreadsToMessagesRepository } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/repository";
+import { Configuration as SocialThreadsToMessagesConfiguration } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as SocialMessagesToFileStorageModuleFilesRepository } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/repository";
 import { Configuration as SocialMessagesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as SocialAttributeKeysToAttributesRepository } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
@@ -161,6 +167,9 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         chat: new CRUDService<any>(
           new SocialChatRepository(new SocialChatConfiguration()),
         ),
+        thread: new CRUDService<any>(
+          new SocialThreadRepository(new SocialThreadConfiguration()),
+        ),
         message: new CRUDService<any>(
           new SocialMessageRepository(new SocialMessageConfiguration()),
         ),
@@ -200,9 +209,19 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
             new SocialChatsToMessagesConfiguration(),
           ),
         ),
+        chatsToThreads: new CRUDService<any>(
+          new SocialChatsToThreadsRepository(
+            new SocialChatsToThreadsConfiguration(),
+          ),
+        ),
         chatsToActions: new CRUDService<any>(
           new SocialChatsToActionsRepository(
             new SocialChatsToActionsConfiguration(),
+          ),
+        ),
+        threadsToMessages: new CRUDService<any>(
+          new SocialThreadsToMessagesRepository(
+            new SocialThreadsToMessagesConfiguration(),
           ),
         ),
         messagesToFileStorageModuleFiles: new CRUDService<any>(

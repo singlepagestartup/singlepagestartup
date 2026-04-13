@@ -11,10 +11,11 @@ export default function Component(props: IComponentProps) {
   const {
     data: socialModuleMessages,
     isLoading: socialModuleMessagesIsLoading,
-  } = api.socialModuleProfileFindByIdChatFindByIdMessageFind({
+  } = api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind({
     id: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
+    socialModuleThreadId: props.socialModuleThreadId,
     params: {
       orderBy: {
         and: [

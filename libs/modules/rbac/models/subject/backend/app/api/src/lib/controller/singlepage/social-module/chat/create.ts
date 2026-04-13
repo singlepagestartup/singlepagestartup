@@ -1,7 +1,7 @@
 import { RBAC_JWT_SECRET } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../../../service";
+import { Service } from "../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -21,23 +21,6 @@ export class Handler {
 
       if (!id) {
         throw new Error("Validation error. No id provided");
-      }
-
-      const socialModuleProfileId = c.req.param("socialModuleProfileId");
-
-      if (!socialModuleProfileId) {
-        throw new Error("Validation error. No socialModuleProfileId provided");
-      }
-
-      const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
-          id: socialModuleProfileId,
-        });
-
-      if (!socialModuleProfile) {
-        throw new Error(
-          "Not found error. Requested social-module profile not found",
-        );
       }
 
       const body = await c.req.parseBody();
@@ -63,9 +46,8 @@ export class Handler {
         await this.service.socialModuleChatLifecycleCreateChatWithDefaultThread(
           {
             subjectId: id,
-            requestedSocialModuleProfileId: socialModuleProfileId,
-            autoBootstrapProfile: false,
             data,
+            autoBootstrapProfile: true,
           },
         );
 

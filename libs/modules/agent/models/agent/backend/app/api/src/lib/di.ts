@@ -10,13 +10,16 @@ export interface IHostPageReadService extends IReadService {
 export interface ISocialModule {
   profile: IReadService;
   chat: IReadService;
+  thread: IReadService;
   message: IReadService;
   action: IReadService;
   profilesToChats: IReadService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
+  chatsToThreads: IReadService;
   chatsToMessages: IReadService;
   chatsToActions: IReadService;
+  threadsToMessages: IReadService;
 }
 
 export interface IRbacModule {

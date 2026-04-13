@@ -5,6 +5,7 @@ import { Service } from "../../../../../../../../service";
 import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
+import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { IModel as ISocialModuleMessagesToFileStorageModuleFile } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/model";
@@ -47,6 +48,14 @@ export class Handler {
         throw new Error("Validation error. No socialModuleChatId provided");
       }
 
+      const socialModuleThreadIdFromPath = c.req.param("socialModuleThreadId");
+
+      await this.assertProfileCanAccessChat({
+        subjectId: id,
+        socialModuleProfileId,
+        socialModuleChatId,
+      });
+
       const formData = await c.req.formData();
       const dataField = formData.get("data");
 
@@ -74,6 +83,20 @@ export class Handler {
         );
       }
 
+      const requestedThreadId =
+        typeof parsedBody.data?.threadId === "string"
+          ? parsedBody.data.threadId.trim()
+          : "";
+      const socialModuleThreadId = await this.resolveTargetThreadId({
+        socialModuleChatId,
+        pathSocialModuleThreadId: socialModuleThreadIdFromPath || undefined,
+        requestedThreadId: requestedThreadId || undefined,
+      });
+
+      if (parsedBody.data && "threadId" in parsedBody.data) {
+        delete parsedBody.data.threadId;
+      }
+
       const sourceSystemId =
         typeof parsedBody.data?.sourceSystemId === "string"
           ? parsedBody.data.sourceSystemId.trim()
@@ -83,6 +106,7 @@ export class Handler {
         const existingMessage = await this.findExistingBySourceSystemId({
           sourceSystemId,
           socialModuleChatId,
+          socialModuleThreadId,
         });
 
         if (existingMessage) {
@@ -113,6 +137,18 @@ export class Handler {
         data: {
           messageId: socialMouleMessage.id,
           chatId: socialModuleChatId,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
+
+      await socialModuleThreadsToMessagesApi.create({
+        data: {
+          messageId: socialMouleMessage.id,
+          threadId: socialModuleThreadId,
         },
         options: {
           headers: {
@@ -509,6 +545,7 @@ export class Handler {
   async findExistingBySourceSystemId(props: {
     sourceSystemId: string;
     socialModuleChatId: string;
+    socialModuleThreadId: string;
   }): Promise<ISocialModuleMessage | undefined> {
     const messages = await this.service.socialModule.message.find({
       params: {
@@ -562,8 +599,152 @@ export class Handler {
       return;
     }
 
-    const messageIdsSet = new Set(messageIdsInChat);
+    const threadsToMessages =
+      await this.service.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "eq",
+                value: props.socialModuleThreadId,
+              },
+              {
+                column: "messageId",
+                method: "inArray",
+                value: messageIdsInChat,
+              },
+            ],
+          },
+        },
+      });
+
+    if (!threadsToMessages?.length) {
+      return;
+    }
+
+    const messageIdsSet = new Set(
+      threadsToMessages
+        .map((threadToMessage) => threadToMessage.messageId)
+        .filter((id): id is string => Boolean(id)),
+    );
 
     return messages.find((message) => messageIdsSet.has(message.id));
+  }
+
+  async resolveTargetThreadId(props: {
+    socialModuleChatId: string;
+    pathSocialModuleThreadId?: string;
+    requestedThreadId?: string;
+  }): Promise<string> {
+    if (props.pathSocialModuleThreadId) {
+      if (
+        props.requestedThreadId &&
+        props.requestedThreadId !== props.pathSocialModuleThreadId
+      ) {
+        throw new Error(
+          "Validation error. threadId in path does not match threadId in payload",
+        );
+      }
+
+      await this.service.socialModuleChatLifecycleAssertThreadBelongsToChat({
+        socialModuleChatId: props.socialModuleChatId,
+        socialModuleThreadId: props.pathSocialModuleThreadId,
+      });
+
+      return props.pathSocialModuleThreadId;
+    }
+
+    if (props.requestedThreadId) {
+      throw new Error(
+        "Validation error. threadId must be provided in route path",
+      );
+    }
+
+    const defaultThread =
+      await this.service.socialModuleChatLifecycleEnsureDefaultThreadForChat({
+        socialModuleChatId: props.socialModuleChatId,
+      });
+
+    return defaultThread.id;
+  }
+
+  async assertProfileCanAccessChat(props: {
+    subjectId: string;
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }) {
+    const socialModuleProfilesToChats =
+      await this.service.socialModule.profilesToChats.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    if (socialModuleProfilesToChats?.length) {
+      return;
+    }
+
+    if (await this.isSubjectAdmin(props.subjectId)) {
+      return;
+    }
+
+    throw new Error(
+      "Authorization error. Requested social-module chat does not belong to profile",
+    );
+  }
+
+  async isSubjectAdmin(subjectId: string): Promise<boolean> {
+    const subjectsToRoles = await this.service.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: subjectId,
+            },
+          ],
+        },
+      },
+    });
+
+    const roleIds =
+      subjectsToRoles
+        ?.map((subjectToRole) => subjectToRole.roleId)
+        .filter((roleId): roleId is string => Boolean(roleId)) || [];
+
+    if (!roleIds.length) {
+      return false;
+    }
+
+    const roles = await this.service.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: roleIds,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(roles?.find((role) => role.slug === "admin"));
   }
 }

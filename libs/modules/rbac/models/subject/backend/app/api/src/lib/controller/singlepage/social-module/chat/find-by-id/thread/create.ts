@@ -1,8 +1,10 @@
-import { RBAC_JWT_SECRET } from "@sps/shared-utils";
+import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 
 export class Handler {
   service: Service;
@@ -17,28 +19,24 @@ export class Handler {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
+      const secretKey = this.getRequiredSecretKey();
+
       const id = c.req.param("id");
 
       if (!id) {
         throw new Error("Validation error. No id provided");
       }
 
-      const socialModuleProfileId = c.req.param("socialModuleProfileId");
+      const socialModuleChatId = c.req.param("socialModuleChatId");
 
-      if (!socialModuleProfileId) {
-        throw new Error("Validation error. No socialModuleProfileId provided");
+      if (!socialModuleChatId) {
+        throw new Error("Validation error. No socialModuleChatId provided");
       }
 
-      const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
-          id: socialModuleProfileId,
-        });
-
-      if (!socialModuleProfile) {
-        throw new Error(
-          "Not found error. Requested social-module profile not found",
-        );
-      }
+      await this.service.socialModuleChatLifecycleAssertSubjectOwnsChat({
+        subjectId: id,
+        socialModuleChatId,
+      });
 
       const body = await c.req.parseBody();
 
@@ -59,24 +57,43 @@ export class Handler {
         );
       }
 
-      const { socialModuleChat } =
-        await this.service.socialModuleChatLifecycleCreateChatWithDefaultThread(
-          {
-            subjectId: id,
-            requestedSocialModuleProfileId: socialModuleProfileId,
-            autoBootstrapProfile: false,
-            data,
+      const socialModuleThread = await socialModuleThreadApi.create({
+        data: {
+          ...data,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": secretKey,
           },
-        );
+        },
+      });
+
+      await socialModuleChatsToThreadsApi.create({
+        data: {
+          chatId: socialModuleChatId,
+          threadId: socialModuleThread.id,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": secretKey,
+          },
+        },
+      });
 
       return c.json({
-        data: {
-          socialModuleChat,
-        },
+        data: socialModuleThread,
       });
     } catch (error: any) {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  getRequiredSecretKey(): string {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    return RBAC_SECRET_KEY;
   }
 }

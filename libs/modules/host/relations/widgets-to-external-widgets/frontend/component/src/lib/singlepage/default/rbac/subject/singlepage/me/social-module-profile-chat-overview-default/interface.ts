@@ -5,4 +5,5 @@ export type IComponentProps = ISpsComponentBase & {
   language: string;
   variant: "me-social-module-profile-chat-overview-default";
   socialModuleChatId: ISocialModuleChat["id"];
+  socialModuleThreadId?: string;
 };

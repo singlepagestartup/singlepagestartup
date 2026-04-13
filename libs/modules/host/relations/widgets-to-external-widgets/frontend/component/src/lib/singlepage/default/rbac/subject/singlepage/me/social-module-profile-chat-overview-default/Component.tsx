@@ -10,6 +10,7 @@ export function Component(props: IComponentProps) {
       language={props.language}
       variant={props.variant}
       socialModuleChatId={props.socialModuleChatId}
+      socialModuleThreadId={props.socialModuleThreadId}
     />
   );
 }

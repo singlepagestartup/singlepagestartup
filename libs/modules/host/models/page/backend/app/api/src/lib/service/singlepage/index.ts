@@ -105,16 +105,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       throw new Error("Validation error. Invalid page size");
     }
 
-    const moduleData = await fetch(
-      `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
-      {
-        headers: {
-          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY as string,
-        },
-      },
-    ).then((res) => res.json());
-
-    const totalItems = moduleData?.data?.length || 0;
+    const moduleEntities = await this.fetchAllModuleEntities({
+      moduleName,
+      modelName,
+      secretKey: RBAC_SECRET_KEY,
+    });
+    const totalItems = moduleEntities.length;
     const totalPages = Math.ceil(totalItems / pageSizeNum);
 
     return [
@@ -157,26 +153,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           const param = moduleSegment.split(".")[2];
           const moduleSegmentPaths: string[] = [];
 
-          const moduleData = await fetch(
-            `${API_SERVICE_URL}/api/${moduleName}/${modelName}`,
-            {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
-            },
-          ).then((res) => res.json());
+          const moduleEntities = await this.fetchAllModuleEntities({
+            moduleName,
+            modelName,
+            secretKey: RBAC_SECRET_KEY,
+          });
 
-          if (moduleData?.data?.length) {
-            moduleData.data.forEach((entity: unknown) => {
-              if (!entity?.[param]) {
-                throw new Error(
-                  `Not Found error. Entity with param ${param} not found`,
-                );
-              }
+          moduleEntities.forEach((entity: unknown) => {
+            if (!entity?.[param]) {
+              throw new Error(
+                `Not Found error. Entity with param ${param} not found`,
+              );
+            }
 
-              moduleSegmentPaths.push(entity[param]);
-            });
-          }
+            moduleSegmentPaths.push(entity[param]);
+          });
 
           saturatedSegments.push(moduleSegmentPaths);
           continue;
@@ -207,6 +198,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     return { ...result, urls };
+  }
+
+  private async fetchAllModuleEntities(props: {
+    moduleName: string;
+    modelName: string;
+    secretKey: string;
+  }): Promise<any[]> {
+    const response = await fetch(
+      `${API_SERVICE_URL}/api/${props.moduleName}/${props.modelName}`,
+      {
+        headers: {
+          "X-RBAC-SECRET-KEY": props.secretKey,
+        },
+      },
+    );
+    const payload = await response.json();
+
+    if (!Array.isArray(payload?.data)) {
+      return [];
+    }
+
+    return payload.data;
   }
 
   async urls() {
