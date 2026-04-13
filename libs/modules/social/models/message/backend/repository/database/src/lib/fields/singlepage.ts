@@ -14,4 +14,8 @@ export const fields = {
     .jsonb("interaction")
     .$type<{ [key: string]: any }>()
     .default({}),
+  metadata: pgCore
+    .jsonb("metadata")
+    .$type<{ [key: string]: any }>()
+    .default({}),
 };

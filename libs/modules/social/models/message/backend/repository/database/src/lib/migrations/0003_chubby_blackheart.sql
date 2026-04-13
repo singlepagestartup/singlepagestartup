@@ -1,0 +1,1 @@
+ALTER TABLE "sl_message" ADD COLUMN "metadata" jsonb DEFAULT '{}'::jsonb;
