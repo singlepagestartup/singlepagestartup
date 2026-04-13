@@ -21,6 +21,7 @@
     "test:scenario": "bash tools/testing/test-scenario.sh",
     "test:scenario:issue": "bash tools/testing/test-scenario-issue.sh",
     "test:scenario:issue-152": "bash tools/testing/test-scenario-issue-152.sh",
+    "test:scenario:issue-154": "bash tools/testing/test-scenario-issue-154.sh",
     "test:all:scoped": "npm run test:unit:scoped && npm run test:integration:scoped && npm run test:scenario:issue-152",
     "prepare": "husky",
     "openapi:build": "nx run openapi:build",
