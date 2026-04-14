@@ -8,6 +8,15 @@ is_gh_retryable_error() {
     'error connecting to api\.github\.com|connection reset|connection refused|timeout|timed out|temporary failure|tls handshake timeout|502 bad gateway|503 service unavailable|504 gateway timeout'
 }
 
+print_gh_retry_guidance() {
+  local error_text="$1"
+
+  if is_gh_retryable_error "$error_text"; then
+    printf "%s\n" \
+      "Hint: if this helper is running inside a sandboxed Codex/Claude session, rerun it with elevated permissions so gh can reach GitHub." >&2
+  fi
+}
+
 gh_retry() {
   local max_attempts="${GH_RETRY_MAX_ATTEMPTS:-5}"
   local base_delay_seconds="${GH_RETRY_BASE_DELAY_SECONDS:-1}"
@@ -31,6 +40,7 @@ gh_retry() {
 
     if [ "$attempt" -ge "$max_attempts" ]; then
       printf "%s\n" "$output" >&2
+      print_gh_retry_guidance "$output"
       return "$exit_code"
     fi
 

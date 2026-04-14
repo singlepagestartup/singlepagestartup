@@ -25,6 +25,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 - Keep failure handling and human-review gates equivalent to source behavior.
 - Quote shell-sensitive paths containing glob characters (for example `[[...url]]`) in command execution.
 - Prefer bash-compatible execution for helper flows that use heredoc/body-file patterns.
+- In sandboxed Codex sessions, proactively request elevated permissions for `.claude/helpers/get_issue_status.sh`, `.claude/helpers/update_issue_status.sh`, `.claude/helpers/gh_issue_comment.sh`, and other networked GitHub helper flows instead of waiting for `gh_retry` to exhaust on blocked network access.
 
 ## Inputs
 

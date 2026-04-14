@@ -19,6 +19,7 @@ Codex wrapper for `.claude/commands/github_status.md`.
 - When the source mentions Claude-specific slash invocation mechanics, execute the referenced workflow in the current Codex thread.
 - For delegated research tasks, use Codex subagents defined in `.codex/agents/*.toml`.
 - Do not rewrite process policy in this phase; preserve behavior parity with the source command.
+- In sandboxed Codex sessions, proactively request elevated permissions for `.claude/helpers/get_issue_status.sh` because the helper depends on live GitHub network access through `gh`.
 
 ## Inputs
 
