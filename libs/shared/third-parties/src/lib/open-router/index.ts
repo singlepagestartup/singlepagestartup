@@ -1,5 +1,13 @@
 import { OPEN_ROUTER_API_KEY } from "@sps/shared-utils";
-import type { IOpenRouterModel } from "./interface";
+import type {
+  IOpenRouterBilling,
+  IOpenRouterGeneratedImage,
+  IOpenRouterGenerateResult,
+  IOpenRouterGenerationError,
+  IOpenRouterGenerationSuccess,
+  IOpenRouterModel,
+  IOpenRouterUsage,
+} from "./interface";
 
 export type IOpenRouterMessageContent =
   | { type: "text"; text: string }
@@ -35,6 +43,14 @@ export type IOpenRouterResponseFormat =
         strict?: boolean;
       };
     };
+
+const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
+let cachedModels:
+  | {
+      expiresAt: number;
+      models: IOpenRouterModel[];
+    }
+  | undefined;
 
 export class Service {
   baseURL: string;
@@ -220,7 +236,7 @@ export class Service {
 
   private parseMessage(message: any): {
     text: string;
-    images?: { url?: string; b64_json?: string }[];
+    images?: IOpenRouterGeneratedImage[];
   } {
     let text = "";
     let images: { url?: string; b64_json?: string }[] | undefined;
@@ -261,6 +277,239 @@ export class Service {
     return { text, images };
   }
 
+  private toFiniteNumber(value: unknown): number | null {
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : null;
+    }
+
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return null;
+  }
+
+  private normalizeUsage(usage: any): IOpenRouterUsage | null {
+    if (!usage || typeof usage !== "object") {
+      return null;
+    }
+
+    const promptTokens = this.toFiniteNumber(usage.prompt_tokens) ?? 0;
+    const completionTokens = this.toFiniteNumber(usage.completion_tokens) ?? 0;
+    const totalTokens =
+      this.toFiniteNumber(usage.total_tokens) ??
+      promptTokens + completionTokens;
+
+    return {
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      total_tokens: totalTokens,
+      ...(this.toFiniteNumber(usage.cost) !== null && {
+        cost: this.toFiniteNumber(usage.cost) as number,
+      }),
+      ...(usage.cost_details &&
+        typeof usage.cost_details === "object" && {
+          cost_details: {
+            ...(this.toFiniteNumber(
+              usage.cost_details.upstream_inference_cost,
+            ) !== null && {
+              upstream_inference_cost: this.toFiniteNumber(
+                usage.cost_details.upstream_inference_cost,
+              ) as number,
+            }),
+          },
+        }),
+      ...(usage.prompt_tokens_details &&
+        typeof usage.prompt_tokens_details === "object" && {
+          prompt_tokens_details: {
+            ...(this.toFiniteNumber(
+              usage.prompt_tokens_details.cached_tokens,
+            ) !== null && {
+              cached_tokens: this.toFiniteNumber(
+                usage.prompt_tokens_details.cached_tokens,
+              ) as number,
+            }),
+            ...(this.toFiniteNumber(
+              usage.prompt_tokens_details.cache_write_tokens,
+            ) !== null && {
+              cache_write_tokens: this.toFiniteNumber(
+                usage.prompt_tokens_details.cache_write_tokens,
+              ) as number,
+            }),
+            ...(this.toFiniteNumber(
+              usage.prompt_tokens_details.audio_tokens,
+            ) !== null && {
+              audio_tokens: this.toFiniteNumber(
+                usage.prompt_tokens_details.audio_tokens,
+              ) as number,
+            }),
+          },
+        }),
+      ...(usage.completion_tokens_details &&
+        typeof usage.completion_tokens_details === "object" && {
+          completion_tokens_details: {
+            ...(this.toFiniteNumber(
+              usage.completion_tokens_details.reasoning_tokens,
+            ) !== null && {
+              reasoning_tokens: this.toFiniteNumber(
+                usage.completion_tokens_details.reasoning_tokens,
+              ) as number,
+            }),
+            ...(this.toFiniteNumber(
+              usage.completion_tokens_details.audio_tokens,
+            ) !== null && {
+              audio_tokens: this.toFiniteNumber(
+                usage.completion_tokens_details.audio_tokens,
+              ) as number,
+            }),
+          },
+        }),
+    };
+  }
+
+  private countInputImages(messages: IOpenRouterRequestMessage[]): number {
+    return messages.reduce((count, message) => {
+      if (typeof message.content === "string") {
+        return count;
+      }
+
+      return (
+        count +
+        message.content.filter((part) => part.type === "image_url").length
+      );
+    }, 0);
+  }
+
+  private async buildBilling(props: {
+    data: any;
+    requestModelId: string;
+    messages: IOpenRouterRequestMessage[];
+    images?: IOpenRouterGeneratedImage[];
+  }): Promise<IOpenRouterBilling> {
+    const usage = this.normalizeUsage(props.data?.usage);
+    const models = await this.getModels();
+    const model =
+      models.find((item) => item.id === props.requestModelId) ||
+      models.find((item) => item.canonical_slug === props.requestModelId) ||
+      null;
+    const pricing = model?.pricing || null;
+    const billablePromptTokens = Math.max(
+      (usage?.prompt_tokens || 0) -
+        (usage?.prompt_tokens_details?.cached_tokens || 0) -
+        (usage?.prompt_tokens_details?.cache_write_tokens || 0),
+      0,
+    );
+    const completionTokens = usage?.completion_tokens || 0;
+    const reasoningTokens =
+      usage?.completion_tokens_details?.reasoning_tokens || 0;
+    const cachedTokens = usage?.prompt_tokens_details?.cached_tokens || 0;
+    const cacheWriteTokens =
+      usage?.prompt_tokens_details?.cache_write_tokens || 0;
+    const inputImageCount = this.countInputImages(props.messages);
+    const outputImageCount = props.images?.length || 0;
+    const promptUsd =
+      billablePromptTokens * (this.toFiniteNumber(pricing?.prompt) || 0);
+    const completionUsd =
+      completionTokens * (this.toFiniteNumber(pricing?.completion) || 0);
+    const reasoningUsd =
+      reasoningTokens * (this.toFiniteNumber(pricing?.internal_reasoning) || 0);
+    const cacheReadUsd =
+      cachedTokens * (this.toFiniteNumber(pricing?.input_cache_read) || 0);
+    const cacheWriteUsd =
+      cacheWriteTokens * (this.toFiniteNumber(pricing?.input_cache_write) || 0);
+    const requestUsd = this.toFiniteNumber(pricing?.request) || 0;
+    let imageUsd = inputImageCount * (this.toFiniteNumber(pricing?.image) || 0);
+    const webSearchUsd = 0;
+    let totalUsd =
+      promptUsd +
+      completionUsd +
+      requestUsd +
+      imageUsd +
+      webSearchUsd +
+      reasoningUsd +
+      cacheReadUsd +
+      cacheWriteUsd;
+    const usageCostCredits = usage?.cost ?? null;
+    const upstreamInferenceCostCredits =
+      usage?.cost_details?.upstream_inference_cost ?? null;
+    const providerReportedTotalUsd =
+      upstreamInferenceCostCredits ?? usageCostCredits ?? 0;
+
+    if (totalUsd <= 0 && providerReportedTotalUsd > 0) {
+      if (outputImageCount > 0) {
+        imageUsd = providerReportedTotalUsd;
+      }
+
+      totalUsd = providerReportedTotalUsd;
+    }
+
+    return {
+      requestModelId: props.requestModelId,
+      responseModelId:
+        typeof props.data?.model === "string"
+          ? props.data.model
+          : props.requestModelId,
+      usage,
+      pricing,
+      usageCostCredits,
+      upstreamInferenceCostCredits,
+      breakdown: {
+        promptUsd,
+        completionUsd,
+        requestUsd,
+        imageUsd,
+        webSearchUsd,
+        reasoningUsd,
+        cacheReadUsd,
+        cacheWriteUsd,
+        totalUsd,
+        inputImageCount,
+        outputImageCount,
+      },
+      totalUsd,
+    };
+  }
+
+  private async buildSuccessResult(props: {
+    data: any;
+    requestModelId: string;
+    messages: IOpenRouterRequestMessage[];
+  }): Promise<IOpenRouterGenerationSuccess> {
+    const message = props.data?.choices?.[0]?.message;
+    const parsedMessage = this.parseMessage(message || {});
+    const billing = await this.buildBilling({
+      data: props.data,
+      requestModelId: props.requestModelId,
+      messages: props.messages,
+      images: parsedMessage.images,
+    });
+
+    return {
+      ...parsedMessage,
+      billing,
+    };
+  }
+
+  private async buildErrorResult(props: {
+    data: any;
+    requestModelId: string;
+    messages: IOpenRouterRequestMessage[];
+  }): Promise<IOpenRouterGenerationError> {
+    const billing = props.data?.usage
+      ? await this.buildBilling({
+          data: props.data,
+          requestModelId: props.requestModelId,
+          messages: props.messages,
+        })
+      : null;
+
+    return {
+      error: props.data?.error || props.data,
+      billing,
+    };
+  }
+
   async generate(props: {
     context: IOpenRouterRequestMessage[];
     model: string;
@@ -270,15 +519,7 @@ export class Service {
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
     stripNonTextOnRetry?: boolean;
-  }): Promise<
-    | {
-        text: string;
-        images?: { url?: string; b64_json?: string }[];
-      }
-    | {
-        error: any;
-      }
-  > {
+  }): Promise<IOpenRouterGenerateResult> {
     const hasNonTextContent = props.context.some(
       (message) => typeof message.content !== "string",
     );
@@ -322,19 +563,39 @@ export class Service {
             "❌ OpenRouter Retry Error:",
             JSON.stringify(retryData.error, null, 2),
           );
-          return retryData;
+          return this.buildErrorResult({
+            data: retryData,
+            requestModelId: props.model,
+            messages: strippedMessages,
+          });
         }
 
-        return this.parseMessage(retryData.choices[0].message);
+        return this.buildSuccessResult({
+          data: retryData,
+          requestModelId: props.model,
+          messages: strippedMessages,
+        });
       }
 
-      return data;
+      return this.buildErrorResult({
+        data,
+        requestModelId: props.model,
+        messages: normalizedMessages,
+      });
     }
 
-    return this.parseMessage(data.choices[0].message);
+    return this.buildSuccessResult({
+      data,
+      requestModelId: props.model,
+      messages: normalizedMessages,
+    });
   }
 
   async getModels(): Promise<IOpenRouterModel[]> {
+    if (cachedModels && cachedModels.expiresAt > Date.now()) {
+      return cachedModels.models;
+    }
+
     const response = await fetch(`${this.baseURL}/models`, {
       method: "GET",
       headers: {
@@ -344,7 +605,13 @@ export class Service {
     });
 
     const data = await response.json();
+    const models = Array.isArray(data.data) ? data.data : [];
 
-    return data.data;
+    cachedModels = {
+      expiresAt: Date.now() + MODEL_CACHE_TTL_MS,
+      models,
+    };
+
+    return models;
   }
 }

@@ -7,3 +7,11 @@ export {
   type IOpenRouterMessageContent,
   type IOpenRouterRequestMessage,
 } from "./open-router";
+export type {
+  IOpenRouterBilling,
+  IOpenRouterGenerateResult,
+  IOpenRouterGenerationError,
+  IOpenRouterGenerationSuccess,
+  IOpenRouterGeneratedImage,
+  IOpenRouterUsage,
+} from "./open-router/interface";

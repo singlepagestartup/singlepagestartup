@@ -11,10 +11,18 @@ import { api } from "@sps/rbac/models/subject/sdk/server";
 import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
 import {
   OpenRouter,
+  type IOpenRouterGenerateResult,
+  type IOpenRouterGenerationSuccess,
   type IOpenRouterRequestMessage,
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import * as jwt from "hono/jwt";
+import {
+  OPEN_ROUTER_PRECHARGE_TOKENS,
+  summarizeOpenRouterBilling,
+  type IOpenRouterBillingLedgerEntry,
+  type TOpenRouterBillingPurpose,
+} from "../../../../../../../../service/singlepage/open-router-billing";
 
 type TRequestTask =
   | "qa"
@@ -320,7 +328,122 @@ export class Handler {
     this.service = service;
   }
 
+  private stringifyError(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+
+  private async generateWithBillingLedger(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    purpose: TOpenRouterBillingPurpose;
+    openRouter: OpenRouter;
+    model: string;
+    context: IOpenRouterRequestMessage[];
+    max_tokens?: number;
+    reasoning?: boolean;
+    responseFormat?:
+      | {
+          type: "json_object";
+        }
+      | {
+          type: "json_schema";
+          json_schema: {
+            name: string;
+            schema: Record<string, unknown>;
+            strict?: boolean;
+          };
+        };
+    temperature?: number;
+    stripNonTextOnRetry?: boolean;
+  }): Promise<IOpenRouterGenerateResult> {
+    const result = await props.openRouter.generate({
+      model: props.model,
+      context: props.context,
+      max_tokens: props.max_tokens,
+      reasoning: props.reasoning,
+      responseFormat: props.responseFormat,
+      temperature: props.temperature,
+      stripNonTextOnRetry: props.stripNonTextOnRetry,
+    });
+
+    props.billingLedger.push({
+      purpose: props.purpose,
+      modelId: props.model,
+      status: "error" in result ? "error" : "success",
+      billing: result.billing,
+      ...("error" in result
+        ? { error: this.stringifyError(result.error) }
+        : {}),
+    });
+
+    return result;
+  }
+
+  private setLatestBillingLedgerFallbackReason(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    fallbackReason: string;
+  }) {
+    const latestEntry = props.billingLedger[props.billingLedger.length - 1];
+
+    if (!latestEntry) {
+      return;
+    }
+
+    latestEntry.fallbackReason = props.fallbackReason;
+  }
+
+  private async settleOpenRouterBilling(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    selectedModelId: string | null;
+    route: string;
+    method: string;
+    authorization?: string;
+  }) {
+    const summary = summarizeOpenRouterBilling({
+      calls: props.billingLedger,
+      selectedModelId: props.selectedModelId,
+      prechargeTokens: OPEN_ROUTER_PRECHARGE_TOKENS,
+    });
+    const settlement = await this.service.billRouteSettle({
+      permission: {
+        route: props.route,
+        method: props.method,
+        type: "HTTP",
+      },
+      authorization: {
+        value: props.authorization,
+      },
+      exactAmount: String(summary.exactTokens),
+    });
+
+    return {
+      summary,
+      settlement,
+    };
+  }
+
   async execute(c: Context, next: any): Promise<Response> {
+    const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
+    let selectedModelIdForBilling: string | null = null;
+    let billingSettled = false;
+    const requestRoute = c.req.path.toLowerCase();
+    const requestMethod = c.req.method;
+    const authorizationHeader = c.req.header("Authorization");
+    const requestAuthorization = authorizationHeader?.startsWith("Bearer ")
+      ? authorizationHeader.replace("Bearer ", "")
+      : authorizationHeader;
+
     try {
       if (!RBAC_JWT_SECRET) {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
@@ -735,6 +858,8 @@ export class Handler {
         },
       });
 
+      await openRouter.getModels();
+
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
         id: replyBySubject.id,
         socialModuleProfileId: replyBySocialModuleProfile.id,
@@ -754,6 +879,7 @@ export class Handler {
         this.detectInputModalitiesFromContext(context);
 
       const rawRequestClassification = await this.classifyRequest({
+        billingLedger,
         openRouter,
         requestText: socialModuleMessage.description,
         requiredInputModalitiesList,
@@ -805,6 +931,7 @@ export class Handler {
       }
 
       const modelSelection = await this.selectModelCandidatesForRequest({
+        billingLedger,
         openRouter,
         requestText: socialModuleMessage.description,
         requestClassification,
@@ -840,12 +967,7 @@ export class Handler {
       ];
 
       let selectModelForRequest: string | null = null;
-      let generationResult:
-        | {
-            text: string;
-            images?: { url?: string; b64_json?: string }[];
-          }
-        | undefined;
+      let generationResult: IOpenRouterGenerationSuccess | undefined;
       const fallbackReasons: string[] = [];
 
       for (const modelCandidateId of modelSelection.orderedCandidateIds) {
@@ -868,7 +990,10 @@ export class Handler {
           },
         });
 
-        const candidateResult = await openRouter.generate({
+        const candidateResult = await this.generateWithBillingLedger({
+          billingLedger,
+          purpose: "generation",
+          openRouter,
           model: modelCandidateId,
           context: generationContext,
           stripNonTextOnRetry: false,
@@ -877,6 +1002,10 @@ export class Handler {
         if ("error" in candidateResult) {
           const reason = `model=${modelCandidateId}: generation error`;
           fallbackReasons.push(reason);
+          this.setLatestBillingLedgerFallbackReason({
+            billingLedger,
+            fallbackReason: reason,
+          });
           console.log("react-by-openrouter/fallback", reason);
           continue;
         }
@@ -889,20 +1018,43 @@ export class Handler {
         if (validationError) {
           const reason = `model=${modelCandidateId}: ${validationError}`;
           fallbackReasons.push(reason);
+          this.setLatestBillingLedgerFallbackReason({
+            billingLedger,
+            fallbackReason: reason,
+          });
           console.log("react-by-openrouter/fallback", reason);
           continue;
         }
 
         selectModelForRequest = modelCandidateId;
+        selectedModelIdForBilling = modelCandidateId;
         generationResult = candidateResult;
         break;
       }
 
       if (!selectModelForRequest || !generationResult) {
+        selectedModelIdForBilling = modelSelection.selectedModelId;
+        await this.settleOpenRouterBilling({
+          billingLedger,
+          selectedModelId: selectedModelIdForBilling,
+          route: requestRoute,
+          method: requestMethod,
+          authorization: requestAuthorization,
+        });
+        billingSettled = true;
         throw new Error(
           "No valid model response received. " + fallbackReasons.join(" | "),
         );
       }
+
+      const billingSettlement = await this.settleOpenRouterBilling({
+        billingLedger,
+        selectedModelId: selectModelForRequest,
+        route: requestRoute,
+        method: requestMethod,
+        authorization: requestAuthorization,
+      });
+      billingSettled = true;
 
       let generatedMessageDescription = "";
       const replyMessageData: any = {};
@@ -936,6 +1088,14 @@ export class Handler {
       generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
 
       replyMessageData.description = generatedMessageDescription;
+      replyMessageData.metadata = {
+        openRouter: {
+          billing: {
+            ...billingSettlement.summary,
+            settlement: billingSettlement.settlement?.settlement || null,
+          },
+        },
+      };
 
       if (replyMessageData.description == "") {
         throw new Error("Generated message is empty");
@@ -977,6 +1137,25 @@ export class Handler {
         },
       });
     } catch (error: any) {
+      if (!billingSettled && requestAuthorization) {
+        try {
+          await this.settleOpenRouterBilling({
+            billingLedger,
+            selectedModelId: selectedModelIdForBilling,
+            route: requestRoute,
+            method: requestMethod,
+            authorization: requestAuthorization,
+          });
+          billingSettled = true;
+        } catch (settlementError) {
+          error = new Error(
+            `OpenRouter settlement failed after request error: ${this.stringifyError(
+              settlementError,
+            )}. Original error: ${this.stringifyError(error)}`,
+          );
+        }
+      }
+
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
@@ -1225,6 +1404,7 @@ export class Handler {
   }
 
   private async selectModelCandidatesForRequest(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
     requestClassification: IRequestClassification;
@@ -1243,7 +1423,10 @@ export class Handler {
     ).map((candidate) => candidate.id);
 
     for (const selectorModelId of classifierModelIds) {
-      const selectorResponse = await props.openRouter.generate({
+      const selectorResponse = await this.generateWithBillingLedger({
+        billingLedger: props.billingLedger,
+        purpose: "model_selection",
+        openRouter: props.openRouter,
         model: selectorModelId,
         reasoning: false,
         max_tokens: 300,
@@ -1297,6 +1480,7 @@ No markdown. No extra keys.`,
       }
 
       const selectedModelId = await this.parseAndNormalizeModelSelection({
+        billingLedger: props.billingLedger,
         openRouter: props.openRouter,
         selectorModelId,
         requestText: props.requestText,
@@ -1312,6 +1496,11 @@ No markdown. No extra keys.`,
           "react-by-openrouter/model-selector-retry",
           `model=${selectorModelId}: invalid json or invalid selected_model_id`,
         );
+        this.setLatestBillingLedgerFallbackReason({
+          billingLedger: props.billingLedger,
+          fallbackReason:
+            "invalid json or invalid selected_model_id; falling back to the next selector model",
+        });
         continue;
       }
 
@@ -1333,6 +1522,7 @@ No markdown. No extra keys.`,
   }
 
   private async parseAndNormalizeModelSelection(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     selectorModelId: string;
     requestText: string;
@@ -1379,7 +1569,10 @@ No markdown. No extra keys.`,
       return directSelectedModelId;
     }
 
-    const repairResponse = await props.openRouter.generate({
+    const repairResponse = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "model_selection_repair",
+      openRouter: props.openRouter,
       model: props.selectorModelId,
       reasoning: false,
       max_tokens: 300,
@@ -1427,6 +1620,7 @@ No markdown. No extra keys.`,
   }
 
   private async classifyRequest(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
@@ -1443,7 +1637,10 @@ No markdown. No extra keys.`,
     ];
 
     for (const classifierModel of classifierModels) {
-      const classificationResponse = await props.openRouter.generate({
+      const classificationResponse = await this.generateWithBillingLedger({
+        billingLedger: props.billingLedger,
+        purpose: "classification",
+        openRouter: props.openRouter,
         model: classifierModel,
         reasoning: false,
         max_tokens: 600,
@@ -1485,6 +1682,7 @@ No markdown. No explanation. No extra keys.`,
 
       const normalizedClassification =
         await this.parseAndNormalizeClassification({
+          billingLedger: props.billingLedger,
           openRouter: props.openRouter,
           classifierModel,
           fallbackClassifierModels: classifierModels.filter(
@@ -1500,6 +1698,11 @@ No markdown. No explanation. No extra keys.`,
           "react-by-openrouter/classifier-fallback",
           `model=${classifierModel}: invalid json`,
         );
+        this.setLatestBillingLedgerFallbackReason({
+          billingLedger: props.billingLedger,
+          fallbackReason:
+            "invalid classification json; falling back to the next classifier model",
+        });
         continue;
       }
 
@@ -1507,7 +1710,10 @@ No markdown. No explanation. No extra keys.`,
     }
 
     for (const classifierModel of fallbackClassifierModels) {
-      const classificationResponse = await props.openRouter.generate({
+      const classificationResponse = await this.generateWithBillingLedger({
+        billingLedger: props.billingLedger,
+        purpose: "classification",
+        openRouter: props.openRouter,
         model: classifierModel,
         reasoning: false,
         max_tokens: 600,
@@ -1548,6 +1754,7 @@ No markdown. No explanation.`,
 
       const normalizedClassification =
         await this.parseAndNormalizeClassification({
+          billingLedger: props.billingLedger,
           openRouter: props.openRouter,
           classifierModel,
           fallbackClassifierModels: allClassifierModels.filter(
@@ -1563,6 +1770,11 @@ No markdown. No explanation.`,
           "react-by-openrouter/classifier-fallback",
           `model=${classifierModel}: fallback invalid json`,
         );
+        this.setLatestBillingLedgerFallbackReason({
+          billingLedger: props.billingLedger,
+          fallbackReason:
+            "invalid fallback classification json; falling back to another classifier",
+        });
         continue;
       }
 
@@ -1692,6 +1904,7 @@ No markdown. No explanation.`,
   }
 
   private async parseAndNormalizeClassification(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     classifierModel: string;
     fallbackClassifierModels?: string[];
@@ -1712,7 +1925,10 @@ No markdown. No explanation.`,
     const repairModelId =
       props.fallbackClassifierModels?.[0] ?? props.classifierModel;
 
-    const repairResponse = await props.openRouter.generate({
+    const repairResponse = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "classification_repair",
+      openRouter: props.openRouter,
       model: repairModelId,
       reasoning: false,
       max_tokens: 300,
