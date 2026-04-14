@@ -8,7 +8,6 @@ import { IComponentProps } from "./interface";
 import { Component as Layout } from "../../layout";
 import { Component as Page } from "../../page";
 import { Component as Widget } from "../";
-import { Component as AgentWidget } from "@sps/agent/models/widget/frontend/component";
 import { Component as AnalyticWidget } from "@sps/analytic/models/widget/frontend/component";
 import { Component as BillingWidget } from "@sps/billing/models/widget/frontend/component";
 import { Component as BlogWidget } from "@sps/blog/models/widget/frontend/component";
@@ -37,8 +36,6 @@ export function Component(props: IComponentProps) {
     };
 
     switch (data.externalModule) {
-      case "agent":
-        return <AgentWidget {...commonProps} />;
       case "analytic":
         return <AnalyticWidget {...commonProps} />;
       case "billing":

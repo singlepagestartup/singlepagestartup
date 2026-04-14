@@ -84,6 +84,7 @@ describe("Given: order update-default action component", () => {
   it("When: update button is submitted Then: mutation receives id, orderId, and order lines", () => {
     render(
       <Component
+        isServer={false}
         variant="ecommerce-module-order-update-default"
         data={{ id: "subject-1" } as any}
         order={{ id: "order-1" } as any}

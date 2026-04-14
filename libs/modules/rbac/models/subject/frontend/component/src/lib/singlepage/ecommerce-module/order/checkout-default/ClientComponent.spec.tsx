@@ -98,8 +98,10 @@ describe("Given: order checkout-default action component", () => {
   it("When: checkout is submitted Then: checkout payload is sent and redirect is applied", async () => {
     render(
       <Component
+        isServer={false}
         variant="ecommerce-module-order-checkout-default"
         data={{ id: "subject-1" } as any}
+        product={{ id: "product-1" } as any}
         order={{ id: "order-1" } as any}
         language="en"
       />,

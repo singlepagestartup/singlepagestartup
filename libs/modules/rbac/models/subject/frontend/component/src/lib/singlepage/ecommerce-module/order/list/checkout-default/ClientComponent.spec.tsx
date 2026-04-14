@@ -155,6 +155,7 @@ describe("Given: order list checkout component", () => {
 
     render(
       <Component
+        isServer={false}
         variant="ecommerce-module-order-list-checkout-default"
         data={{ id: "subject-1" } as any}
         language="en"
@@ -187,6 +188,7 @@ describe("Given: order list checkout component", () => {
 
     render(
       <Component
+        isServer={false}
         variant="ecommerce-module-order-list-checkout-default"
         data={{ id: "subject-1" } as any}
         language="en"

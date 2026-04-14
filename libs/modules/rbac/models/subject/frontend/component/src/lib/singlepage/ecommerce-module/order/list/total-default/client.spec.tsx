@@ -32,8 +32,10 @@ describe("Given: order list total wrapper", () => {
 
     const { container } = render(
       <Component
+        isServer={false}
         data={{ id: "subject-1" } as any}
         variant="ecommerce-module-order-list-total-default"
+        language="en"
       />,
     );
 
@@ -47,8 +49,10 @@ describe("Given: order list total wrapper", () => {
 
     render(
       <Component
+        isServer={false}
         data={{ id: "subject-1" } as any}
         variant="ecommerce-module-order-list-total-default"
+        language="en"
       >
         {({ data }: any) => <div data-testid="totals">{data.length}</div>}
       </Component>,

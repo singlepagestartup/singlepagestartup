@@ -73,6 +73,7 @@ describe("Given: order delete-default action component", () => {
   it("When: delete button is submitted Then: mutation receives subject and order identifiers", () => {
     render(
       <Component
+        isServer={false}
         variant="ecommerce-module-order-delete-default"
         data={{ id: "subject-1" } as any}
         order={{ id: "order-1" } as any}
