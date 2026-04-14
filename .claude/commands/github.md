@@ -14,10 +14,11 @@ description: Manage GitHub Project issues - create, update, comment, and follow 
 
 **Only `GITHUB_PROJECT_NUMBER` is required in `.claude/.env`.** All other IDs are resolved dynamically by name.
 
-At the start of every session, load config and fetch the project structure:
+At the start of every session, load config and fetch the project structure. Run this inside `bash` when the active shell might be `zsh`, because the helper is sourced and later commands rely on the exported variables remaining in the same shell:
 
 ````bash
 # Load project config from .env using helper
+bash -lc '
 source .claude/helpers/load_config.sh
 
 # Optional repo context
@@ -84,7 +85,10 @@ get_status_id() {
 
 # Example:
 READY_FOR_DEV_ID=$(get_status_id "Ready for Dev")
+'
 ````
+
+If `gh` reports `error connecting to api.github.com` in a sandboxed agent, rerun the same `bash -lc` block with network escalation. Do not replace the helper flow with ad hoc commands.
 
 If `GITHUB_PROJECT_NUMBER` is empty, ask the user to fill in `.claude/.env`:
 

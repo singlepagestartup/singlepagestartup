@@ -20,6 +20,8 @@ Codex wrapper for `.claude/commands/github.md`.
 - When the source mentions Claude-specific slash invocation mechanics, execute the referenced workflow in the current Codex thread.
 - For delegated research tasks, use Codex subagents defined in `.codex/agents/*.toml`.
 - Do not rewrite process policy in this phase; preserve behavior parity with the source command.
+- Execute any sequence that sources `.claude/helpers/load_config.sh` inside a single `bash -lc` block so `.claude` GitHub helpers work reliably even when the repo shell defaults to `zsh`.
+- If `gh` reports `error connecting to api.github.com`, rerun the same helper block with escalated network access rather than bypassing `.claude` helpers.
 
 ## Inputs
 

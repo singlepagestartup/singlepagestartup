@@ -56,10 +56,14 @@ You create a new development issue with local documentation and GitHub issue cre
 
 3. **Create GitHub issue** (ask user to confirm first):
 
-   - Load project config once before all `gh` project operations:
+   - Run the GitHub/project sequence inside a single `bash` shell. The repo may default to `zsh`, but this workflow sources `.claude/helpers/load_config.sh` and must keep the exported config in the same shell context:
      ```bash
+     bash -lc '
      source .claude/helpers/load_config.sh
+     # gh issue/project commands go here
+     '
      ```
+   - If `gh` fails with `error connecting to api.github.com` in a sandboxed agent, rerun the same `bash -lc` block with network escalation instead of changing the workflow steps.
    - Create issue via `gh issue create --title "..." --body-file ISSUE_BODY_FILE --label "size:[size]"`:
      ```bash
      ISSUE_BODY_FILE="$(mktemp)"
