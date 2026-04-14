@@ -51,6 +51,7 @@ import {
 import {
   Service as BillRoute,
   IExecuteProps as IBillRouteProps,
+  ISettleProps as IBillRouteSettleProps,
 } from "./bill-route";
 import {
   Service as EcommerceOrderProceed,
@@ -272,6 +273,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
   async billRoute(props: IBillRouteProps) {
     return this.billRouteService.execute(props);
+  }
+
+  async billRouteSettle(props: IBillRouteSettleProps) {
+    return this.billRouteService.settle(props);
   }
 
   async ecommerceOrderProceed(props: IEcommerceOrderProceedProps) {
