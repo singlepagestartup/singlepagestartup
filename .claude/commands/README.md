@@ -34,6 +34,7 @@ Supporting commands used by the main workflow:
 | -------------------------- | -------------------------------------------------- |
 | `utilities/commit.md`      | Create git commits (used by implement phase)       |
 | `utilities/describe_pr.md` | Generate PR descriptions (used by implement phase) |
+| `utilities/post_commit_retro.md` | Analyze workflow friction after a commit/session and propose reusable improvements |
 
 ## Special Purpose Commands
 

@@ -21,7 +21,7 @@ This directory adds a Codex-native workflow in parallel with the existing `.clau
 ## Skills
 
 - Core: `core-next`, `core-00-create`, `core-10-research`, `core-20-plan`, `core-30-implement`
-- Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`
+- Utility: `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`, `post-commit-retro`
 - Legacy aliases: `ralph-research`, `ralph-plan`, `ralph-impl`, `oneshot`, `oneshot-plan`
 
 ## Subagents
