@@ -33,3 +33,4 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 ## Notes
 
 Plan output must remain compatible with downstream `core-30-implement`.
+Update the persistent process artifact with planning incidents and outcomes exactly as the source command describes.

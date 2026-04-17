@@ -28,6 +28,9 @@ fi
 1. **Resolve issue and read ticket file**:
 
    - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
+   - If it exists, read it completely before starting research
+   - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
    - Check if ticket file exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-{NUMBER}.md`
    - If no ticket file exists, fetch and format issue from GitHub:
      ```bash
@@ -55,6 +58,11 @@ fi
    ```bash
    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research in Progress"
    ```
+
+   - Update the process file:
+     - `current_phase: research`
+     - `Research: in_progress`
+     - `Next step: complete research and move to Research in Review`
 
 3. **Analyze and decompose the research question**:
 
@@ -100,6 +108,7 @@ fi
    - Include specific file paths and line numbers for reference
    - Highlight patterns, connections, and architectural decisions
    - Answer the research questions with concrete evidence
+   - If the research phase encounters substantive friction (for example wrong assumptions, misleading historical context, helper/tooling friction, or repeated file-discovery dead ends), record it in the process file incident log using `.claude/references/process-artifact-contract.md`
 
 7. **Gather metadata and document findings**:
 
@@ -197,9 +206,15 @@ fi
    .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research in Review"
    ```
 
+   - Update the process file:
+     - `Research: completed`
+     - phase summary/outputs referencing the research artifact path
+     - `Next step: human review, then core/20-plan`
+
 ## Exit
 
 - [ ] Research documented at `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md`
+- [ ] Process file updated at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
 - [ ] Issue commented with research summary and document link
 - [ ] Status updated to "Research in Review" in GitHub Project
 
@@ -229,6 +244,7 @@ View the issue: [ISSUE_URL]
 - The thoughts/ directory provides historical context to supplement live findings
 - Focus on finding concrete file paths and line numbers for developer reference
 - Research documents should be self-contained with all necessary context
+- Process file updates should capture workflow friction and reusable fixes, not duplicate the full research narrative
 - **CRITICAL**: You and all sub-agents are documentarians, not evaluators — document what IS, not what SHOULD BE
 - **NO RECOMMENDATIONS**: Only describe the current state of the codebase
 - **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks

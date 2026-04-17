@@ -26,6 +26,8 @@ You create a new development issue with local documentation and GitHub issue cre
    - Run `gh repo view --json name -q '.name'` to get REPO_NAME
    - Determine a TEMP_IDENTIFIER (kebab-case from title, e.g., `auth-login-fix`)
    - Save to `thoughts/shared/tickets/REPO_NAME/ISSUE-{TEMP_IDENTIFIER}.md`
+   - Create a matching temporary process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{TEMP_IDENTIFIER}.md`
+   - Follow the structure in `.claude/references/process-artifact-contract.md`
    - Format: Use the standard ticket structure below
 
    ```markdown
@@ -82,15 +84,25 @@ You create a new development issue with local documentation and GitHub issue cre
      .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
      ```
    - Update local ticket file with GitHub URL and issue number
+   - Update the process file with:
+     - `issue_number`;
+     - `current_phase: create`;
+     - `Create: completed`;
+     - `Research: not_started`;
+     - outputs/notes for the created ticket + GitHub issue;
+     - any substantive incidents encountered during creation (for example network escalation, helper failure, or project-status mismatch) using the process artifact contract
    - Rename the local ticket file from `ISSUE-{TEMP_IDENTIFIER}.md` to `ISSUE-{ISSUE_NUMBER}.md` (e.g., `ISSUE-145.md`)
+   - Rename the process file from `ISSUE-{TEMP_IDENTIFIER}.md` to `ISSUE-{ISSUE_NUMBER}.md`
 
 4. **Update status to "Research Needed"**:
 
    - Run `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research Needed"`
    - This signals the issue is ready for the `research` phase
+   - Update the process file `Next step` to indicate `core/10-research`
 
 ## Exit
 
 - [ ] Local ticket file created at `thoughts/shared/tickets/REPO_NAME/ISSUE-{ISSUE_NUMBER}.md`
+- [ ] Process file created at `thoughts/shared/processes/REPO_NAME/ISSUE-{ISSUE_NUMBER}.md`
 - [ ] GitHub issue created (or user declined)
 - [ ] Status updated to "Research Needed" in GitHub Project

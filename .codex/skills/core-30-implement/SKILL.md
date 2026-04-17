@@ -30,3 +30,4 @@ Primary workflow skill. Canonical source: `.claude/commands/core/30-implement.md
 ## Notes
 
 Respect in-progress resume behavior and incident log handling exactly as source command describes.
+Mirror implementation incidents into the persistent process artifact exactly as the source command describes.

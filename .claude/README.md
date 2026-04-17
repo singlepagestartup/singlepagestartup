@@ -31,6 +31,7 @@ This directory contains Claude Code agents, commands (skills), and local configu
 │   ├── utilities/
 │   │   ├── commit.md
 │   │   └── describe_pr.md
+│   │   └── post_commit_retro.md
 │   └── ...
 ├── .env          # ⚠ Gitignored — per-project config (you must create this)
 ├── settings.local.json  # Local Claude Code settings
@@ -166,6 +167,14 @@ These gates are now required for all tasks (task-agnostic):
 
 `ralph_*` commands must keep behavior parity with `core/*` (single source of truth).
 
+## Workflow Improvement Utility
+
+The repo also includes a shared retrospective utility for improving the AI workflow itself:
+
+- `.claude/commands/utilities/post_commit_retro.md`
+
+Use it after a commit or a slow/brittle session when you want the agent to inspect the recent context and propose improvements to shared `.claude` / `.codex` workflows, helpers, and prompt contracts.
+
 ---
 
 ## Development Process
@@ -188,6 +197,9 @@ thoughts/
 │   ├── tickets/
 │   │   └── REPO_NAME/       ← namespaced by repo (e.g. singlepagestartup/)
 │   │       └── ISSUE-42.md
+│   ├── processes/
+│   │   └── REPO_NAME/
+│   │       └── ISSUE-42.md
 │   ├── research/
 │   │   └── REPO_NAME/       ← namespaced by repo
 │   │       └── ISSUE-42.md
@@ -201,6 +213,8 @@ thoughts/
 ```
 
 `REPO_NAME` is the short repository name derived automatically at runtime via `gh repo view --json name -q '.name'` (e.g. `singlepagestartup`). This namespacing keeps ticket snapshots organised if the `thoughts/` directory is ever shared across multiple repositories.
+
+`processes/` stores the persistent cross-phase execution log for each issue: workflow friction, incidents, reusable fixes, and phase summaries. Unlike the temporary implementation progress file in `handoffs/`, the process file is intended to survive the full issue lifecycle.
 
 ---
 

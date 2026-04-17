@@ -33,3 +33,4 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 ## Notes
 
 Use this as workflow entrypoint for newly created issues before research.
+Maintain the persistent process artifact exactly as the source command describes.

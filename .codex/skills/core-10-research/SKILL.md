@@ -30,3 +30,4 @@ Primary workflow skill. Canonical source: `.claude/commands/core/10-research.md`
 ## Notes
 
 Research output must remain compatible with downstream `core-20-plan`.
+Update the persistent process artifact with research-phase incidents and outcomes exactly as the source command describes.
