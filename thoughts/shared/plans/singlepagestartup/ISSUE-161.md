@@ -4,6 +4,8 @@
 
 Adopt a shared admin-v2 exact model-route matcher based on parsed route segments, use it to fix the current Website Builder `button`/`buttons-array` collision, and audit other admin-v2 model routes for the same prefix-overlap failure mode so confirmed sibling collisions are fixed with the same implementation pattern.
 
+Implementation scope update on 2026-04-19: manual review expanded this from confirmed collision pairs to standardizing admin-v2 route gating across all module/model wrappers so every admin-v2 overview and sidebar route check uses the same shared matcher contract.
+
 ## Current State Analysis
 
 Website Builder admin-v2 renders every model-specific table wrapper for module routes and relies on each wrapper to decide whether it should display. The `button` and `buttons-array` wrappers currently use overlapping `startsWith` checks, so the shorter `button` prefix also matches `/admin/website-builder/buttons-array`.
@@ -16,7 +18,7 @@ This is not isolated to Website Builder. A repo scan of admin-v2 wrappers confir
 
 Opening `/admin/website-builder/buttons-array` renders only the `Buttons Array` heading, `buttons-array` admin-v2 table, and `buttons-array` sidebar item as active. Opening `/admin/website-builder/button` continues to render only the `Button` heading, `button` admin-v2 table, and `button` sidebar item as active. The same exact-match behavior is applied to other confirmed prefix-collision pairs discovered in the audit, starting with `ecommerce` and `social` `attribute`/`attribute-key`.
 
-After implementation, admin-v2 model wrappers should no longer rely on raw `startsWith("/module/model")` checks when a model slug can be a prefix of another slug. Instead, they should use a shared exact model-route matcher built on parsed admin route segments so future prefix-overlap bugs are prevented by default.
+After implementation, admin-v2 module and model wrappers should no longer rely on raw `startsWith(...)` checks for route activation. Instead, they should use a shared matcher built on parsed admin route segments so prefix-overlap bugs are prevented and route matching stays consistent across the full admin-v2 surface.
 
 ### Key Discoveries
 
@@ -30,15 +32,14 @@ After implementation, admin-v2 model wrappers should no longer rely on raw `star
 ## What We're NOT Doing
 
 - No backend or SDK route changes for Website Builder, Ecommerce, or Social models
-- No blanket migration of every admin-v2 wrapper in the repository when there is no confirmed prefix-overlap risk
 - No redesign of admin-v2 cards, forms, or table presentation
 - No changes to model slugs, API paths, or sidebar information architecture beyond fixing exact route selection and active-state behavior
 
 ## Implementation Approach
 
-Promote route matching out of ad-hoc `startsWith` checks and into a shared exact matcher built on the existing admin-route parser in `libs/shared/frontend/client/utils`. The matcher should compare the normalized admin route's `module` and `model` segments directly, which solves the current Website Builder bug and future-proofs other modules against the same prefix-overlap class of error.
+Promote route matching out of ad-hoc `startsWith` checks and into a shared matcher built on the existing admin-route parser in `libs/shared/frontend/client/utils`. The matcher should support both module-level checks and exact module/model checks from the same entry point so overview containers, sidebar module groups, and model-specific wrappers all use the same contract.
 
-Run a targeted audit of admin-v2 overview and sidebar wrappers that still use raw model-prefix `startsWith` matching. The current audit has already confirmed Website Builder `button`/`buttons-array` and Ecommerce/Social `attribute`/`attribute-key` as affected pairs, so those should be included in implementation scope rather than deferred. Use shared tests for the matcher itself plus focused component regression coverage to prove the fix works across both the original bug and at least one additional collision family.
+Run a repository-wide admin-v2 overview/sidebar audit for raw `startsWith` route gating and migrate every matching module/model wrapper to the shared matcher, including but not limited to the originally confirmed Website Builder `button`/`buttons-array` and Ecommerce/Social `attribute`/`attribute-key` pairs. Use shared tests for the matcher itself plus focused component regression coverage to prove the fix works for both the original collision and the broader standardization pass.
 
 ## Phase 1: Build Shared Exact Model-Route Matching And Lock In The Audit Scope
 
@@ -55,13 +56,13 @@ Extend the existing shared admin-route utilities with an exact model matcher and
 - `libs/shared/frontend/client/utils/src/lib/admin-route/index.ts`
 - `libs/shared/frontend/client/utils/src/lib/index.ts`
   **Why**: The repository already parses admin routes into `{ module, model }`. Extending that shared utility avoids creating another Website Builder-only matcher and gives future admin-v2 wrappers a standard exact-match primitive.
-  **Changes**: Add and export a shared helper such as `isAdminModelRoute(path, module, model)` built on `getAdminRoutePath` and `parseAdminRoute`, with exact segment matching instead of prefix matching.
+  **Changes**: Add and export a shared helper such as `isAdminRoute(path, module, model?)` built on `getAdminRoutePath` and `parseAdminRoute`, so callers can use the same matcher for module-level and model-level admin-v2 route checks.
 
 #### 2. Shared admin-route utility tests
 
 **File**: `libs/shared/frontend/client/utils/src/lib/admin-route/index.spec.ts`
 **Why**: The future-proof part of this change depends on proving the shared matcher handles prefix-overlap pairs correctly.
-**Changes**: Add test cases that explicitly cover `website-builder/button` vs `website-builder/buttons-array` and `ecommerce/attribute` vs `ecommerce/attribute-key`, including positive and negative matches.
+**Changes**: Add test cases that explicitly cover module-only matches plus `website-builder/button` vs `website-builder/buttons-array` and `ecommerce/attribute` vs `ecommerce/attribute-key`, including positive and negative matches.
 
 #### 3. Audit notes for affected wrappers
 
@@ -70,15 +71,15 @@ Extend the existing shared admin-route utilities with an exact model matcher and
 - `libs/modules/website-builder/frontend/component/src/lib/admin-v2/**`
 - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/**`
 - `libs/modules/social/frontend/component/src/lib/admin-v2/**`
-  **Why**: The implementation should fix all confirmed collision pairs with the same shared matcher, not just the first issue report.
-  **Changes**: Enumerate and update all overview/sidebar wrappers in the confirmed collision pairs so the scope is explicit before the migration begins.
+  **Why**: The implementation should standardize all admin-v2 route gates on one matcher contract so the codebase does not retain mixed matching strategies.
+  **Changes**: Enumerate and update every admin-v2 overview/sidebar wrapper that still uses raw `startsWith(...)` route checks.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- [ ] Shared frontend client utils tests pass: `npx nx run @sps/shared-frontend-client-utils:jest:test`
-- [ ] Shared frontend client utils lint passes: `npx nx run @sps/shared-frontend-client-utils:eslint:lint`
+- [x] Shared frontend client utils tests pass: `npx nx run @sps/shared-frontend-client-utils:jest:test`
+- [x] Shared frontend client utils lint passes: `npx nx run @sps/shared-frontend-client-utils:eslint:lint`
 
 #### Manual Verification
 
@@ -91,7 +92,7 @@ Extend the existing shared admin-route utilities with an exact model matcher and
 
 ### Overview
 
-Apply the shared exact-match helper to the current Website Builder bug and the other confirmed prefix-collision pairs so rendered content and sidebar state stay aligned.
+Apply the shared matcher to all admin-v2 model wrappers so rendered content and sidebar state stay aligned across every module, not only the collision-prone pairs that exposed the bug first.
 
 ### Changes Required
 
@@ -106,7 +107,7 @@ Apply the shared exact-match helper to the current Website Builder bug and the o
   **Why**: These files are the directly reported bug surface and the current visible regression.
   **Changes**: Replace the local raw `startsWith` checks with the shared exact matcher so `button` no longer captures `buttons-array` in either content rendering or sidebar state.
 
-#### 2. Ecommerce `attribute` and `attribute-key` wrappers
+#### 2. Remaining Ecommerce wrappers
 
 **Files**:
 
@@ -114,10 +115,10 @@ Apply the shared exact-match helper to the current Website Builder bug and the o
 - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/overview/attribute-key/admin-v2-table/ClientComponent.tsx`
 - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/sidebar-module-item/attribute/Component.tsx`
 - `libs/modules/ecommerce/frontend/component/src/lib/admin-v2/sidebar-module-item/attribute-key/Component.tsx`
-  **Why**: The audit already confirms the same prefix-overlap bug class here, so leaving it untouched would knowingly preserve the same defect in another module.
-  **Changes**: Move all four wrappers to the shared exact matcher and preserve existing headings, table wiring, and sidebar destinations.
+  **Why**: The initial audit confirmed a collision here, but the broader follow-up requirement is consistency across the entire module surface.
+  **Changes**: Move all Ecommerce overview/sidebar wrappers to the shared matcher and preserve existing headings, table wiring, and sidebar destinations.
 
-#### 3. Social `attribute` and `attribute-key` wrappers
+#### 3. Remaining admin-v2 module wrappers
 
 **Files**:
 
@@ -125,17 +126,17 @@ Apply the shared exact-match helper to the current Website Builder bug and the o
 - `libs/modules/social/frontend/component/src/lib/admin-v2/overview/attribute-key/admin-v2-table/ClientComponent.tsx`
 - `libs/modules/social/frontend/component/src/lib/admin-v2/sidebar-module-item/attribute/Component.tsx`
 - `libs/modules/social/frontend/component/src/lib/admin-v2/sidebar-module-item/attribute-key/Component.tsx`
-  **Why**: This module repeats the same exact route-selection bug class and should adopt the shared matcher in the same implementation pass.
-  **Changes**: Replace the raw `startsWith` gates with the shared exact matcher for overview and sidebar wrappers.
+  **Why**: Once a single shared matcher exists, leaving `startsWith(...)` in other admin-v2 modules would reintroduce code-path inconsistency and future drift.
+  **Changes**: Replace raw `startsWith` route gates in the remaining admin-v2 overview/sidebar wrappers across Agent, Analytic, Billing, Blog, Broadcast, CRM, File Storage, Host, Notification, RBAC, Startup, Telegram, and Website Builder/Ecommerce/Social non-collision models.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- [ ] Website Builder tests pass: `npx nx run @sps/website-builder:jest:test`
-- [ ] Ecommerce tests pass: `npx nx run @sps/ecommerce:jest:test`
-- [ ] Social tests pass: `npx nx run @sps/social:jest:test`
-- [ ] Lint passes for changed projects: `npx nx run @sps/website-builder:eslint:lint`, `npx nx run @sps/ecommerce:eslint:lint`, `npx nx run @sps/social:eslint:lint`
+- [x] Website Builder tests pass: `npx nx run @sps/website-builder:jest:test`
+- [x] Ecommerce tests pass: `npx nx run @sps/ecommerce:jest:test`
+- [x] Social tests pass: `npx nx run @sps/social:jest:test`
+- [x] Lint passes for changed projects: `npx nx run @sps/website-builder:eslint:lint`, `npx nx run @sps/ecommerce:eslint:lint`, `npx nx run @sps/social:eslint:lint`
 
 #### Manual Verification
 
@@ -178,8 +179,8 @@ Protect both the shared matcher and the affected module surfaces so prefix-overl
 
 #### Automated Verification
 
-- [ ] Shared matcher tests fail if exact segment matching is replaced by prefix matching
-- [ ] Module overview tests fail if `button` captures `buttons-array` or `attribute` captures `attribute-key`
+- [x] Shared matcher tests fail if exact segment matching is replaced by prefix matching
+- [x] Module overview tests fail if `button` captures `buttons-array` or `attribute` captures `attribute-key`
 
 #### Manual Verification
 

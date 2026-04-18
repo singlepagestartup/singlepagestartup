@@ -1,11 +1,14 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Channel } from "./channel";
 import { Component as Message } from "./message";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/broadcast");
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/broadcast";
+  const isCurrentModule = isAdminRoute(props.url, "broadcast");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/broadcast";
 
   if (!isCurrentModule) {
     return null;

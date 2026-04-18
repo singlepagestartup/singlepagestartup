@@ -1,5 +1,8 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Form } from "./form";
 import { Component as Input } from "./input";
 import { Component as Option } from "./option";
@@ -8,8 +11,8 @@ import { Component as Step } from "./step";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/crm");
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/crm";
+  const isCurrentModule = isAdminRoute(props.url, "crm");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/crm";
 
   if (!isCurrentModule) {
     return null;

@@ -1,15 +1,16 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Notification } from "./notification";
 import { Component as Template } from "./template";
 import { Component as Topic } from "./topic";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(
-    ADMIN_BASE_PATH + "/notification",
-  );
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/notification";
+  const isCurrentModule = isAdminRoute(props.url, "notification");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/notification";
 
   if (!isCurrentModule) {
     return null;

@@ -1,14 +1,12 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/ecommerce/models/attribute-key/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 import { IComponentProps } from "./interface";
 import { Component as AdminForm } from "../admin-v2-form";
 
 export function Component(props: IComponentProps) {
-  const isActive = props.url.startsWith(
-    `${ADMIN_BASE_PATH}/ecommerce/attribute-key`,
-  );
+  const isActive = isAdminRoute(props.url, "ecommerce", "attribute-key");
 
   if (!isActive) {
     return null;

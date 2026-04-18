@@ -1,8 +1,8 @@
 import { Component as ParentComponent } from "@sps/rbac/models/identity/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: { url: string; isServer: boolean }) {
-  const isActive = props.url.startsWith(ADMIN_BASE_PATH + "/rbac/identity");
+  const isActive = isAdminRoute(props.url, "rbac", "identity");
 
   return (
     <ParentComponent

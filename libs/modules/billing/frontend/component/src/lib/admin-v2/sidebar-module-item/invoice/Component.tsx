@@ -1,8 +1,8 @@
 import { Component as Invoice } from "@sps/billing/models/invoice/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: { url: string; isServer: boolean }) {
-  const isActive = props.url.startsWith(`${ADMIN_BASE_PATH}/billing/invoice`);
+  const isActive = isAdminRoute(props.url, "billing", "invoice");
 
   return (
     <Invoice

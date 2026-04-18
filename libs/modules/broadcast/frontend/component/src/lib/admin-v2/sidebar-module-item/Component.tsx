@@ -1,4 +1,4 @@
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn, isAdminRoute } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { Component as Channel } from "./channel/Component";
 import { Component as Message } from "./message/Component";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/broadcast");
+  const isCurrentModule = isAdminRoute(props.url, "broadcast");
 
   return (
     <div

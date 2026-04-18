@@ -29,6 +29,32 @@ export function parseAdminRoute(path: string): {
   };
 }
 
+export function isAdminRoute(
+  pathname: string | null,
+  module: string,
+  model?: string | null,
+) {
+  const route = parseAdminRoute(getAdminRoutePath(pathname));
+
+  if (route.module !== module) {
+    return false;
+  }
+
+  if (typeof model === "undefined") {
+    return true;
+  }
+
+  return route.model === model;
+}
+
+export function isAdminModelRoute(
+  pathname: string | null,
+  module: string,
+  model: string,
+) {
+  return isAdminRoute(pathname, module, model);
+}
+
 export function useAdminRoute(pathname: string | null) {
   const currentPath = useAdminRoutePath(pathname);
   const route = useMemo(() => parseAdminRoute(currentPath), [currentPath]);

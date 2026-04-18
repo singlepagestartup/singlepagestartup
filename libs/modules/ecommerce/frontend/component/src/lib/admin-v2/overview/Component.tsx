@@ -1,5 +1,8 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Product } from "./product";
 import { Component as Attribute } from "./attribute";
 import { Component as AttributeKey } from "./attribute-key";
@@ -9,8 +12,8 @@ import { Component as Store } from "./store";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/ecommerce`);
-  const isOverviewRoute = props.url === `${ADMIN_BASE_PATH}/ecommerce`;
+  const isCurrentModule = isAdminRoute(props.url, "ecommerce");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/ecommerce";
 
   if (!isCurrentModule) {
     return null;

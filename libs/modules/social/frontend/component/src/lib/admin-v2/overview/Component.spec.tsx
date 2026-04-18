@@ -3,7 +3,7 @@
  */
 
 /**
- * BDD Suite: ecommerce admin-v2 overview rendering.
+ * BDD Suite: social admin-v2 overview rendering.
  *
  * Given: overview receives module and model admin routes.
  * When: user opens overview or collision-prone model routes in admin-v2.
@@ -66,11 +66,12 @@ function createModelComponentMock(modelId: string) {
   };
 }
 
-jest.mock("./category", () => createOverviewEntryMock("ecommerce", "category"));
-jest.mock("./order", () => createOverviewEntryMock("ecommerce", "order"));
-jest.mock("./product", () => createOverviewEntryMock("ecommerce", "product"));
-jest.mock("./store", () => createOverviewEntryMock("ecommerce", "store"));
-jest.mock("./widget", () => createOverviewEntryMock("ecommerce", "widget"));
+jest.mock("./action", () => createOverviewEntryMock("social", "action"));
+jest.mock("./chat", () => createOverviewEntryMock("social", "chat"));
+jest.mock("./message", () => createOverviewEntryMock("social", "message"));
+jest.mock("./profile", () => createOverviewEntryMock("social", "profile"));
+jest.mock("./thread", () => createOverviewEntryMock("social", "thread"));
+jest.mock("./widget", () => createOverviewEntryMock("social", "widget"));
 jest.mock("./attribute/admin-v2-form", () =>
   createModelComponentMock("attribute-form"),
 );
@@ -78,14 +79,14 @@ jest.mock("./attribute-key/admin-v2-form", () =>
   createModelComponentMock("attribute-key-form"),
 );
 
-jest.mock("@sps/ecommerce/models/attribute/frontend/component", () =>
+jest.mock("@sps/social/models/attribute/frontend/component", () =>
   createModelComponentMock("attribute"),
 );
-jest.mock("@sps/ecommerce/models/attribute-key/frontend/component", () =>
+jest.mock("@sps/social/models/attribute-key/frontend/component", () =>
   createModelComponentMock("attribute-key"),
 );
 
-describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
+describe("GIVEN: social admin-v2 overview is mounted", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -109,43 +110,20 @@ describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
   /**
    * BDD Scenario: renders module overview cards at the module root.
    *
-   * Given: the current route is the ecommerce module root.
+   * Given: the current route is the social module root.
    * When: the overview component renders.
    * Then: model cards are visible and model tables stay hidden.
    */
-  test("renders overview cards at the ecommerce module root", () => {
+  test("renders overview cards at the social module root", () => {
     act(() => {
-      root.render(<Component isServer={false} url="/admin/ecommerce" />);
+      root.render(<Component isServer={false} url="/admin/social" />);
     });
 
-    expect(queryByTestId(container, "card:product")).not.toBeNull();
     expect(queryByTestId(container, "card:attribute")).not.toBeNull();
     expect(queryByTestId(container, "card:attribute-key")).not.toBeNull();
-    expect(queryByTestId(container, "card:category")).not.toBeNull();
-    expect(queryByTestId(container, "card:order")).not.toBeNull();
-    expect(queryByTestId(container, "card:store")).not.toBeNull();
-    expect(queryByTestId(container, "card:widget")).not.toBeNull();
-    expect(queryByTestId(container, "table:product")).toBeNull();
+    expect(queryByTestId(container, "card:action")).not.toBeNull();
     expect(queryByTestId(container, "table:attribute")).toBeNull();
-  });
-
-  /**
-   * BDD Scenario: renders a non-overlapping model route.
-   *
-   * Given: the current route targets a standard ecommerce model.
-   * When: the overview component renders.
-   * Then: the matching model table is shown without overview cards.
-   */
-  test("renders a product table without overview cards for the product route", () => {
-    act(() => {
-      root.render(
-        <Component isServer={false} url="/admin/ecommerce/product" />,
-      );
-    });
-
-    expect(queryByTestId(container, "table:product")).not.toBeNull();
-    expect(queryByTestId(container, "table:attribute")).toBeNull();
-    expect(queryByTestIdPrefix(container, "card:")).toBeNull();
+    expect(queryByTestId(container, "table:attribute-key")).toBeNull();
   });
 
   /**
@@ -158,7 +136,7 @@ describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
   test("renders only the attribute-key table for the attribute-key route", () => {
     act(() => {
       root.render(
-        <Component isServer={false} url="/admin/ecommerce/attribute-key" />,
+        <Component isServer={false} url="/admin/social/attribute-key" />,
       );
     });
 
@@ -171,12 +149,14 @@ describe("GIVEN: ecommerce admin-v2 overview is mounted", () => {
    * BDD Scenario: rejects routes from other modules.
    *
    * Given: the current route belongs to another module.
-   * When: the ecommerce overview renders.
+   * When: the social overview renders.
    * Then: no overview content is produced.
    */
-  test("returns null for routes outside ecommerce", () => {
+  test("returns null for routes outside social", () => {
     act(() => {
-      root.render(<Component isServer={false} url="/admin/social/post" />);
+      root.render(
+        <Component isServer={false} url="/admin/ecommerce/product" />,
+      );
     });
 
     expect(container.firstChild).toBeNull();

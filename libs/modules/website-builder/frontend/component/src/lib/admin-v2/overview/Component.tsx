@@ -1,5 +1,8 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Button } from "./button";
 import { Component as ButtonsArray } from "./buttons-array";
 import { Component as Feature } from "./feature";
@@ -9,10 +12,8 @@ import { Component as Slider } from "./slider";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(
-    ADMIN_BASE_PATH + "/website-builder",
-  );
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/website-builder";
+  const isCurrentModule = isAdminRoute(props.url, "website-builder");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/website-builder";
 
   if (!isCurrentModule) {
     return null;

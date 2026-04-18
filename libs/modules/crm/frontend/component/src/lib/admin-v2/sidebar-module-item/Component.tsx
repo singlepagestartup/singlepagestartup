@@ -1,4 +1,4 @@
-import { cn } from "@sps/shared-frontend-client-utils";
+import { cn, isAdminRoute } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { Component as Step } from "./step/Component";
 import { Component as Widget } from "./widget/Component";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/crm");
+  const isCurrentModule = isAdminRoute(props.url, "crm");
 
   return (
     <div
