@@ -1,6 +1,13 @@
 #!/bin/bash
 # Retry and preflight helpers for GitHub CLI calls.
 
+is_gh_connectivity_error() {
+  local error_text="$1"
+
+  echo "$error_text" | grep -qiE \
+    'error connecting to api\.github\.com|connection reset|connection refused|temporary failure|tls handshake timeout'
+}
+
 is_gh_retryable_error() {
   local error_text="$1"
 
@@ -11,6 +18,7 @@ is_gh_retryable_error() {
 gh_retry() {
   local max_attempts="${GH_RETRY_MAX_ATTEMPTS:-5}"
   local base_delay_seconds="${GH_RETRY_BASE_DELAY_SECONDS:-1}"
+  local fail_fast_connectivity="${GH_RETRY_FAIL_FAST_CONNECTIVITY:-1}"
   local attempt=1
   local output
   # Use a non-reserved name: in zsh, "status" is readonly.
@@ -26,6 +34,12 @@ gh_retry() {
 
     if ! is_gh_retryable_error "$output"; then
       printf "%s\n" "$output" >&2
+      return "$exit_code"
+    fi
+
+    if [ "$fail_fast_connectivity" = "1" ] && is_gh_connectivity_error "$output"; then
+      printf "%s\n" "$output" >&2
+      echo "GitHub CLI connectivity failure detected. If this is a sandboxed run, rerun the same GitHub helper command with escalated network access." >&2
       return "$exit_code"
     fi
 
