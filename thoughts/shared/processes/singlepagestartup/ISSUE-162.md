@@ -3,9 +3,9 @@ issue_number: 162
 issue_title: "Migrate host app to Next.js 16.2.4"
 repository: singlepagestartup
 created_at: 2026-04-18T23:49:01Z
-last_updated: 2026-04-19T00:07:40Z
+last_updated: 2026-04-19T00:24:22Z
 status: active
-current_phase: research
+current_phase: plan
 ---
 
 # Process Log: ISSUE-162 - Migrate host app to Next.js 16.2.4
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
+- Plan: completed
 - Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Current phase: plan
+- Next step: human review, then core/30-implement
 
 ## Phase Notes
 
@@ -39,9 +39,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Wrote the implementation plan for the Next.js 16.2.4 host migration after reconciling the ticket, research, live GitHub comments, and the current host route/widget composition code. The plan keeps the migration focused on dependency alignment, host entrypoint migration, and cold-state verification with explicit coverage for the historical `widgets-to-external-widgets` OOM path.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-162.md`
+- Notes: Planning started after confirming the issue was in `Ready for Plan`, re-reading the ticket/process/research artifacts, syncing the live GitHub issue/comments, and re-checking the host Next.js/Nx code paths that will shape the migration phases. No additional scope contradictions or unresolved ambiguities were found during plan drafting, so the plan could be completed without reopening research.
 
 ### Implement
 
@@ -58,12 +58,12 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Incident 1 — GitHub helper sequence required escalated network access
 
 - **Phase**: Create
-- **Occurrences**: 2
-- **Symptom**: The initial `bash -lc` workflow block failed with `error connecting to api.github.com` while trying to create the issue through `gh`.
+- **Occurrences**: 4
+- **Symptom**: Multiple `bash -lc` workflow blocks failed with `error connecting to api.github.com` while trying to create/update/sync GitHub issue workflow state through `gh`.
 - **Root Cause**: GitHub API access was blocked by the sandboxed network context for the `gh` helper sequence.
-- **Fix**: Re-ran the same `bash -lc` issue/project helper blocks with escalated network permissions, then completed both the create-phase issue setup and the research-phase status transition successfully.
+- **Fix**: Re-ran the same `bash -lc` issue/project helper blocks with escalated network permissions, then completed the create-phase issue setup, the research/plan status transitions, and the live issue comment sync successfully.
 - **Preventive Action**: For future `core-*` GitHub helper flows in this environment, rerun the unchanged `bash -lc` block with escalation as soon as `gh` reports connectivity failures to `api.github.com`.
-- **References**: `.claude/commands/core/00-create.md`, `.claude/commands/core/10-research.md`, `.codex/skills/core-00-create/SKILL.md`, `.codex/skills/core-10-research/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
+- **References**: `.claude/commands/core/00-create.md`, `.claude/commands/core/10-research.md`, `.claude/commands/core/20-plan.md`, `.codex/skills/core-00-create/SKILL.md`, `.codex/skills/core-10-research/SKILL.md`, `.codex/skills/core-20-plan/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
 
 ## Reusable Learnings
 
