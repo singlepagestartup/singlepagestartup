@@ -3,9 +3,9 @@ issue_number: 162
 issue_title: "Migrate host app to Next.js 16.2.4"
 repository: singlepagestartup
 created_at: 2026-04-18T23:49:01Z
-last_updated: 2026-04-18T23:53:48Z
+last_updated: 2026-04-19T00:07:40Z
 status: active
-current_phase: create
+current_phase: research
 ---
 
 # Process Log: ISSUE-162 - Migrate host app to Next.js 16.2.4
@@ -17,11 +17,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Phase Status
 
 - Create: completed
-- Research: not_started
+- Research: completed
 - Plan: not_started
 - Implement: not_started
-- Current phase: create
-- Next step: run core/10-research for issue 162
+- Current phase: research
+- Next step: human review, then core/20-plan
 
 ## Phase Notes
 
@@ -33,9 +33,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Research
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Documented the current `apps/host` Next/Nx version surface, App Router entrypoints, middleware and route-handler conventions, build-time page/metadata flows, and the host page -> widget -> `widgets-to-external-widgets` rendering chain together with the prior GitHub `#113` Turbopack OOM evidence.
+- Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-162.md`, `https://github.com/singlepagestartup/singlepagestartup/issues/162`
+- Notes: Research completed after verifying the live issue metadata/status, reading the existing ticket and process artifacts, inspecting the host runtime/config files cited in the ticket, and checking the historical GitHub issue `#113` conversation referenced by the ticket.
 
 ### Plan
 
@@ -58,12 +58,12 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Incident 1 — GitHub helper sequence required escalated network access
 
 - **Phase**: Create
-- **Occurrences**: 1
+- **Occurrences**: 2
 - **Symptom**: The initial `bash -lc` workflow block failed with `error connecting to api.github.com` while trying to create the issue through `gh`.
 - **Root Cause**: GitHub API access was blocked by the sandboxed network context for the `gh` helper sequence.
-- **Fix**: Re-ran the same `bash -lc` issue/project workflow block with escalated network permissions, then completed issue creation and project status updates successfully.
+- **Fix**: Re-ran the same `bash -lc` issue/project helper blocks with escalated network permissions, then completed both the create-phase issue setup and the research-phase status transition successfully.
 - **Preventive Action**: For future `core-*` GitHub helper flows in this environment, rerun the unchanged `bash -lc` block with escalation as soon as `gh` reports connectivity failures to `api.github.com`.
-- **References**: `.claude/commands/core/00-create.md`, `.codex/skills/core-00-create/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
+- **References**: `.claude/commands/core/00-create.md`, `.claude/commands/core/10-research.md`, `.codex/skills/core-00-create/SKILL.md`, `.codex/skills/core-10-research/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
 
 ## Reusable Learnings
 
