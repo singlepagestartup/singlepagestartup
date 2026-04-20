@@ -73,9 +73,9 @@ Bring the repo onto a single intentional Next 16 package surface and confirm the
 
 #### Automated Verification:
 
-- [ ] Dependency installation succeeds after the version alignment.
-- [ ] Host lint surface still runs for the changed files: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
-- [ ] The workspace can resolve the upgraded host dependency graph without mixed-version package errors.
+- [x] Dependency installation succeeds after the version alignment.
+- [x] Host lint surface still runs for the changed files: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`
+- [x] The workspace can resolve the upgraded host dependency graph without mixed-version package errors.
 
 #### Manual Verification:
 
@@ -114,8 +114,8 @@ Update the host-specific framework touchpoints that conflict with Next 16 and re
 
 #### Automated Verification:
 
-- [ ] The host production build succeeds after the route/proxy migration: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
-- [ ] No import or config errors remain around the host proxy/route entrypoints.
+- [x] The host production build succeeds after the route/proxy migration: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`
+- [x] No import or config errors remain around the host proxy/route entrypoints.
 
 #### Manual Verification:
 

@@ -8,7 +8,6 @@ import { Component as AdminV2 } from "../../src/components/admin-v2";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
-export const experimental_ppr = true;
 
 export async function generateStaticParams() {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;

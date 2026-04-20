@@ -6,14 +6,10 @@
   "tags": [],
   "targets": {
     "next:dev": {
-      "executor": "@nx/next:server",
-      "defaultConfiguration": "development",
-      "cache": true,
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "next:build",
-        "dev": true,
-        "port": 3000,
-        "turbo": true
+        "cwd": "apps/host",
+        "command": "node ../../node_modules/next/dist/bin/next dev --webpack --port 3000"
       }
     },
     "next:build": {

@@ -3,9 +3,9 @@ issue_number: 162
 issue_title: "Migrate host app to Next.js 16.2.4"
 repository: singlepagestartup
 created_at: 2026-04-18T23:49:01Z
-last_updated: 2026-04-19T00:24:22Z
+last_updated: 2026-04-19T08:54:12Z
 status: active
-current_phase: plan
+current_phase: implement
 ---
 
 # Process Log: ISSUE-162 - Migrate host app to Next.js 16.2.4
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: not_started
-- Current phase: plan
-- Next step: human review, then core/30-implement
+- Implement: in_progress
+- Current phase: implement
+- Next step: complete Phase 3 cold-state verification in a full local stack, including production start and API-backed external-widget validation
 
 ## Phase Notes
 
@@ -45,15 +45,15 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Completed Phases 1 and 2 and started Phase 3. Production build remains green on Next 16, the external-widget dispatcher now uses server-side runtime selection instead of a single eager module fan-in, and the host dev target now starts Next.js in webpack mode because Next 16 dev continued to OOM under Turbopack after rendering the catch-all route.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-162-progress.md`, `package.json`, `package-lock.json`, `apps/host/package.json`, `apps/host/project.json`, `apps/host/next.config.js`, `apps/host/app/[[...url]]/page.tsx`, `apps/host/proxy.ts`, `apps/host/app/api/revalidate/route.ts`, `libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx`
+- Notes: GitHub comments were synced through 2026-04-19T00:24:57Z with no post-plan scope changes. Phase 1 automated verification passed via `npm install`, `npm ls next @next/bundle-analyzer @next/third-parties eslint-config-next`, and `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`; the lint target still reports an existing warning in `apps/host/styles/presets/shadcn.ts:63`. Phase 2 automated verification passed via `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`. During static data collection the build logged `ECONNREFUSED` fetch failures from host SDK calls when the local API was unavailable, but those paths already tolerate `catchErrors`, so static page generation still completed successfully and the build exited cleanly. Phase 3 investigation reproduced the dev-only OOM after `GET /` under Turbopack, confirmed that `next/dynamic` at the external-widget dispatcher was insufficient, and verified that the updated `host:next:dev` / `npm run host:dev` webpack path stays alive on the same route path where Turbopack crashed.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 1 -->
+<!-- incident-count: 2 -->
 
 ### Incident 1 — GitHub helper sequence required escalated network access
 
@@ -64,6 +64,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Re-ran the same `bash -lc` issue/project helper blocks with escalated network permissions, then completed the create-phase issue setup, the research/plan status transitions, and the live issue comment sync successfully.
 - **Preventive Action**: For future `core-*` GitHub helper flows in this environment, rerun the unchanged `bash -lc` block with escalation as soon as `gh` reports connectivity failures to `api.github.com`.
 - **References**: `.claude/commands/core/00-create.md`, `.claude/commands/core/10-research.md`, `.claude/commands/core/20-plan.md`, `.codex/skills/core-00-create/SKILL.md`, `.codex/skills/core-10-research/SKILL.md`, `.codex/skills/core-20-plan/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
+
+### Incident 2 — Next 16 host dev still defaulted to Turbopack and OOMed after route render
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: `npm run host:dev` reported `Next.js 16.2.4 (Turbopack)`, rendered the catch-all route, then climbed toward 9 GB heap and crashed with `Ineffective mark-compacts near heap limit`.
+- **Root Cause**: In Next.js 16, `next dev` still defaulted to Turbopack even when the Nx executor did not pass `--turbo`, and the host app's catch-all route graph remained too large for Turbopack to keep stable in dev mode.
+- **Fix**: Reworked the external-widget dispatcher to load the selected server component at runtime instead of through one eager import fan-in, verified that the production build still passed, then moved the host `next:dev` / `host:dev` entrypoint to `next dev --webpack`, which stayed up on the same route path without reproducing the OOM.
+- **Preventive Action**: For this host app on Next 16, treat webpack as the stable default for interactive dev until the Turbopack graph issue is isolated separately; do not assume omitting Nx `turbo` options disables Turbopack in Next 16.
+- **References**: `package.json`, `apps/host/project.json`, `libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx`, `node_modules/@nx/next/src/executors/server/server.impl.js`, `node node_modules/next/dist/bin/next dev --help`
 
 ## Reusable Learnings
 
