@@ -8,7 +8,6 @@ import "../styles/tailwind.css";
 import { fonts } from "./fonts";
 import React, { Suspense } from "react";
 import { Toaster } from "@sps/shared-ui-shadcn";
-import { Component as RbacSubject } from "@sps/rbac/models/subject/frontend/component";
 import Loading from "./loading";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import {
@@ -17,6 +16,7 @@ import {
   YANDEX_METRIKA_ID,
 } from "@sps/shared-utils";
 import { Component as Revalidation } from "../src/components/revalidation";
+import { SubjectAuthenticationInitBoundary } from "../src/runtime/authentication/subject-init";
 import http from "http";
 import https from "https";
 import { YandexMetrika } from "@sps/shared-third-parties";
@@ -39,7 +39,7 @@ export default async function RootLayout({
         className={`${fonts.defaultFont.variable} ${fonts.primaryFont.variable}`}
       >
         <Suspense fallback={<Loading />}>
-          <RbacSubject isServer={false} variant="authentication-init-default" />
+          <SubjectAuthenticationInitBoundary />
           <Revalidation isServer={true} />
           <div className="relative">
             {children}
