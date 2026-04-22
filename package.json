@@ -7,6 +7,7 @@
     "api:start": "nx run api:start",
     "host:build": "nx run host:next:build",
     "host:dev": "nx run host:next:dev",
+    "site:dev:poc": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run-many --target=next:dev --projects=host,ecommerce,rbac --parallel=3 --outputStyle=stream",
     "host:production": "NODE_ENV=production npm run host:build && npm run host:start",
     "host:start": "nx run host:next:start",
     "mcp:dev": "nx run mcp:dev",

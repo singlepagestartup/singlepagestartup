@@ -75,6 +75,7 @@
       "@sps/shared-frontend-server-utils": [
         "libs/shared/frontend/server/utils/src/index.ts"
       ],
+      "@sps/shared-fragments": ["libs/shared/fragments/src/index.ts"],
       "@sps/shared-hooks": ["libs/shared/hooks/src/index.ts"],
       "@sps/shared-third-parties": ["libs/shared/third-parties/src/index.ts"],
       "@sps/shared-ui-aceternity": ["libs/shared/ui/aceternity/src/index.ts"],

@@ -1,0 +1,30 @@
+{
+  "name": "ecommerce",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/ecommerce",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "next:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/ecommerce",
+        "command": "node ../../node_modules/next/dist/bin/next dev --turbopack --port 3010"
+      }
+    },
+    "next:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/ecommerce",
+        "command": "node ../../node_modules/next/dist/bin/next build"
+      }
+    },
+    "next:start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/ecommerce",
+        "command": "node ../../node_modules/next/dist/bin/next start --port 3010"
+      }
+    }
+  }
+}

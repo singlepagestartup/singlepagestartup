@@ -9,27 +9,25 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/host",
-        "command": "NODE_OPTIONS=--max-old-space-size=16384 node ../../node_modules/next/dist/bin/next dev --turbopack --port 3000"
+        "command": "node ../../node_modules/next/dist/bin/next dev --turbopack --port 3000"
       }
     },
     "next:build": {
-      "executor": "@nx/next:build",
-      "outputs": ["{options.outputPath}"],
-      "dependsOn": [],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/.next"
+      ],
       "cache": true,
-      "defaultConfiguration": "production",
       "options": {
-        "outputPath": "apps/host"
+        "cwd": "apps/host",
+        "command": "node ../../node_modules/next/dist/bin/next build --webpack"
       }
     },
     "next:start": {
-      "executor": "@nx/next:server",
-      "defaultConfiguration": "production",
-      "dependsOn": [],
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "host:next:build",
-        "dev": false,
-        "port": 3000
+        "cwd": "apps/host",
+        "command": "node ../../node_modules/next/dist/bin/next start --port 3000"
       }
     },
     "next:export": {

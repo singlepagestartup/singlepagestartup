@@ -32,26 +32,44 @@ status: in_progress
 ### Phase 3: Cold-State Validation and External Widget Regression Coverage
 
 - [x] Started: 2026-04-19T08:54:12Z
-- [ ] Completed: —
-- [ ] Automated verification: —
+- [x] Completed: 2026-04-22T00:21:06Z
+- [x] Automated verification: PASSED — `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx jest --config apps/host/jest.config.ts --runInBand apps/host/src/fragments/import-guard.spec.ts apps/host/src/fragments/fragment-renderers.spec.ts`, `npx tsc -p apps/host/tsconfig.json --noEmit`, `npx tsc -p apps/ecommerce/tsconfig.json --noEmit`, `npx tsc -p apps/rbac/tsconfig.json --noEmit`, `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run host:eslint:lint`, `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run host:next:build`, `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run ecommerce:next:build`, `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run rbac:next:build`, `npm run site:dev:poc`
 
-**Notes**: Phase 3 started from the user-reported dev-only regression after `npm run host:dev`. The Turbopack dev server OOM was reproduced locally after the app reached ready state and the catch-all route rendered. A first pass replaced the eager external-widget dispatcher imports with `next/dynamic`, but the dev process still OOMed. The dispatcher was then reworked so the server path resolves the selected external widget with a runtime `await import(...)` instead of one eager fan-in file, and the host `next:dev` / `host:dev` entrypoint was switched to webpack mode, which stayed alive on the same route path where Turbopack crashed. Full Phase 3 completion is still pending because production `start` and API-backed external-widget validation need a full local stack.
+**Notes**: Phase 3 changed direction after the app-local generated manifest approach was rejected for poor authoring UX. The temporary `apps/host/src/runtime/site` runtime and `apps/host/scripts/generate-site-runtime-manifests.cjs` were removed. `apps/host` now uses a server-only fragment orchestrator for the `[[...url]]` hot path and no longer imports ecommerce/rbac frontend component graphs there. A POC fragment split was added with `apps/ecommerce` and `apps/rbac` as standalone Next apps exposing `/api/sps/fragments/query`, `/api/sps/fragments/render`, and `/api/sps/fragments/capabilities`. The POC preserves host-owned cross-module composition by rendering rbac cart/checkout fragments first and passing their HTML into the ecommerce product fragment as a `children` slot. `site:dev:poc` starts host/ecommerce/rbac together in Turbopack dev mode. Host production build now uses explicit `next build --webpack` because the remaining admin graph still makes Turbopack production build impractical; host dev remains Turbopack.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 1 -->
+<!-- incident-count: 3 -->
 
 ### Incident 1 — Next 16 Turbopack dev OOM persisted after the host route rendered
 
-- **Occurrences**: 1
+- **Occurrences**: 2
 - **Stage**: Phase 3 - Cold-State Validation and External Widget Regression Coverage
 - **Symptom**: `npm run host:dev` reached ready state, served the catch-all route, then consumed ~8.5-9 GB heap and crashed with `Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
-- **Root Cause**: Next.js 16 dev still defaulted to Turbopack even when the Nx target did not explicitly add `--turbo`, and the host route graph remained too large for Turbopack to handle stably in this app.
-- **Fix**: Confirmed the direct webpack path via `next dev --webpack`, rewired the host `next:dev` / `host:dev` entrypoint to use webpack mode, removed the stale `turbo` hint from the Nx target, and reworked the external-widget dispatcher so the server path selects the external module with a runtime import instead of a single eager import fan-in.
-- **Reusable Pattern**: When Next 16 Nx dev still prints `Turbopack` after removing `turbo` options, check `next dev --help` and switch the dev entrypoint to `--webpack` explicitly; omitting Nx `turbo` flags is not sufficient to opt out.
+- **Root Cause**: The catch-all host route imported too much of the `@sps/*/frontend/component` graph through `libs/modules/host` and later through the app-local generated manifest experiment. This made a single Turbopack dev process responsible for analyzing the entire modular page-builder graph.
+- **Fix**: Rejected both the webpack-dev fallback and the generated manifest approach as final architecture. Replaced the `[[...url]]` hot path with a server-only fragment orchestrator and POC remote fragments in `apps/ecommerce` and `apps/rbac`, so host composes ecommerce/rbac output over HTTP instead of importing their frontend components.
+- **Reusable Pattern**: Keep `apps/host` as the cross-module composition owner, but never let `[[...url]]` import broad module frontend component graphs. Cross-module slots must be represented as serializable recipes plus remote HTML fragments.
+
+### Incident 2 — Next App Router private folders made `/_sps` endpoints unroutable
+
+- **Occurrences**: 1
+- **Stage**: Phase 3 - Fragment POC implementation
+- **Symptom**: `apps/ecommerce` and `apps/rbac` builds succeeded, but the expected `/_sps/fragments/*` endpoints did not appear in the Next route table.
+- **Root Cause**: App Router treats folders prefixed with `_` as private folders, so `app/_sps/...` is not routable.
+- **Fix**: Moved fragment endpoints to `app/api/sps/fragments/*` and updated host remote calls to `/api/sps/fragments/query` and `/api/sps/fragments/render`.
+- **Reusable Pattern**: Do not use leading-underscore folders for routable internal endpoints in Next App Router; use `/api/sps/...` or another explicit routable namespace.
+
+### Incident 3 — Host Turbopack production build still pulls admin graph
+
+- **Occurrences**: 1
+- **Stage**: Phase 3 - Framework acceptance
+- **Symptom**: `host:next:build` with the default Next 16 Turbopack build stayed at `Creating an optimized production build ...` for several minutes with no progress after the site hot path was moved to fragments.
+- **Root Cause**: `apps/host` still has admin routes and layout/auth entrypoints that import broad `@sps/*/frontend/component` graphs. The fragment POC only removed the public `[[...url]]` site hot path from that graph.
+- **Fix**: Changed `host:next:build` and `host:next:start` to explicit run-command targets and use `next build --webpack` for production build. `host:next:dev` remains `next dev --turbopack`.
+- **Reusable Pattern**: Site runtime fragmentation fixes the public page-builder hot path. Admin/auth graphs need a separate migration before host production build can safely use Turbopack too.
 
 ## Summary
 
@@ -65,7 +83,11 @@ status: in_progress
 - Updated the host revalidation route to use the new `revalidateTag(tag, "max")` signature.
 - Removed the obsolete `eslint` build-config field injected by `@nx/next` so Next 16 builds stay clean.
 - Reworked the external-widget dispatcher to resolve the selected server-side widget module at runtime instead of through one eager import fan-in.
-- Switched the host `next:dev` / `host:dev` entrypoint to webpack dev mode because the Next 16 Turbopack path continued to OOM after route render.
+- Removed the rejected app-local generated site runtime under `apps/host/src/runtime/site` and `apps/host/scripts`.
+- Added shared fragment contracts and a host server-only fragment orchestrator for the `[[...url]]` site path.
+- Added `apps/ecommerce` and `apps/rbac` Next fragment apps with `/api/sps/fragments/query`, `/api/sps/fragments/render`, and `/api/sps/fragments/capabilities`.
+- Added a `site:dev:poc` script that starts host/ecommerce/rbac in Turbopack dev mode with one command.
+- Kept host dev on Turbopack; switched only host production build to explicit webpack because admin/auth still pull broad module frontend graphs.
 
 ### Pull Request
 
@@ -80,4 +102,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-04-19T08:54:12Z
+**Last updated**: 2026-04-22T00:21:06Z

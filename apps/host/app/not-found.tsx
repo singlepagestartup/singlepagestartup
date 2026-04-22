@@ -1,8 +1,8 @@
 import { internationalization } from "@sps/shared-configuration";
-import { renderSitePageByUrl } from "../src/runtime/site";
+import { renderFragmentSitePageByUrl } from "../src/fragments";
 
 export default async function NotFoundPage() {
-  const notFoundPage = await renderSitePageByUrl({
+  const notFoundPage = await renderFragmentSitePageByUrl({
     url: "/404",
     language: internationalization.defaultLanguage.code,
     isAdminRoute: false,

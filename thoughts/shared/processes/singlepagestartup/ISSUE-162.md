@@ -3,7 +3,7 @@ issue_number: 162
 issue_title: "Migrate host app to Next.js 16.2.4"
 repository: singlepagestartup
 created_at: 2026-04-18T23:49:01Z
-last_updated: 2026-04-19T08:54:12Z
+last_updated: 2026-04-22T00:21:06Z
 status: active
 current_phase: implement
 ---
@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: in_progress
 - Current phase: implement
-- Next step: complete Phase 3 cold-state verification in a full local stack, including production start and API-backed external-widget validation
+- Next step: review the host-rbac-ecommerce fragment POC and decide whether to continue fragmenting admin/auth/module graphs
 
 ## Phase Notes
 
@@ -45,15 +45,15 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary: Completed Phases 1 and 2 and started Phase 3. Production build remains green on Next 16, the external-widget dispatcher now uses server-side runtime selection instead of a single eager module fan-in, and the host dev target now starts Next.js in webpack mode because Next 16 dev continued to OOM under Turbopack after rendering the catch-all route.
-- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-162-progress.md`, `package.json`, `package-lock.json`, `apps/host/package.json`, `apps/host/project.json`, `apps/host/next.config.js`, `apps/host/app/[[...url]]/page.tsx`, `apps/host/proxy.ts`, `apps/host/app/api/revalidate/route.ts`, `libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx`
-- Notes: GitHub comments were synced through 2026-04-19T00:24:57Z with no post-plan scope changes. Phase 1 automated verification passed via `npm install`, `npm ls next @next/bundle-analyzer @next/third-parties eslint-config-next`, and `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:eslint:lint`; the lint target still reports an existing warning in `apps/host/styles/presets/shadcn.ts:63`. Phase 2 automated verification passed via `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run host:next:build`. During static data collection the build logged `ECONNREFUSED` fetch failures from host SDK calls when the local API was unavailable, but those paths already tolerate `catchErrors`, so static page generation still completed successfully and the build exited cleanly. Phase 3 investigation reproduced the dev-only OOM after `GET /` under Turbopack, confirmed that `next/dynamic` at the external-widget dispatcher was insufficient, and verified that the updated `host:next:dev` / `npm run host:dev` webpack path stays alive on the same route path where Turbopack crashed.
+- Summary: Completed the Next 16 migration and replaced the rejected app-local generated site runtime with a host-rbac-ecommerce fragment POC. The public `[[...url]]` path now composes ecommerce product fragments and rbac cart/checkout fragments over internal HTTP instead of importing their frontend component graphs.
+- Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-162-progress.md`, `package.json`, `package-lock.json`, `apps/host/package.json`, `apps/host/project.json`, `apps/host/next.config.js`, `apps/host/app/[[...url]]/page.tsx`, `apps/host/src/fragments/*`, `apps/ecommerce/*`, `apps/rbac/*`, `libs/shared/fragments/*`
+- Notes: Current verification passes for fragment unit/import-guard tests, host/ecommerce/rbac TypeScript, host lint, host production build, ecommerce/rbac Turbopack production builds, and `site:dev:poc` smoke startup. Host production build is explicitly `next build --webpack` because admin/auth entrypoints still import broad module frontend graphs; host dev remains `next dev --turbopack`.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 2 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — GitHub helper sequence required escalated network access
 
@@ -65,16 +65,38 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: For future `core-*` GitHub helper flows in this environment, rerun the unchanged `bash -lc` block with escalation as soon as `gh` reports connectivity failures to `api.github.com`.
 - **References**: `.claude/commands/core/00-create.md`, `.claude/commands/core/10-research.md`, `.claude/commands/core/20-plan.md`, `.codex/skills/core-00-create/SKILL.md`, `.codex/skills/core-10-research/SKILL.md`, `.codex/skills/core-20-plan/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-162.md`
 
-### Incident 2 — Next 16 host dev still defaulted to Turbopack and OOMed after route render
+### Incident 2 — Next 16 Turbopack OOM on broad host site graph
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: `npm run host:dev` reported `Next.js 16.2.4 (Turbopack)`, rendered the catch-all route, then climbed toward 9 GB heap and crashed with `Ineffective mark-compacts near heap limit`.
+- **Root Cause**: The host catch-all route imported too much of the `@sps/*/frontend/component` graph, first through `libs/modules/host` generic runtime and then through the generated app-local manifest experiment.
+- **Fix**: Removed the rejected generated runtime and replaced the public site hot path with a host-owned fragment orchestrator plus remote ecommerce/rbac fragment apps.
+- **Preventive Action**: Keep `apps/host` as composition owner, but model cross-module slots as serializable recipes and remote HTML fragments instead of importing broad module frontend graphs into `[[...url]]`.
+- **References**: `apps/host/app/[[...url]]/page.tsx`, `apps/host/src/fragments/*`, `apps/ecommerce/*`, `apps/rbac/*`, `libs/shared/fragments/*`
+
+### Incident 3 — App Router private folder blocked internal endpoints
 
 - **Phase**: Implement
 - **Occurrences**: 1
-- **Symptom**: `npm run host:dev` reported `Next.js 16.2.4 (Turbopack)`, rendered the catch-all route, then climbed toward 9 GB heap and crashed with `Ineffective mark-compacts near heap limit`.
-- **Root Cause**: In Next.js 16, `next dev` still defaulted to Turbopack even when the Nx executor did not pass `--turbo`, and the host app's catch-all route graph remained too large for Turbopack to keep stable in dev mode.
-- **Fix**: Reworked the external-widget dispatcher to load the selected server component at runtime instead of through one eager import fan-in, verified that the production build still passed, then moved the host `next:dev` / `host:dev` entrypoint to `next dev --webpack`, which stayed up on the same route path without reproducing the OOM.
-- **Preventive Action**: For this host app on Next 16, treat webpack as the stable default for interactive dev until the Turbopack graph issue is isolated separately; do not assume omitting Nx `turbo` options disables Turbopack in Next 16.
-- **References**: `package.json`, `apps/host/project.json`, `libs/modules/host/relations/widgets-to-external-widgets/frontend/component/src/lib/singlepage/default/Component.tsx`, `node_modules/@nx/next/src/executors/server/server.impl.js`, `node node_modules/next/dist/bin/next dev --help`
+- **Symptom**: Fragment apps built successfully, but the planned `/_sps/fragments/*` endpoints were absent from the Next route output.
+- **Root Cause**: App Router treats leading-underscore folders as private implementation folders, not routes.
+- **Fix**: Moved the fragment protocol endpoints to `/api/sps/fragments/*` and updated host remote calls.
+- **Preventive Action**: Avoid `_`-prefixed folders for routable internal endpoints in Next App Router.
+- **References**: `apps/ecommerce/app/api/sps/fragments/*`, `apps/rbac/app/api/sps/fragments/*`, `apps/host/src/fragments/remote.ts`
+
+### Incident 4 — Host Turbopack production build still includes admin graph
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: Host production build with Turbopack stayed on `Creating an optimized production build ...` for several minutes after the public site hot path was moved to fragments.
+- **Root Cause**: Admin routes and auth/layout entrypoints still import broad module frontend graphs in `apps/host`; the POC only fragmented the public `[[...url]]` site path.
+- **Fix**: Changed `host:next:build` to explicit `next build --webpack` while leaving `host:next:dev` on Turbopack for dev/OOM validation.
+- **Preventive Action**: Treat admin/auth fragmentation as the next migration if host production builds must also move to Turbopack.
+- **References**: `apps/host/project.json`, `apps/host/src/components/admin-v2/Component.tsx`, `apps/host/src/runtime/authentication/subject-init.tsx`
 
 ## Reusable Learnings
 
 - For Next.js major upgrades in this repo, capture both official framework changes and the exact `apps/host` usages they affect before opening the issue, so the later research phase starts with verified migration hotspots instead of a generic upgrade request.
+- In Next App Router, do not use `app/_name` for internal routes; underscore folders are private and will not be routed.
+- Splitting the public site page builder does not remove admin/auth bundle pressure; those entrypoints need their own migration before host production build can use Turbopack safely.

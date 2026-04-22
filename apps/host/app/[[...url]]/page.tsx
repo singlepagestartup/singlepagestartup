@@ -3,9 +3,9 @@ import { api as metadataApi } from "@sps/host/models/metadata/sdk/server";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { notFound } from "next/navigation";
 import {
-  renderSitePageByUrl,
+  renderFragmentSitePageByUrl,
   resolveRouteContext,
-} from "../../src/runtime/site";
+} from "../../src/fragments";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -42,7 +42,7 @@ export default async function Page(props: {
   params: Promise<{ url?: string[] }>;
 }) {
   const routeContext = resolveRouteContext(await props.params);
-  const page = await renderSitePageByUrl(routeContext);
+  const page = await renderFragmentSitePageByUrl(routeContext);
 
   if (!page) {
     throw notFound();
