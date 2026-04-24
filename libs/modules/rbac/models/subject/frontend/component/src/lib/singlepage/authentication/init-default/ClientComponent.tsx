@@ -46,6 +46,13 @@ export function Component(props: IComponentPropsExtended) {
     (Boolean(searchParams.get("code")) ||
       Boolean(searchParams.get("oauthError")));
 
+  const refreshError = refresh.error as unknown as
+    | { status?: unknown }
+    | null
+    | undefined;
+  const refreshErrorStatus =
+    typeof refreshError?.status === "number" ? refreshError.status : undefined;
+
   useEffect(() => {
     if (isOAuthCallbackPending) {
       return;
@@ -142,8 +149,12 @@ export function Component(props: IComponentPropsExtended) {
       return;
     }
 
+    if (refreshErrorStatus !== 401) {
+      return;
+    }
+
     clearAuthenticationTokens();
-  }, [refresh.isError]);
+  }, [refresh.isError, refreshErrorStatus]);
 
   useEffect(() => {
     if (!refresh.isSuccess && !init.isSuccess) {
