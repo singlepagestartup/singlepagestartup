@@ -74,7 +74,7 @@ export class Handler {
         path: "/",
         secure: true,
         httpOnly: false,
-        expires: new Date(decodedJwt.exp),
+        expires: new Date(decodedJwt.exp * 1000),
         sameSite: "Strict",
       });
 

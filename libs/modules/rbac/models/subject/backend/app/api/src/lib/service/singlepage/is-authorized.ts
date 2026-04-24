@@ -244,7 +244,7 @@ export class Service {
 
     if (!authorized) {
       throw new Error(
-        `Authorization error. You do not have access to this resource: ${JSON.stringify(props.permission)}`,
+        `Permission error. You do not have access to this resource: ${JSON.stringify(props.permission)}`,
       );
     } else {
       return {

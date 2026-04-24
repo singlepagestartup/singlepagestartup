@@ -35,6 +35,11 @@ import {
   type IProps as IAuthenticationRefreshProps,
   type IResult as IAuthenticationRefreshResult,
 } from "./authentication/refresh";
+export {
+  AUTHENTICATION_STORAGE_EVENT,
+  clearAuthenticationTokens,
+  persistAuthenticationTokens,
+} from "./authentication/persist-authentication-tokens";
 import {
   action as authenticationEmailAndPasswordForgotPassword,
   type IProps as IAuthenticationEmailAndPasswordForgotPasswordProps,

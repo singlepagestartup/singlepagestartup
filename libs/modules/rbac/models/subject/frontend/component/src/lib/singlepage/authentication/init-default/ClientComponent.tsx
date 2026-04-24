@@ -1,21 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IComponentPropsExtended } from "./interface";
-import { api } from "@sps/rbac/models/subject/sdk/client";
-import Cookie from "js-cookie";
+import {
+  api,
+  clearAuthenticationTokens,
+} from "@sps/rbac/models/subject/sdk/client";
 import { useCookies } from "react-cookie";
 import { useJwt } from "react-jwt";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { useLocalStorage } from "@sps/shared-frontend-client-hooks";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export function Component(props: IComponentPropsExtended) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [seconds, setSeconds] = useState(new Date().getTime());
+  const lastAuthActionRef = useRef<string | null>(null);
 
   const refresh = api.authenticationRefresh({
     mute: true,
@@ -27,12 +29,13 @@ export function Component(props: IComponentPropsExtended) {
   });
   const [cookies] = useCookies(["rbac.subject.jwt"]);
   const refreshToken = useLocalStorage("rbac.subject.refresh");
+  const jwtCookie = cookies["rbac.subject.jwt"];
 
   const tokenDecoded = useJwt<{
     exp: number;
     iat: number;
     subject: { id: string };
-  }>(cookies["rbac.subject.jwt"]);
+  }>(jwtCookie);
   const refreshTokenDecoded = useJwt<{
     exp: number;
     iat: number;
@@ -48,71 +51,107 @@ export function Component(props: IComponentPropsExtended) {
       return;
     }
 
-    if (!refreshToken && typeof refreshToken !== "string") {
-      init.refetch();
-    }
-  }, [refreshToken, isOAuthCallbackPending]);
+    const decodedJwt = tokenDecoded.decodedToken;
+    const hasValidJwt = decodedJwt ? decodedJwt.exp * 1000 >= seconds : false;
 
-  const handleStorageChange = () => {
-    if (isOAuthCallbackPending) {
+    if (hasValidJwt) {
+      lastAuthActionRef.current = null;
       return;
     }
 
-    if (cookies["rbac.subject.jwt"] && !tokenDecoded.decodedToken) {
-      return;
-    }
+    const hasValidRefreshToken =
+      Boolean(refreshToken) && !refreshTokenDecoded.isExpired;
 
-    /**
-     * No Cookies['rbac.subject.jwt']
-     */
-    if (!tokenDecoded.decodedToken) {
-      if (refreshToken && !refreshTokenDecoded.isExpired) {
+    if (!decodedJwt) {
+      if (hasValidRefreshToken && refreshToken) {
+        const refreshActionKey = `refresh:missing-or-invalid-jwt:${refreshToken}`;
+
+        if (
+          lastAuthActionRef.current === refreshActionKey ||
+          refresh.isPending
+        ) {
+          return;
+        }
+
+        lastAuthActionRef.current = refreshActionKey;
         refresh.mutate({
           data: {
             refresh: refreshToken,
           },
         });
         return;
-      } else {
-        init.refetch();
-        return;
       }
-    } else if (tokenDecoded.decodedToken.exp * 1000 < seconds) {
-      if (!refreshToken && typeof refreshToken !== "string") {
-        Cookie.remove("rbac.subject.jwt");
-        localStorage.removeItem("rbac.subject.refresh");
+
+      const initActionKey = "init:missing-jwt";
+
+      if (lastAuthActionRef.current === initActionKey || init.isFetching) {
         return;
       }
 
-      if (refreshToken.length) {
-        if (!refresh.isPending) {
-          refresh.mutate({
-            data: {
-              refresh: refreshToken,
-            },
-          });
-        }
-      }
+      lastAuthActionRef.current = initActionKey;
+      init.refetch();
+      return;
     }
-  };
 
-  useEffect(() => {
-    handleStorageChange();
+    if (decodedJwt.exp * 1000 < seconds) {
+      if (hasValidRefreshToken && refreshToken) {
+        const refreshActionKey = `refresh:expired-jwt:${decodedJwt.exp}:${refreshToken}`;
+
+        if (
+          lastAuthActionRef.current === refreshActionKey ||
+          refresh.isPending
+        ) {
+          return;
+        }
+
+        lastAuthActionRef.current = refreshActionKey;
+        refresh.mutate({
+          data: {
+            refresh: refreshToken,
+          },
+        });
+        return;
+      }
+
+      clearAuthenticationTokens();
+
+      const initActionKey = `init:expired-jwt:${decodedJwt.exp}`;
+
+      if (lastAuthActionRef.current === initActionKey || init.isFetching) {
+        return;
+      }
+
+      lastAuthActionRef.current = initActionKey;
+      init.refetch();
+    }
   }, [
     isOAuthCallbackPending,
-    tokenDecoded.decodedToken,
+    init.isFetching,
+    init.refetch,
+    jwtCookie,
+    refresh.isPending,
+    refresh.mutate,
     refreshToken,
     refreshTokenDecoded.isExpired,
     seconds,
+    tokenDecoded.decodedToken,
   ]);
 
   useEffect(() => {
-    if (refresh.isError) {
-      Cookie.remove("rbac.subject.jwt");
-      localStorage.removeItem("rbac.subject.refresh");
-      router.replace("/");
+    if (!refresh.isError) {
+      return;
     }
-  }, [refresh.status]);
+
+    clearAuthenticationTokens();
+  }, [refresh.isError]);
+
+  useEffect(() => {
+    if (!refresh.isSuccess && !init.isSuccess) {
+      return;
+    }
+
+    lastAuthActionRef.current = null;
+  }, [init.isSuccess, refresh.isSuccess]);
 
   useEffect(() => {
     const interval = setInterval(() => setSeconds(Date.now()), 1000);
