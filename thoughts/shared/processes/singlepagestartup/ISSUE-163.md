@@ -3,9 +3,9 @@ issue_number: 163
 issue_title: "Create standalone Waku app to validate apps/host frontend startup behavior"
 repository: singlepagestartup
 created_at: 2026-04-24T23:50:06Z
-last_updated: 2026-04-25T03:17:02+0300
+last_updated: 2026-04-25T03:38:31+0300
 status: active
-current_phase: research
+current_phase: plan
 ---
 
 # Process Log: ISSUE-163 - Create standalone Waku app to validate apps/host frontend startup behavior
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
+- Plan: completed
 - Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Current phase: plan
+- Next step: human review, then core/30-implement
 
 ## Phase Notes
 
@@ -39,9 +39,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Created the implementation plan for a standalone `apps/waku-host` parity spike, attached it to GitHub issue `#163`, and anchored the work around four phases: workspace/app scaffold, route and shell parity, host render-chain parity, and final verification plus viability documentation.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-163.md`, `https://github.com/singlepagestartup/singlepagestartup/issues/163#issuecomment-4317236862`
+- Notes: The plan keeps `apps/host` intact, treats `apps/waku-host` as the new evaluation surface, and makes the existing `widgets-to-external-widgets` path the main runtime viability gate because that was the highest-risk surface in issue `#162`.
 
 ### Implement
 
@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 2 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — GitHub helper sequence required escalated network access
 
@@ -74,6 +74,26 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Closed the stalled analyzer sessions, then completed the synthesis from direct local file reads plus the successful `codebase-locator`, `codebase-pattern-finder`, `thoughts-locator`, and `thoughts-analyzer` outputs.
 - **Preventive Action**: When research synthesis depends on a `codebase-analyzer` pass in this environment, keep the scope narrow from the start and fall back quickly to local reads plus locator/pattern findings if the analyzer misses repeated timeout windows.
 - **References**: `.codex/agents/codebase-analyzer.toml`, `thoughts/shared/research/singlepagestartup/ISSUE-163.md`
+
+### Incident 3 — Planning GitHub helper steps required escalated network access
+
+- **Phase**: Plan
+- **Occurrences**: 3
+- **Symptom**: The first attempt to move issue `#163` into `Plan in Progress` failed with repeated `error connecting to api.github.com`, and the later comment-sync and plan-attachment GitHub steps also required networked helper access outside the sandbox.
+- **Root Cause**: GitHub API access for the planning helper sequence was still blocked by the sandboxed network context.
+- **Fix**: Re-ran the status update with escalated network permissions, then used the same escalated helper path for issue comment sync and posting the final plan comment.
+- **Preventive Action**: During future planning sessions in this environment, escalate GitHub helper reads/writes immediately after the first `api.github.com` connectivity failure instead of retrying the sandboxed path.
+- **References**: `.claude/commands/core/20-plan.md`, `.claude/helpers/update_issue_status.sh`, `.claude/helpers/gh_issue_comment.sh`
+
+### Incident 4 — `codebase-analyzer` never returned after the interrupted planning turn
+
+- **Phase**: Plan
+- **Occurrences**: 1
+- **Symptom**: After the earlier interrupted turn, the restarted `codebase-analyzer` planning sub-task never produced a result despite repeated extended waits, while the other planning sub-agents completed successfully.
+- **Root Cause**: The analyzer session stalled or was lost across the interrupted planning turn, leaving the planning pass without its dedicated synthesis output.
+- **Fix**: Completed the plan from direct local reads plus the successful `codebase-locator`, `codebase-pattern-finder`, and `thoughts-locator` outputs, then folded the necessary line-level references into the final plan manually.
+- **Preventive Action**: For future planning passes in this repo, treat direct file reads as the primary source of truth and stop waiting on `codebase-analyzer` after one extended timeout window when other context gatherers have already returned.
+- **References**: `.codex/agents/codebase-analyzer.toml`, `thoughts/shared/plans/singlepagestartup/ISSUE-163.md`
 
 ## Reusable Learnings
 
