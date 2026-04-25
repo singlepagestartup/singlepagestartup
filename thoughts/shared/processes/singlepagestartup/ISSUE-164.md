@@ -3,9 +3,9 @@ issue_number: 164
 issue_title: "Port draft chat UI into SPS subject social module"
 repository: singlepagestartup
 created_at: 2026-04-25T19:52:05Z
-last_updated: 2026-04-25T19:54:36Z
+last_updated: 2026-04-25T20:18:00Z
 status: active
-current_phase: create
+current_phase: research
 ---
 
 # Process Log: ISSUE-164 - Port draft chat UI into SPS subject social module
@@ -17,11 +17,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Phase Status
 
 - Create: completed
-- Research: not_started
+- Research: completed
 - Plan: not_started
 - Implement: not_started
-- Current phase: create
-- Next step: run core/10-research for issue 164
+- Current phase: research
+- Next step: human review, then core/20-plan
 
 ## Phase Notes
 
@@ -33,9 +33,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Research
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Researched the draft `ChatPage.tsx`, current RBAC subject social-module chat components, host `/social/chats/...` composition, subject-scoped social chat/thread/message/action SDK and backend routes, and historical issue-154 thread context.
+- Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-164.md`
+- Notes: Current SPS chat surface already has host chat/thread routes, RBAC subject wrappers, thread list/create, thread-scoped message find/create, chat-scoped message update/delete, and action find/create. The draft source remains a local-state monolith with three-column desktop and single-panel mobile behavior.
 
 ### Plan
 
