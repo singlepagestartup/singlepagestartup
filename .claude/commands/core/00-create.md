@@ -61,19 +61,44 @@ You create a new development issue with local documentation and GitHub issue cre
    - Run the GitHub/project sequence inside a single `bash` shell. The repo may default to `zsh`, but this workflow sources `.claude/helpers/load_config.sh` and must keep the exported config in the same shell context:
      ```bash
      bash -lc '
+     set -euo pipefail
      source .claude/helpers/load_config.sh
      # gh issue/project commands go here
      '
      ```
+   - Prefer the shared helper `.claude/helpers/create_issue_with_project.sh` so issue creation, URL/number validation, project assignment, and status updates fail fast as one unit.
    - If `gh` fails with `error connecting to api.github.com` in a sandboxed agent, rerun the same `bash -lc` block with network escalation instead of changing the workflow steps.
-   - Create issue via `gh issue create --title "..." --body-file ISSUE_BODY_FILE --label "size:[size]"`:
+   - Preferred helper-based sequence:
      ```bash
+     bash -lc '
+     set -euo pipefail
      ISSUE_BODY_FILE="$(mktemp)"
      cat > "$ISSUE_BODY_FILE" <<'EOF'
      [Issue description markdown]
      EOF
-     gh issue create --title "..." --body-file "$ISSUE_BODY_FILE" --label "size:[size]"
+     .claude/helpers/create_issue_with_project.sh \
+       "..." \
+       "$ISSUE_BODY_FILE" \
+       "[size]" \
+       "Triage" \
+       "Research Needed"
      rm -f "$ISSUE_BODY_FILE"
+     '
+     ```
+   - If the helper cannot be used, create issue via a fail-fast guarded manual sequence:
+     ```bash
+     set -euo pipefail
+     ISSUE_BODY_FILE="$(mktemp)"
+     cat > "$ISSUE_BODY_FILE" <<'EOF'
+     [Issue description markdown]
+     EOF
+     ISSUE_URL="$(gh issue create --title "..." --body-file "$ISSUE_BODY_FILE" --label "size:[size]")"
+     rm -f "$ISSUE_BODY_FILE"
+     ISSUE_NUMBER="${ISSUE_URL##*/}"
+     if [ -z "$ISSUE_URL" ] || [ -z "$ISSUE_NUMBER" ]; then
+       echo "Error: Issue creation failed before project/status sync" >&2
+       exit 1
+     fi
      ```
    - Add to GitHub Project via helper (uses `.claude/.env` owner and GraphQL fallback):
      ```bash
@@ -96,7 +121,7 @@ You create a new development issue with local documentation and GitHub issue cre
 
 4. **Update status to "Research Needed"**:
 
-   - Run `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research Needed"`
+   - Run `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "Research Needed"` if the helper-based sequence above did not already perform that final transition.
    - This signals the issue is ready for the `research` phase
    - Update the process file `Next step` to indicate `core/10-research`
 

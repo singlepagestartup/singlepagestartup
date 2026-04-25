@@ -20,6 +20,7 @@ Codex wrapper for `.claude/commands/utilities/commit.md`.
 - For delegated research tasks, use Codex subagents defined in `.codex/agents/*.toml`.
 - Do not rewrite process policy in this phase; preserve behavior parity with the source command.
 - Keep git write operations (`git add`, `git commit`) in one consistent execution context.
+- In sandboxed Codex sessions, prefer requesting elevation before the first git write block instead of intentionally paying for a predictable `.git/index.lock` failure.
 - In sandboxed sessions, if `.git/index.lock` permission errors occur, immediately retry git write commands with elevated permissions.
 - Quote file paths with shell glob characters (`[]`, `*`, `?`) during inspection/staging/commit commands.
 

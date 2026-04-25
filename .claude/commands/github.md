@@ -159,6 +159,7 @@ Use these scripts instead of GraphQL queries for simpler operations:
 - `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
 - `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
 - `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.claude/.env` owner/type, with GraphQL fallback
+- `.claude/helpers/create_issue_with_project.sh TITLE BODY_FILE SIZE_LABEL [INITIAL_STATUS] [FINAL_STATUS]` — Create an issue, validate the returned URL/number, add it to the project, and apply status transitions as one fail-fast step
 - `.claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file PATH` — Safely create/edit issue comments from markdown body files (prevents shell interpolation issues)
 
 ### Updating Status Field
@@ -257,26 +258,22 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
 5. **Create the GitHub issue:**
 
    ```bash
+   set -euo pipefail
    ISSUE_BODY_FILE="$(mktemp)"
    cat > "$ISSUE_BODY_FILE" <<'EOF'
    DESCRIPTION
    EOF
-   gh issue create \
-     --title "TITLE" \
-     --body-file "$ISSUE_BODY_FILE" \
-     --label "size:small,status:triage"
+   .claude/helpers/create_issue_with_project.sh \
+     "TITLE" \
+     "$ISSUE_BODY_FILE" \
+     "small" \
+     "Triage"
    rm -f "$ISSUE_BODY_FILE"
    ```
 
 6. **Add to GitHub Project and set status to Triage:**
 
-   ```bash
-   # Add issue to project (helper resolves owner from .claude/.env and falls back to GraphQL)
-   .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL
-
-   # Then update status field to Triage (use helper script)
-   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
-   ```
+   This is handled by `.claude/helpers/create_issue_with_project.sh`. If you cannot use the helper, keep the manual fallback in one `bash -lc` block with `set -euo pipefail` and abort immediately if `gh issue create` does not return a valid issue URL and number.
 
 7. **Post-creation actions:**
 
