@@ -91,12 +91,12 @@ Introduce the new Waku app as a first-class workspace application with its own r
 
 - [ ] `npm run lint` passes with the new workspace files included.
 - [ ] `nx run waku-host:dev` starts the standalone app successfully.
-- [ ] `nx run waku-host:build` produces a production build artifact for the new app.
+- [x] `nx run waku-host:build` produces a production build artifact for the new app.
 
 #### Manual Verification
 
-- [ ] Developers can run the Waku spike without changing `apps/host` targets or scripts.
-- [ ] The app location and runtime intent are obvious from the directory structure and README.
+- [x] Developers can run the Waku spike without changing `apps/host` targets or scripts.
+- [x] The app location and runtime intent are obvious from the directory structure and README.
 
 ---
 
@@ -147,12 +147,12 @@ Recreate the host runtime boundary that sits above page data resolution: root sh
 #### Automated Verification
 
 - [ ] `npm run lint` passes for the Waku route/bootstrap code and any shared extractions.
-- [ ] `nx run waku-host:build` succeeds with the new route boundary in place.
+- [x] `nx run waku-host:build` succeeds with the new route boundary in place.
 
 #### Manual Verification
 
-- [ ] Visiting a non-prefixed URL redirects or normalizes to the default language consistently with the host app.
-- [ ] `/admin` routes render the admin shell instead of attempting public page lookup.
+- [x] Visiting a non-prefixed URL redirects or normalizes to the default language consistently with the host app.
+- [x] `/admin` routes render the admin shell instead of attempting public page lookup.
 - [ ] A missing public page follows the `/404` lookup path and falls back to a plain not-found screen only when `/404` is absent.
 
 ---
@@ -219,7 +219,7 @@ Bind the Waku app to the existing SPS host page rendering pipeline so viability 
 #### Automated Verification
 
 - [ ] `npm run lint` passes with any shared compatibility extractions required by the host component tree.
-- [ ] `nx run waku-host:build` and `nx run waku-host:start` succeed with the real host page/render pipeline wired in.
+- [x] `nx run waku-host:build` and `nx run waku-host:start` succeed with the real host page/render pipeline wired in.
 
 #### Manual Verification
 
@@ -279,7 +279,7 @@ Finish the spike with the exact verification slice the ticket requires and leave
 - [ ] The Waku app starts in development mode and serves a representative public page successfully.
 - [ ] The production build and production start flows work for the same representative page.
 - [ ] `/admin`, missing-page handling, and at least one external-widget page behave closely enough to `apps/host` to support a viability recommendation.
-- [ ] The README leaves a future implementer or reviewer with a clear go/no-go assessment for Waku adoption.
+- [x] The README leaves a future implementer or reviewer with a clear go/no-go assessment for Waku adoption.
 
 ## Testing Strategy
 

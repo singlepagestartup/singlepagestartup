@@ -6,4 +6,4 @@ export const insertSchema = createInsertSchema(Table);
 export const selectSchema = createSelectSchema(Table);
 export type ISelectSchema = typeof Table.$inferSelect;
 export type IInsertSchema = typeof Table.$inferInsert;
-export const dataDirectory = `${__dirname}/data`;
+export const dataDirectory = new URL("./data", import.meta.url).pathname;

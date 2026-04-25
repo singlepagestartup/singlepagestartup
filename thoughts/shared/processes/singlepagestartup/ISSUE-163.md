@@ -3,9 +3,9 @@ issue_number: 163
 issue_title: "Create standalone Waku app to validate apps/host frontend startup behavior"
 repository: singlepagestartup
 created_at: 2026-04-24T23:50:06Z
-last_updated: 2026-04-25T03:38:31+0300
+last_updated: 2026-04-25T13:27:06Z
 status: active
-current_phase: plan
+current_phase: implement
 ---
 
 # Process Log: ISSUE-163 - Create standalone Waku app to validate apps/host frontend startup behavior
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: not_started
-- Current phase: plan
-- Next step: human review, then core/30-implement
+- Implement: in_progress
+- Current phase: implement
+- Next step: finish live API-backed public page parity verification, then run the remaining checks and submit PR
 
 ## Phase Notes
 
@@ -45,15 +45,15 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Built a standalone `apps/waku-host` spike that reuses the current SPS host shell and host page entrypoints through Waku-specific routes, `next/*` compatibility shims, and a Waku build compatibility layer. Production build/start now succeed, `/` and `/admin` normalize into language-prefixed routes, and `/en/admin` renders the reused admin shell. The remaining gap is live API-backed public-page and external-widget parity: `/en` and `/ru` currently prove shell startup plus not-found fallback, but they do not yet prove database-driven page resolution.
+- Outputs: `apps/waku-host/`, `apps/waku-host/README.md`, `package.json`, `package-lock.json`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-163-progress.md`
+- Notes: Implementation started on 2026-04-25 after the issue status gate passed in `Ready for Dev`, the GitHub status was advanced to `In Dev`, and no new post-plan GitHub requirements were found in the synced issue comments. The spike also required an ESM-safe `dataDirectory` export adjustment across backend repository barrels because the Waku render path imported those modules during bundling.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 4 -->
+<!-- incident-count: 7 -->
 
 ### Incident 1 — GitHub helper sequence required escalated network access
 
@@ -94,6 +94,36 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Completed the plan from direct local reads plus the successful `codebase-locator`, `codebase-pattern-finder`, and `thoughts-locator` outputs, then folded the necessary line-level references into the final plan manually.
 - **Preventive Action**: For future planning passes in this repo, treat direct file reads as the primary source of truth and stop waiting on `codebase-analyzer` after one extended timeout window when other context gatherers have already returned.
 - **References**: `.codex/agents/codebase-analyzer.toml`, `thoughts/shared/plans/singlepagestartup/ISSUE-163.md`
+
+### Incident 5 — Waku `0.21.x` emitted ESM entry files that did not match the runtime lookup paths
+
+- **Phase**: Implement
+- **Occurrences**: 3
+- **Symptom**: The Waku production build completed, but the generated output failed because runtime entry lookups expected `dist/entries.js`, `rsdw-server.js`, and `.js` asset references while the build emitted `.mjs` files.
+- **Root Cause**: The Waku `0.21.x` build output in this workspace used ESM filenames that did not match the runtime path assumptions used during production start.
+- **Fix**: Added a compatibility step in `apps/waku-host/waku.config.ts` that copies `entries.mjs` to `entries.js`, rewrites `rsdw-server` and `rsf` asset references to `.mjs`, and writes a `dist/package.json` with `"type": "module"`.
+- **Preventive Action**: When introducing Waku `0.21.x` into this Nx workspace, inspect the produced `dist` filenames before assuming the runtime will resolve them directly; keep a post-build compatibility rewrite ready if `.mjs` output and `.js` runtime assumptions diverge.
+- **References**: `apps/waku-host/waku.config.ts`, `apps/waku-host/project.json`
+
+### Incident 6 — Backend repository barrels were not ESM-safe when imported through the Waku render path
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: Production build/start failed with `__dirname is not defined in ES module scope`, and the first attempt to replace it with `node:url` helpers then broke public-bundle output because `node:url` was externalized.
+- **Root Cause**: Many backend repository `dataDirectory` exports assumed CommonJS globals, but the Waku parity spike pulled those barrels into an ESM bundling path.
+- **Fix**: Replaced the affected `dataDirectory` exports with `new URL("./data", import.meta.url).pathname`, which removed the `__dirname` dependency without introducing a browser-bundle `node:url` import.
+- **Preventive Action**: Before reusing SPS server-side repository barrels in Waku or other ESM-first runtimes, scan for `__dirname` exports and convert path resolution to `import.meta.url`-based forms that do not require `node:*` helpers in shared bundle paths.
+- **References**: `libs/modules/*/backend/repository/database/src/lib/index.ts`, `apps/waku-host/src/components/PrefixedHostPage.tsx`
+
+### Incident 7 — Full `./up.sh` bootstrap was too broad for quick parity verification
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: The standard infrastructure bootstrap entered a long repo-wide migration fan-out and never reached a stable state quickly enough to support same-turn verification of a seeded API-backed public page.
+- **Root Cause**: The default bootstrap path is optimized for full workspace setup, not for a narrow host-page parity spike that only needs enough data to prove `find-by-url` and external-widget rendering.
+- **Fix**: Completed the build/start/admin-shell validation in this turn and recorded live API-backed public-page plus external-widget verification as the remaining implementation gap.
+- **Preventive Action**: For future frontend parity spikes, provide a scoped API/bootstrap plus seed path before relying on `./up.sh` for verification.
+- **References**: `./up.sh`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-163-progress.md`
 
 ## Reusable Learnings
 

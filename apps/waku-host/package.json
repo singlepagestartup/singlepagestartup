@@ -1,0 +1,9 @@
+{
+  "name": "waku-host",
+  "private": true,
+  "scripts": {
+    "dev": "node ./scripts/run-waku.mjs dev -p 3001",
+    "build": "NEXT_PHASE=phase-production-build waku build",
+    "start": "waku start -p 3001"
+  }
+}
