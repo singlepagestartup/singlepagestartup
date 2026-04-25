@@ -3,9 +3,9 @@ issue_number: 164
 issue_title: "Port draft chat UI into SPS subject social module"
 repository: singlepagestartup
 created_at: 2026-04-25T19:52:05Z
-last_updated: 2026-04-25T20:18:00Z
+last_updated: 2026-04-25T20:56:10Z
 status: active
-current_phase: research
+current_phase: plan
 ---
 
 # Process Log: ISSUE-164 - Port draft chat UI into SPS subject social module
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
+- Plan: completed
 - Implement: not_started
-- Current phase: research
-- Next step: human review, then core/20-plan
+- Current phase: plan
+- Next step: human review, then core/30-implement
 
 ## Phase Notes
 
@@ -39,9 +39,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Created the implementation plan for porting the draft chat workspace into the existing RBAC subject social-module chat surfaces, preserving host routes, SDK-provider data access, relation composition, and supported chat/thread/message/action APIs.
+- Outputs: `thoughts/shared/plans/singlepagestartup/ISSUE-164.md`, `https://github.com/singlepagestartup/singlepagestartup/issues/164#issuecomment-4320535556`
+- Notes: Planning context gathered from the ticket, research artifact, GitHub issue comments, repository docs, draft chat UI, target RBAC subject chat components, and parallel code/thoughts discovery. The scope interpretation was confirmed on 2026-04-25: port the supported layout and chat/thread/message/action UX, while keeping unsupported draft-only member/settings/reaction/unread behaviors out of scope or visual-only unless separately backed by APIs.
 
 ### Implement
 
@@ -53,16 +53,26 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 1 -->
+<!-- incident-count: 2 -->
 
 ### Incident 1 — GitHub helper sequence required escalated network access
 
 - **Phase**: Create
-- **Occurrences**: 1
+- **Occurrences**: 2
 - **Symptom**: The initial `bash -lc` GitHub workflow block failed with `error connecting to api.github.com` while trying to create the issue through `gh`.
 - **Root Cause**: GitHub API access was blocked by the sandboxed network context for the `gh` helper sequence.
-- **Fix**: Re-ran the same `bash -lc` issue/project workflow block with escalated network permissions, then completed issue creation, project assignment, and status updates successfully.
+- **Fix**: Re-ran the same `bash -lc` issue/project workflow block with escalated network permissions, then completed issue creation, project assignment, status updates, and later issue comment reads successfully.
 - **Preventive Action**: For future `core-*` GitHub helper flows in this environment, rerun the unchanged `bash -lc` block with escalation as soon as `gh` reports connectivity failures to `api.github.com`.
 - **References**: `.claude/commands/core/00-create.md`, `.codex/skills/core-00-create/SKILL.md`, `thoughts/shared/tickets/singlepagestartup/ISSUE-164.md`
+
+### Incident 2 — Draft-only chat behaviors require scope confirmation
+
+- **Phase**: Plan
+- **Occurrences**: 1
+- **Symptom**: Planning cannot safely write a final implementation plan from the phrase "port draft chat UI" because the draft includes local-only settings, member management, unread snapshots, reactions, and attachment reorder behavior that do not all have supported SPS subject/social APIs.
+- **Root Cause**: The ticket intentionally says to use the draft as visual source of truth while also saying not to assume unsupported chat/thread/member-management APIs exist.
+- **Fix**: Paused before writing `thoughts/shared/plans/singlepagestartup/ISSUE-164.md` and requested explicit confirmation that the plan should port the layout and supported chat/thread/message/action UX while marking unsupported draft-only behaviors as out of scope or visual-only placeholders.
+- **Preventive Action**: For draft-to-SPS ports, confirm whether draft-only local interactions should be persisted, hidden, or implemented as non-persistent UI before writing the plan.
+- **References**: `thoughts/shared/tickets/singlepagestartup/ISSUE-164.md`, `thoughts/shared/research/singlepagestartup/ISSUE-164.md`, `apps/drafts/incoming/singlepagestartup/src/app/components/ChatPage.tsx`
 
 ## Reusable Learnings
