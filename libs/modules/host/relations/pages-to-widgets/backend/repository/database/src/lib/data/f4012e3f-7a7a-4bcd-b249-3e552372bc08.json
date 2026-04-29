@@ -1,10 +1,10 @@
 {
-  "id": "cd23e931-33a4-442d-b920-ac9d1beb5b5d",
-  "createdAt": "2025-12-24T17:07:32.728Z",
-  "updatedAt": "2026-04-26T20:39:28.763Z",
+  "id": "f4012e3f-7a7a-4bcd-b249-3e552372bc08",
+  "createdAt": "2026-04-12T21:04:17.579Z",
+  "updatedAt": "2026-04-26T20:39:25.265Z",
   "variant": "default",
   "orderIndex": 1,
   "className": "w-full lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:w-3/4 lg:min-w-0 lg:flex-none lg:overflow-hidden",
-  "pageId": "42e4f5a8-7612-4d28-ad3e-4027835a6d37",
+  "pageId": "3fdabcf4-0db3-42c1-bb27-2178ef0e2097",
   "widgetId": "c786cb5d-3c7a-4694-b86f-74eee0241995"
 }

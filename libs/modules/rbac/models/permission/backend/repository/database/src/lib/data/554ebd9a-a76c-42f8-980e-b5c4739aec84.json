@@ -1,0 +1,9 @@
+{
+  "id": "554ebd9a-a76c-42f8-980e-b5c4739aec84",
+  "createdAt": "2026-04-29T20:22:31.304Z",
+  "updatedAt": "2026-04-29T20:22:31.304Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]"
+}

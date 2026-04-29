@@ -1,0 +1,9 @@
+{
+  "id": "998ea952-bb2a-4047-b2e0-4781d94f5f39",
+  "createdAt": "2026-01-31T00:16:43.688Z",
+  "updatedAt": "2026-01-31T00:16:43.688Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/widgets-to-website-builder-module-widgets"
+}
