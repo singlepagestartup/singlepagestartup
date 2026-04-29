@@ -25,14 +25,15 @@ export class Handler {
       const provider = c.req.param("provider");
       const contentType = c.req.header("content-type");
       const headers = c.req.header();
-      const rawBody = await c.req.text();
+      const isMultipart = contentType?.includes("multipart/form-data");
+      const rawBody = isMultipart ? "" : await c.req.text();
 
       logger.debug("🚀 ~ providerWebhook ~ headers:", headers);
-      logger.debug("🚀 ~ providerWebhook ~ c.req.text:", await c.req.text());
+      logger.debug("🚀 ~ providerWebhook ~ c.req.text:", rawBody);
 
       let data;
       if (contentType?.includes("application/json")) {
-        data = await c.req.json();
+        data = rawBody ? JSON.parse(rawBody) : {};
       } else if (contentType?.includes("multipart/form-data")) {
         const body = await c.req.parseBody();
 
@@ -40,8 +41,10 @@ export class Handler {
           throw new Error("Validation error. Files are not supported");
         }
 
-        if (typeof body["data"] !== "string") {
+        if (typeof body["data"] === "string") {
           data = JSON.parse(body["data"]);
+        } else if (body["data"]) {
+          data = body["data"];
         }
       } else if (contentType?.includes("application/x-www-form-urlencoded")) {
         const params = new URLSearchParams(rawBody);
@@ -155,6 +158,15 @@ export class Handler {
           callback: this.service.updatePaymentIntentStatus,
         });
       } else if (provider === "telegram-star") {
+        const rbacSecretKeyHeader =
+          c.req.header("X-RBAC-SECRET-KEY") || headers["x-rbac-secret-key"];
+
+        if (rbacSecretKeyHeader !== RBAC_SECRET_KEY) {
+          throw new Error(
+            "Forbidden error. Invalid Telegram Star webhook secret",
+          );
+        }
+
         result = await this.service.telegramStar({
           data,
           action: "webhook",

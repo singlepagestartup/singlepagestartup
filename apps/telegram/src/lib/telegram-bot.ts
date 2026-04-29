@@ -20,6 +20,7 @@ import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
 import * as jwt from "hono/jwt";
@@ -82,6 +83,69 @@ export class TelegarmBot {
       await ctx.conversation.exit();
       await ctx.reply("Leaving.");
     });
+  }
+
+  private getTelegramMessageThreadId(props: { ctx: GrammyContext }) {
+    const messageThreadId = (props.ctx.message as any)?.message_thread_id;
+
+    if (messageThreadId === undefined || messageThreadId === null) {
+      return undefined;
+    }
+
+    return String(messageThreadId);
+  }
+
+  private isTelegramForumTopicServiceMessage(props: { ctx: GrammyContext }) {
+    const message = props.ctx.message as any;
+
+    return Boolean(
+      message?.forum_topic_edited ||
+        message?.forum_topic_closed ||
+        message?.forum_topic_reopened ||
+        message?.general_forum_topic_hidden ||
+        message?.general_forum_topic_unhidden,
+    );
+  }
+
+  private getTelegramForumTopicCreated(props: { ctx: GrammyContext }) {
+    const message = props.ctx.message as any;
+
+    if (!message?.forum_topic_created) {
+      return;
+    }
+
+    const messageThreadId = this.getTelegramMessageThreadId({
+      ctx: props.ctx,
+    });
+
+    if (!messageThreadId) {
+      return;
+    }
+
+    return {
+      messageThreadId,
+    };
+  }
+
+  private async signSubjectJwt(props: { rbacModuleSubject: IRbacSubject }) {
+    if (!RBAC_JWT_SECRET) {
+      throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+    }
+
+    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+      throw new Error(
+        "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+      );
+    }
+
+    return jwt.sign(
+      {
+        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+        iat: Math.floor(Date.now() / 1000),
+        subject: props.rbacModuleSubject,
+      },
+      RBAC_JWT_SECRET,
+    );
   }
 
   private runInBackground(props: { label: string; task: () => Promise<void> }) {
@@ -258,6 +322,10 @@ export class TelegarmBot {
       this.runInBackground({
         label: "message:successful_payment",
         task: async () => {
+          if (!RBAC_SECRET_KEY) {
+            throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+          }
+
           await billingModulePaymentIntentApi.providerWebhook({
             data: {
               provider: "telegram-star",
@@ -269,6 +337,12 @@ export class TelegarmBot {
                 ctx.message.successful_payment.telegram_payment_charge_id,
               total_amount: ctx.message.successful_payment.total_amount,
             },
+            options: {
+              headers: {
+                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                "Cache-Control": "no-store",
+              },
+            },
           });
         },
       });
@@ -278,6 +352,37 @@ export class TelegarmBot {
 
     this.instance.on("message", async (ctx) => {
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
+
+      const telegramForumTopicCreated = this.getTelegramForumTopicCreated({
+        ctx,
+      });
+
+      if (telegramForumTopicCreated) {
+        this.runInBackground({
+          label: "message:forum_topic_created",
+          task: async () => {
+            await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
+              {
+                ctx,
+                telegram: {
+                  messageThreadId: telegramForumTopicCreated.messageThreadId,
+                  isTopicMessage: true,
+                },
+              },
+            );
+          },
+        });
+
+        return;
+      }
+
+      if (
+        this.isTelegramForumTopicServiceMessage({
+          ctx,
+        })
+      ) {
+        return;
+      }
 
       const mediaGroupId = ctx.message?.media_group_id;
 
@@ -350,10 +455,16 @@ export class TelegarmBot {
 
   async rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(props: {
     ctx: GrammyContext;
+    telegram?: {
+      messageText?: string;
+      messageThreadId?: string;
+      isTopicMessage?: boolean;
+    };
   }): Promise<{
     rbacModuleSubject: IRbacSubject;
     socialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
+    socialModuleThread: ISocialModuleThread;
   }> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
@@ -367,7 +478,15 @@ export class TelegarmBot {
       throw new Error("Validation error. Telegram chat id is required");
     }
 
-    const messageText = props.ctx.message?.text || props.ctx.message?.caption;
+    const messageText =
+      props.telegram?.messageText ||
+      props.ctx.message?.text ||
+      props.ctx.message?.caption;
+    const messageThreadId =
+      props.telegram?.messageThreadId ||
+      this.getTelegramMessageThreadId({
+        ctx: props.ctx,
+      });
 
     const bootstrap = await rbacModuleSubjectApi.telegramBootstrap({
       data: {
@@ -375,6 +494,10 @@ export class TelegarmBot {
           fromId: props.ctx.from.id,
           chatId: props.ctx.chat.id,
           messageText,
+          messageThreadId,
+          isTopicMessage:
+            props.telegram?.isTopicMessage ??
+            Boolean((props.ctx.message as any)?.is_topic_message),
         },
       },
       options: {
@@ -399,6 +522,7 @@ export class TelegarmBot {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
       socialModuleProfile: bootstrap.socialModuleProfile,
       socialModuleChat: bootstrap.socialModuleChat,
+      socialModuleThread: bootstrap.socialModuleThread,
     };
   }
 
@@ -699,19 +823,16 @@ export class TelegarmBot {
       );
     }
 
-    const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
-      await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
-        ctx: props.ctx,
-      });
+    const {
+      rbacModuleSubject,
+      socialModuleProfile,
+      socialModuleChat,
+      socialModuleThread,
+    } = await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+      ctx: props.ctx,
+    });
 
-    const jwtToken = await jwt.sign(
-      {
-        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        iat: Math.floor(Date.now() / 1000),
-        subject: rbacModuleSubject,
-      },
-      RBAC_JWT_SECRET,
-    );
+    const jwtToken = await this.signSubjectJwt({ rbacModuleSubject });
 
     const sanitizedDescription = props.data.description.replaceAll(
       `@${TELEGRAM_SERVICE_BOT_USERNAME} `,
@@ -724,10 +845,11 @@ export class TelegarmBot {
       props.ctx.message.text.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`);
 
     if (!isGroup) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
         {
           id: rbacModuleSubject.id,
           socialModuleChatId: socialModuleChat.id,
+          socialModuleThreadId: socialModuleThread.id,
           socialModuleProfileId: socialModuleProfile.id,
           data: { ...props.data, description: sanitizedDescription },
           options: {
@@ -740,10 +862,11 @@ export class TelegarmBot {
     }
 
     if (isMentioned) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
         {
           id: rbacModuleSubject.id,
           socialModuleChatId: socialModuleChat.id,
+          socialModuleThreadId: socialModuleThread.id,
           socialModuleProfileId: socialModuleProfile.id,
           data: { ...props.data, description: sanitizedDescription },
           options: {

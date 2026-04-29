@@ -25,15 +25,17 @@ function dispatchBrowserAuthorizationStateChange() {
   window.dispatchEvent(new Event(authenticationStorageEvent));
 }
 
-function hasBrowserAuthorizationState() {
+function hasBrowserJwtCookie() {
   if (!browserGlobals.document) {
     return false;
   }
 
-  const hasJwtCookie = browserGlobals.document.cookie
+  return browserGlobals.document.cookie
     .split("; ")
     .some((cookie) => cookie.startsWith("rbac.subject.jwt="));
+}
 
+function hasBrowserRefreshToken() {
   let hasRefreshToken = false;
 
   try {
@@ -43,6 +45,13 @@ function hasBrowserAuthorizationState() {
   } catch {
     hasRefreshToken = false;
   }
+
+  return hasRefreshToken;
+}
+
+function hasBrowserAuthorizationState() {
+  const hasJwtCookie = hasBrowserJwtCookie();
+  const hasRefreshToken = hasBrowserRefreshToken();
 
   return hasJwtCookie || hasRefreshToken;
 }
@@ -70,6 +79,10 @@ function shouldTreatAsExpiredSession(props: {
   }
 
   if (invalidCredentialsPattern.test(props.message)) {
+    return false;
+  }
+
+  if (hasBrowserRefreshToken()) {
     return false;
   }
 

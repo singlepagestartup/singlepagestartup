@@ -19,6 +19,13 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Guarding access to resources.
 - Linking subjects to application-specific data.
 
+### Authorization layering:
+
+- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver.
+- Add route access through `rbac.permissions`; keep resource ownership and module-specific checks in `backend/app/middlewares/src/lib/*` middleware for that module.
+- Controllers should compose exported middleware instances, not define middleware bodies inline.
+- Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
+
 ---
 
 ## 2. Models

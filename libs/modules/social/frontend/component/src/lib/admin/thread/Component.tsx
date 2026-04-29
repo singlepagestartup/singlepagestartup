@@ -2,6 +2,7 @@
 
 import { Component as ParentComponent } from "@sps/social/models/thread/frontend/component";
 import { Component as ThreadsToMessages } from "@sps/social/relations/threads-to-messages/frontend/component";
+import { Component as ThreadsToActions } from "@sps/social/relations/threads-to-actions/frontend/component";
 import { Component as ChatsTothreads } from "@sps/social/relations/chats-to-threads/frontend/component";
 import { Component as ThreadsToEcommerceModuleProducts } from "@sps/social/relations/threads-to-ecommerce-module-products/frontend/component";
 
@@ -23,6 +24,31 @@ export function Component() {
 
               return (
                 <ThreadsToMessages
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "threadId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
+            threadsToActions={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ThreadsToActions
                   isServer={isServer}
                   variant="admin-table"
                   apiProps={{

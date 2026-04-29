@@ -6,7 +6,9 @@ import { Service } from "../../service";
 import { Context } from "hono";
 import {
   RequestProfileSubjectIdOwner,
+  RequestSocialModuleThreadBelongsToChat,
   RequestSubjectIdOwner,
+  RequestSubjectOwnsSocialModuleChat,
 } from "../../../../../middlewares";
 
 import { Handler as AuthenticationMe } from "./authentication/me";
@@ -59,8 +61,14 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./soci
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionCreate } from "./social-module/profile/find-by-id/chat/find-by-id/action/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionFind } from "./social-module/profile/find-by-id/chat/find-by-id/action/find";
 import { Handler as SocialModuleChatCreate } from "./social-module/chat/create";
+import { Handler as SocialModuleChatFindByIdUpdate } from "./social-module/chat/find-by-id/update";
 import { Handler as SocialModuleChatFindByIdThreadFind } from "./social-module/chat/find-by-id/thread/find";
 import { Handler as SocialModuleChatFindByIdThreadCreate } from "./social-module/chat/find-by-id/thread/create";
+import { Handler as SocialModuleChatFindByIdThreadUpdate } from "./social-module/chat/find-by-id/thread/update";
+import { Handler as SocialModuleChatFindByIdThreadDelete } from "./social-module/chat/find-by-id/thread/delete";
+import { Handler as SocialModuleChatFindByIdProfileCreate } from "./social-module/chat/find-by-id/profile/create";
+import { Handler as SocialModuleChatFindByIdProfileSearch } from "./social-module/chat/find-by-id/profile/search";
+import { Handler as SocialModuleChatFindByIdProfileDelete } from "./social-module/chat/find-by-id/profile/delete";
 import { Handler as TelegramBootstrap } from "./telegram/bootstrap";
 import { Handler as TelegramSyncMembership } from "./telegram/sync-membership";
 import { Handler as TelegramCheckoutFreeSubscription } from "./telegram/checkout-free-subscription";
@@ -302,15 +310,65 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
+        method: "PATCH",
+        path: "/:id/social-module/chats/:socialModuleChatId",
+        handler: this.socialModuleChatFindByIdUpdate,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
         method: "GET",
         path: "/:id/social-module/chats/:socialModuleChatId/threads",
         handler: this.socialModuleChatFindByIdThreadFind,
-        middlewares: [new RequestSubjectIdOwner().init()],
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+        ],
       },
       {
         method: "POST",
         path: "/:id/social-module/chats/:socialModuleChatId/threads",
         handler: this.socialModuleChatFindByIdThreadCreate,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId",
+        handler: this.socialModuleChatFindByIdThreadUpdate,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+          new RequestSocialModuleThreadBelongsToChat(this.service).init(),
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/:id/social-module/chats/:socialModuleChatId/threads/:socialModuleThreadId",
+        handler: this.socialModuleChatFindByIdThreadDelete,
+        middlewares: [
+          new RequestSubjectIdOwner().init(),
+          new RequestSubjectOwnsSocialModuleChat(this.service).init(),
+          new RequestSocialModuleThreadBelongsToChat(this.service).init(),
+        ],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/chats/:socialModuleChatId/profiles",
+        handler: this.socialModuleChatFindByIdProfileCreate,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/chats/:socialModuleChatId/profiles/search",
+        handler: this.socialModuleChatFindByIdProfileSearch,
+        middlewares: [new RequestSubjectIdOwner().init()],
+      },
+      {
+        method: "DELETE",
+        path: "/:id/social-module/chats/:socialModuleChatId/profiles/:socialModuleProfileId",
+        handler: this.socialModuleChatFindByIdProfileDelete,
         middlewares: [new RequestSubjectIdOwner().init()],
       },
       {
@@ -586,6 +644,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new SocialModuleChatCreate(this.service).execute(c, next);
   }
 
+  async socialModuleChatFindByIdUpdate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdUpdate(this.service).execute(c, next);
+  }
+
   async socialModuleChatFindByIdThreadFind(
     c: Context,
     next: any,
@@ -601,6 +666,56 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleChatFindByIdThreadCreate(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdThreadUpdate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdThreadUpdate(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdThreadDelete(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdThreadDelete(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdProfileCreate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdProfileCreate(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdProfileSearch(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdProfileSearch(this.service).execute(
+      c,
+      next,
+    );
+  }
+
+  async socialModuleChatFindByIdProfileDelete(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleChatFindByIdProfileDelete(this.service).execute(
       c,
       next,
     );

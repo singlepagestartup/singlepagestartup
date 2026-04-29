@@ -576,6 +576,7 @@ Commands spawn **sub-agents** from `.claude/agents/` to do parallel research. Yo
 | `thoughts-locator`        | Searches `thoughts/` for existing notes on the topic           |
 | `thoughts-analyzer`       | Deep-reads thoughts documents to extract research context      |
 | `web-search-researcher`   | Searches the web for external docs, APIs, or best practices    |
+| `browser-tester`          | Verifies authenticated SPS UI flows in a real browser          |
 
 When you run `/ralph_plan`, for example, the command spawns several of these in parallel, then synthesizes their findings into the plan. This is why plans reference real file paths and actual patterns from the codebase rather than guesses.
 

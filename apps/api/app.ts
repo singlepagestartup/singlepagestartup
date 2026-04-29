@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serveStatic, createBunWebSocket } from "hono/bun";
+import { createBunWebSocket } from "hono/bun";
+import { join, normalize } from "node:path";
 import { type ServerWebSocket } from "bun";
 import { ExceptionFilter, ParseQueryMiddleware } from "@sps/shared-backend-api";
 import {
@@ -64,7 +65,52 @@ app.use(
 const exceptionFilter = new ExceptionFilter();
 app.onError((err, c) => exceptionFilter.catch(err, c));
 
-app.use("/public/*", serveStatic({ root: "./" }));
+app.on(["GET", "HEAD"], "/public/*", async (c) => {
+  const relativePath = normalize(
+    decodeURIComponent(c.req.path.replace(/^\/public\/?/, "")),
+  );
+
+  if (!relativePath || relativePath.startsWith("..")) {
+    return c.notFound();
+  }
+
+  const publicRoots = [
+    join(process.cwd(), "public"),
+    join(process.cwd(), "apps/api/public"),
+  ];
+
+  for (const publicRoot of publicRoots) {
+    const filePath = join(publicRoot, relativePath);
+
+    if (!filePath.startsWith(publicRoot)) {
+      continue;
+    }
+
+    const file = Bun.file(filePath);
+
+    if (!(await file.exists())) {
+      continue;
+    }
+
+    const headers = new Headers();
+    if (file.type) {
+      headers.set("Content-Type", file.type);
+    }
+    headers.set("Content-Length", String(file.size));
+
+    if (c.req.method === "HEAD") {
+      return new Response(null, {
+        headers,
+      });
+    }
+
+    return new Response(await file.arrayBuffer(), {
+      headers,
+    });
+  }
+
+  return c.notFound();
+});
 
 const requestIdMiddleware = new RequestIdMiddleware();
 app.use(requestIdMiddleware.init());

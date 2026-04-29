@@ -23,7 +23,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/telegram",
-        "command": "bun build src/bot.ts --outdir dist --target bun"
+        "command": "bun build server.ts --outdir dist --target bun"
       }
     },
     "eslint:lint": {}

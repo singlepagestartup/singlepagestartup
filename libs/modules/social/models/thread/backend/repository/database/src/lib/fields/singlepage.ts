@@ -9,6 +9,7 @@ export const fields = {
   variant: pgCore.text("variant").notNull().default("default"),
   title: pgCore.text("title"),
   description: pgCore.text("description"),
+  sourceSystemId: pgCore.text("source_system_id"),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()

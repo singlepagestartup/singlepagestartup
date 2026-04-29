@@ -198,7 +198,7 @@ export const TipTapEditable = forwardRef<
   return (
     <div className={cn("relative flex flex-col gap-1", props.className)}>
       {editor ? (
-        <div className="rounded-lg bg-white flex gap-1 max-w-full">
+        <div className="flex max-w-full flex-wrap gap-1 rounded-lg bg-white">
           <Toggle
             aria-label="Toggle Heading 1"
             data-state={editor.isActive("heading", { level: 1 }) ? "on" : "off"}
