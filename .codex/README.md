@@ -27,6 +27,11 @@ This directory adds a Codex-native workflow in parallel with the existing `.clau
 ## Subagents
 
 Codex subagents are defined in `.codex/agents/*.toml` and mirror `.claude/agents/*` responsibilities.
+Their `developer_instructions` should be detailed enough to stand alone: mission, constraints, strategy, output format, and explicit "do not" rules should match the quality bar of `.claude/agents`.
+
+- Read-only research/navigation: `codebase-locator`, `codebase-analyzer`, `codebase-pattern-finder`, `thoughts-locator`, `thoughts-analyzer`, `web-search-researcher`
+- Browser verification: `browser-tester`
+- Write-capable implementation: `frontend-developer`
 
 ## Run modes
 

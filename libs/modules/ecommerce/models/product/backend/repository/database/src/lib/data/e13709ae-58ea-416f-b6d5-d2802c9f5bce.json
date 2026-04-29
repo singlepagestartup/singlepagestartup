@@ -1,13 +1,13 @@
 {
   "id": "e13709ae-58ea-416f-b6d5-d2802c9f5bce",
   "createdAt": "2025-01-24T23:47:55.629Z",
-  "updatedAt": "2025-11-15T09:32:28.617Z",
+  "updatedAt": "2026-03-04T20:55:58.816Z",
   "variant": "default",
   "type": "one_off",
   "slug": "website",
   "title": {
     "en": "Website",
-    "ru": "Веб-сайт"
+    "ru": "Веб-сайт!"
   },
   "shortDescription": {},
   "description": {},

@@ -5,6 +5,7 @@ import { Service } from "../../../../../../../../service";
 import { api as socialModuleProfilesToActionsApi } from "@sps/social/relations/profiles-to-actions/sdk/server";
 import { api as socialModuleActionApi } from "@sps/social/models/action/sdk/server";
 import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
+import { api as socialModuleThreadsToActionsApi } from "@sps/social/relations/threads-to-actions/sdk/server";
 import { getHttpErrorType } from "@sps/backend-utils";
 
 export class Handler {
@@ -12,6 +13,80 @@ export class Handler {
 
   constructor(service: Service) {
     this.service = service;
+  }
+
+  private async resolveThreadIdForMessageInChat(props: {
+    socialModuleChatId: string;
+    socialModuleMessageId: string;
+  }) {
+    const socialModuleThreadsToMessages =
+      await this.service.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessageId,
+              },
+            ],
+          },
+        },
+      });
+
+    if (!socialModuleThreadsToMessages?.length) {
+      return;
+    }
+
+    const socialModuleChatsToThreads =
+      await this.service.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+    const chatThreadIds = new Set(
+      (socialModuleChatsToThreads || [])
+        .map((relation: { threadId?: string }) => relation.threadId)
+        .filter((threadId: string | undefined): threadId is string => {
+          return Boolean(threadId);
+        }),
+    );
+    const [threadToMessage] = socialModuleThreadsToMessages
+      .filter((relation: { threadId?: string }) => {
+        return Boolean(
+          relation.threadId && chatThreadIds.has(relation.threadId),
+        );
+      })
+      .sort((a, b) => {
+        return (
+          new Date(a.createdAt || 0).getTime() -
+          new Date(b.createdAt || 0).getTime()
+        );
+      });
+
+    if (!threadToMessage?.threadId) {
+      return;
+    }
+
+    return threadToMessage.threadId;
+  }
+
+  private getPayloadMessageId(data: Record<string, any>) {
+    const message = data.payload?.message;
+
+    if (!message || typeof message !== "object") {
+      return;
+    }
+
+    return typeof message.id === "string" ? message.id : undefined;
   }
 
   async execute(c: Context, next: any): Promise<Response> {
@@ -61,8 +136,42 @@ export class Handler {
         );
       }
 
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error("Validation error. Invalid action payload");
+      }
+
+      const actionData = { ...data };
+      const querySocialModuleThreadId = c.req
+        .query("socialModuleThreadId")
+        ?.trim();
+      const bodySocialModuleThreadId =
+        typeof actionData.socialModuleThreadId === "string"
+          ? actionData.socialModuleThreadId.trim()
+          : undefined;
+      const requestedSocialModuleThreadId =
+        bodySocialModuleThreadId || querySocialModuleThreadId || undefined;
+      delete actionData.socialModuleThreadId;
+
+      let socialModuleThreadId = requestedSocialModuleThreadId;
+
+      if (socialModuleThreadId) {
+        await this.service.socialModuleChatLifecycleAssertThreadBelongsToChat({
+          socialModuleChatId,
+          socialModuleThreadId,
+        });
+      } else {
+        const payloadMessageId = this.getPayloadMessageId(actionData);
+
+        if (payloadMessageId) {
+          socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
+            socialModuleChatId,
+            socialModuleMessageId: payloadMessageId,
+          });
+        }
+      }
+
       const socialMouleAction = await socialModuleActionApi.create({
-        data,
+        data: actionData,
         options: {
           headers: {
             "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
@@ -81,6 +190,20 @@ export class Handler {
           },
         },
       });
+
+      if (socialModuleThreadId) {
+        await socialModuleThreadsToActionsApi.create({
+          data: {
+            actionId: socialMouleAction.id,
+            threadId: socialModuleThreadId,
+          },
+          options: {
+            headers: {
+              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+            },
+          },
+        });
+      }
 
       socialModuleProfilesToActionsApi
         .create({

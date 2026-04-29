@@ -114,17 +114,30 @@ export class Service {
         throw new Error("Validation error. Multiple invoices found");
       }
 
-      await this.verifyTelegramStarPayment({
-        invoicePayload: props.data.invoice_payload,
-        telegramPaymentChargeId: props.data.telegram_payment_charge_id,
-        providerPaymentChargeId: props.data.provider_payment_charge_id,
-        totalAmount: props.data.total_amount,
+      const invoice = invoices[0];
+
+      this.assertSuccessfulTelegramStarPayment({
+        invoice,
+        data: props.data,
       });
 
-      const invoice = await invoiceApi.update({
-        id: invoices[0].id,
+      if (invoice.status === "paid") {
+        if (
+          invoice.providerId &&
+          invoice.providerId !== props.data.telegram_payment_charge_id
+        ) {
+          throw new Error(
+            "Validation error. Invoice is already paid by another Telegram charge",
+          );
+        }
+
+        return { code: 0 };
+      }
+
+      const updatedInvoice = await invoiceApi.update({
+        id: invoice.id,
         data: {
-          ...invoices[0],
+          ...invoice,
           providerId: props.data.telegram_payment_charge_id,
           amount: props.data.total_amount,
           status: "paid",
@@ -136,160 +149,42 @@ export class Service {
         },
       });
 
-      if (!invoice) {
+      if (!updatedInvoice) {
         throw new Error("Not Found error. Invoice not found");
       }
 
-      await props.callback({ invoice });
+      await props.callback({ invoice: updatedInvoice });
 
       return { code: 0 };
     }
   }
 
-  private async fetchRecentStarTransactions(limit = 100): Promise<
-    Array<{
-      id?: string;
-      telegram_payment_charge_id?: string;
-      telegramPaymentChargeId?: string;
-      provider_payment_charge_id?: string;
-      providerPaymentChargeId?: string;
-      total_amount?: number;
-      amount?: number;
-      stars?: number;
-      value?: { amount?: number };
-      purpose?: {
-        invoice_payload?: string;
-        payload?: string;
-        total_amount?: number;
-      };
-      source?: {
-        transaction_type?: string;
-        type?: string;
-        invoice_payload?: string;
-        payload?: string;
-        user?: { id?: number };
-      };
-      transaction?: {
-        purpose?: {
-          invoice_payload?: string;
-          payload?: string;
-        };
-      };
-    }>
-  > {
-    if (!TELEGRAM_SERVICE_BOT_TOKEN) {
+  private assertSuccessfulTelegramStarPayment(props: {
+    invoice: IInvoice;
+    data: Extract<IServiceProceedProps, { action: "webhook" }>["data"];
+  }) {
+    if (props.data.currency !== "XTR") {
+      throw new Error("Validation error. Telegram Star currency must be XTR");
+    }
+
+    if (!props.data.telegram_payment_charge_id) {
       throw new Error(
-        "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN secret key not found",
+        "Validation error. Telegram payment charge id is required",
       );
     }
 
-    const url = new URL(
-      `https://api.telegram.org/bot${TELEGRAM_SERVICE_BOT_TOKEN}/getStarTransactions`,
-    );
-    url.searchParams.set("limit", String(limit));
-
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok) {
-      const description = data?.description || response.statusText;
+    if (props.invoice.provider !== "telegram-star") {
       throw new Error(
-        `Telegram API error (getStarTransactions): ${description}`,
+        "Validation error. Invoice provider is not telegram-star",
       );
     }
 
-    const result = (data.result ?? {}) as unknown;
-    const transactions =
-      (result as { transactions?: unknown }).transactions ?? result;
-    if (!Array.isArray(transactions)) {
-      return [];
+    if (props.invoice.id !== props.data.invoice_payload) {
+      throw new Error("Validation error. Invoice payload does not match");
     }
 
-    return transactions as Array<{
-      id?: string;
-      telegram_payment_charge_id?: string;
-      telegramPaymentChargeId?: string;
-      provider_payment_charge_id?: string;
-      providerPaymentChargeId?: string;
-      total_amount?: number;
-      amount?: number;
-      stars?: number;
-      value?: { amount?: number };
-      purpose?: {
-        invoice_payload?: string;
-        payload?: string;
-        total_amount?: number;
-      };
-      source?: {
-        transaction_type?: string;
-        type?: string;
-        invoice_payload?: string;
-        payload?: string;
-        user?: { id?: number };
-      };
-      transaction?: {
-        purpose?: {
-          invoice_payload?: string;
-          payload?: string;
-        };
-      };
-    }>;
-  }
-
-  private async verifyTelegramStarPayment(props: {
-    invoicePayload: string;
-    telegramPaymentChargeId?: string;
-    providerPaymentChargeId?: string;
-    totalAmount?: number;
-  }): Promise<void> {
-    const transactions = await this.fetchRecentStarTransactions(100);
-
-    const matched = transactions.find((tx) => {
-      const purpose = (tx?.purpose ?? tx?.transaction?.purpose ?? {}) as {
-        invoice_payload?: string;
-        payload?: string;
-        total_amount?: number;
-      };
-      const payloadCandidates = [
-        purpose?.invoice_payload,
-        purpose?.payload,
-        tx?.source?.invoice_payload,
-        tx?.source?.payload,
-      ].filter((v) => typeof v === "string");
-      const purposePayload = payloadCandidates[0];
-
-      const tpci =
-        tx?.telegram_payment_charge_id ?? tx?.telegramPaymentChargeId ?? tx?.id;
-      const ppci =
-        tx?.provider_payment_charge_id ?? tx?.providerPaymentChargeId;
-
-      const amounts = [
-        tx?.total_amount,
-        tx?.amount,
-        tx?.stars,
-        tx?.value?.amount,
-        purpose?.total_amount,
-      ].filter((v) => typeof v === "number");
-
-      const amountMatches =
-        !props.totalAmount ||
-        amounts.some((v) => Number(v) === Number(props.totalAmount));
-
-      const payloadMatches = purposePayload === props.invoicePayload;
-      const tpciMatches =
-        !!props.telegramPaymentChargeId &&
-        tpci === props.telegramPaymentChargeId;
-      const ppciMatches =
-        !!props.providerPaymentChargeId &&
-        ppci === props.providerPaymentChargeId;
-
-      return amountMatches && (payloadMatches || tpciMatches || ppciMatches);
-    });
-
-    if (!matched) {
-      throw new Error(
-        "Telegram verification failed: matching Star transaction not found",
-      );
+    if (Number(props.invoice.amount) !== Number(props.data.total_amount)) {
+      throw new Error("Validation error. Telegram Star amount does not match");
     }
   }
 }

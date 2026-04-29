@@ -77,6 +77,8 @@ import { Repository as SocialChatsToActionsRepository } from "@sps/social/relati
 import { Configuration as SocialChatsToActionsConfiguration } from "@sps/social/relations/chats-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as SocialThreadsToMessagesRepository } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialThreadsToMessagesConfiguration } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/configuration";
+import { Repository as SocialThreadsToActionsRepository } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/repository";
+import { Configuration as SocialThreadsToActionsConfiguration } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as SocialMessagesToFileStorageModuleFilesRepository } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/repository";
 import { Configuration as SocialMessagesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as SocialAttributeKeysToAttributesRepository } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
@@ -222,6 +224,11 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         threadsToMessages: new CRUDService<any>(
           new SocialThreadsToMessagesRepository(
             new SocialThreadsToMessagesConfiguration(),
+          ),
+        ),
+        threadsToActions: new CRUDService<any>(
+          new SocialThreadsToActionsRepository(
+            new SocialThreadsToActionsConfiguration(),
           ),
         ),
         messagesToFileStorageModuleFiles: new CRUDService<any>(

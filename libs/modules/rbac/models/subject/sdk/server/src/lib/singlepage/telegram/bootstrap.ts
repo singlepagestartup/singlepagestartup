@@ -11,6 +11,7 @@ import {
 } from "@sps/shared-utils";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 
 export interface IProps {
   host?: string;
@@ -25,6 +26,8 @@ export interface IProps {
       fromId: string | number;
       chatId: string | number;
       messageText?: string;
+      messageThreadId?: string | number;
+      isTopicMessage?: boolean;
     };
   };
 }
@@ -33,6 +36,7 @@ export interface IResult {
   rbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThread: ISocialModuleThread;
   registration: boolean;
   isStartCommand: boolean;
   shouldCheckoutFreeSubscription: boolean;

@@ -266,6 +266,7 @@ const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
 ];
 
 const ALLOWED_INPUT_MODALITIES: TInputModality[] = ["text", "image", "file"];
+const THREAD_CONTEXT_PAGE_SIZE = 100;
 
 const CLASSIFICATION_RESPONSE_FORMAT = {
   type: "json_schema" as const,
@@ -433,6 +434,95 @@ export class Handler {
     };
   }
 
+  private async findThreadMessageIdsInChat(props: {
+    socialModuleChatId: string;
+    socialModuleThreadId: string;
+  }) {
+    const threadMessageIds: string[] = [];
+    let offset = 0;
+
+    while (true) {
+      const socialModuleThreadToMessages =
+        await this.service.socialModule.threadsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "threadId",
+                  method: "eq",
+                  value: props.socialModuleThreadId,
+                },
+              ],
+            },
+            orderBy: {
+              and: [
+                {
+                  column: "createdAt",
+                  method: "asc",
+                },
+              ],
+            },
+            limit: THREAD_CONTEXT_PAGE_SIZE,
+            offset,
+          },
+        });
+
+      if (!socialModuleThreadToMessages?.length) {
+        break;
+      }
+
+      for (const socialModuleThreadToMessage of socialModuleThreadToMessages) {
+        if (socialModuleThreadToMessage.messageId) {
+          threadMessageIds.push(socialModuleThreadToMessage.messageId);
+        }
+      }
+
+      if (socialModuleThreadToMessages.length < THREAD_CONTEXT_PAGE_SIZE) {
+        break;
+      }
+
+      offset += THREAD_CONTEXT_PAGE_SIZE;
+    }
+
+    const uniqueThreadMessageIds = [...new Set(threadMessageIds)];
+
+    if (!uniqueThreadMessageIds.length) {
+      return [];
+    }
+
+    const socialModuleChatToMessages =
+      await this.service.socialModule.chatsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+              {
+                column: "messageId",
+                method: "inArray",
+                value: uniqueThreadMessageIds,
+              },
+            ],
+          },
+        },
+      });
+
+    const chatMessageIds = new Set(
+      socialModuleChatToMessages
+        ?.map((socialModuleChatToMessage) => {
+          return socialModuleChatToMessage.messageId;
+        })
+        .filter((messageId): messageId is string => Boolean(messageId)) || [],
+    );
+
+    return uniqueThreadMessageIds.filter((messageId) => {
+      return chatMessageIds.has(messageId);
+    });
+  }
+
   async execute(c: Context, next: any): Promise<Response> {
     const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
     let selectedModelIdForBilling: string | null = null;
@@ -540,30 +630,6 @@ export class Handler {
         socialModuleMessageId,
       });
 
-      const socialModuleThreadToMessages =
-        await this.service.socialModule.threadsToMessages.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "threadId",
-                  method: "eq",
-                  value: socialModuleThreadId,
-                },
-              ],
-            },
-            orderBy: {
-              and: [
-                {
-                  column: "createdAt",
-                  method: "desc",
-                },
-              ],
-            },
-            limit: 20,
-          },
-        });
-
       const context: IOpenRouterRequestMessage[] = [];
 
       const replyBySocialModuleProfile = data.shouldReplySocialModuleProfile;
@@ -574,48 +640,12 @@ export class Handler {
         );
       }
 
-      if (socialModuleThreadToMessages?.length) {
-        const threadMessageIds = socialModuleThreadToMessages
-          .map((socialModuleThreadToMessage) => {
-            return socialModuleThreadToMessage.messageId;
-          })
-          .filter((messageId): messageId is string => Boolean(messageId));
+      const chatThreadMessageIds = await this.findThreadMessageIdsInChat({
+        socialModuleChatId,
+        socialModuleThreadId,
+      });
 
-        const socialModuleChatToMessages = threadMessageIds.length
-          ? await this.service.socialModule.chatsToMessages.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "chatId",
-                      method: "eq",
-                      value: socialModuleChatId,
-                    },
-                    {
-                      column: "messageId",
-                      method: "inArray",
-                      value: threadMessageIds,
-                    },
-                  ],
-                },
-              },
-            })
-          : [];
-
-        const chatThreadMessageIds =
-          socialModuleChatToMessages
-            ?.map((socialModuleChatToMessage) => {
-              return socialModuleChatToMessage.messageId;
-            })
-            .filter((messageId): messageId is string => Boolean(messageId)) ||
-          [];
-
-        if (!chatThreadMessageIds.length) {
-          throw new Error(
-            "Validation error. No thread messages found in the requested chat",
-          );
-        }
-
+      if (chatThreadMessageIds.length) {
         const socialModuleMessages =
           await this.service.socialModule.message.find({
             params: {
@@ -1042,9 +1072,35 @@ export class Handler {
           authorization: requestAuthorization,
         });
         billingSettled = true;
-        throw new Error(
-          "No valid model response received. " + fallbackReasons.join(" | "),
-        );
+        const fallbackMessage =
+          "No valid model response received. " + fallbackReasons.join(" | ");
+        const updatedStatusMessage =
+          await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+            id: replyBySubject.id,
+            socialModuleProfileId: replyBySocialModuleProfile.id,
+            socialModuleChatId: socialModuleChatId,
+            socialModuleMessageId: statusMessage.id,
+            data: {
+              description:
+                this.statusMessages.openRouterError.ru +
+                "\n`" +
+                fallbackMessage +
+                "`",
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + replyByJwt,
+              },
+            },
+          });
+
+        return c.json({
+          data: {
+            socialModule: {
+              message: updatedStatusMessage,
+            },
+          },
+        });
       }
 
       const billingSettlement = await this.settleOpenRouterBilling({

@@ -147,6 +147,8 @@ Scan:
 
 - `MigrateConfig` from `@sps/shared-backend-database-config`.
 - Defines `schemaPaths`, `migrationsFolder`, `migrationsTable`.
+- Schema/table changes must be followed by the matching Drizzle generation command, not manual edits to migration artifacts. Use `npx nx run @sps/<module>:models:<model>:repository-generate` for a model, the corresponding relation `repository-generate` target for a relation, or `npx nx run api:db:generate` only when intentionally regenerating every repository migration.
+- Do not hand-create or hand-edit migration SQL, `migrations/meta/*` snapshots, or `_journal.json`; only review and adjust generated output if the generation command produced it.
 
 Examples:
 

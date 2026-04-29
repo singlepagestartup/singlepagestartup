@@ -13,6 +13,30 @@ export class Handler {
     this.service = service;
   }
 
+  private matchRoute(route: string | undefined, templates: string[]) {
+    if (!route) {
+      return null;
+    }
+
+    for (const template of templates) {
+      const normalizedTemplate = template.replace(
+        /\[(.+?)\]/g,
+        (_, p1) => `:${p1.replace(/[.\-]/g, "_")}`,
+      );
+      const matcher = match(normalizedTemplate, {
+        decode: decodeURIComponent,
+        end: true,
+      });
+      const result = matcher(route);
+
+      if (result) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
   async execute(c: Context, next: any): Promise<Response> {
     try {
       const body = await c.req.parseBody();
@@ -309,17 +333,10 @@ export class Handler {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const template =
-      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profile.id]/chats/[social.chat.id]/messages".replace(
-        /\[(.+?)\]/g,
-        (_, p1) => `:${p1.replace(/[.\-]/g, "_")}`,
-      );
-    const matcher = match(template, {
-      decode: decodeURIComponent,
-      end: true,
-    });
-
-    const result = matcher(props.data.rbacModuleAction.payload?.route);
+    const result = this.matchRoute(props.data.rbacModuleAction.payload?.route, [
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profile.id]/chats/[social.chat.id]/messages",
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profile.id]/chats/[social.chat.id]/threads/[social.thread.id]/messages",
+    ]);
 
     if (!result) {
       return c.json({

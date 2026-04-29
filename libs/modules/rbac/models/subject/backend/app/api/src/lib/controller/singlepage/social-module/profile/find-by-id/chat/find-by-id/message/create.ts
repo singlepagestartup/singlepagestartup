@@ -260,46 +260,42 @@ export class Handler {
         );
       }
 
-      socialModuleProfilesToMessagesApi
-        .create({
-          data: {
-            messageId: socialMouleMessage.id,
-            profileId: socialModuleProfileId,
+      await socialModuleProfilesToMessagesApi.create({
+        data: {
+          messageId: socialMouleMessage.id,
+          profileId: socialModuleProfileId,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
           },
-          options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
-          },
-        })
-        .then(() => {
-          this.notifyOtherSubjectsInChat({
-            id,
-            socialModuleChatId,
-            extendedSocialModuleMessage: {
-              ...socialMouleMessage,
-              messagesToFileStorageModuleFiles:
-                socialModuleMessagesToFileStorageModuleFiles?.map(
-                  (socialModuleMessagesToFileStorageModuleFile) => {
-                    return {
-                      ...socialModuleMessagesToFileStorageModuleFile,
-                      fileStorageModuleFile: fileStorageModuleFiles?.find(
-                        (fileStorageModuleFile) =>
-                          fileStorageModuleFile.id ===
-                          socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
-                      ),
-                    };
-                  },
-                ),
-            },
-            socialModuleProfileId,
-          }).catch((error) => {
-            logger.error(error);
-          });
-        })
-        .catch((error) => {
-          logger.error(error);
-        });
+        },
+      });
+
+      void this.notifyOtherSubjectsInChat({
+        id,
+        socialModuleChatId,
+        socialModuleThreadId,
+        extendedSocialModuleMessage: {
+          ...socialMouleMessage,
+          messagesToFileStorageModuleFiles:
+            socialModuleMessagesToFileStorageModuleFiles?.map(
+              (socialModuleMessagesToFileStorageModuleFile) => {
+                return {
+                  ...socialModuleMessagesToFileStorageModuleFile,
+                  fileStorageModuleFile: fileStorageModuleFiles?.find(
+                    (fileStorageModuleFile) =>
+                      fileStorageModuleFile.id ===
+                      socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
+                  ),
+                };
+              },
+            ),
+        },
+        socialModuleProfileId,
+      }).catch((error) => {
+        logger.error(error);
+      });
 
       return c.json({
         data: socialMouleMessage,
@@ -313,6 +309,7 @@ export class Handler {
   async notifyOtherSubjectsInChat(props: {
     id: string;
     socialModuleChatId: string;
+    socialModuleThreadId: string;
     extendedSocialModuleMessage: ISocialModuleMessage & {
       messagesToFileStorageModuleFiles:
         | (ISocialModuleMessagesToFileStorageModuleFile & {
@@ -328,6 +325,10 @@ export class Handler {
 
     const socialModuleChat = await this.service.socialModule.chat.findById({
       id: props.socialModuleChatId,
+    });
+
+    const socialModuleThread = await this.service.socialModule.thread.findById({
+      id: props.socialModuleThreadId,
     });
 
     const socialModuleProfilesToChats =
@@ -493,6 +494,7 @@ export class Handler {
                     data: {
                       socialModule: {
                         message: props.extendedSocialModuleMessage,
+                        thread: socialModuleThread,
                       },
                     },
                   },
@@ -500,6 +502,9 @@ export class Handler {
                 social: {
                   chat: {
                     id: props.socialModuleChatId,
+                  },
+                  thread: {
+                    id: props.socialModuleThreadId,
                   },
                 },
                 fileStorage: {

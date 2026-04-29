@@ -21,6 +21,13 @@ jest.mock(
 import { Service } from "./index";
 
 describe("OpenRouter billing fallback for provider-reported costs", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
   /**
    * BDD Scenario
    * Given: an image generation response reports upstream inference cost but the selected model has no pricing payload.
@@ -73,6 +80,38 @@ describe("OpenRouter billing fallback for provider-reported costs", () => {
         imageUsd: 0.03,
         totalUsd: 0.03,
         outputImageCount: 1,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the runtime cannot verify the upstream TLS certificate.
+   * When: OpenRouter generation performs the HTTPS request.
+   * Then: the wrapper returns a structured generation error instead of throwing.
+   */
+  it("returns an error result for certificate verification failures", async () => {
+    const service = new Service();
+
+    global.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error("unknown certificate verification error"));
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: "Hello",
+        },
+      ],
+    });
+
+    expect("error" in result).toBe(true);
+    expect(result).toMatchObject({
+      error: {
+        message:
+          "OpenRouter request failed: unknown certificate verification error",
       },
     });
   });

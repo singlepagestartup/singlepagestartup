@@ -1,0 +1,9 @@
+{
+  "id": "cedbfa9a-8e9e-41c5-9525-d36ac0a8a914",
+  "createdAt": "2026-04-25T19:42:45.557Z",
+  "updatedAt": "2026-04-25T19:42:45.557Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/inputs-to-options/[crm.inputs-to-options.id]"
+}

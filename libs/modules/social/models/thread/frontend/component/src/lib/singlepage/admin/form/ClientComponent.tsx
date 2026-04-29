@@ -127,6 +127,13 @@ export function Component(props: IComponentPropsExtended) {
             })
           : null}
 
+        {props.threadsToActions
+          ? props.threadsToActions({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+
         {props.threadsToEcommerceModuleProducts
           ? props.threadsToEcommerceModuleProducts({
               data: props.data,

@@ -1,0 +1,10 @@
+{
+  "id": "ef50cf1f-941d-4de5-9235-eebd62c5e0c7",
+  "createdAt": "2026-04-12T21:04:32.160Z",
+  "updatedAt": "2026-04-26T20:38:50.344Z",
+  "variant": "default",
+  "orderIndex": 0,
+  "className": "w-full lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:w-1/4 lg:flex-none lg:overflow-hidden",
+  "pageId": "3fdabcf4-0db3-42c1-bb27-2178ef0e2097",
+  "widgetId": "88510a3e-313e-4024-8a36-5aa245fa5cd9"
+}
