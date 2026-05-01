@@ -17,6 +17,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 6. For project item creation, use `.claude/helpers/add_issue_to_project.sh` (do not call raw `gh project item-add` directly).
 7. For issue bodies/comments that may include markdown or shell-sensitive characters, prefer `--body-file` and `.claude/helpers/gh_issue_comment.sh` over inline `--body "..."`.
 8. Prefer `.claude/helpers/create_issue_with_project.sh` for GitHub issue creation so URL/issue-number validation, project assignment, and status transitions fail fast as one helper-driven step.
+9. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
 
 ## Codex Adaptation Rules
 

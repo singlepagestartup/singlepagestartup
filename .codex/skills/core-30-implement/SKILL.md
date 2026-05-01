@@ -15,6 +15,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/30-implement.md
 4. Write/update artifacts in the exact same repository paths.
 5. Use `.claude/helpers/*.sh` for status operations.
 6. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) instead of inline `--body "..."` markdown.
+7. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
 
 ## Codex Adaptation Rules
 

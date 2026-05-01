@@ -7,6 +7,20 @@ model: opus
 
 You create a new development issue with local documentation and GitHub issue creation.
 
+## Repository / Project Preflight
+
+Before any GitHub issue command or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: None (can be run anytime for new issues)
@@ -23,7 +37,7 @@ You create a new development issue with local documentation and GitHub issue cre
 
 2. **Create local ticket file**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
    - Determine a TEMP_IDENTIFIER (kebab-case from title, e.g., `auth-login-fix`)
    - Save to `thoughts/shared/tickets/REPO_NAME/ISSUE-{TEMP_IDENTIFIER}.md`
    - Create a matching temporary process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{TEMP_IDENTIFIER}.md`
@@ -92,7 +106,7 @@ You create a new development issue with local documentation and GitHub issue cre
      cat > "$ISSUE_BODY_FILE" <<'EOF'
      [Issue description markdown]
      EOF
-     ISSUE_URL="$(gh issue create --title "..." --body-file "$ISSUE_BODY_FILE" --label "size:[size]")"
+     ISSUE_URL="$(gh issue create --repo "$REPO_FULL_NAME" --title "..." --body-file "$ISSUE_BODY_FILE" --label "size:[size]")"
      rm -f "$ISSUE_BODY_FILE"
      ISSUE_NUMBER="${ISSUE_URL##*/}"
      if [ -z "$ISSUE_URL" ] || [ -z "$ISSUE_NUMBER" ]; then

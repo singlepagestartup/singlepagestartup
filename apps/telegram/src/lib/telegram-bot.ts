@@ -205,10 +205,30 @@ export class TelegarmBot {
             );
           }
 
-          const { rbacModuleSubject, socialModuleProfile, socialModuleChat } =
+          const callbackMessage = ctx.callbackQuery.message as any;
+          const callbackMessageThreadId =
+            callbackMessage?.message_thread_id !== undefined &&
+            callbackMessage?.message_thread_id !== null
+              ? String(callbackMessage.message_thread_id)
+              : undefined;
+
+          const {
+            rbacModuleSubject,
+            socialModuleProfile,
+            socialModuleChat,
+            socialModuleThread,
+          } =
             await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
               {
                 ctx,
+                telegram: callbackMessageThreadId
+                  ? {
+                      messageThreadId: callbackMessageThreadId,
+                      isTopicMessage: Boolean(
+                        callbackMessage?.is_topic_message,
+                      ),
+                    }
+                  : undefined,
               },
             );
 
@@ -231,6 +251,7 @@ export class TelegarmBot {
               socialModuleChatId: socialModuleChat.id,
               socialModuleProfileId: socialModuleProfile.id,
               data: {
+                socialModuleThreadId: socialModuleThread.id,
                 payload: {
                   telegram: {
                     callback_query: ctx.callbackQuery,
