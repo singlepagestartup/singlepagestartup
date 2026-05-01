@@ -177,6 +177,87 @@ describe("Given: thread-scoped social action create", () => {
   });
 
   /**
+   * BDD Scenario: action create uses body thread id.
+   *
+   * Given: Telegram callback action data carries socialModuleThreadId next to payload.
+   * When: the action create endpoint persists the action.
+   * Then: socialModuleThreadId creates threads-to-actions and is not stored in the action payload.
+   */
+  it("When: creating action with body thread id Then: links action without persisting thread id", async () => {
+    const callbackPayload = {
+      telegram: {
+        callback_query: {
+          data: "command_premium",
+        },
+      },
+    };
+    const service = {
+      socialModuleChatLifecycleAssertThreadBelongsToChat: jest
+        .fn()
+        .mockResolvedValue(undefined),
+      socialModule: {
+        threadsToMessages: {
+          find: jest.fn(),
+        },
+        chatsToThreads: {
+          find: jest.fn(),
+        },
+      },
+    };
+    const handler = new Handler(service as any);
+    const context = {
+      req: {
+        param: jest.fn((name: string) => {
+          return {
+            id: "subject-1",
+            socialModuleProfileId: "profile-1",
+            socialModuleChatId: "chat-1",
+          }[name];
+        }),
+        query: jest.fn(() => undefined),
+        parseBody: jest.fn().mockResolvedValue({
+          data: JSON.stringify({
+            socialModuleThreadId: "thread-body",
+            payload: callbackPayload,
+          }),
+        }),
+      },
+      json: jest.fn((payload: unknown) => payload),
+    };
+
+    await handler.execute(context as any, jest.fn());
+
+    expect(
+      service.socialModuleChatLifecycleAssertThreadBelongsToChat,
+    ).toHaveBeenCalledWith({
+      socialModuleChatId: "chat-1",
+      socialModuleThreadId: "thread-body",
+    });
+    expect(service.socialModule.threadsToMessages.find).not.toHaveBeenCalled();
+    expect(mockSocialModuleActionCreate).toHaveBeenCalledWith({
+      data: {
+        payload: callbackPayload,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret-key",
+        },
+      },
+    });
+    expect(mockSocialModuleThreadsToActionsCreate).toHaveBeenCalledWith({
+      data: {
+        actionId: "action-1",
+        threadId: "thread-body",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret-key",
+        },
+      },
+    });
+  });
+
+  /**
    * BDD Scenario: action create resolves thread from payload message.
    *
    * Given: message update/delete logging does not pass socialModuleThreadId in the query.

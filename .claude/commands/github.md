@@ -21,8 +21,9 @@ At the start of every session, load config and fetch the project structure. Run 
 bash -lc '
 source .claude/helpers/load_config.sh
 
-# Optional repo context
-GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+# Helper-exported repo context
+GITHUB_REPO="$TARGET_REPO_FULL_NAME"
+REPO_NAME="$TARGET_REPO_NAME"
 
 # Use helper-exported owner/type
 PROJECT_OWNER="$GITHUB_OWNER"
@@ -190,8 +191,9 @@ Available status names:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
-  jq '[.items[] | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
+source .claude/helpers/load_config.sh
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json | \
+  jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
 ```
 
 Or via labels:
@@ -327,8 +329,9 @@ When the user wants to add a comment to an issue:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
-  jq '[.items[] | select(.status == "Research Needed")]'
+source .claude/helpers/load_config.sh
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json | \
+  jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status == "Research Needed")]'
 
 # Via labels (if using label-based status)
 gh issue list --label "status:research-needed" --json number,title,url,labels
@@ -349,7 +352,9 @@ Consider adding a comment explaining the status change.
 To save an issue for reference as readable Markdown:
 
 ```bash
-REPO_NAME=$(gh repo view --json name -q '.name')
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 ```
 
 Then fetch the issue data and format it as Markdown before saving to `thoughts/shared/tickets/$REPO_NAME/ISSUE-NUM.md`. The Markdown format must include:

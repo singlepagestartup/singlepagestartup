@@ -19,9 +19,9 @@ Use it to run the same workflow and quality gates as `core/20-plan.md`.
 ## Issue Auto-Selection (when ISSUE_NUMBER is omitted)
 
 ```bash
-source .claude/.env
-gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_OWNER" --format json | \
-  jq '[.items[] | select(.status == "Ready for Plan") | select((.labels // []) | any(.name == "size:xs" or .name == "size:small"))] | sort_by(.priority // 999) | .[0]'
+source .claude/helpers/load_config.sh
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json | \
+  jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status == "Ready for Plan") | select((.labels // []) | any(.name == "size:xs" or .name == "size:small"))] | sort_by(.priority // 999) | .[0]'
 ```
 
 If no suitable issue exists, exit and report that no `size:xs`/`size:small` issue is ready.

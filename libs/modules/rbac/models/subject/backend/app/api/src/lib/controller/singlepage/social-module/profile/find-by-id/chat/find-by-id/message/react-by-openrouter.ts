@@ -434,7 +434,7 @@ export class Handler {
     };
   }
 
-  private async findThreadMessageIdsInChat(props: {
+  async findThreadMessageIdsInChat(props: {
     socialModuleChatId: string;
     socialModuleThreadId: string;
   }) {

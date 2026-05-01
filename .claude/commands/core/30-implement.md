@@ -7,6 +7,20 @@ model: sonnet
 
 You implement an approved plan phase-by-phase with progress tracking. Plans are carefully designed, but reality can be messy — follow the plan's intent while adapting to what you find.
 
+## Repository / Project Preflight
+
+Before any status gate, GitHub issue command, or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)
@@ -33,7 +47,7 @@ fi
 
 2. **Resolve issue, read ticket and plan**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
    - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
    - If it exists, read it completely before implementation
    - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
@@ -70,7 +84,7 @@ fi
 4. **Sync GitHub comments** (before starting any code changes):
 
    ```bash
-   gh issue view ISSUE_NUMBER --json comments | jq -r '.comments'
+   gh issue view ISSUE_NUMBER --repo "$REPO_FULL_NAME" --json comments | jq -r '.comments'
    ```
 
    Check `<!-- Last synced at: ... -->` marker in the plan file to determine the cutoff date. Read all comments since the plan was last synced.

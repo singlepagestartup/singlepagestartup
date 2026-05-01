@@ -7,6 +7,20 @@ model: opus
 
 You create a detailed implementation plan for a researched issue, or update an existing plan based on GitHub issue discussion. Plans should be brief and focused — WHAT to do, WHERE, and WHY — NOT how with actual code.
 
+## Repository / Project Preflight
+
+Before any status gate, GitHub issue command, or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Plan" or "Plan in Progress" status (the latter allows resuming an interrupted session or revising a plan after review feedback)
@@ -36,7 +50,7 @@ fi
 
 2. **Read existing ticket and research files**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
    - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
    - If it exists, read it completely before planning
    - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
@@ -56,7 +70,7 @@ fi
 3. **Check whether a plan already exists**:
 
    ```bash
-   REPO_NAME=$(gh repo view --json name -q '.name')
+   REPO_NAME=$(.claude/helpers/get_repo_name.sh)
    find "thoughts/shared/plans/$REPO_NAME" -name "*ISSUE-${ISSUE_NUMBER}*.md" -type f | sort -r | head -1
    ```
 
@@ -210,9 +224,8 @@ fi
    b. **Fetch GitHub issue comments** newer than the marker:
 
    ```bash
-   source .claude/helpers/gh_retry.sh
-   ensure_gh_ready
-   gh_retry issue view ISSUE_NUMBER --json comments | jq -r '.comments'
+   source .claude/helpers/load_config.sh
+   gh_retry issue view ISSUE_NUMBER --repo "$REPO_FULL_NAME" --json comments | jq -r '.comments'
    ```
 
    Filter to only those newer than the last sync timestamp.
@@ -284,11 +297,11 @@ fi
 
 6.5 **Update process file**:
 
-   - Set `current_phase: plan`
-   - Mark `Plan: completed`
-   - Add a short phase summary with the final plan path
-   - Record substantive planning incidents encountered during the phase (ambiguity, stale research assumptions, comment sync surprises, helper friction, or scope contradictions that required recovery)
-   - Set `Next step: human review, then core/30-implement`
+- Set `current_phase: plan`
+- Mark `Plan: completed`
+- Add a short phase summary with the final plan path
+- Record substantive planning incidents encountered during the phase (ambiguity, stale research assumptions, comment sync surprises, helper friction, or scope contradictions that required recovery)
+- Set `Next step: human review, then core/30-implement`
 
 7. **Update status to "Plan in Review"**:
 
@@ -320,6 +333,7 @@ If a reviewer requests changes while the issue is in "Plan in Review", manually 
 4. **Be Practical**: Focus on incremental, testable changes. Consider migration and rollback. Include "what we're NOT doing".
 
 5. **No Open Questions in Final Plan**: If you encounter open questions during planning, STOP. Research or ask for clarification immediately. Do NOT write the plan with unresolved questions.
+
    - Record the blocking ambiguity or contradiction in the process file before stopping so future agents do not rediscover it.
 
 6. **Separate Success Criteria**:

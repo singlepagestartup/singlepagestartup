@@ -25,6 +25,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/load_config.sh"
 
 ISSUE_URL=$(gh_retry issue create \
+  --repo "$TARGET_REPO_FULL_NAME" \
   --title "$TITLE" \
   --body-file "$BODY_FILE" \
   --label "size:$SIZE_LABEL")

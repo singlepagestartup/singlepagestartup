@@ -75,7 +75,17 @@ Then set it in `.claude/.env`:
 GITHUB_PROJECT_NUMBER=3
 ```
 
-That's it for personal projects. `GITHUB_LOGIN`, `GITHUB_REPO`, and all GraphQL IDs are auto-detected at runtime.
+That's it for personal projects. GitHub login, target repository context, and all GraphQL IDs are resolved at runtime.
+
+### Target repository override
+
+Workflow commands use a target repository to decide where GitHub issue operations go and which `thoughts/shared/<repo>/...` namespace to use. By default this is resolved from `remote.origin.url`, so most checkouts can leave it empty:
+
+```env
+TARGET_REPO=
+```
+
+Set `TARGET_REPO=owner/name` when the current checkout has ambiguous remotes, when `gh repo view` resolves to an upstream/default repository, or when automation runs outside a normal git checkout. Without the correct target repo, commands can read or update a same-numbered issue in another repository, move the wrong Project item, post comments to the wrong issue, or write artifacts under the wrong `thoughts/shared/<repo>/` directory.
 
 ### Organization projects
 
@@ -212,7 +222,7 @@ thoughts/
 │               └── YYYY-MM-DD_HH-MM-SS_description.md
 ```
 
-`REPO_NAME` is the short repository name derived automatically at runtime via `gh repo view --json name -q '.name'` (e.g. `singlepagestartup`). This namespacing keeps ticket snapshots organised if the `thoughts/` directory is ever shared across multiple repositories.
+`REPO_NAME` is the short repository name derived automatically at runtime via `.claude/helpers/get_repo_name.sh`, which resolves from `TARGET_REPO`, `GITHUB_REPOSITORY`, or `remote.origin.url` before falling back to GitHub CLI defaults. Do not derive artifact paths from bare `gh repo view`, because template-based projects often have an upstream/default GitHub repository that differs from the workspace `origin`. This namespacing keeps ticket snapshots organised if the `thoughts/` directory is ever shared across multiple repositories.
 
 `processes/` stores the persistent cross-phase execution log for each issue: workflow friction, incidents, reusable fixes, and phase summaries. Unlike the temporary implementation progress file in `handoffs/`, the process file is intended to survive the full issue lifecycle.
 
