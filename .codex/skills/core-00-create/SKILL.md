@@ -16,6 +16,8 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 5. Use `.claude/helpers/*.sh` for project/status operations.
 6. For project item creation, use `.claude/helpers/add_issue_to_project.sh` (do not call raw `gh project item-add` directly).
 7. For issue bodies/comments that may include markdown or shell-sensitive characters, prefer `--body-file` and `.claude/helpers/gh_issue_comment.sh` over inline `--body "..."`.
+8. Prefer `.claude/helpers/create_issue_with_project.sh` for GitHub issue creation so URL/issue-number validation, project assignment, and status transitions fail fast as one helper-driven step.
+9. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
 
 ## Codex Adaptation Rules
 
@@ -24,6 +26,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 - Keep failure handling and human-review gates equivalent to source behavior.
 - Keep all GitHub operations in one consistent execution context and load owner/project config from `.claude/helpers/load_config.sh`.
 - When a workflow step sources `.claude/helpers/load_config.sh`, execute the whole GitHub helper sequence inside one `bash -lc` block so exported variables persist and shell-dependent helper logic does not break under `zsh`.
+- Ensure the GitHub helper shell block is fail-fast (`set -euo pipefail`) so project/status helpers do not run with empty issue identifiers after a create failure.
 - If `gh` fails with `error connecting to api.github.com`, rerun the same `bash -lc` workflow block with escalated network access instead of rewriting the helper sequence.
 
 ## Inputs
@@ -33,3 +36,4 @@ Primary workflow skill. Canonical source: `.claude/commands/core/00-create.md`.
 ## Notes
 
 Use this as workflow entrypoint for newly created issues before research.
+Maintain the persistent process artifact exactly as the source command describes.

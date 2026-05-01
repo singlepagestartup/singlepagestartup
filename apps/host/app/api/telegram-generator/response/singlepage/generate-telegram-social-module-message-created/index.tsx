@@ -4,6 +4,7 @@ export { type IResponseProps } from "./interface";
 
 export function response(props: IResponseProps) {
   delete props.data.socialModule.message.messagesToFileStorageModuleFiles;
+  const messageThreadId = props.data.socialModule.thread?.sourceSystemId;
   // return {
   //   method: "sendMessage",
   //   props: [
@@ -32,6 +33,11 @@ export function response(props: IResponseProps) {
       props.data.socialModule.message.description,
       {
         parse_mode: "MarkdownV2",
+        ...(messageThreadId
+          ? {
+              message_thread_id: Number(messageThreadId),
+            }
+          : {}),
         ...(Object.keys(props.data.socialModule.message.interaction || {})
           .length
           ? {

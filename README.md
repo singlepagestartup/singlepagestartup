@@ -85,7 +85,8 @@ Strict layered architecture: Repository → Service → Controller → App.
 
 - Direct database interaction using model Table descriptions
 - Fields defined in `fields/`, table schema in `schema.ts`
-- Database structure changes managed via SQL migrations
+- Database structure changes are managed via generated Drizzle SQL migrations
+- After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
 
 #### Service Layer
 
@@ -124,6 +125,10 @@ Strict layered architecture: Repository → Service → Controller → App.
   - `index.tsx` — wrapper with `ParentComponent`
   - `Component.tsx` — UI implementation
   - Optional `ClientComponent.tsx` for client-side logic
+- If a variant requires `"use client"`, put the directive and client-only logic in `ClientComponent.tsx`; keep `Component.tsx` as a server-compatible wrapper that renders `ClientComponent`.
+- When `Component.tsx` renders `ClientComponent.tsx`, pass an explicit allowlist of props. Do not forward `{...props}` across the Server → Client boundary; Next.js requires props passed to Client Components to be serializable, and a spread can accidentally leak unsupported values.
+- `isServer` is part of the SPS base component contract. If the client component needs the SPS runtime context or renders lower-level SPS components, pass `isServer` explicitly from `Component.tsx` to `ClientComponent.tsx`.
+- Inside a file marked with `"use client"`, pass `isServer={false}` to nested SPS model/relation components declared in that client file. Function props are only safe when they are created and consumed inside an existing client-side subtree, not when created by a Server Component wrapper.
 
 #### Data Handling
 
@@ -207,6 +212,9 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
   - `index.tsx`
   - `Component.tsx`
   - Optional `ClientComponent.tsx`
+- Do not put `"use client"` in `Component.tsx`; create `ClientComponent.tsx` and render it from `Component.tsx`.
+- Do not render `<ClientComponent {...props} />` from `Component.tsx`. Destructure or reference only the props the client file actually needs, including `isServer` when it is part of the downstream SPS contract.
+- In `ClientComponent.tsx`, nested SPS components created inside that client boundary must receive `isServer={false}`.
 
 ### TypeScript Standards
 

@@ -1,11 +1,14 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Agent } from "./agent";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/agent`);
-  const isOverviewRoute = props.url === `${ADMIN_BASE_PATH}/agent`;
+  const isCurrentModule = isAdminRoute(props.url, "agent");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/agent";
 
   if (!isCurrentModule) {
     return null;

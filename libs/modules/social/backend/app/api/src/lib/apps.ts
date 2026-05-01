@@ -19,6 +19,7 @@ import { app as messagesToFileStorageModuleFiles } from "@sps/social/relations/m
 import { app as thread } from "@sps/social/models/thread/backend/app/api";
 import { app as chatsToThreads } from "@sps/social/relations/chats-to-threads/backend/app/api";
 import { app as threadsToMessages } from "@sps/social/relations/threads-to-messages/backend/app/api";
+import { app as threadsToActions } from "@sps/social/relations/threads-to-actions/backend/app/api";
 import { app as threadsToEcommerceModuleProducts } from "@sps/social/relations/threads-to-ecommerce-module-products/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
@@ -140,6 +141,11 @@ export class Apps {
       type: "relation",
       route: "/chats-to-actions",
       app: chatsToActions,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/threads-to-actions",
+      app: threadsToActions,
     });
   }
 }

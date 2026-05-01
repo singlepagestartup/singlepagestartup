@@ -1,10 +1,8 @@
 import { Component as ParentComponent } from "@sps/social/models/attribute-key/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: { url: string; isServer: boolean }) {
-  const isActive = props.url.startsWith(
-    ADMIN_BASE_PATH + "/social/attribute-key",
-  );
+  const isActive = isAdminRoute(props.url, "social", "attribute-key");
 
   return (
     <ParentComponent

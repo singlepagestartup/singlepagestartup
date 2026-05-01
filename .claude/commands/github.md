@@ -21,8 +21,9 @@ At the start of every session, load config and fetch the project structure. Run 
 bash -lc '
 source .claude/helpers/load_config.sh
 
-# Optional repo context
-GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+# Helper-exported repo context
+GITHUB_REPO="$TARGET_REPO_FULL_NAME"
+REPO_NAME="$TARGET_REPO_NAME"
 
 # Use helper-exported owner/type
 PROJECT_OWNER="$GITHUB_OWNER"
@@ -159,6 +160,7 @@ Use these scripts instead of GraphQL queries for simpler operations:
 - `.claude/helpers/get_project_item_id.sh ISSUE_NUMBER` — Get project item ID for status updates
 - `.claude/helpers/update_issue_status.sh ISSUE_NUMBER "NEW_STATUS"` — Update issue status
 - `.claude/helpers/add_issue_to_project.sh ISSUE_NUMBER [ISSUE_URL]` — Add issue to project using `.claude/.env` owner/type, with GraphQL fallback
+- `.claude/helpers/create_issue_with_project.sh TITLE BODY_FILE SIZE_LABEL [INITIAL_STATUS] [FINAL_STATUS]` — Create an issue, validate the returned URL/number, add it to the project, and apply status transitions as one fail-fast step
 - `.claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file PATH` — Safely create/edit issue comments from markdown body files (prevents shell interpolation issues)
 
 ### Updating Status Field
@@ -189,8 +191,9 @@ Available status names:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
-  jq '[.items[] | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
+source .claude/helpers/load_config.sh
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json | \
+  jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status == "STATUS_NAME")] | sort_by(.priority // 999)'
 ```
 
 Or via labels:
@@ -257,26 +260,22 @@ gh issue list --label "status:research-needed" --json number,title,labels,url
 5. **Create the GitHub issue:**
 
    ```bash
+   set -euo pipefail
    ISSUE_BODY_FILE="$(mktemp)"
    cat > "$ISSUE_BODY_FILE" <<'EOF'
    DESCRIPTION
    EOF
-   gh issue create \
-     --title "TITLE" \
-     --body-file "$ISSUE_BODY_FILE" \
-     --label "size:small,status:triage"
+   .claude/helpers/create_issue_with_project.sh \
+     "TITLE" \
+     "$ISSUE_BODY_FILE" \
+     "small" \
+     "Triage"
    rm -f "$ISSUE_BODY_FILE"
    ```
 
 6. **Add to GitHub Project and set status to Triage:**
 
-   ```bash
-   # Add issue to project (helper resolves owner from .claude/.env and falls back to GraphQL)
-   .claude/helpers/add_issue_to_project.sh ISSUE_NUMBER ISSUE_URL
-
-   # Then update status field to Triage (use helper script)
-   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Triage"
-   ```
+   This is handled by `.claude/helpers/create_issue_with_project.sh`. If you cannot use the helper, keep the manual fallback in one `bash -lc` block with `set -euo pipefail` and abort immediately if `gh issue create` does not return a valid issue URL and number.
 
 7. **Post-creation actions:**
 
@@ -330,8 +329,9 @@ When the user wants to add a comment to an issue:
 
 ```bash
 # Via project items
-gh project item-list PROJECT_NUMBER --owner GITHUB_OWNER --format json | \
-  jq '[.items[] | select(.status == "Research Needed")]'
+source .claude/helpers/load_config.sh
+gh project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json | \
+  jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status == "Research Needed")]'
 
 # Via labels (if using label-based status)
 gh issue list --label "status:research-needed" --json number,title,url,labels
@@ -352,7 +352,9 @@ Consider adding a comment explaining the status change.
 To save an issue for reference as readable Markdown:
 
 ```bash
-REPO_NAME=$(gh repo view --json name -q '.name')
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 ```
 
 Then fetch the issue data and format it as Markdown before saving to `thoughts/shared/tickets/$REPO_NAME/ISSUE-NUM.md`. The Markdown format must include:

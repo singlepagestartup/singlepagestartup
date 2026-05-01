@@ -1,5 +1,8 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Action } from "./action";
 import { Component as Attribute } from "./attribute";
 import { Component as AttributeKey } from "./attribute-key";
@@ -10,8 +13,8 @@ import { Component as Thread } from "./thread";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/social");
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/social";
+  const isCurrentModule = isAdminRoute(props.url, "social");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/social";
 
   if (!isCurrentModule) {
     return null;

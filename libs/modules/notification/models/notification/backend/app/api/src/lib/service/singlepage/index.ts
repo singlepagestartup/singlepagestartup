@@ -1,4 +1,6 @@
 import "reflect-metadata";
+import { readFile } from "node:fs/promises";
+import { join, normalize } from "node:path";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
@@ -12,10 +14,12 @@ import {
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
-import { Bot } from "grammy";
+import { Bot, InputFile } from "grammy";
 import { InlineKeyboardButton } from "@grammyjs/types";
 import { telegramMarkdownFormatter } from "@sps/backend-utils";
 import { IModel } from "@sps/notification/models/notification/sdk/model";
+
+type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -481,6 +485,127 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return mimeTypes[ext] || "application/octet-stream";
   }
 
+  private isTelegramWebpageCurlFailed(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return message.includes("WEBPAGE_CURL_FAILED");
+  }
+
+  private getAttachmentFilename(attachment: INotificationAttachment) {
+    try {
+      const parsedUrl = new URL(attachment.url);
+      const filename = parsedUrl.pathname.split("/").filter(Boolean).pop();
+
+      if (filename) {
+        return filename;
+      }
+    } catch {
+      const filename = attachment.url.split("/").filter(Boolean).pop();
+
+      if (filename) {
+        return filename;
+      }
+    }
+
+    return "attachment";
+  }
+
+  private async createTelegramAttachmentInputFile(props: {
+    attachment: INotificationAttachment;
+  }) {
+    let bytes: Uint8Array | undefined;
+
+    try {
+      const response = await fetch(props.attachment.url);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        if (arrayBuffer.byteLength) {
+          bytes = new Uint8Array(arrayBuffer);
+        }
+      }
+    } catch {
+      bytes = undefined;
+    }
+
+    if (!bytes) {
+      bytes = await this.readLocalPublicAttachmentBytes({
+        attachment: props.attachment,
+      });
+    }
+
+    if (!bytes?.byteLength) {
+      throw new Error(
+        `Telegram attachment upload fallback failed. Could not fetch ${props.attachment.url}`,
+      );
+    }
+
+    return new InputFile(bytes, this.getAttachmentFilename(props.attachment));
+  }
+
+  private async readLocalPublicAttachmentBytes(props: {
+    attachment: INotificationAttachment;
+  }) {
+    let pathname: string;
+
+    try {
+      pathname = new URL(props.attachment.url).pathname;
+    } catch {
+      return;
+    }
+
+    if (!pathname.startsWith("/public/")) {
+      return;
+    }
+
+    const relativePath = normalize(
+      decodeURIComponent(pathname.replace(/^\/public\//, "")),
+    );
+
+    if (relativePath.startsWith("..")) {
+      return;
+    }
+
+    const candidates = [
+      join(process.cwd(), "public", relativePath),
+      join(process.cwd(), "apps/api/public", relativePath),
+    ];
+
+    for (const candidate of candidates) {
+      try {
+        return await readFile(candidate);
+      } catch {
+        continue;
+      }
+    }
+
+    return undefined;
+  }
+
+  private async createTelegramMediaGroup(props: {
+    attachments: INotificationAttachment[];
+    formattedCaption: string;
+    finalParseMode: string;
+    uploadFiles?: boolean;
+  }) {
+    return Promise.all(
+      props.attachments.map(async (attachment, index) => {
+        const mimeType = this.getMimeType(attachment.url);
+        const media = props.uploadFiles
+          ? await this.createTelegramAttachmentInputFile({ attachment })
+          : attachment.url;
+
+        return {
+          type: mimeType.startsWith("image/") ? "photo" : "document",
+          media,
+          ...(index === 0 && {
+            caption: props.formattedCaption,
+            parse_mode: props.finalParseMode,
+          }),
+        };
+      }),
+    );
+  }
+
   async provider(props: {
     method: "email" | "telegram";
     provider: "Amazon SES" | "Telegram";
@@ -584,6 +709,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             const baseCaptionOptions = { ...(captionOptions || {}) };
             delete (baseCaptionOptions as { reply_markup?: unknown })
               .reply_markup;
+            const mediaGroupOptions = { ...baseCaptionOptions };
+            delete (mediaGroupOptions as { parse_mode?: unknown }).parse_mode;
             const normalizedReplyMarkup = this.normalizeReplyMarkup(
               (captionOptions as { reply_markup?: unknown })?.reply_markup as {
                 inline_keyboard?: {
@@ -607,20 +734,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 })
               : captionChunks.shift() || "";
             const finalParseMode = parseMode || "MarkdownV2";
-            const response = await bot.api.sendMediaGroup(
-              entity.reciever,
-              validAttachments.map((attachment, index) => {
-                const mimeType = this.getMimeType(attachment.url);
-                return {
-                  type: mimeType.startsWith("image/") ? "photo" : "document",
-                  media: attachment.url,
-                  ...(index === 0 && {
-                    caption: formattedCaption,
-                    parse_mode: finalParseMode,
-                  }),
-                };
-              }),
-            );
+            const mediaGroup = await this.createTelegramMediaGroup({
+              attachments: validAttachments,
+              formattedCaption,
+              finalParseMode,
+            });
+            let response;
+
+            try {
+              response = await bot.api.sendMediaGroup(
+                entity.reciever,
+                mediaGroup as any,
+                Object.keys(mediaGroupOptions).length
+                  ? (mediaGroupOptions as any)
+                  : undefined,
+              );
+            } catch (error) {
+              if (!this.isTelegramWebpageCurlFailed(error)) {
+                throw error;
+              }
+
+              const uploadMediaGroup = await this.createTelegramMediaGroup({
+                attachments: validAttachments,
+                formattedCaption,
+                finalParseMode,
+                uploadFiles: true,
+              });
+
+              response = await bot.api.sendMediaGroup(
+                entity.reciever,
+                uploadMediaGroup as any,
+                Object.keys(mediaGroupOptions).length
+                  ? (mediaGroupOptions as any)
+                  : undefined,
+              );
+            }
 
             if (response.length) {
               const messageId = response[0].message_id;

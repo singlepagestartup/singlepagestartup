@@ -1,7 +1,7 @@
 {
   "id": "e939ed88-22ba-4630-86e4-9743ad94338c",
   "createdAt": "2025-01-24T23:47:55.624Z",
-  "updatedAt": "2026-01-13T10:47:06.920Z",
+  "updatedAt": "2026-03-19T00:27:17.457Z",
   "variant": "default",
   "type": "subscription",
   "slug": "pro",
@@ -14,7 +14,7 @@
     "ru": "Подписка для получения доступа к нейронным сетят"
   },
   "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription\"}]}]}"
+    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Subscription!\"}]}]}"
   },
   "adminTitle": "Pro Subscription"
 }

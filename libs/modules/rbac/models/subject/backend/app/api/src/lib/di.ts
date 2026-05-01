@@ -39,6 +39,7 @@ export interface ISocialModule {
   chatsToThreads: IReadService;
   chatsToMessages: IReadService;
   chatsToActions: IReadService;
+  threadsToActions: IReadService;
   threadsToMessages: ICreateService;
   messagesToFileStorageModuleFiles: IReadService;
   attributeKeysToAttributes: IReadService;

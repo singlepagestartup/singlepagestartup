@@ -1,8 +1,95 @@
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
-const isServer = typeof window === "undefined";
+const browserGlobals = globalThis as typeof globalThis & {
+  window?: unknown;
+  document?: { cookie: string };
+  localStorage?: {
+    getItem: (key: string) => string | null;
+    removeItem: (key: string) => void;
+  };
+};
+const isServer = typeof browserGlobals.window === "undefined";
 const isDebug =
   process.env.NODE_ENV === "development" || process.env.DEBUG === "true";
+const sessionExpiredMessage = "Session expired. Please sign in again.";
+const authenticationStorageEvent = "sps-rbac-auth-storage-change";
+const invalidCredentialsPattern = /invalid credentials/i;
+const sessionStatePattern =
+  /unauthorized|token required|no session|authorization error|no subject provided in the token|invalid token issued/i;
+
+function dispatchBrowserAuthorizationStateChange() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(authenticationStorageEvent));
+}
+
+function hasBrowserJwtCookie() {
+  if (!browserGlobals.document) {
+    return false;
+  }
+
+  return browserGlobals.document.cookie
+    .split("; ")
+    .some((cookie) => cookie.startsWith("rbac.subject.jwt="));
+}
+
+function hasBrowserRefreshToken() {
+  let hasRefreshToken = false;
+
+  try {
+    hasRefreshToken = Boolean(
+      browserGlobals.localStorage?.getItem("rbac.subject.refresh"),
+    );
+  } catch {
+    hasRefreshToken = false;
+  }
+
+  return hasRefreshToken;
+}
+
+function hasBrowserAuthorizationState() {
+  const hasJwtCookie = hasBrowserJwtCookie();
+  const hasRefreshToken = hasBrowserRefreshToken();
+
+  return hasJwtCookie || hasRefreshToken;
+}
+
+function clearBrowserAuthorizationState() {
+  if (browserGlobals.document) {
+    browserGlobals.document.cookie = "rbac.subject.jwt=; Max-Age=0; path=/";
+  }
+
+  try {
+    browserGlobals.localStorage?.removeItem("rbac.subject.refresh");
+  } catch {
+    // Ignore storage access issues in restricted environments.
+  }
+
+  dispatchBrowserAuthorizationStateChange();
+}
+
+function shouldTreatAsExpiredSession(props: {
+  status: number;
+  message: string;
+}) {
+  if (props.status !== 401) {
+    return false;
+  }
+
+  if (invalidCredentialsPattern.test(props.message)) {
+    return false;
+  }
+
+  if (hasBrowserRefreshToken()) {
+    return false;
+  }
+
+  return (
+    hasBrowserAuthorizationState() || sessionStatePattern.test(props.message)
+  );
+}
 
 async function util<T>(props: {
   res: Response;
@@ -76,7 +163,31 @@ async function util<T>(props: {
         cause: errorPayload,
       });
     } else {
-      throw new Error(JSON.stringify(errorPayload));
+      const shouldClearAuthorizationState = shouldTreatAsExpiredSession({
+        status: errorPayload.status,
+        message: errorPayload.message,
+      });
+
+      if (shouldClearAuthorizationState) {
+        clearBrowserAuthorizationState();
+      }
+
+      const clientError = new Error(
+        shouldClearAuthorizationState
+          ? sessionExpiredMessage
+          : errorPayload.message || "Unknown error",
+      ) as Error & {
+        status?: number;
+        payload?: typeof errorPayload;
+        rawMessage?: string;
+      };
+
+      clientError.name = "ClientResponseError";
+      clientError.status = errorPayload.status;
+      clientError.payload = errorPayload;
+      clientError.rawMessage = JSON.stringify(errorPayload);
+
+      throw clientError;
     }
   }
 

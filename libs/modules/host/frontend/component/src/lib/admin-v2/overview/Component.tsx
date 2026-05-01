@@ -1,13 +1,16 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Layout } from "./layout";
 import { Component as Metadata } from "./metadata";
 import { Component as Page } from "./page";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/host");
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/host";
+  const isCurrentModule = isAdminRoute(props.url, "host");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/host";
 
   if (!isCurrentModule) {
     return null;

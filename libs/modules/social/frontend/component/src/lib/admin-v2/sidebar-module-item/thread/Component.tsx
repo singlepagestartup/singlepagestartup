@@ -1,8 +1,8 @@
 import { Component as ParentComponent } from "@sps/social/models/thread/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 
 export function Component(props: { url: string; isServer: boolean }) {
-  const isActive = props.url.startsWith(ADMIN_BASE_PATH + "/social/thread");
+  const isActive = isAdminRoute(props.url, "social", "thread");
 
   return (
     <ParentComponent

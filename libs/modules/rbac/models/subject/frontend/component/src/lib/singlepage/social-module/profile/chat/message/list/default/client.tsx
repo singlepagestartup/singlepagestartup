@@ -6,6 +6,7 @@ import { IComponentProps } from "./interface";
 import { api } from "@sps/rbac/models/subject/sdk/client";
 import { Skeleton } from "./Skeleton";
 import { useMemo } from "react";
+import { createSocialModuleMessagesAndActionsQuery } from "./timeline";
 
 export default function Component(props: IComponentProps) {
   const {
@@ -38,6 +39,7 @@ export default function Component(props: IComponentProps) {
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
       params: {
+        socialModuleThreadId: props.socialModuleThreadId,
         orderBy: {
           and: [
             {
@@ -55,29 +57,10 @@ export default function Component(props: IComponentProps) {
     });
 
   const socialModuleMessagesAndActionsQuery = useMemo(() => {
-    return socialModuleMessages && socialModuleActions
-      ? [
-          ...socialModuleMessages.map((socialModuleMessage) => {
-            return {
-              type: "message" as const,
-              data: socialModuleMessage,
-            };
-          }),
-          ...socialModuleActions.map((socialModuleAction) => {
-            return {
-              type: "action" as const,
-              data: socialModuleAction,
-            };
-          }),
-        ].sort((a, b) => {
-          if (a.data.createdAt <= b.data.createdAt) {
-            return -1;
-          } else if (a.data.createdAt > b.data.createdAt) {
-            return 1;
-          }
-          return 0;
-        })
-      : [];
+    return createSocialModuleMessagesAndActionsQuery({
+      socialModuleMessages,
+      socialModuleActions,
+    });
   }, [socialModuleMessages, socialModuleActions]);
 
   if (socialModuleMessagesIsLoading || socialModuleActionsIsLoading) {

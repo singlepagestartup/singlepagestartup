@@ -4,6 +4,7 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { internationalization } from "@sps/shared-configuration";
 import { Component as HostModulePage } from "@sps/host/models/page/frontend/component";
 import { notFound } from "next/navigation";
+import { Component as Admin } from "../../src/components/admin";
 import { Component as AdminV2 } from "../../src/components/admin-v2";
 
 export const revalidate = 86400;
@@ -64,13 +65,16 @@ export default async function Page(props: {
         }
 
         return (
-          <HostModulePage
-            isServer={true}
-            variant={data?.variant as any}
-            data={data}
-            url={slashedUrl}
-            language={language}
-          />
+          <>
+            <Admin isServer={true} />
+            <HostModulePage
+              isServer={true}
+              variant={data?.variant as any}
+              data={data}
+              url={slashedUrl}
+              language={language}
+            />
+          </>
         );
       }}
     </HostModulePage>

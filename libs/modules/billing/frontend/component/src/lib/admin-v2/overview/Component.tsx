@@ -1,13 +1,16 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as PaymentIntent } from "./payment-intent";
 import { Component as Invoice } from "./invoice";
 import { Component as Currency } from "./currency";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/billing`);
-  const isOverviewRoute = props.url === `${ADMIN_BASE_PATH}/billing`;
+  const isCurrentModule = isAdminRoute(props.url, "billing");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/billing";
 
   if (!isCurrentModule) {
     return null;

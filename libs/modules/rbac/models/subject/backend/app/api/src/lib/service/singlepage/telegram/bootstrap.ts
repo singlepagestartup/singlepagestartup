@@ -1,13 +1,18 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { RBAC_SECRET_KEY, TELEGRAM_SERVICE_BOT_TOKEN } from "@sps/shared-utils";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as IRbacIdentity } from "@sps/rbac/models/identity/sdk/model";
 import { api as rbacModuleIdentityApi } from "@sps/rbac/models/identity/sdk/server";
 import { api } from "@sps/rbac/models/subject/sdk/server";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
+import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
+import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
+import { api as socialModuleThreadsToActionsApi } from "@sps/social/relations/threads-to-actions/sdk/server";
 import { IModel as ISocialModuleAttributeKey } from "@sps/social/models/attribute-key/sdk/model";
 import { IModel as ISocialModuleAttribute } from "@sps/social/models/attribute/sdk/model";
 import { api as socialModuleAttributeKeyApi } from "@sps/social/models/attribute-key/sdk/server";
@@ -21,17 +26,21 @@ import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subj
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { type ISocialModule } from "../../../di";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
+import { OpenRouter } from "@sps/shared-third-parties";
 
 export interface IExecuteProps {
   fromId: string;
   chatId: string;
   messageText?: string;
+  messageThreadId?: string;
+  isTopicMessage?: boolean;
 }
 
 export interface IResult {
   rbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThread: ISocialModuleThread;
   registration: boolean;
   isStartCommand: boolean;
   shouldCheckoutFreeSubscription: boolean;
@@ -84,6 +93,233 @@ export class Service {
     };
   }
 
+  private getFallbackTelegramThreadTitle(messageThreadId: string) {
+    return `Telegram topic ${messageThreadId}`;
+  }
+
+  private isFallbackTelegramThreadTitle(props: {
+    title?: string | null;
+    messageThreadId: string;
+  }) {
+    const title = props.title?.trim();
+
+    if (!title) {
+      return true;
+    }
+
+    return (
+      title === "New Chat" ||
+      title === this.getFallbackTelegramThreadTitle(props.messageThreadId)
+    );
+  }
+
+  private shouldGenerateThreadTitleFromMessage(messageText?: string) {
+    const text = messageText?.trim();
+
+    if (!text) {
+      return false;
+    }
+
+    return !text.startsWith("/");
+  }
+
+  private getFallbackThreadTitleFromMessage(messageText: string) {
+    const words = messageText
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 3);
+
+    return `${words.join(" ") || "New thread"} 💬`.slice(0, 128).trim();
+  }
+
+  private parseGeneratedThreadTitle(value: string) {
+    const cleanValue = value
+      .trim()
+      .replace(/^```(?:json)?/i, "")
+      .replace(/```$/i, "")
+      .trim();
+
+    try {
+      const parsed = JSON.parse(cleanValue);
+
+      if (parsed && typeof parsed.title === "string") {
+        return parsed.title;
+      }
+    } catch {
+      //
+    }
+
+    return cleanValue;
+  }
+
+  private sanitizeGeneratedThreadTitle(props: {
+    generatedTitle?: string;
+    messageText: string;
+  }) {
+    const rawTitle = props.generatedTitle?.trim();
+    const fallbackTitle = this.getFallbackThreadTitleFromMessage(
+      props.messageText,
+    );
+
+    if (!rawTitle) {
+      return fallbackTitle;
+    }
+
+    const emojiMatch = rawTitle.match(/\p{Extended_Pictographic}/u);
+    const emoji = emojiMatch?.[0] || "💬";
+    const words = rawTitle
+      .replace(/\p{Extended_Pictographic}/gu, " ")
+      .replace(/["'`*_~#[\](){}<>]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 3);
+
+    if (!words.length) {
+      return fallbackTitle;
+    }
+
+    return `${words.join(" ")} ${emoji}`.slice(0, 128).trim();
+  }
+
+  private async generateTelegramThreadTitle(props: { messageText: string }) {
+    const fallbackTitle = this.getFallbackThreadTitleFromMessage(
+      props.messageText,
+    );
+
+    try {
+      const openRouter = new OpenRouter();
+      const result = await openRouter.generate({
+        model: "google/gemini-2.5-flash",
+        temperature: 0.2,
+        max_tokens: 20,
+        responseFormat: {
+          type: "json_object",
+        },
+        context: [
+          {
+            role: "system",
+            content: [
+              "Generate a concise Telegram thread title from the user message.",
+              "Max 3 words. Include one relevant emoji.",
+              "Match message language. Return only JSON:",
+              JSON.stringify({ title: "..." }),
+            ].join(" "),
+          },
+          {
+            role: "user",
+            content: props.messageText.slice(0, 4000),
+          },
+        ],
+      });
+
+      if ("error" in result) {
+        return fallbackTitle;
+      }
+
+      return this.sanitizeGeneratedThreadTitle({
+        generatedTitle: this.parseGeneratedThreadTitle(result.text || ""),
+        messageText: props.messageText,
+      });
+    } catch (error) {
+      console.warn("telegram/bootstrap: failed to generate thread title", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      return fallbackTitle;
+    }
+  }
+
+  private async editTelegramForumTopicTitle(props: {
+    socialModuleChat: ISocialModuleChat;
+    messageThreadId: string;
+    title: string;
+  }) {
+    if (!TELEGRAM_SERVICE_BOT_TOKEN || !props.socialModuleChat.sourceSystemId) {
+      return;
+    }
+
+    const response = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_SERVICE_BOT_TOKEN}/editForumTopic`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: props.socialModuleChat.sourceSystemId,
+          message_thread_id: Number(props.messageThreadId),
+          name: props.title,
+        }),
+      },
+    );
+    const payload = await response.json();
+
+    if (!response.ok || !payload?.ok) {
+      throw new Error(
+        `Telegram topic sync error. ${payload?.description || response.statusText}`,
+      );
+    }
+  }
+
+  private async applyGeneratedTitleToTelegramThread(props: {
+    socialModuleChat: ISocialModuleChat;
+    socialModuleThread: ISocialModuleThread;
+    messageThreadId: string;
+    messageText?: string;
+    headers: Record<string, string>;
+  }) {
+    if (
+      !this.shouldGenerateThreadTitleFromMessage(props.messageText) ||
+      !this.isFallbackTelegramThreadTitle({
+        title: props.socialModuleThread.title,
+        messageThreadId: props.messageThreadId,
+      })
+    ) {
+      return props.socialModuleThread;
+    }
+
+    const title = await this.generateTelegramThreadTitle({
+      messageText: props.messageText as string,
+    });
+
+    if (!title || title === props.socialModuleThread.title) {
+      return props.socialModuleThread;
+    }
+
+    const updatedThread = await socialModuleThreadApi.update({
+      id: props.socialModuleThread.id,
+      data: {
+        title,
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
+
+    try {
+      await this.editTelegramForumTopicTitle({
+        socialModuleChat: props.socialModuleChat,
+        messageThreadId: props.messageThreadId,
+        title,
+      });
+    } catch (error) {
+      console.warn("telegram/bootstrap: failed to mirror generated title", {
+        threadId: props.socialModuleThread.id,
+        messageThreadId: props.messageThreadId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    return {
+      ...props.socialModuleThread,
+      ...updatedThread,
+    };
+  }
+
   private getCreatedAtTimestamp(value: unknown) {
     if (!value) {
       return Number.MAX_SAFE_INTEGER;
@@ -100,6 +336,684 @@ export class Service {
     }
 
     return parsed;
+  }
+
+  private sortThreadsByCreatedAt(threads: ISocialModuleThread[]) {
+    return [...threads].sort((a, b) => {
+      const timestampDiff =
+        this.getCreatedAtTimestamp(a.createdAt) -
+        this.getCreatedAtTimestamp(b.createdAt);
+
+      if (timestampDiff !== 0) {
+        return timestampDiff;
+      }
+
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+
+  private async reconnectDuplicateThreadActionsToPrimary(props: {
+    chatId: string;
+    primaryThreadId: string;
+    duplicateThreadIds: string[];
+    headers: Record<string, string>;
+  }) {
+    if (!props.duplicateThreadIds.length) {
+      return;
+    }
+
+    const currentChatActions = await this.socialModule.chatsToActions.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.chatId,
+            },
+          ],
+        },
+      },
+    });
+    const currentChatActionIds = new Set(
+      currentChatActions
+        ?.map((relation: { actionId?: string }) => relation.actionId)
+        .filter((actionId: string | undefined): actionId is string =>
+          Boolean(actionId),
+        ) || [],
+    );
+    const primaryThreadActions = await this.socialModule.threadsToActions.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "threadId",
+              method: "eq",
+              value: props.primaryThreadId,
+            },
+          ],
+        },
+      },
+    });
+    const primaryActionIds = new Set(
+      primaryThreadActions
+        ?.map((relation: { actionId?: string }) => relation.actionId)
+        .filter((actionId: string | undefined): actionId is string =>
+          Boolean(actionId),
+        ) || [],
+    );
+    const duplicateThreadActions =
+      await this.socialModule.threadsToActions.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "inArray",
+                value: props.duplicateThreadIds,
+              },
+            ],
+          },
+        },
+      });
+
+    for (const duplicateThreadAction of duplicateThreadActions || []) {
+      const actionId = duplicateThreadAction.actionId;
+
+      if (!actionId) {
+        continue;
+      }
+
+      if (currentChatActionIds.size && !currentChatActionIds.has(actionId)) {
+        continue;
+      }
+
+      if (primaryActionIds.has(actionId)) {
+        continue;
+      }
+
+      await socialModuleThreadsToActionsApi.create({
+        data: {
+          threadId: props.primaryThreadId,
+          actionId,
+          variant: duplicateThreadAction.variant || "default",
+          orderIndex: duplicateThreadAction.orderIndex ?? 0,
+          className: duplicateThreadAction.className || undefined,
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
+
+      primaryActionIds.add(actionId);
+    }
+  }
+
+  private async mergeDuplicateDefaultThreadsForChat(props: {
+    chatId: string;
+    defaultThreads: ISocialModuleThread[];
+    chatToThreads: { id?: string; chatId?: string; threadId?: string }[];
+    headers: Record<string, string>;
+  }) {
+    const [primaryThread, ...duplicateThreads] = this.sortThreadsByCreatedAt(
+      props.defaultThreads,
+    );
+    const duplicateThreadIds = duplicateThreads.map((thread) => thread.id);
+
+    if (!duplicateThreadIds.length) {
+      return primaryThread;
+    }
+
+    const currentChatMessages = await this.socialModule.chatsToMessages.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.chatId,
+            },
+          ],
+        },
+      },
+    });
+    const currentChatMessageIds = new Set(
+      currentChatMessages
+        ?.map((relation: { messageId?: string }) => relation.messageId)
+        .filter((messageId: string | undefined): messageId is string =>
+          Boolean(messageId),
+        ) || [],
+    );
+    const primaryThreadMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "eq",
+                value: primaryThread.id,
+              },
+            ],
+          },
+        },
+      });
+    const primaryMessageIds = new Set(
+      primaryThreadMessages
+        ?.map((relation: { messageId?: string }) => relation.messageId)
+        .filter((messageId: string | undefined): messageId is string =>
+          Boolean(messageId),
+        ) || [],
+    );
+    const duplicateThreadMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "inArray",
+                value: duplicateThreadIds,
+              },
+            ],
+          },
+        },
+      });
+
+    for (const duplicateThreadMessage of duplicateThreadMessages || []) {
+      const messageId = duplicateThreadMessage.messageId;
+
+      if (!messageId) {
+        continue;
+      }
+
+      if (currentChatMessageIds.size && !currentChatMessageIds.has(messageId)) {
+        continue;
+      }
+
+      if (primaryMessageIds.has(messageId)) {
+        continue;
+      }
+
+      await socialModuleThreadsToMessagesApi.create({
+        data: {
+          threadId: primaryThread.id,
+          messageId,
+          variant: duplicateThreadMessage.variant || "default",
+          orderIndex: duplicateThreadMessage.orderIndex ?? 0,
+          className: duplicateThreadMessage.className || undefined,
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
+
+      primaryMessageIds.add(messageId);
+    }
+
+    await this.reconnectDuplicateThreadActionsToPrimary({
+      chatId: props.chatId,
+      primaryThreadId: primaryThread.id,
+      duplicateThreadIds,
+      headers: props.headers,
+    });
+
+    const chatToDuplicateThreadRelations = props.chatToThreads.filter(
+      (relation) => {
+        return (
+          relation.id &&
+          relation.chatId === props.chatId &&
+          relation.threadId &&
+          duplicateThreadIds.includes(relation.threadId)
+        );
+      },
+    );
+
+    for (const relation of chatToDuplicateThreadRelations) {
+      await socialModuleChatsToThreadsApi.delete({
+        id: relation.id as string,
+        options: {
+          headers: props.headers,
+        },
+      });
+    }
+
+    const remainingDuplicateThreadLinks =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "inArray",
+                value: duplicateThreadIds,
+              },
+            ],
+          },
+        },
+      });
+    const duplicateThreadIdsLinkedElsewhere = new Set(
+      remainingDuplicateThreadLinks
+        ?.map((relation: { threadId?: string }) => relation.threadId)
+        .filter((threadId: string | undefined): threadId is string =>
+          Boolean(threadId),
+        ) || [],
+    );
+    const deletedThreadIds: string[] = [];
+
+    for (const duplicateThread of duplicateThreads) {
+      if (duplicateThreadIdsLinkedElsewhere.has(duplicateThread.id)) {
+        console.warn(
+          "telegram/bootstrap: duplicate default thread is still linked to another chat, keeping thread record",
+          {
+            chatId: props.chatId,
+            primaryThreadId: primaryThread.id,
+            duplicateThreadId: duplicateThread.id,
+          },
+        );
+        continue;
+      }
+
+      await socialModuleThreadApi.delete({
+        id: duplicateThread.id,
+        options: {
+          headers: props.headers,
+        },
+      });
+      deletedThreadIds.push(duplicateThread.id);
+    }
+
+    console.warn("telegram/bootstrap: merged duplicate default threads", {
+      chatId: props.chatId,
+      primaryThreadId: primaryThread.id,
+      duplicateThreadIds,
+      deletedThreadIds,
+    });
+
+    return primaryThread;
+  }
+
+  private async mergeDuplicateTelegramTopicThreadsForChat(props: {
+    chatId: string;
+    messageThreadId: string;
+    topicThreads: ISocialModuleThread[];
+    chatToThreads: { id?: string; chatId?: string; threadId?: string }[];
+    headers: Record<string, string>;
+  }) {
+    const [primaryThread, ...duplicateThreads] = this.sortThreadsByCreatedAt(
+      props.topicThreads,
+    );
+    const duplicateThreadIds = duplicateThreads.map((thread) => thread.id);
+
+    if (!duplicateThreadIds.length) {
+      return primaryThread;
+    }
+
+    const currentChatMessages = await this.socialModule.chatsToMessages.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.chatId,
+            },
+          ],
+        },
+      },
+    });
+    const currentChatMessageIds = new Set(
+      currentChatMessages
+        ?.map((relation: { messageId?: string }) => relation.messageId)
+        .filter((messageId: string | undefined): messageId is string =>
+          Boolean(messageId),
+        ) || [],
+    );
+    const primaryThreadMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "eq",
+                value: primaryThread.id,
+              },
+            ],
+          },
+        },
+      });
+    const primaryMessageIds = new Set(
+      primaryThreadMessages
+        ?.map((relation: { messageId?: string }) => relation.messageId)
+        .filter((messageId: string | undefined): messageId is string =>
+          Boolean(messageId),
+        ) || [],
+    );
+    const duplicateThreadMessages =
+      await this.socialModule.threadsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "inArray",
+                value: duplicateThreadIds,
+              },
+            ],
+          },
+        },
+      });
+
+    for (const duplicateThreadMessage of duplicateThreadMessages || []) {
+      const messageId = duplicateThreadMessage.messageId;
+
+      if (!messageId) {
+        continue;
+      }
+
+      if (currentChatMessageIds.size && !currentChatMessageIds.has(messageId)) {
+        continue;
+      }
+
+      if (primaryMessageIds.has(messageId)) {
+        continue;
+      }
+
+      await socialModuleThreadsToMessagesApi.create({
+        data: {
+          threadId: primaryThread.id,
+          messageId,
+          variant: duplicateThreadMessage.variant || "default",
+          orderIndex: duplicateThreadMessage.orderIndex ?? 0,
+          className: duplicateThreadMessage.className || undefined,
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
+
+      primaryMessageIds.add(messageId);
+    }
+
+    await this.reconnectDuplicateThreadActionsToPrimary({
+      chatId: props.chatId,
+      primaryThreadId: primaryThread.id,
+      duplicateThreadIds,
+      headers: props.headers,
+    });
+
+    const chatToDuplicateThreadRelations = props.chatToThreads.filter(
+      (relation) => {
+        return (
+          relation.id &&
+          relation.chatId === props.chatId &&
+          relation.threadId &&
+          duplicateThreadIds.includes(relation.threadId)
+        );
+      },
+    );
+
+    for (const relation of chatToDuplicateThreadRelations) {
+      await socialModuleChatsToThreadsApi.delete({
+        id: relation.id as string,
+        options: {
+          headers: props.headers,
+        },
+      });
+    }
+
+    const remainingDuplicateThreadLinks =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "threadId",
+                method: "inArray",
+                value: duplicateThreadIds,
+              },
+            ],
+          },
+        },
+      });
+    const duplicateThreadIdsLinkedElsewhere = new Set(
+      remainingDuplicateThreadLinks
+        ?.map((relation: { threadId?: string }) => relation.threadId)
+        .filter((threadId: string | undefined): threadId is string =>
+          Boolean(threadId),
+        ) || [],
+    );
+    const deletedThreadIds: string[] = [];
+
+    for (const duplicateThread of duplicateThreads) {
+      if (duplicateThreadIdsLinkedElsewhere.has(duplicateThread.id)) {
+        console.warn(
+          "telegram/bootstrap: duplicate Telegram topic thread is still linked to another chat, keeping thread record",
+          {
+            chatId: props.chatId,
+            messageThreadId: props.messageThreadId,
+            primaryThreadId: primaryThread.id,
+            duplicateThreadId: duplicateThread.id,
+          },
+        );
+        continue;
+      }
+
+      await socialModuleThreadApi.delete({
+        id: duplicateThread.id,
+        options: {
+          headers: props.headers,
+        },
+      });
+      deletedThreadIds.push(duplicateThread.id);
+    }
+
+    console.warn(
+      "telegram/bootstrap: merged duplicate Telegram topic threads",
+      {
+        chatId: props.chatId,
+        messageThreadId: props.messageThreadId,
+        primaryThreadId: primaryThread.id,
+        duplicateThreadIds,
+        deletedThreadIds,
+      },
+    );
+
+    return primaryThread;
+  }
+
+  private async ensureDefaultThreadForChat(props: {
+    chatId: string;
+    headers: Record<string, string>;
+  }): Promise<ISocialModuleThread> {
+    const chatToThreads = await this.socialModule.chatsToThreads.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.chatId,
+            },
+          ],
+        },
+      },
+    });
+
+    const threadIds =
+      chatToThreads
+        ?.map((chatToThread: { threadId?: string }) => chatToThread.threadId)
+        .filter((threadId: string | undefined): threadId is string =>
+          Boolean(threadId),
+        ) || [];
+
+    if (threadIds.length) {
+      const threads = await this.socialModule.thread.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: threadIds,
+              },
+            ],
+          },
+        },
+      });
+
+      const defaultThreads =
+        threads?.filter((thread: ISocialModuleThread) => {
+          return thread.variant === "default";
+        }) || [];
+
+      if (defaultThreads.length > 1) {
+        return this.mergeDuplicateDefaultThreadsForChat({
+          chatId: props.chatId,
+          defaultThreads,
+          chatToThreads: chatToThreads || [],
+          headers: props.headers,
+        });
+      }
+
+      if (defaultThreads.length === 1) {
+        return defaultThreads[0];
+      }
+    }
+
+    const thread = await socialModuleThreadApi.create({
+      data: {
+        variant: "default",
+        title: "Default thread",
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
+
+    await socialModuleChatsToThreadsApi.create({
+      data: {
+        chatId: props.chatId,
+        threadId: thread.id,
+        variant: "default",
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
+
+    return thread;
+  }
+
+  private async resolveThreadForTelegramMessage(props: {
+    socialModuleChat: ISocialModuleChat;
+    chatId: string;
+    messageThreadId?: string;
+    messageText?: string;
+    headers: Record<string, string>;
+  }): Promise<ISocialModuleThread> {
+    const messageThreadId = props.messageThreadId?.trim();
+
+    if (!messageThreadId) {
+      return this.ensureDefaultThreadForChat({
+        chatId: props.chatId,
+        headers: props.headers,
+      });
+    }
+
+    const chatToThreads = await this.socialModule.chatsToThreads.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.chatId,
+            },
+          ],
+        },
+      },
+    });
+
+    const threadIds =
+      chatToThreads
+        ?.map((chatToThread: { threadId?: string }) => chatToThread.threadId)
+        .filter((threadId: string | undefined): threadId is string =>
+          Boolean(threadId),
+        ) || [];
+
+    if (threadIds.length) {
+      const threads = await this.socialModule.thread.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: threadIds,
+              },
+              {
+                column: "sourceSystemId",
+                method: "eq",
+                value: messageThreadId,
+              },
+            ],
+          },
+        },
+      });
+
+      if (threads?.length) {
+        const thread =
+          threads.length > 1
+            ? await this.mergeDuplicateTelegramTopicThreadsForChat({
+                chatId: props.chatId,
+                messageThreadId,
+                topicThreads: threads,
+                chatToThreads: chatToThreads || [],
+                headers: props.headers,
+              })
+            : (threads[0] as ISocialModuleThread);
+
+        return this.applyGeneratedTitleToTelegramThread({
+          socialModuleChat: props.socialModuleChat,
+          socialModuleThread: thread,
+          messageThreadId,
+          messageText: props.messageText,
+          headers: props.headers,
+        });
+      }
+    }
+
+    const title = this.getFallbackTelegramThreadTitle(messageThreadId);
+    const thread = await socialModuleThreadApi.create({
+      data: {
+        variant: "telegram",
+        title,
+        sourceSystemId: messageThreadId,
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
+
+    await socialModuleChatsToThreadsApi.create({
+      data: {
+        chatId: props.chatId,
+        threadId: thread.id,
+      },
+      options: {
+        headers: props.headers,
+      },
+    });
+
+    return this.applyGeneratedTitleToTelegramThread({
+      socialModuleChat: props.socialModuleChat,
+      socialModuleThread: thread,
+      messageThreadId,
+      messageText: props.messageText,
+      headers: props.headers,
+    });
   }
 
   private async resolveSubjectByIdentityLinks(props: {
@@ -754,10 +1668,19 @@ export class Service {
       }
     }
 
+    const thread = await this.resolveThreadForTelegramMessage({
+      socialModuleChat: chat,
+      chatId: chat.id,
+      messageThreadId: props.messageThreadId,
+      messageText: props.messageText,
+      headers,
+    });
+
     return {
       rbacModuleSubject: subject,
       socialModuleProfile: profile,
       socialModuleChat: chat,
+      socialModuleThread: thread,
       registration,
       isStartCommand,
       shouldCheckoutFreeSubscription: registration || isStartCommand,

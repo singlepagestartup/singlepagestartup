@@ -14,8 +14,8 @@ import {
   type IProps as IParentProps,
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
-import Cookies from "js-cookie";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { clearAuthenticationTokens } from "./persist-authentication-tokens";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -43,8 +43,7 @@ export function action(props: IProps) {
           host: clientHost,
         });
 
-        localStorage.removeItem("rbac.subject.refresh");
-        Cookies.remove("rbac.subject.jwt");
+        clearAuthenticationTokens();
 
         if (mutationFunctionProps.redirectTo) {
           window.location.replace(mutationFunctionProps.redirectTo);

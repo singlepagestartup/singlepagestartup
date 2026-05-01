@@ -15,7 +15,7 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
-import Cookies from "js-cookie";
+import { persistAuthenticationTokens } from "../persist-authentication-tokens";
 
 export type IProps = {
   reactQueryOptions?: Partial<UseMutationOptions<any, DefaultError, any>>;
@@ -44,8 +44,7 @@ export function action(props: IProps) {
           host: clientHost,
         });
 
-        localStorage.setItem("rbac.subject.refresh", result.refresh);
-        Cookies.set("rbac.subject.jwt", result.jwt);
+        persistAuthenticationTokens(result);
 
         return result;
       } catch (error: any) {

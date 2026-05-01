@@ -877,6 +877,12 @@ paths:
   /social/threads-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products~1{id}"
 
+  # social/relations/threads-to-actions
+  /social/threads-to-actions:
+    $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-actions"
+  /social/threads-to-actions/{id}:
+    $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-actions~1{id}"
+
   # social/relations/threads-to-messages
   /social/threads-to-messages:
     $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages"
@@ -1507,6 +1513,10 @@ components:
       $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/social-threads-to-ecommerce-module-products.yaml"
     "social-threads-to-ecommerce-module-products-input":
       $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/social-threads-to-ecommerce-module-products-input.yaml"
+    "social-threads-to-actions":
+      $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/social-threads-to-actions.yaml"
+    "social-threads-to-actions-input":
+      $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/social-threads-to-actions-input.yaml"
     "social-threads-to-messages":
       $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/social-threads-to-messages.yaml"
     "social-threads-to-messages-input":

@@ -6,6 +6,7 @@ import { IComponentProps as IAdminV2TableComponentProps } from "./admin-v2/table
 import { IComponentProps as IAdminV2TableRowComponentProps } from "./admin-v2/table-row/interface";
 import { IComponentProps as IOverviewDefaultComponentProps } from "./overview/default/interface";
 import { IComponentProps as IButtonDefaultComponentProps } from "./button-default/interface";
+import { IComponentProps as IChatMessageRowComponentProps } from "./chat-message-row/interface";
 import { IComponentProps as IAdminSelectInputComponentProps } from "./admin/select-input/interface";
 import { IComponentProps as IAdminTableComponentProps } from "./admin/table/interface";
 import { IComponentProps as IAdminFormComponentProps } from "./admin/form/interface";
@@ -15,6 +16,7 @@ import { IComponentProps as IFindComponentProps } from "./find/interface";
 export type IComponentProps =
   | IOverviewDefaultComponentProps
   | IButtonDefaultComponentProps
+  | IChatMessageRowComponentProps
   | IAdminSelectInputComponentProps
   | IAdminTableComponentProps
   | IAdminFormComponentProps

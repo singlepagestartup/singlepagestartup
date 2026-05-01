@@ -7,6 +7,20 @@ model: sonnet
 
 You implement an approved plan phase-by-phase with progress tracking. Plans are carefully designed, but reality can be messy — follow the plan's intent while adapting to what you find.
 
+## Repository / Project Preflight
+
+Before any status gate, GitHub issue command, or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)
@@ -33,7 +47,10 @@ fi
 
 2. **Resolve issue, read ticket and plan**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
+   - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
+   - If it exists, read it completely before implementation
+   - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
    - Read `thoughts/shared/tickets/REPO_NAME/ISSUE-{NUMBER}.md` completely (if exists)
    - Find the implementation plan from issue comments or `thoughts/shared/plans/REPO_NAME/`
    - If no plan exists, move the issue back to "Ready for Plan" and EXIT:
@@ -59,11 +76,15 @@ fi
    - If file exists and `status: in_progress` → read it, identify the last completed phase, continue from the next phase
    - If file does not exist → create it and start from Phase 1 (see progress file format below)
    - **Always read the `## Incident Log` section before writing any code.** If incidents are already recorded, treat them as known pitfalls — do not re-debug them from scratch. This is especially critical when multiple agents are working in parallel on the same issue.
+   - Update the persistent process file:
+     - `current_phase: implement`
+     - `Implement: in_progress`
+     - `Next step: complete implementation and submit PR`
 
 4. **Sync GitHub comments** (before starting any code changes):
 
    ```bash
-   gh issue view ISSUE_NUMBER --json comments | jq -r '.comments'
+   gh issue view ISSUE_NUMBER --repo "$REPO_FULL_NAME" --json comments | jq -r '.comments'
    ```
 
    Check `<!-- Last synced at: ... -->` marker in the plan file to determine the cutoff date. Read all comments since the plan was last synced.
@@ -171,6 +192,7 @@ fi
      ```
 
    - **Record incidents while implementing**: whenever you hit an unexpected error, type error, runtime failure, or wrong assumption that required debugging — after resolving it, append an entry to `## Incident Log` in the progress file using the format defined in step 5. Check first if the same root cause is already logged; if so, increment `Occurrences` instead of adding a duplicate. Update the `<!-- incident-count: N -->` counter accordingly.
+   - Mirror the same incident into the persistent process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md` using `.claude/references/process-artifact-contract.md`. Reuse the existing process-file incident entry when the root cause matches; increment `Occurrences` instead of duplicating.
 
    c. Run automated verification (as specified in the phase's Success Criteria):
 
@@ -181,6 +203,7 @@ fi
    - Fix any issues before proceeding
 
    d. Update progress file with verification results (PASSED/FAILED) and notes. If verification failed and required a fix, record the failure as an incident in `## Incident Log` (same format as step 7b — increment `Occurrences` if it is a recurrence of a known issue).
+   Also mirror the verification-related incident into the persistent process file.
 
    e. **Pause for manual verification** (after automated checks pass):
 
@@ -230,6 +253,11 @@ fi
    - Add PR link
    - Add summary of changes
    - Update `status: complete` and `completed_date: CURRENT_DATE` in YAML frontmatter
+   - Update the persistent process file:
+     - `Implement: completed`
+     - `current_phase: complete`
+     - implementation phase summary and outputs
+     - `Next step: code review / merge`
    - **Promote recurring incidents to research**: review `## Incident Log`. For every incident with `Occurrences >= 2`, append it to `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md` under a `## Known Pitfalls (from implementation)` section (create the section if absent). Use the same incident format. This makes the knowledge permanent and visible to future agents working on related issues.
 
    d. **Comment on issue with PR link**:
@@ -256,6 +284,7 @@ fi
 ## Exit
 
 - [ ] Progress file created/updated at `thoughts/shared/handoffs/REPO_NAME/ISSUE-{NUMBER}-progress.md`
+- [ ] Process file updated at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
 - [ ] All phases implemented and verified (automated + manual)
 - [ ] Commit created with descriptive message
 - [ ] PR created with comprehensive description
@@ -276,7 +305,7 @@ rm thoughts/shared/handoffs/REPO_NAME/ISSUE-{NUMBER}-progress.md
 git add -A && git commit -m "chore: clean up handoff file for #ISSUE_NUMBER (merged)"
 ```
 
-The progress file is deleted because its operational tracking content is already captured in git history. The ticket, research, and plan files are kept permanently.
+The progress file is deleted because its operational tracking content is already captured in git history. The ticket, research, plan, and persistent process files are kept permanently.
 
 **Before deleting**: if the progress file contains any incidents with `Occurrences >= 2` that were not yet promoted to the research file during step 8c, promote them now. Single-occurrence incidents (Occurrences = 1) are considered one-off and do not need preservation.
 

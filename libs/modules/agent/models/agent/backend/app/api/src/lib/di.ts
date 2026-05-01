@@ -20,6 +20,7 @@ export interface ISocialModule {
   chatsToMessages: IReadService;
   chatsToActions: IReadService;
   threadsToMessages: IReadService;
+  threadsToActions: IReadService;
 }
 
 export interface IRbacModule {

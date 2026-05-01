@@ -1,12 +1,12 @@
 "use client";
 
 import { Component as ParentComponent } from "@sps/broadcast/models/message/frontend/component";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import { isAdminRoute } from "@sps/shared-frontend-client-utils";
 import { IComponentProps } from "./interface";
 import { Component as AdminForm } from "../admin-v2-form";
 
 export function Component(props: IComponentProps) {
-  const isActive = props.url.startsWith(ADMIN_BASE_PATH + "/broadcast/message");
+  const isActive = isAdminRoute(props.url, "broadcast", "message");
 
   if (!isActive) {
     return null;

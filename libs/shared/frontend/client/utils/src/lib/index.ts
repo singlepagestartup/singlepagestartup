@@ -6,6 +6,8 @@ export {
   getAdminRoutePath,
   useAdminRoutePath,
   parseAdminRoute,
+  isAdminRoute,
+  isAdminModelRoute,
   useAdminRoute,
   getAdminBasePath,
   useAdminBasePath,

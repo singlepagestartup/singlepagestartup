@@ -1,5 +1,8 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Action } from "./action";
 import { Component as Identity } from "./identity";
 import { Component as Permission } from "./permission";
@@ -8,8 +11,8 @@ import { Component as Subject } from "./subject";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(ADMIN_BASE_PATH + "/rbac");
-  const isOverviewRoute = props.url === ADMIN_BASE_PATH + "/rbac";
+  const isCurrentModule = isAdminRoute(props.url, "rbac");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/rbac";
 
   if (!isCurrentModule) {
     return null;

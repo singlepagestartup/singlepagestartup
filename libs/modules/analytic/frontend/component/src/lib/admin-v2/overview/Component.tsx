@@ -1,11 +1,14 @@
 import { IComponentProps } from "./interface";
-import { ADMIN_BASE_PATH } from "@sps/shared-utils";
+import {
+  getAdminRoutePath,
+  isAdminRoute,
+} from "@sps/shared-frontend-client-utils";
 import { Component as Metric } from "./metric";
 import { Component as Widget } from "./widget";
 
 export function Component(props: IComponentProps) {
-  const isCurrentModule = props.url.startsWith(`${ADMIN_BASE_PATH}/analytic`);
-  const isOverviewRoute = props.url === `${ADMIN_BASE_PATH}/analytic`;
+  const isCurrentModule = isAdminRoute(props.url, "analytic");
+  const isOverviewRoute = getAdminRoutePath(props.url) === "/analytic";
 
   if (!isCurrentModule) {
     return null;
