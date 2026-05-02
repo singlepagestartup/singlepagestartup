@@ -3,7 +3,7 @@ issue_number: 160
 issue_title: "Add universal REST /count endpoint and shared SDK support"
 start_date: 2026-05-01T00:54:30Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-160.md
-status: in_progress
+status: pull_request_open
 ---
 
 # Implementation Progress: ISSUE-160 - Add universal REST /count endpoint and shared SDK support
@@ -105,8 +105,9 @@ Browser verification at `http://localhost:3000/en/admin/ecommerce/attribute` aft
 
 ### Pull Request
 
-- [ ] PR created: -
-- [ ] PR number: -
+- [x] PR created: 2026-05-02T00:02:47Z
+- [x] PR number: #168
+- [x] PR URL: https://github.com/singlepagestartup/singlepagestartup/pull/168
 
 ### Final Status
 
@@ -116,4 +117,4 @@ Browser verification at `http://localhost:3000/en/admin/ecommerce/attribute` aft
 
 ---
 
-**Last updated**: 2026-05-01T23:51:57Z
+**Last updated**: 2026-05-02T00:02:47Z

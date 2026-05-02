@@ -3,8 +3,8 @@ issue_number: 160
 issue_title: "Add universal REST /count endpoint and shared SDK support"
 repository: singlepagestartup
 created_at: 2026-05-01T00:54:30Z
-last_updated: 2026-05-01T23:51:57Z
-status: ready_for_commit
+last_updated: 2026-05-02T00:02:47Z
+status: pull_request_open
 current_phase: implement
 ---
 
@@ -21,7 +21,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Plan: completed
 - Implement: completed
 - Current phase: implement
-- Next step: commit implementation changes and submit PR
+- Next step: review PR #168 and merge when checks pass
 
 ## Phase Notes
 
@@ -45,7 +45,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary: Phase 1 backend implementation, Phase 2 frontend API/SDK support, and Phase 3 shared consumer migration are complete. Admin-v2 card/table count usage plus user-requested OpenAPI/MCP coverage are implemented, verified, and ready for commit.
+- Summary: Phase 1 backend implementation, Phase 2 frontend API/SDK support, and Phase 3 shared consumer migration are complete. Admin-v2 card/table count usage plus user-requested OpenAPI/MCP coverage are implemented, verified, committed, and opened as PR #168.
 - Outputs:
   - `libs/shared/backend/api/src/lib/controllers/rest/handler/count/index.ts`
   - `libs/shared/backend/api/src/lib/service/crud/actions/count/index.ts`
@@ -68,6 +68,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - User requested admin-v2 module overview cards use count; shared card server/client wrappers now call `api.count`, preserve `apiProps`, force no-store headers, and pass `count` to child cards. Browser verification on `/en/admin/ecommerce` showed real badge values.
   - User requested checking model page table footer count; shared table client already used `api.count` for total, and was aligned with the card count option-merging pattern so `apiProps.options` are preserved on count/find calls. Browser verification on `/en/admin/ecommerce/attribute` showed `Page 1 of 1 (12 total)`.
   - The repeated scenario-runner hang after successful assertions was promoted to the issue research artifact under Known Pitfalls.
+  - PR opened: https://github.com/singlepagestartup/singlepagestartup/pull/168
 
 ## Incident Log
 
