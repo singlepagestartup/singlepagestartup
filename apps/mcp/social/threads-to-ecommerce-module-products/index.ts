@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialThreadsToEcommerceModuleProductsApi } from "@sps/social/relations/threads-to-ecommerce-module-products/sdk/server";
 import { insertSchema as socialThreadsToEcommerceModuleProductsInsertSchema } from "@sps/social/relations/threads-to-ecommerce-module-products/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-threads-to-ecommerce-module-products-count",
+    "Count social threads to ecommerce module products",
+    "Count social threads to ecommerce module products entities with optional filters.",
+    socialThreadsToEcommerceModuleProductsApi,
+  );
+
   mcp.registerTool(
     "social-threads-to-ecommerce-module-products-get",
     {

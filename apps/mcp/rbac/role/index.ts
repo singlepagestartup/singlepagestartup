@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacRoleApi } from "@sps/rbac/models/role/sdk/server";
 import { insertSchema as rbacRoleInsertSchema } from "@sps/rbac/models/role/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-module-role-count",
+    "Count rbac module role",
+    "Count rbac module role entities with optional filters.",
+    rbacRoleApi,
+  );
+
   mcp.registerTool(
     "rbac-module-role-get",
     {

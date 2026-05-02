@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceOrdersToBillingModulePaymentIntentsApi } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/server";
 import { insertSchema as ecommerceOrdersToBillingModulePaymentIntentsInsertSchema } from "@sps/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-orders-to-billing-module-payment-intents-count",
+    "Count ecommerce orders to billing module payment intents",
+    "Count ecommerce orders to billing module payment intents entities with optional filters.",
+    ecommerceOrdersToBillingModulePaymentIntentsApi,
+  );
+
   mcp.registerTool(
     "ecommerce-orders-to-billing-module-payment-intents-get",
     {

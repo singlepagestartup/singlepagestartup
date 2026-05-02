@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as billingPaymentIntentsToInvoicesApi } from "@sps/billing/relations/payment-intents-to-invoices/sdk/server";
 import { insertSchema as billingPaymentIntentsToInvoicesInsertSchema } from "@sps/billing/relations/payment-intents-to-invoices/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "billing-payment-intents-to-invoices-count",
+    "Count billing payment intents to invoices",
+    "Count billing payment intents to invoices entities with optional filters.",
+    billingPaymentIntentsToInvoicesApi,
+  );
+
   mcp.registerTool(
     "billing-payment-intents-to-invoices-get",
     {

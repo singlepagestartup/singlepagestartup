@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmRequestApi } from "@sps/crm/models/request/sdk/server";
 import { insertSchema as crmRequestInsertSchema } from "@sps/crm/models/request/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-module-request-count",
+    "Count crm module request",
+    "Count crm module request entities with optional filters.",
+    crmRequestApi,
+  );
+
   mcp.registerTool(
     "crm-module-request-get",
     {

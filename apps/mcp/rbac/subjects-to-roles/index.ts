@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { insertSchema as rbacSubjectsToRolesInsertSchema } from "@sps/rbac/relations/subjects-to-roles/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-roles-count",
+    "Count rbac subjects to roles",
+    "Count rbac subjects to roles entities with optional filters.",
+    rbacSubjectsToRolesApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-roles-get",
     {

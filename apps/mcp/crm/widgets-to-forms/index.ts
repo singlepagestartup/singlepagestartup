@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmWidgetsToFormsApi } from "@sps/crm/relations/widgets-to-forms/sdk/server";
 import { insertSchema as crmWidgetsToFormsInsertSchema } from "@sps/crm/relations/widgets-to-forms/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-widgets-to-forms-count",
+    "Count crm widgets to forms",
+    "Count crm widgets to forms entities with optional filters.",
+    crmWidgetsToFormsApi,
+  );
+
   mcp.registerTool(
     "crm-widgets-to-forms-get",
     {

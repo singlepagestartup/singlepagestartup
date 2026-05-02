@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 import { insertSchema as ecommerceAttributesToBillingModuleCurrenciesInsertSchema } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-attributes-to-billing-module-currencies-count",
+    "Count ecommerce attributes to billing module currencies",
+    "Count ecommerce attributes to billing module currencies entities with optional filters.",
+    ecommerceAttributesToBillingModuleCurrenciesApi,
+  );
+
   mcp.registerTool(
     "ecommerce-attributes-to-billing-module-currencies-get",
     {

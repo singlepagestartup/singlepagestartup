@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToBillingModulePaymentIntentsApi } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/sdk/server";
 import { insertSchema as rbacSubjectsToBillingModulePaymentIntentsInsertSchema } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-billing-module-payment-intents-count",
+    "Count rbac subjects to billing module payment intents",
+    "Count rbac subjects to billing module payment intents entities with optional filters.",
+    rbacSubjectsToBillingModulePaymentIntentsApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-billing-module-payment-intents-get",
     {

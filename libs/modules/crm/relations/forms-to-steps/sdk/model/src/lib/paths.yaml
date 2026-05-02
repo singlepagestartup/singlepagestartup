@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "crm-forms-to-steps.yaml"
 
+  /crm/forms-to-steps/count:
+    get:
+      tags:
+        - "crm-forms-to-steps"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /crm/forms-to-steps/{id}:
     get:
       tags:

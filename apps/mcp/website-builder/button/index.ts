@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderButtonApi } from "@sps/website-builder/models/button/sdk/server";
 import { insertSchema as websiteBuilderButtonInsertSchema } from "@sps/website-builder/models/button/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "website-builder-module-button-count",
+    "Count website builder module button",
+    "Count website builder module button entities with optional filters.",
+    websiteBuilderButtonApi,
+  );
+
   mcp.registerTool(
     "website-builder-module-button-get",
     {

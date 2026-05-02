@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmInputApi } from "@sps/crm/models/input/sdk/server";
 import { insertSchema as crmInputInsertSchema } from "@sps/crm/models/input/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-module-input-count",
+    "Count crm module input",
+    "Count crm module input entities with optional filters.",
+    crmInputApi,
+  );
+
   mcp.registerTool(
     "crm-module-input-get",
     {

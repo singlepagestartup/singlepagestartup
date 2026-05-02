@@ -7,8 +7,8 @@ repository: singlepagestartup
 topic: "Add universal REST /count endpoint and shared SDK support"
 tags: [research, codebase, rest-api, sdk, query-filters]
 status: complete
-last_updated: 2026-04-14
-last_updated_by: flakecode
+last_updated: 2026-05-02
+last_updated_by: codex
 ---
 
 # Research: Add universal REST /count endpoint and shared SDK support
@@ -172,6 +172,12 @@ What currently exists in the shared REST controller, handler, service, repositor
 - `thoughts/shared/research/singlepagestartup/ISSUE-145.md`
 - `thoughts/shared/research/singlepagestartup/ISSUE-145-admin-v2-playbook.md`
 - `thoughts/shared/research/singlepagestartup/ISSUE-152.md`
+
+## Known Pitfalls (from implementation)
+
+### Scenario test wrapper can stay open after passing
+
+During implementation, `bash tools/testing/test-scenario-issue.sh singlepagestartup 160` reported the issue-160 scenario suite as passed, then stayed open with Jest open-handle warnings. The reusable recovery is to confirm the scenario assertions passed, check the spawned API port (4000 for this lane) with `lsof -ti tcp:4000`, and stop the spawned API process so the wrapper exits. Do not treat this symptom as a failed scenario unless assertions fail.
 
 ## Open Questions
 

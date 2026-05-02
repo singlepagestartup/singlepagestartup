@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceAttributeKeyApi } from "@sps/ecommerce/models/attribute-key/sdk/server";
 import { insertSchema as ecommerceAttributeKeyInsertSchema } from "@sps/ecommerce/models/attribute-key/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-module-attribute-key-count",
+    "Count ecommerce module attribute key",
+    "Count ecommerce module attribute key entities with optional filters.",
+    ecommerceAttributeKeyApi,
+  );
+
   mcp.registerTool(
     "ecommerce-module-attribute-key-get",
     {

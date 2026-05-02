@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderSlidesToFileStorageModuleFilesApi } from "@sps/website-builder/relations/slides-to-file-storage-module-files/sdk/server";
 import { insertSchema as websiteBuilderSlidesToFileStorageModuleFilesInsertSchema } from "@sps/website-builder/relations/slides-to-file-storage-module-files/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "website-builder-slides-to-file-storage-module-files-count",
+    "Count website builder slides to file storage module files",
+    "Count website builder slides to file storage module files entities with optional filters.",
+    websiteBuilderSlidesToFileStorageModuleFilesApi,
+  );
+
   mcp.registerTool(
     "website-builder-slides-to-file-storage-module-files-get",
     {

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as analyticWidgetApi } from "@sps/analytic/models/widget/sdk/server";
 import { insertSchema as analyticWidgetInsertSchema } from "@sps/analytic/models/widget/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "analytic-module-widget-count",
+    "Count analytic module widget",
+    "Count analytic module widget entities with optional filters.",
+    analyticWidgetApi,
+  );
+
   mcp.registerTool(
     "analytic-module-widget-get",
     {

@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
   FindAction,
+  CountAction,
   FindByIdAction,
   CreateAction,
   UpdateAction,
@@ -29,6 +30,11 @@ export class Service<DTO extends Record<string, unknown>>
 
   async find(props?: FindServiceProps): Promise<DTO[]> {
     const action = new FindAction(this.repository);
+    return action.execute(props);
+  }
+
+  async count(props?: FindServiceProps): Promise<number> {
+    const action = new CountAction(this.repository);
     return action.execute(props);
   }
 

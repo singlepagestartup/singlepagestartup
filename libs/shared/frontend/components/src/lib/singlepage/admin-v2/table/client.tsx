@@ -94,9 +94,24 @@ export function Component<
     searchField,
   ]);
 
-  const { data: totalData, isLoading: isTotalLoading } = typedProps.api.find({
+  const countParams = useMemo(() => {
+    const filters = "filters" in params ? params.filters : undefined;
+
+    if (!filters) {
+      return;
+    }
+
+    return {
+      filters,
+    };
+  }, [params]);
+
+  const { data: totalData, isLoading: isTotalLoading } = typedProps.api.count({
+    params: countParams,
     options: {
+      ...typedProps.apiProps?.options,
       headers: {
+        ...typedProps.apiProps?.options?.headers,
         "Cache-Control": "no-store",
       },
     },
@@ -104,21 +119,21 @@ export function Component<
   const { data, isLoading } = typedProps.api.find({
     params,
     options: {
+      ...typedProps.apiProps?.options,
       headers: {
+        ...typedProps.apiProps?.options?.headers,
         "Cache-Control": "no-store",
       },
     },
   });
 
   useEffect(() => {
-    if (!totalData || !Array.isArray(totalData) || !setState) {
+    if (typeof totalData !== "number" || !setState) {
       return;
     }
 
     setState((prev) => {
-      const newTotal = totalData ? totalData.length : 0;
-
-      return { ...prev, total: newTotal };
+      return { ...prev, total: totalData };
     });
   }, [totalData, setState]);
 

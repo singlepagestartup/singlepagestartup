@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToBlogModuleArticlesApi } from "@sps/rbac/relations/subjects-to-blog-module-articles/sdk/server";
 import { insertSchema as rbacSubjectsToBlogModuleArticlesInsertSchema } from "@sps/rbac/relations/subjects-to-blog-module-articles/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-blog-module-articles-count",
+    "Count rbac subjects to blog module articles",
+    "Count rbac subjects to blog module articles entities with optional filters.",
+    rbacSubjectsToBlogModuleArticlesApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-blog-module-articles-get",
     {

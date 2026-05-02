@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmStepApi } from "@sps/crm/models/step/sdk/server";
 import { insertSchema as crmStepInsertSchema } from "@sps/crm/models/step/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-module-step-count",
+    "Count crm module step",
+    "Count crm module step entities with optional filters.",
+    crmStepApi,
+  );
+
   mcp.registerTool(
     "crm-module-step-get",
     {

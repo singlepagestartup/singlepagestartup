@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToEcommerceModuleProductsApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/server";
 import { insertSchema as rbacSubjectsToEcommerceModuleProductsInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-ecommerce-module-products-count",
+    "Count rbac subjects to ecommerce module products",
+    "Count rbac subjects to ecommerce module products entities with optional filters.",
+    rbacSubjectsToEcommerceModuleProductsApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-ecommerce-module-products-get",
     {

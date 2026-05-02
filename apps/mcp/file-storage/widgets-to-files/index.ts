@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as fileStorageWidgetsToFilesApi } from "@sps/file-storage/relations/widgets-to-files/sdk/server";
 import { insertSchema as fileStorageWidgetsToFilesInsertSchema } from "@sps/file-storage/relations/widgets-to-files/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "file-storage-widgets-to-files-count",
+    "Count file storage widgets to files",
+    "Count file storage widgets to files entities with optional filters.",
+    fileStorageWidgetsToFilesApi,
+  );
+
   mcp.registerTool(
     "file-storage-widgets-to-files-get",
     {

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { insertSchema as rbacSubjectInsertSchema } from "@sps/rbac/models/subject/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-module-subject-count",
+    "Count rbac module subject",
+    "Count rbac module subject entities with optional filters.",
+    rbacSubjectApi,
+  );
+
   mcp.registerTool(
     "rbac-module-subject-get",
     {

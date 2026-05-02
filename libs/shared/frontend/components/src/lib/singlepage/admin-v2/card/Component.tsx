@@ -15,7 +15,7 @@ export function Component<M extends { id: string }, V>(
           <p className="mt-1 text-sm text-slate-600">{props.name}</p>
         </div>
         <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-          0
+          {props.count ?? 0}
         </span>
       </div>
 

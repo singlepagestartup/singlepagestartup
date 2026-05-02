@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostModuleLayoutApi } from "@sps/host/models/layout/sdk/server";
 import { insertSchema as hostModuleLayoutInsertSchema } from "@sps/host/models/layout/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-module-layout-count",
+    "Count host module layout",
+    "Count host module layout entities with optional filters.",
+    hostModuleLayoutApi,
+  );
+
   mcp.registerTool(
     "host-module-layout-get",
     {

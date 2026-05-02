@@ -17,6 +17,16 @@ export async function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
+  const count = await props.api.count({
+    params: props.apiProps?.params,
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        ...props.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
+      },
+    },
+  });
 
   return (
     <Child
@@ -28,6 +38,7 @@ export async function Component<
       type={props.type}
       apiRoute={props.apiRoute}
       href={props.href}
+      count={count ?? 0}
     />
   );
 }

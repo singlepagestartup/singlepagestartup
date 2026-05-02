@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderWidgetApi } from "@sps/website-builder/models/widget/sdk/server";
 import { insertSchema as websiteBuilderWidgetInsertSchema } from "@sps/website-builder/models/widget/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "website-builder-module-widget-count",
+    "Count website builder module widget",
+    "Count website builder module widget entities with optional filters.",
+    websiteBuilderWidgetApi,
+  );
+
   mcp.registerTool(
     "website-builder-module-widget-get",
     {

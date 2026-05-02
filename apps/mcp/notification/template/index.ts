@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as notificationTemplateApi } from "@sps/notification/models/template/sdk/server";
 import { insertSchema as notificationTemplateInsertSchema } from "@sps/notification/models/template/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "notification-module-template-count",
+    "Count notification module template",
+    "Count notification module template entities with optional filters.",
+    notificationTemplateApi,
+  );
+
   mcp.registerTool(
     "notification-module-template-get",
     {

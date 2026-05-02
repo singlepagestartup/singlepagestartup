@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderSlidersToSlidesApi } from "@sps/website-builder/relations/sliders-to-slides/sdk/server";
 import { insertSchema as websiteBuilderSlidersToSlidesInsertSchema } from "@sps/website-builder/relations/sliders-to-slides/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "website-builder-sliders-to-slides-count",
+    "Count website builder sliders to slides",
+    "Count website builder sliders to slides entities with optional filters.",
+    websiteBuilderSlidersToSlidesApi,
+  );
+
   mcp.registerTool(
     "website-builder-sliders-to-slides-get",
     {

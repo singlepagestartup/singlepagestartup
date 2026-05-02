@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderButtonsArrayApi } from "@sps/website-builder/models/buttons-array/sdk/server";
 import { insertSchema as websiteBuilderButtonsArrayInsertSchema } from "@sps/website-builder/models/buttons-array/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "website-builder-module-buttons-array-count",
+    "Count website builder module buttons array",
+    "Count website builder module buttons array entities with optional filters.",
+    websiteBuilderButtonsArrayApi,
+  );
+
   mcp.registerTool(
     "website-builder-module-buttons-array-get",
     {

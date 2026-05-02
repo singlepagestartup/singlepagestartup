@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceWidgetsToCategoriesApi } from "@sps/ecommerce/relations/widgets-to-categories/sdk/server";
 import { insertSchema as ecommerceWidgetsToCategoriesInsertSchema } from "@sps/ecommerce/relations/widgets-to-categories/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-widgets-to-categories-count",
+    "Count ecommerce widgets to categories",
+    "Count ecommerce widgets to categories entities with optional filters.",
+    ecommerceWidgetsToCategoriesApi,
+  );
+
   mcp.registerTool(
     "ecommerce-widgets-to-categories-get",
     {

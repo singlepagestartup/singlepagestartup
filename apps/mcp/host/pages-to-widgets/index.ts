@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostPagesToWidgetsApi } from "@sps/host/relations/pages-to-widgets/sdk/server";
 import { insertSchema as hostPagesToWidgetsInsertSchema } from "@sps/host/relations/pages-to-widgets/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-pages-to-widgets-count",
+    "Count host pages to widgets",
+    "Count host pages to widgets entities with optional filters.",
+    hostPagesToWidgetsApi,
+  );
+
   mcp.registerTool(
     "host-pages-to-widgets-get",
     {

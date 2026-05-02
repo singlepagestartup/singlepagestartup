@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostWidgetsToExternalWidgetsApi } from "@sps/host/relations/widgets-to-external-widgets/sdk/server";
 import { insertSchema as hostWidgetsToExternalWidgetsInsertSchema } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-widgets-to-external-widgets-count",
+    "Count host widgets to external widgets",
+    "Count host widgets to external widgets entities with optional filters.",
+    hostWidgetsToExternalWidgetsApi,
+  );
+
   mcp.registerTool(
     "host-widgets-to-external-widgets-get",
     {

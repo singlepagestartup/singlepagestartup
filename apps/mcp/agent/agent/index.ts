@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as agentAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { insertSchema as agentAgentInsertSchema } from "@sps/agent/models/agent/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "agent-module-agent-count",
+    "Count agent module agent",
+    "Count agent module agent entities with optional filters.",
+    agentAgentApi,
+  );
+
   mcp.registerTool(
     "agent-module-agent-get",
     {

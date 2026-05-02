@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
 import { insertSchema as rbacSubjectsToSocialModuleProfilesInsertSchema } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-social-module-profiles-count",
+    "Count rbac subjects to social module profiles",
+    "Count rbac subjects to social module profiles entities with optional filters.",
+    rbacSubjectsToSocialModuleProfilesApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-social-module-profiles-get",
     {

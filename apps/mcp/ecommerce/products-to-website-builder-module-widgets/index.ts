@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceProductsToWebsiteBuilderModuleWidgetsApi } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/sdk/server";
 import { insertSchema as ecommerceProductsToWebsiteBuilderModuleWidgetsInsertSchema } from "@sps/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -29,6 +30,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-products-to-website-builder-module-widgets-count",
+    "Count ecommerce products to website builder module widgets",
+    "Count ecommerce products to website builder module widgets entities with optional filters.",
+    ecommerceProductsToWebsiteBuilderModuleWidgetsApi,
+  );
+
   mcp.registerTool(
     "ecommerce-products-to-website-builder-module-widgets-get",
     {

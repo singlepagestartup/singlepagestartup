@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceProductsToAttributesApi } from "@sps/ecommerce/relations/products-to-attributes/sdk/server";
 import { insertSchema as ecommerceProductsToAttributesInsertSchema } from "@sps/ecommerce/relations/products-to-attributes/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-products-to-attributes-count",
+    "Count ecommerce products to attributes",
+    "Count ecommerce products to attributes entities with optional filters.",
+    ecommerceProductsToAttributesApi,
+  );
+
   mcp.registerTool(
     "ecommerce-products-to-attributes-get",
     {

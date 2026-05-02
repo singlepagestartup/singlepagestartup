@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "host-layouts-to-widgets.yaml"
 
+  /host/layouts-to-widgets/count:
+    get:
+      tags:
+        - "host-layouts-to-widgets"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /host/layouts-to-widgets/{id}:
     get:
       tags:

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogWidgetsToArticlesApi } from "@sps/blog/relations/widgets-to-articles/sdk/server";
 import { insertSchema as blogWidgetsToArticlesInsertSchema } from "@sps/blog/relations/widgets-to-articles/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "blog-widgets-to-articles-count",
+    "Count blog widgets to articles",
+    "Count blog widgets to articles entities with optional filters.",
+    blogWidgetsToArticlesApi,
+  );
+
   mcp.registerTool(
     "blog-widgets-to-articles-get",
     {

@@ -49,6 +49,7 @@ Introduce a generic count route and count contract from controller through repos
 #### 1. Shared controller and handler surface
 
 **Files**:
+
 - `libs/shared/backend/api/src/lib/controllers/interface.ts`
 - `libs/shared/backend/api/src/lib/controllers/rest/index.ts`
 - `libs/shared/backend/api/src/lib/controllers/rest/handler/index.ts`
@@ -59,6 +60,7 @@ Introduce a generic count route and count contract from controller through repos
 The base controller currently exposes `find`, `findById`, and write routes but no aggregate read route, and `/count` must be registered before `/:uuid` to avoid route collisions (`libs/shared/backend/api/src/lib/controllers/rest/index.ts:31`).
 
 **Changes**:
+
 - Extend the controller contract with a `count` handler method.
 - Register `GET /count` in the shared REST route table before `GET /:uuid`.
 - Add a dedicated count handler that reads `c.var.parsedQuery`, forwards the shared params to `service.count(...)`, and returns `{ data: number }`.
@@ -67,6 +69,7 @@ The base controller currently exposes `find`, `findById`, and write routes but n
 #### 2. Shared service and repository contracts
 
 **Files**:
+
 - `libs/shared/backend/api/src/lib/service/interface.ts`
 - `libs/shared/backend/api/src/lib/service/crud/index.ts`
 - `libs/shared/backend/api/src/lib/service/crud/actions/count/index.ts` (new)
@@ -78,6 +81,7 @@ The base controller currently exposes `find`, `findById`, and write routes but n
 The shared service and repository abstractions currently stop at `find`, so a generic count route cannot propagate through the existing CRUD pipeline without widening those interfaces (`libs/shared/backend/api/src/lib/service/interface.ts:5`, `libs/shared/backend/api/src/lib/repository/interface.ts:9`).
 
 **Changes**:
+
 - Add `count(props?: FindServiceProps): Promise<number>` to the shared service and repository interfaces.
 - Add a CRUD service method and thin action class mirroring the existing `find` delegation pattern.
 - Implement repository-level count using the same filter builder as `find`, but without applying `limit`, `offset`, or `orderBy`.
@@ -86,6 +90,7 @@ The shared service and repository abstractions currently stop at `find`, so a ge
 #### 3. Backend test coverage
 
 **Files**:
+
 - `libs/shared/backend/api/src/lib/repository/database/index.spec.ts`
 - Any controller or handler spec introduced for the new route
 - `apps/api/specs/scenario/singlepagestartup/issue-160/backend-count.scenario.spec.ts` (new)
@@ -95,6 +100,7 @@ The shared service and repository abstractions currently stop at `find`, so a ge
 The new shared aggregate path changes a core repository contract and route table, so it needs direct coverage around filtered counts and route behavior. The repo’s scenario lane is the correct top-level place to prove that the real HTTP endpoint, query parsing, and database state all agree.
 
 **Changes**:
+
 - Add repository tests for unfiltered and filtered `count` behavior using the same `filters.and` grammar used by `find`.
 - Add a route-focused test that proves `/count` resolves as a static endpoint instead of falling through to `/:uuid`.
 - Add a backend scenario suite under `apps/api/specs/scenario/singlepagestartup/issue-160/` that hits a real shared REST-backed model via HTTP.
@@ -106,16 +112,16 @@ The new shared aggregate path changes a core repository contract and route table
 
 #### Automated Verification
 
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:jest:test`
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:tsc:build`
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:eslint:lint`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:jest:test`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:tsc:build`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-backend-api:eslint:lint`
 
 #### Manual Verification
 
-- [ ] `GET /api/<module>/<model>/count` returns a numeric `data` payload for an unfiltered request.
-- [ ] `GET /api/<module>/<model>/count` honors `filters[and]` inputs used by existing list reads.
-- [ ] `GET /api/<module>/<model>/count` is not mistaken for `GET /:uuid`.
-- [ ] Scenario coverage proves the API result matches direct DB counts for both unfiltered and filtered requests.
+- [x] `GET /api/<module>/<model>/count` returns a numeric `data` payload for an unfiltered request.
+- [x] `GET /api/<module>/<model>/count` honors `filters[and]` inputs used by existing list reads.
+- [x] `GET /api/<module>/<model>/count` is not mistaken for `GET /:uuid`.
+- [x] Scenario coverage proves the API result matches direct DB counts for both unfiltered and filtered requests.
 
 ---
 
@@ -130,6 +136,7 @@ Expose the new backend capability through the shared frontend action registry an
 #### 1. Shared frontend action surface
 
 **Files**:
+
 - `libs/shared/frontend/api/src/lib/actions/index.ts`
 - `libs/shared/frontend/api/src/lib/actions/count/index.ts` (new)
 - `libs/shared/frontend/api/src/index.ts`
@@ -139,6 +146,7 @@ Expose the new backend capability through the shared frontend action registry an
 The shared frontend API layer is the common contract consumed by the server/client factories, and it currently has no numeric collection read primitive (`libs/shared/frontend/api/src/lib/actions/index.ts:18`, `libs/shared/frontend/api/src/lib/actions/find/index.ts:23`).
 
 **Changes**:
+
 - Add a `count` action that serializes params like `find` but requests `${route}/count`.
 - Export the action and its prop/result types from the shared action barrel and top-level package entrypoints.
 - Add action tests covering query-string serialization, route construction, and numeric response transformation.
@@ -146,6 +154,7 @@ The shared frontend API layer is the common contract consumed by the server/clie
 #### 2. Shared server and client factories
 
 **Files**:
+
 - `libs/shared/frontend/server/api/src/lib/factory/index.ts`
 - `libs/shared/frontend/client/api/src/lib/factory/index.ts`
 - `libs/shared/frontend/client/api/src/lib/factory/queries/count/index.tsx` (new)
@@ -154,6 +163,7 @@ The shared frontend API layer is the common contract consumed by the server/clie
 The server factory and client React Query factory define the ergonomic SDK surface used across modules, and both need a `count` method for the new shared feature to be consumable (`libs/shared/frontend/server/api/src/lib/factory/index.ts:34`, `libs/shared/frontend/client/api/src/lib/factory/index.ts:222`).
 
 **Changes**:
+
 - Add `count` to the server factory with the same default route/host/params merging pattern as `find`.
 - Add a client-side count query wrapper returning `number | undefined`, with query keys and subscriptions that distinguish `${route}/count` from list reads.
 - Thread shared prop types so consumers can pass the same filter params shape they already use with `find`.
@@ -162,15 +172,15 @@ The server factory and client React Query factory define the ergonomic SDK surfa
 
 #### Automated Verification
 
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-api:jest:test`
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-api:tsc:build`
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:tsc:build`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-api:jest:test`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-api:tsc:build`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:tsc:build`
 
 #### Manual Verification
 
-- [ ] Server-side SDK consumers can call `api.count({ params })` and receive a number.
-- [ ] Client-side SDK consumers can call `api.count({ params })` and receive a React Query result keyed separately from `find`.
-- [ ] Count requests reuse the same filter params shape as `find` without requiring consumer-specific adapters.
+- [x] Server-side SDK consumers can call `api.count({ params })` and receive a number.
+- [x] Client-side SDK consumers can call `api.count({ params })` and receive a React Query result keyed separately from `find`.
+- [x] Count requests reuse the same filter params shape as `find` without requiring consumer-specific adapters.
 
 ---
 
@@ -185,6 +195,7 @@ Adopt the new shared count capability in the admin-v2 table total-state path and
 #### 1. Admin-v2 table total lookup
 
 **Files**:
+
 - `libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/client.tsx`
 - `libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/client.spec.tsx`
 
@@ -192,6 +203,7 @@ Adopt the new shared count capability in the admin-v2 table total-state path and
 The admin-v2 table is the clearest existing shared consumer of totals and currently makes a wasteful extra `find()` call plus `length` derivation (`libs/shared/frontend/components/src/lib/singlepage/admin-v2/table/client.tsx:97`).
 
 **Changes**:
+
 - Replace the total `find()` request with `api.count(...)`.
 - Ensure the table uses the same active filters for its total count that it uses for row lookup, while excluding pagination from the total request.
 - Update tests to assert that total state is driven by the numeric count result rather than array length.
@@ -199,12 +211,14 @@ The admin-v2 table is the clearest existing shared consumer of totals and curren
 #### 2. Cross-layer regression checks
 
 **Files**:
+
 - Shared backend and frontend spec files touched in phases 1 and 2
 
 **Why**:
 This feature spans controller routing, repository behavior, shared actions, React Query wrappers, and one concrete consumer, so the final phase should validate the flow as one coherent contract rather than isolated edits.
 
 **Changes**:
+
 - Add or update assertions proving filtered totals remain correct when list requests include pagination.
 - Confirm the client-side route keying for `/count` does not collide with list read invalidation semantics.
 - Verify that the new endpoint and SDK surface do not require module-specific overrides for shared REST-backed models.
@@ -213,9 +227,9 @@ This feature spans controller routing, repository behavior, shared actions, Reac
 
 #### Automated Verification
 
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:jest:test`
-- [ ] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:eslint:lint`
-- [ ] Relevant shared backend/frontend test suites from phases 1 and 2 still pass together.
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:jest:test`
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/shared-frontend-components:eslint:lint`
+- [x] Relevant shared backend/frontend test suites from phases 1 and 2 still pass together.
 
 #### Manual Verification
 

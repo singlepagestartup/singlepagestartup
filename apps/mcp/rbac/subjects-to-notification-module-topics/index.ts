@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToNotificationModuleTopicsApi } from "@sps/rbac/relations/subjects-to-notification-module-topics/sdk/server";
 import { insertSchema as rbacSubjectsToNotificationModuleTopicsInsertSchema } from "@sps/rbac/relations/subjects-to-notification-module-topics/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-subjects-to-notification-module-topics-count",
+    "Count rbac subjects to notification module topics",
+    "Count rbac subjects to notification module topics entities with optional filters.",
+    rbacSubjectsToNotificationModuleTopicsApi,
+  );
+
   mcp.registerTool(
     "rbac-subjects-to-notification-module-topics-get",
     {
