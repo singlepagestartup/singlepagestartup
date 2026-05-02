@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostModulePageApi } from "@sps/host/models/page/sdk/server";
 import { insertSchema as hostModulePageInsertSchema } from "@sps/host/models/page/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-module-page-count",
+    "Count host module page",
+    "Count host module page entities with optional filters.",
+    hostModulePageApi,
+  );
+
   mcp.registerTool(
     "host-module-page-get",
     {

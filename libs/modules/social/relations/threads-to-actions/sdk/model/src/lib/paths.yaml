@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "social-threads-to-actions.yaml"
 
+  /social/threads-to-actions/count:
+    get:
+      tags:
+        - "social-threads-to-actions"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /social/threads-to-actions/{id}:
     get:
       tags:

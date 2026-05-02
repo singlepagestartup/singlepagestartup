@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as broadcastMessageApi } from "@sps/broadcast/models/message/sdk/server";
 import { insertSchema as broadcastMessageInsertSchema } from "@sps/broadcast/models/message/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "broadcast-module-message-count",
+    "Count broadcast module message",
+    "Count broadcast module message entities with optional filters.",
+    broadcastMessageApi,
+  );
+
   mcp.registerTool(
     "broadcast-module-message-get",
     {

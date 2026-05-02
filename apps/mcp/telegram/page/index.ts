@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as telegramPageApi } from "@sps/telegram/models/page/sdk/server";
 import { insertSchema as telegramPageInsertSchema } from "@sps/telegram/models/page/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "telegram-module-page-count",
+    "Count telegram module page",
+    "Count telegram module page entities with optional filters.",
+    telegramPageApi,
+  );
+
   mcp.registerTool(
     "telegram-module-page-get",
     {

@@ -2,6 +2,7 @@ import {
   actions,
   IFindByIdProps,
   IFindProps,
+  ICountProps,
   IUpdateProps,
   ICreateProps,
   IDeleteProps,
@@ -16,6 +17,7 @@ export interface IFactoryProps {
   params?:
     | IFindByIdProps["params"]
     | IFindProps["params"]
+    | ICountProps["params"]
     | IUpdateProps["params"]
     | ICreateProps["params"]
     | IDeleteProps["params"]
@@ -24,6 +26,7 @@ export interface IFactoryProps {
   options?:
     | IFindByIdProps["options"]
     | IFindProps["options"]
+    | ICountProps["options"]
     | IUpdateProps["options"]
     | ICreateProps["options"]
     | IDeleteProps["options"]
@@ -46,6 +49,15 @@ export function factory<T>(params: IFactoryProps) {
     },
     find: async (props?: Omit<IFindProps, "model" | "route" | "host">) => {
       return await actions.find<T>({
+        params: params.params,
+        options: params.options,
+        route: params.route,
+        host: params.host,
+        ...props,
+      });
+    },
+    count: async (props?: Omit<ICountProps, "model" | "route" | "host">) => {
+      return await actions.count({
         params: params.params,
         options: params.options,
         route: params.route,

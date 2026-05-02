@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogArticlesToFileStorageModuleFilesApi } from "@sps/blog/relations/articles-to-file-storage-module-files/sdk/server";
 import { insertSchema as blogArticlesToFileStorageModuleFilesInsertSchema } from "@sps/blog/relations/articles-to-file-storage-module-files/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "blog-articles-to-file-storage-module-files-count",
+    "Count blog articles to file storage module files",
+    "Count blog articles to file storage module files entities with optional filters.",
+    blogArticlesToFileStorageModuleFilesApi,
+  );
+
   mcp.registerTool(
     "blog-articles-to-file-storage-module-files-get",
     {

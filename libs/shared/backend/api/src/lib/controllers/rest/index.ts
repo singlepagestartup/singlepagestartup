@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { inject, injectable } from "inversify";
 import {
   FindHandler,
+  CountHandler,
   FindByIdHandler,
   CreateHandler,
   UpdateHandler,
@@ -38,6 +39,11 @@ export class Controller<DTO extends Record<string, unknown>>
         method: "GET",
         path: "/dump",
         handler: this.dump,
+      },
+      {
+        method: "GET",
+        path: "/count",
+        handler: this.count,
       },
       {
         method: "GET",
@@ -79,6 +85,11 @@ export class Controller<DTO extends Record<string, unknown>>
 
   public async find(c: Context, next: any): Promise<Response> {
     const handler = new FindHandler<Context, DTO>(this.service);
+    return handler.execute(c, next);
+  }
+
+  public async count(c: Context, next: any): Promise<Response> {
+    const handler = new CountHandler<Context, DTO>(this.service);
     return handler.execute(c, next);
   }
 

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostPagesToMetadataApi } from "@sps/host/relations/pages-to-metadata/sdk/server";
 import { insertSchema as hostPagesToMetadataInsertSchema } from "@sps/host/relations/pages-to-metadata/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-pages-to-metadata-count",
+    "Count host pages to metadata",
+    "Count host pages to metadata entities with optional filters.",
+    hostPagesToMetadataApi,
+  );
+
   mcp.registerTool(
     "host-pages-to-metadata-get",
     {

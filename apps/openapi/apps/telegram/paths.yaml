@@ -18,8 +18,10 @@ paths:
               type: object
               properties:
                 data:
-                  url:
-                    type: string
+                  type: object
+                  properties:
+                    url:
+                      type: string
       responses:
         "200":
           description: Successfully run Telegram bot

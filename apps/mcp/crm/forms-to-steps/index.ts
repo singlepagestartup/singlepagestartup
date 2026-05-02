@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmFormsToStepsApi } from "@sps/crm/relations/forms-to-steps/sdk/server";
 import { insertSchema as crmFormsToStepsInsertSchema } from "@sps/crm/relations/forms-to-steps/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-forms-to-steps-count",
+    "Count crm forms to steps",
+    "Count crm forms to steps entities with optional filters.",
+    crmFormsToStepsApi,
+  );
+
   mcp.registerTool(
     "crm-forms-to-steps-get",
     {

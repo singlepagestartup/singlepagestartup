@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialAttributeKeysToAttributesApi } from "@sps/social/relations/attribute-keys-to-attributes/sdk/server";
 import { insertSchema as socialAttributeKeysToAttributesInsertSchema } from "@sps/social/relations/attribute-keys-to-attributes/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-attribute-keys-to-attributes-count",
+    "Count social attribute keys to attributes",
+    "Count social attribute keys to attributes entities with optional filters.",
+    socialAttributeKeysToAttributesApi,
+  );
+
   mcp.registerTool(
     "social-attribute-keys-to-attributes-get",
     {

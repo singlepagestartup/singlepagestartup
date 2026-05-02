@@ -97,6 +97,32 @@ export class Database<T extends PgTableWithColumns<any>>
     }
   }
 
+  async count(props?: FindServiceProps): Promise<number> {
+    try {
+      const filters = queryBuilder.filters({
+        table: this.Table as T,
+        queryFunctions: methods,
+        filters: props?.params?.filters,
+      });
+
+      const [record] = await this.db
+        .select({ count: methods.count() })
+        .from(this.Table)
+        .where(filters ? methods.and(...filters) : undefined)
+        .execute();
+
+      return Number(record?.count ?? 0);
+    } catch (error: any) {
+      logger.error(error);
+
+      if (error instanceof ZodError) {
+        throw new Error(JSON.stringify({ zodError: error.issues }));
+      }
+
+      throw error;
+    }
+  }
+
   async findByField(field: string, value: any): Promise<any> {
     try {
       if (!this.Table[field]) {

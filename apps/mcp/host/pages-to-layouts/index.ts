@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostPagesToLayoutsApi } from "@sps/host/relations/pages-to-layouts/sdk/server";
 import { insertSchema as hostPagesToLayoutsInsertSchema } from "@sps/host/relations/pages-to-layouts/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-pages-to-layouts-count",
+    "Count host pages to layouts",
+    "Count host pages to layouts entities with optional filters.",
+    hostPagesToLayoutsApi,
+  );
+
   mcp.registerTool(
     "host-pages-to-layouts-get",
     {

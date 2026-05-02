@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialActionApi } from "@sps/social/models/action/sdk/server";
 import { insertSchema as socialActionInsertSchema } from "@sps/social/models/action/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-module-action-count",
+    "Count social module action",
+    "Count social module action entities with optional filters.",
+    socialActionApi,
+  );
+
   mcp.registerTool(
     "social-module-action-get",
     {

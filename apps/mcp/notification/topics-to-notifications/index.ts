@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as notificationTopicsToNotificationsApi } from "@sps/notification/relations/topics-to-notifications/sdk/server";
 import { insertSchema as notificationTopicsToNotificationsInsertSchema } from "@sps/notification/relations/topics-to-notifications/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "notification-topics-to-notifications-count",
+    "Count notification topics to notifications",
+    "Count notification topics to notifications entities with optional filters.",
+    notificationTopicsToNotificationsApi,
+  );
+
   mcp.registerTool(
     "notification-topics-to-notifications-get",
     {

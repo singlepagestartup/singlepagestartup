@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 import { insertSchema as ecommerceOrderInsertSchema } from "@sps/ecommerce/models/order/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-module-order-count",
+    "Count ecommerce module order",
+    "Count ecommerce module order entities with optional filters.",
+    ecommerceOrderApi,
+  );
+
   mcp.registerTool(
     "ecommerce-module-order-get",
     {

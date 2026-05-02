@@ -24,12 +24,16 @@ paths:
   # host/layout
   /host/layouts:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts"
+  /host/layouts/count:
+    $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts~1count"
   /host/layouts/{id}:
     $ref: "../../libs/modules/host/models/layout/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts~1{id}"
 
   # host/page
   /host/pages:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages"
+  /host/pages/count:
+    $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1count"
   /host/pages/{id}:
     $ref: "../../libs/modules/host/models/page/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages~1{id}"
   /host/pages/find-by-url:
@@ -42,54 +46,72 @@ paths:
   # host/metadata
   /host/metadata:
     $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1metadata"
+  /host/metadata/count:
+    $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1metadata~1count"
   /host/metadata/{id}:
     $ref: "../../libs/modules/host/models/metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1metadata~1{id}"
 
   # host/widget
   /host/widgets:
     $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets"
+  /host/widgets/count:
+    $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets~1count"
   /host/widgets/{id}:
     $ref: "../../libs/modules/host/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets~1{id}"
 
   # host/layouts-to-widgets
   /host/layouts-to-widgets:
     $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts-to-widgets"
+  /host/layouts-to-widgets/count:
+    $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts-to-widgets~1count"
   /host/layouts-to-widgets/{id}:
     $ref: "../../libs/modules/host/relations/layouts-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1layouts-to-widgets~1{id}"
 
   # host/pages-to-layouts
   /host/pages-to-layouts:
     $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-layouts"
+  /host/pages-to-layouts/count:
+    $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-layouts~1count"
   /host/pages-to-layouts/{id}:
     $ref: "../../libs/modules/host/relations/pages-to-layouts/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-layouts~1{id}"
 
   # host/pages-to-metadata
   /host/pages-to-metadata:
     $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-metadata"
+  /host/pages-to-metadata/count:
+    $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-metadata~1count"
   /host/pages-to-metadata/{id}:
     $ref: "../../libs/modules/host/relations/pages-to-metadata/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-metadata~1{id}"
 
   # host/pages-to-widgets
   /host/pages-to-widgets:
     $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-widgets"
+  /host/pages-to-widgets/count:
+    $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-widgets~1count"
   /host/pages-to-widgets/{id}:
     $ref: "../../libs/modules/host/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1pages-to-widgets~1{id}"
 
   # host/widgets-to-external-widgets
   /host/widgets-to-external-widgets:
     $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets-to-external-widgets"
+  /host/widgets-to-external-widgets/count:
+    $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets-to-external-widgets~1count"
   /host/widgets-to-external-widgets/{id}:
     $ref: "../../libs/modules/host/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1host~1widgets-to-external-widgets~1{id}"
 
   # rbac/action
   /rbac/actions:
     $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions"
+  /rbac/actions/count:
+    $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions~1count"
   /rbac/actions/{id}:
     $ref: "../../libs/modules/rbac/models/action/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1actions~1{id}"
 
   # rbac/identity
   /rbac/identities:
     $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities"
+  /rbac/identities/count:
+    $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1count"
   /rbac/identities/{id}:
     $ref: "../../libs/modules/rbac/models/identity/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1identities~1{id}"
   /rbac/identities/email-and-password:
@@ -100,6 +122,8 @@ paths:
   # rbac/permission
   /rbac/permissions:
     $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions"
+  /rbac/permissions/count:
+    $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions~1count"
   /rbac/permissions/{id}:
     $ref: "../../libs/modules/rbac/models/permission/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions~1{id}"
   /rbac/permissions/find-by-route:
@@ -108,12 +132,16 @@ paths:
   # rbac/role
   /rbac/roles:
     $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles"
+  /rbac/roles/count:
+    $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles~1count"
   /rbac/roles/{id}:
     $ref: "../../libs/modules/rbac/models/role/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles~1{id}"
 
   # rbac/subject
   /rbac/subjects:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects"
+  /rbac/subjects/count:
+    $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1count"
   /rbac/subjects/{id}:
     $ref: "../../libs/modules/rbac/models/subject/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects~1{id}"
   /rbac/subjects/{id}/notify:
@@ -182,90 +210,120 @@ paths:
   # rbac/widget
   /rbac/widgets:
     $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1widgets"
+  /rbac/widgets/count:
+    $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1widgets~1count"
   /rbac/widgets/{id}:
     $ref: "../../libs/modules/rbac/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1widgets~1{id}"
 
   # rbac/relations/roles-to-ecommerce-module-products
   /rbac/roles-to-ecommerce-module-products:
     $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-ecommerce-module-products"
+  /rbac/roles-to-ecommerce-module-products/count:
+    $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-ecommerce-module-products~1count"
   /rbac/roles-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/rbac/relations/roles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-ecommerce-module-products~1{id}"
 
   # rbac/relations/roles-to-permissions
   /rbac/roles-to-permissions:
     $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions"
+  /rbac/roles-to-permissions/count:
+    $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions~1count"
   /rbac/roles-to-permissions/{id}:
     $ref: "../../libs/modules/rbac/relations/roles-to-permissions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1roles-to-permissions~1{id}"
 
   # rbac/relations/permissions-to-billing-module-currencies
   /rbac/permissions-to-billing-module-currencies:
     $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions-to-billing-module-currencies"
+  /rbac/permissions-to-billing-module-currencies/count:
+    $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions-to-billing-module-currencies~1count"
   /rbac/permissions-to-billing-module-currencies/{id}:
     $ref: "../../libs/modules/rbac/relations/permissions-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1permissions-to-billing-module-currencies~1{id}"
 
   # rbac/relations/subjects-to-actions
   /rbac/subjects-to-actions:
     $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-actions"
+  /rbac/subjects-to-actions/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-actions~1count"
   /rbac/subjects-to-actions/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-actions~1{id}"
 
   # rbac/relations/subjects-to-billing-module-payment-intents
   /rbac/subjects-to-billing-module-payment-intents:
     $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-payment-intents"
+  /rbac/subjects-to-billing-module-payment-intents/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-payment-intents~1count"
   /rbac/subjects-to-billing-module-payment-intents/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-payment-intents~1{id}"
 
   # rbac/relations/subjects-to-blog-module-articles
   /rbac/subjects-to-blog-module-articles:
     $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-blog-module-articles"
+  /rbac/subjects-to-blog-module-articles/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-blog-module-articles~1count"
   /rbac/subjects-to-blog-module-articles/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-blog-module-articles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-blog-module-articles~1{id}"
 
   # rbac/relations/subjects-to-ecommerce-module-orders
   /rbac/subjects-to-ecommerce-module-orders:
     $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-orders"
+  /rbac/subjects-to-ecommerce-module-orders/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-orders~1count"
   /rbac/subjects-to-ecommerce-module-orders/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-orders/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-orders~1{id}"
 
   # rbac/relations/subjects-to-ecommerce-module-products
   /rbac/subjects-to-ecommerce-module-products:
     $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products"
+  /rbac/subjects-to-ecommerce-module-products/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products~1count"
   /rbac/subjects-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-ecommerce-module-products~1{id}"
 
   # rbac/relations/subjects-to-billing-module-currencies
   /rbac/subjects-to-billing-module-currencies:
     $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-currencies"
+  /rbac/subjects-to-billing-module-currencies/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-currencies~1count"
   /rbac/subjects-to-billing-module-currencies/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-billing-module-currencies~1{id}"
 
   # rbac/relations/subjects-to-identities
   /rbac/subjects-to-identities:
     $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities"
+  /rbac/subjects-to-identities/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities~1count"
   /rbac/subjects-to-identities/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-identities/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-identities~1{id}"
 
   # rbac/relations/subjects-to-notification-module-topics
   /rbac/subjects-to-notification-module-topics:
     $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-notification-module-topics"
+  /rbac/subjects-to-notification-module-topics/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-notification-module-topics~1count"
   /rbac/subjects-to-notification-module-topics/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-notification-module-topics/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-notification-module-topics~1{id}"
 
   # rbac/relations/subjects-to-roles
   /rbac/subjects-to-roles:
     $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-roles"
+  /rbac/subjects-to-roles/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-roles~1count"
   /rbac/subjects-to-roles/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-roles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-roles~1{id}"
 
   # rbac/relations/subjects-to-social-module-profiles
   /rbac/subjects-to-social-module-profiles:
     $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles"
+  /rbac/subjects-to-social-module-profiles/count:
+    $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles~1count"
   /rbac/subjects-to-social-module-profiles/{id}:
     $ref: "../../libs/modules/rbac/relations/subjects-to-social-module-profiles/sdk/model/src/lib/paths.yaml#/paths/~1rbac~1subjects-to-social-module-profiles~1{id}"
 
   # agent/agent
   /agent/agents:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents"
+  /agent/agents/count:
+    $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1count"
   /agent/agents/{id}:
     $ref: "../../libs/modules/agent/models/agent/sdk/model/src/lib/paths.yaml#/paths/~1agent~1agents~1{id}"
   /agent/agents/telegram-bot:
@@ -298,36 +356,48 @@ paths:
   # agent/widget
   /agent/widgets:
     $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1agent~1widgets"
+  /agent/widgets/count:
+    $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1agent~1widgets~1count"
   /agent/widgets/{id}:
     $ref: "../../libs/modules/agent/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1agent~1widgets~1{id}"
 
   # analytic/metric
   /analytic/metrics:
     $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1metrics"
+  /analytic/metrics/count:
+    $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1metrics~1count"
   /analytic/metrics/{id}:
     $ref: "../../libs/modules/analytic/models/metric/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1metrics~1{id}"
 
   # analytic/widget
   /analytic/widgets:
     $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets"
+  /analytic/widgets/count:
+    $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets~1count"
   /analytic/widgets/{id}:
     $ref: "../../libs/modules/analytic/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1analytic~1widgets~1{id}"
 
   # billing/currency
   /billing/currencies:
     $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/paths.yaml#/paths/~1billing~1currencies"
+  /billing/currencies/count:
+    $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/paths.yaml#/paths/~1billing~1currencies~1count"
   /billing/currencies/{id}:
     $ref: "../../libs/modules/billing/models/currency/sdk/model/src/lib/paths.yaml#/paths/~1billing~1currencies~1{id}"
 
   # billing/invoice
   /billing/invoices:
     $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/paths.yaml#/paths/~1billing~1invoices"
+  /billing/invoices/count:
+    $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/paths.yaml#/paths/~1billing~1invoices~1count"
   /billing/invoices/{id}:
     $ref: "../../libs/modules/billing/models/invoice/sdk/model/src/lib/paths.yaml#/paths/~1billing~1invoices~1{id}"
 
   # billing/payment-intent
   /billing/payment-intents:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents"
+  /billing/payment-intents/count:
+    $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1count"
   /billing/payment-intents/{id}:
     $ref: "../../libs/modules/billing/models/payment-intent/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents~1{id}"
   /billing/payment-intents/{id}/{provider}:
@@ -340,84 +410,112 @@ paths:
   # billing/widget
   /billing/widgets:
     $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1billing~1widgets"
+  /billing/widgets/count:
+    $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1billing~1widgets~1count"
   /billing/widgets/{id}:
     $ref: "../../libs/modules/billing/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1billing~1widgets~1{id}"
 
   # billing/relations/payment-intents-to-currencies
   /billing/payment-intents-to-currencies:
     $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-currencies"
+  /billing/payment-intents-to-currencies/count:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-currencies~1count"
   /billing/payment-intents-to-currencies/{id}:
     $ref: "../../libs/modules/billing/relations/payment-intents-to-currencies/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-currencies~1{id}"
 
   # billing/relations/payment-intents-to-invoices
   /billing/payment-intents-to-invoices:
     $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-invoices"
+  /billing/payment-intents-to-invoices/count:
+    $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-invoices~1count"
   /billing/payment-intents-to-invoices/{id}:
     $ref: "../../libs/modules/billing/relations/payment-intents-to-invoices/sdk/model/src/lib/paths.yaml#/paths/~1billing~1payment-intents-to-invoices~1{id}"
 
   # blog/article
   /blog/articles:
     $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles"
+  /blog/articles/count:
+    $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles~1count"
   /blog/articles/{id}:
     $ref: "../../libs/modules/blog/models/article/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles~1{id}"
 
   # blog/category
   /blog/categories:
     $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories"
+  /blog/categories/count:
+    $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories~1count"
   /blog/categories/{id}:
     $ref: "../../libs/modules/blog/models/category/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories~1{id}"
 
   # blog/widget
   /blog/widgets:
     $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets"
+  /blog/widgets/count:
+    $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets~1count"
   /blog/widgets/{id}:
     $ref: "../../libs/modules/blog/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets~1{id}"
 
   # blog/relations/articles-to-ecommerce-module-products
   /blog/articles-to-ecommerce-module-products:
     $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-ecommerce-module-products"
+  /blog/articles-to-ecommerce-module-products/count:
+    $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-ecommerce-module-products~1count"
   /blog/articles-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/blog/relations/articles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-ecommerce-module-products~1{id}"
 
   # blog/relations/articles-to-file-storage-module-files
   /blog/articles-to-file-storage-module-files:
     $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-file-storage-module-files"
+  /blog/articles-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-file-storage-module-files~1count"
   /blog/articles-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/blog/relations/articles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-file-storage-module-files~1{id}"
 
   # blog/relations/articles-to-website-builder-module-widgets
   /blog/articles-to-website-builder-module-widgets:
     $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-website-builder-module-widgets"
+  /blog/articles-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-website-builder-module-widgets~1count"
   /blog/articles-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/blog/relations/articles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1articles-to-website-builder-module-widgets~1{id}"
 
   # blog/relations/categories-to-articles
   /blog/categories-to-articles:
     $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-articles"
+  /blog/categories-to-articles/count:
+    $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-articles~1count"
   /blog/categories-to-articles/{id}:
     $ref: "../../libs/modules/blog/relations/categories-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-articles~1{id}"
 
   # blog/relations/categories-to-website-builder-module-widgets
   /blog/categories-to-website-builder-module-widgets:
     $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-website-builder-module-widgets"
+  /blog/categories-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-website-builder-module-widgets~1count"
   /blog/categories-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/blog/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1blog~1categories-to-website-builder-module-widgets~1{id}"
 
   # blog/relations/widgets-to-articles
   /blog/widgets-to-articles:
     $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-articles"
+  /blog/widgets-to-articles/count:
+    $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-articles~1count"
   /blog/widgets-to-articles/{id}:
     $ref: "../../libs/modules/blog/relations/widgets-to-articles/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-articles~1{id}"
 
   # blog/relations/widgets-to-categories
   /blog/widgets-to-categories:
     $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories"
+  /blog/widgets-to-categories/count:
+    $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories~1count"
   /blog/widgets-to-categories/{id}:
     $ref: "../../libs/modules/blog/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1blog~1widgets-to-categories~1{id}"
 
   # broadcast/channel
   /broadcast/channels:
     $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels"
+  /broadcast/channels/count:
+    $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1count"
   /broadcast/channels/{id}:
     $ref: "../../libs/modules/broadcast/models/channel/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels~1{id}"
   /broadcast/channels/push-message:
@@ -430,18 +528,24 @@ paths:
   # broadcast/message
   /broadcast/messages:
     $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1messages"
+  /broadcast/messages/count:
+    $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1messages~1count"
   /broadcast/messages/{id}:
     $ref: "../../libs/modules/broadcast/models/message/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1messages~1{id}"
 
   # broadcast/relations/channels-to-messages
   /broadcast/channels-to-messages:
     $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels-to-messages"
+  /broadcast/channels-to-messages/count:
+    $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels-to-messages~1count"
   /broadcast/channels-to-messages/{id}:
     $ref: "../../libs/modules/broadcast/relations/channels-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1broadcast~1channels-to-messages~1{id}"
 
   # crm/form
   /crm/forms:
     $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms"
+  /crm/forms/count:
+    $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms~1count"
   /crm/forms/{id}:
     $ref: "../../libs/modules/crm/models/form/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms~1{id}"
   /crm/forms/{id}/requests:
@@ -450,96 +554,128 @@ paths:
   # crm/input
   /crm/inputs:
     $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs"
+  /crm/inputs/count:
+    $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs~1count"
   /crm/inputs/{id}:
     $ref: "../../libs/modules/crm/models/input/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs~1{id}"
 
   # crm/option
   /crm/options:
     $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options"
+  /crm/options/count:
+    $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options~1count"
   /crm/options/{id}:
     $ref: "../../libs/modules/crm/models/option/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options~1{id}"
 
   # crm/request
   /crm/requests:
     $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/paths.yaml#/paths/~1crm~1requests"
+  /crm/requests/count:
+    $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/paths.yaml#/paths/~1crm~1requests~1count"
   /crm/requests/{id}:
     $ref: "../../libs/modules/crm/models/request/sdk/model/src/lib/paths.yaml#/paths/~1crm~1requests~1{id}"
 
   # crm/step
   /crm/steps:
     $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps"
+  /crm/steps/count:
+    $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps~1count"
   /crm/steps/{id}:
     $ref: "../../libs/modules/crm/models/step/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps~1{id}"
 
   # crm/widget
   /crm/widgets:
     $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets"
+  /crm/widgets/count:
+    $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets~1count"
   /crm/widgets/{id}:
     $ref: "../../libs/modules/crm/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets~1{id}"
 
   # crm/relations/forms-to-requests
   /crm/forms-to-requests:
     $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-requests"
+  /crm/forms-to-requests/count:
+    $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-requests~1count"
   /crm/forms-to-requests/{id}:
     $ref: "../../libs/modules/crm/relations/forms-to-requests/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-requests~1{id}"
 
   # crm/relations/forms-to-steps
   /crm/forms-to-steps:
     $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-steps"
+  /crm/forms-to-steps/count:
+    $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-steps~1count"
   /crm/forms-to-steps/{id}:
     $ref: "../../libs/modules/crm/relations/forms-to-steps/sdk/model/src/lib/paths.yaml#/paths/~1crm~1forms-to-steps~1{id}"
 
   # crm/relations/inputs-to-options
   /crm/inputs-to-options:
     $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs-to-options"
+  /crm/inputs-to-options/count:
+    $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs-to-options~1count"
   /crm/inputs-to-options/{id}:
     $ref: "../../libs/modules/crm/relations/inputs-to-options/sdk/model/src/lib/paths.yaml#/paths/~1crm~1inputs-to-options~1{id}"
 
   # crm/relations/options-to-file-storage-module-files
   /crm/options-to-file-storage-module-files:
     $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options-to-file-storage-module-files"
+  /crm/options-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options-to-file-storage-module-files~1count"
   /crm/options-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/crm/relations/options-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1crm~1options-to-file-storage-module-files~1{id}"
 
   # crm/relations/steps-to-inputs
   /crm/steps-to-inputs:
     $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps-to-inputs"
+  /crm/steps-to-inputs/count:
+    $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps-to-inputs~1count"
   /crm/steps-to-inputs/{id}:
     $ref: "../../libs/modules/crm/relations/steps-to-inputs/sdk/model/src/lib/paths.yaml#/paths/~1crm~1steps-to-inputs~1{id}"
 
   # crm/relations/widgets-to-forms
   /crm/widgets-to-forms:
     $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms"
+  /crm/widgets-to-forms/count:
+    $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms~1count"
   /crm/widgets-to-forms/{id}:
     $ref: "../../libs/modules/crm/relations/widgets-to-forms/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-forms~1{id}"
 
   # crm/relations/widgets-to-website-builder-module-widgets
   /crm/widgets-to-website-builder-module-widgets:
     $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-website-builder-module-widgets"
+  /crm/widgets-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-website-builder-module-widgets~1count"
   /crm/widgets-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/crm/relations/widgets-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1crm~1widgets-to-website-builder-module-widgets~1{id}"
 
   # ecommerce/attribute-key
   /ecommerce/attribute-keys:
     $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys"
+  /ecommerce/attribute-keys/count:
+    $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys~1count"
   /ecommerce/attribute-keys/{id}:
     $ref: "../../libs/modules/ecommerce/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys~1{id}"
 
   # ecommerce/attribute
   /ecommerce/attributes:
     $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes"
+  /ecommerce/attributes/count:
+    $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes~1count"
   /ecommerce/attributes/{id}:
     $ref: "../../libs/modules/ecommerce/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes~1{id}"
 
   # ecommerce/category
   /ecommerce/categories:
     $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories"
+  /ecommerce/categories/count:
+    $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories~1count"
   /ecommerce/categories/{id}:
     $ref: "../../libs/modules/ecommerce/models/category/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories~1{id}"
 
   # ecommerce/order
   /ecommerce/orders:
     $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders"
+  /ecommerce/orders/count:
+    $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1count"
   /ecommerce/orders/{id}:
     $ref: "../../libs/modules/ecommerce/models/order/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders~1{id}"
   /ecommerce/orders/{id}/checkout-attributes/{billingModuleCurrencyId}:
@@ -558,138 +694,184 @@ paths:
   # ecommerce/product
   /ecommerce/products:
     $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products"
+  /ecommerce/products/count:
+    $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products~1count"
   /ecommerce/products/{id}:
     $ref: "../../libs/modules/ecommerce/models/product/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products~1{id}"
 
   # ecommerce/store
   /ecommerce/stores:
     $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores"
+  /ecommerce/stores/count:
+    $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores~1count"
   /ecommerce/stores/{id}:
     $ref: "../../libs/modules/ecommerce/models/store/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores~1{id}"
 
   # ecommerce/widget
   /ecommerce/widgets:
     $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets"
+  /ecommerce/widgets/count:
+    $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets~1count"
   /ecommerce/widgets/{id}:
     $ref: "../../libs/modules/ecommerce/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets~1{id}"
 
   # ecommerce/relations/attribute-keys-to-attributes
   /ecommerce/attribute-keys-to-attributes:
     $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys-to-attributes"
+  /ecommerce/attribute-keys-to-attributes/count:
+    $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys-to-attributes~1count"
   /ecommerce/attribute-keys-to-attributes/{id}:
     $ref: "../../libs/modules/ecommerce/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attribute-keys-to-attributes~1{id}"
 
   # ecommerce/relations/attributes-to-billing-module-currencies
   /ecommerce/attributes-to-billing-module-currencies:
     $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes-to-billing-module-currencies"
+  /ecommerce/attributes-to-billing-module-currencies/count:
+    $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes-to-billing-module-currencies~1count"
   /ecommerce/attributes-to-billing-module-currencies/{id}:
     $ref: "../../libs/modules/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1attributes-to-billing-module-currencies~1{id}"
 
   # ecommerce/relations/categories-to-file-storage-module-files
   /ecommerce/categories-to-file-storage-module-files:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-file-storage-module-files"
+  /ecommerce/categories-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-file-storage-module-files~1count"
   /ecommerce/categories-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-file-storage-module-files~1{id}"
 
   # ecommerce/relations/categories-to-products
   /ecommerce/categories-to-products:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-products"
+  /ecommerce/categories-to-products/count:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-products~1count"
   /ecommerce/categories-to-products/{id}:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-products~1{id}"
 
   # ecommerce/relations/categories-to-website-builder-module-widgets
   /ecommerce/categories-to-website-builder-module-widgets:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-website-builder-module-widgets"
+  /ecommerce/categories-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-website-builder-module-widgets~1count"
   /ecommerce/categories-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/ecommerce/relations/categories-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1categories-to-website-builder-module-widgets~1{id}"
 
   # ecommerce/relations/orders-to-billing-module-currencies
   /ecommerce/orders-to-billing-module-currencies:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-currencies"
+  /ecommerce/orders-to-billing-module-currencies/count:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-currencies~1count"
   /ecommerce/orders-to-billing-module-currencies/{id}:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-currencies/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-currencies~1{id}"
 
   # ecommerce/relations/orders-to-billing-module-payment-intents
   /ecommerce/orders-to-billing-module-payment-intents:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-payment-intents"
+  /ecommerce/orders-to-billing-module-payment-intents/count:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-payment-intents~1count"
   /ecommerce/orders-to-billing-module-payment-intents/{id}:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-billing-module-payment-intents/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-billing-module-payment-intents~1{id}"
 
   # ecommerce/relations/orders-to-file-storage-module-files
   /ecommerce/orders-to-file-storage-module-files:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-file-storage-module-files"
+  /ecommerce/orders-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-file-storage-module-files~1count"
   /ecommerce/orders-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-file-storage-module-files~1{id}"
 
   # ecommerce/relations/orders-to-products
   /ecommerce/orders-to-products:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products"
+  /ecommerce/orders-to-products/count:
+    $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products~1count"
   /ecommerce/orders-to-products/{id}:
     $ref: "../../libs/modules/ecommerce/relations/orders-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1orders-to-products~1{id}"
 
   # ecommerce/relations/products-to-attributes
   /ecommerce/products-to-attributes:
     $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes"
+  /ecommerce/products-to-attributes/count:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes~1count"
   /ecommerce/products-to-attributes/{id}:
     $ref: "../../libs/modules/ecommerce/relations/products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-attributes~1{id}"
 
   # ecommerce/relations/products-to-file-storage-module-files
   /ecommerce/products-to-file-storage-module-files:
     $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-file-storage-module-files"
+  /ecommerce/products-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-file-storage-module-files~1count"
   /ecommerce/products-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/ecommerce/relations/products-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-file-storage-module-files~1{id}"
 
   # ecommerce/relations/products-to-website-builder-module-widgets
   /ecommerce/products-to-website-builder-module-widgets:
     $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-website-builder-module-widgets"
+  /ecommerce/products-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-website-builder-module-widgets~1count"
   /ecommerce/products-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/ecommerce/relations/products-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1products-to-website-builder-module-widgets~1{id}"
 
   # ecommerce/relations/stores-to-attributes
   /ecommerce/stores-to-attributes:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-attributes"
+  /ecommerce/stores-to-attributes/count:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-attributes~1count"
   /ecommerce/stores-to-attributes/{id}:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-attributes~1{id}"
 
   # ecommerce/relations/stores-to-orders
   /ecommerce/stores-to-orders:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-orders"
+  /ecommerce/stores-to-orders/count:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-orders~1count"
   /ecommerce/stores-to-orders/{id}:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-orders/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-orders~1{id}"
 
   # ecommerce/relations/stores-to-products
   /ecommerce/stores-to-products:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products"
+  /ecommerce/stores-to-products/count:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1count"
   /ecommerce/stores-to-products/{id}:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products~1{id}"
 
   # ecommerce/relations/stores-to-products-to-attributes
   /ecommerce/stores-to-products-to-attributes:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes"
+  /ecommerce/stores-to-products-to-attributes/count:
+    $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes~1count"
   /ecommerce/stores-to-products-to-attributes/{id}:
     $ref: "../../libs/modules/ecommerce/relations/stores-to-products-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1stores-to-products-to-attributes~1{id}"
 
   # ecommerce/relations/widgets-to-categories
   /ecommerce/widgets-to-categories:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-categories"
+  /ecommerce/widgets-to-categories/count:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-categories~1count"
   /ecommerce/widgets-to-categories/{id}:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-categories/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-categories~1{id}"
 
   # ecommerce/relations/widgets-to-products
   /ecommerce/widgets-to-products:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-products"
+  /ecommerce/widgets-to-products/count:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-products~1count"
   /ecommerce/widgets-to-products/{id}:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-products/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-products~1{id}"
 
   # ecommerce/relations/widgets-to-stores
   /ecommerce/widgets-to-stores:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores"
+  /ecommerce/widgets-to-stores/count:
+    $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores~1count"
   /ecommerce/widgets-to-stores/{id}:
     $ref: "../../libs/modules/ecommerce/relations/widgets-to-stores/sdk/model/src/lib/paths.yaml#/paths/~1ecommerce~1widgets-to-stores~1{id}"
 
   # file-storage/file
   /file-storage/files:
     $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files"
+  /file-storage/files/count:
+    $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1count"
   /file-storage/files/{id}:
     $ref: "../../libs/modules/file-storage/models/file/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1files~1{id}"
   /file-storage/files/create-from-url:
@@ -700,18 +882,24 @@ paths:
   # file-storage/widget
   /file-storage/widgets:
     $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets"
+  /file-storage/widgets/count:
+    $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets~1count"
   /file-storage/widgets/{id}:
     $ref: "../../libs/modules/file-storage/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets~1{id}"
 
   # file-storage/relations/widgets-to-files
   /file-storage/widgets-to-files:
     $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets-to-files"
+  /file-storage/widgets-to-files/count:
+    $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets-to-files~1count"
   /file-storage/widgets-to-files/{id}:
     $ref: "../../libs/modules/file-storage/relations/widgets-to-files/sdk/model/src/lib/paths.yaml#/paths/~1file-storage~1widgets-to-files~1{id}"
 
   # notification/notification
   /notification/notifications:
     $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications"
+  /notification/notifications/count:
+    $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications~1count"
   /notification/notifications/{id}:
     $ref: "../../libs/modules/notification/models/notification/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications~1{id}"
   /notification/notifications/{id}/send:
@@ -720,6 +908,8 @@ paths:
   # notification/template
   /notification/templates:
     $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates"
+  /notification/templates/count:
+    $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates~1count"
   /notification/templates/{id}:
     $ref: "../../libs/modules/notification/models/template/sdk/model/src/lib/paths.yaml#/paths/~1notification~1templates~1{id}"
   /notification/templates/{id}/render:
@@ -728,6 +918,8 @@ paths:
   # notification/topic
   /notification/topics:
     $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics"
+  /notification/topics/count:
+    $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics~1count"
   /notification/topics/{id}:
     $ref: "../../libs/modules/notification/models/topic/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics~1{id}"
   /notification/topics/send-all:
@@ -736,284 +928,394 @@ paths:
   # notification/widget
   /notification/widgets:
     $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1notification~1widgets"
+  /notification/widgets/count:
+    $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1notification~1widgets~1count"
   /notification/widgets/{id}:
     $ref: "../../libs/modules/notification/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1notification~1widgets~1{id}"
 
   # notification/relations/notifications-to-templates
   /notification/notifications-to-templates:
     $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications-to-templates"
+  /notification/notifications-to-templates/count:
+    $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications-to-templates~1count"
   /notification/notifications-to-templates/{id}:
     $ref: "../../libs/modules/notification/relations/notifications-to-templates/sdk/model/src/lib/paths.yaml#/paths/~1notification~1notifications-to-templates~1{id}"
 
   # notification/relations/topics-to-notifications
   /notification/topics-to-notifications:
     $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications"
+  /notification/topics-to-notifications/count:
+    $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications~1count"
   /notification/topics-to-notifications/{id}:
     $ref: "../../libs/modules/notification/relations/topics-to-notifications/sdk/model/src/lib/paths.yaml#/paths/~1notification~1topics-to-notifications~1{id}"
 
   # social/action
   /social/actions:
     $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/paths.yaml#/paths/~1social~1actions"
+  /social/actions/count:
+    $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/paths.yaml#/paths/~1social~1actions~1count"
   /social/actions/{id}:
     $ref: "../../libs/modules/social/models/action/sdk/model/src/lib/paths.yaml#/paths/~1social~1actions~1{id}"
 
   # social/attribute
   /social/attributes:
     $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1social~1attributes"
+  /social/attributes/count:
+    $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1social~1attributes~1count"
   /social/attributes/{id}:
     $ref: "../../libs/modules/social/models/attribute/sdk/model/src/lib/paths.yaml#/paths/~1social~1attributes~1{id}"
 
   # social/attribute-key
   /social/attribute-keys:
     $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys"
+  /social/attribute-keys/count:
+    $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys~1count"
   /social/attribute-keys/{id}:
     $ref: "../../libs/modules/social/models/attribute-key/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys~1{id}"
 
   # social/chat
   /social/chats:
     $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats"
+  /social/chats/count:
+    $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats~1count"
   /social/chats/{id}:
     $ref: "../../libs/modules/social/models/chat/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats~1{id}"
 
   # social/message
   /social/messages:
     $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages"
+  /social/messages/count:
+    $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages~1count"
   /social/messages/{id}:
     $ref: "../../libs/modules/social/models/message/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages~1{id}"
 
   # social/profile
   /social/profiles:
     $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles"
+  /social/profiles/count:
+    $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles~1count"
   /social/profiles/{id}:
     $ref: "../../libs/modules/social/models/profile/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles~1{id}"
 
   # social/thread
   /social/threads:
     $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads"
+  /social/threads/count:
+    $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads~1count"
   /social/threads/{id}:
     $ref: "../../libs/modules/social/models/thread/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads~1{id}"
 
   # social/widget
   /social/widgets:
     $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1social~1widgets"
+  /social/widgets/count:
+    $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1social~1widgets~1count"
   /social/widgets/{id}:
     $ref: "../../libs/modules/social/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1social~1widgets~1{id}"
 
   # social/relations/attribute-keys-to-attributes
   /social/attribute-keys-to-attributes:
     $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys-to-attributes"
+  /social/attribute-keys-to-attributes/count:
+    $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys-to-attributes~1count"
   /social/attribute-keys-to-attributes/{id}:
     $ref: "../../libs/modules/social/relations/attribute-keys-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1attribute-keys-to-attributes~1{id}"
 
   # social/relations/chats-to-actions
   /social/chats-to-actions:
     $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-actions"
+  /social/chats-to-actions/count:
+    $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-actions~1count"
   /social/chats-to-actions/{id}:
     $ref: "../../libs/modules/social/relations/chats-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-actions~1{id}"
 
   # social/relations/chats-to-messages
   /social/chats-to-messages:
     $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-messages"
+  /social/chats-to-messages/count:
+    $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-messages~1count"
   /social/chats-to-messages/{id}:
     $ref: "../../libs/modules/social/relations/chats-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-messages~1{id}"
 
   # social/relations/chats-to-threads
   /social/chats-to-threads:
     $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads"
+  /social/chats-to-threads/count:
+    $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads~1count"
   /social/chats-to-threads/{id}:
     $ref: "../../libs/modules/social/relations/chats-to-threads/sdk/model/src/lib/paths.yaml#/paths/~1social~1chats-to-threads~1{id}"
 
   # social/relations/messages-to-file-storage-module-files
   /social/messages-to-file-storage-module-files:
     $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files"
+  /social/messages-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files~1count"
   /social/messages-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/social/relations/messages-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1messages-to-file-storage-module-files~1{id}"
 
   # social/relations/profiles-to-actions
   /social/profiles-to-actions:
     $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-actions"
+  /social/profiles-to-actions/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-actions~1count"
   /social/profiles-to-actions/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-actions~1{id}"
 
   # social/relations/profiles-to-attributes
   /social/profiles-to-attributes:
     $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-attributes"
+  /social/profiles-to-attributes/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-attributes~1count"
   /social/profiles-to-attributes/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-attributes/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-attributes~1{id}"
 
   # social/relations/profiles-to-chats
   /social/profiles-to-chats:
     $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-chats"
+  /social/profiles-to-chats/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-chats~1count"
   /social/profiles-to-chats/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-chats/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-chats~1{id}"
 
   # social/relations/profiles-to-ecommerce-module-products
   /social/profiles-to-ecommerce-module-products:
     $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-ecommerce-module-products"
+  /social/profiles-to-ecommerce-module-products/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-ecommerce-module-products~1count"
   /social/profiles-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-ecommerce-module-products~1{id}"
 
   # social/relations/profiles-to-file-storage-module-files
   /social/profiles-to-file-storage-module-files:
     $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-file-storage-module-files"
+  /social/profiles-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-file-storage-module-files~1count"
   /social/profiles-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-file-storage-module-files~1{id}"
 
   # social/relations/profiles-to-messages
   /social/profiles-to-messages:
     $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-messages"
+  /social/profiles-to-messages/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-messages~1count"
   /social/profiles-to-messages/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-messages~1{id}"
 
   # social/relations/profiles-to-website-builder-module-widgets
   /social/profiles-to-website-builder-module-widgets:
     $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-website-builder-module-widgets"
+  /social/profiles-to-website-builder-module-widgets/count:
+    $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-website-builder-module-widgets~1count"
   /social/profiles-to-website-builder-module-widgets/{id}:
     $ref: "../../libs/modules/social/relations/profiles-to-website-builder-module-widgets/sdk/model/src/lib/paths.yaml#/paths/~1social~1profiles-to-website-builder-module-widgets~1{id}"
 
   # social/relations/threads-to-ecommerce-module-products
   /social/threads-to-ecommerce-module-products:
     $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products"
+  /social/threads-to-ecommerce-module-products/count:
+    $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products~1count"
   /social/threads-to-ecommerce-module-products/{id}:
     $ref: "../../libs/modules/social/relations/threads-to-ecommerce-module-products/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-ecommerce-module-products~1{id}"
 
   # social/relations/threads-to-actions
   /social/threads-to-actions:
     $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-actions"
+  /social/threads-to-actions/count:
+    $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-actions~1count"
   /social/threads-to-actions/{id}:
     $ref: "../../libs/modules/social/relations/threads-to-actions/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-actions~1{id}"
 
   # social/relations/threads-to-messages
   /social/threads-to-messages:
     $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages"
+  /social/threads-to-messages/count:
+    $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages~1count"
   /social/threads-to-messages/{id}:
     $ref: "../../libs/modules/social/relations/threads-to-messages/sdk/model/src/lib/paths.yaml#/paths/~1social~1threads-to-messages~1{id}"
 
   # startup/widget
   /startup/widgets:
     $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1startup~1widgets"
+  /startup/widgets/count:
+    $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1startup~1widgets~1count"
   /startup/widgets/{id}:
     $ref: "../../libs/modules/startup/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1startup~1widgets~1{id}"
 
   # website-builder/button
   /website-builder/buttons:
     $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons"
+  /website-builder/buttons/count:
+    $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons~1count"
   /website-builder/buttons/{id}:
     $ref: "../../libs/modules/website-builder/models/button/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons~1{id}"
 
   # website-builder/buttons-array
   /website-builder/buttons-arrays:
     $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays"
+  /website-builder/buttons-arrays/count:
+    $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays~1count"
   /website-builder/buttons-arrays/{id}:
     $ref: "../../libs/modules/website-builder/models/buttons-array/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays~1{id}"
 
   # website-builder/feature
   /website-builder/features:
     $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features"
+  /website-builder/features/count:
+    $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features~1count"
   /website-builder/features/{id}:
     $ref: "../../libs/modules/website-builder/models/feature/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features~1{id}"
 
   # website-builder/logotype
   /website-builder/logotypes:
     $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes"
+  /website-builder/logotypes/count:
+    $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes~1count"
   /website-builder/logotypes/{id}:
     $ref: "../../libs/modules/website-builder/models/logotype/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes~1{id}"
 
   # website-builder/slide
   /website-builder/slides:
     $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides"
+  /website-builder/slides/count:
+    $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides~1count"
   /website-builder/slides/{id}:
     $ref: "../../libs/modules/website-builder/models/slide/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides~1{id}"
 
   # website-builder/slider
   /website-builder/sliders:
     $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders"
+  /website-builder/sliders/count:
+    $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders~1count"
   /website-builder/sliders/{id}:
     $ref: "../../libs/modules/website-builder/models/slider/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders~1{id}"
 
   # website-builder/widget
   /website-builder/widgets:
     $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets"
+  /website-builder/widgets/count:
+    $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets~1count"
   /website-builder/widgets/{id}:
     $ref: "../../libs/modules/website-builder/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets~1{id}"
 
   # website-builder/relations/buttons-arrays-to-buttons
   /website-builder/buttons-arrays-to-buttons:
     $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays-to-buttons"
+  /website-builder/buttons-arrays-to-buttons/count:
+    $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays-to-buttons~1count"
   /website-builder/buttons-arrays-to-buttons/{id}:
     $ref: "../../libs/modules/website-builder/relations/buttons-arrays-to-buttons/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-arrays-to-buttons~1{id}"
 
   # website-builder/relations/buttons-to-file-storage-module-files
   /website-builder/buttons-to-file-storage-module-files:
     $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-to-file-storage-module-files"
+  /website-builder/buttons-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-to-file-storage-module-files~1count"
   /website-builder/buttons-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/website-builder/relations/buttons-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1buttons-to-file-storage-module-files~1{id}"
 
   # website-builder/relations/features-to-buttons-arrays
   /website-builder/features-to-buttons-arrays:
     $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-buttons-arrays"
+  /website-builder/features-to-buttons-arrays/count:
+    $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-buttons-arrays~1count"
   /website-builder/features-to-buttons-arrays/{id}:
     $ref: "../../libs/modules/website-builder/relations/features-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-buttons-arrays~1{id}"
 
   # website-builder/relations/features-to-file-storage-module-files
   /website-builder/features-to-file-storage-module-files:
     $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-file-storage-module-files"
+  /website-builder/features-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-file-storage-module-files~1count"
   /website-builder/features-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/website-builder/relations/features-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1features-to-file-storage-module-files~1{id}"
 
   # website-builder/relations/logotypes-to-file-storage-module-files
   /website-builder/logotypes-to-file-storage-module-files:
     $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes-to-file-storage-module-files"
+  /website-builder/logotypes-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes-to-file-storage-module-files~1count"
   /website-builder/logotypes-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/website-builder/relations/logotypes-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1logotypes-to-file-storage-module-files~1{id}"
 
   # website-builder/relations/sliders-to-slides
   /website-builder/sliders-to-slides:
     $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders-to-slides"
+  /website-builder/sliders-to-slides/count:
+    $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders-to-slides~1count"
   /website-builder/sliders-to-slides/{id}:
     $ref: "../../libs/modules/website-builder/relations/sliders-to-slides/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1sliders-to-slides~1{id}"
 
   # website-builder/relations/slides-to-buttons-arrays
   /website-builder/slides-to-buttons-arrays:
     $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-buttons-arrays"
+  /website-builder/slides-to-buttons-arrays/count:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-buttons-arrays~1count"
   /website-builder/slides-to-buttons-arrays/{id}:
     $ref: "../../libs/modules/website-builder/relations/slides-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-buttons-arrays~1{id}"
 
   # website-builder/relations/slides-to-file-storage-module-files
   /website-builder/slides-to-file-storage-module-files:
     $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-file-storage-module-files"
+  /website-builder/slides-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-file-storage-module-files~1count"
   /website-builder/slides-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/website-builder/relations/slides-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1slides-to-file-storage-module-files~1{id}"
 
   # website-builder/relations/widgets-to-buttons-arrays
   /website-builder/widgets-to-buttons-arrays:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-buttons-arrays"
+  /website-builder/widgets-to-buttons-arrays/count:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-buttons-arrays~1count"
   /website-builder/widgets-to-buttons-arrays/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-buttons-arrays/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-buttons-arrays~1{id}"
 
   # website-builder/relations/widgets-to-features
   /website-builder/widgets-to-features:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-features"
+  /website-builder/widgets-to-features/count:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-features~1count"
   /website-builder/widgets-to-features/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-features/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-features~1{id}"
 
   # website-builder/relations/widgets-to-file-storage-module-files
   /website-builder/widgets-to-file-storage-module-files:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-file-storage-module-files"
+  /website-builder/widgets-to-file-storage-module-files/count:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-file-storage-module-files~1count"
   /website-builder/widgets-to-file-storage-module-files/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-file-storage-module-files/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-file-storage-module-files~1{id}"
 
   # website-builder/relations/widgets-to-logotypes
   /website-builder/widgets-to-logotypes:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-logotypes"
+  /website-builder/widgets-to-logotypes/count:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-logotypes~1count"
   /website-builder/widgets-to-logotypes/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-logotypes/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-logotypes~1{id}"
 
   # website-builder/relations/widgets-to-sliders
   /website-builder/widgets-to-sliders:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders"
+  /website-builder/widgets-to-sliders/count:
+    $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1count"
   /website-builder/widgets-to-sliders/{id}:
     $ref: "../../libs/modules/website-builder/relations/widgets-to-sliders/sdk/model/src/lib/paths.yaml#/paths/~1website-builder~1widgets-to-sliders~1{id}"
+
+  # telegram/page
+  /telegram/pages/count:
+    $ref: "../../libs/modules/telegram/models/page/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1pages~1count"
+
+  # telegram/widget
+  /telegram/widgets/count:
+    $ref: "../../libs/modules/telegram/models/widget/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1widgets~1count"
+
+  # telegram/relations/pages-to-widgets
+  /telegram/pages-to-widgets/count:
+    $ref: "../../libs/modules/telegram/relations/pages-to-widgets/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1pages-to-widgets~1count"
+
+  # telegram/relations/widgets-to-external-widgets
+  /telegram/widgets-to-external-widgets/count:
+    $ref: "../../libs/modules/telegram/relations/widgets-to-external-widgets/sdk/model/src/lib/paths.yaml#/paths/~1telegram~1widgets-to-external-widgets~1count"
 
   # apps/telegram
   /telegram/run:

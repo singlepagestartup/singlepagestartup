@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialProfilesToFileStorageModuleFilesApi } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/server";
 import { insertSchema as socialProfilesToFileStorageModuleFilesInsertSchema } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-profiles-to-file-storage-module-files-count",
+    "Count social profiles to file storage module files",
+    "Count social profiles to file storage module files entities with optional filters.",
+    socialProfilesToFileStorageModuleFilesApi,
+  );
+
   mcp.registerTool(
     "social-profiles-to-file-storage-module-files-get",
     {

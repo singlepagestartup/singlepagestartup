@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostModuleWidgetApi } from "@sps/host/models/widget/sdk/server";
 import { insertSchema as hostModuleWidgetInsertSchema } from "@sps/host/models/widget/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-module-widget-count",
+    "Count host module widget",
+    "Count host module widget entities with optional filters.",
+    hostModuleWidgetApi,
+  );
+
   mcp.registerTool(
     "host-module-widget-get",
     {

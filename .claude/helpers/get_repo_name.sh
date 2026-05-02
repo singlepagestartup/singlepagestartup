@@ -7,5 +7,5 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/repo_context.sh"
 
-sps_resolve_repo_context
-printf "%s\n" "$SPS_REPO_NAME"
+target_resolve_repo_context
+printf "%s\n" "$TARGET_REPO_NAME"

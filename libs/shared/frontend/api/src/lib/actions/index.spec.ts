@@ -20,6 +20,7 @@ jest.mock("@sps/shared-utils", () => ({
 
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { action as findAction } from "./find";
+import { action as countAction } from "./count";
 import { action as findByIdAction } from "./find-by-id";
 import { action as createAction } from "./create";
 import { action as bulkUpdateAction } from "./bulk-update";
@@ -75,6 +76,50 @@ describe("shared frontend api actions", () => {
     expect(transformResponseItemMock).toHaveBeenCalledWith({
       data: { id: "entity-id" },
     });
+  });
+
+  it("count builds count request with query params and distinct route tags", async () => {
+    responsePipeMock.mockResolvedValueOnce({ data: 12 });
+    transformResponseItemMock.mockReturnValueOnce(12);
+
+    const result = await countAction({
+      host: "http://localhost:3000",
+      route: "/api/ecommerce/products",
+      params: {
+        filters: {
+          and: [
+            {
+              column: "variant",
+              method: "eq",
+              value: "default",
+            },
+          ],
+        },
+      },
+      options: {
+        headers: {
+          "X-Test": "1",
+        },
+      },
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/ecommerce/products/count?filters[and][0][column]=variant&filters[and][0][method]=eq&filters[and][0][value]=default",
+      expect.objectContaining({
+        credentials: "include",
+        headers: { "X-Test": "1" },
+        next: { tags: ["/api/ecommerce/products/count"] },
+      }),
+    );
+
+    expect(responsePipeMock).toHaveBeenCalledWith({
+      res: expect.any(Object),
+      catchErrors: false,
+    });
+    expect(transformResponseItemMock).toHaveBeenCalledWith({
+      data: 12,
+    });
+    expect(result).toBe(12);
   });
 
   it("findById uses no-store cache header during production build", async () => {

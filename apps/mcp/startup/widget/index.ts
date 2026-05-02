@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as startupWidgetApi } from "@sps/startup/models/widget/sdk/server";
 import { insertSchema as startupWidgetInsertSchema } from "@sps/startup/models/widget/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "startup-module-widget-count",
+    "Count startup module widget",
+    "Count startup module widget entities with optional filters.",
+    startupWidgetApi,
+  );
+
   mcp.registerTool(
     "startup-module-widget-get",
     {

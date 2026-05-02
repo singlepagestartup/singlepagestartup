@@ -39,6 +39,7 @@ export interface IController<DTO extends Record<string, unknown>> {
   telegramRoutes: ITelegramRoute[];
   telegramConversations: ITelegramConversation[];
   find: (c: Context, next: any) => Response | Promise<Response>;
+  count: (c: Context, next: any) => Response | Promise<Response>;
   findById: (c: Context, next: any) => Response | Promise<Response>;
   create: (c: Context, next: any) => Response | Promise<Response>;
   update: (c: Context, next: any) => Response | Promise<Response>;

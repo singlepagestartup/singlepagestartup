@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacIdentityApi } from "@sps/rbac/models/identity/sdk/server";
 import { insertSchema as rbacIdentityInsertSchema } from "@sps/rbac/models/identity/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-module-identity-count",
+    "Count rbac module identity",
+    "Count rbac module identity entities with optional filters.",
+    rbacIdentityApi,
+  );
+
   mcp.registerTool(
     "rbac-module-identity-get",
     {

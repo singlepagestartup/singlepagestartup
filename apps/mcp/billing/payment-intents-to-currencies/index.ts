@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as billingPaymentIntentsToCurrenciesApi } from "@sps/billing/relations/payment-intents-to-currencies/sdk/server";
 import { insertSchema as billingPaymentIntentsToCurrenciesInsertSchema } from "@sps/billing/relations/payment-intents-to-currencies/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "billing-payment-intents-to-currencies-count",
+    "Count billing payment intents to currencies",
+    "Count billing payment intents to currencies entities with optional filters.",
+    billingPaymentIntentsToCurrenciesApi,
+  );
+
   mcp.registerTool(
     "billing-payment-intents-to-currencies-get",
     {

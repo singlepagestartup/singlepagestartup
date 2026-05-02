@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialMessageApi } from "@sps/social/models/message/sdk/server";
 import { insertSchema as socialMessageInsertSchema } from "@sps/social/models/message/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-module-message-count",
+    "Count social module message",
+    "Count social module message entities with optional filters.",
+    socialMessageApi,
+  );
+
   mcp.registerTool(
     "social-module-message-get",
     {

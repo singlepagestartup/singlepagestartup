@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmFormsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
 import { insertSchema as crmFormsToRequestsInsertSchema } from "@sps/crm/relations/forms-to-requests/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "crm-forms-to-requests-count",
+    "Count crm forms to requests",
+    "Count crm forms to requests entities with optional filters.",
+    crmFormsToRequestsApi,
+  );
+
   mcp.registerTool(
     "crm-forms-to-requests-get",
     {

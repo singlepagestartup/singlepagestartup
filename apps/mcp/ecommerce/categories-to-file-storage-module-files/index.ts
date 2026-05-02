@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceCategoriesToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/sdk/server";
 import { insertSchema as ecommerceCategoriesToFileStorageModuleFilesInsertSchema } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +29,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-categories-to-file-storage-module-files-count",
+    "Count ecommerce categories to file storage module files",
+    "Count ecommerce categories to file storage module files entities with optional filters.",
+    ecommerceCategoriesToFileStorageModuleFilesApi,
+  );
+
   mcp.registerTool(
     "ecommerce-categories-to-file-storage-module-files-get",
     {

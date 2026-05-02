@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as billingCurrencyApi } from "@sps/billing/models/currency/sdk/server";
 import { insertSchema as billingCurrencyInsertSchema } from "@sps/billing/models/currency/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "billing-module-currency-count",
+    "Count billing module currency",
+    "Count billing module currency entities with optional filters.",
+    billingCurrencyApi,
+  );
+
   mcp.registerTool(
     "billing-module-currency-get",
     {

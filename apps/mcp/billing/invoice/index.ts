@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as billingInvoiceApi } from "@sps/billing/models/invoice/sdk/server";
 import { insertSchema as billingInvoiceInsertSchema } from "@sps/billing/models/invoice/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "billing-module-invoice-count",
+    "Count billing module invoice",
+    "Count billing module invoice entities with optional filters.",
+    billingInvoiceApi,
+  );
+
   mcp.registerTool(
     "billing-module-invoice-get",
     {

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialChatApi } from "@sps/social/models/chat/sdk/server";
 import { insertSchema as socialChatInsertSchema } from "@sps/social/models/chat/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -27,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "social-module-chat-count",
+    "Count social module chat",
+    "Count social module chat entities with optional filters.",
+    socialChatApi,
+  );
+
   mcp.registerTool(
     "social-module-chat-get",
     {
