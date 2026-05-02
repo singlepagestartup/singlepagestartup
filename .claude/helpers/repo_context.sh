@@ -17,6 +17,7 @@
 #   SPS_REPO_OWNER      owner
 #   SPS_REPO_NAME       short repository name
 #   SPS_REPO_URL        https://github.com/owner/name
+#   TARGET_REPO_*       legacy aliases for older workflow commands
 #   GH_REPO             owner/name, for gh issue/comment defaults
 
 sps_normalize_github_repo() {
@@ -98,13 +99,25 @@ sps_resolve_repo_context() {
   SPS_REPO_OWNER="${full_name%%/*}"
   SPS_REPO_NAME="${full_name#*/}"
   SPS_REPO_URL="https://github.com/$SPS_REPO_FULL_NAME"
+  TARGET_REPO_FULL_NAME="$SPS_REPO_FULL_NAME"
+  TARGET_REPO_OWNER="$SPS_REPO_OWNER"
+  TARGET_REPO_NAME="$SPS_REPO_NAME"
+  TARGET_REPO_URL="$SPS_REPO_URL"
   GH_REPO="$SPS_REPO_FULL_NAME"
 
   export SPS_REPO_FULL_NAME
   export SPS_REPO_OWNER
   export SPS_REPO_NAME
   export SPS_REPO_URL
+  export TARGET_REPO_FULL_NAME
+  export TARGET_REPO_OWNER
+  export TARGET_REPO_NAME
+  export TARGET_REPO_URL
   export GH_REPO
+}
+
+resolve_repo_context() {
+  sps_resolve_repo_context "$@"
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then

@@ -3,9 +3,9 @@ issue_number: 160
 issue_title: "Add universal REST /count endpoint and shared SDK support"
 repository: singlepagestartup
 created_at: 2026-05-01T00:54:30Z
-last_updated: 2026-05-02T00:02:47Z
-status: pull_request_open
-current_phase: implement
+last_updated: 2026-05-02T00:39:06Z
+status: complete
+current_phase: complete
 ---
 
 # Process Log: ISSUE-160 - Add universal REST /count endpoint and shared SDK support
@@ -20,8 +20,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Current phase: implement
-- Next step: review PR #168 and merge when checks pass
+- Current phase: complete
+- Next step: code review / merge PR #168
 
 ## Phase Notes
 
@@ -69,6 +69,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - User requested checking model page table footer count; shared table client already used `api.count` for total, and was aligned with the card count option-merging pattern so `apiProps.options` are preserved on count/find calls. Browser verification on `/en/admin/ecommerce/attribute` showed `Page 1 of 1 (12 total)`.
   - The repeated scenario-runner hang after successful assertions was promoted to the issue research artifact under Known Pitfalls.
   - PR opened: https://github.com/singlepagestartup/singlepagestartup/pull/168
+  - Follow-up workflow fix added portable helper compatibility aliases and `submit_pr_for_code_review.sh` so PR submission cannot bypass the `Code Review` Project transition.
+  - Issue #160 was submitted through `submit_pr_for_code_review.sh 160 168` and verified in GitHub Project status `Code Review`.
 
 ## Incident Log
 
@@ -82,8 +84,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Occurrences**: 1
 - **Symptom**: `.claude/helpers/get_issue_status.sh 160` failed before returning status because `load_config.sh` called `resolve_repo_context`, and `get_issue_status.sh` called `validate_project_artifact_context`; only `sps_resolve_repo_context` and `sps_validate_project_artifact_context` exist.
 - **Root Cause**: The shared helper scripts mix legacy function and variable names with the newer `sps_*` repository context helpers.
-- **Fix**: Ran the required status/update helpers through a narrow Bash compatibility shim that exports the legacy function names and `TARGET_REPO_*` aliases from the resolved `SPS_REPO_*` values.
-- **Preventive Action**: Align helper function and variable names in `.claude/helpers/load_config.sh`, `.claude/helpers/get_issue_status.sh`, and related project helpers so workflow commands do not require a caller-side shim.
+- **Fix**: Ran the required status/update helpers through a narrow Bash compatibility shim during implementation, then added portable legacy wrappers in `.claude/helpers/repo_context.sh` and `.claude/helpers/validate_project_context.sh` so callers no longer need a shim.
+- **Preventive Action**: Keep `SPS_REPO_*` as canonical helper output while preserving `TARGET_REPO_*`, `resolve_repo_context`, and `validate_project_artifact_context` as compatibility aliases for older commands and downstream projects.
 - **References**: `.claude/helpers/load_config.sh`, `.claude/helpers/repo_context.sh`, `.claude/helpers/validate_project_context.sh`, `.claude/helpers/get_issue_status.sh`
 
 ### Incident 2 - Scenario Jest process stayed open after passing

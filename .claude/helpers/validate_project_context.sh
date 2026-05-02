@@ -62,3 +62,7 @@ sps_validate_project_artifact_context() {
 
   return 0
 }
+
+validate_project_artifact_context() {
+  sps_validate_project_artifact_context "$@"
+}

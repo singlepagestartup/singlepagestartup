@@ -16,6 +16,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/30-implement.md
 5. Use `.claude/helpers/*.sh` for status operations.
 6. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) instead of inline `--body "..."` markdown.
 7. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
+8. After commit and PR creation, run `.claude/helpers/submit_pr_for_code_review.sh ISSUE_NUMBER PR_NUMBER_OR_URL` before giving the final implementation answer. Do not treat `$commit` + `$describe-pr` as complete implementation finalization unless the issue status has been verified as `Code Review`.
 
 ## Codex Adaptation Rules
 

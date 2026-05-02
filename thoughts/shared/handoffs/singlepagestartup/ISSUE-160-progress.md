@@ -3,7 +3,8 @@ issue_number: 160
 issue_title: "Add universal REST /count endpoint and shared SDK support"
 start_date: 2026-05-01T00:54:30Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-160.md
-status: pull_request_open
+status: complete
+completed_date: 2026-05-02T00:16:22Z
 ---
 
 # Implementation Progress: ISSUE-160 - Add universal REST /count endpoint and shared SDK support
@@ -71,8 +72,8 @@ Browser verification at `http://localhost:3000/en/admin/ecommerce/attribute` aft
 - **Stage**: Workflow preflight - Status gate
 - **Symptom**: `.claude/helpers/get_issue_status.sh 160` failed before returning status because `load_config.sh` called `resolve_repo_context`, and `get_issue_status.sh` called `validate_project_artifact_context`; only `sps_resolve_repo_context` and `sps_validate_project_artifact_context` exist.
 - **Root Cause**: The shared helper scripts mix legacy function and variable names with the newer `sps_*` repository context helpers.
-- **Fix**: Ran the required status/update helpers through a narrow Bash compatibility shim that exports the legacy function names and `TARGET_REPO_*` aliases from the resolved `SPS_REPO_*` values.
-- **Reusable Pattern**: If status/project helpers fail before querying the Project item, inspect helper naming drift before assuming GitHub Project data is missing.
+- **Fix**: Ran the required status/update helpers through a narrow Bash compatibility shim during implementation, then added portable legacy wrappers in `.claude/helpers/repo_context.sh` and `.claude/helpers/validate_project_context.sh` so callers no longer need a shim.
+- **Reusable Pattern**: Keep `SPS_REPO_*` as canonical helper output while preserving `TARGET_REPO_*`, `resolve_repo_context`, and `validate_project_artifact_context` as compatibility aliases for older commands and downstream projects.
 
 ### Incident 2 - Scenario Jest process stayed open after passing
 
@@ -113,8 +114,9 @@ Browser verification at `http://localhost:3000/en/admin/ecommerce/attribute` aft
 
 - [x] All phases completed
 - [x] All automated verification passed
+- [x] Issue moved to Code Review
 - [ ] Issue marked as Done
 
 ---
 
-**Last updated**: 2026-05-02T00:02:47Z
+**Last updated**: 2026-05-02T00:39:06Z

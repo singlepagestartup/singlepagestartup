@@ -260,26 +260,15 @@ fi
      - `Next step: code review / merge`
    - **Promote recurring incidents to research**: review `## Incident Log`. For every incident with `Occurrences >= 2`, append it to `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md` under a `## Known Pitfalls (from implementation)` section (create the section if absent). Use the same incident format. This makes the knowledge permanent and visible to future agents working on related issues.
 
-   d. **Comment on issue with PR link**:
+   d. **Submit PR for code review**:
 
    ```bash
-   COMMENT_FILE="$(mktemp)"
-   cat > "$COMMENT_FILE" <<'EOF'
-   PR submitted: [PR_URL]
-
-   Implementation summary:
-   - [Key change 1]
-   - [Key change 2]
-   EOF
-   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
-   rm -f "$COMMENT_FILE"
+   .claude/helpers/submit_pr_for_code_review.sh ISSUE_NUMBER PR_NUMBER_OR_URL
    ```
 
-9. **Update status to "Code Review"**:
+9. **Verify status is "Code Review"**:
 
-   ```bash
-   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Code Review"
-   ```
+   The helper above comments on the issue with the PR link, updates the GitHub Project status to `Code Review`, and rereads the status. Do not finish the implementation phase until it succeeds.
 
 ## Exit
 
@@ -289,8 +278,8 @@ fi
 - [ ] Commit created with descriptive message
 - [ ] PR created with comprehensive description
 - [ ] Progress file updated with PR link and marked `status: complete`
-- [ ] Issue commented with PR link
-- [ ] Status updated to "Code Review" in GitHub Project
+- [ ] Issue commented with PR link through `submit_pr_for_code_review.sh`
+- [ ] Status verified as "Code Review" in GitHub Project
 
 ## Post-Merge Cleanup
 
