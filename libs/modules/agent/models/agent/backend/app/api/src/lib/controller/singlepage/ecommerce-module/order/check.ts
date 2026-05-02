@@ -5,6 +5,14 @@ import { Service } from "../../../../service";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { api as ecommerceModuleOrderApi } from "@sps/ecommerce/models/order/sdk/server";
 
+export const ECOMMERCE_ORDER_CHECK_BATCH_LIMIT = 100;
+
+export const ECOMMERCE_ORDER_CHECK_STATUSES = [
+  "paying",
+  "delivering",
+  "requested_cancelation",
+];
+
 export class Handler {
   service: Service;
 
@@ -20,22 +28,31 @@ export class Handler {
 
       logger.info("Ecommerce module order check started");
 
-      const notCompletedOrders = await this.service.ecommerceModule.order.find({
+      const currentOrders = await this.service.ecommerceModule.order.find({
         params: {
           filters: {
             and: [
               {
                 column: "status",
-                method: "ne",
-                value: "completed",
+                method: "inArray",
+                value: ECOMMERCE_ORDER_CHECK_STATUSES,
+              },
+            ],
+          },
+          limit: ECOMMERCE_ORDER_CHECK_BATCH_LIMIT,
+          orderBy: {
+            and: [
+              {
+                column: "updatedAt",
+                method: "asc",
               },
             ],
           },
         },
       });
 
-      if (notCompletedOrders?.length) {
-        for (const order of notCompletedOrders) {
+      if (currentOrders?.length) {
+        for (const order of currentOrders) {
           try {
             await ecommerceModuleOrderApi.check({
               id: order.id,

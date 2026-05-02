@@ -1,6 +1,6 @@
 # Repository and Project Context Contract
 
-SPS workflow commands must resolve the target repository and artifact namespace from the current workspace, not from GitHub CLI defaults.
+Workflow commands must resolve the target repository and artifact namespace from the current workspace or explicit configuration, not from GitHub CLI defaults.
 
 ## Canonical Repository Context
 
@@ -21,13 +21,22 @@ REPO_FULL_NAME=$(.claude/helpers/get_repo_full_name.sh)
 
 The helper resolves repository context in this order:
 
-1. `TARGET_REPO_FULL_NAME` if intentionally provided.
+1. `TARGET_REPO` from `.claude/.env` if intentionally provided.
 2. `GITHUB_REPOSITORY` in CI-style environments.
 3. `remote.origin.url` from the current git checkout.
 4. Ambient `GH_REPO`.
 5. `gh repo view` only as a last-resort fallback.
 
-This is required because SPS-based projects often have an `upstream` remote or GitHub CLI default repository that differs from the workspace `origin`.
+`TARGET_REPO` is an optional but explicit override in `owner/name` form. It identifies the GitHub repository whose issues, comments, Project items, and local `thoughts/shared/<repo>/...` artifacts belong to the current workflow.
+
+This exists because template-based and fork-based projects often have an `upstream` remote or GitHub CLI default repository that differs from the workspace `origin`. Without a correct target repository, commands can:
+
+- read a same-numbered issue from another repository;
+- update a Project item belonging to the wrong repo or wrong Project;
+- post comments to the wrong GitHub issue;
+- write tickets, research, plans, handoffs, or process logs under the wrong `thoughts/shared/<repo>/` namespace.
+
+If `remote.origin.url` reliably points at the intended GitHub repository, `TARGET_REPO` can remain empty. Set `TARGET_REPO` when the checkout has ambiguous remotes, a misleading GitHub CLI default, or no normal `origin`.
 
 ## Artifact Namespace
 

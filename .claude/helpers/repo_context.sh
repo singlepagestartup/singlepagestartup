@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Resolve the target GitHub repository for SPS workflow commands.
+# Resolve the target GitHub repository for workflow commands.
 #
 # Do not derive workflow paths from bare `gh repo view`: in forks or template
 # checkouts GitHub CLI may resolve to an upstream/default repository that is
 # different from the workspace's `origin`.
 #
 # Resolution order:
-#   1. TARGET_REPO_FULL_NAME (intentional override, owner/name)
+#   1. TARGET_REPO (intentional override, owner/name)
 #   2. GITHUB_REPOSITORY (CI-style owner/name)
 #   3. git remote.origin.url
 #   4. ambient GH_REPO
@@ -19,7 +19,7 @@
 #   TARGET_REPO_URL        https://github.com/owner/name
 #   GH_REPO             owner/name, for gh issue/comment defaults
 
-target_normalize_github_repo() {
+normalize_github_repo() {
   local raw="${1:-}"
   local value
 
@@ -60,23 +60,23 @@ target_normalize_github_repo() {
   esac
 }
 
-target_resolve_repo_context() {
+resolve_repo_context() {
   local full_name=""
   local origin_url=""
   local gh_repo_view=""
 
-  if [ -n "${TARGET_REPO_FULL_NAME:-}" ]; then
-    full_name="$(target_normalize_github_repo "$TARGET_REPO_FULL_NAME")"
+  if [ -n "${TARGET_REPO:-}" ]; then
+    full_name="$(normalize_github_repo "$TARGET_REPO")"
   elif [ -n "${GITHUB_REPOSITORY:-}" ]; then
-    full_name="$(target_normalize_github_repo "$GITHUB_REPOSITORY")"
+    full_name="$(normalize_github_repo "$GITHUB_REPOSITORY")"
   else
     origin_url="$(git config --get remote.origin.url 2>/dev/null || true)"
     if [ -n "$origin_url" ]; then
-      full_name="$(target_normalize_github_repo "$origin_url" || true)"
+      full_name="$(normalize_github_repo "$origin_url" || true)"
     fi
 
     if [ -z "$full_name" ] && [ -n "${GH_REPO:-}" ]; then
-      full_name="$(target_normalize_github_repo "$GH_REPO" || true)"
+      full_name="$(normalize_github_repo "$GH_REPO" || true)"
     fi
 
     if [ -z "$full_name" ]; then
@@ -85,12 +85,12 @@ target_resolve_repo_context() {
       else
         gh_repo_view="$(gh repo view --json nameWithOwner -q '.nameWithOwner')"
       fi
-      full_name="$(target_normalize_github_repo "$gh_repo_view")"
+      full_name="$(normalize_github_repo "$gh_repo_view")"
     fi
   fi
 
   if [ -z "$full_name" ]; then
-    echo "Error: Could not resolve target GitHub repository. Set TARGET_REPO_FULL_NAME=owner/name or configure remote.origin.url." >&2
+    echo "Error: Could not resolve target GitHub repository. Set TARGET_REPO=owner/name or configure remote.origin.url." >&2
     return 1
   fi
 
@@ -107,11 +107,7 @@ target_resolve_repo_context() {
   export GH_REPO
 }
 
-resolve_repo_context() {
-  target_resolve_repo_context "$@"
-}
-
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
-  target_resolve_repo_context
+  resolve_repo_context
   printf "%s\n" "$TARGET_REPO_FULL_NAME"
 fi

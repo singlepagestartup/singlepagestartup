@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Validate that local issue artifacts do not point at a different Project.
 
-target_validate_project_artifact_context() {
+validate_project_artifact_context() {
   local issue_number="${1:-}"
   local file
   local search_files=()
@@ -61,8 +61,4 @@ target_validate_project_artifact_context() {
   done
 
   return 0
-}
-
-validate_project_artifact_context() {
-  target_validate_project_artifact_context "$@"
 }
