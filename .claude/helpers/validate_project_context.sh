@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Validate that local issue artifacts do not point at a different Project.
 
-sps_validate_project_artifact_context() {
+target_validate_project_artifact_context() {
   local issue_number="${1:-}"
   local file
   local search_files=()
@@ -10,13 +10,13 @@ sps_validate_project_artifact_context() {
   local hinted_owner=""
   local hinted_type=""
 
-  if [ -z "$issue_number" ] || [ -z "${SPS_REPO_NAME:-}" ]; then
+  if [ -z "$issue_number" ] || [ -z "${TARGET_REPO_NAME:-}" ]; then
     return 0
   fi
 
   search_files=(
-    "thoughts/shared/processes/$SPS_REPO_NAME/ISSUE-$issue_number.md"
-    "thoughts/shared/tickets/$SPS_REPO_NAME/ISSUE-$issue_number.md"
+    "thoughts/shared/processes/$TARGET_REPO_NAME/ISSUE-$issue_number.md"
+    "thoughts/shared/tickets/$TARGET_REPO_NAME/ISSUE-$issue_number.md"
   )
 
   for file in "${search_files[@]}"; do
@@ -43,7 +43,7 @@ sps_validate_project_artifact_context() {
 
     if [ -n "$hinted_number" ] && [ -n "${GITHUB_PROJECT_NUMBER:-}" ] && [ "$hinted_number" != "$GITHUB_PROJECT_NUMBER" ]; then
       echo "Error: Local artifact $file references GitHub Project #$hinted_number, but .claude/.env is configured for #$GITHUB_PROJECT_NUMBER." >&2
-      echo "Refusing to use a mismatched Project for issue #$issue_number in $SPS_REPO_FULL_NAME." >&2
+      echo "Refusing to use a mismatched Project for issue #$issue_number in $TARGET_REPO_FULL_NAME." >&2
       return 1
     fi
 
@@ -64,5 +64,5 @@ sps_validate_project_artifact_context() {
 }
 
 validate_project_artifact_context() {
-  sps_validate_project_artifact_context "$@"
+  target_validate_project_artifact_context "$@"
 }

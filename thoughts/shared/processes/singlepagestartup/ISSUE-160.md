@@ -3,7 +3,7 @@ issue_number: 160
 issue_title: "Add universal REST /count endpoint and shared SDK support"
 repository: singlepagestartup
 created_at: 2026-05-01T00:54:30Z
-last_updated: 2026-05-02T00:39:06Z
+last_updated: 2026-05-02T00:49:03Z
 status: complete
 current_phase: complete
 ---
@@ -82,10 +82,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - **Phase**: Implement
 - **Occurrences**: 1
-- **Symptom**: `.claude/helpers/get_issue_status.sh 160` failed before returning status because `load_config.sh` called `resolve_repo_context`, and `get_issue_status.sh` called `validate_project_artifact_context`; only `sps_resolve_repo_context` and `sps_validate_project_artifact_context` exist.
-- **Root Cause**: The shared helper scripts mix legacy function and variable names with the newer `sps_*` repository context helpers.
+- **Symptom**: `.claude/helpers/get_issue_status.sh 160` failed before returning status because callers and helper implementations disagreed on repository-context function names.
+- **Root Cause**: The shared helper scripts mixed unprefixed compatibility names with prefixed implementation names.
 - **Fix**: Ran the required status/update helpers through a narrow Bash compatibility shim during implementation, then added portable legacy wrappers in `.claude/helpers/repo_context.sh` and `.claude/helpers/validate_project_context.sh` so callers no longer need a shim.
-- **Preventive Action**: Keep `SPS_REPO_*` as canonical helper output while preserving `TARGET_REPO_*`, `resolve_repo_context`, and `validate_project_artifact_context` as compatibility aliases for older commands and downstream projects.
+- **Preventive Action**: Keep `TARGET_REPO_*` as canonical helper output while preserving `resolve_repo_context` and `validate_project_artifact_context` as compatibility aliases for older commands and downstream projects.
 - **References**: `.claude/helpers/load_config.sh`, `.claude/helpers/repo_context.sh`, `.claude/helpers/validate_project_context.sh`, `.claude/helpers/get_issue_status.sh`
 
 ### Incident 2 - Scenario Jest process stayed open after passing
@@ -111,5 +111,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ## Reusable Learnings
 
-- When SPS project helpers fail before status lookup, check for drift between `TARGET_REPO_*` legacy variables and the newer `SPS_REPO_*` repository context contract before debugging GitHub Project data.
+- When SPS project helpers fail before status lookup, check for drift between helper callers and the `TARGET_REPO_*` repository context contract before debugging GitHub Project data.
 - Redocly lint can surface unrelated OpenAPI schema defects while validating new route refs; treat bundle success as reference resolution only and use lint to catch source schema shape issues.

@@ -6,21 +6,20 @@
 # different from the workspace's `origin`.
 #
 # Resolution order:
-#   1. SPS_TARGET_REPO (intentional override, owner/name)
+#   1. TARGET_REPO_FULL_NAME (intentional override, owner/name)
 #   2. GITHUB_REPOSITORY (CI-style owner/name)
 #   3. git remote.origin.url
 #   4. ambient GH_REPO
 #   5. gh repo view fallback
 #
 # Exports:
-#   SPS_REPO_FULL_NAME  owner/name
-#   SPS_REPO_OWNER      owner
-#   SPS_REPO_NAME       short repository name
-#   SPS_REPO_URL        https://github.com/owner/name
-#   TARGET_REPO_*       legacy aliases for older workflow commands
+#   TARGET_REPO_FULL_NAME  owner/name
+#   TARGET_REPO_OWNER      owner
+#   TARGET_REPO_NAME       short repository name
+#   TARGET_REPO_URL        https://github.com/owner/name
 #   GH_REPO             owner/name, for gh issue/comment defaults
 
-sps_normalize_github_repo() {
+target_normalize_github_repo() {
   local raw="${1:-}"
   local value
 
@@ -61,23 +60,23 @@ sps_normalize_github_repo() {
   esac
 }
 
-sps_resolve_repo_context() {
+target_resolve_repo_context() {
   local full_name=""
   local origin_url=""
   local gh_repo_view=""
 
-  if [ -n "${SPS_TARGET_REPO:-}" ]; then
-    full_name="$(sps_normalize_github_repo "$SPS_TARGET_REPO")"
+  if [ -n "${TARGET_REPO_FULL_NAME:-}" ]; then
+    full_name="$(target_normalize_github_repo "$TARGET_REPO_FULL_NAME")"
   elif [ -n "${GITHUB_REPOSITORY:-}" ]; then
-    full_name="$(sps_normalize_github_repo "$GITHUB_REPOSITORY")"
+    full_name="$(target_normalize_github_repo "$GITHUB_REPOSITORY")"
   else
     origin_url="$(git config --get remote.origin.url 2>/dev/null || true)"
     if [ -n "$origin_url" ]; then
-      full_name="$(sps_normalize_github_repo "$origin_url" || true)"
+      full_name="$(target_normalize_github_repo "$origin_url" || true)"
     fi
 
     if [ -z "$full_name" ] && [ -n "${GH_REPO:-}" ]; then
-      full_name="$(sps_normalize_github_repo "$GH_REPO" || true)"
+      full_name="$(target_normalize_github_repo "$GH_REPO" || true)"
     fi
 
     if [ -z "$full_name" ]; then
@@ -86,29 +85,21 @@ sps_resolve_repo_context() {
       else
         gh_repo_view="$(gh repo view --json nameWithOwner -q '.nameWithOwner')"
       fi
-      full_name="$(sps_normalize_github_repo "$gh_repo_view")"
+      full_name="$(target_normalize_github_repo "$gh_repo_view")"
     fi
   fi
 
   if [ -z "$full_name" ]; then
-    echo "Error: Could not resolve target GitHub repository. Set SPS_TARGET_REPO=owner/name or configure remote.origin.url." >&2
+    echo "Error: Could not resolve target GitHub repository. Set TARGET_REPO_FULL_NAME=owner/name or configure remote.origin.url." >&2
     return 1
   fi
 
-  SPS_REPO_FULL_NAME="$full_name"
-  SPS_REPO_OWNER="${full_name%%/*}"
-  SPS_REPO_NAME="${full_name#*/}"
-  SPS_REPO_URL="https://github.com/$SPS_REPO_FULL_NAME"
-  TARGET_REPO_FULL_NAME="$SPS_REPO_FULL_NAME"
-  TARGET_REPO_OWNER="$SPS_REPO_OWNER"
-  TARGET_REPO_NAME="$SPS_REPO_NAME"
-  TARGET_REPO_URL="$SPS_REPO_URL"
-  GH_REPO="$SPS_REPO_FULL_NAME"
+  TARGET_REPO_FULL_NAME="$full_name"
+  TARGET_REPO_OWNER="${full_name%%/*}"
+  TARGET_REPO_NAME="${full_name#*/}"
+  TARGET_REPO_URL="https://github.com/$TARGET_REPO_FULL_NAME"
+  GH_REPO="$TARGET_REPO_FULL_NAME"
 
-  export SPS_REPO_FULL_NAME
-  export SPS_REPO_OWNER
-  export SPS_REPO_NAME
-  export SPS_REPO_URL
   export TARGET_REPO_FULL_NAME
   export TARGET_REPO_OWNER
   export TARGET_REPO_NAME
@@ -117,10 +108,10 @@ sps_resolve_repo_context() {
 }
 
 resolve_repo_context() {
-  sps_resolve_repo_context "$@"
+  target_resolve_repo_context "$@"
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
-  sps_resolve_repo_context
-  printf "%s\n" "$SPS_REPO_FULL_NAME"
+  target_resolve_repo_context
+  printf "%s\n" "$TARGET_REPO_FULL_NAME"
 fi

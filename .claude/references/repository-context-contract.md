@@ -8,8 +8,8 @@ Use `.claude/helpers/load_config.sh` or the dedicated helpers:
 
 ```bash
 source .claude/helpers/load_config.sh
-REPO_NAME="$SPS_REPO_NAME"
-REPO_FULL_NAME="$SPS_REPO_FULL_NAME"
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 ```
 
 For one-off shell snippets:
@@ -21,7 +21,7 @@ REPO_FULL_NAME=$(.claude/helpers/get_repo_full_name.sh)
 
 The helper resolves repository context in this order:
 
-1. `SPS_TARGET_REPO` if intentionally provided.
+1. `TARGET_REPO_FULL_NAME` if intentionally provided.
 2. `GITHUB_REPOSITORY` in CI-style environments.
 3. `remote.origin.url` from the current git checkout.
 4. Ambient `GH_REPO`.
@@ -31,7 +31,7 @@ This is required because SPS-based projects often have an `upstream` remote or G
 
 ## Artifact Namespace
 
-All `thoughts/shared/*/REPO_NAME/...` paths must use `SPS_REPO_NAME` from the helper. Do not derive `REPO_NAME` with bare `gh repo view --json name -q '.name'`.
+All `thoughts/shared/*/REPO_NAME/...` paths must use `TARGET_REPO_NAME` from the helper. Do not derive `REPO_NAME` with bare `gh repo view --json name -q '.name'`.
 
 Never hard-code a project-specific artifact namespace such as `doctorgpt` or `singlepagestartup` in shared workflow instructions.
 
@@ -45,7 +45,7 @@ Use shared helpers when available:
 - `.claude/helpers/add_issue_to_project.sh`
 - `.claude/helpers/create_issue_with_project.sh`
 
-When a raw `gh issue ...` command is unavoidable, pass `--repo "$SPS_REPO_FULL_NAME"` or run it after sourcing `.claude/helpers/load_config.sh`, which exports `GH_REPO="$SPS_REPO_FULL_NAME"`.
+When a raw `gh issue ...` command is unavoidable, pass `--repo "$TARGET_REPO_FULL_NAME"` or run it after sourcing `.claude/helpers/load_config.sh`, which exports `GH_REPO="$TARGET_REPO_FULL_NAME"`.
 
 ## GitHub Project Guardrails
 
