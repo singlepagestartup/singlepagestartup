@@ -58,7 +58,12 @@ export default async function Page(props: {
   }
 
   return (
-    <HostModulePage isServer={true} variant="find-by-url" url={slashedUrl}>
+    <HostModulePage
+      isServer={true}
+      variant="find-by-url"
+      url={slashedUrl}
+      silentNotFound={true}
+    >
       {({ data }) => {
         if (!data) {
           throw notFound();

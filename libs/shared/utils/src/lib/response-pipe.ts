@@ -94,6 +94,7 @@ function shouldTreatAsExpiredSession(props: {
 async function util<T>(props: {
   res: Response;
   catchErrors?: boolean;
+  silentErrorStatuses?: number[];
 }): Promise<T | undefined> {
   if (!props.res.ok) {
     let errorJson;
@@ -150,7 +151,10 @@ async function util<T>(props: {
     };
 
     if (props.catchErrors) {
-      console.error("❌ API Error:", JSON.stringify(errorPayload, null, 2));
+      if (!props.silentErrorStatuses?.includes(props.res.status)) {
+        console.error("❌ API Error:", JSON.stringify(errorPayload, null, 2));
+      }
+
       return undefined;
     }
 

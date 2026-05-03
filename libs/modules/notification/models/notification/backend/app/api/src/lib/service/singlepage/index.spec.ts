@@ -53,6 +53,7 @@ function createService(overrides: Record<string, jest.Mock> = {}) {
   return Object.assign(Object.create(Service.prototype), {
     findById: jest.fn(),
     delete: jest.fn(),
+    update: jest.fn(),
     provider: jest.fn(),
     ...overrides,
   }) as Service & Record<string, jest.Mock>;
@@ -60,7 +61,7 @@ function createService(overrides: Record<string, jest.Mock> = {}) {
 
 describe("notification send service", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   /**
@@ -145,6 +146,138 @@ describe("notification send service", () => {
         variant: "generate-email-agent-result-admin",
       },
     });
+    expect(service.delete).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: Blocked Telegram recipient is terminal
+   *
+   * Given a new notification is ready for Telegram delivery
+   * When Telegram reports that the recipient blocked the bot
+   * Then the notification is marked as error and returned without propagating the provider error
+   */
+  it("marks blocked Telegram recipient delivery as a terminal error", async () => {
+    const notification = createNotification({ reciever: "5530000566" });
+    const erroredNotification = createNotification({
+      reciever: notification.reciever,
+      status: "error",
+    });
+    const service = createService({
+      findById: jest.fn().mockResolvedValue(notification),
+      provider: jest
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            "Call to 'sendMessage' failed! (403: Forbidden: bot was blocked by the user)",
+          ),
+        ),
+      update: jest.fn().mockResolvedValue(erroredNotification),
+    });
+
+    notificationsToTemplatesFindMock.mockResolvedValue([
+      {
+        notificationId: notification.id,
+        templateId: "template-id",
+      },
+    ]);
+    templateFindMock.mockResolvedValue([
+      {
+        id: "template-id",
+        variant: "generate-telegram-agent-result-user",
+      },
+    ]);
+
+    await expect(service.send({ id: notification.id })).resolves.toBe(
+      erroredNotification,
+    );
+    expect(service.provider).toHaveBeenCalledWith({
+      method: "telegram",
+      provider: "Telegram",
+      id: notification.id,
+      template: {
+        id: "template-id",
+        variant: "generate-telegram-agent-result-user",
+      },
+    });
+    expect(service.update).toHaveBeenCalledWith({
+      id: notification.id,
+      data: {
+        ...notification,
+        status: "error",
+      },
+    });
+    expect(service.delete).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: Error notification is skipped
+   *
+   * Given a notification was already marked as an error
+   * When the notification send service processes the request again
+   * Then it returns the notification without template lookup or provider delivery
+   */
+  it("skips delivery when the notification is already marked as error", async () => {
+    const erroredNotification = createNotification({ status: "error" });
+    const service = createService({
+      findById: jest.fn().mockResolvedValue(erroredNotification),
+    });
+
+    await expect(service.send({ id: erroredNotification.id })).resolves.toBe(
+      erroredNotification,
+    );
+    expect(service.provider).not.toHaveBeenCalled();
+    expect(service.update).not.toHaveBeenCalled();
+    expect(service.delete).not.toHaveBeenCalled();
+    expect(notificationsToTemplatesFindMock).not.toHaveBeenCalled();
+    expect(templateFindMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: Non-blocked provider failure is preserved
+   *
+   * Given a new notification is ready for Telegram delivery
+   * When the provider fails for a reason other than a blocked recipient
+   * Then the original error is propagated and the notification is not marked as error
+   */
+  it("propagates unrelated Telegram provider errors without marking the notification as error", async () => {
+    const notification = createNotification({ reciever: "5530000566" });
+    const service = createService({
+      findById: jest.fn().mockResolvedValue(notification),
+      provider: jest
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            "Call to 'sendMessage' failed! (500: Internal Server Error)",
+          ),
+        ),
+    });
+
+    notificationsToTemplatesFindMock.mockResolvedValue([
+      {
+        notificationId: notification.id,
+        templateId: "template-id",
+      },
+    ]);
+    templateFindMock.mockResolvedValue([
+      {
+        id: "template-id",
+        variant: "generate-telegram-agent-result-user",
+      },
+    ]);
+
+    await expect(service.send({ id: notification.id })).rejects.toThrow(
+      "Internal Server Error",
+    );
+    expect(service.provider).toHaveBeenCalledWith({
+      method: "telegram",
+      provider: "Telegram",
+      id: notification.id,
+      template: {
+        id: "template-id",
+        variant: "generate-telegram-agent-result-user",
+      },
+    });
+    expect(service.update).not.toHaveBeenCalled();
     expect(service.delete).not.toHaveBeenCalled();
   });
 });

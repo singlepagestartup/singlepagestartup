@@ -11,12 +11,14 @@ interface Params {
   host?: string;
   url: string;
   catchErrors?: boolean;
+  silentErrorStatuses?: number[];
 }
 
 export async function action({
   host = serverHost,
   url,
   catchErrors = false,
+  silentErrorStatuses,
 }: Params) {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
@@ -52,6 +54,7 @@ export async function action({
   const json = await responsePipe<{ data: IModel }>({
     res,
     catchErrors: catchErrors || productionBuild,
+    silentErrorStatuses,
   });
 
   if (!json) {

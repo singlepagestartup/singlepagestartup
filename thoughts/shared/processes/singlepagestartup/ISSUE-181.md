@@ -3,9 +3,9 @@ issue_number: 181
 issue_title: "[log-watch] [LW-ddbd3ed79c54] host_host ❌ API Error: {"
 repository: singlepagestartup
 created_at: 2026-05-03T19:40:25Z
-last_updated: 2026-05-03T19:40:25Z
+last_updated: 2026-05-03T21:35:13Z
 status: active
-current_phase: create
+current_phase: research
 ---
 
 # Process Log: ISSUE-181 - [log-watch] [LW-ddbd3ed79c54] host_host ❌ API Error: {
@@ -17,11 +17,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Phase Status
 
 - Create: completed
-- Research: not_started
+- Research: completed
 - Plan: not_started
 - Implement: not_started
-- Current phase: create
-- Next step: core/10-research
+- Current phase: research
+- Next step: human review, then core/20-plan
 
 ## Phase Notes
 
@@ -33,9 +33,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Research
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Traced issue #181's `❌ API Error` fingerprint through the host middleware, catch-all route, Host Page `find-by-url` server component, server SDK, backend `/api/host/pages/find-by-url` controller, DB-backed page service, shared 404 normalization, and response-pipe logging path. Local read-only reproduction used the current `doctorgpt-production` database and confirmed that none of the logged `/wp-json/...` or quoted `_next/static/chunks` URLs exist in `sps_h_page`; direct backend calls returned the same 404 messages and host requests emitted matching `❌ API Error` payloads.
+- Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-181.md`
+- Notes: User confirmed on 2026-05-04 that the current local project database is the same database deployed on the production server where this error was observed; research treated local DB-backed reproduction as primary evidence.
 
 ### Plan
 

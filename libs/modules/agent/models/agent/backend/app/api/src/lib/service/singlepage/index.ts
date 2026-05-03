@@ -43,6 +43,8 @@ import {
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
+const openRouterTerminalMessageWrittenMarker =
+  "open-router-terminal-message-written";
 
 interface ISocialModuleTelegramMessageData {
   description: string;
@@ -229,6 +231,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
+  private isOpenRouterTerminalMessageWrittenError(error: unknown) {
+    return this.collectErrorMessages(error).some((message) => {
+      return message.includes(openRouterTerminalMessageWrittenMarker);
+    });
+  }
+
   async agentSocialModuleProfileHandler(
     props:
       | {
@@ -346,6 +354,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
 
         if (telegramBotCommandMessage) {
+          return;
+        }
+
+        if (!props.socialModuleMessage.description?.trim()) {
           return;
         }
 
@@ -1687,10 +1699,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!props.socialModuleMessage.description) {
-        throw new Error(
-          "Validation error. 'props.socialModuleMessage.description' is empty.",
-        );
+      if (!props.socialModuleMessage.description?.trim()) {
+        return;
       }
 
       socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
@@ -1920,6 +1930,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
           throw error;
         }
+      }
+
+      if (this.isOpenRouterTerminalMessageWrittenError(error)) {
+        logger.error(error);
+        return;
       }
 
       if (socialModuleThreadId) {
