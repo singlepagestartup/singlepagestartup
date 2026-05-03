@@ -41,6 +41,11 @@ import {
   type ISocialModule,
 } from "../../di";
 
+const activeSubscriptionProductsCheckoutMessage =
+  "Checking out order has active subscription products.";
+const openRouterTerminalMessageWrittenMarker =
+  "open-router-terminal-message-written";
+
 interface ISocialModuleTelegramMessageData {
   description: string;
   interaction?:
@@ -134,6 +139,80 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ];
   statusMessages = telegramBotServiceMessages;
 
+  private collectErrorMessages(error: unknown): string[] {
+    const messages = new Set<string>();
+    const seen = new WeakSet<object>();
+
+    const visit = (value: unknown) => {
+      if (!value) {
+        return;
+      }
+
+      if (typeof value === "string") {
+        messages.add(value);
+
+        try {
+          visit(JSON.parse(value));
+        } catch {
+          //
+        }
+
+        return;
+      }
+
+      if (value instanceof Error) {
+        visit(value.message);
+        visit((value as { cause?: unknown }).cause);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          visit(item);
+        }
+
+        return;
+      }
+
+      if (typeof value === "object") {
+        if (seen.has(value)) {
+          return;
+        }
+
+        seen.add(value);
+
+        const payload = value as {
+          message?: unknown;
+          error?: unknown;
+          data?: unknown;
+          cause?: unknown;
+        };
+
+        visit(payload.message);
+        visit(payload.error);
+        visit(payload.data);
+        visit(payload.cause);
+      }
+    };
+
+    visit(error);
+
+    return Array.from(messages);
+  }
+
+  private isActiveSubscriptionProductsCheckoutError(error: unknown) {
+    return this.collectErrorMessages(error).some((message) => {
+      return message.includes(activeSubscriptionProductsCheckoutMessage);
+    });
+  }
+
+  private activeSubscriptionProductsCheckoutTelegramMessage() {
+    return (
+      this.statusMessages.ecommerceModuleOrderAlreadyHaveSubscription?.ru ||
+      "У вас уже есть активная подписка."
+    );
+  }
+
   private isRecoverableOpenRouterReplyError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -149,6 +228,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       "ENOTFOUND",
     ].some((marker) => {
       return message.toLowerCase().includes(marker.toLowerCase());
+    });
+  }
+
+  private isOpenRouterTerminalMessageWrittenError(error: unknown) {
+    return this.collectErrorMessages(error).some((message) => {
+      return message.includes(openRouterTerminalMessageWrittenMarker);
     });
   }
 
@@ -269,6 +354,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
 
         if (telegramBotCommandMessage) {
+          return;
+        }
+
+        if (!props.socialModuleMessage.description?.trim()) {
           return;
         }
 
@@ -1252,7 +1341,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const rbacModuleSubjectEcommerceModuleProductCheckoutResult =
+    try {
       await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
         id: messageFromSubject.id,
         productId: extendedEcommerceModuleProduct.id,
@@ -1264,6 +1353,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           account: props.socialModuleChat.sourceSystemId,
         },
       });
+    } catch (error) {
+      if (this.isActiveSubscriptionProductsCheckoutError(error)) {
+        await this.telegramBotReplyMessageCreate({
+          ...props,
+          data: {
+            description:
+              this.activeSubscriptionProductsCheckoutTelegramMessage(),
+          },
+        });
+
+        return;
+      }
+
+      throw error;
+    }
   }
 
   async telegramBotPremiumMessageWithKeyboardCreate(
@@ -1595,10 +1699,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!props.socialModuleMessage.description) {
-        throw new Error(
-          "Validation error. 'props.socialModuleMessage.description' is empty.",
-        );
+      if (!props.socialModuleMessage.description?.trim()) {
+        return;
       }
 
       socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
@@ -1828,6 +1930,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
           throw error;
         }
+      }
+
+      if (this.isOpenRouterTerminalMessageWrittenError(error)) {
+        logger.error(error);
+        return;
       }
 
       if (socialModuleThreadId) {

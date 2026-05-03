@@ -36,7 +36,10 @@ export class Handler {
         );
       }
 
-      const payloadData = JSON.parse(body["data"]);
+      const payloadData =
+        typeof body["data"] === "string" && body["data"].length
+          ? JSON.parse(body["data"])
+          : undefined;
 
       const type = entity.variant.includes("email")
         ? "email"
@@ -57,7 +60,9 @@ export class Handler {
       });
 
       if (!data) {
-        throw new Error("Not Found error. Not Found");
+        return c.json({
+          data: null,
+        });
       }
 
       if (!Object.keys(data).length) {

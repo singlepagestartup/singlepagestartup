@@ -20,7 +20,7 @@ validate_project_artifact_context "$ISSUE_NUMBER"
 
 # Get project item ID using gh project item-list (REST API)
 # This is simpler and more reliable than GraphQL for this use case
-PROJECT_ITEMS_JSON=$(gh_retry project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json)
+PROJECT_ITEMS_JSON=$(gh_retry project item-list "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --format json --limit 1000)
 TARGET_REPO_URL="https://github.com/$TARGET_REPO_FULL_NAME"
 MATCHING_ITEMS_JSON=$(echo "$PROJECT_ITEMS_JSON" | \
   jq -c --arg num "$ISSUE_NUMBER" --arg repo "$TARGET_REPO_URL" '

@@ -11,11 +11,44 @@ import pako from "pako";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
+  private hasRenderErrorPayload(data: string): boolean {
+    try {
+      const parsedData = JSON.parse(data);
+
+      return (
+        !!parsedData && typeof parsedData === "object" && "error" in parsedData
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  private async fetchRenderedTemplate(params: {
+    url: string;
+  }): Promise<string | null> {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. Secret key not found");
+    }
+
+    const response = await fetch(params.url, {
+      headers: {
+        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+      },
+    });
+    const data = await response.text();
+
+    if (!response.ok || !data.trim() || this.hasRenderErrorPayload(data)) {
+      return null;
+    }
+
+    return data;
+  }
+
   async render(params: {
     id: string;
     type: "email" | "telegram";
     payload?: any;
-  }) {
+  }): Promise<string | null> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -49,29 +82,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
 
     if (params.type === "email") {
-      const data = await fetch(
-        NEXT_PUBLIC_HOST_SERVICE_URL +
+      return await this.fetchRenderedTemplate({
+        url:
+          NEXT_PUBLIC_HOST_SERVICE_URL +
           "/api/email-generator/index.html?" +
           query,
-        {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      ).then((res) => res.text());
-
-      return data;
+      });
     } else if (params.type === "telegram") {
-      const data = await fetch(
-        NEXT_PUBLIC_HOST_SERVICE_URL + "/api/telegram-generator?" + query,
-        {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
-        },
-      ).then((res) => res.text());
-
-      return data;
+      return await this.fetchRenderedTemplate({
+        url: NEXT_PUBLIC_HOST_SERVICE_URL + "/api/telegram-generator?" + query,
+      });
     }
 
     throw new Error("Internal error. Passed render type is not supported");

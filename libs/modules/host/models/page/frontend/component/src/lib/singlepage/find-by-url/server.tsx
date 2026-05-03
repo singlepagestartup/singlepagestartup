@@ -9,6 +9,7 @@ export default async function Server(props: IComponentProps) {
     .findByUrl({
       url: props.url,
       catchErrors: true,
+      silentErrorStatuses: props.silentNotFound ? [404] : undefined,
     })
     .catch((error) => {
       //

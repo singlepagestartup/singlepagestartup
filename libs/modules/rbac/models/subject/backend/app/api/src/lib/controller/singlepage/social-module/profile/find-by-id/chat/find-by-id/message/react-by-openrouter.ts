@@ -72,6 +72,12 @@ interface IModelSelectionResult {
   selectedBy: "llm" | "priority";
 }
 
+interface IFinalGenerationResult {
+  selectedModelId: string | null;
+  generationResult?: IOpenRouterGenerationSuccess;
+  fallbackReasons: string[];
+}
+
 const MODEL_ROUTER_CONFIG = {
   version: "2026-02-13",
   classes: {
@@ -267,6 +273,8 @@ const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
 
 const ALLOWED_INPUT_MODALITIES: TInputModality[] = ["text", "image", "file"];
 const THREAD_CONTEXT_PAGE_SIZE = 100;
+const OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER =
+  "open-router-terminal-message-written";
 
 const CLASSIFICATION_RESPONSE_FORMAT = {
   type: "json_schema" as const,
@@ -431,6 +439,197 @@ export class Handler {
     return {
       summary,
       settlement,
+    };
+  }
+
+  private async buildOpenRouterReplyMessageData(props: {
+    expectedOutputModality: TOutputModality;
+    generationResult: IOpenRouterGenerationSuccess;
+    selectModelForRequest: string;
+    billingSettlement: {
+      summary: ReturnType<typeof summarizeOpenRouterBilling>;
+      settlement: any;
+    };
+  }) {
+    const generatedMessageText = props.generationResult.text?.trim() || "";
+    let generatedMessageDescription = "";
+    const replyMessageData: any = {};
+
+    if (props.expectedOutputModality === "image") {
+      const imageUrl = props.generationResult.images?.[0]?.url;
+
+      if (!imageUrl) {
+        throw new Error(
+          "Model selected for image response returned no images.",
+        );
+      }
+
+      replyMessageData.files = await blobifyFiles({
+        files: [
+          {
+            title: "generated-image",
+            type: "image/png",
+            extension: "png",
+            url: imageUrl,
+          },
+        ],
+      });
+
+      generatedMessageDescription =
+        generatedMessageText || "Изображение сгенерировано";
+    } else if (props.expectedOutputModality === "text") {
+      if (!generatedMessageText) {
+        throw new Error("Generated message is empty");
+      }
+
+      generatedMessageDescription = generatedMessageText;
+    } else {
+      throw new Error(
+        `output modality is not supported by endpoint: ${props.expectedOutputModality}`,
+      );
+    }
+
+    replyMessageData.description = `${generatedMessageDescription}\n\n__${props.selectModelForRequest}__`;
+    replyMessageData.metadata = {
+      openRouter: {
+        billing: {
+          ...props.billingSettlement.summary,
+          settlement: props.billingSettlement.settlement?.settlement || null,
+        },
+      },
+    };
+
+    return replyMessageData;
+  }
+
+  private buildNoValidModelResponseMessage(fallbackReasons: string[]) {
+    const normalizedFallbackReasons = fallbackReasons.filter(Boolean);
+
+    if (!normalizedFallbackReasons.length) {
+      return "No valid model response received.";
+    }
+
+    return (
+      "No valid model response received. " +
+      normalizedFallbackReasons.join(" | ")
+    );
+  }
+
+  private getGenerationFailureReason(props: {
+    modelId: string;
+    expectedOutputModality: TOutputModality;
+    result: IOpenRouterGenerateResult;
+  }): string | null {
+    if ("error" in props.result) {
+      return `model=${props.modelId}: generation error`;
+    }
+
+    const validationError = this.getGenerationValidationError({
+      expectedOutputModality: props.expectedOutputModality,
+      result: props.result,
+    });
+
+    if (!validationError) {
+      return null;
+    }
+
+    return `model=${props.modelId}: ${validationError}`;
+  }
+
+  private async generateFinalOpenRouterReply(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    openRouter: OpenRouter;
+    modelSelection: IModelSelectionResult;
+    expectedOutputModality: TOutputModality;
+    generationContext: IOpenRouterRequestMessage[];
+    onModelAttempt?: (modelId: string) => Promise<void>;
+  }): Promise<IFinalGenerationResult> {
+    const primaryModelId =
+      props.modelSelection.selectedModelId ||
+      props.modelSelection.orderedCandidateIds[0] ||
+      null;
+
+    if (!primaryModelId) {
+      return {
+        selectedModelId: null,
+        fallbackReasons: ["model=null: no model selected"],
+      };
+    }
+
+    const fallbackReasons: string[] = [];
+
+    await props.onModelAttempt?.(primaryModelId);
+
+    const primaryResult = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "generation",
+      openRouter: props.openRouter,
+      model: primaryModelId,
+      context: props.generationContext,
+      stripNonTextOnRetry: true,
+    });
+
+    const primaryFailureReason = this.getGenerationFailureReason({
+      modelId: primaryModelId,
+      expectedOutputModality: props.expectedOutputModality,
+      result: primaryResult,
+    });
+
+    if (!primaryFailureReason) {
+      return {
+        selectedModelId: primaryModelId,
+        generationResult: primaryResult as IOpenRouterGenerationSuccess,
+        fallbackReasons,
+      };
+    }
+
+    fallbackReasons.push(primaryFailureReason);
+    this.setLatestBillingLedgerFallbackReason({
+      billingLedger: props.billingLedger,
+      fallbackReason: primaryFailureReason,
+    });
+    console.log("react-by-openrouter/fallback", primaryFailureReason);
+
+    const fallbackModelId =
+      props.modelSelection.orderedCandidateIds.find((modelId) => {
+        return modelId !== primaryModelId;
+      }) || primaryModelId;
+
+    await props.onModelAttempt?.(fallbackModelId);
+
+    const fallbackResult = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "generation",
+      openRouter: props.openRouter,
+      model: fallbackModelId,
+      context: props.generationContext,
+      stripNonTextOnRetry: true,
+    });
+
+    const fallbackFailureReason = this.getGenerationFailureReason({
+      modelId: fallbackModelId,
+      expectedOutputModality: props.expectedOutputModality,
+      result: fallbackResult,
+    });
+
+    if (!fallbackFailureReason) {
+      return {
+        selectedModelId: fallbackModelId,
+        generationResult: fallbackResult as IOpenRouterGenerationSuccess,
+        fallbackReasons,
+      };
+    }
+
+    fallbackReasons.push(fallbackFailureReason);
+    this.setLatestBillingLedgerFallbackReason({
+      billingLedger: props.billingLedger,
+      fallbackReason: fallbackFailureReason,
+    });
+    console.log("react-by-openrouter/fallback", fallbackFailureReason);
+
+    return {
+      selectedModelId: fallbackModelId,
+      fallbackReasons,
     };
   }
 
@@ -998,72 +1197,42 @@ export class Handler {
 
       let selectModelForRequest: string | null = null;
       let generationResult: IOpenRouterGenerationSuccess | undefined;
-      const fallbackReasons: string[] = [];
-
-      for (const modelCandidateId of modelSelection.orderedCandidateIds) {
-        await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-          id: replyBySubject.id,
-          socialModuleProfileId: replyBySocialModuleProfile.id,
-          socialModuleChatId: socialModuleChatId,
-          socialModuleMessageId: statusMessage.id,
-          data: {
-            description:
-              this.statusMessages.openRouterGeneratingResponse.ru.replace(
-                "[selectModelForRequest]",
-                modelCandidateId,
-              ),
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + replyByJwt,
+      const finalGenerationResult = await this.generateFinalOpenRouterReply({
+        billingLedger,
+        openRouter,
+        modelSelection,
+        expectedOutputModality,
+        generationContext,
+        onModelAttempt: async (modelCandidateId) => {
+          await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+            id: replyBySubject.id,
+            socialModuleProfileId: replyBySocialModuleProfile.id,
+            socialModuleChatId: socialModuleChatId,
+            socialModuleMessageId: statusMessage.id,
+            data: {
+              description:
+                this.statusMessages.openRouterGeneratingResponse.ru.replace(
+                  "[selectModelForRequest]",
+                  modelCandidateId,
+                ),
             },
-          },
-        });
-
-        const candidateResult = await this.generateWithBillingLedger({
-          billingLedger,
-          purpose: "generation",
-          openRouter,
-          model: modelCandidateId,
-          context: generationContext,
-          stripNonTextOnRetry: false,
-        });
-
-        if ("error" in candidateResult) {
-          const reason = `model=${modelCandidateId}: generation error`;
-          fallbackReasons.push(reason);
-          this.setLatestBillingLedgerFallbackReason({
-            billingLedger,
-            fallbackReason: reason,
+            options: {
+              headers: {
+                Authorization: "Bearer " + replyByJwt,
+              },
+            },
           });
-          console.log("react-by-openrouter/fallback", reason);
-          continue;
-        }
+        },
+      });
 
-        const validationError = this.getGenerationValidationError({
-          expectedOutputModality,
-          result: candidateResult,
-        });
-
-        if (validationError) {
-          const reason = `model=${modelCandidateId}: ${validationError}`;
-          fallbackReasons.push(reason);
-          this.setLatestBillingLedgerFallbackReason({
-            billingLedger,
-            fallbackReason: reason,
-          });
-          console.log("react-by-openrouter/fallback", reason);
-          continue;
-        }
-
-        selectModelForRequest = modelCandidateId;
-        selectedModelIdForBilling = modelCandidateId;
-        generationResult = candidateResult;
-        break;
-      }
+      selectModelForRequest = finalGenerationResult.selectedModelId;
+      selectedModelIdForBilling = finalGenerationResult.selectedModelId;
+      generationResult = finalGenerationResult.generationResult;
 
       if (!selectModelForRequest || !generationResult) {
-        selectedModelIdForBilling = modelSelection.selectedModelId;
+        selectedModelIdForBilling =
+          finalGenerationResult.selectedModelId ||
+          modelSelection.selectedModelId;
         await this.settleOpenRouterBilling({
           billingLedger,
           selectedModelId: selectedModelIdForBilling,
@@ -1072,35 +1241,31 @@ export class Handler {
           authorization: requestAuthorization,
         });
         billingSettled = true;
-        const fallbackMessage =
-          "No valid model response received. " + fallbackReasons.join(" | ");
-        const updatedStatusMessage =
-          await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-            id: replyBySubject.id,
-            socialModuleProfileId: replyBySocialModuleProfile.id,
-            socialModuleChatId: socialModuleChatId,
-            socialModuleMessageId: statusMessage.id,
-            data: {
-              description:
-                this.statusMessages.openRouterError.ru +
-                "\n`" +
-                fallbackMessage +
-                "`",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + replyByJwt,
-              },
-            },
-          });
-
-        return c.json({
+        const fallbackMessage = this.buildNoValidModelResponseMessage(
+          finalGenerationResult.fallbackReasons,
+        );
+        await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+          id: replyBySubject.id,
+          socialModuleProfileId: replyBySocialModuleProfile.id,
+          socialModuleChatId: socialModuleChatId,
+          socialModuleMessageId: statusMessage.id,
           data: {
-            socialModule: {
-              message: updatedStatusMessage,
+            description:
+              this.statusMessages.openRouterError.ru +
+              "\n`" +
+              fallbackMessage +
+              "`",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + replyByJwt,
             },
           },
         });
+
+        throw new Error(
+          `${fallbackMessage} [${OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER}]`,
+        );
       }
 
       const billingSettlement = await this.settleOpenRouterBilling({
@@ -1112,50 +1277,12 @@ export class Handler {
       });
       billingSettled = true;
 
-      let generatedMessageDescription = "";
-      const replyMessageData: any = {};
-
-      if (expectedOutputModality === "image") {
-        const imageUrl = generationResult.images?.[0]?.url;
-
-        if (!imageUrl) {
-          throw new Error(
-            "Model selected for image response returned no images.",
-          );
-        }
-
-        replyMessageData.files = await blobifyFiles({
-          files: [
-            {
-              title: "generated-image",
-              type: "image/png",
-              extension: "png",
-              url: imageUrl,
-            },
-          ],
-        });
-
-        generatedMessageDescription =
-          generationResult.text?.trim() || "Изображение сгенерировано";
-      } else {
-        generatedMessageDescription = generationResult.text?.trim() || "";
-      }
-
-      generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
-
-      replyMessageData.description = generatedMessageDescription;
-      replyMessageData.metadata = {
-        openRouter: {
-          billing: {
-            ...billingSettlement.summary,
-            settlement: billingSettlement.settlement?.settlement || null,
-          },
-        },
-      };
-
-      if (replyMessageData.description == "") {
-        throw new Error("Generated message is empty");
-      }
+      const replyMessageData = await this.buildOpenRouterReplyMessageData({
+        expectedOutputModality,
+        generationResult,
+        selectModelForRequest,
+        billingSettlement,
+      });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
         id: replyBySubject.id,
@@ -1946,6 +2073,11 @@ No markdown. No explanation.`,
       if (!props.result.images?.length) {
         return "expected image output, but model returned no images";
       }
+
+      if (!props.result.images.some((image) => image.url)) {
+        return "expected image output, but model returned no image URL";
+      }
+
       return null;
     }
 

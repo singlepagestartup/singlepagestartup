@@ -23,7 +23,7 @@ export interface IProps {
   data?: any;
 }
 
-export type IResult = IModel;
+export type IResult = IModel | null;
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options, host = serverHost } = props;
