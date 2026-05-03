@@ -3,6 +3,13 @@ import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server
 import { type IBillingModule, type IEcommerceModule } from "../../../di";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
+const inactiveSubscriptionOrderStatuses = new Set([
+  "requested_cancelation",
+  "canceling",
+  "completed",
+  "canceled",
+]);
+
 export interface IExecuteProps {
   id: string;
   chatId: string;
@@ -24,6 +31,46 @@ export class Service {
     this.billingModule = props.billingModule;
     this.subjectsToEcommerceModuleOrders =
       props.subjectsToEcommerceModuleOrders;
+  }
+
+  private async hasActiveSubscriptionOrder(props: {
+    subjectToOrders?: { ecommerceModuleOrderId?: string | null }[];
+  }) {
+    if (!props.subjectToOrders?.length) {
+      return false;
+    }
+
+    for (const subjectToOrder of props.subjectToOrders) {
+      if (!subjectToOrder.ecommerceModuleOrderId) {
+        continue;
+      }
+
+      const ecommerceModuleOrder = await this.ecommerceModule.order.findById({
+        id: subjectToOrder.ecommerceModuleOrderId,
+      });
+
+      if (!ecommerceModuleOrder) {
+        continue;
+      }
+
+      if (
+        ecommerceModuleOrder.status &&
+        inactiveSubscriptionOrderStatuses.has(ecommerceModuleOrder.status)
+      ) {
+        continue;
+      }
+
+      const checkoutAttributes =
+        await this.ecommerceModule.order.findByIdCheckoutAttributes({
+          id: ecommerceModuleOrder.id,
+        });
+
+      if (checkoutAttributes?.type === "subscription") {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   async execute(props: IExecuteProps) {
@@ -53,7 +100,11 @@ export class Service {
       },
     });
 
-    if (subjectToOrders?.length) {
+    const hasActiveSubscriptionOrder = await this.hasActiveSubscriptionOrder({
+      subjectToOrders: subjectToOrders ?? [],
+    });
+
+    if (hasActiveSubscriptionOrder) {
       return null;
     }
 
@@ -228,6 +279,12 @@ export class Service {
           currency: billingModuleCurrency,
         },
         account: props.chatId,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
       },
     });
   }
