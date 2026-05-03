@@ -905,7 +905,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return updatedNotification;
   }
 
-  async send(params: { id: string }): Promise<IModel> {
+  private isExpired(notification: IModel): boolean {
+    const createdAtTimestamp = new Date(notification.createdAt).getTime();
+
+    if (Number.isNaN(createdAtTimestamp)) {
+      return false;
+    }
+
+    return (
+      createdAtTimestamp <
+      Date.now() - NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT
+    );
+  }
+
+  private async deleteBestEffort(params: { id: string }) {
+    try {
+      await this.delete({ id: params.id });
+    } catch {
+      return;
+    }
+  }
+
+  async send(params: { id: string }): Promise<IModel | null> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -915,7 +936,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!notification) {
-      throw new Error("Not Found error. Notification not found");
+      return null;
+    }
+
+    if (this.isExpired(notification)) {
+      await this.deleteBestEffort({ id: notification.id });
+      return null;
     }
 
     if (notification.status !== "new") {
@@ -1033,7 +1059,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    Promise.allSettled(
+    await Promise.allSettled(
       expiredNotifications.map((notification) =>
         this.delete({ id: notification.id }).catch((error) => {
           //

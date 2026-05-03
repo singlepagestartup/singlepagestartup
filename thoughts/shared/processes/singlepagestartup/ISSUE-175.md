@@ -3,9 +3,9 @@ issue_number: 175
 issue_title: "[log-watch] [LW-fe596862c7a7] api_api Validation error. 'props.<id>.description' is empty."
 repository: singlepagestartup
 created_at: 2026-05-03T19:40:12Z
-last_updated: 2026-05-03T19:40:12Z
+last_updated: 2026-05-03T20:51:11Z
 status: active
-current_phase: create
+current_phase: research
 ---
 
 # Process Log: ISSUE-175 - [log-watch] [LW-fe596862c7a7] api_api Validation error. 'props.<id>.description' is empty.
@@ -17,11 +17,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Phase Status
 
 - Create: completed
-- Research: not_started
+- Research: completed
 - Plan: not_started
 - Implement: not_started
-- Current phase: create
-- Next step: core/10-research
+- Current phase: research
+- Next step: human review, then core/20-plan
 
 ## Phase Notes
 
@@ -33,9 +33,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Research
 
-- Summary:
-- Outputs:
-- Notes:
+- Summary: Documented the agent Telegram/OpenRouter path that throws `Validation error. 'props.socialModuleMessage.description' is empty.`, traced empty descriptions to Telegram attachment/media ingestion, and confirmed the restored `doctorgpt-production` database contains many linked empty-description Telegram messages in chats with automatic profiles.
+- Outputs: `thoughts/shared/research/singlepagestartup/ISSUE-175.md`
+- Notes: Research used SELECT-only database inspection against the restored production-copy database. Direct `POST /api/agent/agents/telegram-bot` reproduction was not executed because the current catch path would write an OpenRouter error reply to the restored database before rethrowing the validation.
 
 ### Plan
 
