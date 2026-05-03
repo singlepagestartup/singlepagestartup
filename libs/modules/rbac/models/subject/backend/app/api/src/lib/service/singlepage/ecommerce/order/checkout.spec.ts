@@ -346,6 +346,42 @@ describe("Given: subject starts checkout for a subscription product", () => {
         }),
       );
     });
+
+    /**
+     * BDD Scenario
+     *
+     * Given: a Telegram Star checkout attempts to buy a subscription product already active on the subject.
+     * When: the checkout service evaluates active subscription products.
+     * Then: checkout is rejected with the same validation error and the new checkout order is canceled.
+     */
+    it("Then: telegram-star checkout is rejected with active subscription validation error", async () => {
+      const { service, checkoutOrders } = createTestContext({
+        activeOrderProductId: "product-target",
+      });
+
+      await expect(
+        service.execute({
+          id: "subject-1",
+          account: "telegram-chat-1",
+          provider: "telegram-star",
+          comment: "",
+          ecommerceModule: {
+            orders: [{ id: checkoutOrders[0].id }],
+          },
+        }),
+      ).rejects.toThrow(
+        "Validation error. Checking out order has active subscription products.",
+      );
+
+      expect(mockEcommerceOrderUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: checkoutOrders[0].id,
+          data: expect.objectContaining({
+            status: "canceled",
+          }),
+        }),
+      );
+    });
   });
 
   describe("When: active subscription has another product", () => {

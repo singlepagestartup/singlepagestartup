@@ -559,30 +559,6 @@ export class Service {
                   return checkoutOrderProductIds.has(orderToProduct.productId);
                 })
               ) {
-                if (props.provider === "telegram-star") {
-                  for (const ecommerceModuleOrder of ecommerceModuleOrders) {
-                    await ecommerceModuleOrderApi.update({
-                      id: ecommerceModuleOrder.id,
-                      data: {
-                        ...ecommerceModuleOrder,
-                        status: "canceled",
-                      },
-                      options: {
-                        headers: {
-                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                          "Cache-Control": "no-store",
-                        },
-                      },
-                    });
-                  }
-
-                  return {
-                    billingModule: {
-                      invoices: [],
-                    },
-                  };
-                }
-
                 throw new Error(
                   "Validation error. Checking out order has active subscription products.",
                 );
