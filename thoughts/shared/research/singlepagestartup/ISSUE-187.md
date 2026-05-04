@@ -182,3 +182,15 @@ What exists today in the SPS MCP server, SDK/API stack, and host/blog content gr
 - What exact ambiguity contract should MCP expose when a natural-language target such as "Articles widget on `/about`" matches zero, one, or multiple host/external widgets?
 - How should destructive MCP operations distinguish preview, confirmation, and apply phases while still using the existing SDK/API delete paths?
 - How should locale-specific patches represent JSONB field updates such as `title.en` while preserving sibling language keys in the current whole-record update API?
+
+## Known Pitfalls (from implementation)
+
+### GitHub CLI network blocked in sandbox
+
+- **Phase**: Create, Research
+- **Occurrences**: 2
+- **Symptom**: GitHub helper/CLI calls failed with `error connecting to api.github.com` when run in the sandbox.
+- **Root Cause**: The sandboxed command did not have network access to GitHub.
+- **Fix**: Re-run the same GitHub helper or `gh` command with escalated network access.
+- **Preventive Action**: For core workflow GitHub helper failures that explicitly report GitHub connectivity errors, retry the same helper sequence with network escalation instead of rewriting the helper flow.
+- **References**: `.claude/helpers/create_issue_with_project.sh`, `gh issue view 187 --repo singlepagestartup/singlepagestartup`, `https://github.com/singlepagestartup/singlepagestartup/issues/187`
