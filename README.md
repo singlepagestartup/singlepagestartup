@@ -39,7 +39,7 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
-├── mcp/    # MCP server for generating contend in apps/api/
+├── mcp/    # MCP server for documentation and content operations through apps/api/
 ├── openapi/  # OpenAPI documentation app
 ├── redis/  # Docker service for Redis
 └── telegram/  # Telegram bot app
@@ -74,6 +74,12 @@ tools/
 ├── rules/     # Cursor automation rules
 └── knowledge/ # Project knowledge base
 ```
+
+## MCP Content Management
+
+`apps/mcp` exposes content-management tools for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with the content entity discovery tool/resource to find supported model and relation keys such as `host.page`, `host.widget`, `host.pages-to-widgets`, `host.widgets-to-external-widgets`, and `blog.widget`.
+
+For page content edits, use the host graph preview tool before writing. It resolves `host.page` by URL, follows `pages-to-widgets`, follows `widgets-to-external-widgets`, and returns external widget candidates with ids. Mutations should use dry-run first, delete preview before delete apply, and localized field updates for locale-keyed JSON fields.
 
 ## Core Architecture
 

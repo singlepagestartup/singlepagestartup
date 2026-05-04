@@ -92,6 +92,14 @@ Sometimes variants are nested (e.g. `admin/form`, `article/overview/default`). A
 
 The MCP server (`apps/mcp`) exposes tools/resources for models and relations. Use those instead of inventing data or direct DB access.
 
+### 6.1 MCP content-management workflow
+
+For content edits through MCP, start with content entity discovery, then use filtered reads or host graph preview before any mutation.
+
+Use dry-run mutations first. For deletes, call delete preview and pass the returned confirmation token to delete apply. For localized fields such as `blog.widget.title`, use the localized field update tool so changing `title.en` preserves `title.ru` and other locale keys.
+
+For URL-based edits such as changing the Articles widget on `/about`, preview the host graph first. The path is `host.page` -> `host.pages-to-widgets` -> `host.widget` -> `host.widgets-to-external-widgets` -> external module widget, for example `blog.widget`.
+
 ## 7. Nx usage
 
 Prefer running tasks via Nx (`nx run`, `nx run-many`, `nx affected`).

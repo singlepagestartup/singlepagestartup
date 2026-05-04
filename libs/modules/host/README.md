@@ -64,6 +64,12 @@ Step-by-step:
 If you only create a Host widget, nothing will render because it has no
 external content connected.
 
+### MCP host graph traversal:
+
+MCP content-management tools can preview the same composition path used by the frontend: resolve `host.page` by URL, read ordered `pages-to-widgets` rows, load the linked `host.widget`, read `widgets-to-external-widgets`, then load the supported external module widget such as `blog.widget`.
+
+Use the graph preview result ids for follow-up updates. Locale-specific external widget changes should use localized field updates so one locale key is merged without replacing sibling locales.
+
 ### External widget sources:
 
 You can connect host widgets to content widgets from these modules:
