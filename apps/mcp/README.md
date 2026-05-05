@@ -69,6 +69,19 @@ If Codex Desktop is launched from the app UI and cannot read shell environment v
 
 This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual header setup unless you want to switch back to the `RBAC_SECRET_KEY` environment-variable mapping.
 
+If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
+
+```bash
+npm run mcp:codex:add:http:desktop
+```
+
+Expected verification output includes:
+
+```text
+http_headers: X-RBAC-SECRET-KEY=*****
+env_http_headers: -
+```
+
 ## Connect MCP Inspector
 
 Start Inspector:

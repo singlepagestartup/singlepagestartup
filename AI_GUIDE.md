@@ -136,6 +136,8 @@ npm run mcp:codex:add:http
 
 For Codex Desktop launched only through the app UI, configure `X-RBAC-SECRET-KEY` directly in the MCP server `Headers` field instead of relying on environment variables.
 
+If the Desktop UI clears the header value after restart, use `npm run mcp:codex:add:http:desktop` to write static `http_headers` into the user-level Codex config.
+
 For a remote server, override the URL:
 
 ```bash

@@ -154,6 +154,14 @@ If Codex Desktop is launched only through the app UI and cannot read shell envir
 
 This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual UI header setup unless you want to switch back to the environment-variable header mapping.
 
+If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
+
+```bash
+npm run mcp:codex:add:http:desktop
+```
+
+Expected verification output includes `http_headers: X-RBAC-SECRET-KEY=*****` and no `env_http_headers`.
+
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS, make the API service URL reachable from that process, then register Codex with the remote URL:
