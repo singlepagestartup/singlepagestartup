@@ -81,6 +81,8 @@ tools/
 
 For page content edits, use the host graph preview tool before writing. It resolves `host.page` by URL, follows `pages-to-widgets`, follows `widgets-to-external-widgets`, and returns external widget candidates with ids. Mutations should use dry-run first, delete preview before delete apply, and localized field updates for locale-keyed JSON fields.
 
+For client-specific connection steps, see `apps/mcp/README.md`.
+
 ### Running MCP Content Management
 
 The MCP server uses the same runtime API path as other SPS SDK calls. Start infrastructure and the API first so reads and writes go through `apps/api`.
@@ -112,7 +114,15 @@ npm run mcp:inspector:http
 
 In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
 
-Register the HTTP server in Codex App/CLI with the same streamable HTTP transport:
+### Connecting MCP clients
+
+Prefer the Streamable HTTP transport for Codex, Inspector, and any remote client because it can carry request auth. The default local MCP URL is:
+
+```text
+http://127.0.0.1:3001/mcp
+```
+
+Connect Codex App/CLI with the repository registration script:
 
 ```bash
 export SPS_JWT="<jwt>"
@@ -126,6 +136,24 @@ SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
 `npm run mcp:codex:add` is the aggregate registration entry point for repository MCP servers and currently registers the SPS HTTP server.
+
+Verify the Codex registration:
+
+```bash
+codex mcp get sps-mcp
+```
+
+Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `bearer_token_env_var` is `SPS_JWT`.
+
+For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
+
+For a remote server, run the MCP HTTP process on the application server behind HTTPS, make the API service URL reachable from that process, then register Codex with the remote URL:
+
+```bash
+SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+```
+
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `SPS_JWT` value.
 
 The legacy Inspector command starts the MCP server through stdio:
 
