@@ -12,6 +12,8 @@
     "mcp:dev": "nx run mcp:dev",
     "mcp:http": "nx run mcp:http",
     "mcp:http:dev": "nx run mcp:http-dev",
+    "mcp:codex:add": "bash tools/mcp/codex-register-all.sh",
+    "mcp:codex:add:http": "bash tools/mcp/codex-register-sps-http.sh",
     "mcp:start": "nx run mcp:start",
     "mcp:inspector": "npx @modelcontextprotocol/inspector bun apps/mcp/index.ts",
     "mcp:inspector:http": "npx @modelcontextprotocol/inspector",

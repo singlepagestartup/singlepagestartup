@@ -112,6 +112,21 @@ npm run mcp:inspector:http
 
 In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
 
+Register the HTTP server in Codex App/CLI with the same streamable HTTP transport:
+
+```bash
+export SPS_JWT="<jwt>"
+npm run mcp:codex:add:http
+```
+
+This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the token environment variable name (`SPS_JWT`) in the Codex config, not the token value. Override the defaults when registering a remote server:
+
+```bash
+SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+```
+
+`npm run mcp:codex:add` is the aggregate registration entry point for repository MCP servers and currently registers the SPS HTTP server.
+
 The legacy Inspector command starts the MCP server through stdio:
 
 ```bash
