@@ -30,11 +30,11 @@ http://127.0.0.1:3001/mcp
 Register the MCP server in Codex with the repository script:
 
 ```bash
-export MCP_JWT="<jwt>"
+export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 
-This writes a user-level Codex MCP config for `sps-mcp` using Streamable HTTP. It stores only the environment variable name `MCP_JWT`; it does not store the token value.
+This writes a user-level Codex MCP config for `sps-mcp` using Streamable HTTP. It stores only the mapping `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`; it does not store the secret value.
 
 Verify the registration:
 
@@ -47,16 +47,16 @@ Expected output includes:
 ```text
 transport: streamable_http
 url: http://127.0.0.1:3001/mcp
-bearer_token_env_var: MCP_JWT
+env_http_headers: X-RBAC-SECRET-KEY=RBAC_SECRET_KEY
 ```
 
-When using Codex CLI, start Codex from an environment that has `MCP_JWT`:
+When using Codex CLI, start Codex from an environment that has `RBAC_SECRET_KEY`:
 
 ```bash
-MCP_JWT="<jwt>" codex
+RBAC_SECRET_KEY="<secret>" codex
 ```
 
-When using Codex Desktop, the app process must also have access to `MCP_JWT`. Restart the app after changing the environment.
+When using Codex Desktop, the app process must also have access to `RBAC_SECRET_KEY`. On macOS, set it with `launchctl setenv RBAC_SECRET_KEY "<secret>"`, then fully quit and reopen Codex Desktop.
 
 ## Connect MCP Inspector
 

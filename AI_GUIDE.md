@@ -127,10 +127,10 @@ Choose `Streamable HTTP` and connect to `http://127.0.0.1:3001/mcp`. The compati
 npm run mcp:inspector
 ```
 
-To register the HTTP server in Codex App/CLI, provide a JWT through an environment variable and run:
+To register the HTTP server in Codex App/CLI, provide the RBAC secret key through an environment variable and run:
 
 ```bash
-export MCP_JWT="<jwt>"
+export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 

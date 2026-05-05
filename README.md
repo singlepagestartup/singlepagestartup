@@ -125,11 +125,11 @@ http://127.0.0.1:3001/mcp
 Connect Codex App/CLI with the repository registration script:
 
 ```bash
-export MCP_JWT="<jwt>"
+export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 
-This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the token environment variable name (`MCP_JWT`) in the Codex config, not the token value. Override the defaults when registering a remote server:
+This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the header-to-environment mapping in the Codex config: `X-RBAC-SECRET-KEY` is read from `RBAC_SECRET_KEY`. The secret value is not stored in the Codex config. Override the URL when registering a remote server:
 
 ```bash
 MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
@@ -143,7 +143,7 @@ Verify the Codex registration:
 codex mcp get sps-mcp
 ```
 
-Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `bearer_token_env_var` is `MCP_JWT`.
+Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `env_http_headers` includes `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`.
 
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
@@ -153,7 +153,7 @@ For a remote server, run the MCP HTTP process on the application server behind H
 MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `MCP_JWT` value.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the header environment variable name; the runtime environment must provide the actual `RBAC_SECRET_KEY` value.
 
 The legacy Inspector command starts the MCP server through stdio:
 
