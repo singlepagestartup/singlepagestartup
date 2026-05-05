@@ -122,7 +122,7 @@ Prefer the Streamable HTTP transport for Codex, Inspector, and any remote client
 http://127.0.0.1:3001/mcp
 ```
 
-Connect Codex App/CLI with the repository registration script:
+Connect Codex CLI, or a Codex Desktop process that can read shell environment variables, with the repository registration script:
 
 ```bash
 export RBAC_SECRET_KEY="<secret>"
@@ -145,6 +145,15 @@ codex mcp get sps-mcp
 
 Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `env_http_headers` includes `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`.
 
+If Codex Desktop is launched only through the app UI and cannot read shell environment variables, configure the server manually in the MCP settings instead:
+
+- URL: `http://127.0.0.1:3001/mcp`
+- Bearer token env var: empty
+- Headers: `X-RBAC-SECRET-KEY` = `<secret>`
+- Headers from environment variables: empty
+
+This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual UI header setup unless you want to switch back to the environment-variable header mapping.
+
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS, make the API service URL reachable from that process, then register Codex with the remote URL:
@@ -153,7 +162,7 @@ For a remote server, run the MCP HTTP process on the application server behind H
 MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the header environment variable name; the runtime environment must provide the actual `RBAC_SECRET_KEY` value.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. In the script-based setup, Codex stores only the header environment variable name and the runtime environment must provide the actual `RBAC_SECRET_KEY` value. In the manual Desktop UI setup, Codex stores the header value in the user config.
 
 The legacy Inspector command starts the MCP server through stdio:
 

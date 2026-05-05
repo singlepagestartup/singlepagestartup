@@ -25,7 +25,7 @@ http://127.0.0.1:3001/mcp
 
 `http://127.0.0.1:3001/sse` is also available as a compatibility endpoint.
 
-## Connect Codex App or Codex CLI
+## Connect Codex CLI or Environment-Aware Desktop
 
 Register the MCP server in Codex with the repository script:
 
@@ -56,7 +56,18 @@ When using Codex CLI, start Codex from an environment that has `RBAC_SECRET_KEY`
 RBAC_SECRET_KEY="<secret>" codex
 ```
 
-When using Codex Desktop, the app process must also have access to `RBAC_SECRET_KEY`. On macOS, set it with `launchctl setenv RBAC_SECRET_KEY "<secret>"`, then fully quit and reopen Codex Desktop.
+When using Codex Desktop with environment variables, the app process must also have access to `RBAC_SECRET_KEY`. On macOS, set it with `launchctl setenv RBAC_SECRET_KEY "<secret>"`, then fully quit and reopen Codex Desktop.
+
+## Connect Codex Desktop Without Environment Variables
+
+If Codex Desktop is launched from the app UI and cannot read shell environment variables, configure the MCP server manually in the app:
+
+- URL: `http://127.0.0.1:3001/mcp`
+- Bearer token env var: empty
+- Headers: `X-RBAC-SECRET-KEY` = `<secret>`
+- Headers from environment variables: empty
+
+This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual header setup unless you want to switch back to the `RBAC_SECRET_KEY` environment-variable mapping.
 
 ## Connect MCP Inspector
 

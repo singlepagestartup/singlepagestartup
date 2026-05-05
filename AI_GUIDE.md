@@ -134,6 +134,8 @@ export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 
+For Codex Desktop launched only through the app UI, configure `X-RBAC-SECRET-KEY` directly in the MCP server `Headers` field instead of relying on environment variables.
+
 For a remote server, override the URL:
 
 ```bash
