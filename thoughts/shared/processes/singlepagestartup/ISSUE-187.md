@@ -49,6 +49,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Outputs: `apps/mcp/content-management.ts`, `apps/mcp/lib/content-management/*`, `apps/mcp/content-management.spec.ts`, `apps/mcp/lib/content-management/*.spec.ts`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-187-progress.md`
 - Notes: Moved the GitHub Project status to `In Dev`, synced GitHub comments since the plan marker, and found no new implementation-blocking requirements. Verification passed: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`, and `npm run lint` (repo-wide lint emitted pre-existing warnings outside MCP but exited successfully). Created draft PR https://github.com/singlepagestartup/singlepagestartup/pull/188 and submitted it for Code Review.
 - Follow-up: Removed MCP `.env` root-secret authorization for MCP-to-API calls. Generated MCP resources/tools, count tools, and content-management tools now forward caller auth from `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input. Verification passed: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`, and `git diff --check`.
+- Follow-up: Added Streamable HTTP MCP entrypoint (`apps/mcp/http.ts`, `npm run mcp:http`) and a standalone HTTP Inspector script so Inspector `Custom Headers` reach MCP handlers. Kept stdio as the direct-process transport for MCP clients that do not need HTTP request headers.
 
 ## Incident Log
 
@@ -80,4 +81,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - For MCP content-management tasks, preserve the user-facing natural-language workflow as an acceptance example so later phases can validate schema discovery, relation traversal, and locale-specific edits end to end.
 - MCP resources have no input schema; auth for resource reads must come from transport headers/cookies, MCP auth info, or request metadata. Use generic content-management tools with explicit `auth` input for stdio calls that cannot forward transport auth.
+- Use `npm run mcp:http` plus Inspector Streamable HTTP at `http://127.0.0.1:3001/mcp` when validating MCP resources with `Authorization` or `X-RBAC-SECRET-KEY` headers.
 - In zsh, quote Next.js route segment paths such as `apps/host/app/[[...url]]/page.tsx` before reading them.

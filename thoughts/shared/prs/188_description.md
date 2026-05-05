@@ -16,6 +16,7 @@ This enables workflows such as resolving `/about` through `host.page` -> `host.p
 - Added delete-preview relation context for known host/blog paths.
 - Replaced MCP `.env` root-secret usage with forwarded MCP auth: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input.
 - Added forwarded auth to generated MCP resources/tools and to host `findByUrl` SDK calls so protected API reads use the caller's credential instead of the MCP process credential.
+- Added a Streamable HTTP MCP entrypoint (`npm run mcp:http`) plus HTTP Inspector script so Inspector `Custom Headers` can reach MCP resource/tool handlers.
 - Added BDD Jest coverage for registration, schemas, responses, forwarded auth headers, localized merge behavior, generic operations, delete guardrails, and host graph traversal.
 - Documented the MCP content-management workflow in `README.md`, `AI_GUIDE.md`, and `libs/modules/host/README.md`.
 
@@ -25,6 +26,7 @@ This enables workflows such as resolving `/about` through `host.page` -> `host.p
 - [x] `npx tsc -p apps/mcp/tsconfig.json --noEmit`
 - [x] `npx nx run mcp:eslint:lint`
 - [x] `npm run lint`
+- [x] HTTP smoke check: `MCP_HTTP_PORT=3999 npm run mcp:http` + `curl -i -X OPTIONS http://127.0.0.1:3999/mcp`
 
 ## Notes
 

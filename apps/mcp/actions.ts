@@ -65,41 +65,47 @@ import {
 } from "./content-management";
 import { registerTools as documentationRegisterTools } from "./documentation";
 
-export const mcp = new McpServer({
-  name: "singlepagestartup-mcp",
-  version: "1.0.0",
-});
+export function createMcpServer() {
+  const mcp = new McpServer({
+    name: "singlepagestartup-mcp",
+    version: "1.0.0",
+  });
 
-agentModuleRegisterResources(mcp);
-agentModuleRegisterTools(mcp);
-analyticModuleRegisterResources(mcp);
-analyticModuleRegisterTools(mcp);
-billingModuleRegisterResources(mcp);
-billingModuleRegisterTools(mcp);
-blogModuleRegisterResources(mcp);
-blogModuleRegisterTools(mcp);
-broadcastModuleRegisterResources(mcp);
-broadcastModuleRegisterTools(mcp);
-crmModuleRegisterResources(mcp);
-crmModuleRegisterTools(mcp);
-ecommerceModuleRegisterResources(mcp);
-ecommerceModuleRegisterTools(mcp);
-fileStorageModuleRegisterResources(mcp);
-fileStorageModuleRegisterTools(mcp);
-hostModuleRegisterResources(mcp);
-hostModuleRegisterTools(mcp);
-notificationModuleRegisterResources(mcp);
-notificationModuleRegisterTools(mcp);
-rbacModuleRegisterResources(mcp);
-rbacModuleRegisterTools(mcp);
-socialModuleRegisterResources(mcp);
-socialModuleRegisterTools(mcp);
-startupModuleRegisterResources(mcp);
-startupModuleRegisterTools(mcp);
-telegramModuleRegisterResources(mcp);
-telegramModuleRegisterTools(mcp);
-websiteBuilderModuleRegisterResources(mcp);
-websiteBuilderModuleRegisterTools(mcp);
-documentationRegisterTools(mcp);
-contentManagementRegisterResources(mcp);
-contentManagementRegisterTools(mcp);
+  agentModuleRegisterResources(mcp);
+  agentModuleRegisterTools(mcp);
+  analyticModuleRegisterResources(mcp);
+  analyticModuleRegisterTools(mcp);
+  billingModuleRegisterResources(mcp);
+  billingModuleRegisterTools(mcp);
+  blogModuleRegisterResources(mcp);
+  blogModuleRegisterTools(mcp);
+  broadcastModuleRegisterResources(mcp);
+  broadcastModuleRegisterTools(mcp);
+  crmModuleRegisterResources(mcp);
+  crmModuleRegisterTools(mcp);
+  ecommerceModuleRegisterResources(mcp);
+  ecommerceModuleRegisterTools(mcp);
+  fileStorageModuleRegisterResources(mcp);
+  fileStorageModuleRegisterTools(mcp);
+  hostModuleRegisterResources(mcp);
+  hostModuleRegisterTools(mcp);
+  notificationModuleRegisterResources(mcp);
+  notificationModuleRegisterTools(mcp);
+  rbacModuleRegisterResources(mcp);
+  rbacModuleRegisterTools(mcp);
+  socialModuleRegisterResources(mcp);
+  socialModuleRegisterTools(mcp);
+  startupModuleRegisterResources(mcp);
+  startupModuleRegisterTools(mcp);
+  telegramModuleRegisterResources(mcp);
+  telegramModuleRegisterTools(mcp);
+  websiteBuilderModuleRegisterResources(mcp);
+  websiteBuilderModuleRegisterTools(mcp);
+  documentationRegisterTools(mcp);
+  contentManagementRegisterResources(mcp);
+  contentManagementRegisterTools(mcp);
+
+  return mcp;
+}
+
+export const mcp = createMcpServer();

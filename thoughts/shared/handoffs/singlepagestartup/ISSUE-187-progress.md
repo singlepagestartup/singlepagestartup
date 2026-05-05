@@ -61,6 +61,14 @@ completed_date: 2026-05-05T16:30:00Z
 
 **Notes**: Removed MCP `.env` root-secret usage from MCP-to-API calls. Generated MCP resources/tools, count tools, and content-management tools now forward caller auth from `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input.
 
+### Follow-up: Streamable HTTP Transport
+
+- [x] Completed: 2026-05-05T16:53:00Z
+- [x] Automated verification: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`
+- [x] Smoke verification: `MCP_HTTP_PORT=3999 npm run mcp:http` plus `curl -i -X OPTIONS http://127.0.0.1:3999/mcp`
+
+**Notes**: Added `apps/mcp/http.ts`, `npm run mcp:http`, `npm run mcp:http:dev`, and `npm run mcp:inspector:http`. Inspector can now connect with Streamable HTTP at `http://127.0.0.1:3001/mcp` and pass `Authorization` or `X-RBAC-SECRET-KEY` through HTTP headers. `/sse` is kept as a compatibility endpoint for existing Inspector setups.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -76,6 +84,7 @@ completed_date: 2026-05-05T16:30:00Z
 - Registered content-management resources/tools from `apps/mcp/actions.ts`.
 - Added BDD unit tests for registration, schemas, response envelopes, forwarded auth headers, localized field merging, generic operations, delete guardrails, and host graph traversal.
 - Removed MCP process-level `RBAC_SECRET_KEY` auth from API calls and replaced it with caller-provided auth propagation.
+- Added a Streamable HTTP MCP entrypoint for Inspector/header-based resource testing while preserving the existing stdio entrypoint.
 - Documented the MCP content-management workflow in the root, AI, and host module docs.
 
 ### Pull Request
@@ -92,4 +101,4 @@ completed_date: 2026-05-05T16:30:00Z
 
 ---
 
-**Last updated**: 2026-05-05T16:30:00Z
+**Last updated**: 2026-05-05T16:53:00Z

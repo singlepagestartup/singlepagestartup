@@ -105,7 +105,21 @@ Then start MCP:
 npm run mcp:dev
 ```
 
-For interactive discovery/testing, use:
+This uses stdio. Use it when the MCP client launches the server process directly.
+
+For HTTP headers, cookies, or Inspector `Custom Headers`, start the Streamable HTTP transport:
+
+```bash
+npm run mcp:http
+```
+
+Then open Inspector:
+
+```bash
+npm run mcp:inspector:http
+```
+
+Choose `Streamable HTTP` and connect to `http://127.0.0.1:3001/mcp`. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available. The legacy Inspector command starts the MCP server through stdio:
 
 ```bash
 npm run mcp:inspector

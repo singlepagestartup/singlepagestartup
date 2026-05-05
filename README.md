@@ -96,7 +96,23 @@ Run the MCP server directly:
 npm run mcp:dev
 ```
 
-Or inspect and call tools interactively:
+This starts the stdio transport. It is useful for local MCP clients that launch the server process directly, but HTTP headers from Inspector are not available to resource/tool handlers in this mode.
+
+Run the HTTP transport when you need request headers, cookies, or Inspector `Custom Headers`:
+
+```bash
+npm run mcp:http
+```
+
+Then inspect it interactively:
+
+```bash
+npm run mcp:inspector:http
+```
+
+In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
+
+The legacy Inspector command starts the MCP server through stdio:
 
 ```bash
 npm run mcp:inspector
