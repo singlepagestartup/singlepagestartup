@@ -153,7 +153,7 @@ For a remote server, run the MCP HTTP process on the application server behind H
 MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
-Use `MCP_SERVER_NAME` to change the Codex MCP entry name and `MCP_BEARER_TOKEN_ENV` to change the bearer-token environment variable name. Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `MCP_JWT` value, or whatever name `MCP_BEARER_TOKEN_ENV` points to.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `MCP_JWT` value.
 
 The legacy Inspector command starts the MCP server through stdio:
 

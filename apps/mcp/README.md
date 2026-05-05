@@ -103,12 +103,6 @@ npm run mcp:codex:add
 
 It currently registers the SPS HTTP MCP server and is the entry point to extend when more repository MCP servers need automatic setup.
 
-Use `MCP_SERVER_NAME` to override the Codex entry name and `MCP_BEARER_TOKEN_ENV` to override the token environment variable name:
-
-```bash
-MCP_SERVER_NAME="content-mcp" MCP_BEARER_TOKEN_ENV="JWT" npm run mcp:codex:add:http
-```
-
 ## Authentication
 
 MCP does not read `RBAC_SECRET_KEY` from `apps/mcp/.env` for content/API access. Pass auth with each MCP request:
