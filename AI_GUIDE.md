@@ -92,6 +92,27 @@ Sometimes variants are nested (e.g. `admin/form`, `article/overview/default`). A
 
 The MCP server (`apps/mcp`) exposes tools/resources for models and relations. Use those instead of inventing data or direct DB access.
 
+To run MCP locally, start infrastructure and API first:
+
+```bash
+./up.sh
+npm run api:dev
+```
+
+Then start MCP:
+
+```bash
+npm run mcp:dev
+```
+
+For interactive discovery/testing, use:
+
+```bash
+npm run mcp:inspector
+```
+
+Content write tools require `RBAC_SECRET_KEY`, and SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow.
+
 ### 6.1 MCP content-management workflow
 
 For content edits through MCP, start with content entity discovery, then use filtered reads or host graph preview before any mutation.

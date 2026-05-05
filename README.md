@@ -81,6 +81,34 @@ tools/
 
 For page content edits, use the host graph preview tool before writing. It resolves `host.page` by URL, follows `pages-to-widgets`, follows `widgets-to-external-widgets`, and returns external widget candidates with ids. Mutations should use dry-run first, delete preview before delete apply, and localized field updates for locale-keyed JSON fields.
 
+### Running MCP Content Management
+
+The MCP server uses the same runtime API path as other SPS SDK calls. Start infrastructure and the API first so reads and writes go through `apps/api`.
+
+```bash
+./up.sh
+npm run api:dev
+```
+
+Run the MCP server directly:
+
+```bash
+npm run mcp:dev
+```
+
+Or inspect and call tools interactively:
+
+```bash
+npm run mcp:inspector
+```
+
+Required environment values are loaded from the app env files created by `./up.sh`; content write tools need `RBAC_SECRET_KEY`, and SDK calls need the configured API service URL. A typical edit flow is:
+
+1. Call `content-entity-list` or read `sps://content/entities`.
+2. Use `content-record-find` for filtered model/relation reads, or `content-host-graph-preview` for URL-based page content.
+3. Use dry-run write tools first, such as `content-record-update` with `dryRun: true` or `content-host-graph-localized-field-update` with `dryRun: true`.
+4. Apply the write only after the preview is unambiguous. For deletes, call `content-record-delete-preview` first and pass its `confirmationToken` to `content-record-delete-apply`.
+
 ## Core Architecture
 
 ### Backend Architecture
