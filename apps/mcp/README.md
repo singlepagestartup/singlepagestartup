@@ -30,11 +30,11 @@ http://127.0.0.1:3001/mcp
 Register the MCP server in Codex with the repository script:
 
 ```bash
-export SPS_JWT="<jwt>"
+export MCP_JWT="<jwt>"
 npm run mcp:codex:add:http
 ```
 
-This writes a user-level Codex MCP config for `sps-mcp` using Streamable HTTP. It stores only the environment variable name `SPS_JWT`; it does not store the token value.
+This writes a user-level Codex MCP config for `sps-mcp` using Streamable HTTP. It stores only the environment variable name `MCP_JWT`; it does not store the token value.
 
 Verify the registration:
 
@@ -47,16 +47,16 @@ Expected output includes:
 ```text
 transport: streamable_http
 url: http://127.0.0.1:3001/mcp
-bearer_token_env_var: SPS_JWT
+bearer_token_env_var: MCP_JWT
 ```
 
-When using Codex CLI, start Codex from an environment that has `SPS_JWT`:
+When using Codex CLI, start Codex from an environment that has `MCP_JWT`:
 
 ```bash
-SPS_JWT="<jwt>" codex
+MCP_JWT="<jwt>" codex
 ```
 
-When using Codex Desktop, the app process must also have access to `SPS_JWT`. Restart the app after changing the environment.
+When using Codex Desktop, the app process must also have access to `MCP_JWT`. Restart the app after changing the environment.
 
 ## Connect MCP Inspector
 
@@ -92,7 +92,7 @@ https://mcp.example.com/mcp
 Register that URL in Codex:
 
 ```bash
-SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
 The aggregate command is:
@@ -102,6 +102,12 @@ npm run mcp:codex:add
 ```
 
 It currently registers the SPS HTTP MCP server and is the entry point to extend when more repository MCP servers need automatic setup.
+
+Use `MCP_SERVER_NAME` to override the Codex entry name and `MCP_BEARER_TOKEN_ENV` to override the token environment variable name:
+
+```bash
+MCP_SERVER_NAME="content-mcp" MCP_BEARER_TOKEN_ENV="JWT" npm run mcp:codex:add:http
+```
 
 ## Authentication
 

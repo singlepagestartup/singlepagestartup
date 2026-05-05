@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-name="${SPS_MCP_NAME:-sps-mcp}"
-url="${SPS_MCP_URL:-http://127.0.0.1:3001/mcp}"
-token_env="${SPS_MCP_BEARER_TOKEN_ENV:-SPS_JWT}"
+name="${MCP_SERVER_NAME:-sps-mcp}"
+url="${MCP_URL:-http://127.0.0.1:3001/mcp}"
+token_env="${MCP_BEARER_TOKEN_ENV:-MCP_JWT}"
 
 if ! command -v codex >/dev/null 2>&1; then
   echo "codex CLI is required to register MCP servers." >&2

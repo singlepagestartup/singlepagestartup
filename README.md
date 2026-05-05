@@ -125,14 +125,14 @@ http://127.0.0.1:3001/mcp
 Connect Codex App/CLI with the repository registration script:
 
 ```bash
-export SPS_JWT="<jwt>"
+export MCP_JWT="<jwt>"
 npm run mcp:codex:add:http
 ```
 
-This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the token environment variable name (`SPS_JWT`) in the Codex config, not the token value. Override the defaults when registering a remote server:
+This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the token environment variable name (`MCP_JWT`) in the Codex config, not the token value. Override the defaults when registering a remote server:
 
 ```bash
-SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
 `npm run mcp:codex:add` is the aggregate registration entry point for repository MCP servers and currently registers the SPS HTTP server.
@@ -143,17 +143,17 @@ Verify the Codex registration:
 codex mcp get sps-mcp
 ```
 
-Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `bearer_token_env_var` is `SPS_JWT`.
+Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `bearer_token_env_var` is `MCP_JWT`.
 
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS, make the API service URL reachable from that process, then register Codex with the remote URL:
 
 ```bash
-SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `SPS_JWT` value.
+Use `MCP_SERVER_NAME` to change the Codex MCP entry name and `MCP_BEARER_TOKEN_ENV` to change the bearer-token environment variable name. Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Codex stores only the bearer token environment variable name; the runtime environment must provide the actual `MCP_JWT` value, or whatever name `MCP_BEARER_TOKEN_ENV` points to.
 
 The legacy Inspector command starts the MCP server through stdio:
 

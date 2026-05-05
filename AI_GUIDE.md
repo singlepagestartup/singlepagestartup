@@ -130,14 +130,14 @@ npm run mcp:inspector
 To register the HTTP server in Codex App/CLI, provide a JWT through an environment variable and run:
 
 ```bash
-export SPS_JWT="<jwt>"
+export MCP_JWT="<jwt>"
 npm run mcp:codex:add:http
 ```
 
 For a remote server, override the URL:
 
 ```bash
-SPS_MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 ```
 
 MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Generic content-management tools also accept `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`; resources need auth from transport headers, cookies, MCP auth info, or request metadata because resources have no input schema.
