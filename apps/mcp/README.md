@@ -34,17 +34,18 @@ export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 
-This writes a user-level Codex MCP config for `sps-mcp` using Streamable HTTP. It stores only the mapping `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`; it does not store the secret value.
+This writes to the user-level Codex config (`~/.codex/config.toml`), creates a unique MCP server name for the current project path, and links that server in the current `[projects."<path>"].mcp_servers` list. It stores only the mapping `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`; it does not store the secret value.
 
 Verify the registration:
 
 ```bash
-codex mcp get sps-mcp
+codex mcp list
 ```
 
 Expected output includes:
 
 ```text
+name: mcp-<project-folder>-<path-hash>
 transport: streamable_http
 url: http://127.0.0.1:3001/mcp
 env_http_headers: X-RBAC-SECRET-KEY=RBAC_SECRET_KEY
@@ -67,7 +68,7 @@ If Codex Desktop is launched from the app UI and cannot read shell environment v
 - Headers: `X-RBAC-SECRET-KEY` = `<secret>`
 - Headers from environment variables: empty
 
-This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual header setup unless you want to switch back to the `RBAC_SECRET_KEY` environment-variable mapping.
+This stores the secret in the project-specific MCP server entry inside the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual header setup unless you want to switch back to the `RBAC_SECRET_KEY` environment-variable mapping.
 
 If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
 

@@ -129,7 +129,7 @@ export RBAC_SECRET_KEY="<secret>"
 npm run mcp:codex:add:http
 ```
 
-This registers `sps-mcp` as `http://127.0.0.1:3001/mcp` and stores only the header-to-environment mapping in the Codex config: `X-RBAC-SECRET-KEY` is read from `RBAC_SECRET_KEY`. The secret value is not stored in the Codex config. Override the URL when registering a remote server:
+This writes to the user-level Codex config (`~/.codex/config.toml`), creates a unique MCP server name for the current project path, and links that server in the current `[projects."<path>"].mcp_servers` list. It stores only the header-to-environment mapping in the Codex config: `X-RBAC-SECRET-KEY` is read from `RBAC_SECRET_KEY`. The secret value is not stored in the Codex config. Override the URL when registering a remote server:
 
 ```bash
 MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
@@ -140,10 +140,10 @@ MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
 Verify the Codex registration:
 
 ```bash
-codex mcp get sps-mcp
+codex mcp list
 ```
 
-Expected transport is `streamable_http`, URL is `http://127.0.0.1:3001/mcp`, and `env_http_headers` includes `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`.
+Expected output includes a project-specific MCP server name such as `mcp-sps-lite-123456789`, transport `streamable_http`, URL `http://127.0.0.1:3001/mcp`, and `env_http_headers` includes `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`.
 
 If Codex Desktop is launched only through the app UI and cannot read shell environment variables, configure the server manually in the MCP settings instead:
 
@@ -152,7 +152,7 @@ If Codex Desktop is launched only through the app UI and cannot read shell envir
 - Headers: `X-RBAC-SECRET-KEY` = `<secret>`
 - Headers from environment variables: empty
 
-This stores the secret in the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual UI header setup unless you want to switch back to the environment-variable header mapping.
+This stores the secret in the project-specific MCP server entry inside the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual UI header setup unless you want to switch back to the environment-variable header mapping.
 
 If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
 

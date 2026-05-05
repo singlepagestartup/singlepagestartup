@@ -138,6 +138,8 @@ For Codex Desktop launched only through the app UI, configure `X-RBAC-SECRET-KEY
 
 If the Desktop UI clears the header value after restart, use `npm run mcp:codex:add:http:desktop` to write static `http_headers` into the user-level Codex config.
 
+The Codex registration scripts generate a unique MCP server name from the current project path and bind it under the current `[projects."<path>"].mcp_servers` entry, so each checkout can have its own MCP URL and auth configuration.
+
 For a remote server, override the URL:
 
 ```bash
