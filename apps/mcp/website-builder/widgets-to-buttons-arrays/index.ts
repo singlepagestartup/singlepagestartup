@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderWidgetsToButtonsArraysApi } from "@sps/website-builder/relations/widgets-to-buttons-arrays/sdk/server";
 import { insertSchema as websiteBuilderWidgetsToButtonsArraysInsertSchema } from "@sps/website-builder/relations/widgets-to-buttons-arrays/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,8 +13,12 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all widgets-to-buttons-arrays relations from website-builder module",
     },
-    async (uri) => {
-      const resp = await websiteBuilderWidgetsToButtonsArraysApi.find();
+    async (uri, extra) => {
+      const resp = await websiteBuilderWidgetsToButtonsArraysApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -45,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all widgets-to-buttons-arrays relations from website-builder module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await websiteBuilderWidgetsToButtonsArraysApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -89,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderWidgetsToButtonsArraysInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -97,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await websiteBuilderWidgetsToButtonsArraysApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -128,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new widgets-to-buttons-arrays relation in the website-builder module.",
       inputSchema: websiteBuilderWidgetsToButtonsArraysInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderWidgetsToButtonsArraysApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -172,23 +167,17 @@ export function registerTools(mcp: McpServer) {
         "Update an existing widgets-to-buttons-arrays relation by id.",
       inputSchema: websiteBuilderWidgetsToButtonsArraysInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await websiteBuilderWidgetsToButtonsArraysApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -221,22 +210,16 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing widgets-to-buttons-arrays relation by id.",
       inputSchema: websiteBuilderWidgetsToButtonsArraysInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderWidgetsToButtonsArraysApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

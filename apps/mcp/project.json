@@ -12,6 +12,20 @@
         "command": "bun --watch index.ts"
       }
     },
+    "http": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/mcp",
+        "command": "bun http.ts"
+      }
+    },
+    "http-dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/mcp",
+        "command": "bun --watch http.ts"
+      }
+    },
     "start": {
       "executor": "nx:run-commands",
       "options": {

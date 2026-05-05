@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogArticleApi } from "@sps/blog/models/article/sdk/server";
 import { insertSchema as blogArticleInsertSchema } from "@sps/blog/models/article/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,8 +12,12 @@ export function registerResources(mcp: McpServer) {
       title: "blog module articles",
       description: "Get list of all articles from blog module",
     },
-    async (uri) => {
-      const resp = await blogArticleApi.find();
+    async (uri, extra) => {
+      const resp = await blogArticleApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -43,17 +47,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all articles from blog module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await blogArticleApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -87,7 +85,7 @@ export function registerTools(mcp: McpServer) {
         id: blogArticleInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,6 +93,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await blogArticleApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -125,18 +126,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new article in the blog module.",
       inputSchema: blogArticleInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await blogArticleApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -168,23 +163,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing article in the blog module by id.",
       inputSchema: blogArticleInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await blogArticleApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -216,22 +205,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing article in the blog module by id.",
       inputSchema: blogArticleInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await blogArticleApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceWidgetApi } from "@sps/ecommerce/models/widget/sdk/server";
 import { insertSchema as ecommerceWidgetInsertSchema } from "@sps/ecommerce/models/widget/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,8 +12,12 @@ export function registerResources(mcp: McpServer) {
       title: "ecommerce module widgets",
       description: "Get list of all widgets from ecommerce module",
     },
-    async (uri) => {
-      const resp = await ecommerceWidgetApi.find();
+    async (uri, extra) => {
+      const resp = await ecommerceWidgetApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -43,17 +47,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all widgets from ecommerce module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await ecommerceWidgetApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -87,7 +85,7 @@ export function registerTools(mcp: McpServer) {
         id: ecommerceWidgetInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,6 +93,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await ecommerceWidgetApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -125,18 +126,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new widget in the ecommerce module.",
       inputSchema: ecommerceWidgetInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await ecommerceWidgetApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -168,23 +163,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing widget in the ecommerce module by id.",
       inputSchema: ecommerceWidgetInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await ecommerceWidgetApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -216,22 +205,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing widget in the ecommerce module by id.",
       inputSchema: ecommerceWidgetInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await ecommerceWidgetApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

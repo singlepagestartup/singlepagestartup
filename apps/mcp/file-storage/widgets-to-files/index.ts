@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as fileStorageWidgetsToFilesApi } from "@sps/file-storage/relations/widgets-to-files/sdk/server";
 import { insertSchema as fileStorageWidgetsToFilesInsertSchema } from "@sps/file-storage/relations/widgets-to-files/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,8 +13,12 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all widgets-to-files relations from file-storage module",
     },
-    async (uri) => {
-      const resp = await fileStorageWidgetsToFilesApi.find();
+    async (uri, extra) => {
+      const resp = await fileStorageWidgetsToFilesApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -45,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all widgets-to-files relations from file-storage module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await fileStorageWidgetsToFilesApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -89,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: fileStorageWidgetsToFilesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -97,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await fileStorageWidgetsToFilesApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -128,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new widgets-to-files relation in the file-storage module.",
       inputSchema: fileStorageWidgetsToFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await fileStorageWidgetsToFilesApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -171,23 +166,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing widgets-to-files relation by id.",
       inputSchema: fileStorageWidgetsToFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await fileStorageWidgetsToFilesApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -219,22 +208,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing widgets-to-files relation by id.",
       inputSchema: fileStorageWidgetsToFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await fileStorageWidgetsToFilesApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToEcommerceModuleProductsApi } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/server";
 import { insertSchema as rbacSubjectsToEcommerceModuleProductsInsertSchema } from "@sps/rbac/relations/subjects-to-ecommerce-module-products/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,8 +13,12 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all subjects-to-ecommerce-module-products relations from rbac module",
     },
-    async (uri) => {
-      const resp = await rbacSubjectsToEcommerceModuleProductsApi.find();
+    async (uri, extra) => {
+      const resp = await rbacSubjectsToEcommerceModuleProductsApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -45,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all subjects-to-ecommerce-module-products relations from rbac module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await rbacSubjectsToEcommerceModuleProductsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -90,7 +88,7 @@ export function registerTools(mcp: McpServer) {
         id: rbacSubjectsToEcommerceModuleProductsInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -98,6 +96,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await rbacSubjectsToEcommerceModuleProductsApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -129,18 +130,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new subjects-to-ecommerce-module-products relation in the rbac module.",
       inputSchema: rbacSubjectsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await rbacSubjectsToEcommerceModuleProductsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -173,23 +168,17 @@ export function registerTools(mcp: McpServer) {
         "Update an existing subjects-to-ecommerce-module-products relation by id.",
       inputSchema: rbacSubjectsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await rbacSubjectsToEcommerceModuleProductsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -222,22 +211,16 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing subjects-to-ecommerce-module-products relation by id.",
       inputSchema: rbacSubjectsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await rbacSubjectsToEcommerceModuleProductsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

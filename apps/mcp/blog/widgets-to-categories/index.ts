@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogWidgetsToCategoriesApi } from "@sps/blog/relations/widgets-to-categories/sdk/server";
 import { insertSchema as blogWidgetsToCategoriesInsertSchema } from "@sps/blog/relations/widgets-to-categories/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,8 +13,12 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all widgets-to-categories relations from blog module",
     },
-    async (uri) => {
-      const resp = await blogWidgetsToCategoriesApi.find();
+    async (uri, extra) => {
+      const resp = await blogWidgetsToCategoriesApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -45,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all widgets-to-categories relations from blog module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await blogWidgetsToCategoriesApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -89,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: blogWidgetsToCategoriesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -97,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await blogWidgetsToCategoriesApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -128,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new widgets-to-categories relation in the blog module.",
       inputSchema: blogWidgetsToCategoriesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await blogWidgetsToCategoriesApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -171,23 +166,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing widgets-to-categories relation by id.",
       inputSchema: blogWidgetsToCategoriesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await blogWidgetsToCategoriesApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -219,22 +208,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing widgets-to-categories relation by id.",
       inputSchema: blogWidgetsToCategoriesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await blogWidgetsToCategoriesApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

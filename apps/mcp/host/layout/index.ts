@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostModuleLayoutApi } from "@sps/host/models/layout/sdk/server";
 import { insertSchema as hostModuleLayoutInsertSchema } from "@sps/host/models/layout/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,8 +12,12 @@ export function registerResources(mcp: McpServer) {
       title: "host module layouts",
       description: "Get list of all layouts from host module",
     },
-    async (uri) => {
-      const resp = await hostModuleLayoutApi.find();
+    async (uri, extra) => {
+      const resp = await hostModuleLayoutApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -43,17 +47,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all layouts from host module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await hostModuleLayoutApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -87,7 +85,7 @@ export function registerTools(mcp: McpServer) {
         id: hostModuleLayoutInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,6 +93,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await hostModuleLayoutApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -125,18 +126,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new layout in the host module.",
       inputSchema: hostModuleLayoutInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostModuleLayoutApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -168,23 +163,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing layout in the host module by id.",
       inputSchema: hostModuleLayoutInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await hostModuleLayoutApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -216,22 +205,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing layout in the host module by id.",
       inputSchema: hostModuleLayoutInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostModuleLayoutApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

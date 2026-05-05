@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmWidgetsToFormsApi } from "@sps/crm/relations/widgets-to-forms/sdk/server";
 import { insertSchema as crmWidgetsToFormsInsertSchema } from "@sps/crm/relations/widgets-to-forms/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,8 +12,12 @@ export function registerResources(mcp: McpServer) {
       title: "crm widgets-to-forms relation",
       description: "Get list of all widgets-to-forms relations from crm module",
     },
-    async (uri) => {
-      const resp = await crmWidgetsToFormsApi.find();
+    async (uri, extra) => {
+      const resp = await crmWidgetsToFormsApi.find({
+        options: {
+          headers: getMcpAuthHeaders(extra),
+        },
+      });
 
       return {
         contents: [
@@ -44,17 +48,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all widgets-to-forms relations from crm module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await crmWidgetsToFormsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -88,7 +86,7 @@ export function registerTools(mcp: McpServer) {
         id: crmWidgetsToFormsInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -96,6 +94,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await crmWidgetsToFormsApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -126,18 +127,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new widgets-to-forms relation in the crm module.",
       inputSchema: crmWidgetsToFormsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await crmWidgetsToFormsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -169,23 +164,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing widgets-to-forms relation by id.",
       inputSchema: crmWidgetsToFormsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await crmWidgetsToFormsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -217,22 +206,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing widgets-to-forms relation by id.",
       inputSchema: crmWidgetsToFormsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await crmWidgetsToFormsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
