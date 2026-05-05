@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all profiles-to-website-builder-module-widgets relations from social module",
     },
     async (uri) => {
-      const resp = await socialProfilesToWebsiteBuilderModuleWidgetsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await socialProfilesToWebsiteBuilderModuleWidgetsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

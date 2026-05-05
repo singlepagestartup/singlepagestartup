@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all subjects-to-ecommerce-module-orders relations from rbac module",
     },
     async (uri) => {
-      const resp = await rbacSubjectsToEcommerceModuleOrdersApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await rbacSubjectsToEcommerceModuleOrdersApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

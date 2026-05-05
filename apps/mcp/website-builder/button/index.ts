@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all buttons from website-builder module",
     },
     async (uri) => {
-      const resp = await websiteBuilderButtonApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await websiteBuilderButtonApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

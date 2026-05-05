@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all subjects from rbac module",
     },
     async (uri) => {
-      const resp = await rbacSubjectApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await rbacSubjectApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

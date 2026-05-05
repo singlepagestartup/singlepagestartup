@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all subjects-to-blog-module-articles relations from rbac module",
     },
     async (uri) => {
-      const resp = await rbacSubjectsToBlogModuleArticlesApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await rbacSubjectsToBlogModuleArticlesApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

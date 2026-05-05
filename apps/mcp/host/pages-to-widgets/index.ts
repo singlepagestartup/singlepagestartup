@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all pages-to-widgets relations from host module",
     },
     async (uri) => {
-      const resp = await hostPagesToWidgetsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await hostPagesToWidgetsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

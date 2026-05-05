@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all inputs-to-options relations from crm module",
     },
     async (uri) => {
-      const resp = await crmInputsToOptionsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await crmInputsToOptionsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

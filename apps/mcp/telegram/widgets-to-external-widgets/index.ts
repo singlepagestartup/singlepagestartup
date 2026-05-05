@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all widgets-to-external-widgets relations from telegram module",
     },
     async (uri) => {
-      const resp = await telegramWidgetsToExternalWidgetsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await telegramWidgetsToExternalWidgetsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all articles-to-ecommerce-module-products relations from blog module",
     },
     async (uri) => {
-      const resp = await blogArticlesToEcommerceModuleProductsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await blogArticlesToEcommerceModuleProductsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all categories-to-website-builder-module-widgets relations from blog module",
     },
     async (uri) => {
-      const resp = await blogCategoriesToWebsiteBuilderModuleWidgetsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await blogCategoriesToWebsiteBuilderModuleWidgetsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

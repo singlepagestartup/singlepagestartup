@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all orders-to-products relations from ecommerce module",
     },
     async (uri) => {
-      const resp = await ecommerceOrdersToProductsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await ecommerceOrdersToProductsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

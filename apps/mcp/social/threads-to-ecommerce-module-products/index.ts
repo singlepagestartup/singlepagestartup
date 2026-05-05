@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all threads-to-ecommerce-module-products relations from social module",
     },
     async (uri) => {
-      const resp = await socialThreadsToEcommerceModuleProductsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await socialThreadsToEcommerceModuleProductsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

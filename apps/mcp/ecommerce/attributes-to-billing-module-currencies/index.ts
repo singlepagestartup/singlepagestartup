@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all attributes-to-billing-module-currencies relations from ecommerce module",
     },
     async (uri) => {
-      const resp = await ecommerceAttributesToBillingModuleCurrenciesApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await ecommerceAttributesToBillingModuleCurrenciesApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

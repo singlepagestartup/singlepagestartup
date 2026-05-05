@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all payment-intents-to-currencies relations from billing module",
     },
     async (uri) => {
-      const resp = await billingPaymentIntentsToCurrenciesApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await billingPaymentIntentsToCurrenciesApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

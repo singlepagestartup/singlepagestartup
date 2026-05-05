@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all widgets-to-logotypes relations from website-builder module",
     },
     async (uri) => {
-      const resp = await websiteBuilderWidgetsToLogotypesApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await websiteBuilderWidgetsToLogotypesApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

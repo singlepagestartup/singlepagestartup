@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all profiles from social module",
     },
     async (uri) => {
-      const resp = await socialProfileApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await socialProfileApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

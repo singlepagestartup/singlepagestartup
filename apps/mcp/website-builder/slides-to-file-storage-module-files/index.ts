@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all slides-to-file-storage-module-files relations from website-builder module",
     },
     async (uri) => {
-      const resp = await websiteBuilderSlidesToFileStorageModuleFilesApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await websiteBuilderSlidesToFileStorageModuleFilesApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

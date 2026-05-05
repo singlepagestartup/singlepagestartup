@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all steps-to-inputs relations from crm module",
     },
     async (uri) => {
-      const resp = await crmStepsToInputsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await crmStepsToInputsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

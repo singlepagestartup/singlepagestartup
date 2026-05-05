@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all pages from telegram module",
     },
     async (uri) => {
-      const resp = await telegramPageApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await telegramPageApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

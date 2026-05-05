@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all pages-to-metadata relations from host module",
     },
     async (uri) => {
-      const resp = await hostPagesToMetadataApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await hostPagesToMetadataApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

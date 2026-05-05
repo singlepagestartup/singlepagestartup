@@ -13,7 +13,17 @@ export function registerResources(mcp: McpServer) {
       description: "Get list of all widgets from social module",
     },
     async (uri) => {
-      const resp = await socialWidgetApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await socialWidgetApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [

@@ -14,7 +14,17 @@ export function registerResources(mcp: McpServer) {
         "Get list of all profiles-to-actions relations from social module",
     },
     async (uri) => {
-      const resp = await socialProfilesToActionsApi.find();
+      if (!RBAC_SECRET_KEY) {
+        throw new Error("RBAC_SECRET_KEY is not set");
+      }
+
+      const resp = await socialProfilesToActionsApi.find({
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          },
+        },
+      });
 
       return {
         contents: [
