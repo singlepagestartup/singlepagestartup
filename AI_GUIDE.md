@@ -111,7 +111,7 @@ For interactive discovery/testing, use:
 npm run mcp:inspector
 ```
 
-Content write tools require `RBAC_SECRET_KEY`, and SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow.
+MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Generic content-management tools also accept `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`; resources need auth from transport headers, cookies, MCP auth info, or request metadata because resources have no input schema.
 
 ### 6.1 MCP content-management workflow
 

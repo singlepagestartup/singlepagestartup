@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { insertSchema as socialChatsToMessagesInsertSchema } from "@sps/social/relations/chats-to-messages/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all chats-to-messages relations from social module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await socialChatsToMessagesApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all chats-to-messages relations from social module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await socialChatsToMessagesApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -99,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: socialChatsToMessagesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -107,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await socialChatsToMessagesApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -138,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new chats-to-messages relation in the social module.",
       inputSchema: socialChatsToMessagesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await socialChatsToMessagesApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -181,23 +166,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing chats-to-messages relation by id.",
       inputSchema: socialChatsToMessagesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await socialChatsToMessagesApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -229,22 +208,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing chats-to-messages relation by id.",
       inputSchema: socialChatsToMessagesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await socialChatsToMessagesApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

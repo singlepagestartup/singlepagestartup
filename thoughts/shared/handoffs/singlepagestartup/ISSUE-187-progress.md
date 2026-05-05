@@ -4,7 +4,7 @@ issue_title: "Enable Codex content management through the MCP server"
 start_date: 2026-05-04T21:24:06Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-187.md
 status: complete
-completed_date: 2026-05-04T22:44:32Z
+completed_date: 2026-05-05T16:30:00Z
 ---
 
 # Implementation Progress: ISSUE-187 - Enable Codex content management through the MCP server
@@ -54,6 +54,13 @@ completed_date: 2026-05-04T22:44:32Z
 
 **Notes**: Updated `README.md`, `AI_GUIDE.md`, and `libs/modules/host/README.md`. Focused MCP checks pass; repo-wide lint passes with pre-existing warnings in unrelated packages.
 
+### Follow-up: Forwarded MCP Auth
+
+- [x] Completed: 2026-05-05T16:30:00Z
+- [x] Automated verification: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`, `git diff --check`
+
+**Notes**: Removed MCP `.env` root-secret usage from MCP-to-API calls. Generated MCP resources/tools, count tools, and content-management tools now forward caller auth from `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input.
+
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
@@ -67,7 +74,8 @@ completed_date: 2026-05-04T22:44:32Z
 
 - Added `apps/mcp/content-management.ts` and `apps/mcp/lib/content-management/*` for generic MCP content management.
 - Registered content-management resources/tools from `apps/mcp/actions.ts`.
-- Added BDD unit tests for registration, schemas, response envelopes, RBAC headers, localized field merging, generic operations, delete guardrails, and host graph traversal.
+- Added BDD unit tests for registration, schemas, response envelopes, forwarded auth headers, localized field merging, generic operations, delete guardrails, and host graph traversal.
+- Removed MCP process-level `RBAC_SECRET_KEY` auth from API calls and replaced it with caller-provided auth propagation.
 - Documented the MCP content-management workflow in the root, AI, and host module docs.
 
 ### Pull Request
@@ -84,4 +92,4 @@ completed_date: 2026-05-04T22:44:32Z
 
 ---
 
-**Last updated**: 2026-05-04T22:44:32Z
+**Last updated**: 2026-05-05T16:30:00Z

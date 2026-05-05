@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderLogotypeApi } from "@sps/website-builder/models/logotype/sdk/server";
 import { insertSchema as websiteBuilderLogotypeInsertSchema } from "@sps/website-builder/models/logotype/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,16 +12,10 @@ export function registerResources(mcp: McpServer) {
       title: "website-builder module logotypes",
       description: "Get list of all logotypes from website-builder module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await websiteBuilderLogotypeApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -53,17 +47,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all logotypes from website-builder module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await websiteBuilderLogotypeApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -97,7 +85,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderLogotypeInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -105,6 +93,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await websiteBuilderLogotypeApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -135,18 +126,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new logotype in the website-builder module.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderLogotypeApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -179,23 +164,17 @@ export function registerTools(mcp: McpServer) {
         "Update an existing logotype in the website-builder module by id.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await websiteBuilderLogotypeApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -228,22 +207,16 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing logotype in the website-builder module by id.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderLogotypeApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

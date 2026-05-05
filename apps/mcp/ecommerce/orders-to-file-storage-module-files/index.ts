@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceOrdersToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/server";
 import { insertSchema as ecommerceOrdersToFileStorageModuleFilesInsertSchema } from "@sps/ecommerce/relations/orders-to-file-storage-module-files/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all orders-to-file-storage-module-files relations from ecommerce module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await ecommerceOrdersToFileStorageModuleFilesApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all orders-to-file-storage-module-files relations from ecommerce module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await ecommerceOrdersToFileStorageModuleFilesApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -99,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: ecommerceOrdersToFileStorageModuleFilesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -108,6 +96,9 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await ecommerceOrdersToFileStorageModuleFilesApi.findById({
             id: args.id,
+            options: {
+              headers: getMcpAuthHeaders(extra),
+            },
           });
 
         return {
@@ -139,18 +130,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new orders-to-file-storage-module-files relation in the ecommerce module.",
       inputSchema: ecommerceOrdersToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await ecommerceOrdersToFileStorageModuleFilesApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -184,23 +169,17 @@ export function registerTools(mcp: McpServer) {
         "Update an existing orders-to-file-storage-module-files relation by id.",
       inputSchema: ecommerceOrdersToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await ecommerceOrdersToFileStorageModuleFilesApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -234,22 +213,16 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing orders-to-file-storage-module-files relation by id.",
       inputSchema: ecommerceOrdersToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await ecommerceOrdersToFileStorageModuleFilesApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

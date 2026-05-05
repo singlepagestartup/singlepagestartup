@@ -40,7 +40,10 @@ import {
   requireSingleHostGraphCandidate,
   resolveHostGraph,
 } from "./lib/content-management/host-graph";
-import { getRbacSdkOptions } from "./lib/content-management/auth";
+import {
+  getMcpAuthHeaders,
+  getMcpSdkOptions,
+} from "./lib/content-management/auth";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -114,11 +117,13 @@ export function registerTools(mcp: McpServer) {
         "Find model or relation records with filters, order, limit, and offset through the existing SDK/API path.",
       inputSchema: ContentFindInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-find",
-          await findContentRecords(args),
+          await findContentRecords(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -133,11 +138,13 @@ export function registerTools(mcp: McpServer) {
       description: "Count model or relation records with optional filters.",
       inputSchema: ContentCountInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-count",
-          await countContentRecords(args),
+          await countContentRecords(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -152,11 +159,13 @@ export function registerTools(mcp: McpServer) {
       description: "Get one content entity record by id.",
       inputSchema: ContentGetByIdInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-get-by-id",
-          await getContentRecordById(args),
+          await getContentRecordById(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -172,11 +181,13 @@ export function registerTools(mcp: McpServer) {
         "Create a model or relation record through the existing SDK/API path. Use dryRun for payload validation without writing.",
       inputSchema: ContentCreateInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-create",
-          await createContentRecord(args),
+          await createContentRecord(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -192,11 +203,13 @@ export function registerTools(mcp: McpServer) {
         "Update a model or relation record through the existing SDK/API path. Use dryRun for payload validation without writing.",
       inputSchema: ContentUpdateInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-update",
-          await updateContentRecord(args),
+          await updateContentRecord(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -212,11 +225,13 @@ export function registerTools(mcp: McpServer) {
         "Read a record and return the confirmation token required by content-record-delete-apply.",
       inputSchema: ContentDeletePreviewInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-delete-preview",
-          await previewDeleteContentRecord(args),
+          await previewDeleteContentRecord(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -232,11 +247,13 @@ export function registerTools(mcp: McpServer) {
         "Delete a record only after content-record-delete-preview returned a matching confirmation token.",
       inputSchema: ContentDeleteApplyInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-record-delete-apply",
-          await applyDeleteContentRecord(args),
+          await applyDeleteContentRecord(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -252,11 +269,13 @@ export function registerTools(mcp: McpServer) {
         "Resolve a host page URL into page widgets, host widgets, external widget relations, and supported external widget candidates.",
       inputSchema: HostGraphPreviewInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-host-graph-preview",
-          await resolveHostGraph(args),
+          await resolveHostGraph(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -272,11 +291,13 @@ export function registerTools(mcp: McpServer) {
         "Merge and update one locale key in a localized JSON field while preserving sibling locales.",
       inputSchema: LocalizedFieldUpdateInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
+        const authHeaders = getMcpAuthHeaders(extra, args);
+
         return okResponse(
           "content-localized-field-update",
-          await updateLocalizedContentField(args),
+          await updateLocalizedContentField(args, { authHeaders }),
         );
       } catch (error) {
         return unknownErrorResponse(error);
@@ -292,7 +313,7 @@ export function registerTools(mcp: McpServer) {
         "Resolve a host URL and unambiguous external widget candidate, then dry-run or apply a locale-safe field update.",
       inputSchema: HostGraphLocalizedFieldUpdateInputSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         const parsed = HostGraphLocalizedFieldUpdateInputSchema.safeParse(args);
 
@@ -300,7 +321,8 @@ export function registerTools(mcp: McpServer) {
           return errorResponse("validation", parsed.error.message);
         }
 
-        const graph = await resolveHostGraph(parsed.data);
+        const authHeaders = getMcpAuthHeaders(extra, parsed.data);
+        const graph = await resolveHostGraph(parsed.data, { authHeaders });
         const candidate = requireSingleHostGraphCandidate({
           result: graph,
           input: parsed.data,
@@ -341,7 +363,7 @@ export function registerTools(mcp: McpServer) {
         const updated = await descriptor.api.update({
           id: candidate.externalWidget.id,
           data,
-          options: getRbacSdkOptions(),
+          options: getMcpSdkOptions(authHeaders),
         });
 
         return okResponse("content-host-graph-localized-field-update", {

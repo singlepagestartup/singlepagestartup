@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { z } from "zod";
+import { McpAuthFieldsSchema, getMcpAuthHeaders } from "./auth";
 
 const CountFilterMethodSchema = z.enum([
   "eq",
@@ -17,6 +17,7 @@ const CountFilterMethodSchema = z.enum([
 ]);
 
 const CountParamsSchema = z.object({
+  auth: McpAuthFieldsSchema,
   filters: z
     .object({
       and: z
@@ -34,7 +35,7 @@ const CountParamsSchema = z.object({
 
 interface ICountableApi {
   count: (props?: {
-    params?: z.infer<typeof CountParamsSchema>;
+    params?: Omit<z.infer<typeof CountParamsSchema>, "auth">;
     options?: {
       headers?: Record<string, string>;
     };
@@ -55,24 +56,19 @@ export function registerCountTool(
       description,
       inputSchema: CountParamsSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const parsed = CountParamsSchema.safeParse(args);
 
         if (!parsed.success) {
           throw new Error(parsed.error.message);
         }
 
+        const { auth, ...params } = parsed.data;
         const count = await api.count({
-          params: parsed.data,
+          params,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra, { auth }),
           },
         });
 

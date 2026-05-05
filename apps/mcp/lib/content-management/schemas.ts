@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { McpAuthFieldsSchema } from "../auth";
 
 export const ContentEntityKeySchema = z.enum([
   "host.page",
@@ -65,7 +66,12 @@ export const ContentEntitySelectorSchema = z.object({
 
 export const ContentEntityDescribeInputSchema = ContentEntitySelectorSchema;
 
+export const ContentAuthInputSchema = z.object({
+  auth: McpAuthFieldsSchema,
+});
+
 export const ContentFindInputSchema = ContentEntitySelectorSchema.extend({
+  auth: ContentAuthInputSchema.shape.auth,
   filters: ContentFiltersSchema.optional(),
   orderBy: ContentOrderBySchema.optional(),
   limit: z.number().int().min(1).max(100).default(25),
@@ -73,14 +79,17 @@ export const ContentFindInputSchema = ContentEntitySelectorSchema.extend({
 });
 
 export const ContentCountInputSchema = ContentEntitySelectorSchema.extend({
+  auth: ContentAuthInputSchema.shape.auth,
   filters: ContentFiltersSchema.optional(),
 });
 
 export const ContentGetByIdInputSchema = ContentEntitySelectorSchema.extend({
+  auth: ContentAuthInputSchema.shape.auth,
   id: z.string().min(1),
 });
 
 export const ContentCreateInputSchema = ContentEntitySelectorSchema.extend({
+  auth: ContentAuthInputSchema.shape.auth,
   data: z.record(z.any()),
   dryRun: z.boolean().default(false),
 });
@@ -107,6 +116,7 @@ export const LocalizedFieldUpdateInputSchema = ContentGetByIdInputSchema.extend(
 );
 
 export const HostGraphPreviewInputSchema = z.object({
+  auth: ContentAuthInputSchema.shape.auth,
   url: z.string().min(1),
   language: z.string().min(2).default("en"),
   externalModule: z.string().optional(),

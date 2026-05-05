@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmFormsToRequestsApi } from "@sps/crm/relations/forms-to-requests/sdk/server";
 import { insertSchema as crmFormsToRequestsInsertSchema } from "@sps/crm/relations/forms-to-requests/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all forms-to-requests relations from crm module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await crmFormsToRequestsApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all forms-to-requests relations from crm module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await crmFormsToRequestsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -99,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: crmFormsToRequestsInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -107,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await crmFormsToRequestsApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -137,18 +128,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new forms-to-requests relation in the crm module.",
       inputSchema: crmFormsToRequestsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await crmFormsToRequestsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -180,23 +165,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing forms-to-requests relation by id.",
       inputSchema: crmFormsToRequestsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await crmFormsToRequestsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -228,22 +207,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing forms-to-requests relation by id.",
       inputSchema: crmFormsToRequestsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await crmFormsToRequestsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

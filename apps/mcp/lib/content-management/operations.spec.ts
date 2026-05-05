@@ -2,7 +2,7 @@
  * BDD Suite: MCP content-management generic operations
  * Given content entities expose mocked server SDK adapters
  * When Codex calls generic find, create, update, delete, and localized update operations
- * Then the operations validate input, forward SDK calls with RBAC headers, and respect dry-run or confirmation guardrails
+ * Then the operations validate input, forward caller auth headers, and respect dry-run or confirmation guardrails
  */
 
 import { z } from "zod";
@@ -17,7 +17,9 @@ import {
 } from "./operations";
 import { IContentEntityDescriptor } from "./types";
 
-const originalRbacSecretKey = process.env.RBAC_SECRET_KEY;
+const authHeaders = {
+  Authorization: "Bearer test-jwt",
+};
 
 function createApi(records: Record<string, any>[] = []) {
   return {
@@ -81,12 +83,7 @@ function createDescriptor(
 }
 
 describe("MCP content-management generic operations", () => {
-  beforeEach(() => {
-    process.env.RBAC_SECRET_KEY = "test-secret";
-  });
-
   afterEach(() => {
-    process.env.RBAC_SECRET_KEY = originalRbacSecretKey;
     jest.clearAllMocks();
   });
 
@@ -124,9 +121,9 @@ describe("MCP content-management generic operations", () => {
    * BDD Scenario: Filtered find forwards query arguments
    * Given a content entity SDK adapter supports filtered find
    * When Codex asks for blog widgets with filters and ordering
-   * Then filters, order, limit, and RBAC headers are forwarded to the SDK
+   * Then filters, order, limit, and caller auth headers are forwarded to the SDK
    */
-  it("forwards filtered find arguments with RBAC headers", async () => {
+  it("forwards filtered find arguments with caller auth headers", async () => {
     const api = createApi([{ id: "widget-1" }]);
     const registry = [createDescriptor(api)];
 
@@ -148,7 +145,7 @@ describe("MCP content-management generic operations", () => {
           },
           limit: 2,
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual([{ id: "widget-1" }]);
 
@@ -169,9 +166,7 @@ describe("MCP content-management generic operations", () => {
         limit: 2,
       },
       options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-secret",
-        },
+        headers: authHeaders,
       },
     });
   });
@@ -213,9 +208,9 @@ describe("MCP content-management generic operations", () => {
    * BDD Scenario: Update forwards validated patch
    * Given a content entity SDK adapter supports update
    * When Codex applies a generic update
-   * Then the validated patch and RBAC headers are forwarded to the SDK
+   * Then the validated patch and caller auth headers are forwarded to the SDK
    */
-  it("forwards generic update patches with RBAC headers", async () => {
+  it("forwards generic update patches with caller auth headers", async () => {
     const api = createApi();
     const registry = [createDescriptor(api)];
 
@@ -229,7 +224,7 @@ describe("MCP content-management generic operations", () => {
           },
           dryRun: false,
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual({
       id: "widget-1",
@@ -242,9 +237,7 @@ describe("MCP content-management generic operations", () => {
         adminTitle: "Fresh Articles",
       },
       options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-secret",
-        },
+        headers: authHeaders,
       },
     });
   });
@@ -265,7 +258,7 @@ describe("MCP content-management generic operations", () => {
           entity: "blog.widget",
           id: "widget-1",
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual({
       entity: "blog.widget",
@@ -285,7 +278,7 @@ describe("MCP content-management generic operations", () => {
           confirm: true,
           confirmationToken: "wrong-token",
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).rejects.toThrow(
       "Validation error. Delete confirmation token does not match entity and id",
@@ -299,7 +292,7 @@ describe("MCP content-management generic operations", () => {
           confirm: true,
           confirmationToken: "blog.widget:widget-1",
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual({
       id: "widget-1",
@@ -308,9 +301,7 @@ describe("MCP content-management generic operations", () => {
     expect(api.delete).toHaveBeenCalledWith({
       id: "widget-1",
       options: {
-        headers: {
-          "X-RBAC-SECRET-KEY": "test-secret",
-        },
+        headers: authHeaders,
       },
     });
   });
@@ -363,7 +354,7 @@ describe("MCP content-management generic operations", () => {
           entity: "blog.widget",
           id: "widget-1",
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -424,7 +415,7 @@ describe("MCP content-management generic operations", () => {
           value: "Fresh articles",
           dryRun: true,
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual({
       operation: "localized-field-update",

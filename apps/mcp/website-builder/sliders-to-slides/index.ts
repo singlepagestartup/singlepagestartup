@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderSlidersToSlidesApi } from "@sps/website-builder/relations/sliders-to-slides/sdk/server";
 import { insertSchema as websiteBuilderSlidersToSlidesInsertSchema } from "@sps/website-builder/relations/sliders-to-slides/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all sliders-to-slides relations from website-builder module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await websiteBuilderSlidersToSlidesApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all sliders-to-slides relations from website-builder module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await websiteBuilderSlidersToSlidesApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -99,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderSlidersToSlidesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -107,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await websiteBuilderSlidersToSlidesApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -138,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new sliders-to-slides relation in the website-builder module.",
       inputSchema: websiteBuilderSlidersToSlidesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderSlidersToSlidesApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -181,23 +166,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing sliders-to-slides relation by id.",
       inputSchema: websiteBuilderSlidersToSlidesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await websiteBuilderSlidersToSlidesApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -229,22 +208,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing sliders-to-slides relation by id.",
       inputSchema: websiteBuilderSlidersToSlidesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await websiteBuilderSlidersToSlidesApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

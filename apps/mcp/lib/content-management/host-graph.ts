@@ -3,7 +3,7 @@ import {
   IHostGraphLocalizedFieldUpdateInput,
   IHostGraphPreviewInput,
 } from "./schemas";
-import { getRbacSdkOptions } from "./auth";
+import { getMcpSdkOptions } from "./auth";
 import {
   contentEntityRegistry,
   requireContentEntityDescriptor,
@@ -18,6 +18,7 @@ import {
 
 export interface IHostGraphOptions {
   registry?: IContentEntityDescriptor[];
+  authHeaders?: Record<string, string>;
 }
 
 function normalizeUrl(url: string) {
@@ -62,6 +63,7 @@ function buildFilterParams(filters: IContentQueryParams["filters"]) {
 async function findPageByUrl(props: {
   url: string;
   descriptor: IContentEntityDescriptor;
+  authHeaders: Record<string, string>;
 }) {
   if (props.descriptor.api.findByUrl) {
     try {
@@ -69,6 +71,7 @@ async function findPageByUrl(props: {
         url: props.url,
         catchErrors: true,
         silentErrorStatuses: [404],
+        options: getMcpSdkOptions(props.authHeaders),
       });
 
       if (page?.id) {
@@ -89,7 +92,7 @@ async function findPageByUrl(props: {
         },
       ],
     }),
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(props.authHeaders),
   });
 
   return pages?.[0];
@@ -98,11 +101,12 @@ async function findPageByUrl(props: {
 async function findByFilters(props: {
   descriptor: IContentEntityDescriptor;
   params: IContentQueryParams;
+  authHeaders: Record<string, string>;
 }) {
   return (
     (await props.descriptor.api.find({
       params: props.params,
-      options: getRbacSdkOptions(),
+      options: getMcpSdkOptions(props.authHeaders),
     })) ?? []
   );
 }
@@ -110,16 +114,18 @@ async function findByFilters(props: {
 async function findById(props: {
   descriptor: IContentEntityDescriptor;
   id: string;
+  authHeaders: Record<string, string>;
 }) {
   return await props.descriptor.api.findById({
     id: props.id,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(props.authHeaders),
   });
 }
 
 async function resolveExternalWidget(props: {
   externalWidgetRelation: Record<string, any>;
   registry: IContentEntityDescriptor[];
+  authHeaders: Record<string, string>;
 }) {
   if (props.externalWidgetRelation.externalModule !== "blog") {
     return;
@@ -140,6 +146,7 @@ async function resolveExternalWidget(props: {
   const widget = await findById({
     descriptor,
     id: externalWidgetId,
+    authHeaders: props.authHeaders,
   });
 
   return {
@@ -276,6 +283,7 @@ export async function resolveHostGraph(
   }
 
   const registry = options?.registry ?? contentEntityRegistry;
+  const authHeaders = options?.authHeaders ?? {};
   const url = normalizeUrl(parsed.data.url);
   const pageDescriptor = requireContentEntityDescriptor("host.page", registry);
   const pageWidgetsDescriptor = requireContentEntityDescriptor(
@@ -294,6 +302,7 @@ export async function resolveHostGraph(
   const page = await findPageByUrl({
     url,
     descriptor: pageDescriptor,
+    authHeaders,
   });
 
   if (!page?.id) {
@@ -327,6 +336,7 @@ export async function resolveHostGraph(
       },
       limit: 100,
     },
+    authHeaders,
   });
 
   const candidates: IHostGraphCandidate[] = [];
@@ -334,7 +344,11 @@ export async function resolveHostGraph(
   for (const pageWidget of pageWidgets) {
     const widgetId = getStringValue(pageWidget.widgetId);
     const hostWidget = widgetId
-      ? await findById({ descriptor: hostWidgetDescriptor, id: widgetId })
+      ? await findById({
+          descriptor: hostWidgetDescriptor,
+          id: widgetId,
+          authHeaders,
+        })
       : undefined;
 
     if (!hostWidget?.id) {
@@ -371,6 +385,7 @@ export async function resolveHostGraph(
         },
         limit: 100,
       },
+      authHeaders,
     });
 
     if (!externalWidgetRelations.length) {
@@ -396,6 +411,7 @@ export async function resolveHostGraph(
       const externalWidget = await resolveExternalWidget({
         externalWidgetRelation,
         registry,
+        authHeaders,
       });
 
       candidates.push(

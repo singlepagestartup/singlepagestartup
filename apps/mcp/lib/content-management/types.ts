@@ -75,6 +75,7 @@ export interface IContentSdkAdapter<
     url: string;
     catchErrors?: boolean;
     silentErrorStatuses?: number[];
+    options?: IContentSdkOptions;
   }) => Promise<TEntity | undefined>;
 }
 

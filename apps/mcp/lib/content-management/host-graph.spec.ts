@@ -13,7 +13,9 @@ import {
 } from "./host-graph";
 import { IContentEntityDescriptor } from "./types";
 
-const originalRbacSecretKey = process.env.RBAC_SECRET_KEY;
+const authHeaders = {
+  Authorization: "Bearer test-jwt",
+};
 
 function createDescriptor(props: {
   key: IContentEntityDescriptor["key"];
@@ -129,12 +131,7 @@ function createCanonicalRegistry() {
 }
 
 describe("MCP content-management host graph resolver", () => {
-  beforeEach(() => {
-    process.env.RBAC_SECRET_KEY = "test-secret";
-  });
-
   afterEach(() => {
-    process.env.RBAC_SECRET_KEY = originalRbacSecretKey;
     jest.clearAllMocks();
   });
 
@@ -156,7 +153,7 @@ describe("MCP content-management host graph resolver", () => {
           externalModule: "blog",
           targetText: "Articles",
         },
-        { registry },
+        { registry, authHeaders },
       ),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -186,6 +183,9 @@ describe("MCP content-management host graph resolver", () => {
             and: [{ column: "orderIndex", method: "asc" }],
           },
         }),
+        options: {
+          headers: authHeaders,
+        },
       }),
     );
     expect(externalRelationsDescriptor.api.find).toHaveBeenCalledWith(
@@ -195,6 +195,9 @@ describe("MCP content-management host graph resolver", () => {
             and: [{ column: "orderIndex", method: "asc" }],
           },
         }),
+        options: {
+          headers: authHeaders,
+        },
       }),
     );
   });
@@ -227,7 +230,10 @@ describe("MCP content-management host graph resolver", () => {
     ];
 
     await expect(
-      resolveHostGraph({ url: "/missing", language: "en" }, { registry }),
+      resolveHostGraph(
+        { url: "/missing", language: "en" },
+        { registry, authHeaders },
+      ),
     ).resolves.toEqual({
       url: "/missing",
       language: "en",

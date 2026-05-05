@@ -3,7 +3,7 @@ issue_number: 187
 issue_title: "Enable Codex content management through the MCP server"
 repository: singlepagestartup
 created_at: 2026-05-03T23:10:17Z
-last_updated: 2026-05-04T22:44:32Z
+last_updated: 2026-05-05T16:30:00Z
 status: active
 current_phase: complete
 ---
@@ -48,6 +48,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Summary: Implemented the approved MCP content-management layer with canonical entity discovery, generic filtered CRUD operations, host graph traversal, guarded deletes, and locale-safe update flows.
 - Outputs: `apps/mcp/content-management.ts`, `apps/mcp/lib/content-management/*`, `apps/mcp/content-management.spec.ts`, `apps/mcp/lib/content-management/*.spec.ts`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-187-progress.md`
 - Notes: Moved the GitHub Project status to `In Dev`, synced GitHub comments since the plan marker, and found no new implementation-blocking requirements. Verification passed: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`, and `npm run lint` (repo-wide lint emitted pre-existing warnings outside MCP but exited successfully). Created draft PR https://github.com/singlepagestartup/singlepagestartup/pull/188 and submitted it for Code Review.
+- Follow-up: Removed MCP `.env` root-secret authorization for MCP-to-API calls. Generated MCP resources/tools, count tools, and content-management tools now forward caller auth from `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input. Verification passed: `npx nx run mcp:jest:test`, `npx tsc -p apps/mcp/tsconfig.json --noEmit`, `npx nx run mcp:eslint:lint`, and `git diff --check`.
 
 ## Incident Log
 
@@ -78,4 +79,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ## Reusable Learnings
 
 - For MCP content-management tasks, preserve the user-facing natural-language workflow as an acceptance example so later phases can validate schema discovery, relation traversal, and locale-specific edits end to end.
+- MCP resources have no input schema; auth for resource reads must come from transport headers/cookies, MCP auth info, or request metadata. Use generic content-management tools with explicit `auth` input for stdio calls that cannot forward transport auth.
 - In zsh, quote Next.js route segment paths such as `apps/host/app/[[...url]]/page.tsx` before reading them.

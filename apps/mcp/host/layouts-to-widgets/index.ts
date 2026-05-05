@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostLayoutsToWidgetsApi } from "@sps/host/relations/layouts-to-widgets/sdk/server";
 import { insertSchema as hostLayoutsToWidgetsInsertSchema } from "@sps/host/relations/layouts-to-widgets/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all layouts-to-widgets relations from host module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await hostLayoutsToWidgetsApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all layouts-to-widgets relations from host module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await hostLayoutsToWidgetsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -99,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: hostLayoutsToWidgetsInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -107,6 +95,9 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await hostLayoutsToWidgetsApi.findById({
           id: args.id,
+          options: {
+            headers: getMcpAuthHeaders(extra),
+          },
         });
 
         return {
@@ -138,18 +129,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new layouts-to-widgets relation in the host module.",
       inputSchema: hostLayoutsToWidgetsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostLayoutsToWidgetsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -181,23 +166,17 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing layouts-to-widgets relation by id.",
       inputSchema: hostLayoutsToWidgetsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await hostLayoutsToWidgetsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -229,22 +208,16 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing layouts-to-widgets relation by id.",
       inputSchema: hostLayoutsToWidgetsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostLayoutsToWidgetsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

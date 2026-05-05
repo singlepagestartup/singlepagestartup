@@ -14,8 +14,9 @@ This enables workflows such as resolving `/about` through `host.page` -> `host.p
 - Added host graph preview and host graph localized update flows with ambiguity checks.
 - Added locale-safe merge helpers for JSON localized fields such as `title`, `subtitle`, and `description`.
 - Added delete-preview relation context for known host/blog paths.
-- Added RBAC headers to generated MCP resource reads so Inspector resource fetches use the same service authorization as tools.
-- Added BDD Jest coverage for registration, schemas, responses, auth headers, localized merge behavior, generic operations, delete guardrails, and host graph traversal.
+- Replaced MCP `.env` root-secret usage with forwarded MCP auth: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input.
+- Added forwarded auth to generated MCP resources/tools and to host `findByUrl` SDK calls so protected API reads use the caller's credential instead of the MCP process credential.
+- Added BDD Jest coverage for registration, schemas, responses, forwarded auth headers, localized merge behavior, generic operations, delete guardrails, and host graph traversal.
 - Documented the MCP content-management workflow in `README.md`, `AI_GUIDE.md`, and `libs/modules/host/README.md`.
 
 ## Verification

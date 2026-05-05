@@ -13,7 +13,7 @@ import {
   ILocalizedFieldUpdateInput,
   LocalizedFieldUpdateInputSchema,
 } from "./schemas";
-import { getRbacSdkOptions } from "./auth";
+import { getMcpSdkOptions } from "./auth";
 import { buildLocalizedFieldPatch } from "./localized-field";
 import {
   contentEntityRegistry,
@@ -28,6 +28,7 @@ import {
 
 export interface IContentOperationOptions {
   registry?: IContentEntityDescriptor[];
+  authHeaders?: Record<string, string>;
 }
 
 export function createDeleteConfirmationToken(props: {
@@ -133,7 +134,7 @@ export async function findContentRecords(
 
   return await descriptor.api.find({
     params: buildFindParams(parsed.data),
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 }
 
@@ -158,7 +159,7 @@ export async function countContentRecords(
 
   return await descriptor.api.count({
     params: buildCountParams(parsed.data),
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 }
 
@@ -180,7 +181,7 @@ export async function getContentRecordById(
 
   const record = await descriptor.api.findById({
     id: parsed.data.id,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 
   if (!record) {
@@ -417,7 +418,7 @@ export async function createContentRecord(
 
   return await descriptor.api.create({
     data,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 }
 
@@ -451,7 +452,7 @@ export async function updateContentRecord(
   return await descriptor.api.update({
     id: parsed.data.id,
     data,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 }
 
@@ -507,7 +508,7 @@ export async function applyDeleteContentRecord(
 
   return await descriptor.api.delete({
     id: parsed.data.id,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 }
 
@@ -550,7 +551,7 @@ export async function updateLocalizedContentField(
   const updated = await descriptor.api.update({
     id: parsed.data.id,
     data,
-    options: getRbacSdkOptions(),
+    options: getMcpSdkOptions(options?.authHeaders ?? {}),
   });
 
   return {

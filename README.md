@@ -102,7 +102,14 @@ Or inspect and call tools interactively:
 npm run mcp:inspector
 ```
 
-Required environment values are loaded from the app env files created by `./up.sh`; content write tools need `RBAC_SECRET_KEY`, and SDK calls need the configured API service URL. A typical edit flow is:
+Required environment values are loaded from the app env files created by `./up.sh`; SDK calls need the configured API service URL. MCP does not read `RBAC_SECRET_KEY` from its `.env` for content/API access. Pass authorization with the MCP request instead:
+
+- Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
+- For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
+- HTTP transports may also forward the frontend cookies `rbac.subject.jwt` or `rbac.secret-key`.
+- Generic content-management tools also accept explicit input auth, for example `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`, which is useful for stdio Inspector calls.
+
+Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
 
 1. Call `content-entity-list` or read `sps://content/entities`.
 2. Use `content-record-find` for filtered model/relation reads, or `content-host-graph-preview` for URL-based page content.

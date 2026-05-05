@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderFeaturesToFileStorageModuleFilesApi } from "@sps/website-builder/relations/features-to-file-storage-module-files/sdk/server";
 import { insertSchema as websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema } from "@sps/website-builder/relations/features-to-file-storage-module-files/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,7 +13,7 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all features-to-file-storage-module-files relations from website-builder module",
     },
-    async (uri) => {
+    async (uri, extra) => {
       const resp =
         await websiteBuilderFeaturesToFileStorageModuleFilesApi.find();
 
@@ -47,18 +47,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all features-to-file-storage-module-files relations from website-builder module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.find({
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: getMcpAuthHeaders(extra),
             },
           });
 
@@ -94,7 +88,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -103,6 +97,9 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.findById({
             id: args.id,
+            options: {
+              headers: getMcpAuthHeaders(extra),
+            },
           });
 
         return {
@@ -136,19 +133,13 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.create({
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: getMcpAuthHeaders(extra),
             },
           });
 
@@ -183,14 +174,10 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity =
@@ -198,9 +185,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: getMcpAuthHeaders(extra),
             },
           });
 
@@ -235,23 +220,17 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.delete({
             id: args.id,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: getMcpAuthHeaders(extra),
             },
           });
 

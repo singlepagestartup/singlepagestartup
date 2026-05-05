@@ -12,6 +12,7 @@ interface Params {
   url: string;
   catchErrors?: boolean;
   silentErrorStatuses?: number[];
+  options?: Partial<NextRequestOptions>;
 }
 
 export async function action({
@@ -19,6 +20,7 @@ export async function action({
   url,
   catchErrors = false,
   silentErrorStatuses,
+  options: requestOptions,
 }: Params) {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
@@ -29,10 +31,13 @@ export async function action({
     : {};
 
   const options: NextRequestOptions = {
+    ...requestOptions,
     headers: {
       ...cacheControlOptions,
+      ...requestOptions?.headers,
     },
     next: {
+      ...requestOptions?.next,
       tags: [route],
     },
   };

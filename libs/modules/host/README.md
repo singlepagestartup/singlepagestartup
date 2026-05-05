@@ -68,6 +68,8 @@ external content connected.
 
 MCP content-management tools can preview the same composition path used by the frontend: resolve `host.page` by URL, read ordered `pages-to-widgets` rows, load the linked `host.widget`, read `widgets-to-external-widgets`, then load the supported external module widget such as `blog.widget`.
 
+MCP callers must forward the same auth accepted by the frontend/API path, such as `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY`; the MCP server does not source root access from its own `.env`.
+
 Use the graph preview result ids for follow-up updates. Locale-specific external widget changes should use localized field updates so one locale key is merged without replacing sibling locales.
 
 ### External widget sources:

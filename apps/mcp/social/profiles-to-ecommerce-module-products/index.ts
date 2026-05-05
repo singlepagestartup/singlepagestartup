@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialProfilesToEcommerceModuleProductsApi } from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/server";
 import { insertSchema as socialProfilesToEcommerceModuleProductsInsertSchema } from "@sps/social/relations/profiles-to-ecommerce-module-products/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,16 +13,10 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all profiles-to-ecommerce-module-products relations from social module",
     },
-    async (uri) => {
-      if (!RBAC_SECRET_KEY) {
-        throw new Error("RBAC_SECRET_KEY is not set");
-      }
-
+    async (uri, extra) => {
       const resp = await socialProfilesToEcommerceModuleProductsApi.find({
         options: {
-          headers: {
-            "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-          },
+          headers: getMcpAuthHeaders(extra),
         },
       });
 
@@ -55,17 +49,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all profiles-to-ecommerce-module-products relations from social module.",
       inputSchema: {},
     },
-    async () => {
+    async (_args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await socialProfilesToEcommerceModuleProductsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -100,7 +88,7 @@ export function registerTools(mcp: McpServer) {
         id: socialProfilesToEcommerceModuleProductsInsertSchema.shape.id,
       },
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -109,6 +97,9 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await socialProfilesToEcommerceModuleProductsApi.findById({
             id: args.id,
+            options: {
+              headers: getMcpAuthHeaders(extra),
+            },
           });
 
         return {
@@ -140,18 +131,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new profiles-to-ecommerce-module-products relation in the social module.",
       inputSchema: socialProfilesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await socialProfilesToEcommerceModuleProductsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -185,23 +170,17 @@ export function registerTools(mcp: McpServer) {
         "Update an existing profiles-to-ecommerce-module-products relation by id.",
       inputSchema: socialProfilesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
-        }
-
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
         }
 
         const entity = await socialProfilesToEcommerceModuleProductsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
@@ -235,22 +214,16 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing profiles-to-ecommerce-module-products relation by id.",
       inputSchema: socialProfilesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args) => {
+    async (args, extra) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await socialProfilesToEcommerceModuleProductsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: getMcpAuthHeaders(extra),
           },
         });
 
