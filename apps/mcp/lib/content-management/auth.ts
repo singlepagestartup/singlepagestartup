@@ -1,9 +1,5 @@
 import { IContentSdkOptions } from "./types";
-export {
-  getMcpAuthHeaders,
-  McpAuthFieldsSchema,
-  McpAuthInputSchema,
-} from "../auth";
+export { getMcpAuthHeaders } from "../auth";
 
 export function getMcpSdkOptions(
   headers: Record<string, string>,

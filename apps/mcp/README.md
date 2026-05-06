@@ -25,63 +25,75 @@ http://127.0.0.1:3001/mcp
 
 `http://127.0.0.1:3001/sse` is also available as a compatibility endpoint.
 
-## Connect Codex CLI or Environment-Aware Desktop
+## Connect Codex
 
-Register the MCP server in Codex with the repository script:
+Codex loads the project-local server from `.codex/config.toml`:
 
-```bash
-export RBAC_SECRET_KEY="<secret>"
-npm run mcp:codex:add:http
+```toml
+[mcp_servers.singlepagestartup]
+url = "http://127.0.0.1:3001/mcp"
+env_http_headers = { "X-RBAC-SECRET-KEY" = "RBAC_SECRET_KEY" }
 ```
 
-This writes to the user-level Codex config (`~/.codex/config.toml`), creates a unique MCP server name for the current project path, and links that server in the current `[projects."<path>"].mcp_servers` list. It stores only the mapping `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`; it does not store the secret value.
+This keeps the config portable across cloned projects. It does not write username-specific `[projects."/Users/..."]` entries to `~/.codex/config.toml`, and it does not store the secret value.
 
-Verify the registration:
-
-```bash
-codex mcp list
-```
-
-Expected output includes:
-
-```text
-name: mcp-<project-folder>-<path-hash>
-transport: streamable_http
-url: http://127.0.0.1:3001/mcp
-env_http_headers: X-RBAC-SECRET-KEY=RBAC_SECRET_KEY
-```
-
-When using Codex CLI, start Codex from an environment that has `RBAC_SECRET_KEY`:
+Start Codex from an environment that has `RBAC_SECRET_KEY`:
 
 ```bash
 RBAC_SECRET_KEY="<secret>" codex
 ```
 
-When using Codex Desktop with environment variables, the app process must also have access to `RBAC_SECRET_KEY`. On macOS, set it with `launchctl setenv RBAC_SECRET_KEY "<secret>"`, then fully quit and reopen Codex Desktop.
-
-## Connect Codex Desktop Without Environment Variables
-
-If Codex Desktop is launched from the app UI and cannot read shell environment variables, configure the MCP server manually in the app:
-
-- URL: `http://127.0.0.1:3001/mcp`
-- Bearer token env var: empty
-- Headers: `X-RBAC-SECRET-KEY` = `<secret>`
-- Headers from environment variables: empty
-
-This stores the secret in the project-specific MCP server entry inside the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual header setup unless you want to switch back to the `RBAC_SECRET_KEY` environment-variable mapping.
-
-If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
+Verify the repository config:
 
 ```bash
-npm run mcp:codex:add:http:desktop
+npm run mcp:codex:add:http
 ```
 
-Expected verification output includes:
+Expected output includes:
 
 ```text
-http_headers: X-RBAC-SECRET-KEY=*****
-env_http_headers: -
+name: singlepagestartup
+url: http://127.0.0.1:3001/mcp
+env_http_headers: X-RBAC-SECRET-KEY=RBAC_SECRET_KEY
 ```
+
+The MCP server name should match the GitHub repository name. For this repository, that name is `singlepagestartup`.
+
+If Codex Desktop is launched only through the app UI and cannot read environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. That stores the secret in local user/app config, not in repository files. If the app clears the value on restart, use an environment-aware launch or implement MCP OAuth/auth instead of committing a static secret.
+
+## Connect Claude Code
+
+Claude Code loads the project-local server from `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "singlepagestartup": {
+      "type": "http",
+      "url": "${MCP_URL:-http://127.0.0.1:3001/mcp}",
+      "headers": {
+        "X-RBAC-SECRET-KEY": "${RBAC_SECRET_KEY}"
+      }
+    }
+  }
+}
+```
+
+Start Claude Code from an environment that has `RBAC_SECRET_KEY`:
+
+```bash
+RBAC_SECRET_KEY="<secret>" claude
+```
+
+Override the MCP URL for a deployed HTTP server without editing repository files:
+
+```bash
+MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
+```
+
+Use `/mcp` inside Claude Code to inspect the connected server.
+
+Claude Desktop and Claude.ai remote connectors cannot reach `127.0.0.1` on your machine. Use Claude Code for local HTTP MCP, or expose the MCP server through HTTPS for remote connectors.
 
 ## Connect MCP Inspector
 
@@ -114,10 +126,10 @@ Expose it through HTTPS, for example:
 https://mcp.example.com/mcp
 ```
 
-Register that URL in Codex:
+Use that URL in Codex by updating the project-local `.codex/config.toml` URL for that deployment, or use Claude Code with `MCP_URL`:
 
 ```bash
-MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
 ```
 
 The aggregate command is:
@@ -126,7 +138,7 @@ The aggregate command is:
 npm run mcp:codex:add
 ```
 
-It currently registers the SPS HTTP MCP server and is the entry point to extend when more repository MCP servers need automatic setup.
+It currently verifies the SPS HTTP MCP project config and is the entry point to extend when more repository MCP servers need automatic setup.
 
 ## Authentication
 
@@ -135,7 +147,7 @@ MCP does not read `RBAC_SECRET_KEY` from `apps/mcp/.env` for content/API access.
 - `Authorization: Bearer <jwt>` using the same JWT as the frontend `rbac.subject.jwt` cookie.
 - `X-RBAC-SECRET-KEY: <secret>` for root/service access in clients that support custom headers.
 - Cookies `rbac.subject.jwt` or `rbac.secret-key` when the transport forwards frontend cookies.
-- Generic content-management tool input, for example `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`.
+- Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
 
 Resources do not have input fields, so protected resource reads need auth from HTTP headers, cookies, MCP auth info, or request metadata.
 
@@ -147,4 +159,4 @@ The stdio server is still available for clients that launch the MCP process dire
 npm run mcp:dev
 ```
 
-The repository `.mcp.json` also points at the stdio entrypoint. Prefer Streamable HTTP for Codex and Inspector workflows that need auth headers.
+Prefer Streamable HTTP for Codex, Claude Code, and Inspector workflows that need auth headers.

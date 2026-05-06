@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { McpAuthFieldsSchema, getMcpAuthHeaders } from "./auth";
+import { getMcpAuthHeaders } from "./auth";
 
 const CountFilterMethodSchema = z.enum([
   "eq",
@@ -17,7 +17,6 @@ const CountFilterMethodSchema = z.enum([
 ]);
 
 const CountParamsSchema = z.object({
-  auth: McpAuthFieldsSchema,
   filters: z
     .object({
       and: z
@@ -35,7 +34,7 @@ const CountParamsSchema = z.object({
 
 interface ICountableApi {
   count: (props?: {
-    params?: Omit<z.infer<typeof CountParamsSchema>, "auth">;
+    params?: z.infer<typeof CountParamsSchema>;
     options?: {
       headers?: Record<string, string>;
     };
@@ -64,11 +63,10 @@ export function registerCountTool(
           throw new Error(parsed.error.message);
         }
 
-        const { auth, ...params } = parsed.data;
         const count = await api.count({
-          params,
+          params: parsed.data,
           options: {
-            headers: getMcpAuthHeaders(extra, { auth }),
+            headers: getMcpAuthHeaders(extra),
           },
         });
 

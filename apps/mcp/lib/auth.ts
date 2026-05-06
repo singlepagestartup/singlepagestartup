@@ -3,23 +3,7 @@ import {
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
 
-export const McpAuthFieldsSchema = z
-  .object({
-    jwt: z.string().min(1).optional(),
-    authorization: z.string().min(1).optional(),
-    rbacSecretKey: z.string().min(1).optional(),
-  })
-  .optional();
-
-export const McpAuthInputSchema = z
-  .object({
-    auth: McpAuthFieldsSchema,
-  })
-  .optional();
-
-export type IMcpAuthInput = z.infer<typeof McpAuthInputSchema>;
 export type IMcpRequestExtra = RequestHandlerExtra<
   ServerRequest,
   ServerNotification
@@ -98,14 +82,11 @@ function getAuthInfoExtraString(
 
 export function getMcpAuthHeaders(
   extra?: IMcpRequestExtra,
-  input?: IMcpAuthInput,
 ): Record<string, string> {
   const requestHeaders = extra?.requestInfo?.headers ?? {};
   const cookies = parseCookieHeader(getHeader(requestHeaders, "cookie"));
-  const inputAuth = input?.auth;
 
   const rbacSecretKey =
-    inputAuth?.rbacSecretKey ??
     getHeader(requestHeaders, "x-rbac-secret-key") ??
     cookies["rbac.secret-key"] ??
     getAuthInfoExtraString(extra, "x-rbac-secret-key") ??
@@ -114,8 +95,6 @@ export function getMcpAuthHeaders(
     getMetaString(extra, "rbacSecretKey");
 
   const authorization =
-    normalizeAuthorization(inputAuth?.authorization) ??
-    normalizeAuthorization(inputAuth?.jwt) ??
     normalizeAuthorization(getHeader(requestHeaders, "authorization")) ??
     normalizeAuthorization(cookies["rbac.subject.jwt"]) ??
     normalizeAuthorization(extra?.authInfo?.token) ??
@@ -137,6 +116,6 @@ export function getMcpAuthHeaders(
   }
 
   throw new Error(
-    "Authentication error. Provide Authorization: Bearer <jwt> or X-RBAC-SECRET-KEY via MCP request headers, cookies, auth info, _meta, or tool auth input",
+    "Authentication error. Provide Authorization: Bearer <jwt> or X-RBAC-SECRET-KEY via MCP request headers, cookies, auth info, or _meta",
   );
 }

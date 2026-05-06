@@ -119,7 +119,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-find",
@@ -140,7 +140,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-count",
@@ -161,7 +161,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-get-by-id",
@@ -183,7 +183,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-create",
@@ -205,7 +205,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-update",
@@ -227,7 +227,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-delete-preview",
@@ -249,7 +249,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-record-delete-apply",
@@ -271,7 +271,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-host-graph-preview",
@@ -293,7 +293,7 @@ export function registerTools(mcp: McpServer) {
     },
     async (args, extra) => {
       try {
-        const authHeaders = getMcpAuthHeaders(extra, args);
+        const authHeaders = getMcpAuthHeaders(extra);
 
         return okResponse(
           "content-localized-field-update",
@@ -321,7 +321,7 @@ export function registerTools(mcp: McpServer) {
           return errorResponse("validation", parsed.error.message);
         }
 
-        const authHeaders = getMcpAuthHeaders(extra, parsed.data);
+        const authHeaders = getMcpAuthHeaders(extra);
         const graph = await resolveHostGraph(parsed.data, { authHeaders });
         const candidate = requireSingleHostGraphCandidate({
           result: graph,

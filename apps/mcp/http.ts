@@ -118,8 +118,6 @@ function createTransport() {
     if (transport.sessionId) {
       delete transports[transport.sessionId];
     }
-
-    void server.close();
   };
 
   transport.onerror = (error) => {

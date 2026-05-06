@@ -127,26 +127,37 @@ Choose `Streamable HTTP` and connect to `http://127.0.0.1:3001/mcp`. The compati
 npm run mcp:inspector
 ```
 
-To register the HTTP server in Codex App/CLI, provide the RBAC secret key through an environment variable and run:
+Codex and Claude Code use project-local HTTP MCP configs:
+
+- Codex: `.codex/config.toml`
+- Claude Code: `.mcp.json`
+
+Both configs point to `singlepagestartup`, matching the GitHub repository name, and map `X-RBAC-SECRET-KEY` from `RBAC_SECRET_KEY`. They do not store secrets and do not write username-specific `[projects."/Users/..."]` entries to `~/.codex/config.toml`.
+
+Start Codex or Claude Code from an environment that has the RBAC secret:
 
 ```bash
-export RBAC_SECRET_KEY="<secret>"
+RBAC_SECRET_KEY="<secret>" codex
+RBAC_SECRET_KEY="<secret>" claude
+```
+
+Verify the Codex project config:
+
+```bash
 npm run mcp:codex:add:http
 ```
 
-For Codex Desktop launched only through the app UI, configure `X-RBAC-SECRET-KEY` directly in the MCP server `Headers` field instead of relying on environment variables.
-
-If the Desktop UI clears the header value after restart, use `npm run mcp:codex:add:http:desktop` to write static `http_headers` into the user-level Codex config.
-
-The Codex registration scripts generate a unique MCP server name from the current project path and bind it under the current `[projects."<path>"].mcp_servers` entry, so each checkout can have its own MCP URL and auth configuration.
-
-For a remote server, override the URL:
+Claude Code can override the HTTP URL through `.mcp.json` env expansion:
 
 ```bash
-MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
 ```
 
-MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Generic content-management tools also accept `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`; resources need auth from transport headers, cookies, MCP auth info, or request metadata because resources have no input schema.
+If Codex Desktop is launched only through the app UI and cannot read environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. Do not commit static secrets. If the app clears the header on restart, use an environment-aware launch or MCP OAuth/auth instead of repository config.
+
+Claude Desktop and Claude.ai remote connectors cannot reach local `127.0.0.1`; use Claude Code for local HTTP MCP, or expose the MCP server over HTTPS.
+
+MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Tool input schemas do not expose direct auth fields; resources and tools need auth from transport headers, cookies, MCP auth info, or request metadata.
 
 ### 6.1 MCP content-management workflow
 

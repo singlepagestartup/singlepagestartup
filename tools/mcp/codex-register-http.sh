@@ -1,67 +1,61 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-project_dir="$(pwd -P)"
-project_slug="$(basename "$project_dir" | tr "[:upper:]" "[:lower:]" | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-project_slug="${project_slug:-project}"
-project_hash="$(printf "%s" "$project_dir" | cksum | awk '{print $1}')"
-name="mcp-${project_slug}-${project_hash}"
-url="${MCP_URL:-http://127.0.0.1:3001/mcp}"
-config_file="${CODEX_HOME:-$HOME/.codex}/config.toml"
+config_file=".codex/config.toml"
 
-if ! command -v codex >/dev/null 2>&1; then
-  echo "codex CLI is required to register MCP servers." >&2
+remote_url="$(git remote get-url origin 2>/dev/null || true)"
+if [ -n "$remote_url" ]; then
+  server_name="$(basename "$remote_url")"
+  server_name="${server_name%.git}"
+else
+  server_name="$(node -p "require('./package.json').name" 2>/dev/null || true)"
+fi
+
+if [ -z "$server_name" ]; then
+  echo "Cannot determine MCP server name from git origin or package.json." >&2
   exit 1
 fi
 
-toml_escape() {
-  local value="$1"
-  value="${value//\\/\\\\}"
-  value="${value//\"/\\\"}"
-  printf "%s" "$value"
-}
+if [ ! -f "$config_file" ]; then
+  echo "Missing $config_file. Run this command from the repository root." >&2
+  exit 1
+fi
 
-upsert_project_binding() {
-  SERVER_NAME="$name" PROJECT_DIR="$project_dir" perl -0pi -e '
-    my $server = $ENV{"SERVER_NAME"};
-    my $project = $ENV{"PROJECT_DIR"};
-    my $project_re = quotemeta($project);
+if ! grep -q "^\[mcp_servers\\.$server_name\]" "$config_file"; then
+  echo "Missing [mcp_servers.$server_name] in $config_file." >&2
+  echo "MCP server name should match the GitHub repository name." >&2
+  exit 1
+fi
 
-    if (s/\n?\[projects\."$project_re"\]\n((?:(?!\n\[).)*)/replace_project($project, $server, $1)/se) {
-      # Existing project table updated.
-    } else {
-      $_ .= "\n[projects.\"$project\"]\ntrust_level = \"trusted\"\nmcp_servers = [\"$server\"]\n";
-    }
+if ! grep -q 'env_http_headers = { "X-RBAC-SECRET-KEY" = "RBAC_SECRET_KEY" }' "$config_file"; then
+  echo "Expected X-RBAC-SECRET-KEY to be mapped from RBAC_SECRET_KEY in $config_file." >&2
+  exit 1
+fi
 
-    sub replace_project {
-      my ($project, $server, $body) = @_;
-      my @servers = ($server);
-      if ($body =~ s/^mcp_servers\s*=\s*\[(.*?)\]\n?//ms) {
-        my $list = $1;
-        while ($list =~ /"((?:\\.|[^"\\])*)"/g) {
-          my $item = $1;
-          next if $item eq $server || $item eq "sps-mcp";
-          push @servers, $item;
-        }
-      }
-      $body = "trust_level = \"trusted\"\n" . $body unless $body =~ /^trust_level\s*=/m;
-      $body =~ s/\n*\z/\n/;
-      return "\n[projects.\"$project\"]\n$body" . "mcp_servers = [" . join(", ", map { "\"$_\"" } @servers) . "]\n";
-    }
-  ' "$config_file"
-}
+configured_url="$(awk '
+  $0 == "[mcp_servers." server_name "]" { in_server = 1; next }
+  /^\[/ { in_server = 0 }
+  in_server && /^url = / {
+    sub(/^url = "/, "")
+    sub(/"$/, "")
+    print
+    exit
+  }
+' server_name="$server_name" "$config_file")"
 
-codex mcp remove "$name" >/dev/null 2>&1 || true
-codex mcp remove sps-mcp >/dev/null 2>&1 || true
-codex mcp add "$name" --url "$url"
+if [ -z "$configured_url" ]; then
+  echo "Missing url in [mcp_servers.$server_name] in $config_file." >&2
+  exit 1
+fi
 
-escaped_url="$(toml_escape "$url")"
-SERVER_NAME="$name" perl -0pi -e '
-  my $server = quotemeta($ENV{"SERVER_NAME"});
-  s/\n\[mcp_servers\.sps-mcp\]\n(?:(?!\n\[).)*//s;
-  s/\n\[mcp_servers\.$server\]\n(?:(?!\n\[).)*//s;
-' "$config_file"
-upsert_project_binding
-printf '\n[mcp_servers.%s]\nurl = "%s"\nenv_http_headers = { "X-RBAC-SECRET-KEY" = "RBAC_SECRET_KEY" }\n' "$name" "$escaped_url" >>"$config_file"
+echo "Codex MCP server is configured in project-local $config_file."
+echo "Name: $server_name"
+echo "URL: $configured_url"
+echo "Header env mapping: X-RBAC-SECRET-KEY=RBAC_SECRET_KEY"
+echo
+echo "Start Codex from an environment that contains RBAC_SECRET_KEY."
 
-codex mcp get "$name"
+if command -v codex >/dev/null 2>&1; then
+  echo
+  codex mcp get "$server_name" 2>/dev/null || true
+fi

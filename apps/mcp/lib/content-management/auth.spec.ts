@@ -1,7 +1,7 @@
 /**
  * BDD Suite: MCP forwarded authentication helper
  * Given MCP resources and tools call protected SPS API routes through SDK adapters
- * When authorization is provided by the MCP transport or tool input
+ * When authorization is provided by the MCP transport
  * Then SDK options use the same headers accepted by the SPS frontend/API path
  */
 
@@ -51,20 +51,6 @@ describe("MCP forwarded authentication helper", () => {
     ).toEqual({
       "X-RBAC-SECRET-KEY": "test-secret",
     });
-  });
-
-  /**
-   * BDD Scenario: JWT input is converted to a bearer header
-   * Given a tool call provides a JWT in its auth input
-   * When SDK auth headers are built
-   * Then the API receives Authorization: Bearer <jwt>
-   */
-  it("builds Authorization from tool JWT input", () => {
-    expect(getMcpAuthHeaders(undefined, { auth: { jwt: "test-jwt" } })).toEqual(
-      {
-        Authorization: "Bearer test-jwt",
-      },
-    );
   });
 
   /**
@@ -138,14 +124,10 @@ describe("MCP forwarded authentication helper", () => {
       getMcpAuthHeaders(
         createExtra({
           headers: {
+            "x-rbac-secret-key": "test-secret",
             authorization: "Bearer request-jwt",
           },
         }),
-        {
-          auth: {
-            rbacSecretKey: "test-secret",
-          },
-        },
       ),
     ).toEqual({
       "X-RBAC-SECRET-KEY": "test-secret",
@@ -172,7 +154,7 @@ describe("MCP forwarded authentication helper", () => {
 
   /**
    * BDD Scenario: Missing auth is rejected
-   * Given no MCP request header, auth info, cookie, metadata, or tool auth input exists
+   * Given no MCP request header, auth info, cookie, or metadata exists
    * When SDK auth headers are built
    * Then an authentication error prevents an unauthenticated API call
    */

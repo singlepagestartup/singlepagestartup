@@ -116,61 +116,56 @@ In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as th
 
 ### Connecting MCP clients
 
-Prefer the Streamable HTTP transport for Codex, Inspector, and any remote client because it can carry request auth. The default local MCP URL is:
+Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any remote client because it can carry request auth. The default local MCP URL is:
 
 ```text
 http://127.0.0.1:3001/mcp
 ```
 
-Connect Codex CLI, or a Codex Desktop process that can read shell environment variables, with the repository registration script:
+The repository contains project-local MCP client config:
+
+- Codex loads `singlepagestartup` from `.codex/config.toml`.
+- Claude Code loads `singlepagestartup` from `.mcp.json`.
+
+These files contain only the URL and the `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY` environment mapping. They do not store secrets and do not write username-specific `[projects."/Users/..."]` entries into `~/.codex/config.toml`.
+
+Start Codex from an environment that contains `RBAC_SECRET_KEY`:
 
 ```bash
-export RBAC_SECRET_KEY="<secret>"
+RBAC_SECRET_KEY="<secret>" codex
+```
+
+Verify the project-local Codex config:
+
+```bash
 npm run mcp:codex:add:http
 ```
 
-This writes to the user-level Codex config (`~/.codex/config.toml`), creates a unique MCP server name for the current project path, and links that server in the current `[projects."<path>"].mcp_servers` list. It stores only the header-to-environment mapping in the Codex config: `X-RBAC-SECRET-KEY` is read from `RBAC_SECRET_KEY`. The secret value is not stored in the Codex config. Override the URL when registering a remote server:
+Expected output names `singlepagestartup`, URL `http://127.0.0.1:3001/mcp`, and `env_http_headers` with `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`. The MCP server name should match the GitHub repository name.
+
+Start Claude Code from the same environment:
 
 ```bash
-MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
+RBAC_SECRET_KEY="<secret>" claude
 ```
 
-`npm run mcp:codex:add` is the aggregate registration entry point for repository MCP servers and currently registers the SPS HTTP server.
-
-Verify the Codex registration:
+The Claude Code `.mcp.json` supports overriding the URL without editing files:
 
 ```bash
-codex mcp list
+MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
 ```
 
-Expected output includes a project-specific MCP server name such as `mcp-sps-lite-123456789`, transport `streamable_http`, URL `http://127.0.0.1:3001/mcp`, and `env_http_headers` includes `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`.
+Use `/mcp` inside Claude Code to inspect or authenticate connected MCP servers.
 
-If Codex Desktop is launched only through the app UI and cannot read shell environment variables, configure the server manually in the MCP settings instead:
+If Codex Desktop is launched only through the app UI and cannot read shell environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. That stores the secret in local user/app config, not in repository files. If the app UI clears the value on restart, use an environment-aware launch or implement MCP OAuth/auth instead of committing a static secret.
 
-- URL: `http://127.0.0.1:3001/mcp`
-- Bearer token env var: empty
-- Headers: `X-RBAC-SECRET-KEY` = `<secret>`
-- Headers from environment variables: empty
-
-This stores the secret in the project-specific MCP server entry inside the user-level Codex config, not in repository files. Do not rerun `npm run mcp:codex:add:http` after manual UI header setup unless you want to switch back to the environment-variable header mapping.
-
-If the Desktop UI clears the header value after restart, write the same static header to the user-level Codex config with:
-
-```bash
-npm run mcp:codex:add:http:desktop
-```
-
-Expected verification output includes `http_headers: X-RBAC-SECRET-KEY=*****` and no `env_http_headers`.
+Claude Desktop or Claude.ai remote connectors cannot reach `127.0.0.1` on your machine. Use Claude Code for local HTTP MCP, or expose the MCP server through HTTPS for remote connectors.
 
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
-For a remote server, run the MCP HTTP process on the application server behind HTTPS, make the API service URL reachable from that process, then register Codex with the remote URL:
+For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Update the Codex project config URL for that deployment, or pass `MCP_URL` when launching Claude Code.
 
-```bash
-MCP_URL="https://mcp.example.com/mcp" npm run mcp:codex:add:http
-```
-
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. In the script-based setup, Codex stores only the header environment variable name and the runtime environment must provide the actual `RBAC_SECRET_KEY` value. In the manual Desktop UI setup, Codex stores the header value in the user config.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. The committed configs store only the header environment variable name; the MCP client process must provide the actual `RBAC_SECRET_KEY` value at runtime.
 
 The legacy Inspector command starts the MCP server through stdio:
 
@@ -183,7 +178,7 @@ Required environment values are loaded from the app env files created by `./up.s
 - Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
 - For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
 - HTTP transports may also forward the frontend cookies `rbac.subject.jwt` or `rbac.secret-key`.
-- Generic content-management tools also accept explicit input auth, for example `"auth": { "jwt": "..." }` or `"auth": { "rbacSecretKey": "..." }`, which is useful for stdio Inspector calls.
+- Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
 
 Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
 

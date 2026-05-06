@@ -1,9 +1,11 @@
 {
   "mcpServers": {
     "singlepagestartup": {
-      "command": "bun",
-      "args": ["./apps/mcp/index.ts"],
-      "cwd": "./"
+      "type": "http",
+      "url": "${MCP_URL:-http://127.0.0.1:3001/mcp}",
+      "headers": {
+        "X-RBAC-SECRET-KEY": "${RBAC_SECRET_KEY}"
+      }
     }
   }
 }

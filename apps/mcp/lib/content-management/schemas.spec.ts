@@ -1,7 +1,7 @@
 /**
  * BDD Suite: MCP content-management input schemas
  * Given Codex calls generic content-management tools with structured input
- * When entity selectors, auth inputs, filters, ordering, and destructive confirmations are parsed
+ * When entity selectors, filters, ordering, and destructive confirmations are parsed
  * Then invalid entity keys and unsafe delete calls are rejected before SDK calls
  */
 
@@ -42,20 +42,13 @@ describe("MCP content-management input schemas", () => {
   });
 
   /**
-   * BDD Scenario: Explicit tool auth is accepted
-   * Given a stdio MCP tool call cannot rely on HTTP headers
-   * When a content find request includes a JWT auth input
-   * Then schema validation accepts the same bearer credential path as the frontend
+   * BDD Scenario: Tool auth is not exposed in input
+   * Given auth is provided by the MCP transport
+   * When content find input schema is exposed to clients
+   * Then direct auth fields are absent from the tool input shape
    */
-  it("accepts optional JWT auth input for content tools", () => {
-    expect(
-      ContentFindInputSchema.safeParse({
-        entity: "host.page",
-        auth: {
-          jwt: "test-jwt",
-        },
-      }).success,
-    ).toBe(true);
+  it("does not expose direct auth input for content tools", () => {
+    expect("auth" in ContentFindInputSchema.shape).toBe(false);
   });
 
   /**
