@@ -2,34 +2,36 @@
 
 ## Summary
 
-Adds an MCP content-management layer so Codex can discover supported SPS content entities, perform filtered model/relation reads and guarded writes through existing SDK/API paths, traverse host page widget graphs, and update localized JSON fields without dropping sibling locales.
+Adds an MCP content-management layer and HTTP transport for SPS so Codex and Claude Code can discover SPS entities, read protected API resources, and perform guarded content-management operations through the existing SDK/API path.
 
-This enables workflows such as resolving `/about` through `host.page` -> `host.pages-to-widgets` -> `host.widget` -> `host.widgets-to-external-widgets` -> `blog.widget`, then dry-running or applying `blog.widget.title.en = "Fresh articles"`.
+The PR now uses project-scoped MCP configuration for both Codex and Claude Code. The MCP server is named after the GitHub repository (`singlepagestartup`), uses Streamable HTTP by default, and forwards caller credentials from transport headers/cookies/auth info instead of storing secrets in repository files or exposing auth fields in tool inputs.
 
 ## Changes
 
-- Registered new content-management MCP resources/tools from `apps/mcp/actions.ts`.
-- Added canonical entity registry for `host.page`, `host.widget`, `host.pages-to-widgets`, `host.widgets-to-external-widgets`, and `blog.widget`.
-- Added generic content tools for entity discovery, filtered find/count/get, create/update dry-runs, delete preview, and confirmed delete apply.
-- Added host graph preview and host graph localized update flows with ambiguity checks.
-- Added locale-safe merge helpers for JSON localized fields such as `title`, `subtitle`, and `description`.
-- Added delete-preview relation context for known host/blog paths.
-- Replaced MCP `.env` root-secret usage with forwarded MCP auth: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, frontend auth cookies, MCP auth info, request metadata, or explicit generic tool auth input.
-- Added forwarded auth to generated MCP resources/tools and to host `findByUrl` SDK calls so protected API reads use the caller's credential instead of the MCP process credential.
-- Added a Streamable HTTP MCP entrypoint (`npm run mcp:http`) plus HTTP Inspector script so Inspector `Custom Headers` can reach MCP resource/tool handlers.
-- Added BDD Jest coverage for registration, schemas, responses, forwarded auth headers, localized merge behavior, generic operations, delete guardrails, and host graph traversal.
-- Documented the MCP content-management workflow in `README.md`, `AI_GUIDE.md`, and `libs/modules/host/README.md`.
+- Registered generic MCP content-management resources/tools for entity discovery, filtered find/count/get, create/update dry-runs, delete preview/apply, host graph preview, and localized field updates.
+- Added canonical content entity registry and host graph traversal for paths such as `host.page` -> `host.pages-to-widgets` -> `host.widget` -> `host.widgets-to-external-widgets` -> external widgets.
+- Added locale-safe JSON field update helpers so changing `title.en` preserves sibling locales.
+- Added Streamable HTTP MCP server entrypoint (`npm run mcp:http`) with `/mcp` and `/sse` compatibility endpoints, CORS headers, session handling, and Inspector-compatible custom header forwarding.
+- Fixed HTTP session reconnect handling by avoiding recursive transport/server close calls.
+- Forwarded auth from MCP request headers, cookies, MCP auth info, and request metadata into SDK/API calls.
+- Removed direct `auth.jwt`, `auth.authorization`, and `auth.rbacSecretKey` fields from public tool input schemas; auth now belongs to the MCP transport connection.
+- Added project-local Codex config in `.codex/config.toml` and Claude Code config in `.mcp.json`, both mapping `X-RBAC-SECRET-KEY` from `RBAC_SECRET_KEY`.
+- Simplified Codex MCP registration scripts so they verify project-local config instead of writing username-specific project entries to `~/.codex/config.toml`.
+- Removed the static-secret Desktop registration script and documented safe HTTP MCP setup for Codex, Claude Code, MCP Inspector, and remote HTTPS deployment.
+- Added BDD Jest coverage for MCP registration, content schemas, response envelopes, forwarded auth, localized field merging, generic operations, delete guardrails, and host graph traversal.
 
 ## Verification
 
 - [x] `npx nx run mcp:jest:test`
 - [x] `npx tsc -p apps/mcp/tsconfig.json --noEmit`
 - [x] `npx nx run mcp:eslint:lint`
-- [x] `npm run lint`
-- [x] HTTP smoke check: `MCP_HTTP_PORT=3999 npm run mcp:http` + `curl -i -X OPTIONS http://127.0.0.1:3999/mcp`
+- [x] `git diff --check`
+- [x] HTTP reconnect smoke check: initialize a Streamable HTTP MCP session, send `DELETE` with `Mcp-Session-Id`, then initialize a new session without stack overflow.
+- [x] MCP `tools/list` smoke check confirmed count/content schemas no longer expose `"auth"`, `"jwt"`, `"authorization"`, or `"rbacSecretKey"` input fields.
 
 ## Notes
 
 - No Drizzle schema or migration changes.
 - No repository data snapshot files were modified.
-- Live MCP Inspector/API mutation of a local dataset was not performed; the canonical host/blog path and dry-run/apply behavior are covered with mocked SDK adapters.
+- Secrets are not committed. Local clients must provide `RBAC_SECRET_KEY` through their runtime environment or HTTP custom headers.
+- Claude Desktop connectors are separate from Claude Code project MCP; local `127.0.0.1` HTTP MCP is intended for Claude Code/Codex/Inspector unless exposed over HTTPS.
