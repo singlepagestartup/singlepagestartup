@@ -75,7 +75,7 @@ MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600
 MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS=2592000
 ```
 
-`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
+`MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME` falls back to `API_SERVICE_DOCKER_HUB_REPOSITORY_NAME` when empty. Leave `MCP_ALLOWED_ORIGINS` empty to allow every Origin; OAuth/Bearer still protects data access. Redis is used for OAuth clients, codes, access-token mappings, and refresh tokens.
 
 Deploy or remove only the MCP service:
 
