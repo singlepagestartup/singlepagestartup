@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogArticlesToWebsiteBuilderModuleWidgetsApi } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/server";
 import { insertSchema as blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -48,16 +47,10 @@ export function registerTools(mcp: McpServer) {
     },
     async () => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.find({
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -135,17 +128,11 @@ export function registerTools(mcp: McpServer) {
     },
     async (args) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.create({
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -185,18 +172,12 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for update");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.update({
             id: args.id,
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -236,17 +217,11 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.delete({
             id: args.id,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 

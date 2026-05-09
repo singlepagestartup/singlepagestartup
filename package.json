@@ -10,6 +10,7 @@
     "host:production": "NODE_ENV=production npm run host:build && npm run host:start",
     "host:start": "nx run host:next:start",
     "mcp:dev": "nx run mcp:dev",
+    "mcp:http": "nx run mcp:http",
     "mcp:start": "nx run mcp:start",
     "mcp:inspector": "npx @modelcontextprotocol/inspector bun apps/mcp/index.ts",
     "lint": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run-many --target=eslint:lint --parallel=2 --all",

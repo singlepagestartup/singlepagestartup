@@ -1,5 +1,4 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { z } from "zod";
 
 const CountFilterMethodSchema = z.enum([
@@ -57,10 +56,6 @@ export function registerCountTool(
     },
     async (args) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const parsed = CountParamsSchema.safeParse(args);
 
         if (!parsed.success) {
@@ -70,9 +65,7 @@ export function registerCountTool(
         const count = await api.count({
           params: parsed.data,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 

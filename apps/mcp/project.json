@@ -19,6 +19,13 @@
         "command": "bun index.ts"
       }
     },
+    "http": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/mcp",
+        "command": "bun http.ts"
+      }
+    },
     "eslint:lint": {},
     "jest:test": {}
   }

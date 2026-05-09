@@ -13,5 +13,6 @@ get_environment_type $1
     ./postgres.sh up $ENVIRONMENT_TYPE && \
     ./redis.sh up $ENVIRONMENT_TYPE && \
     ./api.sh up $ENVIRONMENT_TYPE && \
+    ./mcp.sh up $ENVIRONMENT_TYPE && \
     ./telegram.sh up $ENVIRONMENT_TYPE && \
     ./host.sh up $ENVIRONMENT_TYPE

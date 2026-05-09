@@ -22,6 +22,10 @@ All 15 business modules participate in `unit + integration` lanes. DB-backed sce
 Browser E2E/Playwright is not part of scoped validation.
 For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is applied only to subject cart counter routes (`/orders/quantity`, `/orders/total`).
 
+## Remote MCP Connector
+
+`apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's SPS JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
+
 ### Key Principles:
 
 - Everything is based on Models, each having:

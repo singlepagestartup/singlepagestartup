@@ -41,6 +41,7 @@ RUN npm run host:build
 
 EXPOSE 3000
 EXPOSE 4000
+EXPOSE 3001
 EXPOSE 8000
 
 # Running the app
