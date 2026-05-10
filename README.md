@@ -26,6 +26,23 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 
 `apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's SPS JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
 
+For Codex Desktop/CLI, register the remote MCP explicitly:
+
+```bash
+codex mcp add singlepagestartup --url https://mcp.<domain>/mcp
+codex mcp login singlepagestartup --scopes mcp:content
+```
+
+For local Codex testing, use `http://127.0.0.1:3001/mcp` and restart Codex Desktop or open a new session after adding the server.
+
+For Claude Code, register the remote MCP and authenticate through `/mcp` inside Claude Code:
+
+```bash
+claude mcp add --transport http singlepagestartup https://mcp.<domain>/mcp
+```
+
+For Claude UI / Claude Desktop, add a custom connector in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login.
+
 ### Key Principles:
 
 - Everything is based on Models, each having:

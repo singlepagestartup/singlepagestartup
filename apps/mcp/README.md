@@ -42,6 +42,67 @@ Select `Streamable HTTP`, set URL to `http://127.0.0.1:3001/mcp`, keep custom au
 
 If Inspector keeps reconnecting without `Authorization`, clear the Inspector browser session storage or restart Inspector. It caches OAuth clients and tokens by MCP server URL.
 
+## Codex Client Setup
+
+Codex uses its own MCP configuration. Project `.mcp.json` is not enough for Codex Desktop/CLI to show this server in active MCP settings.
+
+Register the local Streamable HTTP server:
+
+```bash
+codex mcp add singlepagestartup-local --url http://127.0.0.1:3001/mcp
+codex mcp login singlepagestartup-local --scopes mcp:content
+```
+
+Register the deployed remote server:
+
+```bash
+codex mcp add singlepagestartup --url https://mcp.<domain>/mcp
+codex mcp login singlepagestartup --scopes mcp:content
+```
+
+Check active Codex MCP servers:
+
+```bash
+codex mcp list
+```
+
+Restart Codex Desktop or open a new session after adding or logging in to a server so the tool list is reloaded.
+
+## Claude Client Setup
+
+Claude UI and Claude Code use different MCP setup paths.
+
+For Claude UI / Claude Desktop remote connectors, add a custom connector:
+
+1. Open `Customize -> Connectors`.
+2. Click `+` and choose `Add custom connector`.
+3. Use URL `https://mcp.<domain>/mcp`.
+4. Leave advanced OAuth Client ID/Secret empty.
+5. Click `Add`, then `Connect`, and sign in with SPS email/password.
+6. Enable the connector in a chat via `+ -> Connectors`.
+
+Remote connectors are reached from Anthropic cloud infrastructure, so `http://127.0.0.1:3001/mcp` does not work for Claude UI. Use the public HTTPS endpoint.
+
+For Claude Code CLI with the deployed remote server:
+
+```bash
+claude mcp add --transport http singlepagestartup https://mcp.<domain>/mcp
+```
+
+For Claude Code CLI with the local server:
+
+```bash
+claude mcp add --transport http singlepagestartup-local http://127.0.0.1:3001/mcp
+```
+
+`claude mcp add` only registers the server. Start Claude Code, run `/mcp`, select the server, and authenticate there. Claude should open the OAuth login page; if it does not, open the URL it prints manually.
+
+To share the remote server through project `.mcp.json`:
+
+```bash
+claude mcp add --transport http --scope project singlepagestartup https://mcp.<domain>/mcp
+```
+
 ## Remote Connector
 
 Deployed remote MCP is served as:
