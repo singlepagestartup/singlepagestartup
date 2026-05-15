@@ -46,18 +46,32 @@ If Inspector keeps reconnecting without `Authorization`, clear the Inspector bro
 
 Codex uses its own MCP configuration. Project `.mcp.json` is not enough for Codex Desktop/CLI to show this server in active MCP settings.
 
+Print repo-derived Codex and Claude setup commands:
+
+```bash
+tools/mcp/setup-project-mcp.sh
+```
+
+To apply client configuration from the helper, pass a real production URL:
+
+```bash
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-codex
+```
+
 Register the local Streamable HTTP server:
 
 ```bash
-codex mcp add singlepagestartup-local --url http://127.0.0.1:3001/mcp
-codex mcp login singlepagestartup-local --scopes mcp:content
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+codex mcp add "${REPO_NAME}-local" --url http://127.0.0.1:3001/mcp
+codex mcp login "${REPO_NAME}-local" --scopes mcp:content
 ```
 
 Register the deployed remote server:
 
 ```bash
-codex mcp add singlepagestartup --url https://mcp.<domain>/mcp
-codex mcp login singlepagestartup --scopes mcp:content
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
 ```
 
 Check active Codex MCP servers:
@@ -76,31 +90,36 @@ For Claude UI / Claude Desktop remote connectors, add a custom connector:
 
 1. Open `Customize -> Connectors`.
 2. Click `+` and choose `Add custom connector`.
-3. Use URL `https://mcp.<domain>/mcp`.
-4. Leave advanced OAuth Client ID/Secret empty.
-5. Click `Add`, then `Connect`, and sign in with SPS email/password.
-6. Enable the connector in a chat via `+ -> Connectors`.
+3. Use name `<repo-name>-production`, for example `singlepagestartup-production`.
+4. Use URL `https://mcp.<domain>/mcp`.
+5. Leave advanced OAuth Client ID/Secret empty.
+6. Click `Add`, then `Connect`, and sign in with SPS email/password.
+7. Enable the connector in a chat via `+ -> Connectors`.
 
 Remote connectors are reached from Anthropic cloud infrastructure, so `http://127.0.0.1:3001/mcp` does not work for Claude UI. Use the public HTTPS endpoint.
 
 For Claude Code CLI with the deployed remote server:
 
 ```bash
-claude mcp add --transport http singlepagestartup https://mcp.<domain>/mcp
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
 ```
 
 For Claude Code CLI with the local server:
 
 ```bash
-claude mcp add --transport http singlepagestartup-local http://127.0.0.1:3001/mcp
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
 ```
 
 `claude mcp add` only registers the server. Start Claude Code, run `/mcp`, select the server, and authenticate there. Claude should open the OAuth login page; if it does not, open the URL it prints manually.
 
-To share the remote server through project `.mcp.json`:
+This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local project MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
+
+To apply Claude Code configuration from the helper, pass a real production URL:
 
 ```bash
-claude mcp add --transport http --scope project singlepagestartup https://mcp.<domain>/mcp
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-claude
 ```
 
 ## Remote Connector

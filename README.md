@@ -29,19 +29,28 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
 ```bash
-codex mcp add singlepagestartup --url https://mcp.<domain>/mcp
-codex mcp login singlepagestartup --scopes mcp:content
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
 ```
 
-For local Codex testing, use `http://127.0.0.1:3001/mcp` and restart Codex Desktop or open a new session after adding the server.
+For local Codex testing, use `http://127.0.0.1:3001/mcp` with the `<repo-name>-local` MCP name and restart Codex Desktop or open a new session after adding the server.
 
 For Claude Code, register the remote MCP and authenticate through `/mcp` inside Claude Code:
 
 ```bash
-claude mcp add --transport http singlepagestartup https://mcp.<domain>/mcp
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
 ```
 
-For Claude UI / Claude Desktop, add a custom connector in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login.
+For Claude UI / Claude Desktop, add a custom connector named `<repo-name>-production` in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login. Keep the project `.mcp.json` local MCP named `<repo-name>` separate from the production connector. Run `tools/mcp/setup-project-mcp.sh` to print exact repo-derived commands.
+
+To apply Claude or Codex setup from the helper, pass the real production URL:
+
+```bash
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-claude
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-codex
+```
 
 ### Key Principles:
 
@@ -432,6 +441,18 @@ After creating repository based on singlepagestartup template, call command:
 ```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
 git pull upstream main
+```
+
+After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
+
+```bash
+tools/mcp/setup-project-mcp.sh --write-project
+```
+
+Use the same helper without flags to print Claude and Codex MCP setup commands for the downstream repository:
+
+```bash
+tools/mcp/setup-project-mcp.sh
 ```
 
 When you get an error
