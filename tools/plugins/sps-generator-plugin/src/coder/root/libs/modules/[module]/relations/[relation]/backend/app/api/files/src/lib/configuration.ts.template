@@ -1,4 +1,7 @@
-import { Configuration as ParentConfiguration } from "@sps/shared-backend-api";
+import {
+  IConfiguration,
+  Configuration as ParentConfiguration,
+} from "@sps/shared-backend-api";
 import {
   Table,
   insertSchema,
@@ -8,7 +11,10 @@ import {
 import { injectable } from "inversify";
 
 @injectable()
-export class Configuration extends ParentConfiguration {
+export class Configuration
+  extends ParentConfiguration
+  implements IConfiguration
+{
   constructor() {
     super({
       repository: {
