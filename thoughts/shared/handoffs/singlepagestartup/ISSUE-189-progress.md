@@ -51,7 +51,7 @@ completed_date: 2026-05-16T08:04:22Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 - `test:file` Nx parser failure
 
@@ -80,6 +80,15 @@ completed_date: 2026-05-16T08:04:22Z
 - **Fix**: Reran the equivalent target with `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run telegram:build`, which executed `bun build server.ts --outdir dist --target bun` and passed.
 - **Reusable Pattern**: When an Nx target fails before the underlying command with plugin-worker startup friction, rerun the same target with `NX_DAEMON=false NX_ISOLATE_PLUGINS=false`.
 
+### Incident 4 - Submit helper rejects draft PRs
+
+- **Occurrences**: 1
+- **Stage**: Finalization - Submit PR for Code Review
+- **Symptom**: `.claude/helpers/submit_pr_for_code_review.sh 189 190` failed with `Error: PR #190 is a draft; refusing to move issue #189 to Code Review`.
+- **Root Cause**: The PR was initially created as a draft, but the submit helper requires a ready PR before moving the issue to `Code Review`.
+- **Fix**: Ran `gh pr ready 190`, then reran `.claude/helpers/submit_pr_for_code_review.sh 189 190`; it commented on the issue and updated status to `Code Review`.
+- **Reusable Pattern**: Mark implementation PRs ready before running `submit_pr_for_code_review.sh`, or create them as ready when the workflow must immediately enter Code Review.
+
 ## Summary
 
 ### Changes Made
@@ -98,8 +107,8 @@ completed_date: 2026-05-16T08:04:22Z
 
 - [x] All phases completed
 - [x] All automated verification passed
-- [ ] Issue marked as Done
+- [x] Issue submitted for Code Review
 
 ---
 
-**Last updated**: 2026-05-16T08:04:22Z
+**Last updated**: 2026-05-16T08:05:49Z

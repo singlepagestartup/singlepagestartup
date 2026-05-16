@@ -3,7 +3,7 @@ issue_number: 189
 issue_title: "Telegram bot: transcribe voice messages into social.message text"
 repository: singlepagestartup
 created_at: 2026-05-15T22:41:25Z
-last_updated: 2026-05-16T08:04:22Z
+last_updated: 2026-05-16T08:05:49Z
 status: active
 current_phase: complete
 ---
@@ -47,13 +47,13 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Summary: Implemented Telegram voice-message ingestion, shared OpenAI transcription, completed-transcript agent routing, and operator/deployment documentation.
 - Outputs: OpenAI wrapper `libs/shared/third-parties/src/lib/open-ai/index.ts`; Telegram helper `apps/telegram/src/lib/telegram-voice-message.ts`; RBAC action signal in `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/update.ts`; agent routing in `libs/modules/agent/models/agent/backend/app/api/src/lib/controller/singlepage/telegram/bot.ts`; documentation and env updates in `apps/telegram/README.md`, `apps/telegram/.env.example`, `tools/deployer/*`, and `Dockerfile`; PR https://github.com/singlepagestartup/singlepagestartup/pull/190.
-- Notes: Automated verification passed across targeted wrapper, Telegram, agent, OpenRouter guard, Telegram build, and changed library TypeScript builds. External Telegram/OpenAI manual verification remains operator-dependent. PR #190 was created and described; submit-for-code-review is the remaining workflow transition.
+- Notes: Automated verification passed across targeted wrapper, Telegram, agent, OpenRouter guard, Telegram build, and changed library TypeScript builds. External Telegram/OpenAI manual verification remains operator-dependent. PR #190 was created, described, marked ready for review, submitted through `.claude/helpers/submit_pr_for_code_review.sh`, and issue #189 was verified in `Code Review`.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 6 -->
+<!-- incident-count: 7 -->
 
 ### Incident 1 — Project item lookup propagation delay
 
@@ -114,6 +114,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Fix**: Reran the equivalent target with `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run telegram:build`, which executed `bun build server.ts --outdir dist --target bun` and passed.
 - **Preventive Action**: When an Nx target fails before the underlying command with plugin-worker startup friction, rerun the same target with `NX_DAEMON=false NX_ISOLATE_PLUGINS=false`.
 - **References**: `apps/telegram/project.json`; `npm run telegram:build`
+
+### Incident 7 — Submit helper rejects draft PRs
+
+- **Phase**: Implement
+- **Occurrences**: 1
+- **Symptom**: `.claude/helpers/submit_pr_for_code_review.sh 189 190` failed with `Error: PR #190 is a draft; refusing to move issue #189 to Code Review`.
+- **Root Cause**: The PR was initially created as a draft, but the submit helper requires a ready PR before moving the issue to `Code Review`.
+- **Fix**: Ran `gh pr ready 190`, then reran `.claude/helpers/submit_pr_for_code_review.sh 189 190`; it commented on the issue and updated status to `Code Review`.
+- **Preventive Action**: Mark implementation PRs ready before running `submit_pr_for_code_review.sh`, or create them as ready when the workflow must immediately enter Code Review.
+- **References**: `.claude/helpers/submit_pr_for_code_review.sh`; PR https://github.com/singlepagestartup/singlepagestartup/pull/190; GitHub issue https://github.com/singlepagestartup/singlepagestartup/issues/189
 
 ## Reusable Learnings
 
