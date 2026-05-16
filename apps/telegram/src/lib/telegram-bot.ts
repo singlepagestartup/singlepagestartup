@@ -28,6 +28,7 @@ import { OpenAI } from "@sps/shared-third-parties";
 import * as jwt from "hono/jwt";
 import {
   convertTelegramVoiceFileToWebm,
+  extractTelegramAudioMessageData,
   extractTelegramVoiceMessageData,
   getTelegramVoiceTranscriptionStatus,
   processTelegramVoiceMessage,
@@ -424,6 +425,22 @@ export class TelegarmBot {
             await this.handleIncomingVoiceMessage({
               ctx,
               voice: telegramVoice,
+            });
+          },
+        });
+
+        return;
+      }
+
+      const telegramAudio = extractTelegramAudioMessageData(ctx.message);
+
+      if (telegramAudio) {
+        this.runInBackground({
+          label: "message:audio",
+          task: async () => {
+            await this.handleIncomingVoiceMessage({
+              ctx,
+              voice: telegramAudio,
             });
           },
         });

@@ -8,6 +8,7 @@
 
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import {
+  extractTelegramAudioMessageData,
   extractTelegramVoiceMessageData,
   processTelegramVoiceMessage,
   TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
@@ -58,6 +59,58 @@ describe("Telegram voice message processing", () => {
         },
       }),
     ).toEqual(voice);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram message contains an uploaded audio file.
+   * When: the adapter extracts audio processing input.
+   * Then: the audio file identifiers and sourceSystemId are captured for transcription.
+   */
+  it("extracts uploaded audio metadata from a Telegram message", () => {
+    expect(
+      extractTelegramAudioMessageData({
+        audio: {
+          duration: 11,
+          file_id: "telegram-audio-file-id",
+          file_name: "meeting.mp3",
+          file_unique_id: "telegram-audio-file-unique-id",
+          mime_type: "audio/mpeg",
+        },
+        message_id: 4243,
+      }),
+    ).toEqual({
+      duration: 11,
+      fileId: "telegram-audio-file-id",
+      fileUniqueId: "telegram-audio-file-unique-id",
+      mimeType: "audio/mpeg",
+      sourceSystemId: "4243",
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram document is an audio file by MIME type.
+   * When: the adapter extracts audio processing input.
+   * Then: the document is routed through the transcription flow.
+   */
+  it("extracts audio document metadata from a Telegram message", () => {
+    expect(
+      extractTelegramAudioMessageData({
+        document: {
+          file_id: "telegram-document-file-id",
+          file_name: "voice-note.ogg",
+          file_unique_id: "telegram-document-file-unique-id",
+          mime_type: "audio/ogg",
+        },
+        message_id: 4244,
+      }),
+    ).toEqual({
+      fileId: "telegram-document-file-id",
+      fileUniqueId: "telegram-document-file-unique-id",
+      mimeType: "audio/ogg",
+      sourceSystemId: "4244",
+    });
   });
 
   /**
