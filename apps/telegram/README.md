@@ -54,9 +54,26 @@ Main app-level variables are documented in `.env.example`:
 - `NEXT_PUBLIC_API_SERVICE_URL`
 - `RBAC_SECRET_KEY`
 - `RBAC_JWT_SECRET`
+- `OPEN_AI_API_KEY`
+- `OPEN_AI_TRANSCRIPTION_MODEL` (optional, defaults to `gpt-4o-transcribe`)
 
 Subscription channel variables are also defined there when the bot must enforce
 channel membership.
+
+Voice-note transcription also requires an `ffmpeg` binary available on the
+Telegram service runtime path. The Docker image installs it for deployed
+services; local development machines must install it separately before testing
+voice messages.
+
+Telegram voice messages are ingested as a staged `social.message` lifecycle:
+
+- `metadata.telegramVoiceTranscription.status = "processing"` while converted
+  audio is attached and transcription is running.
+- `status = "completed"` after OpenAI returns transcript text; `description` is
+  updated and agent handling is triggered through a dedicated action signal.
+- `status = "failed"` when download, conversion, size validation, or
+  transcription fails; the traceable message and available audio attachment are
+  preserved.
 
 ## Adapter Responsibilities
 
@@ -64,6 +81,8 @@ Allowed responsibilities in `apps/telegram`:
 
 - Initialize the grammY bot and expose webhook/polling transport.
 - Parse Telegram messages, files, payments, callback data, and topic metadata.
+- Convert Telegram voice-note audio to WebM and call the shared OpenAI
+  transcription wrapper for speech-to-text.
 - Bootstrap Telegram users, profiles, chats, and thread mapping through the
   RBAC subject Telegram bootstrap API.
 - Ingest incoming Telegram messages/actions into SPS as `social.message` or

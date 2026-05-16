@@ -1,4 +1,8 @@
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_SECRET_KEY,
+  TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../service";
@@ -175,10 +179,34 @@ export class Handler {
       messageSourceSystemId?: string | number;
       chatSourceSystemId?: string | number;
       message?: {
+        description?: string | null;
         id?: string;
+        metadata?: Record<string, unknown> | null;
         sourceSystemId?: string | null;
       };
     };
+
+    if (actionPayload?.type === TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE) {
+      const socialModuleMessage = actionPayload.message;
+
+      if (
+        !socialModuleMessage?.id ||
+        !this.isTelegramVoiceTranscriptionCompletedMessage(socialModuleMessage)
+      ) {
+        return c.json({
+          data: false,
+        });
+      }
+
+      const handled = await this.dispatchAutomaticReplyForMessage({
+        socialModuleChat,
+        socialModuleMessage: socialModuleMessage as any,
+      });
+
+      return c.json({
+        data: handled,
+      });
+    }
 
     if (actionPayload?.type === "update") {
       const socialModuleMessage = actionPayload.message;
@@ -361,35 +389,74 @@ export class Handler {
       });
     }
 
-    const socialModuleChatsToMessages =
-      await this.service.socialModule.chatsToMessages.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "messageId",
-                method: "eq",
-                value: socialModuleMessage.id,
-              },
-            ],
-          },
-        },
-      });
+    const handled = await this.dispatchAutomaticReplyForMessage({
+      socialModuleMessage,
+    });
 
-    if (!socialModuleChatsToMessages?.length) {
-      return c.json({
-        data: false,
+    return c.json({
+      data: handled,
+    });
+  }
+
+  private isTelegramVoiceTranscriptionCompletedMessage(message: {
+    metadata?: Record<string, unknown> | null;
+  }) {
+    const metadata = message.metadata;
+
+    if (!metadata || typeof metadata !== "object") {
+      return false;
+    }
+
+    const telegramVoiceTranscription =
+      metadata[TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY];
+
+    return Boolean(
+      telegramVoiceTranscription &&
+        typeof telegramVoiceTranscription === "object" &&
+        (telegramVoiceTranscription as Record<string, unknown>).status ===
+          "completed" &&
+        (telegramVoiceTranscription as Record<string, unknown>).agentTrigger ===
+          TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+    );
+  }
+
+  private async dispatchAutomaticReplyForMessage(props: {
+    socialModuleChat?: any;
+    socialModuleMessage: any;
+  }) {
+    if (!props.socialModuleMessage.description?.trim()) {
+      return false;
+    }
+
+    let socialModuleChat = props.socialModuleChat;
+
+    if (!socialModuleChat) {
+      const socialModuleChatsToMessages =
+        await this.service.socialModule.chatsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "messageId",
+                  method: "eq",
+                  value: props.socialModuleMessage.id,
+                },
+              ],
+            },
+          },
+        });
+
+      if (!socialModuleChatsToMessages?.length) {
+        return false;
+      }
+
+      socialModuleChat = await this.service.socialModule.chat.findById({
+        id: socialModuleChatsToMessages[0].chatId,
       });
     }
 
-    const socialModuleChat = await this.service.socialModule.chat.findById({
-      id: socialModuleChatsToMessages[0].chatId,
-    });
-
     if (!socialModuleChat) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
     const socialModuleProfilesToChats =
@@ -408,9 +475,7 @@ export class Handler {
       });
 
     if (!socialModuleProfilesToChats?.length) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
     const socialModuleProfiles = await this.service.socialModule.profile.find({
@@ -430,9 +495,7 @@ export class Handler {
     });
 
     if (!socialModuleProfiles?.length) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
     const socialModuleProfilesToMessages =
@@ -443,7 +506,7 @@ export class Handler {
               {
                 column: "messageId",
                 method: "eq",
-                value: socialModuleMessage.id,
+                value: props.socialModuleMessage.id,
               },
             ],
           },
@@ -451,9 +514,7 @@ export class Handler {
       });
 
     if (!socialModuleProfilesToMessages?.length) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
     const socialModuleProfileToMessage = socialModuleProfilesToMessages[0];
@@ -474,9 +535,7 @@ export class Handler {
     ].includes(messageFromSocialModuleProfile?.variant);
 
     if (isMessageFromAutomaticReplySocialModuleProfile) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
     const shouldReplySocialModuleProfiles = socialModuleProfiles.filter(
@@ -485,31 +544,27 @@ export class Handler {
     );
 
     if (!shouldReplySocialModuleProfiles.length) {
-      return c.json({
-        data: false,
-      });
+      return false;
     }
 
-    if (messageFromSocialModuleProfile) {
-      for (const shouldReplySocialModuleProfile of shouldReplySocialModuleProfiles) {
-        if (
-          shouldReplySocialModuleProfile.id ===
-          messageFromSocialModuleProfile.id
-        ) {
-          continue;
-        }
+    let handled = false;
 
-        await this.service.agentSocialModuleProfileHandler({
-          shouldReplySocialModuleProfile,
-          socialModuleChat,
-          socialModuleMessage,
-          messageFromSocialModuleProfile: messageFromSocialModuleProfile,
-        });
+    for (const shouldReplySocialModuleProfile of shouldReplySocialModuleProfiles) {
+      if (
+        shouldReplySocialModuleProfile.id === messageFromSocialModuleProfile.id
+      ) {
+        continue;
       }
+
+      await this.service.agentSocialModuleProfileHandler({
+        shouldReplySocialModuleProfile,
+        socialModuleChat,
+        socialModuleMessage: props.socialModuleMessage,
+        messageFromSocialModuleProfile,
+      });
+      handled = true;
     }
 
-    return c.json({
-      data: true,
-    });
+    return handled;
   }
 }

@@ -3,6 +3,7 @@ import {
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
+  OPEN_AI_TRANSCRIPTION_MODEL,
   TELEGRAM_SERVICE_BOT_TOKEN,
   TELEGRAM_SERVICE_BOT_USERNAME,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
@@ -23,7 +24,16 @@ import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/m
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
+import { OpenAI } from "@sps/shared-third-parties";
 import * as jwt from "hono/jwt";
+import {
+  convertTelegramVoiceFileToWebm,
+  extractTelegramVoiceMessageData,
+  getTelegramVoiceTranscriptionStatus,
+  processTelegramVoiceMessage,
+  TELEGRAM_VOICE_TRANSCRIPTION_DEFAULT_MODEL,
+  type TelegramVoiceMessageData,
+} from "./telegram-voice-message";
 
 export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
 
@@ -402,6 +412,22 @@ export class TelegarmBot {
           ctx,
         })
       ) {
+        return;
+      }
+
+      const telegramVoice = extractTelegramVoiceMessageData(ctx.message);
+
+      if (telegramVoice) {
+        this.runInBackground({
+          label: "message:voice",
+          task: async () => {
+            await this.handleIncomingVoiceMessage({
+              ctx,
+              voice: telegramVoice,
+            });
+          },
+        });
+
         return;
       }
 
@@ -813,6 +839,200 @@ export class TelegarmBot {
           };
         }),
       ),
+    });
+  }
+
+  private shouldHandleIncomingMessageInChat(props: { ctx: GrammyContext }) {
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. 'TELEGRAM_SERVICE_BOT_USERNAME' is not set",
+      );
+    }
+
+    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
+
+    if (!isGroup) {
+      return true;
+    }
+
+    const messageText = props.ctx.message?.text || props.ctx.message?.caption;
+
+    return Boolean(
+      messageText?.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`),
+    );
+  }
+
+  private async downloadTelegramVoiceFile(props: {
+    ctx: GrammyContext;
+    voice: TelegramVoiceMessageData;
+  }) {
+    const files = await this.buildTelegramFiles({
+      ctx: props.ctx,
+      attachments: [
+        {
+          fileId: props.voice.fileId,
+          mimeType: props.voice.mimeType || "audio/ogg",
+          title: `telegram-voice-${
+            props.voice.fileUniqueId || props.voice.sourceSystemId
+          }`,
+        },
+      ],
+    });
+
+    const [file] = files;
+
+    if (!file) {
+      throw new Error("Telegram voice file download returned no files");
+    }
+
+    return file;
+  }
+
+  private async findExistingTelegramMessageBySourceSystemId(props: {
+    jwtToken: string;
+    rbacModuleSubject: IRbacSubject;
+    socialModuleChat: ISocialModuleChat;
+    socialModuleProfile: ISocialModuleProfile;
+    socialModuleThread: ISocialModuleThread;
+    sourceSystemId: string;
+  }) {
+    const messages =
+      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleThreadId: props.socialModuleThread.id,
+          socialModuleProfileId: props.socialModuleProfile.id,
+          params: {
+            limit: 100,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
+
+    return messages.find(
+      (message) => message.sourceSystemId === props.sourceSystemId,
+    );
+  }
+
+  private async handleIncomingVoiceMessage(props: {
+    ctx: GrammyContext;
+    voice: TelegramVoiceMessageData;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    if (!RBAC_JWT_SECRET) {
+      throw new Error("Configuration error. RBAC_JWT_SECRET is not set");
+    }
+
+    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+      throw new Error(
+        "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS is not set",
+      );
+    }
+
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. 'TELEGRAM_SERVICE_BOT_USERNAME' is not set",
+      );
+    }
+
+    const messageText = props.ctx.message?.text || props.ctx.message?.caption;
+
+    const {
+      rbacModuleSubject,
+      socialModuleProfile,
+      socialModuleChat,
+      socialModuleThread,
+    } = await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate({
+      ctx: props.ctx,
+      telegram: {
+        messageText,
+      },
+    });
+
+    if (
+      !this.shouldHandleIncomingMessageInChat({
+        ctx: props.ctx,
+      })
+    ) {
+      return;
+    }
+
+    const jwtToken = await this.signSubjectJwt({ rbacModuleSubject });
+    const existingMessage =
+      await this.findExistingTelegramMessageBySourceSystemId({
+        jwtToken,
+        rbacModuleSubject,
+        socialModuleChat,
+        socialModuleProfile,
+        socialModuleThread,
+        sourceSystemId: props.voice.sourceSystemId,
+      });
+
+    if (getTelegramVoiceTranscriptionStatus(existingMessage)) {
+      return existingMessage;
+    }
+
+    return await processTelegramVoiceMessage({
+      convertVoiceFile: convertTelegramVoiceFileToWebm,
+      createMessage: async ({ data }) => {
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            socialModuleThreadId: socialModuleThread.id,
+            socialModuleProfileId: socialModuleProfile.id,
+            data,
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
+          },
+        );
+      },
+      downloadVoiceFile: async () => {
+        return await this.downloadTelegramVoiceFile({
+          ctx: props.ctx,
+          voice: props.voice,
+        });
+      },
+      existingMessage,
+      transcribeAudio: async ({ file, model }) => {
+        const openAI = new OpenAI();
+
+        return await openAI.transcribeAudio({
+          file,
+          model,
+        });
+      },
+      transcriptionModel:
+        OPEN_AI_TRANSCRIPTION_MODEL ||
+        TELEGRAM_VOICE_TRANSCRIPTION_DEFAULT_MODEL,
+      updateMessage: async ({ data, message }) => {
+        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+          {
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            socialModuleProfileId: socialModuleProfile.id,
+            socialModuleMessageId: message.id,
+            data,
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
+          },
+        );
+      },
+      voice: props.voice,
     });
   }
 

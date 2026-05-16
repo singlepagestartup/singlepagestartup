@@ -5,6 +5,7 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "jest:test": {},
     "dev": {
       "executor": "nx:run-commands",
       "options": {
