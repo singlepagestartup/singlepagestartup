@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
@@ -272,30 +276,36 @@ export class Handler {
         },
       });
 
-      void this.notifyOtherSubjectsInChat({
-        id,
-        socialModuleChatId,
-        socialModuleThreadId,
-        extendedSocialModuleMessage: {
-          ...socialMouleMessage,
-          messagesToFileStorageModuleFiles:
-            socialModuleMessagesToFileStorageModuleFiles?.map(
-              (socialModuleMessagesToFileStorageModuleFile) => {
-                return {
-                  ...socialModuleMessagesToFileStorageModuleFile,
-                  fileStorageModuleFile: fileStorageModuleFiles?.find(
-                    (fileStorageModuleFile) =>
-                      fileStorageModuleFile.id ===
-                      socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
-                  ),
-                };
-              },
-            ),
-        },
-        socialModuleProfileId,
-      }).catch((error) => {
-        logger.error(error);
-      });
+      if (
+        this.shouldNotifyOtherSubjectsInChat({
+          socialModuleMessage: socialMouleMessage,
+        })
+      ) {
+        void this.notifyOtherSubjectsInChat({
+          id,
+          socialModuleChatId,
+          socialModuleThreadId,
+          extendedSocialModuleMessage: {
+            ...socialMouleMessage,
+            messagesToFileStorageModuleFiles:
+              socialModuleMessagesToFileStorageModuleFiles?.map(
+                (socialModuleMessagesToFileStorageModuleFile) => {
+                  return {
+                    ...socialModuleMessagesToFileStorageModuleFile,
+                    fileStorageModuleFile: fileStorageModuleFiles?.find(
+                      (fileStorageModuleFile) =>
+                        fileStorageModuleFile.id ===
+                        socialModuleMessagesToFileStorageModuleFile.fileStorageModuleFileId,
+                    ),
+                  };
+                },
+              ),
+          },
+          socialModuleProfileId,
+        }).catch((error) => {
+          logger.error(error);
+        });
+      }
 
       return c.json({
         data: socialMouleMessage,
@@ -545,6 +555,31 @@ export class Handler {
         }
       }
     }
+  }
+
+  private shouldNotifyOtherSubjectsInChat(props: {
+    socialModuleMessage: Pick<ISocialModuleMessage, "metadata">;
+  }) {
+    const metadata = props.socialModuleMessage.metadata;
+
+    if (!metadata || typeof metadata !== "object") {
+      return true;
+    }
+
+    const telegramVoiceTranscription =
+      metadata[TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY];
+
+    if (
+      !telegramVoiceTranscription ||
+      typeof telegramVoiceTranscription !== "object"
+    ) {
+      return true;
+    }
+
+    const status = (telegramVoiceTranscription as Record<string, unknown>)
+      .status;
+
+    return status !== "processing" && status !== "failed";
   }
 
   async findExistingBySourceSystemId(props: {
