@@ -8,9 +8,35 @@ export function Component(props: IComponentPropsExtended) {
   const src = props.data.file.includes("https")
     ? props.data.file
     : `${NEXT_PUBLIC_API_SERVICE_URL}/public${props.data.file}`;
-  const isImage = props.data.file && props.data.mimeType?.includes("image");
-  const isVideo = props.data.file && props.data.mimeType?.includes("video");
-  const isAudio = props.data.file && props.data.mimeType?.includes("audio");
+  const mimeType = props.data.mimeType || "";
+  const extension =
+    props.data.extension ||
+    props.data.file.split("?")[0].split(".").pop()?.toLowerCase() ||
+    "";
+  const hasDimensions = Boolean(props.data.width && props.data.height);
+  const isAudioOnlyWebm = mimeType === "video/webm" && !hasDimensions;
+  const isImage = Boolean(props.data.file && mimeType.startsWith("image/"));
+  const isAudio = Boolean(
+    props.data.file &&
+      (mimeType.startsWith("audio/") ||
+        isAudioOnlyWebm ||
+        (!mimeType &&
+          [
+            "aac",
+            "flac",
+            "m4a",
+            "mp3",
+            "oga",
+            "ogg",
+            "opus",
+            "wav",
+            "webm",
+          ].includes(extension))),
+  );
+  const isVideo = Boolean(
+    props.data.file && mimeType.startsWith("video/") && !isAudio,
+  );
+  const mediaType = isAudioOnlyWebm ? "audio/webm" : mimeType || undefined;
   const title =
     props.data.adminTitle ||
     props.data.alt ||
@@ -55,23 +81,15 @@ export function Component(props: IComponentPropsExtended) {
 
       {isVideo ? (
         <video
-          width={
-            !props.data.containerClassName?.includes("aspect-")
-              ? props.data.width || 0
-              : undefined
-          }
-          height={
-            !props.data.containerClassName?.includes("aspect-")
-              ? props.data.height || 0
-              : undefined
-          }
+          width={!hasDimensions ? undefined : props.data.width || undefined}
+          height={!hasDimensions ? undefined : props.data.height || undefined}
           className={cn(
-            "max-w-full max-h-full object-contain",
+            "w-full max-w-full max-h-80 object-contain",
             props.data.className,
           )}
           controls
         >
-          <source src={src} type={props.data.mimeType || undefined} />
+          <source src={src} type={mediaType} />
         </video>
       ) : null}
 
@@ -87,7 +105,7 @@ export function Component(props: IComponentPropsExtended) {
             {title}
           </div>
           <audio className="h-10 w-full" controls preload="metadata">
-            <source src={src} type={props.data.mimeType || undefined} />
+            <source src={src} type={mediaType} />
           </audio>
         </div>
       ) : null}

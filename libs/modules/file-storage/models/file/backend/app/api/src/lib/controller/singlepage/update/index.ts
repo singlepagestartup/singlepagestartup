@@ -105,7 +105,9 @@ export class Handler {
         data["size"] = fileSize;
 
         data["extension"] = fileType?.ext ?? "";
-        data["mimeType"] = fileType?.mime ?? "";
+        data["mimeType"] = file.type.startsWith("audio/")
+          ? file.type
+          : (fileType?.mime ?? "");
 
         try {
           const dimensions = imageSize(Buffer.from(fileBuffer));
