@@ -3,9 +3,9 @@ issue_number: 189
 issue_title: "Telegram bot: transcribe voice messages into social.message text"
 repository: singlepagestartup
 created_at: 2026-05-15T22:41:25Z
-last_updated: 2026-05-16T07:52:23Z
+last_updated: 2026-05-16T08:04:22Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-189 - Telegram bot: transcribe voice messages into social.message text
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: in_progress
-- Current phase: implement
-- Next step: complete implementation and submit PR
+- Implement: completed
+- Current phase: complete
+- Next step: code review / merge
 
 ## Phase Notes
 
@@ -46,8 +46,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: Implemented Telegram voice-message ingestion, shared OpenAI transcription, completed-transcript agent routing, and operator/deployment documentation.
-- Outputs: OpenAI wrapper `libs/shared/third-parties/src/lib/open-ai/index.ts`; Telegram helper `apps/telegram/src/lib/telegram-voice-message.ts`; RBAC action signal in `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/update.ts`; agent routing in `libs/modules/agent/models/agent/backend/app/api/src/lib/controller/singlepage/telegram/bot.ts`; documentation and env updates in `apps/telegram/README.md`, `apps/telegram/.env.example`, `tools/deployer/*`, and `Dockerfile`.
-- Notes: Automated verification passed across targeted wrapper, Telegram, agent, OpenRouter guard, Telegram build, and changed library TypeScript builds. External Telegram/OpenAI manual verification remains operator-dependent.
+- Outputs: OpenAI wrapper `libs/shared/third-parties/src/lib/open-ai/index.ts`; Telegram helper `apps/telegram/src/lib/telegram-voice-message.ts`; RBAC action signal in `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/update.ts`; agent routing in `libs/modules/agent/models/agent/backend/app/api/src/lib/controller/singlepage/telegram/bot.ts`; documentation and env updates in `apps/telegram/README.md`, `apps/telegram/.env.example`, `tools/deployer/*`, and `Dockerfile`; PR https://github.com/singlepagestartup/singlepagestartup/pull/190.
+- Notes: Automated verification passed across targeted wrapper, Telegram, agent, OpenRouter guard, Telegram build, and changed library TypeScript builds. External Telegram/OpenAI manual verification remains operator-dependent. PR #190 was created and described; submit-for-code-review is the remaining workflow transition.
 
 ## Incident Log
 
