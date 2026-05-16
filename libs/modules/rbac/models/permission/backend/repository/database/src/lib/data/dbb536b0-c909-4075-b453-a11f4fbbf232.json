@@ -1,0 +1,9 @@
+{
+  "id": "dbb536b0-c909-4075-b453-a11f4fbbf232",
+  "createdAt": "2026-05-10T00:48:22.337Z",
+  "updatedAt": "2026-05-10T00:48:22.337Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/threads-to-messages/count"
+}

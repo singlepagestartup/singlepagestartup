@@ -1,0 +1,9 @@
+{
+  "id": "1fedab8a-120a-468b-8172-a61aa1d6d176",
+  "createdAt": "2026-05-10T00:48:33.429Z",
+  "updatedAt": "2026-05-10T00:48:33.429Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/telegram/pages-to-widgets/count"
+}

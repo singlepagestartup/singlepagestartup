@@ -1,0 +1,9 @@
+{
+  "id": "4edc9ddf-702d-4f0c-b65d-28019ef750c6",
+  "createdAt": "2026-05-10T00:48:22.439Z",
+  "updatedAt": "2026-05-10T00:48:22.439Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/features/count"
+}

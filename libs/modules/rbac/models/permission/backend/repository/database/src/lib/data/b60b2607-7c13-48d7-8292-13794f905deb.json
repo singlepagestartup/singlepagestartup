@@ -1,0 +1,9 @@
+{
+  "id": "b60b2607-7c13-48d7-8292-13794f905deb",
+  "createdAt": "2026-05-10T00:46:54.831Z",
+  "updatedAt": "2026-05-10T00:46:54.831Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/broadcast/channels-to-messages/count"
+}

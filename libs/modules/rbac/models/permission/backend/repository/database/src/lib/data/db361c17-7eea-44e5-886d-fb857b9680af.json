@@ -1,0 +1,9 @@
+{
+  "id": "db361c17-7eea-44e5-886d-fb857b9680af",
+  "createdAt": "2026-05-10T00:48:33.279Z",
+  "updatedAt": "2026-05-10T00:48:33.279Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/widgets-to-file-storage-module-files/count"
+}

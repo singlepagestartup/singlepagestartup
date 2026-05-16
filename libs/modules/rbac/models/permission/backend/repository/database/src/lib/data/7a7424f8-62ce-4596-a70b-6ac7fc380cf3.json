@@ -1,0 +1,9 @@
+{
+  "id": "7a7424f8-62ce-4596-a70b-6ac7fc380cf3",
+  "createdAt": "2026-05-10T00:46:30.218Z",
+  "updatedAt": "2026-05-10T00:46:30.218Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/payment-intents/count"
+}

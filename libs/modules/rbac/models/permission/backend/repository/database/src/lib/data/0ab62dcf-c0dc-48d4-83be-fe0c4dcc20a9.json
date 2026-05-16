@@ -1,0 +1,9 @@
+{
+  "id": "0ab62dcf-c0dc-48d4-83be-fe0c4dcc20a9",
+  "createdAt": "2026-05-10T00:46:04.500Z",
+  "updatedAt": "2026-05-10T00:46:04.500Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/count"
+}

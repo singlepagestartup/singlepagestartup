@@ -1,9 +1,12 @@
+import { spawn } from "node:child_process";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   NEXT_PUBLIC_TELEGRAM_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
   RBAC_SECRET_KEY,
-  OPEN_AI_TRANSCRIPTION_MODEL,
   TELEGRAM_SERVICE_BOT_TOKEN,
   TELEGRAM_SERVICE_BOT_USERNAME,
   TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
@@ -24,15 +27,10 @@ import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/m
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { api as billingModulePaymentIntentApi } from "@sps/billing/models/payment-intent/sdk/server";
 import { blobifyFiles } from "@sps/backend-utils";
-import { OpenAI } from "@sps/shared-third-parties";
 import * as jwt from "hono/jwt";
 import {
-  convertTelegramVoiceFileToWebm,
   extractTelegramAudioMessageData,
   extractTelegramVoiceMessageData,
-  getTelegramVoiceTranscriptionStatus,
-  processTelegramVoiceMessage,
-  TELEGRAM_VOICE_TRANSCRIPTION_DEFAULT_MODEL,
   type TelegramVoiceMessageData,
 } from "./telegram-voice-message";
 
@@ -44,6 +42,18 @@ type TelegramAttachmentCandidate = {
   title?: string;
   mimeType?: string;
 };
+
+const TELEGRAM_AUDIO_EXTENSIONS = [
+  "aac",
+  "flac",
+  "m4a",
+  "mp3",
+  "oga",
+  "ogg",
+  "opus",
+  "wav",
+  "webm",
+];
 
 function splitFileName(value: string) {
   const cleanValue = value.split("?")[0];
@@ -58,6 +68,15 @@ function splitFileName(value: string) {
   }
 
   return { title: baseName, extension: "" };
+}
+
+function sanitizeFileTitle(value: string) {
+  const trimmed = value.trim();
+  const safe = trimmed
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return safe || "telegram-audio";
 }
 
 export class TelegarmBot {
@@ -829,33 +848,156 @@ export class TelegarmBot {
       props.attachments.map((attachment) => [attachment.fileId, attachment]),
     );
 
-    return blobifyFiles({
-      files: await Promise.all(
-        [...uniqueAttachments.values()].map(async (attachment) => {
-          const fileInfo = await props.ctx.api.getFile(attachment.fileId);
+    const telegramFiles = await Promise.all(
+      [...uniqueAttachments.values()].map(async (attachment) => {
+        const fileInfo = await props.ctx.api.getFile(attachment.fileId);
 
-          if (!fileInfo.file_path) {
-            throw new Error(
-              `Telegram file_path missing for file_id ${attachment.fileId}`,
-            );
-          }
-
-          const inferred = splitFileName(
-            attachment.fileName || fileInfo.file_path,
+        if (!fileInfo.file_path) {
+          throw new Error(
+            `Telegram file_path missing for file_id ${attachment.fileId}`,
           );
-          const title = attachment.title || inferred.title || attachment.fileId;
-          const extension = inferred.extension || "bin";
-          const type = attachment.mimeType || "application/octet-stream";
-          const url = `https://api.telegram.org/file/bot${TELEGRAM_SERVICE_BOT_TOKEN}/${fileInfo.file_path}`;
+        }
 
-          return {
-            title,
+        const inferred = splitFileName(
+          attachment.fileName || fileInfo.file_path,
+        );
+        const title = attachment.title || inferred.title || attachment.fileId;
+        const extension = inferred.extension || "bin";
+        const type = attachment.mimeType || "application/octet-stream";
+        const url = `https://api.telegram.org/file/bot${TELEGRAM_SERVICE_BOT_TOKEN}/${fileInfo.file_path}`;
+
+        return {
+          shouldConvertAudioToMp3: this.isTelegramAudioAttachment({
             extension,
-            type,
-            url,
-          };
-        }),
-      ),
+            mimeType: type,
+          }),
+          title,
+          extension,
+          type,
+          url,
+        };
+      }),
+    );
+
+    const files = await blobifyFiles({
+      files: telegramFiles,
+    });
+
+    return await Promise.all(
+      files.map(async (file, index) => {
+        const telegramFile = telegramFiles[index];
+
+        if (!telegramFile?.shouldConvertAudioToMp3) {
+          return file;
+        }
+
+        if (
+          file.type === "audio/mpeg" &&
+          file.name.toLowerCase().endsWith(".mp3")
+        ) {
+          return file;
+        }
+
+        return await this.convertTelegramAudioFileToMp3({
+          file,
+          title: telegramFile.title,
+        });
+      }),
+    );
+  }
+
+  private isTelegramAudioAttachment(props: {
+    extension?: string;
+    mimeType?: string;
+  }) {
+    if (props.mimeType?.startsWith("audio/")) {
+      return true;
+    }
+
+    return Boolean(
+      props.extension &&
+        TELEGRAM_AUDIO_EXTENSIONS.includes(props.extension.toLowerCase()),
+    );
+  }
+
+  private async convertTelegramAudioFileToMp3(props: {
+    file: File;
+    title: string;
+  }) {
+    const tempDirectory = await mkdtemp(join(tmpdir(), "sps-telegram-audio-"));
+    const inputExtension =
+      props.file.name.split("?")[0].split(".").pop() || "bin";
+    const inputPath = join(tempDirectory, `input.${inputExtension}`);
+    const outputPath = join(tempDirectory, "output.mp3");
+
+    try {
+      const inputBuffer = Buffer.from(await props.file.arrayBuffer());
+      await writeFile(inputPath, inputBuffer);
+
+      await this.runFfmpeg([
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        inputPath,
+        "-vn",
+        "-codec:a",
+        "libmp3lame",
+        "-q:a",
+        "2",
+        outputPath,
+      ]);
+
+      const outputBuffer = await readFile(outputPath);
+
+      return new File(
+        [new Uint8Array(outputBuffer)],
+        `${sanitizeFileTitle(props.title)}.mp3`,
+        {
+          type: "audio/mpeg",
+        },
+      ) as unknown as File;
+    } catch (error) {
+      throw new Error(
+        `Telegram audio conversion to MP3 failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    } finally {
+      await rm(tempDirectory, {
+        force: true,
+        recursive: true,
+      });
+    }
+  }
+
+  private runFfmpeg(args: string[]) {
+    return new Promise<void>((resolve, reject) => {
+      const child = spawn("ffmpeg", args, {
+        stdio: ["ignore", "ignore", "pipe"],
+      });
+      const stderr: Buffer[] = [];
+
+      child.stderr?.on("data", (chunk) => {
+        stderr.push(Buffer.from(chunk));
+      });
+
+      child.on("error", reject);
+      child.on("close", (code) => {
+        if (code === 0) {
+          resolve();
+          return;
+        }
+
+        reject(
+          new Error(
+            `ffmpeg exited with code ${code}: ${Buffer.concat(stderr)
+              .toString("utf8")
+              .trim()}`,
+          ),
+        );
+      });
     });
   }
 
@@ -993,64 +1135,43 @@ export class TelegarmBot {
         sourceSystemId: props.voice.sourceSystemId,
       });
 
-    if (getTelegramVoiceTranscriptionStatus(existingMessage)) {
+    if (existingMessage) {
       return existingMessage;
     }
 
-    return await processTelegramVoiceMessage({
-      convertVoiceFile: convertTelegramVoiceFileToWebm,
-      createMessage: async ({ data }) => {
-        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-          {
-            id: rbacModuleSubject.id,
-            socialModuleChatId: socialModuleChat.id,
-            socialModuleThreadId: socialModuleThread.id,
-            socialModuleProfileId: socialModuleProfile.id,
-            data,
-            options: {
-              headers: {
-                Authorization: "Bearer " + jwtToken,
-              },
-            },
-          },
-        );
-      },
-      downloadVoiceFile: async () => {
-        return await this.downloadTelegramVoiceFile({
-          ctx: props.ctx,
-          voice: props.voice,
-        });
-      },
-      existingMessage,
-      transcribeAudio: async ({ file, model }) => {
-        const openAI = new OpenAI();
-
-        return await openAI.transcribeAudio({
-          file,
-          model,
-        });
-      },
-      transcriptionModel:
-        OPEN_AI_TRANSCRIPTION_MODEL ||
-        TELEGRAM_VOICE_TRANSCRIPTION_DEFAULT_MODEL,
-      updateMessage: async ({ data, message }) => {
-        return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
-          {
-            id: rbacModuleSubject.id,
-            socialModuleChatId: socialModuleChat.id,
-            socialModuleProfileId: socialModuleProfile.id,
-            socialModuleMessageId: message.id,
-            data,
-            options: {
-              headers: {
-                Authorization: "Bearer " + jwtToken,
-              },
-            },
-          },
-        );
-      },
+    const file = await this.downloadTelegramVoiceFile({
+      ctx: props.ctx,
       voice: props.voice,
     });
+
+    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: rbacModuleSubject.id,
+        socialModuleChatId: socialModuleChat.id,
+        socialModuleThreadId: socialModuleThread.id,
+        socialModuleProfileId: socialModuleProfile.id,
+        data: {
+          description: messageText || "",
+          files: [file],
+          metadata: {
+            telegram: {
+              audio: {
+                duration: props.voice.duration,
+                fileId: props.voice.fileId,
+                fileUniqueId: props.voice.fileUniqueId,
+                mimeType: props.voice.mimeType,
+              },
+            },
+          },
+          sourceSystemId: props.voice.sourceSystemId,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + jwtToken,
+          },
+        },
+      },
+    );
   }
 
   private async handleIncomingMessage(props: {

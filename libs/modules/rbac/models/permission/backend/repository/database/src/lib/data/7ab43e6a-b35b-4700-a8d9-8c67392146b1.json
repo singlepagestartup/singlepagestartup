@@ -1,0 +1,9 @@
+{
+  "id": "7ab43e6a-b35b-4700-a8d9-8c67392146b1",
+  "createdAt": "2026-05-10T00:46:30.096Z",
+  "updatedAt": "2026-05-10T00:46:30.096Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/agent/agents/count"
+}

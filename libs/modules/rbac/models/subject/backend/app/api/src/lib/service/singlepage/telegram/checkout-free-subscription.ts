@@ -33,7 +33,7 @@ export class Service {
       props.subjectsToEcommerceModuleOrders;
   }
 
-  private async hasActiveSubscriptionOrder(props: {
+  protected async hasActiveSubscriptionOrder(props: {
     subjectToOrders?: { ecommerceModuleOrderId?: string | null }[];
   }) {
     if (!props.subjectToOrders?.length) {

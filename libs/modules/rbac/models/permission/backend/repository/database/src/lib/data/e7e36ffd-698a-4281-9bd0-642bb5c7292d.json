@@ -1,0 +1,9 @@
+{
+  "id": "e7e36ffd-698a-4281-9bd0-642bb5c7292d",
+  "createdAt": "2026-05-10T00:46:30.257Z",
+  "updatedAt": "2026-05-10T00:46:30.257Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/payment-intents-to-currencies/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "a14b8e41-cb05-4faa-9a51-748f12a0abe8",
+  "createdAt": "2026-05-10T00:47:38.871Z",
+  "updatedAt": "2026-05-10T00:47:38.871Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/notification/topics-to-notifications/count"
+}

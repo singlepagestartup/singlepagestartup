@@ -1,0 +1,9 @@
+{
+  "id": "a4d17a57-e9d4-460e-a4ad-0d52931c0cea",
+  "createdAt": "2026-05-10T00:47:59.930Z",
+  "updatedAt": "2026-05-10T00:47:59.930Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-chats/count"
+}

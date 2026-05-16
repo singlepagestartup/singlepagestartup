@@ -1,0 +1,9 @@
+{
+  "id": "03356f09-ec2b-45fe-8275-0c03bca469c6",
+  "createdAt": "2026-05-10T00:46:54.654Z",
+  "updatedAt": "2026-05-10T00:46:54.654Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/articles-to-file-storage-module-files/count"
+}

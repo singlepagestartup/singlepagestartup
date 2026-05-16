@@ -1,0 +1,9 @@
+{
+  "id": "d77cc208-0217-4e3e-8d1e-89003456d3a6",
+  "createdAt": "2026-05-10T00:47:59.655Z",
+  "updatedAt": "2026-05-10T00:47:59.655Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/attribute-keys/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "3bcf66a3-027b-4b7b-88d7-b0386dfb0d9e",
+  "createdAt": "2026-05-10T00:46:54.941Z",
+  "updatedAt": "2026-05-10T00:46:54.941Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/widgets/count"
+}

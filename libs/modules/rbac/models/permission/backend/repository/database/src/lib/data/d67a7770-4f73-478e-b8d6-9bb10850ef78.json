@@ -1,0 +1,9 @@
+{
+  "id": "d67a7770-4f73-478e-b8d6-9bb10850ef78",
+  "createdAt": "2026-05-10T00:47:59.880Z",
+  "updatedAt": "2026-05-10T00:47:59.880Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/messages-to-file-storage-module-files/count"
+}

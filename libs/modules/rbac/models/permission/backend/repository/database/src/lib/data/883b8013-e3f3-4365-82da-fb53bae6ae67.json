@@ -1,0 +1,9 @@
+{
+  "id": "883b8013-e3f3-4365-82da-fb53bae6ae67",
+  "createdAt": "2026-05-10T00:46:04.377Z",
+  "updatedAt": "2026-05-10T00:46:04.377Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/pages-to-widgets/count"
+}

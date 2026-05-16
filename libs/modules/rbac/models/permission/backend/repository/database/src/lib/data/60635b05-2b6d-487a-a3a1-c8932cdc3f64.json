@@ -1,0 +1,9 @@
+{
+  "id": "60635b05-2b6d-487a-a3a1-c8932cdc3f64",
+  "createdAt": "2026-05-10T00:47:59.864Z",
+  "updatedAt": "2026-05-10T00:47:59.864Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/chats-to-threads/count"
+}

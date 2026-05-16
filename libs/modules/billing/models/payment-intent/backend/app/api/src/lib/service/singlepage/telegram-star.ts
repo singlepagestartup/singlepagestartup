@@ -159,7 +159,7 @@ export class Service {
     }
   }
 
-  private assertSuccessfulTelegramStarPayment(props: {
+  protected assertSuccessfulTelegramStarPayment(props: {
     invoice: IInvoice;
     data: Extract<IServiceProceedProps, { action: "webhook" }>["data"];
   }) {

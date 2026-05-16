@@ -1,0 +1,9 @@
+{
+  "id": "6d8de79b-8648-4a0c-af67-a54b46508913",
+  "createdAt": "2026-05-10T00:46:30.118Z",
+  "updatedAt": "2026-05-10T00:46:30.118Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/agent/widgets/count"
+}

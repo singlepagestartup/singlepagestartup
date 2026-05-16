@@ -1,0 +1,9 @@
+{
+  "id": "e927e82e-5da9-4cf1-ad22-63a2177ff184",
+  "createdAt": "2026-05-10T00:47:59.788Z",
+  "updatedAt": "2026-05-10T00:47:59.788Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/widgets/count"
+}

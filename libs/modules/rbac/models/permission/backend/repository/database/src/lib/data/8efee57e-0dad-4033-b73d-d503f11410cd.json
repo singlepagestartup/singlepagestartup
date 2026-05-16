@@ -1,0 +1,9 @@
+{
+  "id": "8efee57e-0dad-4033-b73d-d503f11410cd",
+  "createdAt": "2026-05-10T00:46:04.331Z",
+  "updatedAt": "2026-05-10T00:46:04.331Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/pages-to-layouts/count"
+}

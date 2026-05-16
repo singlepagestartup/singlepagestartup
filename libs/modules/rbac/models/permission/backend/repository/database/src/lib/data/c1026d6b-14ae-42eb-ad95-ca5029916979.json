@@ -1,0 +1,9 @@
+{
+  "id": "c1026d6b-14ae-42eb-ad95-ca5029916979",
+  "createdAt": "2026-05-10T00:47:17.827Z",
+  "updatedAt": "2026-05-10T00:47:17.827Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/orders-to-file-storage-module-files/count"
+}

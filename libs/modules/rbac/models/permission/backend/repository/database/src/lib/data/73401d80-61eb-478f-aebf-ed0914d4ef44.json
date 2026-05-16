@@ -1,0 +1,9 @@
+{
+  "id": "73401d80-61eb-478f-aebf-ed0914d4ef44",
+  "createdAt": "2026-05-10T00:47:17.772Z",
+  "updatedAt": "2026-05-10T00:47:17.772Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/categories-to-website-builder-module-widgets/count"
+}

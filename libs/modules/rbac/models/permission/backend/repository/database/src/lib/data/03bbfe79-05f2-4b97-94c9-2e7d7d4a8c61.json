@@ -1,0 +1,9 @@
+{
+  "id": "03bbfe79-05f2-4b97-94c9-2e7d7d4a8c61",
+  "createdAt": "2026-05-10T00:47:38.601Z",
+  "updatedAt": "2026-05-10T00:47:38.601Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/stores-to-products/count"
+}

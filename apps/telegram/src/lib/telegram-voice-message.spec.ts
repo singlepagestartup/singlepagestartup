@@ -1,53 +1,28 @@
+/// <reference types="jest" />
+
 /**
- * BDD Suite: Telegram voice message processing.
+ * @jest-environment node
  *
- * Given: Telegram voice notes arrive separately from text and ordinary attachments.
- * When: the Telegram adapter processes a voice update through mocked boundaries.
- * Then: it creates one traceable social message, stores audio metadata, and records transcription success or failure.
+ * BDD Suite: Telegram audio message extraction.
+ *
+ * Given: Telegram voice notes and uploaded audio files arrive through transport updates.
+ * When: the Telegram adapter extracts message data.
+ * Then: it captures only Telegram-specific file identifiers for RBAC ingestion.
  */
 
-import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import {
   extractTelegramAudioMessageData,
   extractTelegramVoiceMessageData,
-  processTelegramVoiceMessage,
-  TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
-  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
 } from "./telegram-voice-message";
 
-describe("Telegram voice message processing", () => {
-  const voice = {
-    duration: 7,
-    fileId: "telegram-file-id",
-    fileUniqueId: "telegram-file-unique-id",
-    mimeType: "audio/ogg",
-    sourceSystemId: "4242",
-  };
-
-  const createMessage = (props?: Partial<ISocialModuleMessage>) => {
-    return {
-      id: "message-id",
-      createdAt: new Date("2026-05-15T00:00:00Z"),
-      updatedAt: new Date("2026-05-15T00:00:00Z"),
-      className: null,
-      description: "",
-      interaction: {},
-      metadata: {},
-      sourceSystemId: "4242",
-      subtitle: null,
-      title: null,
-      variant: "default",
-      ...props,
-    } as ISocialModuleMessage;
-  };
-
+describe("Given: Telegram audio message extraction", () => {
   /**
    * BDD Scenario
    * Given: a Telegram message contains voice metadata and a Telegram message id.
    * When: the adapter extracts voice processing input.
-   * Then: the voice file identifiers and sourceSystemId are captured.
+   * Then: the voice file identifiers and sourceSystemId are captured without OpenAI state.
    */
-  it("extracts voice metadata from a Telegram message", () => {
+  it("When: voice metadata is present Then: it extracts Telegram file identifiers", () => {
     expect(
       extractTelegramVoiceMessageData({
         message_id: 4242,
@@ -58,16 +33,22 @@ describe("Telegram voice message processing", () => {
           mime_type: "audio/ogg",
         },
       }),
-    ).toEqual(voice);
+    ).toEqual({
+      duration: 7,
+      fileId: "telegram-file-id",
+      fileUniqueId: "telegram-file-unique-id",
+      mimeType: "audio/ogg",
+      sourceSystemId: "4242",
+    });
   });
 
   /**
    * BDD Scenario
    * Given: a Telegram message contains an uploaded audio file.
    * When: the adapter extracts audio processing input.
-   * Then: the audio file identifiers and sourceSystemId are captured for transcription.
+   * Then: the audio file identifiers and sourceSystemId are captured for RBAC ingestion.
    */
-  it("extracts uploaded audio metadata from a Telegram message", () => {
+  it("When: uploaded audio metadata is present Then: it extracts Telegram file identifiers", () => {
     expect(
       extractTelegramAudioMessageData({
         audio: {
@@ -92,9 +73,9 @@ describe("Telegram voice message processing", () => {
    * BDD Scenario
    * Given: a Telegram document is an audio file by MIME type.
    * When: the adapter extracts audio processing input.
-   * Then: the document is routed through the transcription flow.
+   * Then: the document is routed into RBAC as an audio attachment.
    */
-  it("extracts audio document metadata from a Telegram message", () => {
+  it("When: document is audio Then: it extracts document file identifiers", () => {
     expect(
       extractTelegramAudioMessageData({
         document: {
@@ -111,249 +92,5 @@ describe("Telegram voice message processing", () => {
       mimeType: "audio/ogg",
       sourceSystemId: "4244",
     });
-  });
-
-  /**
-   * BDD Scenario
-   * Given: voice audio downloads, converts, and transcribes successfully.
-   * When: the voice processor runs.
-   * Then: it creates a processing message with converted audio and updates the same message with the transcript.
-   */
-  it("creates a processing message and completes it with transcript metadata", async () => {
-    const originalFile = new File(["original"], "voice.ogg", {
-      type: "audio/ogg",
-    });
-    const convertedFile = new File(["converted"], "voice.webm", {
-      type: "audio/webm",
-    });
-    const processingMessage = createMessage({
-      metadata: {
-        existing: true,
-      },
-    });
-    const completedMessage = createMessage({
-      description: "hello from voice",
-    });
-    const createMessageMock = jest.fn().mockResolvedValue(processingMessage);
-    const updateMessageMock = jest.fn().mockResolvedValue(completedMessage);
-    const transcribeAudioMock = jest.fn().mockResolvedValue({
-      metadata: {
-        usage: {
-          seconds: 7,
-        },
-      },
-      text: "hello from voice",
-    });
-
-    const result = await processTelegramVoiceMessage({
-      convertVoiceFile: jest.fn().mockResolvedValue(convertedFile),
-      createMessage: createMessageMock,
-      downloadVoiceFile: jest.fn().mockResolvedValue(originalFile),
-      now: () => "2026-05-15T23:00:00.000Z",
-      transcribeAudio: transcribeAudioMock,
-      transcriptionModel: "gpt-4o-transcribe",
-      updateMessage: updateMessageMock,
-      voice,
-    });
-
-    expect(result).toBe(completedMessage);
-    expect(createMessageMock).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        description: "",
-        files: [convertedFile],
-        sourceSystemId: "4242",
-      }),
-    });
-    expect(
-      (createMessageMock.mock.calls[0][0].data.metadata as any)[
-        TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY
-      ],
-    ).toMatchObject({
-      status: "processing",
-      telegram: {
-        fileId: "telegram-file-id",
-        fileUniqueId: "telegram-file-unique-id",
-      },
-    });
-    expect(transcribeAudioMock).toHaveBeenCalledWith({
-      file: convertedFile,
-      model: "gpt-4o-transcribe",
-    });
-    expect(updateMessageMock).toHaveBeenCalledWith({
-      data: {
-        description: "hello from voice",
-        metadata: expect.objectContaining({
-          existing: true,
-          [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: expect.objectContaining({
-            agentTrigger: TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
-            status: "completed",
-          }),
-        }),
-      },
-      message: processingMessage,
-    });
-  });
-
-  /**
-   * BDD Scenario
-   * Given: voice audio downloads but conversion fails.
-   * When: the voice processor handles the failure.
-   * Then: it creates one failed social message with the original audio attached and does not call transcription.
-   */
-  it("records conversion failure without calling transcription", async () => {
-    const originalFile = new File(["original"], "voice.ogg", {
-      type: "audio/ogg",
-    });
-    const failedMessage = createMessage({
-      metadata: {
-        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
-          status: "failed",
-        },
-      },
-    });
-    const createMessageMock = jest.fn().mockResolvedValue(failedMessage);
-    const errorReporterMock = jest.fn();
-    const transcribeAudioMock = jest.fn();
-    const updateMessageMock = jest.fn();
-
-    const result = await processTelegramVoiceMessage({
-      convertVoiceFile: jest.fn().mockRejectedValue(new Error("ffmpeg failed")),
-      createMessage: createMessageMock,
-      downloadVoiceFile: jest.fn().mockResolvedValue(originalFile),
-      errorReporter: errorReporterMock,
-      now: () => "2026-05-15T23:00:00.000Z",
-      transcribeAudio: transcribeAudioMock,
-      updateMessage: updateMessageMock,
-      voice,
-    });
-
-    expect(result).toBe(failedMessage);
-    expect(createMessageMock).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        files: [originalFile],
-        sourceSystemId: "4242",
-      }),
-    });
-    expect(
-      (createMessageMock.mock.calls[0][0].data.metadata as any)[
-        TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY
-      ],
-    ).toMatchObject({
-      error: {
-        category: "conversion",
-      },
-      status: "failed",
-    });
-    expect(errorReporterMock).toHaveBeenCalledWith({
-      error: expect.objectContaining({
-        category: "conversion",
-        message: "ffmpeg failed",
-      }),
-      stage: "conversion",
-      voice,
-    });
-    expect(transcribeAudioMock).not.toHaveBeenCalled();
-    expect(updateMessageMock).not.toHaveBeenCalled();
-  });
-
-  /**
-   * BDD Scenario
-   * Given: OpenAI transcription fails with a configuration error.
-   * When: the voice processor records the failed status.
-   * Then: the technical error is reported for server logs and not persisted into frontend metadata.
-   */
-  it("reports transcription errors without persisting technical messages", async () => {
-    const originalFile = new File(["original"], "voice.ogg", {
-      type: "audio/ogg",
-    });
-    const convertedFile = new File(["converted"], "voice.webm", {
-      type: "audio/webm",
-    });
-    const processingMessage = createMessage();
-    const failedMessage = createMessage({
-      metadata: {
-        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
-          status: "failed",
-        },
-      },
-    });
-    const createMessageMock = jest.fn().mockResolvedValue(processingMessage);
-    const updateMessageMock = jest.fn().mockResolvedValue(failedMessage);
-    const errorReporterMock = jest.fn();
-
-    const result = await processTelegramVoiceMessage({
-      convertVoiceFile: jest.fn().mockResolvedValue(convertedFile),
-      createMessage: createMessageMock,
-      downloadVoiceFile: jest.fn().mockResolvedValue(originalFile),
-      errorReporter: errorReporterMock,
-      now: () => "2026-05-15T23:00:00.000Z",
-      transcribeAudio: jest
-        .fn()
-        .mockRejectedValue(
-          new Error("Configuration error. OPEN_AI_API_KEY is not set"),
-        ),
-      updateMessage: updateMessageMock,
-      voice,
-    });
-
-    expect(result).toBe(failedMessage);
-    expect(updateMessageMock).toHaveBeenCalledWith({
-      data: {
-        metadata: expect.objectContaining({
-          [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: expect.objectContaining({
-            error: {
-              category: "transcription",
-            },
-            status: "failed",
-          }),
-        }),
-      },
-      message: processingMessage,
-    });
-    expect(
-      (updateMessageMock.mock.calls[0][0].data.metadata as any)[
-        TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY
-      ].error.message,
-    ).toBeUndefined();
-    expect(errorReporterMock).toHaveBeenCalledWith({
-      error: expect.objectContaining({
-        category: "transcription",
-        message: "Configuration error. OPEN_AI_API_KEY is not set",
-      }),
-      stage: "transcription",
-      voice,
-    });
-  });
-
-  /**
-   * BDD Scenario
-   * Given: a duplicate Telegram update already has transcription metadata.
-   * When: the voice processor runs again with the existing message.
-   * Then: it returns the existing message without downloading, converting, or transcribing again.
-   */
-  it("skips duplicate voice updates that already have transcription metadata", async () => {
-    const existingMessage = createMessage({
-      metadata: {
-        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
-          status: "completed",
-        },
-      },
-    });
-    const downloadVoiceFileMock = jest.fn();
-    const createMessageMock = jest.fn();
-
-    const result = await processTelegramVoiceMessage({
-      convertVoiceFile: jest.fn(),
-      createMessage: createMessageMock,
-      downloadVoiceFile: downloadVoiceFileMock,
-      existingMessage,
-      transcribeAudio: jest.fn(),
-      updateMessage: jest.fn(),
-      voice,
-    });
-
-    expect(result).toBe(existingMessage);
-    expect(downloadVoiceFileMock).not.toHaveBeenCalled();
-    expect(createMessageMock).not.toHaveBeenCalled();
   });
 });

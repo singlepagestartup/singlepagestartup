@@ -8,17 +8,17 @@
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
+    AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
+    AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
     RBAC_SECRET_KEY: "rbac-secret",
-    TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE:
-      "telegram_voice_transcription_completed",
-    TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY: "telegramVoiceTranscription",
   };
 });
 
 import { Handler } from "./bot";
 import {
-  TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
-  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
+  AUDIO_TRANSCRIPTION_ACTION_TYPE,
+  AUDIO_TRANSCRIPTION_METADATA_KEY,
 } from "@sps/shared-utils";
 
 function createContext() {
@@ -226,20 +226,20 @@ describe("Given: agent social message action routing", () => {
 
   /**
    * BDD Scenario
-   * Given: a Telegram voice transcript update is marked completed with the explicit agent trigger.
+   * Given: an audio transcript update is marked completed with the explicit agent trigger.
    * When: the agent telegram handler processes the forwarded social action.
    * Then: it reuses normal message dispatch and asks the OpenRouter social profile to reply.
    */
-  it("When: voice transcription completed action is logged Then: automatic social profile handler runs", async () => {
+  it("When: audio transcription completed action is logged Then: automatic social profile handler runs", async () => {
     const service = createService();
     const forwardedAction = createForwardedSocialAction({
-      type: TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+      type: AUDIO_TRANSCRIPTION_ACTION_TYPE,
       message: {
         id: "message-1",
         description: "transcribed voice text",
         metadata: {
-          [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
-            agentTrigger: TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+          [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+            agentTrigger: AUDIO_TRANSCRIPTION_ACTION_TYPE,
             status: "completed",
           },
         },
@@ -318,20 +318,20 @@ describe("Given: agent social message action routing", () => {
 
   /**
    * BDD Scenario
-   * Given: a voice transcription action has completed metadata but no transcript text.
+   * Given: an audio transcription action has completed metadata but no transcript text.
    * When: the agent telegram handler processes the action.
    * Then: it does not trigger an agent reply.
    */
-  it("When: completed voice action has empty text Then: automatic social profile handler is skipped", async () => {
+  it("When: completed audio action has empty text Then: automatic social profile handler is skipped", async () => {
     const service = createService();
     const forwardedAction = createForwardedSocialAction({
-      type: TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+      type: AUDIO_TRANSCRIPTION_ACTION_TYPE,
       message: {
         id: "message-1",
         description: "",
         metadata: {
-          [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
-            agentTrigger: TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+          [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+            agentTrigger: AUDIO_TRANSCRIPTION_ACTION_TYPE,
             status: "completed",
           },
         },

@@ -13,7 +13,7 @@ export class Handler {
     this.service = service;
   }
 
-  private normalizeLimit(value: string | undefined) {
+  protected normalizeLimit(value: string | undefined) {
     const parsedLimit = Number.parseInt(value || "20", 10);
 
     if (Number.isNaN(parsedLimit)) {
@@ -23,7 +23,7 @@ export class Handler {
     return Math.min(Math.max(parsedLimit, 1), 50);
   }
 
-  private profileSearchColumns() {
+  protected profileSearchColumns() {
     return [
       "slug",
       "adminTitle",

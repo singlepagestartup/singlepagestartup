@@ -1,0 +1,9 @@
+{
+  "id": "9583e4a8-7abe-4f53-8768-3042586f8ccd",
+  "createdAt": "2026-05-10T00:47:38.771Z",
+  "updatedAt": "2026-05-10T00:47:38.771Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/notification/notifications/count"
+}

@@ -1,5 +1,12 @@
 # Api app
 
+## Environment
+
+Audio transcription runs inside the API/RBAC message flow and uses:
+
+- `OPEN_AI_API_KEY` - required when audio transcription should run.
+- `OPEN_AI_TRANSCRIPTION_MODEL` - optional, defaults to `gpt-4o-transcribe`.
+
 ## Guidelines
 
 - `apps/api/app.ts` is the **only** host: mount every module backend app via `app.route("/api/<module>", moduleApp.hono)`; modules must not expose their own servers.

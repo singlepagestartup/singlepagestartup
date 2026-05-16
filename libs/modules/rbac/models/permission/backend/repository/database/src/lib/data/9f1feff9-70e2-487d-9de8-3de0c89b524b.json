@@ -1,0 +1,9 @@
+{
+  "id": "9f1feff9-70e2-487d-9de8-3de0c89b524b",
+  "createdAt": "2026-05-10T00:47:59.683Z",
+  "updatedAt": "2026-05-10T00:47:59.683Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/chats/count"
+}

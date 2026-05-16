@@ -1,4 +1,5 @@
 import {
+  AUDIO_TRANSCRIPTION_DEFAULT_MODEL,
   OPEN_AI_API_KEY,
   OPEN_AI_TRANSCRIPTION_MODEL,
 } from "@sps/shared-utils";
@@ -47,7 +48,9 @@ export class Service {
     props: TranscribeAudioProps,
   ): Promise<TranscribeAudioResult> {
     const model =
-      props.model || OPEN_AI_TRANSCRIPTION_MODEL || "gpt-4o-transcribe";
+      props.model ||
+      OPEN_AI_TRANSCRIPTION_MODEL ||
+      AUDIO_TRANSCRIPTION_DEFAULT_MODEL;
 
     const response = await this.client.audio.transcriptions.create({
       file: props.file,

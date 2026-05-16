@@ -1,0 +1,9 @@
+{
+  "id": "a47bd242-fb7c-4651-b408-51f55b24d35b",
+  "createdAt": "2026-05-10T00:47:59.829Z",
+  "updatedAt": "2026-05-10T00:47:59.829Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/chats-to-actions/count"
+}

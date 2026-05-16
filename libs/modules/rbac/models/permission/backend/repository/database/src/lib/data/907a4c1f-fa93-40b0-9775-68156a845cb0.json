@@ -1,0 +1,9 @@
+{
+  "id": "907a4c1f-fa93-40b0-9775-68156a845cb0",
+  "createdAt": "2026-05-10T00:46:04.302Z",
+  "updatedAt": "2026-05-10T00:46:04.302Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/layouts-to-widgets/count"
+}

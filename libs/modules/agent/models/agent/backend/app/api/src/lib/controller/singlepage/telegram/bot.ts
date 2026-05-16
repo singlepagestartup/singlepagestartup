@@ -1,7 +1,8 @@
 import {
+  AUDIO_TRANSCRIPTION_ACTION_TYPE,
+  AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY,
+  AUDIO_TRANSCRIPTION_METADATA_KEY,
   RBAC_SECRET_KEY,
-  TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
-  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -17,7 +18,7 @@ export class Handler {
     this.service = service;
   }
 
-  private matchRoute(route: string | undefined, templates: string[]) {
+  protected matchRoute(route: string | undefined, templates: string[]) {
     if (!route) {
       return null;
     }
@@ -186,12 +187,12 @@ export class Handler {
       };
     };
 
-    if (actionPayload?.type === TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE) {
+    if (actionPayload?.type === AUDIO_TRANSCRIPTION_ACTION_TYPE) {
       const socialModuleMessage = actionPayload.message;
 
       if (
         !socialModuleMessage?.id ||
-        !this.isTelegramVoiceTranscriptionCompletedMessage(socialModuleMessage)
+        !this.isAudioTranscriptionCompletedMessage(socialModuleMessage)
       ) {
         return c.json({
           data: false,
@@ -398,7 +399,7 @@ export class Handler {
     });
   }
 
-  private isTelegramVoiceTranscriptionCompletedMessage(message: {
+  protected isAudioTranscriptionCompletedMessage(message: {
     metadata?: Record<string, unknown> | null;
   }) {
     const metadata = message.metadata;
@@ -407,23 +408,28 @@ export class Handler {
       return false;
     }
 
-    const telegramVoiceTranscription =
-      metadata[TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY];
+    const audioTranscription =
+      metadata[AUDIO_TRANSCRIPTION_METADATA_KEY] ||
+      metadata[AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY];
 
     return Boolean(
-      telegramVoiceTranscription &&
-        typeof telegramVoiceTranscription === "object" &&
-        (telegramVoiceTranscription as Record<string, unknown>).status ===
+      audioTranscription &&
+        typeof audioTranscription === "object" &&
+        (audioTranscription as Record<string, unknown>).status ===
           "completed" &&
-        (telegramVoiceTranscription as Record<string, unknown>).agentTrigger ===
-          TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
+        (audioTranscription as Record<string, unknown>).agentTrigger ===
+          AUDIO_TRANSCRIPTION_ACTION_TYPE,
     );
   }
 
-  private async dispatchAutomaticReplyForMessage(props: {
+  protected async dispatchAutomaticReplyForMessage(props: {
     socialModuleChat?: any;
     socialModuleMessage: any;
   }) {
+    if (this.isAudioTranscriptionPendingOrFailed(props.socialModuleMessage)) {
+      return false;
+    }
+
     if (!props.socialModuleMessage.description?.trim()) {
       return false;
     }
@@ -566,5 +572,27 @@ export class Handler {
     }
 
     return handled;
+  }
+
+  protected isAudioTranscriptionPendingOrFailed(message: {
+    metadata?: Record<string, unknown> | null;
+  }) {
+    const metadata = message.metadata;
+
+    if (!metadata || typeof metadata !== "object") {
+      return false;
+    }
+
+    const audioTranscription =
+      metadata[AUDIO_TRANSCRIPTION_METADATA_KEY] ||
+      metadata[AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY];
+
+    if (!audioTranscription || typeof audioTranscription !== "object") {
+      return false;
+    }
+
+    const status = (audioTranscription as Record<string, unknown>).status;
+
+    return status === "processing" || status === "failed";
   }
 }

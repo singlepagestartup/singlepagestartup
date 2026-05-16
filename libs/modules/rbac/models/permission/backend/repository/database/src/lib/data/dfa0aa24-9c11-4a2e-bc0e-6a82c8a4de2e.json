@@ -1,0 +1,9 @@
+{
+  "id": "dfa0aa24-9c11-4a2e-bc0e-6a82c8a4de2e",
+  "createdAt": "2026-05-10T00:48:22.684Z",
+  "updatedAt": "2026-05-10T00:48:22.684Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides-to-buttons-arrays/count"
+}

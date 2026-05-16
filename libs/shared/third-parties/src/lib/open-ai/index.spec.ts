@@ -1,7 +1,7 @@
 /**
  * BDD Suite: OpenAI audio transcription wrapper.
  *
- * Given: Telegram voice ingestion needs reusable OpenAI speech-to-text access.
+ * Given: RBAC audio ingestion needs reusable OpenAI speech-to-text access.
  * When: callers transcribe an uploadable audio file through the shared wrapper.
  * Then: the wrapper selects the configured model, returns normalized text, and rejects empty transcripts.
  */
@@ -30,6 +30,7 @@ describe("OpenAI audio transcription wrapper", () => {
         return {
           OPEN_AI_API_KEY: "test-open-ai-api-key",
           OPEN_AI_TRANSCRIPTION_MODEL: props?.transcriptionModel,
+          AUDIO_TRANSCRIPTION_DEFAULT_MODEL: "gpt-4o-transcribe",
         };
       },
       {

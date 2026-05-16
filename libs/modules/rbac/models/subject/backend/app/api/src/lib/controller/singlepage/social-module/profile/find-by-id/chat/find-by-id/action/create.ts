@@ -15,7 +15,7 @@ export class Handler {
     this.service = service;
   }
 
-  private async resolveThreadIdForMessageInChat(props: {
+  protected async resolveThreadIdForMessageInChat(props: {
     socialModuleChatId: string;
     socialModuleMessageId: string;
   }) {
@@ -79,7 +79,7 @@ export class Handler {
     return threadToMessage.threadId;
   }
 
-  private getPayloadMessageId(data: Record<string, any>) {
+  protected getPayloadMessageId(data: Record<string, any>) {
     const message = data.payload?.message;
 
     if (!message || typeof message !== "object") {

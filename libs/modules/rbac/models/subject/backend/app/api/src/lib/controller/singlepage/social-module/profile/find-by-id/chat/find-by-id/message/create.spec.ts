@@ -15,9 +15,14 @@ const mockFileStorageFileCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
+    AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
+    AUDIO_TRANSCRIPTION_DEFAULT_MODEL: "gpt-4o-transcribe",
+    AUDIO_TRANSCRIPTION_MAX_BYTES: 25 * 1024 * 1024,
+    AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
+    OPEN_AI_TRANSCRIPTION_MODEL: undefined,
     RBAC_JWT_SECRET: "jwt-secret",
     RBAC_SECRET_KEY: "rbac-secret",
-    TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY: "telegramVoiceTranscription",
   };
 });
 
@@ -98,7 +103,7 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   };
 });
 
-import { TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY } from "@sps/shared-utils";
+import { AUDIO_TRANSCRIPTION_METADATA_KEY } from "@sps/shared-utils";
 import { Handler } from "./create";
 
 function createContext(
@@ -215,18 +220,18 @@ describe("Given: rbac social message create author relation", () => {
 
   /**
    * BDD Scenario
-   * Given: a Telegram voice note is created as a processing social message.
+   * Given: an audio attachment is created as a processing social message.
    * When: the handler persists the message and attached audio.
    * Then: it skips ordinary chat notifications so Telegram does not echo the transient audio attachment.
    */
-  it("When: voice transcription is processing Then: ordinary chat notification is skipped", async () => {
+  it("When: audio transcription is processing Then: ordinary chat notification is skipped", async () => {
     const events: string[] = [];
 
     mockSocialModuleMessageCreate.mockResolvedValueOnce({
       id: "message-1",
       description: "",
       metadata: {
-        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
+        [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
           status: "processing",
         },
       },
@@ -242,7 +247,7 @@ describe("Given: rbac social message create author relation", () => {
     const context = createContext(events, {
       description: "",
       metadata: {
-        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
+        [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
           status: "processing",
         },
       },

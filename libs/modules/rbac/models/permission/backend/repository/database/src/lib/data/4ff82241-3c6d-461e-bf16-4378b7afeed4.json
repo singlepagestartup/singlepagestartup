@@ -1,0 +1,9 @@
+{
+  "id": "4ff82241-3c6d-461e-bf16-4378b7afeed4",
+  "createdAt": "2026-05-10T00:47:59.984Z",
+  "updatedAt": "2026-05-10T00:47:59.984Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-messages/count"
+}

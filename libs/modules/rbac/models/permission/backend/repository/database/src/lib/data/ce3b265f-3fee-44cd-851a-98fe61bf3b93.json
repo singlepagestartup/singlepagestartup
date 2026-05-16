@@ -1,0 +1,9 @@
+{
+  "id": "ce3b265f-3fee-44cd-851a-98fe61bf3b93",
+  "createdAt": "2026-05-10T00:47:59.968Z",
+  "updatedAt": "2026-05-10T00:47:59.968Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-file-storage-module-files/count"
+}

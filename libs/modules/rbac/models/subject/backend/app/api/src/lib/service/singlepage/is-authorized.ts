@@ -39,7 +39,7 @@ export class Service {
     this.subjectsToRolesService = subjectsToRolesService;
   }
 
-  private async getSubjectRoleIds(subjectId: string) {
+  protected async getSubjectRoleIds(subjectId: string) {
     const cacheKey = `subjects-to-roles:subject:${subjectId}`;
     const cachedRoleIds = cache.get<string[]>(cacheKey);
 
@@ -78,7 +78,7 @@ export class Service {
     return roleIds;
   }
 
-  private getRoleIdsByPermissionId(props: {
+  protected getRoleIdsByPermissionId(props: {
     rolesToPermissions: IRolesToPermissions[];
     permissionId?: string;
   }) {

@@ -1,0 +1,9 @@
+{
+  "id": "c4846a62-848c-4664-9be8-d1c874785e71",
+  "createdAt": "2026-05-10T00:48:22.367Z",
+  "updatedAt": "2026-05-10T00:48:22.367Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/startup/widgets/count"
+}

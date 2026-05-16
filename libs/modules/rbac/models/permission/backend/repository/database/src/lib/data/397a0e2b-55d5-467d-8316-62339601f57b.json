@@ -1,0 +1,9 @@
+{
+  "id": "397a0e2b-55d5-467d-8316-62339601f57b",
+  "createdAt": "2026-05-10T00:47:59.896Z",
+  "updatedAt": "2026-05-10T00:47:59.896Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-actions/count"
+}

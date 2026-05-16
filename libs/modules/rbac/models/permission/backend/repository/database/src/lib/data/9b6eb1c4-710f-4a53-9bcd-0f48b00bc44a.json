@@ -1,0 +1,9 @@
+{
+  "id": "9b6eb1c4-710f-4a53-9bcd-0f48b00bc44a",
+  "createdAt": "2026-05-10T00:46:29.987Z",
+  "updatedAt": "2026-05-10T00:46:29.987Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-billing-module-currencies/count"
+}

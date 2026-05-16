@@ -139,7 +139,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ];
   statusMessages = telegramBotServiceMessages;
 
-  private collectErrorMessages(error: unknown): string[] {
+  protected collectErrorMessages(error: unknown): string[] {
     const messages = new Set<string>();
     const seen = new WeakSet<object>();
 
@@ -200,20 +200,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return Array.from(messages);
   }
 
-  private isActiveSubscriptionProductsCheckoutError(error: unknown) {
+  protected isActiveSubscriptionProductsCheckoutError(error: unknown) {
     return this.collectErrorMessages(error).some((message) => {
       return message.includes(activeSubscriptionProductsCheckoutMessage);
     });
   }
 
-  private activeSubscriptionProductsCheckoutTelegramMessage() {
+  protected activeSubscriptionProductsCheckoutTelegramMessage() {
     return (
       this.statusMessages.ecommerceModuleOrderAlreadyHaveSubscription?.ru ||
       "У вас уже есть активная подписка."
     );
   }
 
-  private isRecoverableOpenRouterReplyError(error: unknown) {
+  protected isRecoverableOpenRouterReplyError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
 
     return [
@@ -231,7 +231,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private isOpenRouterTerminalMessageWrittenError(error: unknown) {
+  protected isOpenRouterTerminalMessageWrittenError(error: unknown) {
     return this.collectErrorMessages(error).some((message) => {
       return message.includes(openRouterTerminalMessageWrittenMarker);
     });
@@ -458,7 +458,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private parseTelegramBotCommand(props: { description?: string | null }) {
+  protected parseTelegramBotCommand(props: { description?: string | null }) {
     const description = props.description?.trim();
 
     if (!description?.startsWith("/")) {
@@ -479,7 +479,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
   }
 
-  private isTelegramThreadCommand(command: string) {
+  protected isTelegramThreadCommand(command: string) {
     return [
       "/threads",
       "/thread_new",
@@ -488,7 +488,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     ].includes(command);
   }
 
-  private async signRbacModuleSubjectJwt(props: {
+  protected async signRbacModuleSubjectJwt(props: {
     rbacModuleSubject: IRbacModuleSubject;
   }) {
     if (!RBAC_JWT_SECRET) {
@@ -511,7 +511,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  private async getTelegramThreadCommandSubjectContext(
+  protected async getTelegramThreadCommandSubjectContext(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
     },
@@ -530,7 +530,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     };
   }
 
-  private formatTelegramThreadTitle(props: {
+  protected formatTelegramThreadTitle(props: {
     thread: { title?: string | null; variant?: string | null };
     index: number;
   }) {
@@ -547,7 +547,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return `Thread ${props.index + 1}`;
   }
 
-  private async getCurrentTelegramCommandThread(props: {
+  protected async getCurrentTelegramCommandThread(props: {
     socialModuleChat: ISocialModuleChat;
     socialModuleMessage: ISocialModuleMessage;
   }) {
@@ -572,7 +572,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return socialModuleThread;
   }
 
-  private async telegramBotThreadCommandReplyMessageCreate(
+  protected async telegramBotThreadCommandReplyMessageCreate(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
       command: string;
@@ -610,7 +610,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  private async telegramBotThreadsMessageCreate(
+  protected async telegramBotThreadsMessageCreate(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
     },
@@ -642,7 +642,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private async telegramBotThreadCreateMessageCreate(
+  protected async telegramBotThreadCreateMessageCreate(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
       args: string;
@@ -683,7 +683,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private async telegramBotThreadRenameMessageCreate(
+  protected async telegramBotThreadRenameMessageCreate(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
       args: string;
@@ -741,7 +741,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private async telegramBotThreadDeleteMessageCreate(
+  protected async telegramBotThreadDeleteMessageCreate(
     props: ITelegramBotReplyContext & {
       socialModuleMessage: ISocialModuleMessage;
       args: string;
@@ -797,7 +797,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
   }
 
-  private async telegramBotReplyMessageCreate(
+  protected async telegramBotReplyMessageCreate(
     props: ITelegramBotReplyContext & {
       data: ISocialModuleTelegramMessageData;
     },
@@ -827,7 +827,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  private async resolveThreadIdForReplyContext(
+  protected async resolveThreadIdForReplyContext(
     props: ITelegramBotReplyContext & {
       secretKey: string;
     },

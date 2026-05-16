@@ -1,8 +1,4 @@
-import {
-  RBAC_JWT_SECRET,
-  RBAC_SECRET_KEY,
-  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
-} from "@sps/shared-utils";
+import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
@@ -17,8 +13,13 @@ import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import {
+  AudioTranscriptionService,
+  shouldSkipOrdinaryNotificationForAudioTranscription,
+} from "./audio-transcription";
 export class Handler {
   service: Service;
+  audioTranscriptionService = new AudioTranscriptionService();
 
   constructor(service: Service) {
     this.service = service;
@@ -128,7 +129,7 @@ export class Handler {
         parsedBody.files = { files };
       }
 
-      const socialMouleMessage = await socialModuleMessageApi.create({
+      let socialModuleMessage = await socialModuleMessageApi.create({
         data: parsedBody.data,
         options: {
           headers: {
@@ -139,7 +140,7 @@ export class Handler {
 
       await socialModuleChatsToMessagesApi.create({
         data: {
-          messageId: socialMouleMessage.id,
+          messageId: socialModuleMessage.id,
           chatId: socialModuleChatId,
         },
         options: {
@@ -151,7 +152,7 @@ export class Handler {
 
       await socialModuleThreadsToMessagesApi.create({
         data: {
-          messageId: socialMouleMessage.id,
+          messageId: socialModuleMessage.id,
           threadId: socialModuleThreadId,
         },
         options: {
@@ -169,7 +170,7 @@ export class Handler {
               const fileStorageFile = await fileStorageModuleFileApi.create({
                 data: {
                   adminTitle:
-                    "Social Module Message Id: " + socialMouleMessage.id,
+                    "Social Module Message Id: " + socialModuleMessage.id,
                   file: file,
                 },
                 options: {
@@ -180,7 +181,7 @@ export class Handler {
               });
               await socialModuleMessagesToFileStorageModuleFilesApi.create({
                 data: {
-                  messageId: socialMouleMessage.id,
+                  messageId: socialModuleMessage.id,
                   fileStorageModuleFileId: fileStorageFile.id,
                   orderIndex: index,
                 },
@@ -199,7 +200,7 @@ export class Handler {
             const fileStorageFile = await fileStorageModuleFileApi.create({
               data: {
                 adminTitle:
-                  "Social Module Message Id: " + socialMouleMessage.id,
+                  "Social Module Message Id: " + socialModuleMessage.id,
                 file: files,
               },
               options: {
@@ -210,7 +211,7 @@ export class Handler {
             });
             await socialModuleMessagesToFileStorageModuleFilesApi.create({
               data: {
-                messageId: socialMouleMessage.id,
+                messageId: socialModuleMessage.id,
                 fileStorageModuleFileId: fileStorageFile.id,
                 orderIndex: 0,
               },
@@ -234,7 +235,7 @@ export class Handler {
                 {
                   column: "messageId",
                   method: "eq",
-                  value: socialMouleMessage.id,
+                  value: socialModuleMessage.id,
                 },
               ],
             },
@@ -266,7 +267,7 @@ export class Handler {
 
       await socialModuleProfilesToMessagesApi.create({
         data: {
-          messageId: socialMouleMessage.id,
+          messageId: socialModuleMessage.id,
           profileId: socialModuleProfileId,
         },
         options: {
@@ -276,9 +277,18 @@ export class Handler {
         },
       });
 
+      socialModuleMessage = await this.audioTranscriptionService.prepareAndRun({
+        fileStorageModuleFiles,
+        rbacModuleSubjectId: id,
+        socialModuleChatId,
+        socialModuleMessage,
+        socialModuleProfileId,
+        socialModuleThreadId,
+      });
+
       if (
         this.shouldNotifyOtherSubjectsInChat({
-          socialModuleMessage: socialMouleMessage,
+          socialModuleMessage,
         })
       ) {
         void this.notifyOtherSubjectsInChat({
@@ -286,7 +296,7 @@ export class Handler {
           socialModuleChatId,
           socialModuleThreadId,
           extendedSocialModuleMessage: {
-            ...socialMouleMessage,
+            ...socialModuleMessage,
             messagesToFileStorageModuleFiles:
               socialModuleMessagesToFileStorageModuleFiles?.map(
                 (socialModuleMessagesToFileStorageModuleFile) => {
@@ -308,7 +318,7 @@ export class Handler {
       }
 
       return c.json({
-        data: socialMouleMessage,
+        data: socialModuleMessage,
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);
@@ -557,7 +567,7 @@ export class Handler {
     }
   }
 
-  private shouldNotifyOtherSubjectsInChat(props: {
+  protected shouldNotifyOtherSubjectsInChat(props: {
     socialModuleMessage: Pick<ISocialModuleMessage, "metadata">;
   }) {
     const metadata = props.socialModuleMessage.metadata;
@@ -566,20 +576,9 @@ export class Handler {
       return true;
     }
 
-    const telegramVoiceTranscription =
-      metadata[TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY];
-
-    if (
-      !telegramVoiceTranscription ||
-      typeof telegramVoiceTranscription !== "object"
-    ) {
-      return true;
-    }
-
-    const status = (telegramVoiceTranscription as Record<string, unknown>)
-      .status;
-
-    return status !== "processing" && status !== "failed";
+    return !shouldSkipOrdinaryNotificationForAudioTranscription(
+      props.socialModuleMessage,
+    );
   }
 
   async findExistingBySourceSystemId(props: {

@@ -1,0 +1,9 @@
+{
+  "id": "c53ffd71-fe61-437b-a924-862927836fb1",
+  "createdAt": "2026-05-10T00:47:17.546Z",
+  "updatedAt": "2026-05-10T00:47:17.546Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/attribute-keys/count"
+}

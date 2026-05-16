@@ -1,0 +1,9 @@
+{
+  "id": "7b1ed494-a219-4228-8bad-5aa882591d4e",
+  "createdAt": "2026-05-10T00:46:04.480Z",
+  "updatedAt": "2026-05-10T00:46:04.480Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/roles/count"
+}

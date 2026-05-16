@@ -1,0 +1,9 @@
+{
+  "id": "882f30d9-b804-4a92-aa81-fd00da20f43b",
+  "createdAt": "2026-05-10T00:46:30.198Z",
+  "updatedAt": "2026-05-10T00:46:30.198Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/invoices/count"
+}

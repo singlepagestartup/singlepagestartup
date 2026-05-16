@@ -1,0 +1,9 @@
+{
+  "id": "f17aadbf-0b3e-4341-b999-444cc2f68e8b",
+  "createdAt": "2026-05-10T00:46:04.443Z",
+  "updatedAt": "2026-05-10T00:46:04.443Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/identities/count"
+}

@@ -1,8 +1,7 @@
 import {
+  AUDIO_TRANSCRIPTION_ACTION_TYPE,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
-  TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE,
-  TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -13,6 +12,7 @@ import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/soc
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { getAudioTranscriptionMetadata } from "./audio-transcription";
 
 export class Handler {
   service: Service;
@@ -208,7 +208,7 @@ export class Handler {
     }
   }
 
-  private getMessageUpdateActionType(props: {
+  protected getMessageUpdateActionType(props: {
     socialModuleMessage: ISocialModuleMessage;
   }) {
     const metadata = props.socialModuleMessage.metadata;
@@ -217,18 +217,18 @@ export class Handler {
       return "update";
     }
 
-    const telegramVoiceTranscription =
-      metadata[TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY];
+    const audioTranscription = getAudioTranscriptionMetadata(
+      props.socialModuleMessage,
+    );
 
     if (
-      telegramVoiceTranscription &&
-      typeof telegramVoiceTranscription === "object" &&
-      (telegramVoiceTranscription as Record<string, unknown>).status ===
-        "completed" &&
-      (telegramVoiceTranscription as Record<string, unknown>).agentTrigger ===
-        TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE
+      audioTranscription &&
+      typeof audioTranscription === "object" &&
+      (audioTranscription as Record<string, unknown>).status === "completed" &&
+      (audioTranscription as Record<string, unknown>).agentTrigger ===
+        AUDIO_TRANSCRIPTION_ACTION_TYPE
     ) {
-      return TELEGRAM_VOICE_TRANSCRIPTION_ACTION_TYPE;
+      return AUDIO_TRANSCRIPTION_ACTION_TYPE;
     }
 
     return "update";
