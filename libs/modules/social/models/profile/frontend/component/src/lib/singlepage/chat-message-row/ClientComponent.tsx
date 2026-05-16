@@ -27,13 +27,8 @@ function getTelegramVoiceTranscriptionStatus(
   }
 
   const record = value as Record<string, unknown>;
-  const error = record.error;
 
   return {
-    error:
-      error && typeof error === "object"
-        ? String((error as Record<string, unknown>).message || "")
-        : "",
     status: String(record.status || ""),
   };
 }
@@ -122,7 +117,7 @@ export function Component(props: IClientComponentProps) {
         telegramVoiceTranscription.status !== "completed" ? (
           <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
             {telegramVoiceTranscription.status === "failed"
-              ? `Transcription failed${telegramVoiceTranscription.error ? `: ${telegramVoiceTranscription.error}` : ""}`
+              ? "Transcription failed"
               : "Transcription processing"}
           </div>
         ) : null}

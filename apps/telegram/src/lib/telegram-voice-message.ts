@@ -41,6 +41,11 @@ export interface ProcessTelegramVoiceMessageProps {
   }) => Promise<ISocialModuleMessage>;
   description?: string;
   downloadVoiceFile: () => Promise<File>;
+  errorReporter?: (props: {
+    error: TelegramVoiceTranscriptionError;
+    stage: "download" | "conversion" | "transcription";
+    voice: TelegramVoiceMessageData;
+  }) => void;
   existingMessage?: ISocialModuleMessage;
   convertVoiceFile: (props: {
     file: File;
@@ -257,14 +262,22 @@ export async function processTelegramVoiceMessage(
   try {
     originalFile = await props.downloadVoiceFile();
   } catch (error) {
+    const normalizedError = normalizeTelegramVoiceError({
+      category: "download",
+      error,
+    });
+
+    reportTelegramVoiceProcessingError({
+      error: normalizedError,
+      props,
+      stage: "download",
+    });
+
     return props.createMessage({
       data: {
         description: props.description || "",
         metadata: buildTelegramVoiceTranscriptionMetadata({
-          error: normalizeTelegramVoiceError({
-            category: "download",
-            error,
-          }),
+          error: normalizedError,
           model,
           now: now(),
           status: "failed",
@@ -287,18 +300,26 @@ export async function processTelegramVoiceMessage(
       file: transcriptionFile,
     });
   } catch (error) {
+    const normalizedError = normalizeTelegramVoiceError({
+      category:
+        error instanceof TelegramVoiceTranscriptionError
+          ? error.category
+          : "conversion",
+      error,
+    });
+
+    reportTelegramVoiceProcessingError({
+      error: normalizedError,
+      props,
+      stage: "conversion",
+    });
+
     return props.createMessage({
       data: {
         description: props.description || "",
         files: [originalFile],
         metadata: buildTelegramVoiceTranscriptionMetadata({
-          error: normalizeTelegramVoiceError({
-            category:
-              error instanceof TelegramVoiceTranscriptionError
-                ? error.category
-                : "conversion",
-            error,
-          }),
+          error: normalizedError,
           model,
           now: now(),
           originalFile,
@@ -360,19 +381,27 @@ export async function processTelegramVoiceMessage(
       }),
     );
   } catch (error) {
+    const normalizedError = normalizeTelegramVoiceError({
+      category:
+        error instanceof TelegramVoiceTranscriptionError
+          ? error.category
+          : "transcription",
+      error,
+    });
+
+    reportTelegramVoiceProcessingError({
+      error: normalizedError,
+      props,
+      stage: "transcription",
+    });
+
     return normalizeMessageResult(
       await props.updateMessage({
         data: {
           metadata: mergeMessageMetadata({
             metadata: message.metadata,
             voiceMetadata: buildTelegramVoiceTranscriptionMetadata({
-              error: normalizeTelegramVoiceError({
-                category:
-                  error instanceof TelegramVoiceTranscriptionError
-                    ? error.category
-                    : "transcription",
-                error,
-              }),
+              error: normalizedError,
               model,
               now: now(),
               originalFile,
@@ -416,7 +445,6 @@ function buildTelegramVoiceTranscriptionMetadata(props: {
       error: props.error
         ? {
             category: props.error.category,
-            message: props.error.message,
           }
         : undefined,
       failedAt: props.status === "failed" ? props.now : undefined,
@@ -470,6 +498,29 @@ function normalizeTelegramVoiceError(props: {
       props.error instanceof Error
         ? props.error.message
         : String(props.error || "Unknown Telegram voice processing error"),
+  });
+}
+
+function reportTelegramVoiceProcessingError(props: {
+  error: TelegramVoiceTranscriptionError;
+  props: ProcessTelegramVoiceMessageProps;
+  stage: "download" | "conversion" | "transcription";
+}) {
+  if (props.props.errorReporter) {
+    props.props.errorReporter({
+      error: props.error,
+      stage: props.stage,
+      voice: props.props.voice,
+    });
+
+    return;
+  }
+
+  console.error("Telegram voice transcription failed", {
+    category: props.error.category,
+    message: props.error.message,
+    sourceSystemId: props.props.voice.sourceSystemId,
+    stage: props.stage,
   });
 }
 

@@ -212,6 +212,7 @@ describe("Telegram voice message processing", () => {
       },
     });
     const createMessageMock = jest.fn().mockResolvedValue(failedMessage);
+    const errorReporterMock = jest.fn();
     const transcribeAudioMock = jest.fn();
     const updateMessageMock = jest.fn();
 
@@ -219,6 +220,7 @@ describe("Telegram voice message processing", () => {
       convertVoiceFile: jest.fn().mockRejectedValue(new Error("ffmpeg failed")),
       createMessage: createMessageMock,
       downloadVoiceFile: jest.fn().mockResolvedValue(originalFile),
+      errorReporter: errorReporterMock,
       now: () => "2026-05-15T23:00:00.000Z",
       transcribeAudio: transcribeAudioMock,
       updateMessage: updateMessageMock,
@@ -239,12 +241,88 @@ describe("Telegram voice message processing", () => {
     ).toMatchObject({
       error: {
         category: "conversion",
-        message: "ffmpeg failed",
       },
       status: "failed",
     });
+    expect(errorReporterMock).toHaveBeenCalledWith({
+      error: expect.objectContaining({
+        category: "conversion",
+        message: "ffmpeg failed",
+      }),
+      stage: "conversion",
+      voice,
+    });
     expect(transcribeAudioMock).not.toHaveBeenCalled();
     expect(updateMessageMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenAI transcription fails with a configuration error.
+   * When: the voice processor records the failed status.
+   * Then: the technical error is reported for server logs and not persisted into frontend metadata.
+   */
+  it("reports transcription errors without persisting technical messages", async () => {
+    const originalFile = new File(["original"], "voice.ogg", {
+      type: "audio/ogg",
+    });
+    const convertedFile = new File(["converted"], "voice.webm", {
+      type: "audio/webm",
+    });
+    const processingMessage = createMessage();
+    const failedMessage = createMessage({
+      metadata: {
+        [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: {
+          status: "failed",
+        },
+      },
+    });
+    const createMessageMock = jest.fn().mockResolvedValue(processingMessage);
+    const updateMessageMock = jest.fn().mockResolvedValue(failedMessage);
+    const errorReporterMock = jest.fn();
+
+    const result = await processTelegramVoiceMessage({
+      convertVoiceFile: jest.fn().mockResolvedValue(convertedFile),
+      createMessage: createMessageMock,
+      downloadVoiceFile: jest.fn().mockResolvedValue(originalFile),
+      errorReporter: errorReporterMock,
+      now: () => "2026-05-15T23:00:00.000Z",
+      transcribeAudio: jest
+        .fn()
+        .mockRejectedValue(
+          new Error("Configuration error. OPEN_AI_API_KEY is not set"),
+        ),
+      updateMessage: updateMessageMock,
+      voice,
+    });
+
+    expect(result).toBe(failedMessage);
+    expect(updateMessageMock).toHaveBeenCalledWith({
+      data: {
+        metadata: expect.objectContaining({
+          [TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY]: expect.objectContaining({
+            error: {
+              category: "transcription",
+            },
+            status: "failed",
+          }),
+        }),
+      },
+      message: processingMessage,
+    });
+    expect(
+      (updateMessageMock.mock.calls[0][0].data.metadata as any)[
+        TELEGRAM_VOICE_TRANSCRIPTION_METADATA_KEY
+      ].error.message,
+    ).toBeUndefined();
+    expect(errorReporterMock).toHaveBeenCalledWith({
+      error: expect.objectContaining({
+        category: "transcription",
+        message: "Configuration error. OPEN_AI_API_KEY is not set",
+      }),
+      stage: "transcription",
+      voice,
+    });
   });
 
   /**
