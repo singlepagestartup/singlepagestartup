@@ -485,10 +485,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return mimeTypes[ext] || "application/octet-stream";
   }
 
-  private isTelegramWebpageCurlFailed(error: unknown) {
+  private isTelegramWebpageMediaFetchFailed(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
 
-    return message.includes("WEBPAGE_CURL_FAILED");
+    return (
+      message.includes("WEBPAGE_CURL_FAILED") ||
+      message.includes("WEBPAGE_MEDIA_EMPTY")
+    );
   }
 
   private isTelegramBlockedRecipientError(error: unknown) {
@@ -778,7 +781,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   : undefined,
               );
             } catch (error) {
-              if (!this.isTelegramWebpageCurlFailed(error)) {
+              if (!this.isTelegramWebpageMediaFetchFailed(error)) {
                 throw error;
               }
 
