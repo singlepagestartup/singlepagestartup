@@ -129,6 +129,8 @@ export function extractTelegramAudioMessageData(
       sourceSystemId,
     };
   }
+
+  return undefined;
 }
 
 function isTelegramAudioAttachment(props: {
@@ -225,7 +227,7 @@ export async function convertTelegramVoiceFileToWebm(props: {
       {
         type: "audio/webm",
       },
-    );
+    ) as unknown as File;
   } catch (error) {
     throw normalizeTelegramVoiceError({
       category: "conversion",
