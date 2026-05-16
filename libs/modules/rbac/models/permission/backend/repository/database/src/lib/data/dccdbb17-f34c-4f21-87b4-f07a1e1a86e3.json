@@ -1,0 +1,9 @@
+{
+  "id": "dccdbb17-f34c-4f21-87b4-f07a1e1a86e3",
+  "createdAt": "2026-05-10T00:47:38.831Z",
+  "updatedAt": "2026-05-10T00:47:38.831Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/notification/widgets/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "21a3f394-53fc-4362-8b7d-978cde6bed8a",
+  "createdAt": "2026-05-10T00:48:33.358Z",
+  "updatedAt": "2026-05-10T00:48:33.358Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/telegram/pages/count"
+}

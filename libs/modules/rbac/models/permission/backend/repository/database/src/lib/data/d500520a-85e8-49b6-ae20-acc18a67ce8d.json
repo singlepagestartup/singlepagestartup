@@ -1,0 +1,9 @@
+{
+  "id": "d500520a-85e8-49b6-ae20-acc18a67ce8d",
+  "createdAt": "2026-05-10T00:46:29.893Z",
+  "updatedAt": "2026-05-10T00:46:29.893Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-blog-module-articles/count"
+}

@@ -14,3 +14,5 @@ export { util as getNestedValue } from "./lib/get-nested-value";
 export { util as saveLanguageContext } from "./lib/save-language-context";
 export { util as createMemoryCache } from "./lib/memory-cache";
 export { util as telegramBotServiceMessages } from "./lib/telegram-bot-service-messages";
+export * from "./lib/audio-transcription";
+export * from "./lib/telegram-voice-transcription";

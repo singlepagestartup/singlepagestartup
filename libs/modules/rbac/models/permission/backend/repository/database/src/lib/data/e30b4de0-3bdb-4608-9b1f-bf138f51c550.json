@@ -1,0 +1,9 @@
+{
+  "id": "e30b4de0-3bdb-4608-9b1f-bf138f51c550",
+  "createdAt": "2026-05-10T00:46:54.788Z",
+  "updatedAt": "2026-05-10T00:46:54.788Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/broadcast/channels/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "059ffad3-4be9-4db9-b248-fb83850ca8cc",
+  "createdAt": "2026-05-10T00:48:22.664Z",
+  "updatedAt": "2026-05-10T00:48:22.664Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/sliders-to-slides/count"
+}

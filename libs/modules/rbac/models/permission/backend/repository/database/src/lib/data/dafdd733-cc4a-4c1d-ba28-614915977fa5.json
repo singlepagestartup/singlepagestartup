@@ -1,0 +1,9 @@
+{
+  "id": "dafdd733-cc4a-4c1d-ba28-614915977fa5",
+  "createdAt": "2026-05-10T00:47:17.526Z",
+  "updatedAt": "2026-05-10T00:47:17.526Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/widgets-to-website-builder-module-widgets/count"
+}

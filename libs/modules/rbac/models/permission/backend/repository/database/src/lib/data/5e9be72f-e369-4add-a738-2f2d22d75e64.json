@@ -1,0 +1,9 @@
+{
+  "id": "5e9be72f-e369-4add-a738-2f2d22d75e64",
+  "createdAt": "2026-05-10T00:48:22.390Z",
+  "updatedAt": "2026-05-10T00:48:22.390Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/buttons/count"
+}

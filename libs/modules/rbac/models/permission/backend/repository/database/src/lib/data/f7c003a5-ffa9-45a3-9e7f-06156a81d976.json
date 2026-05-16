@@ -1,0 +1,9 @@
+{
+  "id": "f7c003a5-ffa9-45a3-9e7f-06156a81d976",
+  "createdAt": "2026-05-10T00:46:54.851Z",
+  "updatedAt": "2026-05-10T00:46:54.851Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/forms/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "eb2fdcef-db38-467c-becf-8c1bb0d8e1df",
+  "createdAt": "2026-05-10T00:47:59.846Z",
+  "updatedAt": "2026-05-10T00:47:59.846Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/chats-to-messages/count"
+}

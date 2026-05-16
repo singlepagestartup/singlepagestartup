@@ -84,6 +84,33 @@ interface IOpenRouterReplyValidationHandler {
     files?: unknown[];
     metadata: Record<string, unknown>;
   }>;
+  buildGenerationContext(props: {
+    context: {
+      role: "user" | "assistant" | "system";
+      content:
+        | string
+        | (
+            | { type: "text"; text: string }
+            | { type: "image_url"; image_url: { url: string } }
+            | { type: "file_url"; file_url: { url: string } }
+          )[];
+    }[];
+    expectedOutputModality: "text" | "image";
+    language: string;
+  }): {
+    role: "user" | "assistant" | "system";
+    content:
+      | string
+      | (
+          | { type: "text"; text: string }
+          | { type: "image_url"; image_url: { url: string } }
+        )[];
+  }[];
+  isAudioFileStorageFile(file: {
+    extension?: string | null;
+    file: string;
+    mimeType?: string | null;
+  }): boolean;
 }
 
 function createMessageId(index: number) {
@@ -390,5 +417,86 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         },
       ],
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the latest image request uses a pronoun referring to an earlier object.
+   * When: the handler builds image generation context.
+   * Then: it sends a standalone image prompt with the text history and drops non-image file URLs.
+   */
+  it("When: image request is contextual Then: image prompt preserves text history only", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterReplyValidationHandler;
+
+    const generationContext = handler.buildGenerationContext({
+      expectedOutputModality: "image",
+      language: "ru",
+      context: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Какая высота Эйфелевой башни?",
+            },
+            {
+              type: "file_url",
+              file_url: {
+                url: "https://example.com/voice.mp3",
+              },
+            },
+          ],
+        },
+        {
+          role: "assistant",
+          content: "Высота Эйфелевой башни около 330 метров.",
+        },
+        {
+          role: "user",
+          content: "Нарисуй ее фотографию.",
+        },
+      ],
+    });
+
+    expect(generationContext).toHaveLength(2);
+    expect(generationContext[1].content).toEqual(
+      expect.stringContaining("Какая высота Эйфелевой башни?"),
+    );
+    expect(generationContext[1].content).toEqual(
+      expect.stringContaining("Нарисуй ее фотографию."),
+    );
+    expect(JSON.stringify(generationContext)).not.toContain("voice.mp3");
+    expect(JSON.stringify(generationContext)).toContain(
+      "not a portrait of an unrelated person",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a transcribed Telegram voice message still has an audio file attached.
+   * When: OpenRouter context is built from message attachments.
+   * Then: the audio file is treated as transcript source, not as model input.
+   */
+  it("When: attached file is audio Then: it is ignored as OpenRouter input", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterReplyValidationHandler;
+
+    expect(
+      handler.isAudioFileStorageFile({
+        extension: "mp3",
+        file: "/file-storage/static/voice.mp3",
+        mimeType: "audio/mpeg",
+      }),
+    ).toBe(true);
+    expect(
+      handler.isAudioFileStorageFile({
+        extension: "png",
+        file: "/file-storage/static/image.png",
+        mimeType: "image/png",
+      }),
+    ).toBe(false);
   });
 });

@@ -140,7 +140,7 @@ export class Handler {
     }
   }
 
-  private async isSubjectAdmin(subjectId: string): Promise<boolean> {
+  protected async isSubjectAdmin(subjectId: string): Promise<boolean> {
     const subjectsToRoles = await this.service.subjectsToRoles.find({
       params: {
         filters: {

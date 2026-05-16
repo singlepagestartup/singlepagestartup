@@ -1,0 +1,9 @@
+{
+  "id": "edff88c5-3a3b-4d24-a488-44e33dd98d0c",
+  "createdAt": "2026-05-10T00:47:38.507Z",
+  "updatedAt": "2026-05-10T00:47:38.507Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/products-to-file-storage-module-files/count"
+}

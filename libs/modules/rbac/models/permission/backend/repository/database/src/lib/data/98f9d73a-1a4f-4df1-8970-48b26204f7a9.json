@@ -1,0 +1,9 @@
+{
+  "id": "98f9d73a-1a4f-4df1-8970-48b26204f7a9",
+  "createdAt": "2026-05-10T00:48:22.511Z",
+  "updatedAt": "2026-05-10T00:48:22.511Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/sliders/count"
+}

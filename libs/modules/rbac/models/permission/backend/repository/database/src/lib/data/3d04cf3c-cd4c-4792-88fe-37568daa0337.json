@@ -1,0 +1,9 @@
+{
+  "id": "3d04cf3c-cd4c-4792-88fe-37568daa0337",
+  "createdAt": "2026-05-10T00:47:17.672Z",
+  "updatedAt": "2026-05-10T00:47:17.672Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/widgets/count"
+}

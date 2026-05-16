@@ -1,0 +1,9 @@
+{
+  "id": "5814c9b1-fff3-4fac-9000-48cb2968fddb",
+  "createdAt": "2026-05-10T00:46:04.354Z",
+  "updatedAt": "2026-05-10T00:46:04.354Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/pages-to-metadata/count"
+}

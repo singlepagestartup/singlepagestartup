@@ -1,0 +1,9 @@
+{
+  "id": "81cef726-7f7c-4d68-8fde-86ce132c4e0c",
+  "createdAt": "2026-05-10T00:46:54.594Z",
+  "updatedAt": "2026-05-10T00:46:54.594Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/widgets/count"
+}

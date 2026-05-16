@@ -1,0 +1,9 @@
+{
+  "id": "4f22a50a-2e6c-4e1d-bc3f-daa70473dad6",
+  "createdAt": "2026-05-10T00:46:30.164Z",
+  "updatedAt": "2026-05-10T00:46:30.164Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/analytic/widgets/count"
+}

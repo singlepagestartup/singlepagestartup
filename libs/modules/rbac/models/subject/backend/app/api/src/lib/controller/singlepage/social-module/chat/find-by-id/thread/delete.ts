@@ -18,7 +18,7 @@ export class Handler {
     this.service = service;
   }
 
-  private uniqueValues(values: (string | undefined | null)[]) {
+  protected uniqueValues(values: (string | undefined | null)[]) {
     return Array.from(
       new Set(
         values.filter((value): value is string => {
@@ -28,7 +28,7 @@ export class Handler {
     );
   }
 
-  private getRequiredSecretKey(): string {
+  protected getRequiredSecretKey(): string {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -36,7 +36,7 @@ export class Handler {
     return RBAC_SECRET_KEY;
   }
 
-  private async cleanupThreadMessages(props: {
+  protected async cleanupThreadMessages(props: {
     socialModuleChatId: string;
     socialModuleThreadId: string;
     headers: Record<string, string>;

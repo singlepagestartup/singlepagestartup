@@ -1,0 +1,9 @@
+{
+  "id": "d59f9e8e-5571-42f5-9773-c0a639964738",
+  "createdAt": "2026-05-10T00:47:17.477Z",
+  "updatedAt": "2026-05-10T00:47:17.477Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/steps-to-inputs/count"
+}

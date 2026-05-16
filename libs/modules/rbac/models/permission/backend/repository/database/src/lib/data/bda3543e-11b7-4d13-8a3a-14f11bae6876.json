@@ -1,0 +1,9 @@
+{
+  "id": "bda3543e-11b7-4d13-8a3a-14f11bae6876",
+  "createdAt": "2026-05-10T00:46:04.183Z",
+  "updatedAt": "2026-05-10T00:46:04.183Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/layouts/count"
+}

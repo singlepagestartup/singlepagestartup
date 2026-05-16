@@ -18,11 +18,15 @@ const sessionStatePattern =
   /unauthorized|token required|no session|authorization error|no subject provided in the token|invalid token issued/i;
 
 function dispatchBrowserAuthorizationStateChange() {
-  if (typeof window === "undefined") {
+  const browserWindow = browserGlobals.window as
+    | { dispatchEvent: (event: Event) => void }
+    | undefined;
+
+  if (!browserWindow) {
     return;
   }
 
-  window.dispatchEvent(new Event(authenticationStorageEvent));
+  browserWindow.dispatchEvent(new Event(authenticationStorageEvent));
 }
 
 function hasBrowserJwtCookie() {

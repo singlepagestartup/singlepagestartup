@@ -1,0 +1,9 @@
+{
+  "id": "5a84fd26-ecd9-4ff2-b2f3-395c66d288c3",
+  "createdAt": "2026-05-10T00:47:17.439Z",
+  "updatedAt": "2026-05-10T00:47:17.439Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/options-to-file-storage-module-files/count"
+}

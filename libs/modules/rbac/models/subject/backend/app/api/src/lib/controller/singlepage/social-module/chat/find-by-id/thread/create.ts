@@ -162,7 +162,7 @@ export class Handler {
     return RBAC_SECRET_KEY;
   }
 
-  private async findExistingTelegramThread(props: {
+  protected async findExistingTelegramThread(props: {
     socialModuleChatId: string;
     sourceSystemId: string;
   }) {

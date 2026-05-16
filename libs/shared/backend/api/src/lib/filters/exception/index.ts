@@ -62,7 +62,7 @@ export class Filter implements IFilter {
       BUG_SERVICE_TELEGRAM_BOT_TOKEN &&
       BUG_SERVICE_TELEGRAM_CHAT_ID &&
       BUG_SERVICE_PROJECT &&
-      ![401, 403, 404].includes(status as number)
+      status >= 500
     ) {
       try {
         const authorizationHeader = c.req.header("Authorization") || "";

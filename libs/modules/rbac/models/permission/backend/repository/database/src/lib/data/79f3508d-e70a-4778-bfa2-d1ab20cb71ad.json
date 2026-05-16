@@ -1,0 +1,9 @@
+{
+  "id": "79f3508d-e70a-4778-bfa2-d1ab20cb71ad",
+  "createdAt": "2026-05-10T00:46:30.145Z",
+  "updatedAt": "2026-05-10T00:46:30.145Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/analytic/metrics/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "d5213fe4-1507-4747-8eb5-e17c367b065f",
+  "createdAt": "2026-05-10T00:46:04.518Z",
+  "updatedAt": "2026-05-10T00:46:04.518Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/widgets/count"
+}

@@ -54,7 +54,7 @@ export class Service {
       subjectsToBillingModuleCurrenciesService;
   }
 
-  private parseAmount(value: string | number | undefined | null): number {
+  protected parseAmount(value: string | number | undefined | null): number {
     if (typeof value === "number") {
       return Number.isFinite(value) ? value : 0;
     }
@@ -67,11 +67,11 @@ export class Service {
     return 0;
   }
 
-  private formatAmount(value: number): string {
+  protected formatAmount(value: number): string {
     return Number(value.toFixed(6)).toString();
   }
 
-  private async getSubjectId(authorization?: string) {
+  protected async getSubjectId(authorization?: string) {
     if (!authorization) {
       return undefined;
     }
@@ -102,7 +102,7 @@ export class Service {
     return subjectId;
   }
 
-  private async resolvePermissionResolution(
+  protected async resolvePermissionResolution(
     props: IExecuteProps,
   ): Promise<TPermissionResolution> {
     const permissionResolutionCacheKey = [
@@ -142,7 +142,7 @@ export class Service {
     return permissionResolution;
   }
 
-  private async getSubjectBillingRelations(subjectId?: string) {
+  protected async getSubjectBillingRelations(subjectId?: string) {
     if (!subjectId) {
       return undefined;
     }
@@ -164,7 +164,7 @@ export class Service {
     return Array.isArray(fetched) ? fetched : undefined;
   }
 
-  private async resolveBillingContext(props: {
+  protected async resolveBillingContext(props: {
     executeProps: IExecuteProps;
     skipBalanceCheck?: boolean;
   }): Promise<TResolvedBillingContext | null> {
@@ -266,7 +266,7 @@ export class Service {
     };
   }
 
-  private async applyBillingDelta(props: {
+  protected async applyBillingDelta(props: {
     subjectToBillingModuleCurrency: ISubjectsToBillingModuleCurrencies;
     deltaAmount: number;
   }) {

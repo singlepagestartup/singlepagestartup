@@ -1,0 +1,9 @@
+{
+  "id": "059700b3-f8bb-415e-bc10-fa60ea8d8fec",
+  "createdAt": "2026-05-10T00:47:59.949Z",
+  "updatedAt": "2026-05-10T00:47:59.949Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-ecommerce-module-products/count"
+}

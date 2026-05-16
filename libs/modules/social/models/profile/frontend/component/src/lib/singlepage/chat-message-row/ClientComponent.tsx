@@ -11,6 +11,29 @@ import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import Markdown from "markdown-to-jsx";
 import Link from "next/link";
 
+function getAudioTranscriptionStatus(
+  message: IClientComponentProps["message"],
+) {
+  const metadata = message.metadata;
+
+  if (!metadata || typeof metadata !== "object") {
+    return;
+  }
+
+  const value =
+    metadata.audioTranscription || metadata.telegramVoiceTranscription;
+
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return {
+    status: String(record.status || ""),
+  };
+}
+
 function formatTimelineDate(value?: string | Date | null) {
   if (!value) {
     return "";
@@ -48,6 +71,7 @@ export function Component(props: IClientComponentProps) {
   const createdAt = formatTimelineDate(props.message.createdAt);
   const interaction = props.message.interaction;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
+  const audioTranscription = getAudioTranscriptionStatus(props.message);
 
   return (
     <div
@@ -88,6 +112,14 @@ export function Component(props: IClientComponentProps) {
         <div className="mt-1 max-w-none text-sm leading-6 text-slate-700 [&_p]:m-0 [&_ul]:my-1 [&_ol]:my-1">
           <Markdown>{props.message.description || ""}</Markdown>
         </div>
+        {audioTranscription?.status &&
+        audioTranscription.status !== "completed" ? (
+          <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            {audioTranscription.status === "failed"
+              ? "Transcription failed"
+              : "Transcription processing"}
+          </div>
+        ) : null}
         <SocialModuleMessagesToFileStorageModuleFiles
           variant="find"
           isServer={false}

@@ -1,0 +1,9 @@
+{
+  "id": "61c673fa-f662-4fda-b6a5-60b106e35563",
+  "createdAt": "2026-05-10T00:47:38.535Z",
+  "updatedAt": "2026-05-10T00:47:38.535Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/products-to-website-builder-module-widgets/count"
+}

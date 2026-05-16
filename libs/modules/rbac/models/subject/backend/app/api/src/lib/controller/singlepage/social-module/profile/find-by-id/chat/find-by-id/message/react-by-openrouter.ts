@@ -13,6 +13,7 @@ import {
   OpenRouter,
   type IOpenRouterGenerateResult,
   type IOpenRouterGenerationSuccess,
+  type IOpenRouterMessageContent,
   type IOpenRouterRequestMessage,
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
@@ -337,7 +338,7 @@ export class Handler {
     this.service = service;
   }
 
-  private stringifyError(error: unknown): string {
+  protected stringifyError(error: unknown): string {
     if (error instanceof Error) {
       return error.message;
     }
@@ -353,7 +354,7 @@ export class Handler {
     }
   }
 
-  private async generateWithBillingLedger(props: {
+  protected async generateWithBillingLedger(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     purpose: TOpenRouterBillingPurpose;
     openRouter: OpenRouter;
@@ -399,7 +400,7 @@ export class Handler {
     return result;
   }
 
-  private setLatestBillingLedgerFallbackReason(props: {
+  protected setLatestBillingLedgerFallbackReason(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     fallbackReason: string;
   }) {
@@ -412,7 +413,7 @@ export class Handler {
     latestEntry.fallbackReason = props.fallbackReason;
   }
 
-  private async settleOpenRouterBilling(props: {
+  protected async settleOpenRouterBilling(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     selectedModelId: string | null;
     route: string;
@@ -442,7 +443,7 @@ export class Handler {
     };
   }
 
-  private async buildOpenRouterReplyMessageData(props: {
+  protected async buildOpenRouterReplyMessageData(props: {
     expectedOutputModality: TOutputModality;
     generationResult: IOpenRouterGenerationSuccess;
     selectModelForRequest: string;
@@ -502,7 +503,7 @@ export class Handler {
     return replyMessageData;
   }
 
-  private buildNoValidModelResponseMessage(fallbackReasons: string[]) {
+  protected buildNoValidModelResponseMessage(fallbackReasons: string[]) {
     const normalizedFallbackReasons = fallbackReasons.filter(Boolean);
 
     if (!normalizedFallbackReasons.length) {
@@ -515,7 +516,7 @@ export class Handler {
     );
   }
 
-  private getGenerationFailureReason(props: {
+  protected getGenerationFailureReason(props: {
     modelId: string;
     expectedOutputModality: TOutputModality;
     result: IOpenRouterGenerateResult;
@@ -536,7 +537,7 @@ export class Handler {
     return `model=${props.modelId}: ${validationError}`;
   }
 
-  private async generateFinalOpenRouterReply(props: {
+  protected async generateFinalOpenRouterReply(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     modelSelection: IModelSelectionResult;
@@ -975,7 +976,35 @@ export class Handler {
                     },
                   });
               }
-              if (fileStorageFiles?.length) {
+              const contextFileParts: IOpenRouterMessageContent[] = (
+                fileStorageFiles || []
+              ).flatMap((fileStorageFile): IOpenRouterMessageContent[] => {
+                if (this.isAudioFileStorageFile(fileStorageFile)) {
+                  return [];
+                }
+
+                if (fileStorageFile.mimeType?.includes("image")) {
+                  return [
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
+                      },
+                    },
+                  ];
+                }
+
+                return [
+                  {
+                    type: "file_url",
+                    file_url: {
+                      url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
+                    },
+                  },
+                ];
+              });
+
+              if (contextFileParts.length) {
                 context.push({
                   role: isAssistantMessage ? "assistant" : "user",
                   content: [
@@ -983,23 +1012,7 @@ export class Handler {
                       type: "text",
                       text: messageDescription,
                     },
-                    ...fileStorageFiles?.map((fileStorageFile) => {
-                      if (fileStorageFile.mimeType?.includes("image")) {
-                        return {
-                          type: "image_url" as const,
-                          image_url: {
-                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                          },
-                        };
-                      }
-
-                      return {
-                        type: "file_url" as const,
-                        file_url: {
-                          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                        },
-                      };
-                    }),
+                    ...contextFileParts,
                   ],
                 });
               } else {
@@ -1175,25 +1188,11 @@ export class Handler {
         selection: modelSelection,
       });
 
-      const generationContext: IOpenRouterRequestMessage[] = [
-        {
-          role: "system",
-          content: `Answer in ${requestClassification.language} language.`,
-        },
-        {
-          role: "system",
-          content:
-            expectedOutputModality === "image"
-              ? "The user requested image output. You must return at least one generated image."
-              : "Return a text response only.",
-        },
-        {
-          role: "user",
-          content:
-            "Ensure the response fits within 4000 characters for Telegram.",
-        },
-        ...context,
-      ];
+      const generationContext = this.buildGenerationContext({
+        context,
+        expectedOutputModality,
+        language: requestClassification.language,
+      });
 
       let selectModelForRequest: string | null = null;
       let generationResult: IOpenRouterGenerationSuccess | undefined;
@@ -1451,7 +1450,7 @@ export class Handler {
     return socialModuleDefaultThread.id;
   }
 
-  private detectInputModalitiesFromContext(
+  protected detectInputModalitiesFromContext(
     context: IOpenRouterRequestMessage[],
   ): TInputModality[] {
     const latestMessage = context[context.length - 1];
@@ -1485,7 +1484,146 @@ export class Handler {
     );
   }
 
-  private isOpenRouterProgressStatusMessage(
+  protected buildGenerationContext(props: {
+    context: IOpenRouterRequestMessage[];
+    expectedOutputModality: TOutputModality;
+    language: string;
+  }): IOpenRouterRequestMessage[] {
+    if (props.expectedOutputModality === "image") {
+      const prompt = this.buildImageGenerationPrompt({
+        context: props.context,
+      });
+      const imageParts = this.collectImageContextParts(props.context);
+
+      return [
+        {
+          role: "system",
+          content: [
+            "Create the requested image.",
+            `Use ${props.language} for any visible text only if text is explicitly requested.`,
+            "Resolve pronouns and ellipses from the conversation context before generating.",
+            "Do not reinterpret a pronoun as a person when the previous context points to an object, place, concept, or file.",
+            "Return image output.",
+          ].join(" "),
+        },
+        {
+          role: "user",
+          content: imageParts.length
+            ? [
+                {
+                  type: "text",
+                  text: prompt,
+                },
+                ...imageParts,
+              ]
+            : prompt,
+        },
+      ];
+    }
+
+    return [
+      {
+        role: "system",
+        content: `Answer in ${props.language} language.`,
+      },
+      {
+        role: "system",
+        content: "Return a text response only.",
+      },
+      {
+        role: "user",
+        content:
+          "Ensure the response fits within 4000 characters for Telegram.",
+      },
+      ...props.context,
+    ];
+  }
+
+  protected buildImageGenerationPrompt(props: {
+    context: IOpenRouterRequestMessage[];
+  }) {
+    const conversation = props.context
+      .map((message) => {
+        const text = this.getMessageTextContent(message);
+
+        if (!text) {
+          return;
+        }
+
+        return `${message.role}: ${text}`;
+      })
+      .filter((line): line is string => Boolean(line))
+      .slice(-8);
+
+    return [
+      "Conversation context:",
+      conversation.length ? conversation.join("\n") : "(no prior context)",
+      "",
+      "Image task:",
+      "Generate the image requested by the latest user message.",
+      "The prompt is conversational, so resolve references such as it, this, her, him, them, ее, его, это, эта, этот from the prior messages.",
+      "If the latest message asks for a photo of a previously discussed object or place, generate that object or place, not a portrait of an unrelated person.",
+    ].join("\n");
+  }
+
+  protected collectImageContextParts(context: IOpenRouterRequestMessage[]) {
+    return context.flatMap((message) => {
+      if (typeof message.content === "string") {
+        return [];
+      }
+
+      return message.content
+        .filter((part) => part.type === "image_url")
+        .map((part) => {
+          return {
+            type: "image_url" as const,
+            image_url: part.image_url,
+          };
+        });
+    });
+  }
+
+  protected getMessageTextContent(message: IOpenRouterRequestMessage) {
+    if (typeof message.content === "string") {
+      return message.content.trim();
+    }
+
+    return message.content
+      .filter((part) => part.type === "text")
+      .map((part) => part.text.trim())
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+  }
+
+  protected isAudioFileStorageFile(file: IFileStorageModuleFile) {
+    const mimeType = file.mimeType || "";
+    const extension =
+      file.extension ||
+      file.file.split("?")[0].split(".").pop()?.toLowerCase() ||
+      "";
+    const audioExtensions = [
+      "aac",
+      "flac",
+      "m4a",
+      "mp3",
+      "oga",
+      "ogg",
+      "opus",
+      "wav",
+      "webm",
+    ];
+
+    return Boolean(
+      mimeType.startsWith("audio/") ||
+        (mimeType === "video/webm" &&
+          !(file as IFileStorageModuleFile & { width?: unknown }).width &&
+          !(file as IFileStorageModuleFile & { height?: unknown }).height) ||
+        audioExtensions.includes(extension.toLowerCase()),
+    );
+  }
+
+  protected isOpenRouterProgressStatusMessage(
     messageDescription: string,
   ): boolean {
     const selectingVariants = [
@@ -1528,7 +1666,7 @@ export class Handler {
     return false;
   }
 
-  private getEnabledCandidatesByClass(
+  protected getEnabledCandidatesByClass(
     modelClass: TModelConfigClass,
   ): IModelCandidate[] {
     return [...MODEL_ROUTER_CONFIG.classes[modelClass]]
@@ -1536,7 +1674,7 @@ export class Handler {
       .sort((a, b) => b.priority - a.priority);
   }
 
-  private resolveModelCandidates(props: {
+  protected resolveModelCandidates(props: {
     modelClass: TModelClass;
     requiredInputModalitiesList: TInputModality[];
     expectedOutputModality: TOutputModality;
@@ -1562,7 +1700,7 @@ export class Handler {
     return enabledCandidates;
   }
 
-  private buildModelSelectionResponseFormat(candidateIds: string[]) {
+  protected buildModelSelectionResponseFormat(candidateIds: string[]) {
     return {
       type: "json_schema" as const,
       json_schema: {
@@ -1586,7 +1724,7 @@ export class Handler {
     };
   }
 
-  private async selectModelCandidatesForRequest(props: {
+  protected async selectModelCandidatesForRequest(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
@@ -1704,7 +1842,7 @@ No markdown. No extra keys.`,
     };
   }
 
-  private async parseAndNormalizeModelSelection(props: {
+  protected async parseAndNormalizeModelSelection(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     selectorModelId: string;
@@ -1802,7 +1940,7 @@ No markdown. No extra keys.`,
     return parseSelectedModelId(repairedParsed);
   }
 
-  private async classifyRequest(props: {
+  protected async classifyRequest(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
@@ -1978,7 +2116,7 @@ No markdown. No explanation.`,
     return heuristicClassification;
   }
 
-  private getHeuristicClassification(props: {
+  protected getHeuristicClassification(props: {
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
   }): IRequestClassification {
@@ -2039,7 +2177,7 @@ No markdown. No explanation.`,
     };
   }
 
-  private resolveModelClass(props: {
+  protected resolveModelClass(props: {
     classification: IRequestClassification;
     requiredInputModalitiesList: TInputModality[];
   }): TModelClass {
@@ -2065,7 +2203,7 @@ No markdown. No explanation.`,
     return "CHAT";
   }
 
-  private getGenerationValidationError(props: {
+  protected getGenerationValidationError(props: {
     expectedOutputModality: TOutputModality;
     result: { text: string; images?: { url?: string; b64_json?: string }[] };
   }): string | null {
@@ -2091,7 +2229,7 @@ No markdown. No explanation.`,
     return `output modality is not supported by endpoint: ${props.expectedOutputModality}`;
   }
 
-  private async parseAndNormalizeClassification(props: {
+  protected async parseAndNormalizeClassification(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     classifierModel: string;
@@ -2169,7 +2307,7 @@ No markdown. No explanation. No extra keys.`,
     });
   }
 
-  private normalizeClassificationPayload(props: {
+  protected normalizeClassificationPayload(props: {
     parsedJson: Record<string, unknown>;
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
@@ -2216,7 +2354,7 @@ No markdown. No explanation. No extra keys.`,
     };
   }
 
-  private adaptClassificationForEndpoint(props: {
+  protected adaptClassificationForEndpoint(props: {
     classification: IRequestClassification;
     requiredInputModalitiesList: TInputModality[];
   }): IRequestClassification {
@@ -2255,7 +2393,7 @@ No markdown. No explanation. No extra keys.`,
     };
   }
 
-  private normalizeLanguage(value: unknown): string {
+  protected normalizeLanguage(value: unknown): string {
     if (typeof value !== "string") {
       return "en";
     }
@@ -2281,7 +2419,7 @@ No markdown. No explanation. No extra keys.`,
     return "en";
   }
 
-  private tryParseJsonObject(value: string): Record<string, unknown> | null {
+  protected tryParseJsonObject(value: string): Record<string, unknown> | null {
     const trimmed = value.trim();
     const candidateValues = [trimmed];
 

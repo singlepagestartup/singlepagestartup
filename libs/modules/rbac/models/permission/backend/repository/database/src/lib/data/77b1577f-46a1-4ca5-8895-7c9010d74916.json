@@ -1,0 +1,9 @@
+{
+  "id": "77b1577f-46a1-4ca5-8895-7c9010d74916",
+  "createdAt": "2026-05-10T00:47:17.811Z",
+  "updatedAt": "2026-05-10T00:47:17.811Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/orders-to-billing-module-payment-intents/count"
+}

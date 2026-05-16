@@ -46,10 +46,31 @@ export class Handler {
       const socialModuleThreadId = c.req.query("socialModuleThreadId")?.trim();
 
       if (socialModuleThreadId) {
-        await this.service.socialModuleChatLifecycleAssertThreadBelongsToChat({
-          socialModuleChatId,
-          socialModuleThreadId,
-        });
+        const socialModuleChatsToThreads =
+          await this.service.socialModule.chatsToThreads.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "chatId",
+                    method: "eq",
+                    value: socialModuleChatId,
+                  },
+                  {
+                    column: "threadId",
+                    method: "eq",
+                    value: socialModuleThreadId,
+                  },
+                ],
+              },
+            },
+          });
+
+        if (!socialModuleChatsToThreads?.length) {
+          return c.json({
+            data: [],
+          });
+        }
 
         const socialModuleThreadsToActions =
           await this.service.socialModule.threadsToActions.find({

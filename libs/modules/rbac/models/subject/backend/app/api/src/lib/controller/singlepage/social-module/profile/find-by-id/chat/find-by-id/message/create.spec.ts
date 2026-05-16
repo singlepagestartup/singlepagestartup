@@ -15,6 +15,12 @@ const mockFileStorageFileCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
+    AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
+    AUDIO_TRANSCRIPTION_DEFAULT_MODEL: "gpt-4o-transcribe",
+    AUDIO_TRANSCRIPTION_MAX_BYTES: 25 * 1024 * 1024,
+    AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
+    OPEN_AI_TRANSCRIPTION_MODEL: undefined,
     RBAC_JWT_SECRET: "jwt-secret",
     RBAC_SECRET_KEY: "rbac-secret",
   };
@@ -97,17 +103,18 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   };
 });
 
+import { AUDIO_TRANSCRIPTION_METADATA_KEY } from "@sps/shared-utils";
 import { Handler } from "./create";
 
-function createContext(events: string[]) {
+function createContext(
+  events: string[],
+  data: Record<string, unknown> = {
+    description: "Hello",
+  },
+) {
   const formData = new FormData();
 
-  formData.set(
-    "data",
-    JSON.stringify({
-      description: "Hello",
-    }),
-  );
+  formData.set("data", JSON.stringify(data));
 
   return {
     req: {
@@ -209,5 +216,57 @@ describe("Given: rbac social message create author relation", () => {
       events.indexOf("profiles-to-messages"),
     );
     expect(handler.notifyOtherSubjectsInChat).toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an audio attachment is created as a processing social message.
+   * When: the handler persists the message and attached audio.
+   * Then: it skips ordinary chat notifications so Telegram does not echo the transient audio attachment.
+   */
+  it("When: audio transcription is processing Then: ordinary chat notification is skipped", async () => {
+    const events: string[] = [];
+
+    mockSocialModuleMessageCreate.mockResolvedValueOnce({
+      id: "message-1",
+      description: "",
+      metadata: {
+        [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+          status: "processing",
+        },
+      },
+    });
+
+    const handler = new Handler(createService());
+    handler.notifyOtherSubjectsInChat = jest.fn(() => {
+      events.push("notify");
+
+      return Promise.resolve();
+    });
+
+    const context = createContext(events, {
+      description: "",
+      metadata: {
+        [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+          status: "processing",
+        },
+      },
+    });
+
+    await handler.execute(context, jest.fn());
+
+    expect(mockSocialModuleProfilesToMessagesCreate).toHaveBeenCalledWith({
+      data: {
+        messageId: "message-1",
+        profileId: "profile-1",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(handler.notifyOtherSubjectsInChat).not.toHaveBeenCalled();
+    expect(events).toEqual(["response"]);
   });
 });

@@ -23,7 +23,7 @@ type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private splitTelegramText(text: string, limit: number): string[] {
+  protected splitTelegramText(text: string, limit: number): string[] {
     if (!text) {
       return [""];
     }
@@ -53,7 +53,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return chunks;
   }
 
-  private normalizeTelegramProps(props: unknown[]) {
+  protected normalizeTelegramProps(props: unknown[]) {
     if (!props.length) {
       return props;
     }
@@ -83,7 +83,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return props;
   }
 
-  private normalizeInlineKeyboard(interaction?: {
+  protected normalizeInlineKeyboard(interaction?: {
     inline_keyboard?: {
       text: string;
       url?: string;
@@ -133,7 +133,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return keyboard.length ? keyboard : undefined;
   }
 
-  private normalizeReplyMarkup(
+  protected normalizeReplyMarkup(
     replyMarkup?:
       | {
           inline_keyboard?: {
@@ -485,13 +485,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return mimeTypes[ext] || "application/octet-stream";
   }
 
-  private isTelegramWebpageCurlFailed(error: unknown) {
+  protected isTelegramWebpageMediaFetchFailed(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
 
-    return message.includes("WEBPAGE_CURL_FAILED");
+    return (
+      message.includes("WEBPAGE_CURL_FAILED") ||
+      message.includes("WEBPAGE_MEDIA_EMPTY")
+    );
   }
 
-  private isTelegramBlockedRecipientError(error: unknown) {
+  protected isTelegramBlockedRecipientError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     const lowerMessage = message.toLowerCase();
 
@@ -503,7 +506,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  private async markAsError(params: { notification: IModel }) {
+  protected async markAsError(params: { notification: IModel }) {
     const updatedNotification = await this.update({
       id: params.notification.id,
       data: {
@@ -519,7 +522,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return updatedNotification;
   }
 
-  private getAttachmentFilename(attachment: INotificationAttachment) {
+  protected getAttachmentFilename(attachment: INotificationAttachment) {
     try {
       const parsedUrl = new URL(attachment.url);
       const filename = parsedUrl.pathname.split("/").filter(Boolean).pop();
@@ -538,7 +541,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return "attachment";
   }
 
-  private async createTelegramAttachmentInputFile(props: {
+  protected async createTelegramAttachmentInputFile(props: {
     attachment: INotificationAttachment;
   }) {
     let bytes: Uint8Array | undefined;
@@ -570,7 +573,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return new InputFile(bytes, this.getAttachmentFilename(props.attachment));
   }
 
-  private async readLocalPublicAttachmentBytes(props: {
+  protected async readLocalPublicAttachmentBytes(props: {
     attachment: INotificationAttachment;
   }) {
     let pathname: string;
@@ -609,7 +612,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return undefined;
   }
 
-  private async createTelegramMediaGroup(props: {
+  protected async createTelegramMediaGroup(props: {
     attachments: INotificationAttachment[];
     formattedCaption: string;
     finalParseMode: string;
@@ -778,7 +781,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                   : undefined,
               );
             } catch (error) {
-              if (!this.isTelegramWebpageCurlFailed(error)) {
+              if (!this.isTelegramWebpageMediaFetchFailed(error)) {
                 throw error;
               }
 
@@ -933,7 +936,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return updatedNotification;
   }
 
-  private isExpired(notification: IModel): boolean {
+  protected isExpired(notification: IModel): boolean {
     const createdAtTimestamp = new Date(notification.createdAt).getTime();
 
     if (Number.isNaN(createdAtTimestamp)) {
@@ -946,7 +949,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  private async deleteBestEffort(params: { id: string }) {
+  protected async deleteBestEffort(params: { id: string }) {
     try {
       await this.delete({ id: params.id });
     } catch {

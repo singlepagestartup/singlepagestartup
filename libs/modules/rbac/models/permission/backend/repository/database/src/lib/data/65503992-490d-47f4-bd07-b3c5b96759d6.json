@@ -1,0 +1,9 @@
+{
+  "id": "65503992-490d-47f4-bd07-b3c5b96759d6",
+  "createdAt": "2026-05-10T00:46:04.229Z",
+  "updatedAt": "2026-05-10T00:46:04.229Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/pages/count"
+}

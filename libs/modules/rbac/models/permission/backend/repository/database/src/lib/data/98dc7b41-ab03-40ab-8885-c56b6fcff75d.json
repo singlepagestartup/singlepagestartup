@@ -1,0 +1,9 @@
+{
+  "id": "98dc7b41-ab03-40ab-8885-c56b6fcff75d",
+  "createdAt": "2026-05-10T00:47:38.561Z",
+  "updatedAt": "2026-05-10T00:47:38.561Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/stores-to-attributes/count"
+}

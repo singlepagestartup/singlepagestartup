@@ -213,7 +213,7 @@ export type IServiceProceedProps =
 export class Service {
   constructor() {}
 
-  private async authHeaders() {
+  protected async authHeaders() {
     if (!PAYKEEPER_API_LOGIN) {
       throw new Error("Configuration error. Paykeeper API login not found");
     }
@@ -232,7 +232,7 @@ export class Service {
     };
   }
 
-  private async getSecurityToken(): Promise<string> {
+  protected async getSecurityToken(): Promise<string> {
     try {
       const response = await fetch(
         `${PAYKEEPER_BASE_URL}/info/settings/token/`,
@@ -262,7 +262,7 @@ export class Service {
     }
   }
 
-  private async getInvoiceData(
+  protected async getInvoiceData(
     invoiceId: string,
   ): Promise<IPayKeeperInvoiceData> {
     try {
@@ -578,7 +578,7 @@ export class Service {
     }
   }
 
-  private buildCartFromMetadata(metadata: IMetadata) {
+  protected buildCartFromMetadata(metadata: IMetadata) {
     const cartItems: Array<{
       name: string;
       price: number;
@@ -646,7 +646,7 @@ export class Service {
     return cartItems;
   }
 
-  private getProductName(product: {
+  protected getProductName(product: {
     title?: { [key: string]: string };
     adminTitle?: string;
   }): string {
@@ -662,7 +662,7 @@ export class Service {
     return "Товар";
   }
 
-  private getProductPrice(product: {
+  protected getProductPrice(product: {
     productsToAttributes?: Array<{
       attributes?: Array<{
         number?: string;

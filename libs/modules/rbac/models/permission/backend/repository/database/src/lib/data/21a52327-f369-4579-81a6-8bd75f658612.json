@@ -1,0 +1,9 @@
+{
+  "id": "21a52327-f369-4579-81a6-8bd75f658612",
+  "createdAt": "2026-05-10T00:46:54.684Z",
+  "updatedAt": "2026-05-10T00:46:54.684Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/articles-to-website-builder-module-widgets/count"
+}

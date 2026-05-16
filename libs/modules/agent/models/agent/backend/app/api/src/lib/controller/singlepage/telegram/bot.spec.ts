@@ -8,11 +8,18 @@
 
 jest.mock("@sps/shared-utils", () => {
   return {
+    AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
+    AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
+    AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
     RBAC_SECRET_KEY: "rbac-secret",
   };
 });
 
 import { Handler } from "./bot";
+import {
+  AUDIO_TRANSCRIPTION_ACTION_TYPE,
+  AUDIO_TRANSCRIPTION_METADATA_KEY,
+} from "@sps/shared-utils";
 
 function createContext() {
   return {
@@ -24,10 +31,19 @@ function createService() {
   const agentSocialModuleProfileHandler = jest
     .fn()
     .mockResolvedValue(undefined);
+  const notificationMessageUpdate = jest.fn().mockResolvedValue(undefined);
 
   return {
     agentSocialModuleProfileHandler,
+    notificationMessageDelete: jest.fn().mockResolvedValue(undefined),
+    notificationMessageUpdate,
     socialModule: {
+      action: {
+        findById: jest.fn().mockResolvedValue({
+          id: "action-1",
+          payload: {},
+        }),
+      },
       message: {
         findById: jest.fn().mockResolvedValue({
           id: "message-1",
@@ -45,6 +61,7 @@ function createService() {
       chat: {
         findById: jest.fn().mockResolvedValue({
           id: "chat-1",
+          sourceSystemId: "telegram-chat-1",
         }),
       },
       profilesToChats: {
@@ -80,6 +97,22 @@ function createService() {
           },
         ]),
       },
+      chatsToActions: {
+        find: jest.fn().mockResolvedValue([
+          {
+            actionId: "action-1",
+            chatId: "chat-1",
+          },
+        ]),
+      },
+      profilesToActions: {
+        find: jest.fn().mockResolvedValue([
+          {
+            actionId: "action-1",
+            profileId: "sender-profile",
+          },
+        ]),
+      },
     },
   } as any;
 }
@@ -97,6 +130,24 @@ function createAction(route: string) {
         },
       },
     },
+  } as any;
+}
+
+function createForwardedSocialAction(payload: Record<string, unknown>) {
+  return {
+    rbacModuleAction: {
+      payload: {
+        route:
+          "/api/rbac/subjects/subject-1/social-module/profiles/sender-profile/chats/chat-1/actions",
+        method: "POST",
+        result: {
+          data: {
+            id: "action-1",
+          },
+        },
+      },
+    },
+    socialModuleActionPayload: payload,
   } as any;
 }
 
@@ -170,6 +221,137 @@ describe("Given: agent social message action routing", () => {
     });
     expect(context.json).toHaveBeenCalledWith({
       data: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an audio transcript update is marked completed with the explicit agent trigger.
+   * When: the agent telegram handler processes the forwarded social action.
+   * Then: it reuses normal message dispatch and asks the OpenRouter social profile to reply.
+   */
+  it("When: audio transcription completed action is logged Then: automatic social profile handler runs", async () => {
+    const service = createService();
+    const forwardedAction = createForwardedSocialAction({
+      type: AUDIO_TRANSCRIPTION_ACTION_TYPE,
+      message: {
+        id: "message-1",
+        description: "transcribed voice text",
+        metadata: {
+          [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+            agentTrigger: AUDIO_TRANSCRIPTION_ACTION_TYPE,
+            status: "completed",
+          },
+        },
+      },
+    });
+    service.socialModule.action.findById.mockResolvedValue({
+      id: "action-1",
+      payload: forwardedAction.socialModuleActionPayload,
+    });
+    const handler = new Handler(service);
+    const context = createContext();
+
+    await handler.onAction(context, {
+      data: forwardedAction,
+    });
+
+    expect(service.notificationMessageUpdate).not.toHaveBeenCalled();
+    expect(service.agentSocialModuleProfileHandler).toHaveBeenCalledWith({
+      shouldReplySocialModuleProfile: expect.objectContaining({
+        id: "open-router-profile",
+      }),
+      socialModuleChat: expect.objectContaining({
+        id: "chat-1",
+      }),
+      socialModuleMessage: expect.objectContaining({
+        id: "message-1",
+      }),
+      messageFromSocialModuleProfile: expect.objectContaining({
+        id: "sender-profile",
+      }),
+    });
+    expect(context.json).toHaveBeenCalledWith({
+      data: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a normal message edit is forwarded as a generic update action.
+   * When: the agent telegram handler processes the action.
+   * Then: it updates the notification message and does not trigger an agent reply.
+   */
+  it("When: generic update action is logged Then: only notification update runs", async () => {
+    const service = createService();
+    const forwardedAction = createForwardedSocialAction({
+      type: "update",
+      message: {
+        id: "message-1",
+        description: "edited text",
+      },
+    });
+    service.socialModule.action.findById.mockResolvedValue({
+      id: "action-1",
+      payload: forwardedAction.socialModuleActionPayload,
+    });
+    const handler = new Handler(service);
+    const context = createContext();
+
+    await handler.onAction(context, {
+      data: forwardedAction,
+    });
+
+    expect(service.notificationMessageUpdate).toHaveBeenCalledWith({
+      socialModuleChat: expect.objectContaining({
+        id: "chat-1",
+      }),
+      socialModuleMessage: expect.objectContaining({
+        id: "message-1",
+      }),
+    });
+    expect(service.agentSocialModuleProfileHandler).not.toHaveBeenCalled();
+    expect(context.json).toHaveBeenCalledWith({
+      data: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an audio transcription action has completed metadata but no transcript text.
+   * When: the agent telegram handler processes the action.
+   * Then: it does not trigger an agent reply.
+   */
+  it("When: completed audio action has empty text Then: automatic social profile handler is skipped", async () => {
+    const service = createService();
+    const forwardedAction = createForwardedSocialAction({
+      type: AUDIO_TRANSCRIPTION_ACTION_TYPE,
+      message: {
+        id: "message-1",
+        description: "",
+        metadata: {
+          [AUDIO_TRANSCRIPTION_METADATA_KEY]: {
+            agentTrigger: AUDIO_TRANSCRIPTION_ACTION_TYPE,
+            status: "completed",
+          },
+        },
+      },
+    });
+    service.socialModule.action.findById.mockResolvedValue({
+      id: "action-1",
+      payload: forwardedAction.socialModuleActionPayload,
+    });
+    const handler = new Handler(service);
+    const context = createContext();
+
+    await handler.onAction(context, {
+      data: forwardedAction,
+    });
+
+    expect(service.notificationMessageUpdate).not.toHaveBeenCalled();
+    expect(service.agentSocialModuleProfileHandler).not.toHaveBeenCalled();
+    expect(context.json).toHaveBeenCalledWith({
+      data: false,
     });
   });
 });

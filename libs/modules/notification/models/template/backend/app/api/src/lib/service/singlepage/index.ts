@@ -11,7 +11,7 @@ import pako from "pako";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private hasRenderErrorPayload(data: string): boolean {
+  protected hasRenderErrorPayload(data: string): boolean {
     try {
       const parsedData = JSON.parse(data);
 
@@ -23,7 +23,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
-  private async fetchRenderedTemplate(params: {
+  protected async fetchRenderedTemplate(params: {
     url: string;
   }): Promise<string | null> {
     if (!RBAC_SECRET_KEY) {

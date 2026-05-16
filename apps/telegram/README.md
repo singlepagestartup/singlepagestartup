@@ -58,12 +58,22 @@ Main app-level variables are documented in `.env.example`:
 Subscription channel variables are also defined there when the bot must enforce
 channel membership.
 
+Voice-note and audio-file transcription is owned by the API/RBAC social message
+flow. Telegram downloads Telegram audio, converts it to MP3, and forwards that
+file as a social message attachment; OpenAI credentials are configured on the
+API service.
+
+Audio normalization requires an `ffmpeg` binary available on the Telegram
+service runtime path.
+
 ## Adapter Responsibilities
 
 Allowed responsibilities in `apps/telegram`:
 
 - Initialize the grammY bot and expose webhook/polling transport.
 - Parse Telegram messages, files, payments, callback data, and topic metadata.
+- Download Telegram voice/audio files, convert them to MP3, and ingest them as
+  social message attachments.
 - Bootstrap Telegram users, profiles, chats, and thread mapping through the
   RBAC subject Telegram bootstrap API.
 - Ingest incoming Telegram messages/actions into SPS as `social.message` or

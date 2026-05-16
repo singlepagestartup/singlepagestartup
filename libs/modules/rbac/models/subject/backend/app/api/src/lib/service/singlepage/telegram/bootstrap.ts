@@ -71,7 +71,7 @@ export class Service {
     this.subjectsToSocialModuleProfiles = props.subjectsToSocialModuleProfiles;
   }
 
-  private getSdkHeaders() {
+  protected getSdkHeaders() {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
     }
@@ -82,7 +82,7 @@ export class Service {
     };
   }
 
-  private parseStartMessage(messageText?: string) {
+  protected parseStartMessage(messageText?: string) {
     const text = typeof messageText === "string" ? messageText.trim() : "";
     const match = text.match(/^\/start(?:\s+(.+))?$/);
     const referralCode = match?.[1]?.trim() || "";
@@ -93,11 +93,11 @@ export class Service {
     };
   }
 
-  private getFallbackTelegramThreadTitle(messageThreadId: string) {
+  protected getFallbackTelegramThreadTitle(messageThreadId: string) {
     return `Telegram topic ${messageThreadId}`;
   }
 
-  private isFallbackTelegramThreadTitle(props: {
+  protected isFallbackTelegramThreadTitle(props: {
     title?: string | null;
     messageThreadId: string;
   }) {
@@ -113,7 +113,7 @@ export class Service {
     );
   }
 
-  private shouldGenerateThreadTitleFromMessage(messageText?: string) {
+  protected shouldGenerateThreadTitleFromMessage(messageText?: string) {
     const text = messageText?.trim();
 
     if (!text) {
@@ -123,7 +123,7 @@ export class Service {
     return !text.startsWith("/");
   }
 
-  private getFallbackThreadTitleFromMessage(messageText: string) {
+  protected getFallbackThreadTitleFromMessage(messageText: string) {
     const words = messageText
       .replace(/\s+/g, " ")
       .trim()
@@ -134,7 +134,7 @@ export class Service {
     return `${words.join(" ") || "New thread"} 💬`.slice(0, 128).trim();
   }
 
-  private parseGeneratedThreadTitle(value: string) {
+  protected parseGeneratedThreadTitle(value: string) {
     const cleanValue = value
       .trim()
       .replace(/^```(?:json)?/i, "")
@@ -154,7 +154,7 @@ export class Service {
     return cleanValue;
   }
 
-  private sanitizeGeneratedThreadTitle(props: {
+  protected sanitizeGeneratedThreadTitle(props: {
     generatedTitle?: string;
     messageText: string;
   }) {
@@ -185,7 +185,7 @@ export class Service {
     return `${words.join(" ")} ${emoji}`.slice(0, 128).trim();
   }
 
-  private async generateTelegramThreadTitle(props: { messageText: string }) {
+  protected async generateTelegramThreadTitle(props: { messageText: string }) {
     const fallbackTitle = this.getFallbackThreadTitleFromMessage(
       props.messageText,
     );
@@ -233,7 +233,7 @@ export class Service {
     }
   }
 
-  private async editTelegramForumTopicTitle(props: {
+  protected async editTelegramForumTopicTitle(props: {
     socialModuleChat: ISocialModuleChat;
     messageThreadId: string;
     title: string;
@@ -265,7 +265,7 @@ export class Service {
     }
   }
 
-  private async applyGeneratedTitleToTelegramThread(props: {
+  protected async applyGeneratedTitleToTelegramThread(props: {
     socialModuleChat: ISocialModuleChat;
     socialModuleThread: ISocialModuleThread;
     messageThreadId: string;
@@ -320,7 +320,7 @@ export class Service {
     };
   }
 
-  private getCreatedAtTimestamp(value: unknown) {
+  protected getCreatedAtTimestamp(value: unknown) {
     if (!value) {
       return Number.MAX_SAFE_INTEGER;
     }
@@ -338,7 +338,7 @@ export class Service {
     return parsed;
   }
 
-  private sortThreadsByCreatedAt(threads: ISocialModuleThread[]) {
+  protected sortThreadsByCreatedAt(threads: ISocialModuleThread[]) {
     return [...threads].sort((a, b) => {
       const timestampDiff =
         this.getCreatedAtTimestamp(a.createdAt) -
@@ -352,7 +352,7 @@ export class Service {
     });
   }
 
-  private async reconnectDuplicateThreadActionsToPrimary(props: {
+  protected async reconnectDuplicateThreadActionsToPrimary(props: {
     chatId: string;
     primaryThreadId: string;
     duplicateThreadIds: string[];
@@ -449,7 +449,7 @@ export class Service {
     }
   }
 
-  private async mergeDuplicateDefaultThreadsForChat(props: {
+  protected async mergeDuplicateDefaultThreadsForChat(props: {
     chatId: string;
     defaultThreads: ISocialModuleThread[];
     chatToThreads: { id?: string; chatId?: string; threadId?: string }[];
@@ -633,7 +633,7 @@ export class Service {
     return primaryThread;
   }
 
-  private async mergeDuplicateTelegramTopicThreadsForChat(props: {
+  protected async mergeDuplicateTelegramTopicThreadsForChat(props: {
     chatId: string;
     messageThreadId: string;
     topicThreads: ISocialModuleThread[];
@@ -823,7 +823,7 @@ export class Service {
     return primaryThread;
   }
 
-  private async ensureDefaultThreadForChat(props: {
+  protected async ensureDefaultThreadForChat(props: {
     chatId: string;
     headers: Record<string, string>;
   }): Promise<ISocialModuleThread> {
@@ -906,7 +906,7 @@ export class Service {
     return thread;
   }
 
-  private async resolveThreadForTelegramMessage(props: {
+  protected async resolveThreadForTelegramMessage(props: {
     socialModuleChat: ISocialModuleChat;
     chatId: string;
     messageThreadId?: string;
@@ -1016,7 +1016,7 @@ export class Service {
     });
   }
 
-  private async resolveSubjectByIdentityLinks(props: {
+  protected async resolveSubjectByIdentityLinks(props: {
     identityId: string;
     links: IRbacSubjectsToIdentities[];
   }) {
@@ -1070,7 +1070,7 @@ export class Service {
     return selectedSubject;
   }
 
-  private async resolveIdentityDuplicates(props: {
+  protected async resolveIdentityDuplicates(props: {
     account: string;
     provider: string;
     identities: IRbacIdentity[];

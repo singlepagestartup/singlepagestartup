@@ -1,0 +1,9 @@
+{
+  "id": "7bd97403-5cb7-4872-81de-a0b3763573c6",
+  "createdAt": "2026-05-10T00:46:29.930Z",
+  "updatedAt": "2026-05-10T00:46:29.930Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-ecommerce-module-orders/count"
+}

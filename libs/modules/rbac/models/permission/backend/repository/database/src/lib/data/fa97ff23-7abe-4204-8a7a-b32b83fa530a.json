@@ -1,0 +1,9 @@
+{
+  "id": "fa97ff23-7abe-4204-8a7a-b32b83fa530a",
+  "createdAt": "2026-05-10T00:46:04.250Z",
+  "updatedAt": "2026-05-10T00:46:04.250Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/metadata/count"
+}

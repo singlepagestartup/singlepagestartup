@@ -1,0 +1,9 @@
+{
+  "id": "d6a6fcab-395c-4cfb-a3ef-9a7454af1f56",
+  "createdAt": "2026-05-10T00:48:22.643Z",
+  "updatedAt": "2026-05-10T00:48:22.643Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/logotypes-to-file-storage-module-files/count"
+}

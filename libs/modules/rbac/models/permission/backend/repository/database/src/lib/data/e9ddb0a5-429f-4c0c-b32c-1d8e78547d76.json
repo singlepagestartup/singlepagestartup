@@ -1,0 +1,9 @@
+{
+  "id": "e9ddb0a5-429f-4c0c-b32c-1d8e78547d76",
+  "createdAt": "2026-05-10T00:46:30.077Z",
+  "updatedAt": "2026-05-10T00:46:30.077Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-social-module-profiles/count"
+}

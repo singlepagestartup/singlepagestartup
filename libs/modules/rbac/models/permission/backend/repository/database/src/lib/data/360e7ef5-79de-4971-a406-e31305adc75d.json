@@ -1,0 +1,9 @@
+{
+  "id": "360e7ef5-79de-4971-a406-e31305adc75d",
+  "createdAt": "2026-05-10T00:48:22.417Z",
+  "updatedAt": "2026-05-10T00:48:22.417Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/buttons-arrays/count"
+}

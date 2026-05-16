@@ -280,4 +280,37 @@ describe("notification send service", () => {
     expect(service.update).not.toHaveBeenCalled();
     expect(service.delete).not.toHaveBeenCalled();
   });
+
+  /**
+   * BDD Scenario: Telegram media URL fetch failures are retried as uploads
+   *
+   * Given Telegram rejects a media URL because it cannot fetch readable content
+   * When the notification service classifies the delivery error
+   * Then it treats both curl and empty media failures as retriable upload-fallback cases
+   */
+  it("treats Telegram empty webpage media as a retriable upload fallback error", () => {
+    const service = createService() as unknown as {
+      isTelegramWebpageMediaFetchFailed: (error: unknown) => boolean;
+    };
+
+    expect(
+      service.isTelegramWebpageMediaFetchFailed(
+        new Error(
+          "Call to 'sendMediaGroup' failed! (400: Bad Request: WEBPAGE_CURL_FAILED)",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      service.isTelegramWebpageMediaFetchFailed(
+        new Error(
+          "Call to 'sendMediaGroup' failed! (400: Bad Request: failed to send message #1 with the error message \"WEBPAGE_MEDIA_EMPTY\")",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      service.isTelegramWebpageMediaFetchFailed(
+        new Error("Call to 'sendMessage' failed! (500: Internal Server Error)"),
+      ),
+    ).toBe(false);
+  });
 });

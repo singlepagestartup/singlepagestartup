@@ -1,0 +1,9 @@
+{
+  "id": "e5d0d2de-4382-4488-b731-1a630df0145c",
+  "createdAt": "2026-05-10T00:46:54.810Z",
+  "updatedAt": "2026-05-10T00:46:54.810Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/broadcast/messages/count"
+}

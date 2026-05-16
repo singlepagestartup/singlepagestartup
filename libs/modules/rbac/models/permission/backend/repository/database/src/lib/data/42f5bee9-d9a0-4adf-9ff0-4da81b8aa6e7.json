@@ -1,0 +1,9 @@
+{
+  "id": "42f5bee9-d9a0-4adf-9ff0-4da81b8aa6e7",
+  "createdAt": "2026-05-10T00:46:30.034Z",
+  "updatedAt": "2026-05-10T00:46:30.034Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-notification-module-topics/count"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "cb422d15-fb3c-49a7-b54f-afcdfa8ec6d3",
+  "createdAt": "2026-05-10T00:47:17.711Z",
+  "updatedAt": "2026-05-10T00:47:17.711Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/attributes-to-billing-module-currencies/count"
+}

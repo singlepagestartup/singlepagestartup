@@ -1,0 +1,9 @@
+{
+  "id": "747bfcc7-c183-4948-b031-71d9b1d38ec0",
+  "createdAt": "2026-05-10T00:46:30.237Z",
+  "updatedAt": "2026-05-10T00:46:30.237Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/widgets/count"
+}
