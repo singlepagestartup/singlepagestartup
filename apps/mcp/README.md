@@ -1,6 +1,6 @@
 # SPS MCP Server
 
-`apps/mcp` exposes SPS module resources and tools to MCP clients. It supports local stdio and remote Streamable HTTP.
+`apps/mcp` exposes SPS module resources, generated CRUD/count tools, documentation tools, and content-management tools to MCP clients. It supports local stdio and remote Streamable HTTP.
 
 ## Local Development
 

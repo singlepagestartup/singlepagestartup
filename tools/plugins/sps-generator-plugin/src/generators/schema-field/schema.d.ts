@@ -17,6 +17,6 @@ export interface SchemaFieldGeneratorSchema {
     | "time"
     | "number";
   action: "create" | "remove";
-  level: "sps-lite" | "startup";
+  level: "singlepage" | "startup";
   is_required: boolean;
 }

@@ -52,16 +52,21 @@
         "type": "list",
         "default": "website-builder",
         "items": [
+          { "value": "agent" },
+          { "value": "analytic" },
           { "value": "billing" },
+          { "value": "blog" },
           { "value": "broadcast" },
           { "value": "crm" },
+          { "value": "ecommerce" },
           { "value": "file-storage" },
           { "value": "host" },
           { "value": "notification" },
           { "value": "rbac" },
-          { "value": "sps-third-parties" },
-          { "value": "website-builder" },
-          { "value": "startup" }
+          { "value": "social" },
+          { "value": "startup" },
+          { "value": "telegram" },
+          { "value": "website-builder" }
         ]
       }
     },
@@ -95,13 +100,13 @@
       "x-prompt": {
         "message": "Select level",
         "type": "list",
-        "default": "startup",
+        "default": "singlepage",
         "items": [
           {
             "value": "startup"
           },
           {
-            "value": "sps-lite"
+            "value": "singlepage"
           }
         ]
       }

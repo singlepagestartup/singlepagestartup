@@ -59,6 +59,10 @@ import {
   registerResources as websiteBuilderModuleRegisterResources,
   registerTools as websiteBuilderModuleRegisterTools,
 } from "./website-builder";
+import {
+  registerResources as contentManagementRegisterResources,
+  registerTools as contentManagementRegisterTools,
+} from "./content-management";
 import { registerTools as documentationRegisterTools } from "./documentation";
 
 export function createMcpServer() {
@@ -98,6 +102,8 @@ export function createMcpServer() {
   websiteBuilderModuleRegisterResources(mcp);
   websiteBuilderModuleRegisterTools(mcp);
   documentationRegisterTools(mcp);
+  contentManagementRegisterResources(mcp);
+  contentManagementRegisterTools(mcp);
 
   return mcp;
 }

@@ -16,3 +16,9 @@ sandbox_mode = "workspace-write"
 [profiles.sps-readonly]
 approval_policy = "never"
 sandbox_mode = "read-only"
+
+# Project-local SPS MCP server. Codex loads this from the repository root
+# without writing username-specific project paths to ~/.codex/config.toml.
+[mcp_servers.singlepagestartup]
+url = "http://127.0.0.1:3001/mcp"
+env_http_headers = { "X-RBAC-SECRET-KEY" = "RBAC_SECRET_KEY" }

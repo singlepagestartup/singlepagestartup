@@ -1,8 +1,9 @@
-import { Tree, formatFiles } from "@nx/devkit";
+import { Tree } from "@nx/devkit";
 import { ModelGeneratorSchema } from "./schema";
 import { Coder } from "../../coder/Coder";
+import { formatGeneratorFiles } from "../format";
 
-// npx nx generate @sps/sps-generator-plugin:model --name=test-model --action=create --module=startup --no-interactive --dry-run
+// npx nx generate @sps/sps-generator-plugin:model test-model --action=create --module=startup --no-interactive --dry-run
 export async function modelGenerator(
   tree: Tree,
   options: ModelGeneratorSchema,
@@ -61,6 +62,42 @@ export async function modelGenerator(
                             template: "admin-select-input",
                             path: "admin/select-input",
                           },
+                          {
+                            name: "admin-v2-table-row",
+                            level: "singlepage",
+                            template: "admin-v2-table-row",
+                            path: "admin-v2/table-row",
+                          },
+                          {
+                            name: "admin-v2-table",
+                            level: "singlepage",
+                            template: "admin-v2-table",
+                            path: "admin-v2/table",
+                          },
+                          {
+                            name: "admin-v2-select-input",
+                            level: "singlepage",
+                            template: "admin-v2-select-input",
+                            path: "admin-v2/select-input",
+                          },
+                          {
+                            name: "admin-v2-form",
+                            level: "singlepage",
+                            template: "admin-v2-form",
+                            path: "admin-v2/form",
+                          },
+                          {
+                            name: "admin-v2-card",
+                            level: "singlepage",
+                            template: "admin-v2-card",
+                            path: "admin-v2/card",
+                          },
+                          {
+                            name: "admin-v2-sidebar-item",
+                            level: "singlepage",
+                            template: "admin-v2-sidebar-item",
+                            path: "admin-v2/sidebar-item",
+                          },
                         ],
                       },
                     },
@@ -80,7 +117,7 @@ export async function modelGenerator(
     await coder.project.root.project.libs.project.modules[0].project.module.project.models[0].create();
   }
 
-  await formatFiles(tree);
+  await formatGeneratorFiles(tree);
 }
 
 export default modelGenerator;
