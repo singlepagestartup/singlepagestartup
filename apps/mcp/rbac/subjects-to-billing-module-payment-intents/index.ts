@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToBillingModulePaymentIntentsApi } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/sdk/server";
 import { insertSchema as rbacSubjectsToBillingModulePaymentIntentsInsertSchema } from "@sps/rbac/relations/subjects-to-billing-module-payment-intents/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all subjects-to-billing-module-payment-intents relations from rbac module",
     },
-    async (uri, extra) => {
-      const resp = await rbacSubjectsToBillingModulePaymentIntentsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await rbacSubjectsToBillingModulePaymentIntentsApi.find();
 
       return {
         contents: [
@@ -50,12 +45,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all subjects-to-billing-module-payment-intents relations from rbac module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities =
           await rbacSubjectsToBillingModulePaymentIntentsApi.find({
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -91,7 +86,7 @@ export function registerTools(mcp: McpServer) {
         id: rbacSubjectsToBillingModulePaymentIntentsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -100,9 +95,6 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await rbacSubjectsToBillingModulePaymentIntentsApi.findById({
             id: args.id,
-            options: {
-              headers: getMcpAuthHeaders(extra),
-            },
           });
 
         return {
@@ -134,13 +126,13 @@ export function registerTools(mcp: McpServer) {
         "Create a new subjects-to-billing-module-payment-intents relation in the rbac module.",
       inputSchema: rbacSubjectsToBillingModulePaymentIntentsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity =
           await rbacSubjectsToBillingModulePaymentIntentsApi.create({
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing subjects-to-billing-module-payment-intents relation by id.",
       inputSchema: rbacSubjectsToBillingModulePaymentIntentsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -185,7 +177,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -219,7 +211,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing subjects-to-billing-module-payment-intents relation by id.",
       inputSchema: rbacSubjectsToBillingModulePaymentIntentsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -229,7 +221,7 @@ export function registerTools(mcp: McpServer) {
           await rbacSubjectsToBillingModulePaymentIntentsApi.delete({
             id: args.id,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 

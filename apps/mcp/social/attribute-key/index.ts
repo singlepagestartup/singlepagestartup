@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialAttributeKeyApi } from "@sps/social/models/attribute-key/sdk/server";
 import { insertSchema as socialAttributeKeyInsertSchema } from "@sps/social/models/attribute-key/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "social module attribute-keys",
       description: "Get list of all attribute-keys from social module",
     },
-    async (uri, extra) => {
-      const resp = await socialAttributeKeyApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await socialAttributeKeyApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all attribute-keys from social module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await socialAttributeKeyApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: socialAttributeKeyInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await socialAttributeKeyApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new attribute-key in the social module.",
       inputSchema: socialAttributeKeyInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await socialAttributeKeyApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -164,7 +156,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing attribute-key in the social module by id.",
       inputSchema: socialAttributeKeyInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -207,7 +199,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing attribute-key in the social module by id.",
       inputSchema: socialAttributeKeyInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -216,7 +208,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await socialAttributeKeyApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

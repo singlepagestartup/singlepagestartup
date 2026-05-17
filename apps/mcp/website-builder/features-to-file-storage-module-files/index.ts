@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderFeaturesToFileStorageModuleFilesApi } from "@sps/website-builder/relations/features-to-file-storage-module-files/sdk/server";
 import { insertSchema as websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema } from "@sps/website-builder/relations/features-to-file-storage-module-files/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,7 +12,7 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all features-to-file-storage-module-files relations from website-builder module",
     },
-    async (uri, extra) => {
+    async (uri) => {
       const resp =
         await websiteBuilderFeaturesToFileStorageModuleFilesApi.find();
 
@@ -47,12 +46,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all features-to-file-storage-module-files relations from website-builder module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.find({
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -88,7 +87,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -97,9 +96,6 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.findById({
             id: args.id,
-            options: {
-              headers: getMcpAuthHeaders(extra),
-            },
           });
 
         return {
@@ -133,13 +129,13 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity =
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.create({
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -174,7 +170,7 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -185,7 +181,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -220,7 +216,7 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         websiteBuilderFeaturesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -230,7 +226,7 @@ export function registerTools(mcp: McpServer) {
           await websiteBuilderFeaturesToFileStorageModuleFilesApi.delete({
             id: args.id,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 

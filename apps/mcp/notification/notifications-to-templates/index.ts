@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as notificationNotificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { insertSchema as notificationNotificationsToTemplatesInsertSchema } from "@sps/notification/relations/notifications-to-templates/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all notifications-to-templates relations from notification module",
     },
-    async (uri, extra) => {
-      const resp = await notificationNotificationsToTemplatesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await notificationNotificationsToTemplatesApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all notifications-to-templates relations from notification module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await notificationNotificationsToTemplatesApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: notificationNotificationsToTemplatesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await notificationNotificationsToTemplatesApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -129,12 +121,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new notifications-to-templates relation in the notification module.",
       inputSchema: notificationNotificationsToTemplatesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await notificationNotificationsToTemplatesApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -167,7 +159,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing notifications-to-templates relation by id.",
       inputSchema: notificationNotificationsToTemplatesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -177,7 +169,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -210,7 +202,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing notifications-to-templates relation by id.",
       inputSchema: notificationNotificationsToTemplatesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -219,7 +211,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await notificationNotificationsToTemplatesApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialChatApi } from "@sps/social/models/chat/sdk/server";
 import { insertSchema as socialChatInsertSchema } from "@sps/social/models/chat/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "social module chats",
       description: "Get list of all chats from social module",
     },
-    async (uri, extra) => {
-      const resp = await socialChatApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await socialChatApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all chats from social module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await socialChatApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: socialChatInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await socialChatApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new chat in the social module.",
       inputSchema: socialChatInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await socialChatApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -163,7 +155,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing chat in the social module by id.",
       inputSchema: socialChatInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -173,7 +165,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -205,7 +197,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing chat in the social module by id.",
       inputSchema: socialChatInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -214,7 +206,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await socialChatApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

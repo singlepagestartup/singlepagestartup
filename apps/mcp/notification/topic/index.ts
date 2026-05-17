@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as notificationTopicApi } from "@sps/notification/models/topic/sdk/server";
 import { insertSchema as notificationTopicInsertSchema } from "@sps/notification/models/topic/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "notification module topics",
       description: "Get list of all topics from notification module",
     },
-    async (uri, extra) => {
-      const resp = await notificationTopicApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await notificationTopicApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all topics from notification module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await notificationTopicApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: notificationTopicInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await notificationTopicApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new topic in the notification module.",
       inputSchema: notificationTopicInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await notificationTopicApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -163,7 +155,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing topic in the notification module by id.",
       inputSchema: notificationTopicInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -173,7 +165,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -205,7 +197,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing topic in the notification module by id.",
       inputSchema: notificationTopicInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -214,7 +206,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await notificationTopicApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

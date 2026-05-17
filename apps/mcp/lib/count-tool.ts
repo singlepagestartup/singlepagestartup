@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getMcpAuthHeaders } from "./auth";
 
 const CountFilterMethodSchema = z.enum([
   "eq",
@@ -55,7 +54,7 @@ export function registerCountTool(
       description,
       inputSchema: CountParamsSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const parsed = CountParamsSchema.safeParse(args);
 
@@ -66,7 +65,7 @@ export function registerCountTool(
         const count = await api.count({
           params: parsed.data,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

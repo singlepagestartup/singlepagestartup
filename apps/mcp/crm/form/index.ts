@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as crmFormApi } from "@sps/crm/models/form/sdk/server";
 import { insertSchema as crmFormInsertSchema } from "@sps/crm/models/form/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "crm module forms",
       description: "Get list of all forms from crm module",
     },
-    async (uri, extra) => {
-      const resp = await crmFormApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await crmFormApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all forms from crm module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await crmFormApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: crmFormInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await crmFormApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new form in the crm module.",
       inputSchema: crmFormInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await crmFormApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -163,7 +155,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing form in the crm module by id.",
       inputSchema: crmFormInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -173,7 +165,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -205,7 +197,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing form in the crm module by id.",
       inputSchema: crmFormInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -214,7 +206,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await crmFormApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

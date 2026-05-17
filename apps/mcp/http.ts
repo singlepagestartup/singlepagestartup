@@ -1,215 +1,358 @@
 import "./env";
-import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { createMcpServer } from "./actions.js";
+import {
+  installMcpFetchAuthForwarding,
+  runWithMcpRequestAuthContext,
+} from "./lib/auth-context.js";
+import { getOAuthAuthenticationPage } from "./lib/oauth-authentication-page.js";
+import {
+  getMcpPublicUrl,
+  getProtectedResourceMetadata,
+  getWwwAuthenticateHeader,
+  handleOAuthRequest,
+  isOAuthRoute,
+  verifyMcpAccessToken,
+} from "./lib/oauth.js";
 
-const DEFAULT_PORT = 3001;
-const DEFAULT_HOST = "127.0.0.1";
-const MCP_PATHS = new Set(["/mcp", "/sse"]);
-const MAX_BODY_BYTES = 4 * 1024 * 1024;
+type IHttpMcpSession = {
+  transport: StreamableHTTPServerTransport;
+};
 
-const port = Number(process.env["MCP_HTTP_PORT"] ?? DEFAULT_PORT);
-const host = process.env["MCP_HTTP_HOST"] ?? DEFAULT_HOST;
-const transports: Record<string, StreamableHTTPServerTransport> = {};
+const sessions = new Map<string, IHttpMcpSession>();
+const host = process.env["MCP_HTTP_HOST"] || "127.0.0.1";
+const port = Number(process.env["MCP_HTTP_PORT"] || 3001);
 
-function firstHeaderValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
+installMcpFetchAuthForwarding();
 
-function setCorsHeaders(res: ServerResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    [
-      "Authorization",
-      "Content-Type",
-      "Last-Event-ID",
-      "Mcp-Protocol-Version",
-      "Mcp-Session-Id",
-      "X-RBAC-SECRET-KEY",
-      "mcp-protocol-version",
-      "mcp-session-id",
-    ].join(", "),
-  );
-  res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
-}
+const server = createServer(async (req, res) => {
+  try {
+    const url = getRequestUrl(req);
 
-function writeJsonRpcError(props: {
-  res: ServerResponse;
-  status: number;
-  message: string;
-}) {
-  if (!props.res.headersSent) {
-    props.res.writeHead(props.status, {
-      "Content-Type": "application/json",
-    });
-  }
+    setCorsHeaders(req, res);
 
-  props.res.end(
-    JSON.stringify({
-      jsonrpc: "2.0",
-      error: {
-        code: -32000,
-        message: props.message,
+    if (req.method === "OPTIONS") {
+      return sendOptions(res);
+    }
+
+    if (url.pathname === "/authentication/oauth") {
+      return sendHtml(res, 200, getOAuthAuthenticationPage());
+    }
+
+    if (isOAuthRoute(url.pathname)) {
+      return handleOAuthRequest(req, res, url);
+    }
+
+    if (url.pathname !== "/mcp") {
+      return sendJson(res, 404, { error: "not_found" });
+    }
+
+    if (!isAllowedOrigin(req)) {
+      return sendJson(res, 403, { error: "invalid_origin" });
+    }
+
+    const requestAuth = await getRequestAuth(req);
+
+    if (!requestAuth.ok) {
+      return sendUnauthorized(res, requestAuth.message);
+    }
+
+    const sessionId = getHeader(req, "mcp-session-id");
+    const existingSession = sessionId ? sessions.get(sessionId) : undefined;
+    const parsedBody =
+      req.method === "POST" ? await readJsonBody(req, res) : undefined;
+
+    if (req.method === "POST" && parsedBody === undefined) {
+      return;
+    }
+
+    if (sessionId && !existingSession) {
+      return sendJson(res, 404, {
+        jsonrpc: "2.0",
+        error: {
+          code: -32001,
+          message: "Session not found",
+        },
+        id: null,
+      });
+    }
+
+    const session =
+      existingSession ||
+      (req.method === "POST" && isInitializeRequest(parsedBody)
+        ? await createHttpSession()
+        : undefined);
+
+    if (!session) {
+      return sendJson(res, 400, {
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "Invalid or missing MCP session ID",
+        },
+        id: null,
+      });
+    }
+
+    const authInfo: AuthInfo = {
+      token: requestAuth.token,
+      clientId: requestAuth.clientId,
+      scopes: requestAuth.scopes,
+      expiresAt: requestAuth.expiresAt,
+      resource: new URL(getMcpPublicUrl()),
+      extra: {
+        subject: requestAuth.subject,
       },
-      id: null,
-    }),
+    };
+    const authenticatedReq = req as IncomingMessage & { auth?: AuthInfo };
+    authenticatedReq.auth = authInfo;
+
+    await runWithMcpRequestAuthContext(
+      {
+        authorization: requestAuth.authorization,
+        rbacSecretKey: requestAuth.rbacSecretKey,
+        clientId: requestAuth.clientId,
+        scopes: requestAuth.scopes,
+        expiresAt: requestAuth.expiresAt,
+      },
+      () => session.transport.handleRequest(authenticatedReq, res, parsedBody),
+    );
+  } catch (error) {
+    console.error("MCP HTTP error:", error);
+
+    if (!res.headersSent) {
+      sendJson(res, 500, { error: "server_error" });
+    } else {
+      res.end();
+    }
+  }
+});
+
+server.listen(port, host, () => {
+  const publicUrl = getMcpPublicUrl();
+  console.log(
+    `MCP Streamable HTTP server listening on http://${host}:${port}/mcp`,
   );
-}
+  console.log(`MCP public resource URL: ${publicUrl}`);
+  console.log(
+    "MCP protected resource metadata:",
+    getProtectedResourceMetadata(),
+  );
+});
 
-function readJsonBody(req: IncomingMessage) {
-  return new Promise<unknown>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    let size = 0;
-
-    req.on("data", (chunk: Buffer) => {
-      size += chunk.length;
-
-      if (size > MAX_BODY_BYTES) {
-        reject(new Error("Request body too large"));
-        req.destroy();
-        return;
-      }
-
-      chunks.push(chunk);
-    });
-
-    req.on("end", () => {
-      const rawBody = Buffer.concat(chunks).toString("utf8");
-
-      if (!rawBody) {
-        resolve(undefined);
-        return;
-      }
-
-      try {
-        resolve(JSON.parse(rawBody));
-      } catch {
-        reject(new Error("Invalid JSON request body"));
-      }
-    });
-
-    req.on("error", reject);
-  });
-}
-
-function createTransport() {
-  let transport: StreamableHTTPServerTransport;
-  const server = createMcpServer();
-
-  transport = new StreamableHTTPServerTransport({
+async function createHttpSession(): Promise<IHttpMcpSession> {
+  const mcp = createMcpServer();
+  const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
-    enableDnsRebindingProtection: true,
-    allowedHosts: [
-      `${host}:${port}`,
-      `localhost:${port}`,
-      `127.0.0.1:${port}`,
-      `[::1]:${port}`,
-    ],
     onsessioninitialized: (sessionId) => {
-      transports[sessionId] = transport;
+      sessions.set(sessionId, { transport });
+    },
+    onsessionclosed: (sessionId) => {
+      sessions.delete(sessionId);
     },
   });
 
   transport.onclose = () => {
     if (transport.sessionId) {
-      delete transports[transport.sessionId];
+      sessions.delete(transport.sessionId);
     }
   };
-
   transport.onerror = (error) => {
-    console.error("MCP HTTP transport error:", error);
+    console.error("MCP transport error:", error);
   };
 
-  return { server, transport };
+  await mcp.connect(transport);
+
+  return { transport };
 }
 
-async function handleMcpRequest(req: IncomingMessage, res: ServerResponse) {
-  setCorsHeaders(res);
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(204);
-    res.end();
-    return;
+async function getRequestAuth(req: IncomingMessage): Promise<
+  | {
+      ok: true;
+      token: string;
+      clientId: string;
+      scopes: string[];
+      expiresAt?: number;
+      subject?: string;
+      authorization?: string;
+      rbacSecretKey?: string;
+    }
+  | { ok: false; message: string }
+> {
+  if (process.env["MCP_AUTH_REQUIRED"] === "false") {
+    return {
+      ok: true,
+      token: "anonymous",
+      clientId: "anonymous",
+      scopes: ["mcp:content"],
+    };
   }
 
-  const url = new URL(
-    req.url ?? "/",
-    `http://${req.headers.host ?? "localhost"}`,
-  );
+  const authorization = getHeader(req, "authorization");
+  const bearerToken = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
 
-  if (!MCP_PATHS.has(url.pathname)) {
-    res.writeHead(404, {
-      "Content-Type": "text/plain",
-    });
-    res.end("Not found");
-    return;
+  if (bearerToken) {
+    try {
+      const verified = await verifyMcpAccessToken(bearerToken);
+
+      return {
+        ok: true,
+        token: verified.token,
+        clientId: verified.clientId,
+        scopes: verified.scopes,
+        expiresAt: verified.expiresAt,
+        subject: verified.subject,
+        authorization: `Bearer ${verified.spsJwt}`,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        message: error instanceof Error ? error.message : "Invalid token",
+      };
+    }
   }
+
+  if (process.env["MCP_ALLOW_RBAC_SECRET_FALLBACK"] === "true") {
+    const providedSecret = getHeader(req, "x-rbac-secret-key");
+
+    if (providedSecret && providedSecret === process.env["RBAC_SECRET_KEY"]) {
+      return {
+        ok: true,
+        token: "rbac-secret-key",
+        clientId: "rbac-secret-key",
+        scopes: ["mcp:content"],
+        rbacSecretKey: providedSecret,
+      };
+    }
+  }
+
+  return {
+    ok: false,
+    message:
+      process.env["MCP_ALLOW_RBAC_SECRET_FALLBACK"] === "true"
+        ? "Authentication error. Provide Authorization: Bearer <mcp_access_token> or X-RBAC-SECRET-KEY"
+        : "Authentication error. Provide Authorization: Bearer <mcp_access_token>",
+  };
+}
+
+function isAllowedOrigin(req: IncomingMessage) {
+  const origin = getHeader(req, "origin");
+
+  if (!origin) {
+    return true;
+  }
+
+  const allowedOrigins = (process.env["MCP_ALLOWED_ORIGINS"] || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (!allowedOrigins.length) {
+    return true;
+  }
+
+  return allowedOrigins.includes(origin);
+}
+
+function getRequestUrl(req: IncomingMessage) {
+  const hostHeader = req.headers.host || `${host}:${port}`;
+
+  return new URL(req.url || "/", `http://${hostHeader}`);
+}
+
+async function readJsonBody(req: IncomingMessage, res: ServerResponse) {
+  const chunks: Buffer[] = [];
 
   try {
-    if (req.method === "POST") {
-      const body = await readJsonBody(req);
-      const sessionId = firstHeaderValue(req.headers["mcp-session-id"]);
-      let transport = sessionId ? transports[sessionId] : undefined;
-
-      if (!transport && !sessionId && isInitializeRequest(body)) {
-        const created = createTransport();
-        transport = created.transport;
-        await created.server.connect(transport);
-      }
-
-      if (!transport) {
-        writeJsonRpcError({
-          res,
-          status: 400,
-          message: "Bad Request: No valid MCP session ID provided",
-        });
-        return;
-      }
-
-      await transport.handleRequest(req, res, body);
-      return;
+    for await (const chunk of req) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
 
-    const sessionId = firstHeaderValue(req.headers["mcp-session-id"]);
-    const transport = sessionId ? transports[sessionId] : undefined;
+    const raw = Buffer.concat(chunks).toString("utf8");
 
-    if (!transport) {
-      writeJsonRpcError({
-        res,
-        status: 400,
-        message: "Bad Request: Invalid or missing MCP session ID",
-      });
-      return;
-    }
-
-    await transport.handleRequest(req, res);
+    return JSON.parse(raw) as unknown;
   } catch (error) {
-    console.error("MCP HTTP request error:", error);
+    sendJson(res, 400, {
+      jsonrpc: "2.0",
+      error: {
+        code: -32700,
+        message: error instanceof Error ? error.message : "Parse error",
+      },
+      id: null,
+    });
 
-    if (!res.headersSent) {
-      writeJsonRpcError({
-        res,
-        status: 500,
-        message:
-          error instanceof Error ? error.message : "Internal server error",
-      });
-    }
+    return undefined;
   }
 }
 
-const server = createServer((req, res) => {
-  void handleMcpRequest(req, res);
-});
+function getHeader(req: IncomingMessage, name: string) {
+  const value = req.headers[name.toLowerCase()];
 
-server.listen(port, host, () => {
-  console.log(
-    `MCP Streamable HTTP server listening on http://${host}:${port}/mcp`,
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function sendOptions(res: ServerResponse) {
+  res.statusCode = 204;
+  res.end();
+}
+
+function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
+  const origin = getHeader(req, "origin");
+
+  res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    [
+      "Accept",
+      "Authorization",
+      "Content-Type",
+      "Last-Event-ID",
+      "Mcp-Session-Id",
+      "MCP-Protocol-Version",
+      "X-RBAC-SECRET-KEY",
+      "x-custom-auth-headers",
+    ].join(","),
   );
-  console.log(
-    `MCP Streamable HTTP compatibility endpoint: http://${host}:${port}/sse`,
+  res.setHeader(
+    "Access-Control-Expose-Headers",
+    "Mcp-Session-Id,MCP-Protocol-Version,WWW-Authenticate",
   );
-});
+}
+
+function sendUnauthorized(res: ServerResponse, message: string) {
+  res.statusCode = 401;
+  res.setHeader("WWW-Authenticate", getWwwAuthenticateHeader());
+  res.setHeader("Content-Type", "application/json");
+  res.end(
+    JSON.stringify({
+      error: "unauthorized",
+      error_description: message,
+    }),
+  );
+}
+
+function sendHtml(res: ServerResponse, status: number, body: string) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.end(body);
+}
+
+function sendJson(res: ServerResponse, status: number, body: unknown) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(body));
+}

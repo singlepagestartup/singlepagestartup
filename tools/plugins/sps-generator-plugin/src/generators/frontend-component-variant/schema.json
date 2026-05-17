@@ -45,7 +45,7 @@
       "x-prompt": {
         "message": "Which type of component would you like to generate?",
         "type": "list",
-        "default": "startup",
+        "default": "singlepage",
         "items": [
           {
             "value": "startup"
@@ -107,29 +107,39 @@
           { "value": "crm" },
           { "value": "ecommerce" },
           { "value": "file-storage" },
+          { "value": "host" },
           { "value": "notification" },
           { "value": "rbac" },
           { "value": "social" },
           { "value": "startup" },
+          { "value": "telegram" },
           { "value": "website-builder" }
         ]
       }
     },
     "left_model_is_external": {
       "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      }
+      "description": "Whether the inferred left model is external"
     },
     "right_model_is_external": {
       "type": "boolean",
-      "description": "Model name, for example: layout",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      }
+      "description": "Whether the inferred right model is external"
+    },
+    "left_model_name": {
+      "type": "string",
+      "description": "Optional override for relation left model name"
+    },
+    "left_module_name": {
+      "type": "string",
+      "description": "Optional override for relation left model module"
+    },
+    "right_model_name": {
+      "type": "string",
+      "description": "Optional override for relation right model name"
+    },
+    "right_module_name": {
+      "type": "string",
+      "description": "Optional override for relation right model module"
     }
   },
   "required": ["action", "name", "path", "level", "type", "entity", "module"]

@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialProfilesToAttributesApi } from "@sps/social/relations/profiles-to-attributes/sdk/server";
 import { insertSchema as socialProfilesToAttributesInsertSchema } from "@sps/social/relations/profiles-to-attributes/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all profiles-to-attributes relations from social module",
     },
-    async (uri, extra) => {
-      const resp = await socialProfilesToAttributesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await socialProfilesToAttributesApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all profiles-to-attributes relations from social module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await socialProfilesToAttributesApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: socialProfilesToAttributesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await socialProfilesToAttributesApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -129,12 +121,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new profiles-to-attributes relation in the social module.",
       inputSchema: socialProfilesToAttributesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await socialProfilesToAttributesApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -166,7 +158,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing profiles-to-attributes relation by id.",
       inputSchema: socialProfilesToAttributesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -176,7 +168,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -208,7 +200,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing profiles-to-attributes relation by id.",
       inputSchema: socialProfilesToAttributesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -217,7 +209,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await socialProfilesToAttributesApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

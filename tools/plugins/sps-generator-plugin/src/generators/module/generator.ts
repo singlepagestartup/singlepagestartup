@@ -1,6 +1,7 @@
-import { Tree, formatFiles } from "@nx/devkit";
+import { Tree } from "@nx/devkit";
 import { ModuleGeneratorSchema } from "./schema";
 import { Coder } from "../../coder/Coder";
+import { formatGeneratorFiles } from "../format";
 
 // npx nx generate @sps/sps-generator-plugin:module --module=host --action=create --no-interactive --dry-run
 export async function moduleGenerator(
@@ -73,7 +74,7 @@ export async function moduleGenerator(
     await coder.project.root.project.libs.project.modules[0].create();
   }
 
-  await formatFiles(tree);
+  await formatGeneratorFiles(tree);
 }
 
 export default moduleGenerator;

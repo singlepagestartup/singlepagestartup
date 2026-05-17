@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogCategoriesToArticlesApi } from "@sps/blog/relations/categories-to-articles/sdk/server";
 import { insertSchema as blogCategoriesToArticlesInsertSchema } from "@sps/blog/relations/categories-to-articles/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all categories-to-articles relations from blog module",
     },
-    async (uri, extra) => {
-      const resp = await blogCategoriesToArticlesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await blogCategoriesToArticlesApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all categories-to-articles relations from blog module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await blogCategoriesToArticlesApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: blogCategoriesToArticlesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await blogCategoriesToArticlesApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -129,12 +121,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new categories-to-articles relation in the blog module.",
       inputSchema: blogCategoriesToArticlesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await blogCategoriesToArticlesApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -166,7 +158,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing categories-to-articles relation by id.",
       inputSchema: blogCategoriesToArticlesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -176,7 +168,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -208,7 +200,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing categories-to-articles relation by id.",
       inputSchema: blogCategoriesToArticlesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -217,7 +209,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await blogCategoriesToArticlesApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

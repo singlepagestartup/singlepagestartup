@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialProfilesToFileStorageModuleFilesApi } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/server";
 import { insertSchema as socialProfilesToFileStorageModuleFilesInsertSchema } from "@sps/social/relations/profiles-to-file-storage-module-files/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all profiles-to-file-storage-module-files relations from social module",
     },
-    async (uri, extra) => {
-      const resp = await socialProfilesToFileStorageModuleFilesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await socialProfilesToFileStorageModuleFilesApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all profiles-to-file-storage-module-files relations from social module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await socialProfilesToFileStorageModuleFilesApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -88,7 +83,7 @@ export function registerTools(mcp: McpServer) {
         id: socialProfilesToFileStorageModuleFilesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -129,12 +124,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new profiles-to-file-storage-module-files relation in the social module.",
       inputSchema: socialProfilesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await socialProfilesToFileStorageModuleFilesApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -168,7 +163,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing profiles-to-file-storage-module-files relation by id.",
       inputSchema: socialProfilesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -178,7 +173,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -212,7 +207,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing profiles-to-file-storage-module-files relation by id.",
       inputSchema: socialProfilesToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -221,7 +216,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await socialProfilesToFileStorageModuleFilesApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

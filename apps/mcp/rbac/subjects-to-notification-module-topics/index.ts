@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacSubjectsToNotificationModuleTopicsApi } from "@sps/rbac/relations/subjects-to-notification-module-topics/sdk/server";
 import { insertSchema as rbacSubjectsToNotificationModuleTopicsInsertSchema } from "@sps/rbac/relations/subjects-to-notification-module-topics/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all subjects-to-notification-module-topics relations from rbac module",
     },
-    async (uri, extra) => {
-      const resp = await rbacSubjectsToNotificationModuleTopicsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await rbacSubjectsToNotificationModuleTopicsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all subjects-to-notification-module-topics relations from rbac module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await rbacSubjectsToNotificationModuleTopicsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -88,7 +83,7 @@ export function registerTools(mcp: McpServer) {
         id: rbacSubjectsToNotificationModuleTopicsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -129,12 +124,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new subjects-to-notification-module-topics relation in the rbac module.",
       inputSchema: rbacSubjectsToNotificationModuleTopicsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await rbacSubjectsToNotificationModuleTopicsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -168,7 +163,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing subjects-to-notification-module-topics relation by id.",
       inputSchema: rbacSubjectsToNotificationModuleTopicsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -178,7 +173,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -212,7 +207,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing subjects-to-notification-module-topics relation by id.",
       inputSchema: rbacSubjectsToNotificationModuleTopicsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -221,7 +216,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await rbacSubjectsToNotificationModuleTopicsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

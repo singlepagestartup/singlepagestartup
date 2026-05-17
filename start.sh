@@ -13,7 +13,11 @@ elif [ "$1" = "telegram" ]; then
   ./create_env.sh telegram deployment
   npm run telegram:start
   exit 0
+elif [ "$1" = "mcp" ]; then
+  ./create_env.sh mcp deployment
+  npm run mcp:http
+  exit 0
 fi
 
-echo "Usage: ./start.sh [host|api|telegram]"
+echo "Usage: ./start.sh [host|api|telegram|mcp]"
 exit 1

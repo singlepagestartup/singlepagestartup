@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostPagesToLayoutsApi } from "@sps/host/relations/pages-to-layouts/sdk/server";
 import { insertSchema as hostPagesToLayoutsInsertSchema } from "@sps/host/relations/pages-to-layouts/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all pages-to-layouts relations from host module",
     },
-    async (uri, extra) => {
-      const resp = await hostPagesToLayoutsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await hostPagesToLayoutsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all pages-to-layouts relations from host module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await hostPagesToLayoutsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: hostPagesToLayoutsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await hostPagesToLayoutsApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -128,12 +120,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new pages-to-layouts relation in the host module.",
       inputSchema: hostPagesToLayoutsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await hostPagesToLayoutsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -165,7 +157,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing pages-to-layouts relation by id.",
       inputSchema: hostPagesToLayoutsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -175,7 +167,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -207,7 +199,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing pages-to-layouts relation by id.",
       inputSchema: hostPagesToLayoutsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -216,7 +208,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await hostPagesToLayoutsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

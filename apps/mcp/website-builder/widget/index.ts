@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderWidgetApi } from "@sps/website-builder/models/widget/sdk/server";
 import { insertSchema as websiteBuilderWidgetInsertSchema } from "@sps/website-builder/models/widget/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "website-builder module widgets",
       description: "Get list of all widgets from website-builder module",
     },
-    async (uri, extra) => {
-      const resp = await websiteBuilderWidgetApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await websiteBuilderWidgetApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all widgets from website-builder module.",
       inputSchema: {},
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entities = await websiteBuilderWidgetApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderWidgetInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await websiteBuilderWidgetApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new widget in the website-builder module.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await websiteBuilderWidgetApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -164,7 +156,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing widget in the website-builder module by id.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -207,7 +199,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing widget in the website-builder module by id.",
       inputSchema: websiteBuilderWidgetInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -216,7 +208,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await websiteBuilderWidgetApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

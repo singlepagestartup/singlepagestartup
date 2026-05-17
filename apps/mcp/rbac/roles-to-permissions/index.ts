@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacRolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { insertSchema as rbacRolesToPermissionsInsertSchema } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all roles-to-permissions relations from rbac module",
     },
-    async (uri, extra) => {
-      const resp = await rbacRolesToPermissionsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await rbacRolesToPermissionsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all roles-to-permissions relations from rbac module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await rbacRolesToPermissionsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: rbacRolesToPermissionsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await rbacRolesToPermissionsApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -129,12 +121,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new roles-to-permissions relation in the rbac module.",
       inputSchema: rbacRolesToPermissionsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await rbacRolesToPermissionsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -166,7 +158,7 @@ export function registerTools(mcp: McpServer) {
       description: "Update an existing roles-to-permissions relation by id.",
       inputSchema: rbacRolesToPermissionsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -176,7 +168,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -208,7 +200,7 @@ export function registerTools(mcp: McpServer) {
       description: "Delete an existing roles-to-permissions relation by id.",
       inputSchema: rbacRolesToPermissionsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -217,7 +209,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await rbacRolesToPermissionsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

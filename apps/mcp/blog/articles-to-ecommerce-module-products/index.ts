@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogArticlesToEcommerceModuleProductsApi } from "@sps/blog/relations/articles-to-ecommerce-module-products/sdk/server";
 import { insertSchema as blogArticlesToEcommerceModuleProductsInsertSchema } from "@sps/blog/relations/articles-to-ecommerce-module-products/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all articles-to-ecommerce-module-products relations from blog module",
     },
-    async (uri, extra) => {
-      const resp = await blogArticlesToEcommerceModuleProductsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await blogArticlesToEcommerceModuleProductsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all articles-to-ecommerce-module-products relations from blog module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await blogArticlesToEcommerceModuleProductsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -88,7 +83,7 @@ export function registerTools(mcp: McpServer) {
         id: blogArticlesToEcommerceModuleProductsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -96,9 +91,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await blogArticlesToEcommerceModuleProductsApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -130,12 +122,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new articles-to-ecommerce-module-products relation in the blog module.",
       inputSchema: blogArticlesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await blogArticlesToEcommerceModuleProductsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -168,7 +160,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing articles-to-ecommerce-module-products relation by id.",
       inputSchema: blogArticlesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -178,7 +170,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -211,7 +203,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing articles-to-ecommerce-module-products relation by id.",
       inputSchema: blogArticlesToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -220,7 +212,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await blogArticlesToEcommerceModuleProductsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

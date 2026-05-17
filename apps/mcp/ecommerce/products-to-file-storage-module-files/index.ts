@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceProductsToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/server";
 import { insertSchema as ecommerceProductsToFileStorageModuleFilesInsertSchema } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all products-to-file-storage-module-files relations from ecommerce module",
     },
-    async (uri, extra) => {
-      const resp = await ecommerceProductsToFileStorageModuleFilesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await ecommerceProductsToFileStorageModuleFilesApi.find();
 
       return {
         contents: [
@@ -50,12 +45,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all products-to-file-storage-module-files relations from ecommerce module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities =
           await ecommerceProductsToFileStorageModuleFilesApi.find({
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -91,7 +86,7 @@ export function registerTools(mcp: McpServer) {
         id: ecommerceProductsToFileStorageModuleFilesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -100,9 +95,6 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await ecommerceProductsToFileStorageModuleFilesApi.findById({
             id: args.id,
-            options: {
-              headers: getMcpAuthHeaders(extra),
-            },
           });
 
         return {
@@ -134,13 +126,13 @@ export function registerTools(mcp: McpServer) {
         "Create a new products-to-file-storage-module-files relation in the ecommerce module.",
       inputSchema: ecommerceProductsToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity =
           await ecommerceProductsToFileStorageModuleFilesApi.create({
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing products-to-file-storage-module-files relation by id.",
       inputSchema: ecommerceProductsToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -185,7 +177,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -219,7 +211,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing products-to-file-storage-module-files relation by id.",
       inputSchema: ecommerceProductsToFileStorageModuleFilesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -229,7 +221,7 @@ export function registerTools(mcp: McpServer) {
           await ecommerceProductsToFileStorageModuleFilesApi.delete({
             id: args.id,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 

@@ -3,6 +3,7 @@ import {
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
+import { getMcpRequestAuthContext } from "./auth-context";
 
 export type IMcpRequestExtra = RequestHandlerExtra<
   ServerRequest,
@@ -83,6 +84,20 @@ function getAuthInfoExtraString(
 export function getMcpAuthHeaders(
   extra?: IMcpRequestExtra,
 ): Record<string, string> {
+  const context = getMcpRequestAuthContext();
+
+  if (context?.rbacSecretKey) {
+    return {
+      "X-RBAC-SECRET-KEY": context.rbacSecretKey,
+    };
+  }
+
+  if (context?.authorization) {
+    return {
+      Authorization: context.authorization,
+    };
+  }
+
   const requestHeaders = extra?.requestInfo?.headers ?? {};
   const cookies = parseCookieHeader(getHeader(requestHeaders, "cookie"));
 

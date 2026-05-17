@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as websiteBuilderLogotypeApi } from "@sps/website-builder/models/logotype/sdk/server";
 import { insertSchema as websiteBuilderLogotypeInsertSchema } from "@sps/website-builder/models/logotype/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -12,12 +11,8 @@ export function registerResources(mcp: McpServer) {
       title: "website-builder module logotypes",
       description: "Get list of all logotypes from website-builder module",
     },
-    async (uri, extra) => {
-      const resp = await websiteBuilderLogotypeApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await websiteBuilderLogotypeApi.find();
 
       return {
         contents: [
@@ -47,11 +42,11 @@ export function registerTools(mcp: McpServer) {
       description: "Get list of all logotypes from website-builder module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await websiteBuilderLogotypeApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -85,7 +80,7 @@ export function registerTools(mcp: McpServer) {
         id: websiteBuilderLogotypeInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -93,9 +88,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await websiteBuilderLogotypeApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -126,12 +118,12 @@ export function registerTools(mcp: McpServer) {
       description: "Create a new logotype in the website-builder module.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await websiteBuilderLogotypeApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -164,7 +156,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing logotype in the website-builder module by id.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -207,7 +199,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing logotype in the website-builder module by id.",
       inputSchema: websiteBuilderLogotypeInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -216,7 +208,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await websiteBuilderLogotypeApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

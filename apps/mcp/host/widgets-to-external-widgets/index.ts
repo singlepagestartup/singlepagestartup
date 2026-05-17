@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostWidgetsToExternalWidgetsApi } from "@sps/host/relations/widgets-to-external-widgets/sdk/server";
 import { insertSchema as hostWidgetsToExternalWidgetsInsertSchema } from "@sps/host/relations/widgets-to-external-widgets/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all widgets-to-external-widgets relations from host module",
     },
-    async (uri, extra) => {
-      const resp = await hostWidgetsToExternalWidgetsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await hostWidgetsToExternalWidgetsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all widgets-to-external-widgets relations from host module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await hostWidgetsToExternalWidgetsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: hostWidgetsToExternalWidgetsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -95,9 +90,6 @@ export function registerTools(mcp: McpServer) {
 
         const entity = await hostWidgetsToExternalWidgetsApi.findById({
           id: args.id,
-          options: {
-            headers: getMcpAuthHeaders(extra),
-          },
         });
 
         return {
@@ -129,12 +121,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new widgets-to-external-widgets relation in the host module.",
       inputSchema: hostWidgetsToExternalWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await hostWidgetsToExternalWidgetsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -167,7 +159,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing widgets-to-external-widgets relation by id.",
       inputSchema: hostWidgetsToExternalWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -177,7 +169,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -210,7 +202,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing widgets-to-external-widgets relation by id.",
       inputSchema: hostWidgetsToExternalWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -219,7 +211,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await hostWidgetsToExternalWidgetsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

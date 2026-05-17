@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as socialThreadsToEcommerceModuleProductsApi } from "@sps/social/relations/threads-to-ecommerce-module-products/sdk/server";
 import { insertSchema as socialThreadsToEcommerceModuleProductsInsertSchema } from "@sps/social/relations/threads-to-ecommerce-module-products/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all threads-to-ecommerce-module-products relations from social module",
     },
-    async (uri, extra) => {
-      const resp = await socialThreadsToEcommerceModuleProductsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await socialThreadsToEcommerceModuleProductsApi.find();
 
       return {
         contents: [
@@ -49,11 +44,11 @@ export function registerTools(mcp: McpServer) {
         "Get list of all threads-to-ecommerce-module-products relations from social module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities = await socialThreadsToEcommerceModuleProductsApi.find({
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -87,7 +82,7 @@ export function registerTools(mcp: McpServer) {
         id: socialThreadsToEcommerceModuleProductsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -128,12 +123,12 @@ export function registerTools(mcp: McpServer) {
         "Create a new threads-to-ecommerce-module-products relation in the social module.",
       inputSchema: socialThreadsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity = await socialThreadsToEcommerceModuleProductsApi.create({
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -167,7 +162,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing threads-to-ecommerce-module-products relation by id.",
       inputSchema: socialThreadsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -177,7 +172,7 @@ export function registerTools(mcp: McpServer) {
           id: args.id,
           data: args,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 
@@ -211,7 +206,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing threads-to-ecommerce-module-products relation by id.",
       inputSchema: socialThreadsToEcommerceModuleProductsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -220,7 +215,7 @@ export function registerTools(mcp: McpServer) {
         const entity = await socialThreadsToEcommerceModuleProductsApi.delete({
           id: args.id,
           options: {
-            headers: getMcpAuthHeaders(extra),
+            headers: {},
           },
         });
 

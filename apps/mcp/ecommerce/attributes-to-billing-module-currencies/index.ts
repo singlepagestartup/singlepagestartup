@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceAttributesToBillingModuleCurrenciesApi } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/server";
 import { insertSchema as ecommerceAttributesToBillingModuleCurrenciesInsertSchema } from "@sps/ecommerce/relations/attributes-to-billing-module-currencies/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all attributes-to-billing-module-currencies relations from ecommerce module",
     },
-    async (uri, extra) => {
-      const resp = await ecommerceAttributesToBillingModuleCurrenciesApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await ecommerceAttributesToBillingModuleCurrenciesApi.find();
 
       return {
         contents: [
@@ -50,12 +45,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all attributes-to-billing-module-currencies relations from ecommerce module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities =
           await ecommerceAttributesToBillingModuleCurrenciesApi.find({
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -91,7 +86,7 @@ export function registerTools(mcp: McpServer) {
         id: ecommerceAttributesToBillingModuleCurrenciesInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -100,9 +95,6 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await ecommerceAttributesToBillingModuleCurrenciesApi.findById({
             id: args.id,
-            options: {
-              headers: getMcpAuthHeaders(extra),
-            },
           });
 
         return {
@@ -136,13 +128,13 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         ecommerceAttributesToBillingModuleCurrenciesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity =
           await ecommerceAttributesToBillingModuleCurrenciesApi.create({
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -177,7 +169,7 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         ecommerceAttributesToBillingModuleCurrenciesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -188,7 +180,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -223,7 +215,7 @@ export function registerTools(mcp: McpServer) {
       inputSchema:
         ecommerceAttributesToBillingModuleCurrenciesInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -233,7 +225,7 @@ export function registerTools(mcp: McpServer) {
           await ecommerceAttributesToBillingModuleCurrenciesApi.delete({
             id: args.id,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 

@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as blogArticlesToWebsiteBuilderModuleWidgetsApi } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/server";
 import { insertSchema as blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema } from "@sps/blog/relations/articles-to-website-builder-module-widgets/sdk/model";
-import { getMcpAuthHeaders } from "../../lib/auth";
 import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
@@ -13,12 +12,8 @@ export function registerResources(mcp: McpServer) {
       description:
         "Get list of all articles-to-website-builder-module-widgets relations from blog module",
     },
-    async (uri, extra) => {
-      const resp = await blogArticlesToWebsiteBuilderModuleWidgetsApi.find({
-        options: {
-          headers: getMcpAuthHeaders(extra),
-        },
-      });
+    async (uri) => {
+      const resp = await blogArticlesToWebsiteBuilderModuleWidgetsApi.find();
 
       return {
         contents: [
@@ -50,12 +45,12 @@ export function registerTools(mcp: McpServer) {
         "Get list of all articles-to-website-builder-module-widgets relations from blog module.",
       inputSchema: {},
     },
-    async (_args, extra) => {
+    async () => {
       try {
         const entities =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.find({
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -91,7 +86,7 @@ export function registerTools(mcp: McpServer) {
         id: blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema.shape.id,
       },
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required");
@@ -100,9 +95,6 @@ export function registerTools(mcp: McpServer) {
         const entity =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.findById({
             id: args.id,
-            options: {
-              headers: getMcpAuthHeaders(extra),
-            },
           });
 
         return {
@@ -134,13 +126,13 @@ export function registerTools(mcp: McpServer) {
         "Create a new articles-to-website-builder-module-widgets relation in the blog module.",
       inputSchema: blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         const entity =
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.create({
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -174,7 +166,7 @@ export function registerTools(mcp: McpServer) {
         "Update an existing articles-to-website-builder-module-widgets relation by id.",
       inputSchema: blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for update");
@@ -185,7 +177,7 @@ export function registerTools(mcp: McpServer) {
             id: args.id,
             data: args,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 
@@ -219,7 +211,7 @@ export function registerTools(mcp: McpServer) {
         "Delete an existing articles-to-website-builder-module-widgets relation by id.",
       inputSchema: blogArticlesToWebsiteBuilderModuleWidgetsInsertSchema.shape,
     },
-    async (args, extra) => {
+    async (args) => {
       try {
         if (!args.id) {
           throw new Error("id is required for delete");
@@ -229,7 +221,7 @@ export function registerTools(mcp: McpServer) {
           await blogArticlesToWebsiteBuilderModuleWidgetsApi.delete({
             id: args.id,
             options: {
-              headers: getMcpAuthHeaders(extra),
+              headers: {},
             },
           });
 

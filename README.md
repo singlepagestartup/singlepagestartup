@@ -22,6 +22,36 @@ All 15 business modules participate in `unit + integration` lanes. DB-backed sce
 Browser E2E/Playwright is not part of scoped validation.
 For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is applied only to subject cart counter routes (`/orders/quantity`, `/orders/total`).
 
+## Remote MCP Connector
+
+`apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's SPS JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
+
+For Codex Desktop/CLI, register the remote MCP explicitly:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
+```
+
+For local Codex testing, use `http://127.0.0.1:3001/mcp` with the `<repo-name>-local` MCP name and restart Codex Desktop or open a new session after adding the server.
+
+For Claude Code, register the remote MCP and authenticate through `/mcp` inside Claude Code:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
+```
+
+For Claude UI / Claude Desktop, add a custom connector named `<repo-name>-production` in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login. Keep the project `.mcp.json` local MCP named `<repo-name>` separate from the production connector. Run `tools/mcp/setup-project-mcp.sh` to print exact repo-derived commands.
+
+To apply Claude or Codex setup from the helper, pass the real production URL:
+
+```bash
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-claude
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-codex
+```
+
 ### Key Principles:
 
 - Everything is based on Models, each having:
@@ -122,50 +152,39 @@ Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any 
 http://127.0.0.1:3001/mcp
 ```
 
-The repository contains project-local MCP client config:
-
-- Codex loads `singlepagestartup` from `.codex/config.toml`.
-- Claude Code loads `singlepagestartup` from `.mcp.json`.
-
-These files contain only the URL and the `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY` environment mapping. They do not store secrets and do not write username-specific `[projects."/Users/..."]` entries into `~/.codex/config.toml`.
-
-Start Codex from an environment that contains `RBAC_SECRET_KEY`:
+The project `.mcp.json` is local and stdio-focused for Claude Code. Codex uses its own MCP config, and remote production connectors should be registered separately with the `-production` suffix. Print repo-derived commands with:
 
 ```bash
-RBAC_SECRET_KEY="<secret>" codex
+tools/mcp/setup-project-mcp.sh
 ```
 
-Verify the project-local Codex config:
+Register local HTTP clients:
 
 ```bash
-npm run mcp:codex:add:http
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
+codex mcp add "${REPO_NAME}-local" --url http://127.0.0.1:3001/mcp
+codex mcp login "${REPO_NAME}-local" --scopes mcp:content
 ```
 
-Expected output names `singlepagestartup`, URL `http://127.0.0.1:3001/mcp`, and `env_http_headers` with `X-RBAC-SECRET-KEY=RBAC_SECRET_KEY`. The MCP server name should match the GitHub repository name.
-
-Start Claude Code from the same environment:
+Register production HTTP clients:
 
 ```bash
-RBAC_SECRET_KEY="<secret>" claude
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
 ```
 
-The Claude Code `.mcp.json` supports overriding the URL without editing files:
+Use `/mcp` inside Claude Code to inspect or authenticate connected MCP servers. Restart Codex Desktop or open a new Codex session after adding or logging in to a server so the tool list is reloaded.
 
-```bash
-MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
-```
-
-Use `/mcp` inside Claude Code to inspect or authenticate connected MCP servers.
-
-If Codex Desktop is launched only through the app UI and cannot read shell environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. That stores the secret in local user/app config, not in repository files. If the app UI clears the value on restart, use an environment-aware launch or implement MCP OAuth/auth instead of committing a static secret.
-
-Claude Desktop or Claude.ai remote connectors cannot reach `127.0.0.1` on your machine. Use Claude Code for local HTTP MCP, or expose the MCP server through HTTPS for remote connectors.
+Claude Desktop or Claude.ai remote connectors cannot reach `127.0.0.1` on your machine. Add the public HTTPS MCP URL in `Customize -> Connectors`, leave OAuth Client ID/Secret empty, click `Connect`, and complete the SPS OAuth login.
 
 For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
 
-For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Update the Codex project config URL for that deployment, or pass `MCP_URL` when launching Claude Code.
+For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. The committed configs store only the header environment variable name; the MCP client process must provide the actual `RBAC_SECRET_KEY` value at runtime.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_ALLOW_RBAC_SECRET_FALLBACK=true`.
 
 The legacy Inspector command starts the MCP server through stdio:
 
@@ -523,6 +542,18 @@ After creating repository based on singlepagestartup template, call command:
 ```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
 git pull upstream main
+```
+
+After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
+
+```bash
+tools/mcp/setup-project-mcp.sh --write-project
+```
+
+Use the same helper without flags to print Claude and Codex MCP setup commands for the downstream repository:
+
+```bash
+tools/mcp/setup-project-mcp.sh
 ```
 
 When you get an error
