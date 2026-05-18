@@ -51,7 +51,7 @@ export class Configuration extends ParentConfiguration {
               value: (data) => {
                 const fileStorageModuleFileSeed = data.seeds.find(
                   (seed) =>
-                    seed.name === "file-storage-module-file" &&
+                    seed.name === "file" &&
                     seed.type === "model" &&
                     seed.module === "file-storage",
                 );

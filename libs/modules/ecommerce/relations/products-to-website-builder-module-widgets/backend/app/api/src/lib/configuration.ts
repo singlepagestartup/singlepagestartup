@@ -51,7 +51,7 @@ export class Configuration extends ParentConfiguration {
               value: (data) => {
                 const websiteBuilderModuleWidgetSeed = data.seeds.find(
                   (seed) =>
-                    seed.name === "website-builder-module-widget" &&
+                    seed.name === "widget" &&
                     seed.type === "model" &&
                     seed.module === "website-builder",
                 );

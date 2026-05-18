@@ -88,7 +88,7 @@ export class Configuration extends ParentConfiguration {
               },
             },
             {
-              field: "widgetId",
+              field: "websiteBuilderModuleWidgetId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
@@ -98,7 +98,9 @@ export class Configuration extends ParentConfiguration {
                       seed.module === "website-builder",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.widgetId,
+                    (seed) =>
+                      seed.dump.id ===
+                      data.entity.dump.websiteBuilderModuleWidgetId,
                   );
 
                 return relationEntites?.[0].new.id;

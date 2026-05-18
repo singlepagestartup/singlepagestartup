@@ -87,17 +87,18 @@ export class Configuration extends ParentConfiguration {
               },
             },
             {
-              field: "fileStorageId",
+              field: "fileStorageModuleFileId",
               transform: (data) => {
                 const relationEntites = data.seeds
                   .find(
                     (seed) =>
-                      seed.name === "file-storage" &&
+                      seed.name === "file" &&
                       seed.type === "model" &&
-                      seed.module === "file",
+                      seed.module === "file-storage",
                   )
                   ?.seeds?.filter(
-                    (seed) => seed.dump.id === data.entity.dump.fileStorageId,
+                    (seed) =>
+                      seed.dump.id === data.entity.dump.fileStorageModuleFileId,
                   );
 
                 return relationEntites?.[0].new.id;
