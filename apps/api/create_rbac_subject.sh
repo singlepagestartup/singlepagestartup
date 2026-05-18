@@ -5,7 +5,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/../../tools/deployer/get_env.sh"
 
-API_URL="${API_URL:-${API_SERVICE_URL:-http://localhost:4000}}"
+API_SERVICE_URL_FROM_ENV=$(get_env "${BASH_SOURCE[0]}" "API_SERVICE_URL")
+API_URL="${API_SERVICE_URL_FROM_ENV:-http://localhost:4000}"
 CURL_CONNECT_TIMEOUT="${CURL_CONNECT_TIMEOUT:-10}"
 CURL_MAX_TIME="${CURL_MAX_TIME:-60}"
 
