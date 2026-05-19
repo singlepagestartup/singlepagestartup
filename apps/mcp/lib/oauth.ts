@@ -7,6 +7,10 @@ const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
 const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const DEFAULT_SCOPE = "mcp:content";
+const PROTECTED_RESOURCE_METADATA_PATH =
+  "/.well-known/oauth-protected-resource";
+const AUTHORIZATION_SERVER_METADATA_PATH =
+  "/.well-known/oauth-authorization-server";
 
 type IOAuthClient = {
   clientId: string;
@@ -250,11 +254,11 @@ export async function handleOAuthRequest(
   url: URL,
 ) {
   try {
-    if (url.pathname === "/.well-known/oauth-protected-resource") {
+    if (isProtectedResourceMetadataRoute(url.pathname)) {
       return sendJson(res, 200, getProtectedResourceMetadata());
     }
 
-    if (url.pathname === "/.well-known/oauth-authorization-server") {
+    if (isAuthorizationServerMetadataRoute(url.pathname)) {
       return sendJson(res, 200, getAuthorizationServerMetadata());
     }
 
@@ -285,8 +289,8 @@ export async function handleOAuthRequest(
 
 export function isOAuthRoute(pathname: string) {
   return (
-    pathname === "/.well-known/oauth-protected-resource" ||
-    pathname === "/.well-known/oauth-authorization-server" ||
+    isProtectedResourceMetadataRoute(pathname) ||
+    isAuthorizationServerMetadataRoute(pathname) ||
     pathname.startsWith("/oauth/")
   );
 }
@@ -322,13 +326,42 @@ export async function verifyMcpAccessToken(
 }
 
 export function getWwwAuthenticateHeader() {
-  const metadataUrl = `${getMcpPublicBaseUrl()}/.well-known/oauth-protected-resource`;
+  const metadataUrl = `${getMcpPublicBaseUrl()}${PROTECTED_RESOURCE_METADATA_PATH}${getMcpWellKnownPathSuffix()}`;
 
   return `Bearer resource_metadata="${metadataUrl}"`;
 }
 
 export function createPkceChallenge(codeVerifier: string) {
   return createHash("sha256").update(codeVerifier).digest("base64url");
+}
+
+function isProtectedResourceMetadataRoute(pathname: string) {
+  return isWellKnownMetadataRoute(pathname, PROTECTED_RESOURCE_METADATA_PATH);
+}
+
+function isAuthorizationServerMetadataRoute(pathname: string) {
+  return isWellKnownMetadataRoute(pathname, AUTHORIZATION_SERVER_METADATA_PATH);
+}
+
+function isWellKnownMetadataRoute(pathname: string, basePath: string) {
+  const resourcePath = `${basePath}${getMcpWellKnownPathSuffix()}`;
+
+  return (
+    pathname === basePath ||
+    pathname === `${basePath}/` ||
+    pathname === resourcePath ||
+    pathname === `${resourcePath}/`
+  );
+}
+
+function getMcpWellKnownPathSuffix() {
+  const pathname = new URL(getMcpPublicUrl()).pathname.replace(/\/$/, "");
+
+  if (!pathname || pathname === "/") {
+    return "";
+  }
+
+  return pathname;
 }
 
 async function handleRegister(req: IncomingMessage, res: ServerResponse) {

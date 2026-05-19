@@ -9,6 +9,8 @@ import {
   createPkceChallenge,
   getAuthorizationServerMetadata,
   getProtectedResourceMetadata,
+  getWwwAuthenticateHeader,
+  isOAuthRoute,
 } from "./oauth";
 
 describe("MCP OAuth helpers", () => {
@@ -59,6 +61,40 @@ describe("MCP OAuth helpers", () => {
       revocation_endpoint: "https://mcp.example.com/oauth/revoke",
       code_challenge_methods_supported: ["S256"],
     });
+  });
+
+  /**
+   * BDD Scenario: Resource-specific metadata routes
+   *
+   * Given the MCP resource is served from /mcp
+   * When OAuth well-known routes are matched
+   * Then both root and resource-specific metadata URLs are accepted
+   */
+  it("accepts root and MCP resource-specific OAuth metadata routes", () => {
+    expect(isOAuthRoute("/.well-known/oauth-protected-resource")).toBe(true);
+    expect(isOAuthRoute("/.well-known/oauth-protected-resource/mcp")).toBe(
+      true,
+    );
+    expect(isOAuthRoute("/.well-known/oauth-authorization-server")).toBe(true);
+    expect(isOAuthRoute("/.well-known/oauth-authorization-server/mcp")).toBe(
+      true,
+    );
+  });
+
+  /**
+   * BDD Scenario: Protected resource authentication challenge
+   *
+   * Given the MCP resource is served from /mcp
+   * When a client receives a Bearer challenge
+   * Then the challenge points to the resource-specific metadata document
+   */
+  it("advertises the MCP resource-specific metadata URL in the Bearer challenge", () => {
+    const metadataUrl =
+      "https://mcp.example.com/.well-known/oauth-protected-resource/mcp";
+
+    expect(getWwwAuthenticateHeader()).toBe(
+      `Bearer resource_metadata="${metadataUrl}"`,
+    );
   });
 
   /**

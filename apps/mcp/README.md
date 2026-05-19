@@ -136,8 +136,12 @@ Public metadata endpoints:
 
 ```text
 https://mcp.<domain>/.well-known/oauth-protected-resource
+https://mcp.<domain>/.well-known/oauth-protected-resource/mcp
 https://mcp.<domain>/.well-known/oauth-authorization-server
+https://mcp.<domain>/.well-known/oauth-authorization-server/mcp
 ```
+
+The `/mcp` suffix variants are intentionally supported for clients that resolve OAuth metadata for the exact protected resource URL.
 
 ## Deployment
 
