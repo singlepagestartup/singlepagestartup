@@ -11,6 +11,7 @@
  */
 
 import { Component } from "./client";
+import { act } from "react";
 import {
   cleanupHarness,
   createDomHarness,
@@ -21,9 +22,27 @@ import {
 
 const useTableContextMock = jest.fn();
 
+jest.mock("@sps/shared-ui-shadcn", () => {
+  return jest.requireActual("../test-utils/shadcn-mocks").adminV2ShadcnMocks;
+});
+
 jest.mock("../table-controller/Context", () => ({
   useTableContext: () => useTableContextMock(),
 }));
+
+function createApi(params: {
+  count: jest.Mock;
+  find: jest.Mock;
+  mutateAsync?: jest.Mock;
+}) {
+  return {
+    count: params.count,
+    find: params.find,
+    delete: jest.fn(() => ({
+      mutateAsync: params.mutateAsync ?? jest.fn().mockResolvedValue(undefined),
+    })),
+  };
+}
 
 describe("GIVEN: admin-v2 table client integration", () => {
   let harness: TDomHarness;
@@ -62,7 +81,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
       <Component
         variant="admin-v2-table"
         isServer={false}
-        api={{ count, find } as any}
+        api={createApi({ count, find }) as any}
         Component={({ data }: any) => (
           <div data-testid="rows">{String(data.length)}</div>
         )}
@@ -140,7 +159,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
       <Component
         variant="admin-v2-table"
         isServer={false}
-        api={{ count, find } as any}
+        api={createApi({ count, find }) as any}
         Component={() => <div data-testid="ok">ok</div>}
       />,
     );
@@ -225,7 +244,7 @@ describe("GIVEN: admin-v2 table client integration", () => {
       <Component
         variant="admin-v2-table"
         isServer={false}
-        api={{ count, find } as any}
+        api={createApi({ count, find }) as any}
         apiProps={{
           params: {
             filters: {
@@ -284,6 +303,145 @@ describe("GIVEN: admin-v2 table client integration", () => {
     expect(harness.container.querySelector("[data-testid=ok]")).toBeTruthy();
     expect(setState).toHaveBeenCalled();
     expect(setState.mock.calls[0][0]({ total: 0 })).toEqual({ total: 3 });
+  });
+
+  /**
+   * BDD Scenario: table exposes current-page selection actions.
+   *
+   * Given: table context knows the visible row ids for the current page.
+   * When: the select-visible checkbox is checked.
+   * Then: selected row ids are set to the visible current-page ids only.
+   */
+  it("WHEN select visible rows is checked THEN selected row ids match visible row ids", () => {
+    const setState = jest.fn();
+    const count = jest.fn().mockReturnValue({
+      data: 2,
+      isLoading: false,
+    });
+    const find = jest.fn().mockReturnValue({
+      data: [{ id: "row-1" }, { id: "row-2" }],
+      isLoading: false,
+    });
+
+    useTableContextMock.mockReturnValue({
+      debouncedSearch: "",
+      selectedField: "id",
+      searchField: "id",
+      offset: 0,
+      limit: 25,
+      total: 2,
+      selectedRowIds: [],
+      visibleRowIds: ["row-1", "row-2"],
+      bulkDeletePending: false,
+      setState,
+    });
+
+    renderInHarness(
+      harness,
+      <Component
+        variant="admin-v2-table"
+        isServer={false}
+        api={createApi({ count, find }) as any}
+        Component={() => <div data-testid="ok">ok</div>}
+      />,
+    );
+
+    const checkbox = harness.container.querySelector(
+      'input[aria-label="Select visible rows"]',
+    ) as HTMLInputElement | null;
+    expect(checkbox).toBeTruthy();
+
+    act(() => {
+      checkbox!.click();
+    });
+
+    const selectionUpdate = setState.mock.calls.at(-1)?.[0];
+    expect(
+      selectionUpdate({
+        selectedRowIds: [],
+        visibleRowIds: ["row-1", "row-2"],
+      }),
+    ).toEqual({
+      selectedRowIds: ["row-1", "row-2"],
+      visibleRowIds: ["row-1", "row-2"],
+    });
+  });
+
+  /**
+   * BDD Scenario: table deletes selected current-page rows in bulk.
+   *
+   * Given: two visible rows are selected.
+   * When: the bulk delete confirmation action is clicked.
+   * Then: the existing delete mutation is called once per selected row id.
+   */
+  it("WHEN bulk delete is confirmed THEN delete mutation is called for each selected visible row", async () => {
+    const setState = jest.fn();
+    const mutateAsync = jest.fn().mockResolvedValue(undefined);
+    const count = jest.fn().mockReturnValue({
+      data: 2,
+      isLoading: false,
+    });
+    const find = jest.fn().mockReturnValue({
+      data: [{ id: "row-1" }, { id: "row-2" }],
+      isLoading: false,
+    });
+
+    useTableContextMock.mockReturnValue({
+      debouncedSearch: "",
+      selectedField: "id",
+      searchField: "id",
+      offset: 0,
+      limit: 25,
+      total: 2,
+      selectedRowIds: ["row-1", "row-2"],
+      visibleRowIds: ["row-1", "row-2"],
+      bulkDeletePending: false,
+      setState,
+    });
+
+    renderInHarness(
+      harness,
+      <Component
+        variant="admin-v2-table"
+        isServer={false}
+        api={createApi({ count, find, mutateAsync }) as any}
+        Component={() => <div data-testid="ok">ok</div>}
+      />,
+    );
+
+    const triggerButton = Array.from(
+      harness.container.querySelectorAll("button"),
+    ).find((button) => button.textContent?.includes("Delete selected"));
+    expect(triggerButton).toBeTruthy();
+
+    act(() => {
+      triggerButton!.click();
+    });
+
+    const confirmButton = harness.container.querySelector(
+      '[data-testid="alert-action"]',
+    ) as HTMLButtonElement | null;
+    expect(confirmButton).toBeTruthy();
+
+    await act(async () => {
+      confirmButton!.click();
+      await Promise.resolve();
+    });
+
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
+    expect(mutateAsync).toHaveBeenCalledWith({ id: "row-1" });
+    expect(mutateAsync).toHaveBeenCalledWith({ id: "row-2" });
+
+    const clearSelectionUpdate = setState.mock.calls.at(-1)?.[0];
+    expect(
+      clearSelectionUpdate({
+        selectedRowIds: ["row-1", "row-2"],
+        bulkDeletePending: true,
+      }),
+    ).toEqual({
+      selectedRowIds: [],
+      bulkDeletePending: false,
+    });
   });
 });
 beforeAll(() => {

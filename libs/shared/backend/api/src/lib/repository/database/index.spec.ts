@@ -17,6 +17,7 @@ import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
 import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 const CountTestTable = pgTable("count_test", {
   id: text("id"),
@@ -141,6 +142,61 @@ describe("Database", () => {
       expect(result).toBe(3);
       expect(where).toHaveBeenCalledWith(expect.anything());
       expect(execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("insert", () => {
+    /**
+     * BDD Scenario: nullable timestamp fields arrive from JSON clients.
+     *
+     * Given: a repository insert schema has a nullable optional date field.
+     * When: insert receives that date as an ISO string from a JSON request.
+     * Then: the database layer coerces the value before zod parsing.
+     */
+    it("coerces nullable optional date strings before insert parsing", async () => {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          insertSchema: z.object({
+            id: z.string().optional(),
+            finishedAt: z.date().nullable().optional(),
+          }),
+          selectSchema: z.object({
+            id: z.string(),
+            finishedAt: z.date().nullable().optional(),
+          }),
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const insertedRows: any[] = [];
+
+      (repository as any).db = {
+        insert: () => ({
+          values: (data: any) => {
+            insertedRows.push(data);
+
+            return {
+              returning: () => ({
+                execute: async () => [{ ...data, id: "run-1" }],
+              }),
+            };
+          },
+        }),
+      };
+
+      const result = await repository.insert({
+        id: "client-id",
+        finishedAt: "2026-05-20T00:00:00.000Z",
+      });
+
+      expect(insertedRows[0].finishedAt).toBeInstanceOf(Date);
+      expect(result.finishedAt).toBeInstanceOf(Date);
     });
   });
 

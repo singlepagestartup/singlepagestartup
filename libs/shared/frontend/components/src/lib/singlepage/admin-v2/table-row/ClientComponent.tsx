@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -30,6 +31,7 @@ import {
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { IComponentProps, IComponentPropsExtended } from "./interface";
+import { useTableContext } from "../table-controller/Context";
 
 export function Component<M extends { id: string }, V>(
   props: IComponentPropsExtended<M, V, IComponentProps<M, V>> & {
@@ -45,12 +47,37 @@ export function Component<M extends { id: string }, V>(
   const [isRightModelAdminFormOpen, setIsRightModelAdminFormOpen] =
     useState(false);
   const isRelation = props.type === "relation";
+  const ctx = useTableContext();
 
   const payload = props.data as {
     id?: string;
     adminTitle?: string;
     slug?: string;
     variant?: string;
+  };
+  const rowId = payload.id;
+  const isSelected =
+    typeof rowId === "string" && ctx?.selectedRowIds.includes(rowId) === true;
+
+  const toggleSelected = (checked: boolean | "indeterminate") => {
+    if (!ctx || typeof rowId !== "string" || ctx.bulkDeletePending) {
+      return;
+    }
+
+    ctx.setState((prev) => {
+      const nextSelectedRowIds = new Set(prev.selectedRowIds);
+
+      if (checked === true) {
+        nextSelectedRowIds.add(rowId);
+      } else {
+        nextSelectedRowIds.delete(rowId);
+      }
+
+      return {
+        ...prev,
+        selectedRowIds: Array.from(nextSelectedRowIds),
+      };
+    });
   };
 
   return (
@@ -68,6 +95,17 @@ export function Component<M extends { id: string }, V>(
     >
       <article className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm transition hover:border-slate-400">
         <div className="flex items-start gap-3">
+          {ctx ? (
+            <div className="flex h-9 shrink-0 items-start pt-1">
+              <Checkbox
+                checked={isSelected}
+                disabled={!rowId || ctx.bulkDeletePending}
+                aria-label={`Select row ${rowId ?? ""}`}
+                onCheckedChange={toggleSelected}
+              />
+            </div>
+          ) : null}
+
           <div className="min-w-0 flex-1">
             {props.children ? (
               props.children

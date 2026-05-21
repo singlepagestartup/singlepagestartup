@@ -6,6 +6,28 @@ import { IComponentProps, IComponentPropsExtended } from "./interface";
 import { Component as Skeleton } from "./Skeleton";
 import { ReactNode, useEffect, useMemo } from "react";
 import { useTableContext } from "../table-controller/Context";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  Checkbox,
+} from "@sps/shared-ui-shadcn";
+import { Trash2 } from "lucide-react";
+
+function areSameStringArray(left: string[], right: string[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
+}
 
 export function Component<
   M extends { id?: string },
@@ -30,8 +52,12 @@ export function Component<
     offset = 0,
     limit = 100,
     selectedField = "id",
+    selectedRowIds = [],
+    visibleRowIds = [],
+    bulkDeletePending = false,
     setState,
   } = ctx ?? {};
+  const deleteEntity = typedProps.api.delete();
 
   const params = useMemo(() => {
     const jsonFields = ["title", "subtitle", "description"];
@@ -126,6 +152,11 @@ export function Component<
       },
     },
   });
+  const loadedVisibleRowIds = useMemo(() => {
+    return (data ?? [])
+      .map((entity) => entity.id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
+  }, [data]);
 
   useEffect(() => {
     if (typeof totalData !== "number" || !setState) {
@@ -137,9 +168,160 @@ export function Component<
     });
   }, [totalData, setState]);
 
+  useEffect(() => {
+    if (!setState) {
+      return;
+    }
+
+    setState((prev) => {
+      const nextSelectedRowIds = prev.selectedRowIds.filter((id) =>
+        loadedVisibleRowIds.includes(id),
+      );
+      const hasVisibleChanged = !areSameStringArray(
+        prev.visibleRowIds,
+        loadedVisibleRowIds,
+      );
+      const hasSelectedChanged = !areSameStringArray(
+        prev.selectedRowIds,
+        nextSelectedRowIds,
+      );
+
+      if (!hasVisibleChanged && !hasSelectedChanged) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        visibleRowIds: loadedVisibleRowIds,
+        selectedRowIds: nextSelectedRowIds,
+      };
+    });
+  }, [loadedVisibleRowIds, setState]);
+
   if (isLoading || isTotalLoading || !data) {
     return typedProps.Skeleton ?? <Skeleton />;
   }
 
-  return <Child {...typedProps} isServer={false} data={data} />;
+  const visibleRowIdSet = new Set(visibleRowIds);
+  const selectedVisibleRowIds = selectedRowIds.filter((id) =>
+    visibleRowIdSet.has(id),
+  );
+  const hasVisibleRows = visibleRowIds.length > 0;
+  const allVisibleRowsSelected =
+    hasVisibleRows && selectedVisibleRowIds.length === visibleRowIds.length;
+  const hasSelectedRows = selectedVisibleRowIds.length > 0;
+
+  const toggleVisibleRows = (checked: boolean | "indeterminate") => {
+    if (!setState || bulkDeletePending) {
+      return;
+    }
+
+    setState((prev) => {
+      const nextSelectedRowIds = checked === true ? prev.visibleRowIds : [];
+
+      if (areSameStringArray(prev.selectedRowIds, nextSelectedRowIds)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        selectedRowIds: nextSelectedRowIds,
+      };
+    });
+  };
+
+  const bulkDeleteSelectedRows = async () => {
+    if (!setState || !selectedVisibleRowIds.length) {
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      bulkDeletePending: true,
+    }));
+
+    try {
+      await Promise.all(
+        selectedVisibleRowIds.map((id) => deleteEntity.mutateAsync({ id })),
+      );
+      setState((prev) => ({
+        ...prev,
+        selectedRowIds: [],
+        bulkDeletePending: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        bulkDeletePending: false,
+      }));
+    }
+  };
+
+  return (
+    <>
+      {hasSelectedRows ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-3">
+          <label className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+            <Checkbox
+              checked={allVisibleRowsSelected}
+              disabled={bulkDeletePending || !hasVisibleRows}
+              aria-label="Select visible rows"
+              onCheckedChange={toggleVisibleRows}
+            />
+            <span>{selectedVisibleRowIds.length} selected</span>
+          </label>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={bulkDeletePending}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete selected
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete selected rows?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete {selectedVisibleRowIds.length} selected row
+                  {selectedVisibleRowIds.length === 1 ? "" : "s"} from the
+                  current page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={bulkDeletePending}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={bulkDeletePending}
+                  onClick={() => {
+                    void bulkDeleteSelectedRows();
+                  }}
+                >
+                  Delete selected
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ) : hasVisibleRows ? (
+        <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-card p-3 text-sm text-muted-foreground">
+          <Checkbox
+            checked={false}
+            disabled={bulkDeletePending}
+            aria-label="Select visible rows"
+            onCheckedChange={toggleVisibleRows}
+          />
+          <span>Select visible rows</span>
+        </div>
+      ) : null}
+
+      <Child {...typedProps} isServer={false} data={data} />
+    </>
+  );
 }
