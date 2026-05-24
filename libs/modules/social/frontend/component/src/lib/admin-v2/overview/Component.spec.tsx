@@ -70,6 +70,7 @@ jest.mock("./action", () => createOverviewEntryMock("social", "action"));
 jest.mock("./chat", () => createOverviewEntryMock("social", "chat"));
 jest.mock("./message", () => createOverviewEntryMock("social", "message"));
 jest.mock("./profile", () => createOverviewEntryMock("social", "profile"));
+jest.mock("./skill", () => createOverviewEntryMock("social", "skill"));
 jest.mock("./thread", () => createOverviewEntryMock("social", "thread"));
 jest.mock("./widget", () => createOverviewEntryMock("social", "widget"));
 jest.mock("./attribute/admin-v2-form", () =>
@@ -122,6 +123,7 @@ describe("GIVEN: social admin-v2 overview is mounted", () => {
     expect(queryByTestId(container, "card:attribute")).not.toBeNull();
     expect(queryByTestId(container, "card:attribute-key")).not.toBeNull();
     expect(queryByTestId(container, "card:action")).not.toBeNull();
+    expect(queryByTestId(container, "card:skill")).not.toBeNull();
     expect(queryByTestId(container, "table:attribute")).toBeNull();
     expect(queryByTestId(container, "table:attribute-key")).toBeNull();
   });

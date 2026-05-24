@@ -26,6 +26,7 @@ export interface IEcommerceOrderReadService extends IExtendedReadService {
 
 export interface ISocialModule {
   profile: IReadService;
+  skill: IReadService;
   chat: IReadService;
   thread: IReadService;
   message: IReadService;
@@ -33,6 +34,7 @@ export interface ISocialModule {
   attribute: IReadService;
   attributeKey: IReadService;
   profilesToChats: IReadService;
+  profilesToSkills: IReadService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;

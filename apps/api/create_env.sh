@@ -89,5 +89,10 @@ add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
 add_env "FILE_STORAGE_PROVIDER" "local"
 
+add_env "LLM_SERVICE_URL" "http://localhost:8765"
+add_env "OLLAMA_URL" "http://localhost:11434"
+add_env "ANTHROPIC_API_KEY" ""
+add_env "ANTHROPIC_MODEL" "claude-sonnet-4-20250514"
+
 add_env "RBAC_SUBJECT_IDENTITY_EMAIL" "admin@example.com"
 add_env "RBAC_SUBJECT_IDENTITY_PASSWORD" "Password123!"

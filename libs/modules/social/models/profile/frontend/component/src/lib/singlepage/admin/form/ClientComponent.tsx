@@ -59,6 +59,13 @@ export function Component(props: IComponentPropsExtended) {
       status={status}
     >
       <div className="flex flex-col gap-6">
+        {props.profilesToSkills
+          ? props.profilesToSkills({
+              data: props.data,
+              isServer: props.isServer,
+            })
+          : null}
+
         <FormField
           ui="shadcn"
           type="text"

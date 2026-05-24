@@ -13,6 +13,12 @@ export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
   profilesToFileStorageModuleFiles?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  profilesToKnowledgeModuleDocuments?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
+  profilesToSkills?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   profilesToWebsiteBuilderModuleWidgets?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

@@ -1,3 +1,5 @@
+import { Component as Skill } from "./skill/Component";
+
 import { IComponentProps } from "./interface";
 import { Component as ParentComponent } from "@sps/shared-frontend-components/singlepage/admin/panel/Component";
 import { Component as Profile } from "./profile/Component";
@@ -11,6 +13,10 @@ import { Component as Action } from "./action/Component";
 
 export function Component(props: IComponentProps) {
   const models = [
+    {
+      name: "skill",
+      Comp: Skill,
+    },
     {
       name: "profile",
       Comp: Profile,

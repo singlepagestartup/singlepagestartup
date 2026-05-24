@@ -6,10 +6,13 @@ import { Component as ProfilesToAttributes } from "@sps/social/relations/profile
 import { Component as ProfilesToChats } from "@sps/social/relations/profiles-to-chats/frontend/component";
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
 import { Component as ProfilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/frontend/component";
+import { Component as ProfilesToKnowledgeModuleDocuments } from "@sps/social/relations/profiles-to-knowledge-module-documents/frontend/component";
 import { Component as ProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
+import { Component as ProfilesToSkills } from "@sps/social/relations/profiles-to-skills/frontend/component";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { Component as FileStorageFile } from "@sps/file-storage/models/file/frontend/component";
+import { Component as KnowledgeDocument } from "@sps/knowledge/models/document/frontend/component";
 import { Component as WebsiteBuilderWidget } from "@sps/website-builder/models/widget/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as Action } from "../../action";
@@ -17,6 +20,7 @@ import { Component as Attribute } from "../../attribute";
 import { Component as Chat } from "../../chat";
 import { Component as Message } from "../../message";
 import { Component as Profile } from "../";
+import { Component as Skill } from "../../skill";
 
 export function Component(props: IComponentProps) {
   return (
@@ -24,6 +28,112 @@ export function Component(props: IComponentProps) {
       isServer={false}
       data={props.data}
       variant="admin-v2-form"
+      profilesToKnowledgeModuleDocuments={({ data }) => {
+        if (!data) {
+          return;
+        }
+
+        return (
+          <ProfilesToKnowledgeModuleDocuments
+            isServer={false}
+            variant="admin-v2-table"
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Document"
+            leftModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <Profile
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.profileId } as any}
+                />
+              );
+            }}
+            rightModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <KnowledgeDocument
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.knowledgeModuleDocumentId } as any}
+                />
+              );
+            }}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "profileId",
+                      method: "eq",
+                      value: data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          />
+        );
+      }}
+      profilesToSkills={({ data }) => {
+        if (!data) {
+          return;
+        }
+
+        return (
+          <ProfilesToSkills
+            isServer={false}
+            variant="admin-v2-table"
+            leftModelAdminFormLabel="Profile"
+            rightModelAdminFormLabel="Skill"
+            leftModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <Profile
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.profileId } as any}
+                />
+              );
+            }}
+            rightModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <Skill
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.skillId } as any}
+                />
+              );
+            }}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "profileId",
+                      method: "eq",
+                      value: data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          />
+        );
+      }}
       profilesToFileStorageModuleFiles={({ data }) => {
         if (!data) {
           return;
