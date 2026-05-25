@@ -8,6 +8,7 @@ import { Component as ProfilesToChats } from "@sps/social/relations/profiles-to-
 import { Component as ProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
 import { Component as ProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
 import { Component as ProfilesToEcommerceModuleProducts } from "@sps/social/relations/profiles-to-ecommerce-module-products/frontend/component";
+import { Component as ProfilesToSkills } from "@sps/social/relations/profiles-to-skills/frontend/component";
 
 export function Component() {
   return (
@@ -20,6 +21,31 @@ export function Component() {
             isServer={false}
             data={props.data}
             variant="admin-form"
+            profilesToSkills={({ data, isServer }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <ProfilesToSkills
+                  isServer={isServer}
+                  variant="admin-table"
+                  apiProps={{
+                    params: {
+                      filters: {
+                        and: [
+                          {
+                            column: "profileId",
+                            method: "eq",
+                            value: data.id,
+                          },
+                        ],
+                      },
+                    },
+                  }}
+                />
+              );
+            }}
             profilesToFileStorageModuleFiles={({ data, isServer }) => {
               if (!data) {
                 return;

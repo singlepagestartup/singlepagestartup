@@ -56,6 +56,7 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from 
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun } from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/skill/find-by-id/run";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdActionCreate } from "./social-module/profile/find-by-id/chat/find-by-id/action/create";
@@ -402,6 +403,17 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           this
             .socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/threads/:socialModuleThreadId/skills/:socialModuleSkillId/run",
+        handler:
+          this
+            .socialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun,
+        middlewares: [
+          new RequestProfileSubjectIdOwner().init(),
+          new RequestSocialModuleThreadBelongsToChat(this.service).init(),
+        ],
       },
       {
         method: "PATCH",
@@ -758,6 +770,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageCreate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun(
       this.service,
     ).execute(c, next);
   }

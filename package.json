@@ -36,7 +36,8 @@
     "drafts:list": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:list --",
     "drafts:dev": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:dev --",
     "drafts:init": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:init --",
-    "drafts:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:validate --"
+    "drafts:validate": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/source:drafts:validate --",
+    "knowledge:index": "NX_DAEMON=false NX_ISOLATE_PLUGINS=false nx run @sps/knowledge:index --"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.717.0",

@@ -40,6 +40,10 @@ import {
   AdminV2SidebarModuleItem as NotificationAdminV2SidebarModuleItem,
 } from "@sps/notification/frontend/component";
 import {
+  AdminV2Overview as KnowledgeAdminV2Overview,
+  AdminV2SidebarModuleItem as KnowledgeAdminV2SidebarModuleItem,
+} from "@sps/knowledge/frontend/component";
+import {
   AdminV2Overview as RbacAdminV2Overview,
   AdminV2SidebarModuleItem as RbacAdminV2SidebarModuleItem,
 } from "@sps/rbac/frontend/component";
@@ -119,6 +123,10 @@ export function Component(props: IComponentProps) {
             isServer={props.isServer}
             url={props.url}
           />
+          <KnowledgeAdminV2SidebarModuleItem
+            isServer={props.isServer}
+            url={props.url}
+          />
           <RbacAdminV2SidebarModuleItem
             isServer={props.isServer}
             url={props.url}
@@ -186,6 +194,7 @@ export function Component(props: IComponentProps) {
             url={props.url}
             isServer={props.isServer}
           />
+          <KnowledgeAdminV2Overview url={props.url} isServer={props.isServer} />
           <RbacAdminV2Overview url={props.url} isServer={props.isServer} />
           <SocialAdminV2Overview url={props.url} isServer={props.isServer} />
           <StartupAdminV2Overview url={props.url} isServer={props.isServer} />

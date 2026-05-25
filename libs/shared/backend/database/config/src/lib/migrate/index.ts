@@ -55,6 +55,8 @@ export class Config {
 
       const db = getDrizzle({ schema: this.schema });
 
+      await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
+
       try {
         beforeMigrations = await db.execute(
           sql`SELECT * FROM drizzle.${sql.raw(this.migrationsTable)}`,
