@@ -44,6 +44,8 @@ type GenerationMetadata = {
   };
 };
 
+const INDEX_LIMIT = 5;
+
 export function ClientComponent() {
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
@@ -149,7 +151,7 @@ export function ClientComponent() {
     setError("");
 
     try {
-      const result = await indexContent.action({ limit: 5 });
+      const result = await indexContent.action({ limit: INDEX_LIMIT });
       const data = result?.data;
       setIndexResult(
         data
@@ -259,13 +261,14 @@ export function ClientComponent() {
             disabled={isBusy}
             onClick={runSampleIndex}
             className="justify-start rounded-md"
+            title={`Index up to ${INDEX_LIMIT} knowledge documents`}
           >
             {pendingAction === "index" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <FileSearch className="mr-2 h-4 w-4" />
             )}
-            Index 5
+            Index content
           </Button>
         </div>
 
