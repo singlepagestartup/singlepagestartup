@@ -137,7 +137,29 @@ export class KnowledgeRepository {
       query = query.limit(props.limit);
     }
 
-    return query.execute();
+    const documents = await query.execute();
+
+    return documents.map((document) => {
+      return {
+        ...document,
+        id: String(document.id),
+        title: this.toStringValue(document.title),
+        slug: this.toStringValue(document.slug),
+        description: this.toStringValue(document.description),
+        status: this.toStringValue(document.status),
+        summary:
+          document.summary === null || document.summary === undefined
+            ? null
+            : this.toStringValue(document.summary),
+        tags: Array.isArray(document.tags) ? document.tags : [],
+        metadata: this.toRecord(document.metadata),
+        contentHash: this.toStringValue(document.contentHash),
+        lastIndexedAt:
+          document.lastIndexedAt instanceof Date
+            ? document.lastIndexedAt
+            : null,
+      };
+    });
   }
 
   async upsertDocumentFromSourceInput(input: KnowledgeSourceInput) {
@@ -196,6 +218,7 @@ export class KnowledgeRepository {
     const [updated] = await this.db
       .update(DocumentTable)
       .set({
+        status: "indexed",
         contentHash: props.contentHash,
         lastIndexedAt: new Date(),
         updatedAt: new Date(),
@@ -238,73 +261,115 @@ export class KnowledgeRepository {
     transcript: string;
     metadata?: Record<string, unknown>;
   }) {
-    const transcriptHash = createHash("sha256")
-      .update(props.transcript)
-      .digest("hex");
+    const profileId = this.toStringValue(props.profileId).trim();
+    const chatId = this.toStringValue(props.chatId).trim();
+    const threadId = this.toStringValue(props.threadId).trim();
+    const skillId = this.toStringValue(props.skillId).trim();
+    const skillSlug = this.toStringValue(props.skillSlug).trim() || null;
+    const transcript = this.toStringValue(props.transcript);
+    const transcriptHash = this.sha256(transcript);
     const title =
-      props.title?.trim() ||
-      this.toTitle(props.transcript) ||
+      this.toStringValue(props.title).trim() ||
+      this.toTitle(transcript) ||
       "Social skill transcript";
     const slug = this.toSlug(
       [
         "social-skill",
-        props.profileId,
-        props.threadId,
-        props.skillId,
+        profileId,
+        threadId,
+        skillId,
         transcriptHash.slice(0, 16),
       ].join("-"),
     );
     const metadata = {
-      ...(props.metadata || {}),
+      ...this.toSerializableRecord(props.metadata),
       sourceKind: "transcript",
       sourceSystem: "social-skill",
-      profileId: props.profileId,
-      chatId: props.chatId,
-      threadId: props.threadId,
-      skillId: props.skillId,
-      skillSlug: props.skillSlug || null,
+      profileId,
+      chatId,
+      threadId,
+      skillId,
+      skillSlug,
       transcriptHash,
     };
 
-    const [existing] = await this.db
-      .select()
-      .from(DocumentTable)
-      .where(eq(DocumentTable.slug, slug))
-      .limit(1)
-      .execute();
-
-    const values = {
+    const document = await this.upsertDocumentBySlug({
+      slug,
       title,
-      description: props.transcript,
+      description: transcript,
       summary: "Transcript imported from social skill chat",
       status: "imported",
       metadata,
-      contentHash: "",
-      adminTitle: title,
-      updatedAt: new Date(),
-    };
-    const document = existing
-      ? (
-          await this.db
-            .update(DocumentTable)
-            .set(values)
-            .where(eq(DocumentTable.id, existing.id))
-            .returning()
-            .execute()
-        )[0]
-      : (
-          await this.db
-            .insert(DocumentTable)
-            .values({
-              ...values,
-              slug,
-            })
-            .returning()
-            .execute()
-        )[0];
+    });
 
     await this.ensureProfileDocumentRelation({
-      profileId: props.profileId,
+      profileId,
+      documentId: document.id,
+    });
+
+    return document;
+  }
+
+  async upsertChatLearnDocumentForProfile(props: {
+    profileId: string;
+    chatId: string;
+    threadId: string;
+    messageId: string;
+    fileId?: string | null;
+    fileName?: string | null;
+    filePath?: string | null;
+    title?: string | null;
+    content: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    const profileId = this.toStringValue(props.profileId).trim();
+    const chatId = this.toStringValue(props.chatId).trim();
+    const threadId = this.toStringValue(props.threadId).trim();
+    const messageId = this.toStringValue(props.messageId).trim();
+    const fileId = this.toStringValue(props.fileId).trim() || null;
+    const fileName = this.toStringValue(props.fileName).trim() || null;
+    const filePath = this.toStringValue(props.filePath).trim() || null;
+    const content = this.toStringValue(props.content);
+    const contentHash = this.sha256(content);
+    const title =
+      this.toStringValue(props.title).trim() ||
+      fileName ||
+      this.toTitle(content) ||
+      "Social chat knowledge";
+    const slug = this.toSlug(
+      [
+        "social-chat-learn",
+        profileId,
+        messageId,
+        fileId || "message",
+        contentHash.slice(0, 16),
+      ].join("-"),
+    );
+    const metadata = {
+      ...this.toSerializableRecord(props.metadata),
+      sourceKind: "chat-message",
+      sourceSystem: "social-chat-learn",
+      profileId,
+      chatId,
+      threadId,
+      messageId,
+      fileId,
+      fileName,
+      filePath,
+      contentHash,
+    };
+
+    const document = await this.upsertDocumentBySlug({
+      slug,
+      title,
+      description: content,
+      summary: "Content learned from social chat message",
+      status: "imported",
+      metadata,
+    });
+
+    await this.ensureProfileDocumentRelation({
+      profileId,
       documentId: document.id,
     });
 
@@ -862,7 +927,63 @@ export class KnowledgeRepository {
   }
 
   private toTitle(value: string) {
-    return value.replace(/\s+/g, " ").trim().slice(0, 120);
+    return this.toStringValue(value).replace(/\s+/g, " ").trim().slice(0, 120);
+  }
+
+  private sha256(value: unknown) {
+    const input = this.toStringValue(value);
+
+    return createHash("sha256").update(input, "utf8").digest("hex");
+  }
+
+  private toStringValue(value: unknown) {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    return String(value);
+  }
+
+  private toSerializableRecord(value: unknown): Record<string, unknown> {
+    const normalized = this.toSerializableJson(value);
+
+    if (
+      normalized &&
+      typeof normalized === "object" &&
+      !Array.isArray(normalized)
+    ) {
+      return normalized as Record<string, unknown>;
+    }
+
+    return {};
+  }
+
+  private toSerializableJson(value: unknown): unknown {
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.toSerializableJson(item));
+    }
+
+    if (value && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, entryValue]) => {
+          return [key, this.toSerializableJson(entryValue)];
+        }),
+      );
+    }
+
+    return value;
   }
 
   private toRecord(value: unknown): Record<string, unknown> {
@@ -880,6 +1001,82 @@ export class KnowledgeRepository {
     }
 
     return {};
+  }
+
+  private async upsertDocumentBySlug(props: {
+    slug: string;
+    title: string;
+    description: string;
+    summary: string | null;
+    status: string;
+    metadata: Record<string, unknown>;
+  }) {
+    const metadata = JSON.stringify(this.toSerializableRecord(props.metadata));
+    const [document] = await this.db.execute<{
+      id: string;
+      title: string;
+      slug: string;
+      description: string;
+      status: string;
+      summary: string | null;
+      tags: string[];
+      metadata: Record<string, unknown>;
+      contentHash: string;
+      lastIndexedAt: Date | null;
+      adminTitle: string;
+    }>(sql`
+      INSERT INTO sps_ke_document (
+        title,
+        description,
+        summary,
+        status,
+        metadata,
+        content_hash,
+        admin_title,
+        slug,
+        updated_at
+      )
+      VALUES (
+        ${props.title},
+        ${props.description},
+        ${props.summary},
+        ${props.status},
+        CAST(${metadata} AS jsonb),
+        ${""},
+        ${props.title},
+        ${props.slug},
+        NOW()
+      )
+      ON CONFLICT (slug) DO UPDATE SET
+        title = EXCLUDED.title,
+        description = EXCLUDED.description,
+        summary = EXCLUDED.summary,
+        status = EXCLUDED.status,
+        metadata = EXCLUDED.metadata,
+        content_hash = ${""},
+        admin_title = EXCLUDED.admin_title,
+        updated_at = NOW()
+      RETURNING
+        id,
+        title,
+        slug,
+        description,
+        status,
+        summary,
+        tags,
+        metadata,
+        content_hash AS "contentHash",
+        last_indexed_at AS "lastIndexedAt",
+        admin_title AS "adminTitle"
+    `);
+
+    if (!document?.id) {
+      throw new Error(
+        `Knowledge document upsert failed for slug ${props.slug}`,
+      );
+    }
+
+    return document;
   }
 
   private async ensureProfileDocumentRelation(props: {
@@ -910,8 +1107,8 @@ export class KnowledgeRepository {
       )
       VALUES (
         ${randomUUID()},
-        ${new Date()},
-        ${new Date()},
+        NOW(),
+        NOW(),
         ${"default"},
         ${0},
         ${props.profileId},

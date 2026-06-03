@@ -9,6 +9,7 @@ get_environment_type $1
     ./telegram.sh down $ENVIRONMENT_TYPE && \
     ./mcp.sh down $ENVIRONMENT_TYPE && \
     ./api.sh down $ENVIRONMENT_TYPE && \
+    ./llm.sh down $ENVIRONMENT_TYPE && \
     ./redis.sh down $ENVIRONMENT_TYPE && \
     ./postgres.sh down $ENVIRONMENT_TYPE && \
     ./portainer.sh down $ENVIRONMENT_TYPE && \

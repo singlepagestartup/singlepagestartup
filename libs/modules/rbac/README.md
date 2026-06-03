@@ -26,6 +26,18 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Controllers should compose exported middleware instances, not define middleware bodies inline.
 - Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
 
+### Social Knowledge reactions:
+
+RBAC owns the authenticated subject endpoint that lets a `social.profile` react to a chat message through Knowledge/RAG:
+
+```text
+POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge
+```
+
+The endpoint validates subject/profile/chat/message access, requires `social.chat.variant="knowledge"`, requires the replying profile to have `variant="artificial-intelligence"`, and requires that replying profile to be connected to the chat.
+
+The Social chat frontend calls this endpoint automatically after creating a message in a Knowledge chat. If the message starts with `/learn`, the endpoint strips the command and asks the Knowledge module to store and index the message text plus supported `.txt`, `.md`, or `.markdown` attachments for the replying AI profile. For normal messages, the endpoint calls Knowledge generation and saves the AI answer as a social message in the same thread.
+
 ---
 
 ## 2. Models

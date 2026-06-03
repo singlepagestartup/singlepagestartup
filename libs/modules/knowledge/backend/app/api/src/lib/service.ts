@@ -307,19 +307,113 @@ export class KnowledgeService {
     transcript: string;
     metadata?: Record<string, unknown>;
   }) {
-    const transcript = props.transcript?.trim();
+    const transcript = this.toText(props.transcript).trim();
 
     if (!transcript) {
       throw new Error("Transcript is required.");
     }
 
-    await this.assertEmbeddingModelDimensions();
+    try {
+      await this.assertEmbeddingModelDimensions();
+    } catch (error) {
+      throw new Error(
+        `Knowledge transcript embedding model check failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
 
-    const document = await this.repository.upsertTranscriptDocumentForProfile({
-      ...props,
-      transcript,
-    });
-    const index = await this.index({ documentId: document.id });
+    let document: Awaited<
+      ReturnType<KnowledgeRepository["upsertTranscriptDocumentForProfile"]>
+    >;
+
+    try {
+      document = await this.repository.upsertTranscriptDocumentForProfile({
+        ...props,
+        transcript,
+      });
+    } catch (error) {
+      throw new Error(
+        `Knowledge transcript document upsert failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    let index: Awaited<ReturnType<KnowledgeService["index"]>>;
+
+    try {
+      index = await this.index({ documentId: document.id });
+    } catch (error) {
+      throw new Error(
+        `Knowledge transcript document indexing failed documentId=${document.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    return {
+      document,
+      index,
+    };
+  }
+
+  async learnFromChatMessage(props: {
+    profileId: string;
+    chatId: string;
+    threadId: string;
+    messageId: string;
+    fileId?: string | null;
+    fileName?: string | null;
+    filePath?: string | null;
+    title?: string | null;
+    content: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    const content = this.toText(props.content).trim();
+
+    if (!content) {
+      throw new Error("Knowledge learn content is required.");
+    }
+
+    try {
+      await this.assertEmbeddingModelDimensions();
+    } catch (error) {
+      throw new Error(
+        `Knowledge learn embedding model check failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    let document: Awaited<
+      ReturnType<KnowledgeRepository["upsertChatLearnDocumentForProfile"]>
+    >;
+
+    try {
+      document = await this.repository.upsertChatLearnDocumentForProfile({
+        ...props,
+        content,
+      });
+    } catch (error) {
+      throw new Error(
+        `Knowledge learn document upsert failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    let index: Awaited<ReturnType<KnowledgeService["index"]>>;
+
+    try {
+      index = await this.index({ documentId: document.id });
+    } catch (error) {
+      throw new Error(
+        `Knowledge learn document indexing failed documentId=${document.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
 
     return {
       document,
@@ -402,5 +496,21 @@ export class KnowledgeService {
         `Knowledge embedding model ${model.id} must have ${config.llm.dimensions} dimensions; got ${model.dimensions || "unknown"}.`,
       );
     }
+  }
+
+  private toText(value: unknown) {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    return String(value);
   }
 }

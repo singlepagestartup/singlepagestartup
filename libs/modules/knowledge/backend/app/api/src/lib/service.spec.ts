@@ -250,4 +250,90 @@ describe("knowledge service", () => {
       }),
     );
   });
+
+  /**
+   * BDD Scenario: social chat learning requires content.
+   *
+   * Given: a Knowledge chat /learn request contains no text after trimming.
+   * When: the service validates chat learning input.
+   * Then: it rejects before model dimension checks or indexing.
+   */
+  it("requires content before learning from a social chat message", async () => {
+    const upsertChatLearnDocumentForProfile = jest.fn();
+    const modelGet = jest.fn();
+    const service = new KnowledgeService({
+      repository: {
+        upsertChatLearnDocumentForProfile,
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: modelGet,
+      } as any,
+    });
+
+    await expect(
+      service.learnFromChatMessage({
+        profileId: "profile-1",
+        chatId: "chat-1",
+        threadId: "thread-1",
+        messageId: "message-1",
+        content: "   ",
+      }),
+    ).rejects.toThrow("Knowledge learn content is required");
+    expect(upsertChatLearnDocumentForProfile).not.toHaveBeenCalled();
+    expect(modelGet).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: social chat learning indexes content.
+   *
+   * Given: a Knowledge chat /learn request has text content.
+   * When: the service stores the deterministic chat document.
+   * Then: it runs embedding indexing for the returned document id.
+   */
+  it("stores chat-learn content and indexes the returned document", async () => {
+    const upsertChatLearnDocumentForProfile = jest
+      .fn()
+      .mockResolvedValue({ id: "document-1" });
+    const service = new KnowledgeService({
+      repository: {
+        upsertChatLearnDocumentForProfile,
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: jest.fn().mockResolvedValue({
+          id: "nomic-embed-text",
+          dimensions: 768,
+        }),
+      } as any,
+    });
+    const index = jest
+      .spyOn(service, "index")
+      .mockResolvedValue({ indexed: 1, skipped: 0 } as any);
+
+    const result = await service.learnFromChatMessage({
+      profileId: "profile-1",
+      chatId: "chat-1",
+      threadId: "thread-1",
+      messageId: "message-1",
+      content: " Learned context ",
+    });
+
+    expect(upsertChatLearnDocumentForProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profileId: "profile-1",
+        chatId: "chat-1",
+        threadId: "thread-1",
+        messageId: "message-1",
+        content: "Learned context",
+      }),
+    );
+    expect(index).toHaveBeenCalledWith({ documentId: "document-1" });
+    expect(result).toEqual({
+      document: { id: "document-1" },
+      index: { indexed: 1, skipped: 0 },
+    });
+  });
 });

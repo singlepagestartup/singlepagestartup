@@ -12,6 +12,7 @@ get_environment_type $1
     ./portainer.sh up $ENVIRONMENT_TYPE && \
     ./postgres.sh up $ENVIRONMENT_TYPE && \
     ./redis.sh up $ENVIRONMENT_TYPE && \
+    ./llm.sh up $ENVIRONMENT_TYPE && \
     ./api.sh up $ENVIRONMENT_TYPE && \
     ./mcp.sh up $ENVIRONMENT_TYPE && \
     ./telegram.sh up $ENVIRONMENT_TYPE && \

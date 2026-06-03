@@ -17,9 +17,18 @@ The Social module manages profiles, chats, messages, and related social interact
 - Profile pages and social feeds.
 - Chat and messaging interfaces.
 - Profile-scoped transcript processing through selected AI skills.
+- Profile-scoped Knowledge/RAG chats through `chat.variant="knowledge"`.
 - Social features tied to ecommerce products.
 
 ---
+
+## 4. Knowledge Chat Variant
+
+`social.chat.variant="knowledge"` is the explicit switch for profile-scoped Knowledge/RAG behavior. In this mode, agent profiles with `variant="artificial-intelligence"` and slugs like `chat-gpt-*` reply through the RBAC Knowledge reaction endpoint instead of the default OpenRouter flow.
+
+Users can send `/learn` in the existing chat UI to add the current message text and supported text/markdown attachments to the replying AI profile's Knowledge base. The resulting Knowledge documents are linked only to that AI profile through `profiles-to-knowledge-module-documents`, indexed into embeddings by the Knowledge module, and later used only when that same profile answers questions in Knowledge chats.
+
+`default` and `telegram` chat variants keep the existing non-RAG behavior.
 
 ## 2. Models
 

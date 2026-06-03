@@ -80,6 +80,22 @@ export function chunkText(props: ChunkTextProps): TextChunk[] {
   return chunks;
 }
 
-export function hashText(text: string) {
-  return createHash("sha256").update(text).digest("hex");
+export function hashText(text: unknown) {
+  return createHash("sha256").update(toHashText(text)).digest("hex");
+}
+
+function toHashText(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return String(value);
 }

@@ -28,7 +28,8 @@ Environment variables:
 | --------------------------- | ----------------------------- | --------------------------------------- |
 | `LLM_SERVICE_URL`           | `http://localhost:8765`       | Local gateway URL used by Knowledge     |
 | `KNOWLEDGE_EMBEDDING_MODEL` | `nomic/nomic-embed-text`      | Gateway embedding model id              |
-| `OLLAMA_MODELS`             | `nomic-embed-text,qwen3:1.7b` | Ollama models pulled by `apps/llm` init |
+| `OLLAMA_MODEL_IDS`          | `nomic-embed-text,qwen3:1.7b` | Ollama models pulled by `apps/llm` init |
+| `OLLAMA_MODELS_DIR`         | `.ollama/models`              | Project-local native Ollama model cache |
 | `ANTHROPIC_API_KEY`         | empty                         | Anthropic key consumed by `apps/llm`    |
 | `OPENAI_API_KEY`            | empty                         | OpenAI key consumed by `apps/llm`       |
 
@@ -64,7 +65,47 @@ cd apps/llm
 ./up.sh
 ```
 
-The LLM compose stack includes Ollama plus an init service that pulls every model listed in `OLLAMA_MODELS`. HuggingFace presets are loaded lazily unless `LLM_PRELOAD_MODEL_IDS` is set in `apps/llm/.env`.
+The LLM compose stack includes Ollama plus an init service that pulls every model listed in `OLLAMA_MODEL_IDS`. HuggingFace presets are loaded lazily unless `LLM_PRELOAD_MODEL_IDS` is set in `apps/llm/.env`.
+
+For native project-local development without Docker for the LLM gateway:
+
+```bash
+npm run llm:install
+npm run llm:ollama:start
+npm run llm:ollama:pull
+npm run llm:dev
+```
+
+`npm run llm:dev` starts the Python gateway and tails the project-local Ollama log by default. Ollama state is kept under `apps/llm/.ollama`, and `npm run llm:ollama:stop` stops only the process owned by this project pid file.
+
+## Server Deployment
+
+Production RAG infrastructure is managed by `tools/deployer` in the same flow as `api`, `host`, `mcp`, and `telegram`:
+
+```bash
+cd tools/deployer
+./llm.sh up
+./api.sh up
+```
+
+The full deployer bootstrap also starts LLM before API:
+
+```bash
+cd tools/deployer
+./up.sh
+```
+
+Required deployer variables are listed in `tools/deployer/.env.example`:
+
+- `LLM_SERVICE_NAME=llm`
+- `LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME`
+- `LLM_SERVICE_URL=http://llm:8765`
+- `OLLAMA_MODEL_IDS=nomic-embed-text,qwen3:1.7b`
+- optional `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `HF_TOKEN`
+
+The server stack runs three private Docker Swarm services: the Python LLM gateway, Ollama, and a one-shot Ollama model pull service. LLM is not exposed through Traefik by default; API reaches it through internal overlay DNS at `http://llm:8765`.
+
+Server PostgreSQL must use `pgvector/pgvector:pg17`. The deployer changes only the image, while the existing `/home/code/postgres_data` volume path is preserved.
 
 ## Migrations
 
@@ -115,6 +156,25 @@ npm run knowledge:index -- --root=tools/digital-agency/project/content/video --l
 ```
 
 The indexer treats `knowledge/document.description` as the source of truth. File discovery remains an import path for source transcripts and canonical content only: `content.txt`, `content.md`, `transcript.txt`, `transcript.md`, `transcription.txt`, and `transcription.md` are read into editable documents first, then documents are indexed into derived Source and Chunk rows. Generated outputs such as `description.md` and `youtube_description.md` are intentionally ignored. Unchanged document hashes are skipped when the source still has chunk relations.
+
+## Social Chat Learning
+
+`social.chat.variant="knowledge"` enables profile-scoped RAG replies through the RBAC subject endpoint `POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge`.
+
+In the Host chat UI, sending a message in a Knowledge chat creates the `social.message` first and then automatically calls the RBAC Knowledge reaction endpoint for the connected AI assistant profile. Users do not need to call the endpoint manually from the browser.
+
+Learning is explicit:
+
+- `/learn Some text to remember` stores the text after `/learn`.
+- `/learn` with supported `.txt`, `.md`, or `.markdown` attachments stores those attachments.
+- Attachments without `/learn` are sent as normal chat attachments and are not indexed as Knowledge.
+- `default` and `telegram` chats do not run Knowledge learning.
+
+Each learned item is stored as a deterministic Knowledge document using the replying AI profile id, source message id, optional file id, and content hash. The document is linked to that AI profile through `profiles-to-knowledge-module-documents`. Each learned document is immediately indexed with `KnowledgeService.index({ documentId })`, which creates sources, chunks, pgvector embeddings, and source/chunk relations through the existing indexer.
+
+Normal non-`/learn` messages in a Knowledge chat call `KnowledgeService.generate({ query, profileId })`, so retrieved chunks are limited to documents linked to the replying AI profile.
+
+The Knowledge document sidebar in the Social chat UI shows documents linked to the answering AI profile. Users can edit document `title` and markdown `description` from the sidebar. Saving edits does not reindex automatically; users must click `Reindex`, which calls `POST /api/knowledge/documents/:id/reindex`.
 
 ## API
 

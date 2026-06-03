@@ -120,8 +120,24 @@ function humanize(value: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function hashContent(content: string) {
-  return createHash("sha256").update(content).digest("hex");
+function hashContent(content: unknown) {
+  return createHash("sha256").update(toHashText(content)).digest("hex");
+}
+
+function toHashText(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return String(value);
 }
 
 async function walk(rootPath: string, files: string[], limit?: number) {

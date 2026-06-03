@@ -530,6 +530,38 @@ export function Component(props: IComponentPropsExtended) {
       };
     });
   }, [props.language, socialModuleMemberProfiles]);
+  const knowledgeAssistantProfile = useMemo(() => {
+    if (props.socialModuleChat.variant !== "knowledge") {
+      return null;
+    }
+
+    const profilesById = new Map(
+      (socialModuleMemberProfiles || []).map((socialModuleProfile) => {
+        return [socialModuleProfile.id, socialModuleProfile];
+      }),
+    );
+
+    for (const relation of socialModuleProfilesToChats || []) {
+      if (!relation.profileId) {
+        continue;
+      }
+
+      const profile = profilesById.get(relation.profileId);
+
+      if (
+        profile?.variant === "artificial-intelligence" &&
+        profile.slug?.startsWith("chat-gpt-")
+      ) {
+        return profile;
+      }
+    }
+
+    return null;
+  }, [
+    props.socialModuleChat.variant,
+    socialModuleMemberProfiles,
+    socialModuleProfilesToChats,
+  ]);
   const normalizedMemberSearch = memberSearch.trim().toLowerCase();
   const canSearchProfiles = memberSearch.trim().length >= 2;
   const filteredMemberItems = useMemo(() => {
@@ -1672,6 +1704,7 @@ export function Component(props: IComponentPropsExtended) {
                 language={props.language}
                 socialModuleChat={props.socialModuleChat}
                 socialModuleProfile={props.socialModuleProfile}
+                knowledgeAssistantProfile={knowledgeAssistantProfile}
                 socialModuleThreadId={activeSocialModuleThreadId}
                 variant="social-module-profile-chat-message-list-default"
               />

@@ -41,4 +41,5 @@ OLLAMA_PORT=$(get_available_port 11434)
 add_env "OLLAMA_PORT" $OLLAMA_PORT
 add_env "OLLAMA_URL" "http://localhost:$OLLAMA_PORT"
 add_env "OLLAMA_EMBED_MODEL" "nomic-embed-text"
-add_env "OLLAMA_MODELS" "nomic-embed-text,qwen3:1.7b"
+add_env "OLLAMA_MODEL_IDS" "nomic-embed-text,qwen3:1.7b"
+add_env "OLLAMA_MODELS_DIR" ".ollama/models"

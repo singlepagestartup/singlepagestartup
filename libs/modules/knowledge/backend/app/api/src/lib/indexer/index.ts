@@ -81,17 +81,23 @@ export class KnowledgeIndexer {
     dryRun: boolean;
     result: KnowledgeIndexResult;
   }) {
-    const content = props.document.description.trim();
-    const originalPath = this.repository.getDocumentOriginalPath(
-      props.document.id,
-    );
+    const document = {
+      ...props.document,
+      title: normalizeIndexText(props.document.title),
+      slug: normalizeIndexText(props.document.slug),
+      description: normalizeIndexText(props.document.description),
+      status: normalizeIndexText(props.document.status),
+      metadata: toRecord(props.document.metadata),
+    };
+    const content = document.description.trim();
+    const originalPath = this.repository.getDocumentOriginalPath(document.id);
     const contentHash = hashContent(content);
     const chunks = chunkText({ text: content });
 
     if (!content) {
       props.result.skipped += 1;
       props.result.sources.push({
-        title: props.document.title,
+        title: document.title,
         originalPath,
         chunks: 0,
         status: "skipped",
@@ -107,9 +113,16 @@ export class KnowledgeIndexer {
         : false;
 
     if (alreadyIndexed && props.document.contentHash === contentHash) {
+      if (document.status !== "indexed") {
+        await this.repository.updateDocumentIndexMetadata({
+          documentId: document.id,
+          contentHash,
+        });
+      }
+
       props.result.skipped += 1;
       props.result.sources.push({
-        title: props.document.title,
+        title: document.title,
         originalPath,
         chunks: 0,
         status: "skipped",
@@ -119,7 +132,7 @@ export class KnowledgeIndexer {
 
     if (props.dryRun) {
       props.result.sources.push({
-        title: props.document.title,
+        title: document.title,
         originalPath,
         chunks: chunks.length,
         status: "dry_run",
@@ -131,10 +144,10 @@ export class KnowledgeIndexer {
       chunks.map((chunk) => chunk.text),
     );
     const source = await this.repository.upsertSourceForDocument({
-      document: props.document,
+      document,
       contentHash,
     });
-    const importedFilePath = props.document.metadata.importedFilePath;
+    const importedFilePath = document.metadata.importedFilePath;
 
     if (typeof importedFilePath === "string" && importedFilePath) {
       await this.repository.ensureFileForSource({
@@ -155,20 +168,20 @@ export class KnowledgeIndexer {
           contentHash: chunk.contentHash,
           metadata: {
             ...chunk.metadata,
-            documentId: props.document.id,
-            documentSlug: props.document.slug,
+            documentId: document.id,
+            documentSlug: document.slug,
           },
         };
       }),
     );
     await this.repository.updateDocumentIndexMetadata({
-      documentId: props.document.id,
+      documentId: document.id,
       contentHash,
     });
 
     props.result.indexed += 1;
     props.result.sources.push({
-      title: props.document.title,
+      title: document.title,
       originalPath,
       chunks: chunks.length,
       status: "indexed",
@@ -176,6 +189,30 @@ export class KnowledgeIndexer {
   }
 }
 
-function hashContent(content: string) {
-  return createHash("sha256").update(content).digest("hex");
+export function hashContent(content: unknown) {
+  return createHash("sha256").update(normalizeIndexText(content)).digest("hex");
+}
+
+export function normalizeIndexText(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return String(value);
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
 }

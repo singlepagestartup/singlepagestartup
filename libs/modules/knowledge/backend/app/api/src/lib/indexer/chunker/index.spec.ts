@@ -6,7 +6,7 @@
  * Then: stable chunk indexes, overlap, and hashes are produced.
  */
 
-import { chunkText } from ".";
+import { chunkText, hashText } from ".";
 
 describe("knowledge chunker", () => {
   /**
@@ -63,5 +63,16 @@ describe("knowledge chunker", () => {
     expect(Math.max(...chunks.map((chunk) => chunk.text.length))).toBeLessThan(
       1800,
     );
+  });
+
+  /**
+   * BDD Scenario: hash input normalization.
+   *
+   * Given: a caller passes a non-string value into the hash helper.
+   * When: the helper hashes that value.
+   * Then: it normalizes the value instead of passing it directly to crypto.
+   */
+  it("normalizes non-string hash input", () => {
+    expect(hashText(new Date("2026-01-01T00:00:00.000Z"))).toHaveLength(64);
   });
 });

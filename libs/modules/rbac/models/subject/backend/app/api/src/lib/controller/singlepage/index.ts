@@ -56,6 +56,7 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from 
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
+import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun } from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/skill/find-by-id/run";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
@@ -448,6 +449,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
       },
       {
         method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge",
+        handler:
+          this.socialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats",
         handler: this.socialModuleProfileFindByIdChatCreate,
         middlewares: [new RequestProfileSubjectIdOwner().init()],
@@ -806,6 +814,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge(
       this.service,
     ).execute(c, next);
   }
