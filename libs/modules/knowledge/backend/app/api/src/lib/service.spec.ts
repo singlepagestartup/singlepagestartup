@@ -1,9 +1,9 @@
 /**
  * BDD Suite: knowledge service.
  *
- * Given: test doubles for embeddings, generation, and repository access.
- * When: search and generation requests are validated.
- * Then: request bounds and response contracts are preserved.
+ * Given: Knowledge is a social-agnostic RAG service.
+ * When: search, generation, and learning requests are executed.
+ * Then: document scope is explicit and caller context stays generic.
  */
 
 import { KnowledgeService } from "./service";
@@ -49,7 +49,7 @@ describe("knowledge service", () => {
       modelClient: {} as any,
     });
 
-    await service.search({ query: "self-storage", topK: 100 });
+    await service.search({ query: "project documentation", topK: 100 });
 
     expect(searchChunks).toHaveBeenCalledWith(
       expect.objectContaining({ topK: 20 }),
@@ -57,19 +57,16 @@ describe("knowledge service", () => {
   });
 
   /**
-   * BDD Scenario: profile-scoped search.
+   * BDD Scenario: explicit document scoped search.
    *
-   * Given: a profile is linked to two knowledge documents.
-   * When: search runs with that profile id.
-   * Then: vector search is restricted to the linked document ids.
+   * Given: a caller passes document ids.
+   * When: search runs with duplicated and blank ids.
+   * Then: vector search is restricted to normalized document ids.
    */
-  it("restricts search to documents linked to the selected profile", async () => {
+  it("restricts search to explicit document ids", async () => {
     const searchChunks = jest.fn().mockResolvedValue([]);
     const service = new KnowledgeService({
       repository: {
-        findDocumentsByProfileId: jest
-          .fn()
-          .mockResolvedValue([{ id: "document-1" }, { id: "document-2" }]),
         searchChunks,
       } as any,
       embeddingClient: {
@@ -81,7 +78,10 @@ describe("knowledge service", () => {
       modelClient: {} as any,
     });
 
-    await service.search({ query: "self-storage", profileId: "profile-1" });
+    await service.search({
+      query: "project documentation",
+      documentIds: ["document-1", "document-2", "document-1", " "],
+    });
 
     expect(searchChunks).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -91,116 +91,76 @@ describe("knowledge service", () => {
   });
 
   /**
-   * BDD Scenario: profile chat without documents.
+   * BDD Scenario: empty explicit document scope.
    *
-   * Given: a profile has no linked knowledge documents.
-   * When: chat generation is requested for that profile.
-   * Then: the service fails before saving social messages or calling LLM.
+   * Given: a caller explicitly passes no document ids.
+   * When: search is requested.
+   * Then: Knowledge returns no sources and does not fall back to global search.
    */
-  it("rejects profile chat when no documents are linked", async () => {
-    const createThreadMessage = jest.fn();
-    const generate = jest.fn();
+  it("does not search globally for an empty explicit document id list", async () => {
+    const embed = jest.fn();
+    const searchChunks = jest.fn();
     const service = new KnowledgeService({
       repository: {
-        findDocumentsByProfileId: jest.fn().mockResolvedValue([]),
-        createThreadMessage,
+        searchChunks,
       } as any,
-      embeddingClient: {} as any,
-      generationClient: { generate } as any,
+      embeddingClient: {
+        embed,
+      } as any,
+      generationClient: {} as any,
       modelClient: {} as any,
     });
 
     await expect(
-      service.chatMessage({
-        profileId: "profile-1",
-        message: "Что известно про Магнит?",
-      }),
-    ).rejects.toThrow("no linked knowledge documents");
-    expect(createThreadMessage).not.toHaveBeenCalled();
-    expect(generate).not.toHaveBeenCalled();
+      service.search({ query: "project documentation", documentIds: [] }),
+    ).resolves.toEqual([]);
+    expect(embed).not.toHaveBeenCalled();
+    expect(searchChunks).not.toHaveBeenCalled();
   });
 
   /**
-   * BDD Scenario: chat edit suggestion.
+   * BDD Scenario: ordered document list.
    *
-   * Given: a profile chat request contains a proposed markdown edit.
-   * When: the assistant response is saved.
-   * Then: a pending edit suggestion is saved and returned with the chat result.
+   * Given: a caller passes profile-linked document ids in relation order.
+   * When: Knowledge loads documents by those ids.
+   * Then: the response preserves caller order and drops missing documents.
    */
-  it("stores an optional edit suggestion from a chat request", async () => {
-    const createEditSuggestion = jest
-      .fn()
-      .mockResolvedValue({ id: "suggestion-1" });
+  it("lists documents in caller-provided order", async () => {
+    const findDocumentsByIds = jest.fn().mockResolvedValue([
+      { id: "document-2", title: "Second" },
+      { id: "document-1", title: "First" },
+    ]);
     const service = new KnowledgeService({
       repository: {
-        findDocumentsByProfileId: jest
-          .fn()
-          .mockResolvedValue([{ id: "document-1" }]),
-        findProfileById: jest.fn().mockResolvedValue({
-          id: "profile-1",
-          adminTitle: "Expert",
-          description: {},
-        }),
-        createKnowledgeThread: jest.fn().mockResolvedValue({
-          thread: { id: "thread-1" },
-        }),
-        createThreadMessage: jest
-          .fn()
-          .mockResolvedValueOnce({ id: "message-user" })
-          .mockResolvedValueOnce({ id: "message-assistant" }),
-        listThreadMessages: jest.fn().mockResolvedValue([]),
-        searchChunks: jest.fn().mockResolvedValue([]),
-        createEditSuggestion,
+        findDocumentsByIds,
       } as any,
-      embeddingClient: {
-        embed: jest
-          .fn()
-          .mockResolvedValue(Array.from({ length: 768 }, () => 0)),
-      } as any,
-      generationClient: {
-        generate: jest.fn().mockResolvedValue({ answer: "answer" }),
-      } as any,
-      modelClient: {
-        get: jest.fn().mockResolvedValue({
-          id: "openai/gpt-5-5",
-          provider: "openai",
-          providerModel: "gpt-5.5",
-        }),
-      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {} as any,
     });
 
-    const result = await service.chatMessage({
-      profileId: "profile-1",
-      message: "Предложи правку",
-      editSuggestion: {
-        title: "Updated Magnit note",
-        targetDocumentId: "document-1",
-        proposedDescription: "# Магнит\n\nНовая версия.",
-      },
-    });
-
-    expect(createEditSuggestion).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "Updated Magnit note",
-        targetDocumentId: "document-1",
-        proposedDescription: "# Магнит\n\nНовая версия.",
+    await expect(
+      service.listDocuments({
+        documentIds: ["document-1", "document-2", "missing-document"],
       }),
-    );
-    expect(result.editSuggestionId).toBe("suggestion-1");
+    ).resolves.toEqual([
+      { id: "document-1", title: "First" },
+      { id: "document-2", title: "Second" },
+    ]);
   });
 
   /**
-   * BDD Scenario: selected generation model.
+   * BDD Scenario: generic persona generation.
    *
-   * Given: a generation request includes a model slug.
+   * Given: a generation request includes document ids and persona context.
    * When: the service builds the generation call.
-   * Then: the selected model id is passed to the generation client.
+   * Then: document scope and generic persona are passed to LLM generation.
    */
-  it("passes the selected generation model to the generation client", async () => {
+  it("passes explicit document scope and generic persona to generation", async () => {
     const contexts = [
       {
         id: "chunk-1",
-        text: "Self-storage context",
+        text: "Documentation context",
         chunkIndex: 0,
         sourceTitle: "Source",
         sourceOriginalPath: "source.txt",
@@ -210,6 +170,7 @@ describe("knowledge service", () => {
         metadata: {},
       },
     ];
+    const searchChunks = jest.fn().mockResolvedValue(contexts);
     const generate = jest.fn().mockResolvedValue({ answer: "answer" });
     const selectedModel = {
       id: "anthropic/claude-opus-4-1",
@@ -219,9 +180,13 @@ describe("knowledge service", () => {
       task: "chat",
       local: false,
     };
+    const persona = {
+      title: "Documentation expert",
+      description: { tone: "concise" },
+    };
     const service = new KnowledgeService({
       repository: {
-        searchChunks: jest.fn().mockResolvedValue(contexts),
+        searchChunks,
       } as any,
       embeddingClient: {
         embed: jest
@@ -233,13 +198,21 @@ describe("knowledge service", () => {
     });
 
     const result = await service.generate({
-      query: "self-storage",
+      query: "project documentation",
+      documentIds: ["document-1"],
+      persona,
       generationModelSlug: "anthropic/claude-opus-4-1",
     });
 
+    expect(searchChunks).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentIds: ["document-1"],
+      }),
+    );
     expect(generate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: "anthropic/claude-opus-4-1",
+        persona,
       }),
     );
     expect(result).toEqual(
@@ -252,18 +225,18 @@ describe("knowledge service", () => {
   });
 
   /**
-   * BDD Scenario: social chat learning requires content.
+   * BDD Scenario: generic learning requires content.
    *
-   * Given: a Knowledge chat /learn request contains no text after trimming.
-   * When: the service validates chat learning input.
-   * Then: it rejects before model dimension checks or indexing.
+   * Given: a learn request contains no text after trimming.
+   * When: the service validates generic learning input.
+   * Then: it rejects before model dimension checks or document upsert.
    */
-  it("requires content before learning from a social chat message", async () => {
-    const upsertChatLearnDocumentForProfile = jest.fn();
+  it("requires content before learning generic knowledge", async () => {
+    const upsertDocumentBySlug = jest.fn();
     const modelGet = jest.fn();
     const service = new KnowledgeService({
       repository: {
-        upsertChatLearnDocumentForProfile,
+        upsertDocumentBySlug,
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
@@ -273,32 +246,30 @@ describe("knowledge service", () => {
     });
 
     await expect(
-      service.learnFromChatMessage({
-        profileId: "profile-1",
-        chatId: "chat-1",
-        threadId: "thread-1",
-        messageId: "message-1",
+      service.learnContent({
+        slug: "knowledge-profile-message",
+        title: "Message",
         content: "   ",
       }),
     ).rejects.toThrow("Knowledge learn content is required");
-    expect(upsertChatLearnDocumentForProfile).not.toHaveBeenCalled();
+    expect(upsertDocumentBySlug).not.toHaveBeenCalled();
     expect(modelGet).not.toHaveBeenCalled();
   });
 
   /**
-   * BDD Scenario: social chat learning indexes content.
+   * BDD Scenario: generic learning indexes content.
    *
-   * Given: a Knowledge chat /learn request has text content.
-   * When: the service stores the deterministic chat document.
+   * Given: a generic learn request has a deterministic slug and content.
+   * When: the service stores the document.
    * Then: it runs embedding indexing for the returned document id.
    */
-  it("stores chat-learn content and indexes the returned document", async () => {
-    const upsertChatLearnDocumentForProfile = jest
+  it("stores learned content and indexes the returned document", async () => {
+    const upsertDocumentBySlug = jest
       .fn()
       .mockResolvedValue({ id: "document-1" });
     const service = new KnowledgeService({
       repository: {
-        upsertChatLearnDocumentForProfile,
+        upsertDocumentBySlug,
       } as any,
       embeddingClient: {} as any,
       generationClient: {} as any,
@@ -313,21 +284,26 @@ describe("knowledge service", () => {
       .spyOn(service, "index")
       .mockResolvedValue({ indexed: 1, skipped: 0 } as any);
 
-    const result = await service.learnFromChatMessage({
-      profileId: "profile-1",
-      chatId: "chat-1",
-      threadId: "thread-1",
-      messageId: "message-1",
+    const result = await service.learnContent({
+      slug: "knowledge-profile-message-file-hash",
+      title: " Uploaded knowledge ",
       content: " Learned context ",
+      summary: "Summary",
+      metadata: {
+        sourceKind: "chat-message",
+      },
     });
 
-    expect(upsertChatLearnDocumentForProfile).toHaveBeenCalledWith(
+    expect(upsertDocumentBySlug).toHaveBeenCalledWith(
       expect.objectContaining({
-        profileId: "profile-1",
-        chatId: "chat-1",
-        threadId: "thread-1",
-        messageId: "message-1",
-        content: "Learned context",
+        slug: "knowledge-profile-message-file-hash",
+        title: "Uploaded knowledge",
+        description: "Learned context",
+        summary: "Summary",
+        status: "imported",
+        metadata: {
+          sourceKind: "chat-message",
+        },
       }),
     );
     expect(index).toHaveBeenCalledWith({ documentId: "document-1" });

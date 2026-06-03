@@ -19,7 +19,7 @@ export interface KnowledgeGenerationProps {
   query: string;
   contexts: KnowledgeSearchResult[];
   model: string;
-  profile?: {
+  persona?: {
     title?: string | null;
     description?: unknown;
   };
@@ -149,20 +149,20 @@ export function buildGroundedPrompt(
         })
         .join("\n")
     : "No previous messages.";
-  const profileTitle = props.profile?.title || "Knowledge expert";
-  const profileDescription =
-    typeof props.profile?.description === "string"
-      ? props.profile.description
-      : props.profile?.description
-        ? JSON.stringify(props.profile.description)
+  const personaTitle = props.persona?.title || "Knowledge expert";
+  const personaDescription =
+    typeof props.persona?.description === "string"
+      ? props.persona.description
+      : props.persona?.description
+        ? JSON.stringify(props.persona.description)
         : "";
 
   return [
     "Answer the query using only the provided knowledge fragments.",
-    `Use the selected profile as the expert role: ${profileTitle}.`,
-    profileDescription ? `Profile context: ${profileDescription}` : "",
+    `Use the selected persona as the expert role: ${personaTitle}.`,
+    personaDescription ? `Persona context: ${personaDescription}` : "",
     "Answer in the same language as the user's query. If the query is in Russian, answer in Russian.",
-    "Disambiguate ambiguous terms strictly from context. For example, Магнит can mean the Russian federal retail operator or a physical magnet; separate these meanings explicitly and ask a clarification if the fragments do not prove which meaning is intended.",
+    "Disambiguate ambiguous terms strictly from context. For example, Delta can mean an airline, a mathematical change, or a river delta; separate these meanings explicitly and ask a clarification if the fragments do not prove which meaning is intended.",
     "If the fragments do not support a claim, say that the indexed sources do not contain it.",
     "Cite source titles inline where useful.",
     "",

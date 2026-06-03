@@ -16,9 +16,9 @@ const mockMessageDeleteMutate = jest.fn();
 const mockMessageUpdateMutate = jest.fn();
 const mockMessageReactByKnowledgeMutate = jest.fn();
 const mockKnowledgeDocumentUpdateMutate = jest.fn();
-const mockKnowledgeReindexDocumentAction = jest.fn();
+const mockKnowledgeReindexDocumentMutateAsync = jest.fn();
+const mockKnowledgeDocumentFindRefetch = jest.fn();
 
-let mockProfileDocumentRelations: any[] = [];
 let mockKnowledgeDocuments: any[] = [];
 
 jest.mock(
@@ -84,69 +84,32 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
             isSuccess: false,
           };
         }),
-    },
-    queryClient: {
-      invalidateQueries: jest.fn(),
-    },
-  };
-});
-
-jest.mock(
-  "@sps/social/relations/profiles-to-knowledge-module-documents/sdk/client",
-  () => {
-    return {
-      api: {
-        find: jest.fn(() => {
-          return {
-            data: mockProfileDocumentRelations,
-            isLoading: false,
-            refetch: jest.fn(),
-          };
-        }),
-      },
-    };
-  },
-);
-
-jest.mock(
-  "@sps/social/relations/profiles-to-knowledge-module-documents/sdk/model",
-  () => {
-    return {
-      route: "/api/social/profiles-to-knowledge-module-documents",
-    };
-  },
-);
-
-jest.mock("@sps/knowledge/models/document/sdk/client", () => {
-  return {
-    api: {
-      find: jest.fn(() => {
+      socialModuleProfileFindByIdKnowledgeDocumentFind: jest.fn(() => {
         return {
           data: mockKnowledgeDocuments,
           isLoading: false,
-          refetch: jest.fn(),
+          refetch: mockKnowledgeDocumentFindRefetch,
         };
       }),
-      update: jest.fn(() => {
-        return {
-          mutate: mockKnowledgeDocumentUpdateMutate,
-          isPending: false,
-        };
-      }),
+      socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate: jest.fn(
+        () => {
+          return {
+            mutate: mockKnowledgeDocumentUpdateMutate,
+            isPending: false,
+          };
+        },
+      ),
+      socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex: jest.fn(
+        () => {
+          return {
+            mutateAsync: mockKnowledgeReindexDocumentMutateAsync,
+            isPending: false,
+          };
+        },
+      ),
     },
-  };
-});
-
-jest.mock("@sps/knowledge/models/document/sdk/model", () => {
-  return {
-    route: "/api/knowledge/documents",
-  };
-});
-
-jest.mock("@sps/knowledge/sdk/client", () => {
-  return {
-    reindexDocument: {
-      action: (...args: any[]) => mockKnowledgeReindexDocumentAction(...args),
+    queryClient: {
+      invalidateQueries: jest.fn(),
     },
   };
 });
@@ -212,10 +175,10 @@ describe("Given: Knowledge chat command picker", () => {
     mockMessageUpdateMutate.mockReset();
     mockMessageReactByKnowledgeMutate.mockReset();
     mockKnowledgeDocumentUpdateMutate.mockReset();
-    mockKnowledgeReindexDocumentAction.mockReset();
-    mockProfileDocumentRelations = [];
+    mockKnowledgeReindexDocumentMutateAsync.mockReset();
+    mockKnowledgeDocumentFindRefetch.mockReset();
     mockKnowledgeDocuments = [];
-    mockKnowledgeReindexDocumentAction.mockResolvedValue({
+    mockKnowledgeReindexDocumentMutateAsync.mockResolvedValue({
       data: {
         indexed: 1,
         skipped: 0,
@@ -410,14 +373,6 @@ describe("Given: Knowledge chat command picker", () => {
    * Then: the Knowledge documents sidebar is visible.
    */
   it("When: rendering a Knowledge chat Then: linked documents are shown", async () => {
-    mockProfileDocumentRelations = [
-      {
-        id: "relation-1",
-        profileId: "assistant-profile-1",
-        knowledgeModuleDocumentId: "document-1",
-        orderIndex: 0,
-      },
-    ];
     mockKnowledgeDocuments = [
       {
         id: "document-1",
@@ -462,14 +417,6 @@ describe("Given: Knowledge chat command picker", () => {
    * Then: the document is updated without triggering reindex.
    */
   it("When: saving a document Then: it updates without reindexing", async () => {
-    mockProfileDocumentRelations = [
-      {
-        id: "relation-1",
-        profileId: "assistant-profile-1",
-        knowledgeModuleDocumentId: "document-1",
-        orderIndex: 0,
-      },
-    ];
     mockKnowledgeDocuments = [
       {
         id: "document-1",
@@ -508,7 +455,13 @@ describe("Given: Knowledge chat command picker", () => {
     await waitFor(() => {
       expect(mockKnowledgeDocumentUpdateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: "document-1",
+          id: "subject-1",
+          socialModuleProfileId: "profile-1",
+          knowledgeModuleDocumentId: "document-1",
+          params: {
+            targetSocialModuleProfileId: "assistant-profile-1",
+            socialModuleChatId: "chat-1",
+          },
           data: expect.objectContaining({
             title: "Policy updated",
           }),
@@ -516,7 +469,7 @@ describe("Given: Knowledge chat command picker", () => {
         expect.any(Object),
       );
     });
-    expect(mockKnowledgeReindexDocumentAction).not.toHaveBeenCalled();
+    expect(mockKnowledgeReindexDocumentMutateAsync).not.toHaveBeenCalled();
   });
 
   /**
@@ -525,15 +478,7 @@ describe("Given: Knowledge chat command picker", () => {
    * When: the user clicks Reindex.
    * Then: the document reindex action runs for that document.
    */
-  it("When: reindexing a document Then: it calls the Knowledge reindex action", async () => {
-    mockProfileDocumentRelations = [
-      {
-        id: "relation-1",
-        profileId: "assistant-profile-1",
-        knowledgeModuleDocumentId: "document-1",
-        orderIndex: 0,
-      },
-    ];
+  it("When: reindexing a document Then: it calls the RBAC scoped reindex action", async () => {
     mockKnowledgeDocuments = [
       {
         id: "document-1",
@@ -558,8 +503,14 @@ describe("Given: Knowledge chat command picker", () => {
     fireEvent.click(screen.getByText("Reindex"));
 
     await waitFor(() => {
-      expect(mockKnowledgeReindexDocumentAction).toHaveBeenCalledWith({
-        id: "document-1",
+      expect(mockKnowledgeReindexDocumentMutateAsync).toHaveBeenCalledWith({
+        id: "subject-1",
+        socialModuleProfileId: "profile-1",
+        knowledgeModuleDocumentId: "document-1",
+        params: {
+          targetSocialModuleProfileId: "assistant-profile-1",
+          socialModuleChatId: "chat-1",
+        },
       });
     });
   });

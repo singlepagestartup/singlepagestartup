@@ -11,6 +11,7 @@ import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { createHash } from "node:crypto";
 
 interface IRequestBody {
   transcript?: string;
@@ -95,17 +96,35 @@ export class Handler {
         skill,
         requested: body.modelSlug,
       });
-      const knowledgeIngest = await this.knowledgeService.ingestTranscript({
-        profileId: socialModuleProfileId,
-        chatId: socialModuleChatId,
-        threadId: socialModuleThreadId,
-        skillId: socialModuleSkillId,
-        skillSlug: skill.slug,
+      const transcriptHash = this.sha256(transcript);
+      const knowledgeIngest = await this.knowledgeService.learnContent({
+        slug: this.toSlug(
+          [
+            "knowledge",
+            socialModuleProfileId,
+            socialModuleThreadId,
+            socialModuleSkillId,
+            transcriptHash.slice(0, 16),
+          ].join("-"),
+        ),
         title: body.title || skill.title,
-        transcript,
+        content: transcript,
+        summary: "Transcript imported from social skill run",
         metadata: {
+          sourceKind: "transcript",
+          sourceSystem: "social-skill",
+          socialModuleProfileId,
+          socialModuleChatId,
+          socialModuleThreadId,
+          socialModuleSkillId,
+          socialModuleSkillSlug: skill.slug,
           socialSkillTitle: skill.title,
+          transcriptHash,
         },
+      });
+      await this.ensureProfileKnowledgeDocumentRelation({
+        socialModuleProfileId,
+        knowledgeModuleDocumentId: knowledgeIngest.document.id,
       });
       const prompt = this.buildPrompt({
         profile,
@@ -267,6 +286,43 @@ export class Handler {
     }
   }
 
+  private async ensureProfileKnowledgeDocumentRelation(props: {
+    socialModuleProfileId: string;
+    knowledgeModuleDocumentId: string;
+  }) {
+    const existing =
+      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "knowledgeModuleDocumentId",
+                method: "eq",
+                value: props.knowledgeModuleDocumentId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      });
+
+    if (existing?.length) {
+      return existing[0];
+    }
+
+    return this.service.socialModule.profilesToKnowledgeModuleDocuments.create({
+      data: {
+        profileId: props.socialModuleProfileId,
+        knowledgeModuleDocumentId: props.knowledgeModuleDocumentId,
+      },
+    });
+  }
+
   private async isSubjectAdmin(subjectId: string): Promise<boolean> {
     const subjectsToRoles = await this.service.subjectsToRoles.find({
       params: {
@@ -370,6 +426,18 @@ export class Handler {
     } catch {
       return "";
     }
+  }
+
+  private toSlug(value: string) {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 180);
+  }
+
+  private sha256(value: string) {
+    return createHash("sha256").update(value, "utf8").digest("hex");
   }
 
   private buildUserMessageContent(props: {

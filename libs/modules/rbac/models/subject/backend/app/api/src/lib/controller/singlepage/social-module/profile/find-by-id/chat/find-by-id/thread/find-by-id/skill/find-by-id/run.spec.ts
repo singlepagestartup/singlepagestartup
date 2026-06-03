@@ -3,10 +3,10 @@
  *
  * Given: a social profile has profile-scoped skills.
  * When: the subject runs a selected skill from a chat thread.
- * Then: the transcript is ingested into Knowledge and the generated output is saved only as chat messages.
+ * Then: the transcript is learned by Knowledge and the generated output is saved only as chat messages.
  */
 
-const mockKnowledgeIngestTranscript = jest.fn();
+const mockKnowledgeLearnContent = jest.fn();
 const mockLlmComplete = jest.fn();
 const mockSocialModuleMessageCreate = jest.fn();
 const mockSocialModuleProfilesToMessagesCreate = jest.fn();
@@ -43,8 +43,8 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
   return {
     KnowledgeService: jest.fn().mockImplementation(() => {
       return {
-        ingestTranscript: (...args: unknown[]) =>
-          mockKnowledgeIngestTranscript(...args),
+        learnContent: (...args: unknown[]) =>
+          mockKnowledgeLearnContent(...args),
       };
     }),
   };
@@ -143,6 +143,12 @@ function createService(
           ],
         ),
       },
+      profilesToKnowledgeModuleDocuments: {
+        find: jest.fn().mockResolvedValue([]),
+        create: jest.fn().mockResolvedValue({
+          id: "profile-document-relation-1",
+        }),
+      },
       profile: {
         findById: jest.fn().mockResolvedValue({
           id: "profile-1",
@@ -178,7 +184,7 @@ describe("Given: rbac social skill transcript run", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockKnowledgeIngestTranscript.mockResolvedValue({
+    mockKnowledgeLearnContent.mockResolvedValue({
       document: {
         id: "knowledge-document-1",
       },
@@ -213,25 +219,42 @@ describe("Given: rbac social skill transcript run", () => {
    * BDD Scenario
    * Given: the selected skill is linked to the profile.
    * When: the skill run endpoint receives a transcript.
-   * Then: Knowledge stores the transcript and the assistant message stores the generated output.
+   * Then: Knowledge stores generic transcript content and RBAC links the document to the profile.
    */
-  it("When: profile skill is run Then: transcript is ingested and generation is saved as assistant message", async () => {
-    const handler = new Handler(createService());
+  it("When: profile skill is run Then: transcript is learned and generation is saved as assistant message", async () => {
+    const service = createService();
+    const handler = new Handler(service);
     const context = createContext({
       title: "Video title",
     });
 
     await handler.execute(context, jest.fn());
 
-    expect(mockKnowledgeIngestTranscript).toHaveBeenCalledWith(
+    expect(mockKnowledgeLearnContent).toHaveBeenCalledWith(
       expect.objectContaining({
-        profileId: "profile-1",
-        chatId: "chat-1",
-        threadId: "thread-1",
-        skillId: "skill-1",
-        skillSlug: "youtube-description",
+        slug: expect.stringMatching(/^knowledge-profile-1-thread-1-skill-1-/),
         title: "Video title",
-        transcript: "Video transcript",
+        content: "Video transcript",
+        summary: "Transcript imported from social skill run",
+        metadata: expect.objectContaining({
+          sourceKind: "transcript",
+          sourceSystem: "social-skill",
+          socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          socialModuleThreadId: "thread-1",
+          socialModuleSkillId: "skill-1",
+          socialModuleSkillSlug: "youtube-description",
+        }),
+      }),
+    );
+    expect(
+      service.socialModule.profilesToKnowledgeModuleDocuments.create,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          profileId: "profile-1",
+          knowledgeModuleDocumentId: "knowledge-document-1",
+        },
       }),
     );
     expect(mockLlmComplete).toHaveBeenCalledWith(
@@ -290,7 +313,7 @@ describe("Given: rbac social skill transcript run", () => {
     await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
       "Requested social skill is not linked to profile",
     );
-    expect(mockKnowledgeIngestTranscript).not.toHaveBeenCalled();
+    expect(mockKnowledgeLearnContent).not.toHaveBeenCalled();
     expect(mockLlmComplete).not.toHaveBeenCalled();
   });
 });

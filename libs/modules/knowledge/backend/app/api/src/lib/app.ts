@@ -104,12 +104,6 @@ export class App implements IDefaultApp<Env> {
       return c.json({ data });
     });
 
-    this.hono.post("/chat/messages", async (c) => {
-      const service = new KnowledgeService();
-      const data = await service.chatMessage(await c.req.json());
-      return c.json({ data });
-    });
-
     this.hono.post("/edit-suggestions/:id/approve", async (c) => {
       const service = new KnowledgeService();
       const data = await service.approveEditSuggestion(c.req.param("id"));

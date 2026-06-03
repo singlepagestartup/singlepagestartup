@@ -58,24 +58,20 @@ describe("knowledge vector repository contract", () => {
   });
 
   /**
-   * BDD Scenario: chat learn upsert payload normalization.
+   * BDD Scenario: generic document upsert payload normalization.
    *
-   * Given: a file-backed /learn request contains Date values from upstream data.
-   * When: the repository creates the deterministic Knowledge document.
-   * Then: hash, slug, document payload, and metadata are normalized before insert.
+   * Given: a caller-provided learn request contains Date values from upstream data.
+   * When: the repository upserts a generic Knowledge document by slug.
+   * Then: document payload and metadata are serialized before insert.
    */
-  it("normalizes file-backed chat learn values before document upsert", async () => {
-    const execute = jest
-      .fn()
-      .mockResolvedValueOnce([
-        {
-          id: "document-1",
-          slug: "social-chat-learn-profile-message-file-hash",
-          title: "2026-01-03T00:00:00.000Z",
-        },
-      ])
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ id: "profile-document-relation-1" }]);
+  it("normalizes learned document values before document upsert", async () => {
+    const execute = jest.fn().mockResolvedValueOnce([
+      {
+        id: "document-1",
+        slug: "knowledge-profile-message-file-hash",
+        title: "2026-01-03T00:00:00.000Z",
+      },
+    ]);
     const db = {
       execute,
     };
@@ -83,18 +79,14 @@ describe("knowledge vector repository contract", () => {
     jest.mocked(getDrizzle).mockReturnValue(db as any);
 
     const repository = new KnowledgeRepository();
-    const result = await repository.upsertChatLearnDocumentForProfile({
-      profileId: "profile-1",
-      chatId: "chat-1",
-      threadId: "thread-1",
-      messageId: "message-1",
-      fileId: new Date("2026-01-01T00:00:00.000Z") as any,
-      fileName: new Date("2026-01-02T00:00:00.000Z") as any,
-      filePath: new Date("2026-01-03T00:00:00.000Z") as any,
+    const result = await repository.upsertDocumentBySlug({
+      slug: "knowledge-profile-message-file-hash",
       title: new Date("2026-01-04T00:00:00.000Z") as any,
-      content: new Date("2026-01-05T00:00:00.000Z") as any,
+      description: new Date("2026-01-05T00:00:00.000Z") as any,
+      summary: new Date("2026-01-06T00:00:00.000Z") as any,
+      status: "imported",
       metadata: {
-        uploadedAt: new Date("2026-01-06T00:00:00.000Z"),
+        uploadedAt: new Date("2026-01-07T00:00:00.000Z"),
       },
     });
     const documentQuery = execute.mock.calls[0][0];
@@ -102,21 +94,38 @@ describe("knowledge vector repository contract", () => {
     const documentQueryText = JSON.stringify(documentQueryValues);
 
     expect(result.id).toBe("document-1");
-    expect(documentQueryText).toContain("2026-01-05T00:00:00.000Z");
-    expect(documentQueryText).toContain(
-      "social-chat-learn-profile-1-message-1",
-    );
-    expect(documentQueryText).toContain("fileId");
-    expect(documentQueryText).toContain("2026-01-01T00:00:00.000Z");
-    expect(documentQueryText).toContain("fileName");
-    expect(documentQueryText).toContain("2026-01-02T00:00:00.000Z");
-    expect(documentQueryText).toContain("filePath");
-    expect(documentQueryText).toContain("2026-01-03T00:00:00.000Z");
+    expect(documentQueryText).toContain("knowledge-profile-message-file-hash");
     expect(documentQueryText).toContain("uploadedAt");
-    expect(documentQueryText).toContain("2026-01-06T00:00:00.000Z");
+    expect(documentQueryText).toContain("2026-01-07T00:00:00.000Z");
     expect(documentQueryValues.some((value) => value instanceof Date)).toBe(
       false,
     );
+  });
+
+  /**
+   * BDD Scenario: one-way module boundary.
+   *
+   * Given: Knowledge is a generic lower-level RAG module.
+   * When: Knowledge runtime source is inspected.
+   * Then: it has no Social imports, Social tables, or chat-message endpoint.
+   */
+  it("does not access Social runtime code or tables", () => {
+    const runtimeFiles = [
+      "libs/modules/knowledge/backend/app/api/src/lib/app.ts",
+      "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      "libs/modules/knowledge/backend/app/api/src/lib/service.ts",
+    ].map((filePath) => {
+      return readFileSync(resolve(process.cwd(), filePath), "utf-8");
+    });
+    const runtimeSource = runtimeFiles.join("\n");
+
+    expect(runtimeSource).not.toContain("@sps/social");
+    expect(runtimeSource).not.toContain("sl_profile");
+    expect(runtimeSource).not.toContain("sl_ps_to_ke");
+    expect(runtimeSource).not.toContain("sl_chat");
+    expect(runtimeSource).not.toContain("sl_thread");
+    expect(runtimeSource).not.toContain("sl_message");
+    expect(runtimeSource).not.toContain("/chat/messages");
   });
 
   /**

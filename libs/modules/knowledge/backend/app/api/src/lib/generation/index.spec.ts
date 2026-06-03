@@ -11,10 +11,10 @@ import { buildGroundedPrompt, LlmChatClient } from ".";
 const contexts = [
   {
     id: "chunk-1",
-    text: "Self-storage facilities can reuse empty retail spaces.",
+    text: "Product documentation can reuse indexed knowledge fragments.",
     chunkIndex: 0,
-    sourceTitle: "Storage source",
-    sourceOriginalPath: "content.txt",
+    sourceTitle: "Documentation source",
+    sourceOriginalPath: "knowledge.md",
     sourceType: "text",
     distance: 0.1,
     similarity: 0.9,
@@ -54,7 +54,7 @@ describe("knowledge LLM generation client", () => {
 
     await expect(
       client.generate({
-        query: "storage",
+        query: "documentation",
         contexts,
         model: "qwen/qwen3-1-7b",
       }),
@@ -102,7 +102,7 @@ describe("knowledge LLM generation client", () => {
 
     await expect(
       client.generate({
-        query: "storage",
+        query: "documentation",
         contexts,
         model: "qwen/qwen3-1-7b",
       }),
@@ -125,18 +125,18 @@ describe("knowledge LLM generation client", () => {
   /**
    * BDD Scenario: ambiguous entity names.
    *
-   * Given: a user asks about an ambiguous Russian term.
+   * Given: a user asks about an ambiguous term.
    * When: the RAG prompt is assembled.
    * Then: the model is instructed to separate meanings instead of blending them.
    */
   it("instructs the model to disambiguate ambiguous terms", () => {
     const prompt = buildGroundedPrompt({
-      query: "Магнит это хороший арендатор?",
+      query: "What does Delta mean here?",
       contexts,
     });
 
     expect(prompt).toContain("Disambiguate ambiguous terms");
-    expect(prompt).toContain("Магнит");
-    expect(prompt).toContain("physical magnet");
+    expect(prompt).toContain("Delta");
+    expect(prompt).toContain("river delta");
   });
 });

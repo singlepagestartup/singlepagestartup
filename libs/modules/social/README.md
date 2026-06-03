@@ -26,7 +26,7 @@ The Social module manages profiles, chats, messages, and related social interact
 
 `social.chat.variant="knowledge"` is the explicit switch for profile-scoped Knowledge/RAG behavior. In this mode, agent profiles with `variant="artificial-intelligence"` and slugs like `chat-gpt-*` reply through the RBAC Knowledge reaction endpoint instead of the default OpenRouter flow.
 
-Users can send `/learn` in the existing chat UI to add the current message text and supported text/markdown attachments to the replying AI profile's Knowledge base. The resulting Knowledge documents are linked only to that AI profile through `profiles-to-knowledge-module-documents`, indexed into embeddings by the Knowledge module, and later used only when that same profile answers questions in Knowledge chats.
+Users can send `/learn` in the existing chat UI to add the current message text and supported text/markdown attachments to the replying AI profile's Knowledge base. RBAC orchestrates the call to generic Knowledge learning and then creates the Social-owned `profiles-to-knowledge-module-documents` relation. Later Knowledge chat questions use only the document ids linked to the replying AI profile; Knowledge itself does not read Social profile or relation tables.
 
 `default` and `telegram` chat variants keep the existing non-RAG behavior.
 

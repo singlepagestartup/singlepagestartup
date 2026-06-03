@@ -6,7 +6,7 @@
  * Then: the handler validates the chat mode and scopes Knowledge calls to the replying AI profile.
  */
 
-const mockKnowledgeLearnFromChatMessage = jest.fn();
+const mockKnowledgeLearnContent = jest.fn();
 const mockKnowledgeGenerate = jest.fn();
 const mockSocialModuleMessageCreate = jest.fn();
 const mockSocialModuleProfilesToMessagesCreate = jest.fn();
@@ -35,7 +35,7 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
   return {
     KnowledgeService: jest.fn().mockImplementation(() => {
       return {
-        learnFromChatMessage: mockKnowledgeLearnFromChatMessage,
+        learnContent: mockKnowledgeLearnContent,
         generate: mockKnowledgeGenerate,
       };
     }),
@@ -107,6 +107,7 @@ function createService(props?: {
   chatVariant?: string;
   messageDescription?: string;
   replyProfileVariant?: string;
+  knowledgeDocumentRelations?: unknown[];
 }) {
   return {
     socialModuleChatLifecycleEnsureDefaultThreadForChat: jest
@@ -154,6 +155,14 @@ function createService(props?: {
       messagesToFileStorageModuleFiles: {
         find: jest.fn().mockResolvedValue([]),
       },
+      profilesToKnowledgeModuleDocuments: {
+        find: jest
+          .fn()
+          .mockResolvedValue(props?.knowledgeDocumentRelations || []),
+        create: jest.fn().mockResolvedValue({
+          id: "profile-document-relation-1",
+        }),
+      },
       chat: {
         findById: jest.fn().mockResolvedValue({
           id: "chat-1",
@@ -192,10 +201,10 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockKnowledgeLearnFromChatMessage.mockResolvedValue({
+    mockKnowledgeLearnContent.mockResolvedValue({
       document: {
         id: "document-1",
-        slug: "social-chat-learn-profile-message-hash",
+        slug: "knowledge-assistant-profile-1-message-1-message-hash",
         title: "Stored context",
       },
       index: {
@@ -238,13 +247,32 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
 
     await handler.execute(context, jest.fn());
 
-    expect(mockKnowledgeLearnFromChatMessage).toHaveBeenCalledWith(
+    expect(mockKnowledgeLearnContent).toHaveBeenCalledWith(
       expect.objectContaining({
-        profileId: "assistant-profile-1",
-        chatId: "chat-1",
-        threadId: "thread-1",
-        messageId: "message-1",
+        slug: expect.stringMatching(
+          /^knowledge-assistant-profile-1-message-1-message-/,
+        ),
+        title: "Stored context",
         content: "Stored context",
+        summary: "Content learned from social chat message",
+        metadata: expect.objectContaining({
+          assistantSocialModuleProfileId: "assistant-profile-1",
+          socialModuleChatId: "chat-1",
+          socialModuleThreadId: "thread-1",
+          socialModuleMessageId: "message-1",
+          triggerMessageId: "message-1",
+        }),
+      }),
+    );
+    expect(
+      (handler.service as any).socialModule.profilesToKnowledgeModuleDocuments
+        .create,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          profileId: "assistant-profile-1",
+          knowledgeModuleDocumentId: "document-1",
+        },
       }),
     );
     expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
@@ -296,12 +324,45 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
 
     await handler.execute(createContext(), jest.fn());
 
-    expect(mockKnowledgeLearnFromChatMessage).toHaveBeenCalledWith(
+    expect(mockKnowledgeLearnContent).toHaveBeenCalledWith(
       expect.objectContaining({
-        fileId: "file-1",
+        slug: expect.stringMatching(
+          /^knowledge-assistant-profile-1-message-1-file-1-/,
+        ),
         content: "2026-01-01T00:00:00.000Z",
+        metadata: expect.objectContaining({
+          fileId: "file-1",
+          fileName: "content.txt",
+          filePath: "uploads/content.txt",
+        }),
       }),
     );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a /learn request produces a document already linked to the AI profile.
+   * When: the subject asks the AI profile to learn through Knowledge again.
+   * Then: RBAC does not duplicate the profile-document relation.
+   */
+  it("When: /learn repeats an existing document Then: it does not duplicate the profile relation", async () => {
+    const service = createService({
+      knowledgeDocumentRelations: [
+        {
+          id: "profile-document-relation-1",
+          profileId: "assistant-profile-1",
+          knowledgeModuleDocumentId: "document-1",
+        },
+      ],
+    });
+    const handler = new Handler(service);
+
+    await handler.execute(createContext(), jest.fn());
+
+    expect(mockKnowledgeLearnContent).toHaveBeenCalled();
+    expect(
+      service.socialModule.profilesToKnowledgeModuleDocuments.create,
+    ).not.toHaveBeenCalled();
   });
 
   /**
@@ -320,7 +381,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
       'chat.variant="knowledge"',
     );
-    expect(mockKnowledgeLearnFromChatMessage).not.toHaveBeenCalled();
+    expect(mockKnowledgeLearnContent).not.toHaveBeenCalled();
   });
 
   /**
@@ -339,7 +400,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
       'variant="artificial-intelligence"',
     );
-    expect(mockKnowledgeLearnFromChatMessage).not.toHaveBeenCalled();
+    expect(mockKnowledgeLearnContent).not.toHaveBeenCalled();
     expect(mockKnowledgeGenerate).not.toHaveBeenCalled();
   });
 
@@ -364,7 +425,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
       "Reply social-module profile is not connected to chat",
     );
-    expect(mockKnowledgeLearnFromChatMessage).not.toHaveBeenCalled();
+    expect(mockKnowledgeLearnContent).not.toHaveBeenCalled();
     expect(mockKnowledgeGenerate).not.toHaveBeenCalled();
   });
 
@@ -378,6 +439,11 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     const handler = new Handler(
       createService({
         messageDescription: "What should we answer?",
+        knowledgeDocumentRelations: [
+          {
+            knowledgeModuleDocumentId: "document-1",
+          },
+        ],
       }),
     );
 
@@ -386,7 +452,10 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
       expect.objectContaining({
         query: "What should we answer?",
-        profileId: "assistant-profile-1",
+        documentIds: ["document-1"],
+        persona: expect.objectContaining({
+          title: "chat-gpt-1",
+        }),
       }),
     );
     expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
@@ -397,6 +466,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
             knowledge: expect.objectContaining({
               action: "generate",
               profileId: "assistant-profile-1",
+              documentIds: ["document-1"],
               citations: [
                 {
                   id: "chunk-1",
@@ -406,6 +476,29 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
             }),
           },
         }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an AI profile has no linked Knowledge documents.
+   * When: a normal question is asked in a Knowledge chat.
+   * Then: RBAC passes an empty document scope instead of using global Knowledge.
+   */
+  it("When: the AI profile has no documents Then: it passes an empty document scope", async () => {
+    const handler = new Handler(
+      createService({
+        messageDescription: "What should we answer?",
+      }),
+    );
+
+    await handler.execute(createContext(), jest.fn());
+
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "What should we answer?",
+        documentIds: [],
       }),
     );
   });

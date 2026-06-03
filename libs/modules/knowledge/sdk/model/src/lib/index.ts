@@ -72,21 +72,6 @@ export interface IKnowledgeGenerateResponse {
   };
 }
 
-export interface IKnowledgeChatMessageResponse {
-  data: {
-    threadId: string;
-    userMessageId: string;
-    assistantMessageId: string;
-    editSuggestionId?: string;
-    answer: string;
-    sources: IKnowledgeSourceReference[];
-    generationModelSlug: string;
-    generationProvider: KnowledgeModelProvider;
-    generationModel: string;
-    usage?: IKnowledgeGenerationUsage;
-  };
-}
-
 export interface IKnowledgeModelsResponse {
   data: KnowledgeModelOption[];
 }

@@ -15,7 +15,6 @@ import {
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
-import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -73,40 +72,24 @@ export class KnowledgeRepository {
     return document;
   }
 
-  async findDocumentsByProfileId(profileId: string) {
-    const rows = await this.db.execute<Record<string, unknown>>(sql`
-      SELECT
-        d.id,
-        d.title,
-        d.slug,
-        d.description,
-        d.status,
-        d.summary,
-        d.tags,
-        d.metadata,
-        d.content_hash AS "contentHash",
-        d.last_indexed_at AS "lastIndexedAt"
-      FROM sps_ke_document d
-      INNER JOIN sl_ps_to_ke_me_ds_gch pd ON pd.ke_me_dt_id = d.id
-      WHERE pd.pe_id = ${profileId}
-      ORDER BY pd.order_index ASC, pd.created_at ASC
-    `);
+  async findDocumentsByIds(documentIds: string[]) {
+    const ids = Array.from(
+      new Set(
+        documentIds
+          .map((documentId) => this.toStringValue(documentId).trim())
+          .filter((documentId) => Boolean(documentId)),
+      ),
+    );
 
-    return rows.map((row) => {
-      return {
-        id: String(row.id),
-        title: String(row.title),
-        slug: String(row.slug),
-        description: String(row.description),
-        status: String(row.status),
-        summary: typeof row.summary === "string" ? row.summary : null,
-        tags: Array.isArray(row.tags) ? row.tags : [],
-        metadata: this.toRecord(row.metadata),
-        contentHash: String(row.contentHash || ""),
-        lastIndexedAt:
-          row.lastIndexedAt instanceof Date ? row.lastIndexedAt : null,
-      };
-    });
+    if (!ids.length) {
+      return [];
+    }
+
+    return this.db
+      .select()
+      .from(DocumentTable)
+      .where(inArray(DocumentTable.id, ids))
+      .execute();
   }
 
   async listDocumentsForIndex(props?: {
@@ -249,131 +232,6 @@ export class KnowledgeRepository {
       .execute();
 
     return updated;
-  }
-
-  async upsertTranscriptDocumentForProfile(props: {
-    profileId: string;
-    chatId: string;
-    threadId: string;
-    skillId: string;
-    skillSlug?: string | null;
-    title?: string | null;
-    transcript: string;
-    metadata?: Record<string, unknown>;
-  }) {
-    const profileId = this.toStringValue(props.profileId).trim();
-    const chatId = this.toStringValue(props.chatId).trim();
-    const threadId = this.toStringValue(props.threadId).trim();
-    const skillId = this.toStringValue(props.skillId).trim();
-    const skillSlug = this.toStringValue(props.skillSlug).trim() || null;
-    const transcript = this.toStringValue(props.transcript);
-    const transcriptHash = this.sha256(transcript);
-    const title =
-      this.toStringValue(props.title).trim() ||
-      this.toTitle(transcript) ||
-      "Social skill transcript";
-    const slug = this.toSlug(
-      [
-        "social-skill",
-        profileId,
-        threadId,
-        skillId,
-        transcriptHash.slice(0, 16),
-      ].join("-"),
-    );
-    const metadata = {
-      ...this.toSerializableRecord(props.metadata),
-      sourceKind: "transcript",
-      sourceSystem: "social-skill",
-      profileId,
-      chatId,
-      threadId,
-      skillId,
-      skillSlug,
-      transcriptHash,
-    };
-
-    const document = await this.upsertDocumentBySlug({
-      slug,
-      title,
-      description: transcript,
-      summary: "Transcript imported from social skill chat",
-      status: "imported",
-      metadata,
-    });
-
-    await this.ensureProfileDocumentRelation({
-      profileId,
-      documentId: document.id,
-    });
-
-    return document;
-  }
-
-  async upsertChatLearnDocumentForProfile(props: {
-    profileId: string;
-    chatId: string;
-    threadId: string;
-    messageId: string;
-    fileId?: string | null;
-    fileName?: string | null;
-    filePath?: string | null;
-    title?: string | null;
-    content: string;
-    metadata?: Record<string, unknown>;
-  }) {
-    const profileId = this.toStringValue(props.profileId).trim();
-    const chatId = this.toStringValue(props.chatId).trim();
-    const threadId = this.toStringValue(props.threadId).trim();
-    const messageId = this.toStringValue(props.messageId).trim();
-    const fileId = this.toStringValue(props.fileId).trim() || null;
-    const fileName = this.toStringValue(props.fileName).trim() || null;
-    const filePath = this.toStringValue(props.filePath).trim() || null;
-    const content = this.toStringValue(props.content);
-    const contentHash = this.sha256(content);
-    const title =
-      this.toStringValue(props.title).trim() ||
-      fileName ||
-      this.toTitle(content) ||
-      "Social chat knowledge";
-    const slug = this.toSlug(
-      [
-        "social-chat-learn",
-        profileId,
-        messageId,
-        fileId || "message",
-        contentHash.slice(0, 16),
-      ].join("-"),
-    );
-    const metadata = {
-      ...this.toSerializableRecord(props.metadata),
-      sourceKind: "chat-message",
-      sourceSystem: "social-chat-learn",
-      profileId,
-      chatId,
-      threadId,
-      messageId,
-      fileId,
-      fileName,
-      filePath,
-      contentHash,
-    };
-
-    const document = await this.upsertDocumentBySlug({
-      slug,
-      title,
-      description: content,
-      summary: "Content learned from social chat message",
-      status: "imported",
-      metadata,
-    });
-
-    await this.ensureProfileDocumentRelation({
-      profileId,
-      documentId: document.id,
-    });
-
-    return document;
   }
 
   async createDocumentFromSuggestion(props: {
@@ -633,229 +491,6 @@ export class KnowledgeRepository {
     return this.hasIndexedChunks(sourceId, contentHash);
   }
 
-  async findProfileById(profileId: string) {
-    const [profile] = await this.db.execute<{
-      id: string;
-      adminTitle: string;
-      description: unknown;
-    }>(sql`
-      SELECT
-        id,
-        admin_title AS "adminTitle",
-        description
-      FROM sl_profile
-      WHERE id = ${profileId}
-      LIMIT 1
-    `);
-
-    return profile;
-  }
-
-  async createKnowledgeThread(props: { profileId: string; message: string }) {
-    const title = this.toTitle(props.message) || "Knowledge chat";
-    const suffix = Date.now().toString(36);
-    const chatId = randomUUID();
-    const threadId = randomUUID();
-    const now = new Date();
-
-    const [chat] = await this.db.execute<{ id: string }>(sql`
-      INSERT INTO sl_chat (
-        id,
-        created_at,
-        updated_at,
-        title,
-        description,
-        admin_title,
-        slug,
-        source_system_id
-      )
-      VALUES (
-        ${chatId},
-        ${now},
-        ${now},
-        ${title},
-        ${"Knowledge profile-scoped chat"},
-        ${title},
-        ${this.toSlug(`knowledge-chat-${title}-${suffix}`)},
-        ${"knowledge"}
-      )
-      RETURNING *
-    `);
-
-    await this.db.execute(sql`
-      INSERT INTO sl_ps_to_cs_m2s (
-        id,
-        created_at,
-        updated_at,
-        pe_id,
-        ct_id
-      )
-      VALUES (
-        ${randomUUID()},
-        ${now},
-        ${now},
-        ${props.profileId},
-        ${chatId}
-      )
-    `);
-
-    const [thread] = await this.db.execute<{ id: string }>(sql`
-      INSERT INTO sl_thread (
-        id,
-        created_at,
-        updated_at,
-        title,
-        description,
-        admin_title,
-        slug,
-        source_system_id
-      )
-      VALUES (
-        ${threadId},
-        ${now},
-        ${now},
-        ${title},
-        ${"Knowledge profile-scoped thread"},
-        ${title},
-        ${this.toSlug(`knowledge-thread-${title}-${suffix}`)},
-        ${"knowledge"}
-      )
-      RETURNING *
-    `);
-
-    await this.db.execute(sql`
-      INSERT INTO sl_cs_to_ts_v33 (
-        id,
-        created_at,
-        updated_at,
-        ct_id,
-        td_id
-      )
-      VALUES (
-        ${randomUUID()},
-        ${now},
-        ${now},
-        ${chatId},
-        ${threadId}
-      )
-    `);
-
-    return { chat, thread };
-  }
-
-  async createThreadMessage(props: {
-    profileId: string;
-    threadId: string;
-    role: "user" | "assistant";
-    content: string;
-    metadata?: Record<string, unknown>;
-  }) {
-    const title = this.toTitle(props.content) || props.role;
-    const messageId = randomUUID();
-    const now = new Date();
-    const interaction = {
-      role: props.role,
-      content: props.content,
-    };
-    const metadata = props.metadata || {};
-
-    const [message] = await this.db.execute<{ id: string }>(sql`
-      INSERT INTO sl_message (
-        id,
-        created_at,
-        updated_at,
-        title,
-        description,
-        source_system_id,
-        interaction,
-        metadata
-      )
-      VALUES (
-        ${messageId},
-        ${now},
-        ${now},
-        ${title},
-        ${props.content},
-        ${"knowledge"},
-        CAST(${JSON.stringify(interaction)} AS jsonb),
-        CAST(${JSON.stringify(metadata)} AS jsonb)
-      )
-      RETURNING *
-    `);
-
-    await this.db.execute(sql`
-      INSERT INTO sl_ts_to_ms_2n4 (
-        id,
-        created_at,
-        updated_at,
-        td_id,
-        me_id
-      )
-      VALUES (
-        ${randomUUID()},
-        ${now},
-        ${now},
-        ${props.threadId},
-        ${messageId}
-      )
-    `);
-
-    await this.db.execute(sql`
-      INSERT INTO sl_ps_to_ms_b03 (
-        id,
-        created_at,
-        updated_at,
-        pe_id,
-        me_id
-      )
-      VALUES (
-        ${randomUUID()},
-        ${now},
-        ${now},
-        ${props.profileId},
-        ${messageId}
-      )
-    `);
-
-    return message;
-  }
-
-  async listThreadMessages(threadId: string, limit = 8) {
-    const rows = await this.db.execute<{
-      id: string;
-      createdAt: Date;
-      interaction: unknown;
-      description: string | null;
-    }>(sql`
-      SELECT
-        m.id,
-        m.created_at AS "createdAt",
-        m.interaction,
-        m.description
-      FROM sl_message m
-      INNER JOIN sl_ts_to_ms_2n4 tm ON tm.me_id = m.id
-      WHERE tm.td_id = ${threadId}
-      ORDER BY m.created_at DESC
-      LIMIT ${limit}
-    `);
-
-    return rows.reverse().map((row) => {
-      const interaction = this.toRecord(row.interaction);
-      const role: "user" | "assistant" =
-        interaction.role === "assistant" ? "assistant" : "user";
-      const content =
-        typeof interaction.content === "string"
-          ? interaction.content
-          : row.description || "";
-
-      return {
-        id: row.id,
-        role,
-        content,
-      };
-    });
-  }
-
   async findEditSuggestionById(id: string) {
     const [suggestion] = await this.db
       .select()
@@ -926,16 +561,6 @@ export class KnowledgeRepository {
     return this.toSlug(`${value}-${Date.now().toString(36)}`);
   }
 
-  private toTitle(value: string) {
-    return this.toStringValue(value).replace(/\s+/g, " ").trim().slice(0, 120);
-  }
-
-  private sha256(value: unknown) {
-    const input = this.toStringValue(value);
-
-    return createHash("sha256").update(input, "utf8").digest("hex");
-  }
-
   private toStringValue(value: unknown) {
     if (typeof value === "string") {
       return value;
@@ -1003,7 +628,7 @@ export class KnowledgeRepository {
     return {};
   }
 
-  private async upsertDocumentBySlug(props: {
+  async upsertDocumentBySlug(props: {
     slug: string;
     title: string;
     description: string;
@@ -1011,6 +636,14 @@ export class KnowledgeRepository {
     status: string;
     metadata: Record<string, unknown>;
   }) {
+    const slug = this.toStringValue(props.slug).trim();
+    const title = this.toStringValue(props.title);
+    const description = this.toStringValue(props.description);
+    const summary =
+      props.summary === null || props.summary === undefined
+        ? null
+        : this.toStringValue(props.summary);
+    const status = this.toStringValue(props.status) || "imported";
     const metadata = JSON.stringify(this.toSerializableRecord(props.metadata));
     const [document] = await this.db.execute<{
       id: string;
@@ -1037,14 +670,14 @@ export class KnowledgeRepository {
         updated_at
       )
       VALUES (
-        ${props.title},
-        ${props.description},
-        ${props.summary},
-        ${props.status},
+        ${title},
+        ${description},
+        ${summary},
+        ${status},
         CAST(${metadata} AS jsonb),
         ${""},
-        ${props.title},
-        ${props.slug},
+        ${title},
+        ${slug},
         NOW()
       )
       ON CONFLICT (slug) DO UPDATE SET
@@ -1071,53 +704,10 @@ export class KnowledgeRepository {
     `);
 
     if (!document?.id) {
-      throw new Error(
-        `Knowledge document upsert failed for slug ${props.slug}`,
-      );
+      throw new Error(`Knowledge document upsert failed for slug ${slug}`);
     }
 
     return document;
-  }
-
-  private async ensureProfileDocumentRelation(props: {
-    profileId: string;
-    documentId: string;
-  }) {
-    const [existing] = await this.db.execute<{ id: string }>(sql`
-      SELECT id
-      FROM sl_ps_to_ke_me_ds_gch
-      WHERE pe_id = ${props.profileId}
-        AND ke_me_dt_id = ${props.documentId}
-      LIMIT 1
-    `);
-
-    if (existing) {
-      return existing;
-    }
-
-    const [created] = await this.db.execute<{ id: string }>(sql`
-      INSERT INTO sl_ps_to_ke_me_ds_gch (
-        id,
-        created_at,
-        updated_at,
-        variant,
-        order_index,
-        pe_id,
-        ke_me_dt_id
-      )
-      VALUES (
-        ${randomUUID()},
-        NOW(),
-        NOW(),
-        ${"default"},
-        ${0},
-        ${props.profileId},
-        ${props.documentId}
-      )
-      RETURNING id
-    `);
-
-    return created;
   }
 
   private async findSourceFileRelation(sourceId: string) {

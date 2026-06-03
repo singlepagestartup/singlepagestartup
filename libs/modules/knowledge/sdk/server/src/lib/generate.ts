@@ -11,6 +11,11 @@ export interface IProps {
   topK?: number;
   minSimilarity?: number;
   generationModelSlug?: KnowledgeGenerationModelSlug;
+  documentIds?: string[];
+  persona?: {
+    title?: string | null;
+    description?: unknown;
+  };
   host?: string;
   options?: Partial<NextRequestOptions>;
 }
@@ -27,6 +32,8 @@ export async function action(props: IProps) {
       topK: props.topK,
       minSimilarity: props.minSimilarity,
       generationModelSlug: props.generationModelSlug,
+      documentIds: props.documentIds,
+      persona: props.persona,
     }),
     ...props.options,
   });

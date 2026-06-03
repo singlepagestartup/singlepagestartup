@@ -9,6 +9,7 @@ export interface IProps {
   query: string;
   topK?: number;
   minSimilarity?: number;
+  documentIds?: string[];
   host?: string;
   options?: Partial<NextRequestOptions>;
 }
@@ -24,6 +25,7 @@ export async function action(props: IProps) {
       query: props.query,
       topK: props.topK,
       minSimilarity: props.minSimilarity,
+      documentIds: props.documentIds,
     }),
     ...props.options,
   });

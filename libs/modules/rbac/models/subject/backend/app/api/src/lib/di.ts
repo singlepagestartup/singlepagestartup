@@ -35,6 +35,7 @@ export interface ISocialModule {
   attributeKey: IReadService;
   profilesToChats: IReadService;
   profilesToSkills: IReadService;
+  profilesToKnowledgeModuleDocuments: ICreateService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;
   profilesToAttributes: IReadService;

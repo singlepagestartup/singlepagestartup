@@ -53,16 +53,3 @@ export interface KnowledgeIndexResult {
     status: "indexed" | "skipped" | "dry_run";
   }[];
 }
-
-export interface KnowledgeChatMessageResult {
-  threadId: string;
-  userMessageId: string;
-  assistantMessageId: string;
-  editSuggestionId?: string;
-  answer: string;
-  sources: KnowledgeSearchResult[];
-  generationModelSlug: string;
-  generationProvider?: string;
-  generationModel?: string;
-  usage?: Record<string, unknown>;
-}

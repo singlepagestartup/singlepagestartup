@@ -57,6 +57,9 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from 
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge";
+import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFind } from "./social-module/profile/find-by-id/knowledge/document/find";
+import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/update";
+import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun } from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/skill/find-by-id/run";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
@@ -455,6 +458,26 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents",
+        handler: this.socialModuleProfileFindByIdKnowledgeDocumentFind,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "PATCH",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId",
+        handler:
+          this.socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
+        method: "POST",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId/reindex",
+        handler:
+          this.socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats",
         handler: this.socialModuleProfileFindByIdChatCreate,
@@ -823,6 +846,33 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdKnowledgeDocumentFind(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdKnowledgeDocumentFind(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex(
       this.service,
     ).execute(c, next);
   }

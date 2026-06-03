@@ -38,11 +38,11 @@ describe("knowledge content parser", () => {
   it("parses markdown transcripts", () => {
     const parsed = parseKnowledgeSourceFile({
       rootPath: "/content",
-      filePath: "/content/articles/self-storage/transcript.md",
-      content: "# Self Storage\nDescription body",
+      filePath: "/content/articles/product-docs/transcript.md",
+      content: "# Product Docs\nDescription body",
     });
 
-    expect(parsed.title).toBe("Self Storage");
+    expect(parsed.title).toBe("Product Docs");
     expect(parsed.type).toBe("transcript");
     expect(parsed.description).toBeNull();
     expect(parsed.contentHash).toHaveLength(64);

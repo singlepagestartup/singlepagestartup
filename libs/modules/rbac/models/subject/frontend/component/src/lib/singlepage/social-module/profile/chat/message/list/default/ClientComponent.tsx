@@ -5,12 +5,6 @@ import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as SocialModuleProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
 import { Component as SocialModuleProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import { api as SocialModuleProfilesToKnowledgeModuleDocumentsApi } from "@sps/social/relations/profiles-to-knowledge-module-documents/sdk/client";
-import { route as socialModuleProfilesToKnowledgeModuleDocumentsRoute } from "@sps/social/relations/profiles-to-knowledge-module-documents/sdk/model";
-import { api as knowledgeModuleDocumentApi } from "@sps/knowledge/models/document/sdk/client";
-import { route as knowledgeModuleDocumentRoute } from "@sps/knowledge/models/document/sdk/model";
-import type { IModel as IKnowledgeModuleDocument } from "@sps/knowledge/models/document/sdk/model";
-import { reindexDocument } from "@sps/knowledge/sdk/client";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { saveLanguageContext } from "@sps/shared-utils";
@@ -410,34 +404,24 @@ export function Component(props: IComponentPropsExtended) {
   const knowledgeAssistantProfileId = isKnowledgeChat
     ? props.knowledgeAssistantProfile?.id
     : undefined;
+  const knowledgeDocumentScopeParams = useMemo(() => {
+    if (!knowledgeAssistantProfileId) {
+      return undefined;
+    }
+
+    return {
+      targetSocialModuleProfileId: knowledgeAssistantProfileId,
+      socialModuleChatId: props.socialModuleChat.id,
+    };
+  }, [knowledgeAssistantProfileId, props.socialModuleChat.id]);
   const {
-    data: socialModuleProfilesToKnowledgeModuleDocuments,
-    isLoading: socialModuleProfilesToKnowledgeModuleDocumentsIsLoading,
-    refetch: refetchSocialModuleProfilesToKnowledgeModuleDocuments,
-  } = SocialModuleProfilesToKnowledgeModuleDocumentsApi.find({
-    params: {
-      filters: {
-        and: [
-          {
-            column: "profileId",
-            method: "eq",
-            value: knowledgeAssistantProfileId || "missing-profile",
-          },
-        ],
-      },
-      orderBy: {
-        and: [
-          {
-            column: "orderIndex",
-            method: "asc",
-          },
-          {
-            column: "createdAt",
-            method: "asc",
-          },
-        ],
-      },
-    },
+    data: knowledgeDocumentsQuery,
+    isLoading: knowledgeDocumentsLoading,
+    refetch: refetchKnowledgeDocuments,
+  } = api.socialModuleProfileFindByIdKnowledgeDocumentFind({
+    id: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    params: knowledgeDocumentScopeParams,
     options: {
       headers: {
         "Cache-Control": "no-store",
@@ -447,67 +431,14 @@ export function Component(props: IComponentPropsExtended) {
       enabled: Boolean(knowledgeAssistantProfileId),
     },
   });
-  const knowledgeDocumentIds = useMemo(() => {
-    return (
-      socialModuleProfilesToKnowledgeModuleDocuments
-        ?.map((relation) => {
-          return relation.knowledgeModuleDocumentId;
-        })
-        .filter((id): id is string => Boolean(id)) || []
-    );
-  }, [socialModuleProfilesToKnowledgeModuleDocuments]);
-  const knowledgeDocumentIdsForQuery = knowledgeDocumentIds.length
-    ? knowledgeDocumentIds
-    : ["00000000-0000-0000-0000-000000000000"];
-  const {
-    data: unorderedKnowledgeDocuments,
-    isLoading: knowledgeDocumentsIsLoading,
-    refetch: refetchKnowledgeModuleDocuments,
-  } = knowledgeModuleDocumentApi.find({
-    params: {
-      limit: Math.max(knowledgeDocumentIds.length, 1),
-      filters: {
-        and: [
-          {
-            column: "id",
-            method: "inArray",
-            value: knowledgeDocumentIdsForQuery,
-          },
-        ],
-      },
-    },
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    },
-    reactQueryOptions: {
-      enabled: knowledgeDocumentIds.length > 0,
-    },
-  });
   const knowledgeDocuments = useMemo(() => {
-    const documentsById = new Map(
-      (unorderedKnowledgeDocuments || []).map((document) => {
-        return [document.id, document];
-      }),
-    );
-
-    return knowledgeDocumentIds
-      .map((documentId) => {
-        return documentsById.get(documentId);
-      })
-      .filter((document): document is IKnowledgeModuleDocument =>
-        Boolean(document),
-      );
-  }, [knowledgeDocumentIds, unorderedKnowledgeDocuments]);
+    return knowledgeDocumentsQuery || [];
+  }, [knowledgeDocumentsQuery]);
   const selectedKnowledgeDocument = useMemo(() => {
     return knowledgeDocuments.find((document) => {
       return document.id === selectedKnowledgeDocumentId;
     });
   }, [knowledgeDocuments, selectedKnowledgeDocumentId]);
-  const knowledgeDocumentsLoading =
-    socialModuleProfilesToKnowledgeModuleDocumentsIsLoading ||
-    knowledgeDocumentsIsLoading;
   const isKnowledgeDocumentDirty = Boolean(
     selectedKnowledgeDocument &&
       (knowledgeDocumentDraft.title !== selectedKnowledgeDocument.title ||
@@ -518,7 +449,20 @@ export function Component(props: IComponentPropsExtended) {
     selectedKnowledgeDocument &&
       knowledgeDocumentsNeedingReindex[selectedKnowledgeDocument.id],
   );
-  const knowledgeDocumentUpdate = knowledgeModuleDocumentApi.update();
+  const knowledgeDocumentUpdate =
+    api.socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      knowledgeModuleDocumentId:
+        selectedKnowledgeDocumentId || "missing-document",
+    });
+  const knowledgeDocumentReindex =
+    api.socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex({
+      id: props.data.id,
+      socialModuleProfileId: props.socialModuleProfile.id,
+      knowledgeModuleDocumentId:
+        selectedKnowledgeDocumentId || "missing-document",
+    });
   const commandQuery = description?.trimStart() || "";
   const visibleKnowledgeChatCommands = useMemo(() => {
     if (!isKnowledgeChat || !commandQuery.startsWith("/")) {
@@ -625,19 +569,25 @@ export function Component(props: IComponentPropsExtended) {
       queryKey: threadMessagesQueryKey,
     });
   }, [threadMessagesQueryKey]);
+  const knowledgeDocumentsQueryKey = useMemo(() => {
+    const scope = knowledgeDocumentScopeParams
+      ? `?targetSocialModuleProfileId=${knowledgeDocumentScopeParams.targetSocialModuleProfileId}&socialModuleChatId=${knowledgeDocumentScopeParams.socialModuleChatId}`
+      : "";
+
+    return [
+      `${route}/${props.data.id}/social-module/profiles/${props.socialModuleProfile.id}/knowledge/documents${scope}`,
+    ];
+  }, [
+    knowledgeDocumentScopeParams,
+    props.data.id,
+    props.socialModuleProfile.id,
+  ]);
   const refetchKnowledgeDocumentQueries = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: [socialModuleProfilesToKnowledgeModuleDocumentsRoute],
+      queryKey: knowledgeDocumentsQueryKey,
     });
-    void queryClient.invalidateQueries({
-      queryKey: [knowledgeModuleDocumentRoute],
-    });
-    void refetchSocialModuleProfilesToKnowledgeModuleDocuments();
-    void refetchKnowledgeModuleDocuments();
-  }, [
-    refetchKnowledgeModuleDocuments,
-    refetchSocialModuleProfilesToKnowledgeModuleDocuments,
-  ]);
+    void refetchKnowledgeDocuments();
+  }, [knowledgeDocumentsQueryKey, refetchKnowledgeDocuments]);
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     shouldScrollToBottomOnNextRenderRef.current = true;
@@ -743,7 +693,7 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   function onKnowledgeDocumentSave() {
-    if (!selectedKnowledgeDocument) {
+    if (!selectedKnowledgeDocument || !knowledgeAssistantProfileId) {
       return;
     }
 
@@ -752,19 +702,13 @@ export function Component(props: IComponentPropsExtended) {
 
     knowledgeDocumentUpdate.mutate(
       {
-        id: selectedKnowledgeDocument.id,
+        id: props.data.id,
+        socialModuleProfileId: props.socialModuleProfile.id,
+        knowledgeModuleDocumentId: selectedKnowledgeDocument.id,
+        params: knowledgeDocumentScopeParams,
         data: {
-          variant: selectedKnowledgeDocument.variant || "default",
-          className: selectedKnowledgeDocument.className || "",
-          slug: selectedKnowledgeDocument.slug,
-          adminTitle: selectedKnowledgeDocument.adminTitle || title,
           title,
           description: knowledgeDocumentDraft.description,
-          summary: selectedKnowledgeDocument.summary || "",
-          status: selectedKnowledgeDocument.status || "draft",
-          contentHash: selectedKnowledgeDocument.contentHash || "",
-          tags: selectedKnowledgeDocument.tags || [],
-          metadata: selectedKnowledgeDocument.metadata || {},
         },
       },
       {
@@ -787,15 +731,18 @@ export function Component(props: IComponentPropsExtended) {
   }
 
   async function onKnowledgeDocumentReindex() {
-    if (!selectedKnowledgeDocument) {
+    if (!selectedKnowledgeDocument || !knowledgeAssistantProfileId) {
       return;
     }
 
     setReindexingKnowledgeDocumentId(selectedKnowledgeDocument.id);
 
     try {
-      await reindexDocument.action({
-        id: selectedKnowledgeDocument.id,
+      await knowledgeDocumentReindex.mutateAsync({
+        id: props.data.id,
+        socialModuleProfileId: props.socialModuleProfile.id,
+        knowledgeModuleDocumentId: selectedKnowledgeDocument.id,
+        params: knowledgeDocumentScopeParams,
       });
       toast.success("Knowledge document reindexed");
       setKnowledgeDocumentsNeedingReindex((current) => {

@@ -13,6 +13,7 @@ import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, extname, join, normalize } from "node:path";
 
@@ -332,6 +333,84 @@ export class Handler {
     }
   }
 
+  private async findKnowledgeDocumentIdsForProfile(
+    socialModuleProfileId: string,
+  ) {
+    const relations =
+      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: socialModuleProfileId,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              {
+                column: "orderIndex",
+                method: "asc",
+              },
+              {
+                column: "createdAt",
+                method: "asc",
+              },
+            ],
+          },
+        },
+      });
+
+    return (
+      relations
+        ?.map((relation: { knowledgeModuleDocumentId?: string }) => {
+          return relation.knowledgeModuleDocumentId;
+        })
+        .filter((documentId: unknown): documentId is string => {
+          return typeof documentId === "string" && Boolean(documentId);
+        }) || []
+    );
+  }
+
+  private async ensureProfileKnowledgeDocumentRelation(props: {
+    socialModuleProfileId: string;
+    knowledgeModuleDocumentId: string;
+  }) {
+    const existing =
+      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "knowledgeModuleDocumentId",
+                method: "eq",
+                value: props.knowledgeModuleDocumentId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      });
+
+    if (existing?.length) {
+      return existing[0];
+    }
+
+    return this.service.socialModule.profilesToKnowledgeModuleDocuments.create({
+      data: {
+        profileId: props.socialModuleProfileId,
+        knowledgeModuleDocumentId: props.knowledgeModuleDocumentId,
+      },
+    });
+  }
+
   private async isSubjectAdmin(subjectId: string): Promise<boolean> {
     const subjectsToRoles = await this.service.subjectsToRoles.find({
       params: {
@@ -404,9 +483,7 @@ export class Handler {
       );
     }
 
-    const learned: Awaited<
-      ReturnType<KnowledgeService["learnFromChatMessage"]>
-    >[] = [];
+    const learned: Awaited<ReturnType<KnowledgeService["learnContent"]>>[] = [];
 
     for (const [index, item] of contentItems.entries()) {
       const content = this.toLearnText(item.content).trim();
@@ -416,24 +493,43 @@ export class Handler {
       }
 
       try {
+        const contentHash = this.sha256(content);
+        const slug = this.toSlug(
+          [
+            "knowledge",
+            props.replyProfile.id,
+            props.socialModuleMessage.id,
+            item.fileId || "message",
+            contentHash.slice(0, 16),
+          ].join("-"),
+        );
         learned.push(
-          await this.knowledgeService.learnFromChatMessage({
-            profileId: props.replyProfile.id,
-            chatId: props.socialModuleChatId,
-            threadId: props.socialModuleThreadId,
-            messageId: props.socialModuleMessage.id,
-            fileId: item.fileId,
-            fileName: this.toLearnText(item.fileName) || null,
-            filePath: this.toLearnText(item.filePath) || null,
+          await this.knowledgeService.learnContent({
+            slug,
             title: this.toLearnText(item.title),
             content,
+            summary: "Content learned from social chat message",
             metadata: {
+              sourceKind: "chat-message",
+              sourceSystem: "social-chat-learn",
+              assistantSocialModuleProfileId: props.replyProfile.id,
+              socialModuleChatId: props.socialModuleChatId,
+              socialModuleThreadId: props.socialModuleThreadId,
+              socialModuleMessageId: props.socialModuleMessage.id,
+              fileId: item.fileId || null,
+              fileName: this.toLearnText(item.fileName) || null,
+              filePath: this.toLearnText(item.filePath) || null,
+              contentHash,
               sourceSocialModuleProfileId: props.sourceSocialModuleProfileId,
               triggerMessageId: props.socialModuleMessage.id,
               learnItemIndex: index,
             },
           }),
         );
+        await this.ensureProfileKnowledgeDocumentRelation({
+          socialModuleProfileId: props.replyProfile.id,
+          knowledgeModuleDocumentId: learned[learned.length - 1].document.id,
+        });
       } catch (error) {
         throw new Error(
           `Knowledge learn failed for item ${index + 1}/${contentItems.length}${
@@ -487,12 +583,19 @@ export class Handler {
       );
     }
 
+    const knowledgeDocumentIds = await this.findKnowledgeDocumentIdsForProfile(
+      props.replyProfile.id,
+    );
     const generation = await this.knowledgeService.generate({
       query,
       topK: props.data.topK,
       minSimilarity: props.data.minSimilarity,
       generationModelSlug: props.data.generationModelSlug,
-      profileId: props.replyProfile.id,
+      documentIds: knowledgeDocumentIds,
+      persona: {
+        title: props.replyProfile.adminTitle || props.replyProfile.slug,
+        description: props.replyProfile.description,
+      },
     });
 
     return this.createThreadMessage({
@@ -505,6 +608,7 @@ export class Handler {
         knowledge: {
           action: "generate",
           profileId: props.replyProfile.id,
+          documentIds: knowledgeDocumentIds,
           triggerMessageId: props.socialModuleMessage.id,
           citations: generation.sources,
           sources: generation.sources,
@@ -669,6 +773,18 @@ export class Handler {
 
   private toTitle(value: string) {
     return this.toLearnText(value).replace(/\s+/g, " ").trim().slice(0, 120);
+  }
+
+  private toSlug(value: string) {
+    return this.toLearnText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 180);
+  }
+
+  private sha256(value: string) {
+    return createHash("sha256").update(value, "utf8").digest("hex");
   }
 
   private toLearnText(value: unknown) {
