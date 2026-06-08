@@ -1,4 +1,5 @@
 import { KNOWLEDGE_EMBEDDING_DIMENSIONS } from "../configuration";
+import { createLlmGatewayNetworkError } from "../llm-gateway-error";
 
 export interface LlmEmbeddingClientProps {
   baseUrl: string;
@@ -30,16 +31,27 @@ export class LlmEmbeddingClient {
       return [];
     }
 
-    const res = await this.fetcher(`${this.baseUrl}/v1/embeddings`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
+    let res: Response;
+
+    try {
+      res = await this.fetcher(`${this.baseUrl}/v1/embeddings`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: this.model,
+          input: inputs,
+        }),
+      });
+    } catch (error) {
+      throw createLlmGatewayNetworkError({
+        operation: "LLM embedding request",
+        baseUrl: this.baseUrl,
         model: this.model,
-        input: inputs,
-      }),
-    });
+        error,
+      });
+    }
 
     if (!res.ok) {
       const body = await res.text();

@@ -1,6 +1,6 @@
 import { getKnowledgeConfiguration } from "./configuration";
 import { LlmEmbeddingClient } from "./embedding";
-import { LlmChatClient } from "./generation";
+import { IKnowledgeProviderSkillReference, LlmChatClient } from "./generation";
 import { KnowledgeIndexer } from "./indexer";
 import { LlmModelClient } from "./models";
 import { KnowledgeRepository } from "./repository";
@@ -62,6 +62,10 @@ export class KnowledgeService {
 
   async models(props?: { task?: KnowledgeModelTask }) {
     return this.modelClient.list(props);
+  }
+
+  async getModel(modelId: string) {
+    return this.modelClient.get(modelId);
   }
 
   async listDocuments(props: { documentIds: string[] }) {
@@ -144,21 +148,39 @@ export class KnowledgeService {
     generationModelSlug?: KnowledgeGenerationModelSlug;
     documentIds?: string[];
     persona?: IKnowledgePersona;
+    skillInstructions?: {
+      id: string;
+      slug: string;
+      title?: string | null;
+      instructions: string;
+    }[];
+    chatHistory?: {
+      role: "user" | "assistant";
+      content: string;
+    }[];
+    providerSkills?: IKnowledgeProviderSkillReference[];
+    useKnowledgeSearch?: boolean;
   }) {
     const generationModelSlug =
       props.generationModelSlug || DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG;
     const selectedModel = await this.modelClient.get(generationModelSlug);
-    const contexts = await this.search({
-      query: props.query,
-      topK: props.topK,
-      minSimilarity: props.minSimilarity,
-      documentIds: props.documentIds,
-    });
+    const contexts =
+      props.useKnowledgeSearch === false
+        ? []
+        : await this.search({
+            query: props.query,
+            topK: props.topK,
+            minSimilarity: props.minSimilarity,
+            documentIds: props.documentIds,
+          });
     const generation = await this.generationClient.generate({
       query: props.query,
       contexts,
       model: generationModelSlug,
       persona: props.persona,
+      skillInstructions: props.skillInstructions,
+      chatHistory: props.chatHistory,
+      providerSkills: props.providerSkills,
     });
 
     return {

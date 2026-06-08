@@ -233,10 +233,20 @@ import {
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge";
 import {
+  action as socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/models";
+import {
   action as socialModuleProfileFindByIdKnowledgeDocumentFind,
   type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindProps,
   type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindResult,
 } from "./social-module/profile/find-by-id/knowledge/document/find";
+import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentCreate,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult,
+} from "./social-module/profile/find-by-id/knowledge/document/create";
 import {
   action as socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
   type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps,
@@ -247,6 +257,11 @@ import {
   type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps,
   type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult,
 } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
+import {
+  action as socialModuleProfileFindByIdSkillProviderSync,
+  type IProps as ISocialModuleProfileFindByIdSkillProviderSyncProps,
+  type IResult as ISocialModuleProfileFindByIdSkillProviderSyncResult,
+} from "./social-module/profile/find-by-id/skill/provider-sync";
 import {
   action as socialModuleProfileFindByIdChatFindByIdDelete,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdDeleteProps,
@@ -358,9 +373,12 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeProps;
+  ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps: ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps;
+  ISocialModuleProfileFindByIdSkillProviderSyncProps: ISocialModuleProfileFindByIdSkillProviderSyncProps;
   ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateProps: ISocialModuleProfileFindByIdChatFindByIdActionCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdActionFindProps: ISocialModuleProfileFindByIdChatFindByIdActionFindProps;
@@ -425,9 +443,12 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult;
+  ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult: ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult;
+  ISocialModuleProfileFindByIdSkillProviderSyncResult: ISocialModuleProfileFindByIdSkillProviderSyncResult;
   ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateResult: ISocialModuleProfileFindByIdChatFindByIdActionCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdActionFindResult: ISocialModuleProfileFindByIdChatFindByIdActionFindResult;
@@ -499,9 +520,12 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdMessageUpdate,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge,
+  socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
   socialModuleProfileFindByIdKnowledgeDocumentFind,
+  socialModuleProfileFindByIdKnowledgeDocumentCreate,
   socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
   socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex,
+  socialModuleProfileFindByIdSkillProviderSync,
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
   socialModuleProfileFindByIdChatFindByIdActionFind,

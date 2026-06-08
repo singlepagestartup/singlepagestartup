@@ -3,7 +3,7 @@
  *
  * Given: social chats can opt into profile-scoped Knowledge/RAG mode.
  * When: an artificial-intelligence chat-gpt profile receives a message in a Knowledge chat.
- * Then: the agent dispatches through the RBAC Knowledge reaction endpoint instead of OpenRouter.
+ * Then: the agent dispatches through the RBAC OpenRouter reaction endpoint by default.
  */
 
 jest.mock("@sps/shared-utils", () => {
@@ -44,6 +44,8 @@ import * as jwt from "hono/jwt";
 const mockedSign = jwt.sign as jest.Mock;
 const mockedReactByKnowledge =
   rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge as jest.Mock;
+const mockedReactByOpenRouter =
+  rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter as jest.Mock;
 
 function createService() {
   const service = Object.create(Service.prototype) as Service;
@@ -82,21 +84,25 @@ describe("Given: agent Knowledge reply dispatch", () => {
     mockedReactByKnowledge.mockResolvedValue({
       id: "assistant-message-1",
     });
+    mockedReactByOpenRouter.mockResolvedValue({
+      id: "assistant-message-1",
+    });
   });
 
   /**
    * BDD Scenario
    * Given: a Knowledge chat targets a chat-gpt artificial-intelligence profile.
    * When: the agent social profile handler receives a user message.
-   * Then: it dispatches to the Knowledge reply path.
+   * Then: it dispatches to the OpenRouter reply path.
    */
-  it("When: knowledge chat targets chat-gpt AI Then: it dispatches Knowledge reply", async () => {
+  it("When: knowledge chat targets chat-gpt AI Then: it dispatches OpenRouter reply", async () => {
     const service = createService();
-    const knowledgeReplyMessageCreate = jest
+    const openRouterReplyMessageCreate = jest
       .fn()
       .mockResolvedValue({ id: "assistant-message-1" });
 
-    (service as any).knowledgeReplyMessageCreate = knowledgeReplyMessageCreate;
+    (service as any).openRouterReplyMessageCreate =
+      openRouterReplyMessageCreate;
 
     await service.agentSocialModuleProfileHandler({
       shouldReplySocialModuleProfile: {
@@ -117,7 +123,7 @@ describe("Given: agent Knowledge reply dispatch", () => {
       } as any,
     });
 
-    expect(knowledgeReplyMessageCreate).toHaveBeenCalledWith(
+    expect(openRouterReplyMessageCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         shouldReplySocialModuleProfile: expect.objectContaining({
           id: "assistant-profile-1",
@@ -134,9 +140,9 @@ describe("Given: agent Knowledge reply dispatch", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge reply has a sender profile connected to an RBAC subject.
-   * When: the agent creates the assistant reply.
-   * Then: it calls the RBAC Knowledge reaction endpoint as the sender subject.
+   * Given: the legacy Knowledge reply method has a sender profile connected to an RBAC subject.
+   * When: the agent creates a legacy Knowledge assistant reply.
+   * Then: it still calls the RBAC Knowledge reaction endpoint as the sender subject.
    */
   it("When: Knowledge reply is created Then: it calls the RBAC Knowledge endpoint as sender", async () => {
     const service = createService();

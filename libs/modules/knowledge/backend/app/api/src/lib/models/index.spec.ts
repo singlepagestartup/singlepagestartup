@@ -87,4 +87,23 @@ describe("knowledge LLM model metadata client", () => {
       expect.objectContaining({ dimensions: 768 }),
     );
   });
+
+  /**
+   * BDD Scenario: LLM gateway network failure.
+   *
+   * Given: apps/llm is not reachable.
+   * When: Knowledge asks for model metadata.
+   * Then: the error includes the gateway URL and startup command.
+   */
+  it("reports model metadata network failures with the target URL", async () => {
+    const fetcher = jest.fn().mockRejectedValue(new Error("Unable to connect"));
+    const client = new LlmModelClient({
+      baseUrl: "http://llm.test/",
+      fetcher,
+    });
+
+    await expect(client.get("openai/gpt-5-5")).rejects.toThrow(
+      "LLM model metadata request could not connect to LLM gateway at http://llm.test",
+    );
+  });
 });

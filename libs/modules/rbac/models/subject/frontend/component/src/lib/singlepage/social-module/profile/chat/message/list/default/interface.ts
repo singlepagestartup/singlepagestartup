@@ -12,6 +12,7 @@ export interface IComponentProps extends ISpsComponentBase {
   language: string;
   data: IModel;
   socialModuleProfile: ISocialModuleProfile;
+  artificialIntelligenceOpponentProfile?: ISocialModuleProfile | null;
   knowledgeAssistantProfile?: ISocialModuleProfile | null;
   socialModuleChat: ISocialModuleChat;
   socialModuleThreadId: string;

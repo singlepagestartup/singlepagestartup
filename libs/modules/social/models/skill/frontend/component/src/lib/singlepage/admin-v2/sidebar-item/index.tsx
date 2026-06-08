@@ -14,6 +14,8 @@ export function Component(props: IComponentProps) {
       Provider={Provider}
       clientApi={clientApi}
       serverApi={serverApi}
+      module="social"
+      name="skill"
       {...props}
     />
   );

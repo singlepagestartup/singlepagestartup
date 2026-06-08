@@ -6,6 +6,7 @@ export {
   Service as OpenRouter,
   type IOpenRouterMessageContent,
   type IOpenRouterRequestMessage,
+  type IOpenRouterReasoning,
 } from "./open-router";
 export type {
   IOpenRouterBilling,
@@ -13,5 +14,6 @@ export type {
   IOpenRouterGenerationError,
   IOpenRouterGenerationSuccess,
   IOpenRouterGeneratedImage,
+  IOpenRouterModel,
   IOpenRouterUsage,
 } from "./open-router/interface";

@@ -3,7 +3,6 @@ import warnings
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routers.openai import audio, chat, embeddings, models
-from services.openai import whisper
 from startup.service import preload_configured_models
 
 
@@ -11,12 +10,11 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Pre-load audio and configured HuggingFace models on startup.
-    print("Loading Whisper model...")
+    # Keep chat/model metadata available even when audio models are not cached.
+    print("Loading configured chat models...")
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, whisper.get_pipeline)
     await loop.run_in_executor(None, preload_configured_models)
-    print("Model ready.")
+    print("Gateway ready.")
     yield
 
 

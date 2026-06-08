@@ -8,13 +8,17 @@ export function Component(props: IComponentPropsExtended) {
       {props.data.map((entity, index) => {
         return (
           <AdminTableRow
-            key={index}
+            key={entity.id || String(index)}
             module="social"
             name="profiles-to-skills"
             isServer={props.isServer}
             variant="admin-v2-table-row"
-            adminForm={props.adminForm}
             data={entity}
+            apiProps={props.apiProps}
+            leftModelAdminForm={props.leftModelAdminForm}
+            rightModelAdminForm={props.rightModelAdminForm}
+            leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+            rightModelAdminFormLabel={props.rightModelAdminFormLabel}
           />
         );
       })}

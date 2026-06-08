@@ -72,6 +72,17 @@ export function Component(props: IClientComponentProps) {
   const interaction = props.message.interaction;
   const hasInteraction = interaction && Object.keys(interaction).length > 0;
   const audioTranscription = getAudioTranscriptionStatus(props.message);
+  const canOpenProfile = Boolean(
+    props.onProfileOpen && props.data.id !== "unknown",
+  );
+
+  function onProfileOpen() {
+    if (!canOpenProfile) {
+      return;
+    }
+
+    props.onProfileOpen?.(props.data);
+  }
 
   return (
     <div
@@ -84,27 +95,46 @@ export function Component(props: IClientComponentProps) {
         props.className,
       )}
     >
-      <Link
-        href={profileHref}
-        className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600"
-      >
-        {profileInitial}
-      </Link>
+      {canOpenProfile ? (
+        <button
+          type="button"
+          onClick={onProfileOpen}
+          className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600 transition hover:bg-slate-200"
+          aria-label={`Open ${props.data.slug} profile`}
+        >
+          {profileInitial}
+        </button>
+      ) : (
+        <Link
+          href={profileHref}
+          className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600"
+        >
+          {profileInitial}
+        </Link>
+      )}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <Link
-            href={profileHref}
-            className="truncate text-sm font-medium text-slate-950 hover:underline"
-          >
-            {props.data.slug}
-          </Link>
+          {canOpenProfile ? (
+            <button
+              type="button"
+              onClick={onProfileOpen}
+              className="truncate text-left text-sm font-medium text-slate-950 hover:underline"
+            >
+              {props.data.slug}
+            </button>
+          ) : (
+            <Link
+              href={profileHref}
+              className="truncate text-sm font-medium text-slate-950 hover:underline"
+            >
+              {props.data.slug}
+            </Link>
+          )}
           {props.message.sourceSystemId ? (
             <span className="truncate text-xs text-slate-400">
               source {props.message.sourceSystemId}
             </span>
-          ) : (
-            <span className="text-xs text-slate-400">participant</span>
-          )}
+          ) : null}
           {createdAt ? (
             <span className="text-xs text-slate-400">{createdAt}</span>
           ) : null}

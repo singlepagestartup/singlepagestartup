@@ -10,6 +10,7 @@ export interface IClientComponentProps
   data: IModel;
   message: ISocialModuleMessage;
   isDeleting?: boolean;
+  onProfileOpen?: (profile: IModel) => void;
   onEdit?: (message: ISocialModuleMessage) => void;
   onDelete?: (message: ISocialModuleMessage) => void;
 }

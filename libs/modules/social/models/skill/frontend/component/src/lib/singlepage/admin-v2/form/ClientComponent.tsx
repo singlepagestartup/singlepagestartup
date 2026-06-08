@@ -10,6 +10,13 @@ import { variants, insertSchema } from "@sps/social/models/skill/sdk/model";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-v2/form/Component";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { randomWordsGenerator } from "@sps/shared-utils";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@sps/shared-ui-shadcn";
+import { useEffect, useMemo, useState } from "react";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -48,6 +55,45 @@ export function Component(props: IComponentPropsExtended) {
     });
   }
 
+  const relationSections = useMemo(() => {
+    return [
+      {
+        id: "profiles-to-skills",
+        title: "Profiles",
+        render: props.profilesToSkills,
+      },
+    ].filter(
+      (
+        section,
+      ): section is {
+        id: string;
+        title: string;
+        render: NonNullable<typeof section.render>;
+      } => Boolean(section.render),
+    );
+  }, [props.profilesToSkills]);
+
+  const [activeMainTab, setActiveMainTab] = useState<"details" | "relations">(
+    "details",
+  );
+  const [activeRelationTab, setActiveRelationTab] = useState(
+    relationSections[0]?.id || "",
+  );
+
+  useEffect(() => {
+    if (!relationSections.length) {
+      setActiveRelationTab("");
+      if (activeMainTab === "relations") {
+        setActiveMainTab("details");
+      }
+      return;
+    }
+
+    if (!relationSections.some((section) => section.id === activeRelationTab)) {
+      setActiveRelationTab(relationSections[0].id);
+    }
+  }, [relationSections, activeRelationTab, activeMainTab]);
+
   return (
     <ParentAdminForm<IModel, typeof variant>
       {...props}
@@ -60,88 +106,153 @@ export function Component(props: IComponentPropsExtended) {
       name="skill"
       status={status}
     >
-      <div className="flex flex-col gap-6">
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Admin title"
-          name="adminTitle"
-          form={form}
-          placeholder="Type admin title"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Title"
-          name="title"
-          form={form}
-          placeholder="Type skill title"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Slug"
-          name="slug"
-          form={form}
-          placeholder="Type slug"
-        />
-        <FormField
-          ui="shadcn"
-          type="textarea"
-          rows={18}
-          label="Description"
-          name="description"
-          form={form}
-          placeholder="Write markdown instructions"
-        />
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Status"
-          name="status"
-          form={form}
-          placeholder="Select status"
-          options={[
-            ["draft", "draft"],
-            ["active", "active"],
-            ["archived", "archived"],
-          ]}
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Default model slug"
-          name="defaultModelSlug"
-          form={form}
-          placeholder="openai/gpt-5-5"
-        />
-        <FormField
-          ui="shadcn"
-          type="text"
-          label="Class Name"
-          name="className"
-          form={form}
-          placeholder="Type class name"
-        />
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Variant"
-          name="variant"
-          form={form}
-          placeholder="Select variant"
-          options={variants.map((variant) => [variant, variant])}
-        />
+      <Tabs
+        value={activeMainTab}
+        onValueChange={(value) => {
+          setActiveMainTab(value as "details" | "relations");
+        }}
+        className="-mt-6"
+      >
+        <div className="-mx-6 border-b border-border bg-slate-50 px-6 py-4">
+          <TabsList className="h-auto w-fit justify-start rounded-md border border-slate-300 bg-slate-100 p-1">
+            <TabsTrigger
+              value="details"
+              className="w-full rounded px-4 py-2 text-base data-[state=active]:bg-white"
+            >
+              Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="relations"
+              className="w-full rounded px-4 py-2 text-base data-[state=active]:bg-white"
+              disabled={!relationSections.length}
+            >
+              Relations
+              <span className="ml-2 rounded-md border border-slate-300 bg-white px-2 py-0.5 text-sm">
+                {relationSections.length}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        {props.profilesToSkills && props.data ? (
-          <div className="rounded-xl border border-slate-300 bg-slate-100 p-5">
-            {props.profilesToSkills({
-              data: props.data,
-              isServer: false,
-            })}
+        <TabsContent value="details" className="mt-0 pt-6">
+          <div className="flex flex-col gap-6">
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Admin title"
+              name="adminTitle"
+              form={form}
+              placeholder="Type admin title"
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Title"
+              name="title"
+              form={form}
+              placeholder="Type skill title"
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Slug"
+              name="slug"
+              form={form}
+              placeholder="Type slug"
+            />
+            <FormField
+              ui="shadcn"
+              type="textarea"
+              rows={18}
+              label="Description"
+              name="description"
+              form={form}
+              placeholder="Write markdown instructions"
+            />
+            <FormField
+              ui="shadcn"
+              type="select"
+              label="Status"
+              name="status"
+              form={form}
+              placeholder="Select status"
+              options={[
+                ["draft", "draft"],
+                ["active", "active"],
+                ["archived", "archived"],
+              ]}
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Default model slug"
+              name="defaultModelSlug"
+              form={form}
+              placeholder="openai/gpt-5-5"
+            />
+            <FormField
+              ui="shadcn"
+              type="text"
+              label="Class Name"
+              name="className"
+              form={form}
+              placeholder="Type class name"
+            />
+            <FormField
+              ui="shadcn"
+              type="select"
+              label="Variant"
+              name="variant"
+              form={form}
+              placeholder="Select variant"
+              options={variants.map((variant) => [variant, variant])}
+            />
           </div>
-        ) : null}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="relations" className="mt-0 pt-6">
+          {relationSections.length ? (
+            <Tabs
+              value={activeRelationTab}
+              onValueChange={(value) => {
+                setActiveRelationTab(value);
+              }}
+              className="space-y-4"
+            >
+              <TabsList className="h-auto w-fit justify-start rounded-md border border-slate-300 bg-slate-100 p-1">
+                {relationSections.map((section) => (
+                  <TabsTrigger
+                    key={section.id}
+                    value={section.id}
+                    className="w-full rounded px-4 py-2 text-base data-[state=active]:bg-white"
+                  >
+                    {section.title}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {relationSections.map((section) => (
+                <TabsContent
+                  key={section.id}
+                  value={section.id}
+                  className="mt-0"
+                >
+                  <div className="rounded-xl border border-slate-300 bg-slate-100 p-5">
+                    {section.render({
+                      data: props.data,
+                      isServer: false,
+                    })}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm text-muted-foreground">
+              No relations configured for this model.
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </ParentAdminForm>
   );
 }

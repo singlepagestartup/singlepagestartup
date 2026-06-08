@@ -225,6 +225,63 @@ describe("knowledge service", () => {
   });
 
   /**
+   * BDD Scenario: disabled knowledge search.
+   *
+   * Given: a generation request is a thread follow-up that should use chat history only.
+   * When: Knowledge generation is called with useKnowledgeSearch=false.
+   * Then: vector search is skipped and chat history is passed to LLM generation.
+   */
+  it("skips vector search for history-only generation", async () => {
+    const embed = jest.fn();
+    const searchChunks = jest.fn();
+    const generate = jest.fn().mockResolvedValue({ answer: "answer" });
+    const service = new KnowledgeService({
+      repository: {
+        searchChunks,
+      } as any,
+      embeddingClient: {
+        embed,
+      } as any,
+      generationClient: { generate } as any,
+      modelClient: {
+        get: jest.fn().mockResolvedValue({
+          id: "openai/gpt-5-5",
+          provider: "openai",
+          providerModel: "gpt-5.5",
+          task: "chat",
+          local: false,
+        }),
+      } as any,
+    });
+
+    await service.generate({
+      query: "Поправь предыдущий текст",
+      documentIds: ["document-1"],
+      chatHistory: [
+        {
+          role: "assistant",
+          content: "В этом фрагменте спикер оценивает помещение.",
+        },
+      ],
+      useKnowledgeSearch: false,
+    });
+
+    expect(embed).not.toHaveBeenCalled();
+    expect(searchChunks).not.toHaveBeenCalled();
+    expect(generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contexts: [],
+        chatHistory: [
+          {
+            role: "assistant",
+            content: "В этом фрагменте спикер оценивает помещение.",
+          },
+        ],
+      }),
+    );
+  });
+
+  /**
    * BDD Scenario: generic learning requires content.
    *
    * Given: a learn request contains no text after trimming.

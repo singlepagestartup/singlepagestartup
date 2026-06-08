@@ -44,6 +44,16 @@ export type IOpenRouterResponseFormat =
       };
     };
 
+export type IOpenRouterReasoning =
+  | {
+      effort: "none" | "low" | "medium" | "high" | "xhigh";
+      exclude?: boolean;
+    }
+  | {
+      enabled: true;
+      exclude?: boolean;
+    };
+
 const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
 let cachedModels:
   | {
@@ -222,7 +232,7 @@ export class Service {
     model: string;
     messages: IOpenRouterRequestMessage[];
     max_tokens?: number;
-    reasoning?: boolean;
+    reasoning?: IOpenRouterReasoning;
     response_format?: IOpenRouterResponseFormat;
     temperature?: number;
   }): Promise<any> {
@@ -238,7 +248,7 @@ export class Service {
           messages: props.messages,
           stream: false,
           max_tokens: props.max_tokens,
-          ...(props.reasoning && { reasoning: {} }),
+          ...(props.reasoning && { reasoning: props.reasoning }),
           ...(props.response_format && {
             response_format: props.response_format,
           }),
@@ -539,7 +549,7 @@ export class Service {
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
-    reasoning?: boolean;
+    reasoning?: IOpenRouterReasoning;
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
     stripNonTextOnRetry?: boolean;

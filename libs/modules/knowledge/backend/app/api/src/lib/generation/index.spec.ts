@@ -85,6 +85,61 @@ describe("knowledge LLM generation client", () => {
   });
 
   /**
+   * BDD Scenario: provider-native skills.
+   *
+   * Given: Knowledge generation receives provider skill references.
+   * When: it delegates to apps/llm.
+   * Then: the gateway payload includes provider_skills outside the prompt.
+   */
+  it("passes provider-native skill references to the LLM gateway", async () => {
+    const fetcher = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: "openai/gpt-5-5",
+          provider: "openai",
+          provider_model: "gpt-5.5",
+          choices: [{ message: { content: "answer" } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const client = new LlmChatClient({
+      baseUrl: "http://llm.test",
+      fetcher,
+    });
+
+    await client.generate({
+      query: "documentation",
+      contexts,
+      model: "openai/gpt-5-5",
+      providerSkills: [
+        {
+          provider: "openai",
+          provider_skill_id: "skill_openai_1",
+          version: "v1",
+          content_hash: "hash-1",
+          name: "brief-writer",
+          source_skill_id: "skill-1",
+        },
+      ],
+    });
+
+    const payload = JSON.parse(fetcher.mock.calls[0][1].body);
+
+    expect(payload.provider_skills).toEqual([
+      {
+        provider: "openai",
+        provider_skill_id: "skill_openai_1",
+        version: "v1",
+        content_hash: "hash-1",
+        name: "brief-writer",
+        source_skill_id: "skill-1",
+      },
+    ]);
+    expect(payload.messages[0].content).not.toContain("skill_openai_1");
+  });
+
+  /**
    * BDD Scenario: unavailable gateway.
    *
    * Given: apps/llm responds with a non-2xx status.
@@ -107,6 +162,124 @@ describe("knowledge LLM generation client", () => {
         model: "qwen/qwen3-1-7b",
       }),
     ).rejects.toThrow("Ensure apps/llm is running");
+  });
+
+  /**
+   * BDD Scenario: LLM gateway network failure.
+   *
+   * Given: apps/llm is not reachable.
+   * When: Knowledge requests generation.
+   * Then: the error includes the gateway URL and startup command.
+   */
+  it("reports LLM gateway network failures with the target URL", async () => {
+    const fetcher = jest.fn().mockRejectedValue(new Error("Unable to connect"));
+    const client = new LlmChatClient({
+      baseUrl: "http://llm.test/",
+      fetcher,
+    });
+
+    await expect(
+      client.generate({
+        query: "documentation",
+        contexts,
+        model: "openai/gpt-5-5",
+      }),
+    ).rejects.toThrow(
+      "LLM generation request could not connect to LLM gateway at http://llm.test",
+    );
+  });
+
+  /**
+   * BDD Scenario: selected prompt skill without RAG fragments.
+   *
+   * Given: a user-selected chat skill has prompt instructions.
+   * When: no indexed knowledge fragments match the query.
+   * Then: the gateway is still called with the skill instructions and user query.
+   */
+  it("generates from selected skill instructions even without matched context", async () => {
+    const fetcher = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: "openai/gpt-5-5",
+          provider: "openai",
+          provider_model: "gpt-5.5",
+          choices: [{ message: { content: "description" } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const client = new LlmChatClient({
+      baseUrl: "http://llm.test",
+      fetcher,
+    });
+
+    await expect(
+      client.generate({
+        query: "Transcript text",
+        contexts: [],
+        model: "openai/gpt-5-5",
+        skillInstructions: [
+          {
+            id: "skill-1",
+            slug: "youtube-description",
+            title: "YouTube Description Generator",
+            instructions: "Create a YouTube description without emoji.",
+          },
+        ],
+      }),
+    ).resolves.toEqual(expect.objectContaining({ answer: "description" }));
+    expect(
+      JSON.parse(fetcher.mock.calls[0][1].body).messages[0].content,
+    ).toContain("@youtube-description");
+  });
+
+  /**
+   * BDD Scenario: history-only follow-up.
+   *
+   * Given: a user asks to edit the previous assistant response.
+   * When: no indexed knowledge fragments are supplied.
+   * Then: the gateway is still called with conversation history as source context.
+   */
+  it("generates from conversation history without RAG fragments", async () => {
+    const fetcher = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: "openai/gpt-5-5",
+          provider: "openai",
+          provider_model: "gpt-5.5",
+          choices: [{ message: { content: "formatted answer" } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const client = new LlmChatClient({
+      baseUrl: "http://llm.test",
+      fetcher,
+    });
+
+    await expect(
+      client.generate({
+        query: 'Поправь текст и замени "спикер" на "Максим Иванов"',
+        contexts: [],
+        model: "openai/gpt-5-5",
+        chatHistory: [
+          {
+            role: "assistant",
+            content: "В этом фрагменте спикер оценивает помещение.",
+          },
+        ],
+      }),
+    ).resolves.toEqual(expect.objectContaining({ answer: "formatted answer" }));
+
+    const prompt = JSON.parse(fetcher.mock.calls[0][1].body).messages[0]
+      .content;
+
+    expect(prompt).toContain(
+      "assistant: В этом фрагменте спикер оценивает помещение.",
+    );
+    expect(prompt).toContain(
+      "No indexed knowledge fragments matched the query",
+    );
   });
 
   /**

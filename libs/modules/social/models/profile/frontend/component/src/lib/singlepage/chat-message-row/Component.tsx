@@ -10,6 +10,7 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       message={props.message}
       isDeleting={props.isDeleting}
+      onProfileOpen={props.onProfileOpen}
       onEdit={props.onEdit}
       onDelete={props.onDelete}
     />

@@ -8,12 +8,22 @@ class ChatMessage(BaseModel):
     content: str
 
 
+class ProviderSkillReference(BaseModel):
+    provider: Literal["openai", "anthropic"]
+    provider_skill_id: str
+    version: str | None = None
+    content_hash: str
+    name: str
+    source_skill_id: str
+
+
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: list[ChatMessage]
     temperature: float | None = None
     max_tokens: int | None = None
     stream: bool = False
+    provider_skills: list[ProviderSkillReference] = Field(default_factory=list)
 
 
 class EmbeddingRequest(BaseModel):

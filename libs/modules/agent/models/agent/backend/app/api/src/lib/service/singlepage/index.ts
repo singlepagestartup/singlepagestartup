@@ -366,7 +366,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           return;
         }
 
-        await this.knowledgeReplyMessageCreate({
+        await this.openRouterReplyMessageCreate({
           jwtToken,
           rbacModuleSubject,
           shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,

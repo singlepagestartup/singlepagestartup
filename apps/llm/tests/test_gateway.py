@@ -15,7 +15,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from singlepage.catalog import ModelCatalog, ModelDefinition
 from singlepage.errors import GatewayError
-from singlepage.providers import OpenAIProvider
+from singlepage.providers import AnthropicProvider, OpenAIProvider
 from singlepage.results import ChatResult, EmbeddingResult, Usage
 from singlepage.service import GatewayService
 
@@ -25,13 +25,21 @@ class FakeProvider:
         self.chat_calls = []
         self.embed_calls = []
 
-    def chat(self, model, messages, temperature=None, max_tokens=None):
+    def chat(
+        self,
+        model,
+        messages,
+        temperature=None,
+        max_tokens=None,
+        provider_skills=None,
+    ):
         self.chat_calls.append(
             {
                 "model": model,
                 "messages": messages,
                 "temperature": temperature,
                 "max_tokens": max_tokens,
+                "provider_skills": provider_skills,
             }
         )
         return ChatResult(
@@ -54,12 +62,31 @@ class TestMessage:
 
 
 class TestChatRequest:
-    def __init__(self, model, messages):
+    def __init__(self, model, messages, provider_skills=None):
         self.model = model
         self.messages = messages
         self.temperature = None
         self.max_tokens = None
         self.stream = False
+        self.provider_skills = provider_skills or []
+
+
+class TestProviderSkill:
+    def __init__(
+        self,
+        provider,
+        provider_skill_id,
+        version="latest",
+        content_hash="hash-1",
+        name="brief-writer",
+        source_skill_id="skill-1",
+    ):
+        self.provider = provider
+        self.provider_skill_id = provider_skill_id
+        self.version = version
+        self.content_hash = content_hash
+        self.name = name
+        self.source_skill_id = source_skill_id
 
 
 class TestEmbeddingRequest:
@@ -87,6 +114,14 @@ def build_service():
                 task="embedding",
                 local=True,
                 dimensions=3,
+            ),
+            ModelDefinition(
+                id="openai/gpt-5-5",
+                label="OpenAI GPT-5.5",
+                provider="openai",
+                provider_model="gpt-5.5",
+                task="chat",
+                local=False,
             ),
         ]
     )
@@ -177,6 +212,62 @@ class GatewayServiceTest(unittest.TestCase):
             )
 
         self.assertIn("qwen/qwen3-1-7b", context.exception.details["available_models"])
+
+    def test_forwards_provider_skills_to_matching_provider(self):
+        """
+        BDD Scenario: provider skill dispatch.
+
+        Given: a chat model is backed by OpenAI.
+        When: provider_skills contain OpenAI references.
+        Then: the selected provider receives those references.
+        """
+        service, _ = build_service()
+        fake_provider = FakeProvider()
+        service.providers["openai"] = fake_provider
+
+        service.chat_completion(
+            TestChatRequest(
+                model="openai/gpt-5-5",
+                messages=[TestMessage(role="user", content="hello")],
+                provider_skills=[
+                    TestProviderSkill(
+                        provider="openai",
+                        provider_skill_id="skill_openai_1",
+                    )
+                ],
+            )
+        )
+
+        self.assertEqual(
+            fake_provider.chat_calls[0]["provider_skills"][0].provider_skill_id,
+            "skill_openai_1",
+        )
+
+    def test_rejects_provider_skills_for_unsupported_provider(self):
+        """
+        BDD Scenario: unsupported provider skills.
+
+        Given: a chat model is backed by a local provider.
+        When: provider_skills are supplied.
+        Then: the gateway fails clearly instead of silently ignoring them.
+        """
+        service, _ = build_service()
+
+        with self.assertRaises(GatewayError) as context:
+            service.chat_completion(
+                TestChatRequest(
+                    model="qwen/qwen3-1-7b",
+                    messages=[TestMessage(role="user", content="hello")],
+                    provider_skills=[
+                        TestProviderSkill(
+                            provider="openai",
+                            provider_skill_id="skill_openai_1",
+                        )
+                    ],
+                )
+            )
+
+        self.assertEqual(context.exception.error_type, "unsupported_parameter")
 
 
 class OpenAIProviderTest(unittest.TestCase):
@@ -280,6 +371,146 @@ class OpenAIProviderTest(unittest.TestCase):
 
         self.assertIn("OpenAI generation request failed with status 400", str(context.exception))
         self.assertEqual(context.exception.error_type, "provider_error")
+
+    def test_responses_api_mounts_provider_skills(self):
+        """
+        BDD Scenario: OpenAI provider-native skills.
+
+        Given: OpenAI provider receives synced skill references.
+        When: the provider calls the Responses API.
+        Then: the shell tool environment contains skill_reference entries.
+        """
+        calls = []
+
+        class FakeResponses:
+            def create(self, **kwargs):
+                calls.append(kwargs)
+                usage = types.SimpleNamespace(
+                    input_tokens=2,
+                    output_tokens=3,
+                    total_tokens=5,
+                )
+                return types.SimpleNamespace(output_text="answer", usage=usage)
+
+        class FakeOpenAI:
+            def __init__(self, api_key):
+                self.responses = FakeResponses()
+
+        sys.modules["openai"] = types.SimpleNamespace(OpenAI=FakeOpenAI)
+
+        provider = OpenAIProvider(api_key="test-key")
+        model = ModelDefinition(
+            id="openai/gpt-5-5",
+            label="OpenAI GPT-5.5",
+            provider="openai",
+            provider_model="gpt-5.5",
+            task="chat",
+            local=False,
+        )
+
+        result = provider.chat(
+            model,
+            [TestMessage(role="user", content="hello")],
+            provider_skills=[
+                TestProviderSkill(
+                    provider="openai",
+                    provider_skill_id="skill_openai_1",
+                    version="v1",
+                )
+            ],
+        )
+
+        self.assertEqual(result.text, "answer")
+        self.assertEqual(
+            calls[0]["tools"][0]["environment"]["skills"],
+            [
+                {
+                    "type": "skill_reference",
+                    "skill_id": "skill_openai_1",
+                    "version": "v1",
+                }
+            ],
+        )
+
+
+class AnthropicProviderTest(unittest.TestCase):
+    def setUp(self):
+        self.previous_anthropic_module = sys.modules.get("anthropic")
+
+    def tearDown(self):
+        if self.previous_anthropic_module is not None:
+            sys.modules["anthropic"] = self.previous_anthropic_module
+        else:
+            sys.modules.pop("anthropic", None)
+
+    def test_beta_messages_mount_provider_skills(self):
+        """
+        BDD Scenario: Anthropic provider-native skills.
+
+        Given: Anthropic provider receives synced custom skill references.
+        When: the provider calls beta Messages.
+        Then: container.skills includes custom skill references and code execution is enabled.
+        """
+        calls = []
+
+        class FakeBetaMessages:
+            def create(self, **kwargs):
+                calls.append(kwargs)
+                usage = types.SimpleNamespace(input_tokens=2, output_tokens=3)
+                return types.SimpleNamespace(
+                    content=[types.SimpleNamespace(type="text", text="answer")],
+                    usage=usage,
+                )
+
+        class FakeMessages:
+            def create(self, **kwargs):
+                raise AssertionError("plain Messages API should not be used")
+
+        class FakeAnthropic:
+            def __init__(self, api_key):
+                self.beta = types.SimpleNamespace(messages=FakeBetaMessages())
+                self.messages = FakeMessages()
+
+        sys.modules["anthropic"] = types.SimpleNamespace(Anthropic=FakeAnthropic)
+
+        provider = AnthropicProvider(api_key="test-key")
+        model = ModelDefinition(
+            id="anthropic/claude-opus-4-7",
+            label="Claude Opus 4.7",
+            provider="anthropic",
+            provider_model="claude-opus-4-7",
+            task="chat",
+            local=False,
+        )
+
+        result = provider.chat(
+            model,
+            [TestMessage(role="user", content="hello")],
+            provider_skills=[
+                TestProviderSkill(
+                    provider="anthropic",
+                    provider_skill_id="skill_anthropic_1",
+                    version="v1",
+                )
+            ],
+        )
+
+        self.assertEqual(result.text, "answer")
+        self.assertIn("skills-2025-10-02", calls[0]["betas"])
+        self.assertEqual(
+            calls[0]["container"]["skills"],
+            [
+                {
+                    "type": "custom",
+                    "skill_id": "skill_anthropic_1",
+                    "version": "v1",
+                }
+            ],
+        )
+        self.assertEqual(
+            calls[0]["tools"],
+            [{"type": "code_execution_20250825", "name": "code_execution"}],
+        )
 
 
 if __name__ == "__main__":

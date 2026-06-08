@@ -4,6 +4,8 @@ import { Component as AdminV2Form } from "./admin-v2/form";
 import { Component as AdminV2SelectInput } from "./admin-v2/select-input";
 import { Component as AdminV2Table } from "./admin-v2/table";
 import { Component as AdminV2TableRow } from "./admin-v2/table-row";
+import { Component as ChatSidebarDetail } from "./chat-sidebar-detail";
+import { Component as ChatSidebarItem } from "./chat-sidebar-item";
 import { Component as AdminSelectInput } from "./admin/select-input";
 import { Component as AdminTable } from "./admin/table";
 import { Component as AdminForm } from "./admin/form";
@@ -11,6 +13,8 @@ import { Component as AdminTableRow } from "./admin/table-row";
 import { Component as Default } from "./default";
 import { Component as Find } from "./find";
 export const variants = {
+  "chat-sidebar-detail": ChatSidebarDetail,
+  "chat-sidebar-item": ChatSidebarItem,
   "admin-v2-sidebar-item": AdminV2SidebarItem,
   "admin-v2-card": AdminV2Card,
   "admin-v2-form": AdminV2Form,

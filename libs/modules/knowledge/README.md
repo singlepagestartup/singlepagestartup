@@ -55,21 +55,6 @@ Start core infrastructure:
 Start the LLM gateway explicitly when indexing/searching with embeddings:
 
 ```bash
-START_LLM=true ./up.sh
-```
-
-or:
-
-```bash
-cd apps/llm
-./up.sh
-```
-
-The LLM compose stack includes Ollama plus an init service that pulls every model listed in `OLLAMA_MODEL_IDS`. HuggingFace presets are loaded lazily unless `LLM_PRELOAD_MODEL_IDS` is set in `apps/llm/.env`.
-
-For native project-local development without Docker for the LLM gateway:
-
-```bash
 npm run llm:install
 npm run llm:ollama:start
 npm run llm:ollama:pull

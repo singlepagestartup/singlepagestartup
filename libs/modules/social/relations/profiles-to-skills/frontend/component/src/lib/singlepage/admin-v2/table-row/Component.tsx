@@ -11,6 +11,8 @@ export function Component(props: IComponentPropsExtended) {
   return (
     <ParentComponent
       {...props}
+      module="social"
+      name="profiles-to-skills"
       type="relation"
       adminForm={() => {
         return (
@@ -21,6 +23,10 @@ export function Component(props: IComponentPropsExtended) {
           />
         );
       }}
+      leftModelAdminForm={props.leftModelAdminForm}
+      rightModelAdminForm={props.rightModelAdminForm}
+      leftModelAdminFormLabel={props.leftModelAdminFormLabel}
+      rightModelAdminFormLabel={props.rightModelAdminFormLabel}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });

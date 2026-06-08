@@ -118,6 +118,53 @@ describe("OpenRouter billing fallback for provider-reported costs", () => {
 
   /**
    * BDD Scenario
+   * Given: the caller selected a concrete OpenRouter reasoning effort.
+   * When: generation sends the chat completion request.
+   * Then: the reasoning object is forwarded and reasoning text is excluded by default.
+   */
+  it("forwards reasoning effort payloads to OpenRouter", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        choices: [
+          {
+            message: {
+              content: "Reasoned answer",
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: "Hello",
+        },
+      ],
+      reasoning: {
+        effort: "high",
+        exclude: true,
+      },
+    });
+
+    const requestBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+
+    expect(requestBody.reasoning).toEqual({
+      effort: "high",
+      exclude: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
    * Given: OpenRouter rejects a multimodal request before generation.
    * When: non-text retry is enabled for generation.
    * Then: the wrapper strips non-text content once and returns the retry success result.

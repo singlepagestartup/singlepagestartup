@@ -10,6 +10,9 @@ export function Component(props: IComponentPropsExtended) {
       language={props.language}
       className={props.className}
       socialModuleProfile={props.socialModuleProfile}
+      artificialIntelligenceOpponentProfile={
+        props.artificialIntelligenceOpponentProfile
+      }
       knowledgeAssistantProfile={props.knowledgeAssistantProfile}
       socialModuleChat={props.socialModuleChat}
       socialModuleThreadId={props.socialModuleThreadId}

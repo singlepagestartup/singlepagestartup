@@ -7,20 +7,19 @@ import { Component as ParentComponent } from "@sps/shared-frontend-components/si
 
 export function Component(props: IComponentPropsExtended) {
   const deleteEntity = api.delete();
+  const adminForm =
+    props.adminForm ||
+    (() => {
+      return (
+        <AdminForm isServer={false} variant="admin-v2-form" data={props.data} />
+      );
+    });
 
   return (
     <ParentComponent
       {...props}
       type="model"
-      adminForm={() => {
-        return (
-          <AdminForm
-            isServer={false}
-            variant="admin-v2-form"
-            data={props.data}
-          />
-        );
-      }}
+      adminForm={adminForm}
       onDelete={() => {
         if (props.data?.id) {
           deleteEntity.mutate({ id: props.data.id });

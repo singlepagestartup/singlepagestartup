@@ -41,7 +41,7 @@ interface IOpenRouterReplyValidationHandler {
     modelSelection: {
       orderedCandidateIds: string[];
       selectedModelId: string | null;
-      selectedBy: "llm" | "priority";
+      selectedBy: "llm" | "priority" | "manual";
     };
     expectedOutputModality: "text" | "image";
     generationContext: {
@@ -111,6 +111,82 @@ interface IOpenRouterReplyValidationHandler {
     file: string;
     mimeType?: string | null;
   }): boolean;
+}
+
+interface IOpenRouterKnowledgeControlsHandler {
+  toOpenRouterReasoning(
+    value: "auto" | "none" | "low" | "medium" | "high" | "xhigh",
+  ):
+    | {
+        effort: string;
+        exclude?: boolean;
+      }
+    | undefined;
+  buildManualRequestClassification(props: {
+    expectedOutputModality: "text" | "image" | "audio" | "file";
+    requestText: string;
+    requiredInputModalitiesList: ("text" | "image" | "file")[];
+  }): {
+    language: string;
+    task: string;
+    input_modalities: string[];
+    output_modality: string;
+    need_web: boolean;
+    complexity: string;
+    risk_level: string;
+  };
+  findPromptSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    skillIds: string[];
+    skillSlugs: string[];
+  }): Promise<{ id: string; slug: string; status?: string }[]>;
+  resolveManualExpectedOutputModality(model: {
+    architecture?: {
+      output_modalities?: string[];
+    };
+  }): "text" | "image" | "audio" | "file";
+  resolveManualOpenRouterModel(props: {
+    expectedOutputModality?: "text" | "image" | "audio" | "file";
+    modelId: string;
+    models: {
+      id: string;
+      architecture?: {
+        input_modalities?: string[];
+        output_modalities?: string[];
+      };
+    }[];
+    requiredInputModalitiesList: ("text" | "image" | "file")[];
+  }): {
+    id: string;
+    architecture?: {
+      input_modalities?: string[];
+      output_modalities?: string[];
+    };
+  };
+  resolveOpenRouterKnowledgeContext(props: {
+    data: {
+      skillIds?: string[];
+      useKnowledgeSearch?: boolean;
+    };
+    replyProfile: {
+      id: string;
+    };
+    socialModuleMessage: {
+      id: string;
+      description: string;
+    };
+    sanitizedQuery: string;
+    requestedKnowledgeSearch: boolean;
+    requestedSkillIds: string[];
+  }): Promise<{
+    useKnowledgeSearch: boolean;
+    searchDocumentIds: string[];
+    sources: unknown[];
+    systemMessages: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    }[];
+  }>;
 }
 
 function createMessageId(index: number) {
@@ -498,5 +574,223 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         mimeType: "image/png",
       }),
     ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the chat UI sends a manual Thinking value.
+   * When: OpenRouter reasoning params are built.
+   * Then: auto is omitted and explicit efforts hide reasoning content by default.
+   */
+  it("When: Thinking is mapped Then: OpenRouter reasoning payload is explicit", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    expect(handler.toOpenRouterReasoning("auto")).toBeUndefined();
+    expect(handler.toOpenRouterReasoning("high")).toEqual({
+      effort: "high",
+      exclude: true,
+    });
+    expect(handler.toOpenRouterReasoning("xhigh")).toEqual({
+      effort: "xhigh",
+      exclude: true,
+    });
+    expect(handler.toOpenRouterReasoning("none")).toEqual({
+      effort: "none",
+      exclude: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the user selected a concrete OpenRouter model in the composer.
+   * When: the manual model plan is built.
+   * Then: text generation is inferred directly from the selected model without requiring auto-routing classification.
+   */
+  it("When: manual model is selected Then: it builds direct text generation metadata", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+    const manualModel = handler.resolveManualOpenRouterModel({
+      modelId: "openai/gpt-5.5",
+      models: [
+        {
+          id: "openai/gpt-5.5",
+          architecture: {
+            input_modalities: ["text"],
+            output_modalities: ["text"],
+          },
+        },
+      ],
+      requiredInputModalitiesList: ["text"],
+    });
+    const expectedOutputModality =
+      handler.resolveManualExpectedOutputModality(manualModel);
+
+    expect(expectedOutputModality).toBe("text");
+    expect(
+      handler.buildManualRequestClassification({
+        expectedOutputModality,
+        requestText: "Купить квартиру - насколько это грамотное решение?",
+        requiredInputModalitiesList: ["text"],
+      }),
+    ).toEqual({
+      language: "ru",
+      task: "qa",
+      input_modalities: ["text"],
+      output_modality: "text",
+      need_web: false,
+      complexity: "medium",
+      risk_level: "low",
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the user selected and mentioned skills in a Knowledge chat.
+   * When: OpenRouter resolves prompt skills for the replying profile.
+   * Then: only linked active skills are returned and unlinked requested ids are rejected.
+   */
+  it("When: prompt skills are resolved Then: only linked active skills are used", async () => {
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () => [
+            {
+              skillId: "skill-1",
+            },
+            {
+              skillId: "skill-2",
+            },
+          ]),
+        },
+        skill: {
+          find: jest.fn(async () => [
+            {
+              id: "skill-1",
+              slug: "brief-writer",
+              status: "active",
+            },
+            {
+              id: "skill-2",
+              slug: "archived-writer",
+              status: "archived",
+            },
+          ]),
+        },
+      },
+    } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    await expect(
+      handler.findPromptSkillsForProfile({
+        socialModuleProfileId: "profile-1",
+        skillIds: ["skill-1", "skill-2"],
+        skillSlugs: ["brief-writer"],
+      }),
+    ).resolves.toEqual([
+      {
+        id: "skill-1",
+        slug: "brief-writer",
+        status: "active",
+      },
+    ]);
+
+    await expect(
+      handler.findPromptSkillsForProfile({
+        socialModuleProfileId: "profile-1",
+        skillIds: ["skill-3"],
+        skillSlugs: [],
+      }),
+    ).rejects.toThrow("Selected social skills are not linked");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a replying profile has scoped Knowledge documents.
+   * When: OpenRouter resolves generation context with and without @knowledge.
+   * Then: RAG search runs only when Knowledge was explicitly requested.
+   */
+  it("When: Knowledge is requested Then: only profile document ids are searched", async () => {
+    const search = jest.fn(async () => [
+      {
+        sourceTitle: "Policy",
+        sourceOriginalPath: "policy.md",
+        similarity: 0.9,
+        text: "Policy fragment",
+      },
+    ]);
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () => []),
+        },
+        profilesToKnowledgeModuleDocuments: {
+          find: jest.fn(async () => [
+            {
+              knowledgeModuleDocumentId: "document-1",
+            },
+          ]),
+        },
+      },
+    } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    (
+      handler as unknown as { knowledgeService: { search: typeof search } }
+    ).knowledgeService = {
+      search,
+    };
+
+    await expect(
+      handler.resolveOpenRouterKnowledgeContext({
+        data: {},
+        replyProfile: {
+          id: "profile-1",
+        },
+        socialModuleMessage: {
+          id: "message-1",
+          description: "Question",
+        },
+        sanitizedQuery: "Question",
+        requestedKnowledgeSearch: false,
+        requestedSkillIds: [],
+      }),
+    ).resolves.toMatchObject({
+      useKnowledgeSearch: false,
+      searchDocumentIds: [],
+      sources: [],
+    });
+    expect(search).not.toHaveBeenCalled();
+
+    const context = await handler.resolveOpenRouterKnowledgeContext({
+      data: {
+        useKnowledgeSearch: true,
+      },
+      replyProfile: {
+        id: "profile-1",
+      },
+      socialModuleMessage: {
+        id: "message-1",
+        description: "@knowledge Question",
+      },
+      sanitizedQuery: "Question",
+      requestedKnowledgeSearch: true,
+      requestedSkillIds: [],
+    });
+
+    expect(search).toHaveBeenCalledWith({
+      query: "Question",
+      documentIds: ["document-1"],
+    });
+    expect(context).toMatchObject({
+      useKnowledgeSearch: true,
+      searchDocumentIds: ["document-1"],
+      sources: [
+        {
+          text: "Policy fragment",
+        },
+      ],
+    });
+    expect(context.systemMessages[0].content).toContain("Policy fragment");
   });
 });

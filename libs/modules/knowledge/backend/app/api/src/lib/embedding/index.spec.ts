@@ -90,4 +90,25 @@ describe("knowledge embedding client", () => {
       "Ensure apps/llm is running",
     );
   });
+
+  /**
+   * BDD Scenario: LLM gateway network failure.
+   *
+   * Given: apps/llm is not reachable.
+   * When: the client embeds content.
+   * Then: the error includes the gateway URL and startup command.
+   */
+  it("reports embedding network failures with the target URL", async () => {
+    const fetcher = jest.fn().mockRejectedValue(new Error("Unable to connect"));
+    const client = new LlmEmbeddingClient({
+      baseUrl: "http://llm.test/",
+      model: "nomic/nomic-embed-text",
+      dimensions: 3,
+      fetcher,
+    });
+
+    await expect(client.embed("hello")).rejects.toThrow(
+      "LLM embedding request could not connect to LLM gateway at http://llm.test",
+    );
+  });
 });

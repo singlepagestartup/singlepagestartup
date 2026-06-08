@@ -2,6 +2,7 @@ import {
   KnowledgeModelOption,
   KnowledgeModelTask,
 } from "@sps/knowledge/sdk/model";
+import { createLlmGatewayNetworkError } from "../llm-gateway-error";
 
 export interface LlmModelClientProps {
   baseUrl: string;
@@ -19,12 +20,22 @@ export class LlmModelClient {
 
   async list(props?: { task?: KnowledgeModelTask }) {
     const params = props?.task ? `?task=${encodeURIComponent(props.task)}` : "";
-    const res = await this.fetcher(`${this.baseUrl}/v1/models${params}`, {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-      },
-    });
+    let res: Response;
+
+    try {
+      res = await this.fetcher(`${this.baseUrl}/v1/models${params}`, {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    } catch (error) {
+      throw createLlmGatewayNetworkError({
+        operation: "LLM models request",
+        baseUrl: this.baseUrl,
+        error,
+      });
+    }
 
     if (!res.ok) {
       const body = await res.text();
@@ -43,12 +54,23 @@ export class LlmModelClient {
   }
 
   async get(modelId: string) {
-    const res = await this.fetcher(`${this.baseUrl}/v1/models/${modelId}`, {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-      },
-    });
+    let res: Response;
+
+    try {
+      res = await this.fetcher(`${this.baseUrl}/v1/models/${modelId}`, {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    } catch (error) {
+      throw createLlmGatewayNetworkError({
+        operation: "LLM model metadata request",
+        baseUrl: this.baseUrl,
+        model: modelId,
+        error,
+      });
+    }
 
     if (!res.ok) {
       const body = await res.text();

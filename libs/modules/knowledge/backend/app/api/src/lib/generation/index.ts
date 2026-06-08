@@ -3,6 +3,7 @@ import {
   KnowledgeModelProvider,
 } from "@sps/knowledge/sdk/model";
 import { KnowledgeSearchResult } from "../types";
+import { createLlmGatewayNetworkError } from "../llm-gateway-error";
 
 const KNOWLEDGE_GENERATION_MAX_OUTPUT_TOKENS = 1800;
 const NO_CONTEXT_ANSWER = "No indexed knowledge fragments matched the query.";
@@ -15,6 +16,15 @@ export interface KnowledgeGenerationResult {
   usage?: IKnowledgeGenerationUsage;
 }
 
+export interface IKnowledgeProviderSkillReference {
+  provider: "openai" | "anthropic";
+  provider_skill_id: string;
+  version?: string | null;
+  content_hash: string;
+  name: string;
+  source_skill_id: string;
+}
+
 export interface KnowledgeGenerationProps {
   query: string;
   contexts: KnowledgeSearchResult[];
@@ -23,10 +33,17 @@ export interface KnowledgeGenerationProps {
     title?: string | null;
     description?: unknown;
   };
+  skillInstructions?: {
+    id: string;
+    slug: string;
+    title?: string | null;
+    instructions: string;
+  }[];
   chatHistory?: {
     role: "user" | "assistant";
     content: string;
   }[];
+  providerSkills?: IKnowledgeProviderSkillReference[];
 }
 
 export interface KnowledgeChatCompletionProps {
@@ -37,6 +54,7 @@ export interface KnowledgeChatCompletionProps {
   }[];
   maxTokens?: number;
   temperature?: number;
+  providerSkills?: IKnowledgeProviderSkillReference[];
 }
 
 export interface LlmChatClientProps {
@@ -56,7 +74,11 @@ export class LlmChatClient {
   async generate(
     props: KnowledgeGenerationProps,
   ): Promise<KnowledgeGenerationResult> {
-    if (!props.contexts.length) {
+    if (
+      !props.contexts.length &&
+      !props.skillInstructions?.length &&
+      !props.chatHistory?.length
+    ) {
       return { answer: NO_CONTEXT_ANSWER, model: props.model };
     }
 
@@ -70,32 +92,48 @@ export class LlmChatClient {
           content: buildGroundedPrompt(props),
         },
       ],
+      providerSkills: props.providerSkills,
     });
   }
 
   async complete(
     props: KnowledgeChatCompletionProps,
   ): Promise<KnowledgeGenerationResult> {
-    const res = await this.fetcher(`${this.baseUrl}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
+    const providerSkills = props.providerSkills?.length
+      ? props.providerSkills
+      : undefined;
+    let res: Response;
+
+    try {
+      res = await this.fetcher(`${this.baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: props.model,
+          stream: false,
+          max_tokens: props.maxTokens ?? KNOWLEDGE_GENERATION_MAX_OUTPUT_TOKENS,
+          temperature: props.temperature ?? 0.2,
+          messages: props.messages,
+          ...(providerSkills ? { provider_skills: providerSkills } : {}),
+        }),
+      });
+    } catch (error) {
+      throw createLlmGatewayNetworkError({
+        operation: "LLM generation request",
+        baseUrl: this.baseUrl,
         model: props.model,
-        stream: false,
-        max_tokens: props.maxTokens ?? KNOWLEDGE_GENERATION_MAX_OUTPUT_TOKENS,
-        temperature: props.temperature ?? 0.2,
-        messages: props.messages,
-      }),
-    });
+        error,
+      });
+    }
 
     if (!res.ok) {
       const body = await res.text();
       const details = body ? ` Response: ${body.slice(0, 500)}` : "";
 
       throw new Error(
-        `LLM generation request failed with status ${res.status}.${details} Ensure apps/llm is running and model ${props.model} is available. Run: cd apps/llm && ./up.sh.`,
+        `LLM generation request failed with status ${res.status}.${details} Ensure apps/llm is running and model ${props.model} is available. Run: npm run llm:dev.`,
       );
     }
 
@@ -132,16 +170,28 @@ export class LlmChatClient {
 export function buildGroundedPrompt(
   props: Omit<KnowledgeGenerationProps, "model">,
 ) {
-  const contextText = props.contexts
-    .map((context, index) => {
-      return [
-        `Source ${index + 1}: ${context.sourceTitle || "Untitled"}`,
-        `Path: ${context.sourceOriginalPath || "unknown"}`,
-        `Similarity: ${context.similarity.toFixed(3)}`,
-        context.text,
-      ].join("\n");
-    })
-    .join("\n\n---\n\n");
+  const contextText = props.contexts.length
+    ? props.contexts
+        .map((context, index) => {
+          return [
+            `Source ${index + 1}: ${context.sourceTitle || "Untitled"}`,
+            `Path: ${context.sourceOriginalPath || "unknown"}`,
+            `Similarity: ${context.similarity.toFixed(3)}`,
+            context.text,
+          ].join("\n");
+        })
+        .join("\n\n---\n\n")
+    : "No indexed knowledge fragments matched the query.";
+  const skillInstructionsText = props.skillInstructions?.length
+    ? props.skillInstructions
+        .map((skill) => {
+          return [
+            `@${skill.slug}${skill.title ? ` (${skill.title})` : ""}`,
+            skill.instructions,
+          ].join("\n");
+        })
+        .join("\n\n---\n\n")
+    : "No selected skills.";
   const historyText = props.chatHistory?.length
     ? props.chatHistory
         .map((message) => {
@@ -157,14 +207,23 @@ export function buildGroundedPrompt(
         ? JSON.stringify(props.persona.description)
         : "";
 
+  const sourceInstruction = props.contexts.length
+    ? "Use conversation history to resolve follow-ups, and use the provided knowledge fragments for factual grounding."
+    : "Use conversation history to answer follow-ups. If the needed source text is not in the history, say that the conversation does not contain enough context.";
+
   return [
-    "Answer the query using only the provided knowledge fragments.",
+    sourceInstruction,
     `Use the selected persona as the expert role: ${personaTitle}.`,
     personaDescription ? `Persona context: ${personaDescription}` : "",
     "Answer in the same language as the user's query. If the query is in Russian, answer in Russian.",
     "Disambiguate ambiguous terms strictly from context. For example, Delta can mean an airline, a mathematical change, or a river delta; separate these meanings explicitly and ask a clarification if the fragments do not prove which meaning is intended.",
     "If the fragments do not support a claim, say that the indexed sources do not contain it.",
+    "When the query asks to edit, format, rewrite, or refine prior text, use the conversation history as the source text and preserve the requested subject instead of replacing it with unrelated knowledge fragments.",
+    "When selected skills are provided, follow their instructions for formatting, tone, and task behavior. Use the user's query as source material when the query contains the needed content.",
     "Cite source titles inline where useful.",
+    "",
+    "Selected skills:",
+    skillInstructionsText,
     "",
     "Conversation history:",
     historyText,

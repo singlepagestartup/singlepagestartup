@@ -562,6 +562,24 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleMemberProfiles,
     socialModuleProfilesToChats,
   ]);
+  const artificialIntelligenceOpponentProfile = useMemo(() => {
+    if (knowledgeAssistantProfile) {
+      return knowledgeAssistantProfile;
+    }
+
+    return (
+      (socialModuleMemberProfiles || []).find((socialModuleProfile) => {
+        return (
+          socialModuleProfile.id !== props.socialModuleProfile.id &&
+          socialModuleProfile.variant === "artificial-intelligence"
+        );
+      }) || null
+    );
+  }, [
+    knowledgeAssistantProfile,
+    props.socialModuleProfile.id,
+    socialModuleMemberProfiles,
+  ]);
   const normalizedMemberSearch = memberSearch.trim().toLowerCase();
   const canSearchProfiles = memberSearch.trim().length >= 2;
   const filteredMemberItems = useMemo(() => {
@@ -937,9 +955,6 @@ export function Component(props: IComponentPropsExtended) {
                       <p className="min-w-0 truncate text-xs text-slate-500">
                         {threadItem.preview}
                       </p>
-                      {isActive ? (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
-                      ) : null}
                     </div>
                   </button>
                 );
@@ -1704,6 +1719,9 @@ export function Component(props: IComponentPropsExtended) {
                 language={props.language}
                 socialModuleChat={props.socialModuleChat}
                 socialModuleProfile={props.socialModuleProfile}
+                artificialIntelligenceOpponentProfile={
+                  artificialIntelligenceOpponentProfile
+                }
                 knowledgeAssistantProfile={knowledgeAssistantProfile}
                 socialModuleThreadId={activeSocialModuleThreadId}
                 variant="social-module-profile-chat-message-list-default"

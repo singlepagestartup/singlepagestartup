@@ -62,12 +62,14 @@ class GatewayService:
             )
 
         model = self._get_model(request.model, task="chat")
+        provider_skills = self._provider_skills_for_model(request, model)
         provider = self.providers[model.provider]
         result = provider.chat(
             model=model,
             messages=request.messages,
             temperature=request.temperature,
             max_tokens=request.max_tokens,
+            provider_skills=provider_skills,
         )
 
         return {
@@ -156,3 +158,31 @@ class GatewayService:
             )
 
         return model
+
+    def _provider_skills_for_model(
+        self, request: ChatCompletionRequest, model: ModelDefinition
+    ) -> list | None:
+        if not request.provider_skills:
+            return None
+
+        if model.provider not in {"openai", "anthropic"}:
+            raise GatewayError(
+                f"provider_skills are only supported for openai and anthropic models. Selected provider: {model.provider}.",
+                status_code=400,
+                error_type="unsupported_parameter",
+            )
+
+        mismatched = [
+            skill.provider
+            for skill in request.provider_skills
+            if skill.provider != model.provider
+        ]
+
+        if mismatched:
+            raise GatewayError(
+                f"provider_skills must match selected model provider {model.provider}. Got: {', '.join(sorted(set(mismatched)))}.",
+                status_code=400,
+                error_type="invalid_request_error",
+            )
+
+        return request.provider_skills

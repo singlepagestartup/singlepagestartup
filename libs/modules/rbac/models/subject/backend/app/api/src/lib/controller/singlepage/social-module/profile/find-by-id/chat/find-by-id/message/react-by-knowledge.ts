@@ -4,7 +4,11 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
-import { KnowledgeGenerationModelSlug } from "@sps/knowledge/sdk/model";
+import {
+  DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG,
+  KnowledgeGenerationModelSlug,
+  KnowledgeModelProvider,
+} from "@sps/knowledge/sdk/model";
 import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/profiles-to-messages/sdk/server";
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
@@ -13,6 +17,14 @@ import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
+import {
+  buildProviderSkillBundle,
+  getProviderSkillReference,
+  isFreshProviderSkillReference,
+  isProviderSkillProvider,
+  toKnowledgeProviderSkillReference,
+} from "../../../skill/provider-skills";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, extname, join, normalize } from "node:path";
@@ -24,6 +36,8 @@ interface IRequestData {
   generationModelSlug?: KnowledgeGenerationModelSlug;
   topK?: number;
   minSimilarity?: number;
+  skillIds?: string[];
+  useKnowledgeSearch?: boolean;
 }
 
 interface ILearnContentItem {
@@ -32,6 +46,22 @@ interface ILearnContentItem {
   fileId?: string | null;
   fileName?: string | null;
   filePath?: string | null;
+}
+
+type IResolvedProviderSkillReference = ReturnType<
+  typeof toKnowledgeProviderSkillReference
+>;
+
+interface IResolvedKnowledgeSkills {
+  requestedSkillIds: string[];
+  skillsProfileId: string;
+  promptSkills: ISocialModuleSkill[];
+  providerSkills: IResolvedProviderSkillReference[];
+}
+
+interface IKnowledgeChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
 export class Handler {
@@ -98,7 +128,8 @@ export class Handler {
         socialModuleMessageId,
       });
 
-      if (this.isLearnMessage(socialModuleMessage)) {
+      if (this.hasLearnCommand(socialModuleMessage)) {
+        this.assertLearnCommandHasKnowledgeMention(socialModuleMessage);
         const result = await this.learnFromMessage({
           data,
           replyProfile,
@@ -455,7 +486,32 @@ export class Handler {
     socialModuleMessage: ISocialModuleMessage | undefined,
   ) {
     return Boolean(
-      socialModuleMessage?.description?.trim().match(/^\/learn\b/i),
+      socialModuleMessage?.description &&
+        this.hasKnowledgeMention(socialModuleMessage.description) &&
+        this.hasLearnCommand(socialModuleMessage),
+    );
+  }
+
+  private hasLearnCommand(
+    socialModuleMessage: ISocialModuleMessage | undefined,
+  ) {
+    return Boolean(
+      socialModuleMessage?.description &&
+        this.stripSkillMentions(socialModuleMessage.description).match(
+          /^\/learn\b/i,
+        ),
+    );
+  }
+
+  private assertLearnCommandHasKnowledgeMention(
+    socialModuleMessage: ISocialModuleMessage | undefined,
+  ) {
+    if (this.isLearnMessage(socialModuleMessage)) {
+      return;
+    }
+
+    throw new Error(
+      "Validation error. /learn requires @knowledge mention. Use @knowledge /learn ...",
     );
   }
 
@@ -575,7 +631,15 @@ export class Handler {
     socialModuleThreadId: string;
     socialModuleMessage: ISocialModuleMessage | undefined;
   }) {
-    const query = props.socialModuleMessage?.description?.trim();
+    const requestedSkillIds = this.normalizeSkillIds(props.data.skillIds);
+    const rawQuery = props.socialModuleMessage?.description || "";
+    const requestedKnowledgeSearch =
+      props.data.useKnowledgeSearch === true ||
+      this.hasKnowledgeMention(rawQuery);
+    const query =
+      requestedSkillIds.length || requestedKnowledgeSearch
+        ? this.stripSkillMentions(rawQuery)
+        : rawQuery.trim();
 
     if (!props.socialModuleMessage || !query) {
       throw new Error(
@@ -586,16 +650,42 @@ export class Handler {
     const knowledgeDocumentIds = await this.findKnowledgeDocumentIdsForProfile(
       props.replyProfile.id,
     );
+    const chatHistory = await this.findThreadChatHistory({
+      socialModuleThreadId: props.socialModuleThreadId,
+      triggerMessageId: props.socialModuleMessage.id,
+    });
+    const generationModelSlug =
+      props.data.generationModelSlug || DEFAULT_KNOWLEDGE_GENERATION_MODEL_SLUG;
+    const selectedModel =
+      await this.knowledgeService.getModel(generationModelSlug);
+    const resolvedSkills = await this.resolveKnowledgeSkills({
+      provider: selectedModel.provider,
+      replySocialModuleProfileId: props.replyProfile.id,
+      requestedSkillIds,
+    });
+    const useKnowledgeSearch = this.shouldUseKnowledgeSearch({
+      query,
+      requestedKnowledgeSearch,
+      requestedSkillIds,
+      chatHistory,
+    });
+    const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
     const generation = await this.knowledgeService.generate({
       query,
       topK: props.data.topK,
       minSimilarity: props.data.minSimilarity,
-      generationModelSlug: props.data.generationModelSlug,
-      documentIds: knowledgeDocumentIds,
+      generationModelSlug,
+      documentIds: searchDocumentIds,
       persona: {
         title: props.replyProfile.adminTitle || props.replyProfile.slug,
         description: props.replyProfile.description,
       },
+      chatHistory,
+      skillInstructions: this.toPromptSkillInstructions(
+        resolvedSkills.promptSkills,
+      ),
+      providerSkills: resolvedSkills.providerSkills,
+      useKnowledgeSearch,
     });
 
     return this.createThreadMessage({
@@ -608,17 +698,371 @@ export class Handler {
         knowledge: {
           action: "generate",
           profileId: props.replyProfile.id,
-          documentIds: knowledgeDocumentIds,
+          documentIds: searchDocumentIds,
           triggerMessageId: props.socialModuleMessage.id,
+          useKnowledgeSearch,
           citations: generation.sources,
           sources: generation.sources,
           generationModelSlug: generation.generationModelSlug,
           generationProvider: generation.generationProvider,
           generationModel: generation.generationModel,
           usage: generation.usage,
+          ...(requestedSkillIds.length
+            ? {
+                requestedSkillIds,
+                skillsProfileId: resolvedSkills.skillsProfileId,
+              }
+            : {}),
+          ...(requestedKnowledgeSearch
+            ? {
+                requestedKnowledgeSearch: true,
+              }
+            : {}),
+          skills: this.toAppliedKnowledgeSkillMetadata(resolvedSkills),
         },
       },
     });
+  }
+
+  private async resolveKnowledgeSkills(props: {
+    provider: KnowledgeModelProvider;
+    replySocialModuleProfileId: string;
+    requestedSkillIds: string[];
+  }): Promise<IResolvedKnowledgeSkills> {
+    const skillsProfileId = props.replySocialModuleProfileId;
+
+    if (props.requestedSkillIds.length) {
+      return {
+        requestedSkillIds: props.requestedSkillIds,
+        skillsProfileId,
+        promptSkills: await this.findPromptSkillsForProfile({
+          socialModuleProfileId: skillsProfileId,
+          skillIds: props.requestedSkillIds,
+        }),
+        providerSkills: [],
+      };
+    }
+
+    return {
+      requestedSkillIds: [],
+      skillsProfileId,
+      promptSkills: [],
+      providerSkills: [],
+    };
+  }
+
+  private async findThreadChatHistory(props: {
+    socialModuleThreadId: string;
+    triggerMessageId: string;
+  }): Promise<IKnowledgeChatHistoryMessage[]> {
+    const relations = await this.service.socialModule.threadsToMessages.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "threadId",
+              method: "eq",
+              value: props.socialModuleThreadId,
+            },
+          ],
+        },
+        orderBy: {
+          and: [
+            {
+              column: "orderIndex",
+              method: "asc",
+            },
+            {
+              column: "createdAt",
+              method: "asc",
+            },
+          ],
+        },
+      },
+    });
+    const orderedMessageIds =
+      relations
+        ?.map((relation: { messageId?: string }) => relation.messageId)
+        .filter((messageId: unknown): messageId is string => {
+          return typeof messageId === "string" && Boolean(messageId);
+        }) || [];
+    const triggerIndex = orderedMessageIds.indexOf(props.triggerMessageId);
+    const historyMessageIds =
+      triggerIndex >= 0
+        ? orderedMessageIds.slice(0, triggerIndex)
+        : orderedMessageIds.filter((id) => id !== props.triggerMessageId);
+
+    if (!historyMessageIds.length) {
+      return [];
+    }
+
+    const messages = await this.service.socialModule.message.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: historyMessageIds,
+            },
+          ],
+        },
+      },
+    });
+    const messagesById = new Map(
+      (messages || []).map((message: ISocialModuleMessage) => [
+        message.id,
+        message,
+      ]),
+    );
+
+    return historyMessageIds
+      .map((messageId) => messagesById.get(messageId))
+      .filter((message): message is ISocialModuleMessage => Boolean(message))
+      .map((message) => this.toChatHistoryMessage(message))
+      .filter((message) => Boolean(message.content.trim()));
+  }
+
+  private toChatHistoryMessage(
+    message: ISocialModuleMessage,
+  ): IKnowledgeChatHistoryMessage {
+    return {
+      role: this.getMessageInteractionRole(message),
+      content: this.toLearnText(
+        this.getMessageInteractionContent(message) || message.description || "",
+      ),
+    };
+  }
+
+  private getMessageInteractionRole(
+    message: ISocialModuleMessage,
+  ): "user" | "assistant" {
+    const interaction = message.interaction;
+
+    if (
+      interaction &&
+      typeof interaction === "object" &&
+      "role" in interaction &&
+      interaction.role === "assistant"
+    ) {
+      return "assistant";
+    }
+
+    return "user";
+  }
+
+  private getMessageInteractionContent(message: ISocialModuleMessage) {
+    const interaction = message.interaction;
+
+    if (
+      interaction &&
+      typeof interaction === "object" &&
+      "content" in interaction &&
+      typeof interaction.content === "string"
+    ) {
+      return interaction.content;
+    }
+
+    return "";
+  }
+
+  private shouldUseKnowledgeSearch(props: {
+    query: string;
+    requestedKnowledgeSearch: boolean;
+    requestedSkillIds: string[];
+    chatHistory: IKnowledgeChatHistoryMessage[];
+  }) {
+    return props.requestedKnowledgeSearch;
+  }
+
+  private hasKnowledgeMention(value: string) {
+    return /(^|\s)@knowledge(?=\s|$)/i.test(value);
+  }
+
+  private toPromptSkillInstructions(skills: ISocialModuleSkill[]) {
+    return skills.map((skill) => {
+      return {
+        id: skill.id,
+        slug: skill.slug,
+        title: skill.title || skill.adminTitle || skill.slug,
+        instructions: skill.description,
+      };
+    });
+  }
+
+  private toAppliedKnowledgeSkillMetadata(skills: IResolvedKnowledgeSkills) {
+    return [
+      ...skills.promptSkills.map((skill) => {
+        return {
+          skillId: skill.id,
+          slug: skill.slug,
+          title: skill.title || skill.adminTitle || skill.slug,
+          mode: "prompt-instruction",
+        };
+      }),
+      ...skills.providerSkills.map((reference) => {
+        return {
+          skillId: reference.source_skill_id,
+          provider: reference.provider,
+          providerSkillId: reference.provider_skill_id,
+          version: reference.version || null,
+          contentHash: reference.content_hash,
+          name: reference.name,
+          mode: "provider-native",
+        };
+      }),
+    ];
+  }
+
+  private async findPromptSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    skillIds: string[];
+  }) {
+    return this.findActiveSkillsForProfile({
+      socialModuleProfileId: props.socialModuleProfileId,
+      skillIds: props.skillIds,
+      requireRequestedSkillsLinked: true,
+    });
+  }
+
+  private async findProviderSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    provider: KnowledgeModelProvider;
+    skillIds?: string[];
+  }) {
+    const activeSkills = await this.findActiveSkillsForProfile({
+      socialModuleProfileId: props.socialModuleProfileId,
+      skillIds: props.skillIds,
+      requireRequestedSkillsLinked: Boolean(props.skillIds?.length),
+    });
+
+    if (!activeSkills.length) {
+      return [];
+    }
+
+    const provider = props.provider;
+
+    if (!isProviderSkillProvider(provider)) {
+      throw new Error(
+        `Validation error. Provider-native social skills are only supported for openai and anthropic models. Selected provider: ${provider}`,
+      );
+    }
+
+    return activeSkills.map((skill) => {
+      const bundle = buildProviderSkillBundle(skill);
+
+      if (
+        !isFreshProviderSkillReference({
+          skill,
+          provider,
+          bundle,
+        })
+      ) {
+        throw new Error(
+          `Validation error. Social skill ${skill.slug} is not synced to ${provider} or has stale provider metadata. Run profile skills provider-sync before Knowledge generation.`,
+        );
+      }
+
+      const reference = getProviderSkillReference({
+        skill,
+        provider,
+      });
+
+      if (!reference) {
+        throw new Error(
+          `Validation error. Social skill ${skill.slug} is missing ${provider} provider reference.`,
+        );
+      }
+
+      return toKnowledgeProviderSkillReference(reference);
+    });
+  }
+
+  private async findActiveSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    skillIds?: string[];
+    requireRequestedSkillsLinked: boolean;
+  }) {
+    const relations = await this.service.socialModule.profilesToSkills.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.socialModuleProfileId,
+            },
+          ],
+        },
+        orderBy: {
+          and: [
+            {
+              column: "orderIndex",
+              method: "asc",
+            },
+            {
+              column: "createdAt",
+              method: "asc",
+            },
+          ],
+        },
+      },
+    });
+    const linkedSkillIds =
+      relations
+        ?.map((relation: { skillId?: string }) => relation.skillId)
+        .filter((skillId: unknown): skillId is string => {
+          return typeof skillId === "string" && Boolean(skillId);
+        }) || [];
+    const requestedSkillIds = this.normalizeSkillIds(props.skillIds);
+    const skillIds = requestedSkillIds.length
+      ? requestedSkillIds
+      : linkedSkillIds;
+
+    if (!skillIds.length) {
+      return [];
+    }
+
+    if (props.requireRequestedSkillsLinked && requestedSkillIds.length) {
+      const linkedSkillIdSet = new Set(linkedSkillIds);
+      const unlinkedSkillIds = requestedSkillIds.filter((skillId) => {
+        return !linkedSkillIdSet.has(skillId);
+      });
+
+      if (unlinkedSkillIds.length) {
+        throw new Error(
+          `Authorization error. Selected social skills are not linked to profile ${props.socialModuleProfileId}: ${unlinkedSkillIds.join(", ")}`,
+        );
+      }
+    }
+
+    const skills = await this.service.socialModule.skill.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: skillIds,
+            },
+          ],
+        },
+      },
+    });
+    const skillsById = new Map(
+      (skills || []).map((skill: ISocialModuleSkill) => [skill.id, skill]),
+    );
+    const activeSkills = skillIds
+      .map((skillId) => skillsById.get(skillId))
+      .filter((skill): skill is ISocialModuleSkill => {
+        return Boolean(skill && skill.status !== "archived");
+      });
+
+    if (!activeSkills.length) {
+      return [];
+    }
+
+    return activeSkills;
   }
 
   private async collectLearnContentItems(props: {
@@ -710,9 +1154,34 @@ export class Handler {
   }
 
   private stripLearnPrefix(value: string) {
-    return this.toLearnText(value)
+    return this.stripSkillMentions(value)
       .replace(/^\/learn\b/i, "")
       .trim();
+  }
+
+  private stripSkillMentions(value: string) {
+    return this.toLearnText(value)
+      .replace(/(^|\s)@[a-zA-Z0-9._-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  private normalizeSkillIds(value?: string[]) {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        value
+          .map((skillId) => {
+            return typeof skillId === "string" ? skillId.trim() : "";
+          })
+          .filter((skillId): skillId is string => {
+            return Boolean(skillId);
+          }),
+      ),
+    );
   }
 
   private isSupportedLearnAttachment(file: IFileStorageModuleFile) {

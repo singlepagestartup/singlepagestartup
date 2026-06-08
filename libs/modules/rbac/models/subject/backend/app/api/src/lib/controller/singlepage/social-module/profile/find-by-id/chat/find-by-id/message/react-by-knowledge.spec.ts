@@ -8,6 +8,7 @@
 
 const mockKnowledgeLearnContent = jest.fn();
 const mockKnowledgeGenerate = jest.fn();
+const mockKnowledgeGetModel = jest.fn();
 const mockSocialModuleMessageCreate = jest.fn();
 const mockSocialModuleProfilesToMessagesCreate = jest.fn();
 const mockSocialModuleChatsToMessagesCreate = jest.fn();
@@ -37,6 +38,7 @@ jest.mock("@sps/knowledge/backend/app/api/src/lib/service", () => {
       return {
         learnContent: mockKnowledgeLearnContent,
         generate: mockKnowledgeGenerate,
+        getModel: mockKnowledgeGetModel,
       };
     }),
   };
@@ -108,7 +110,31 @@ function createService(props?: {
   messageDescription?: string;
   replyProfileVariant?: string;
   knowledgeDocumentRelations?: unknown[];
+  profileSkillRelations?: unknown[];
+  skills?: unknown[];
+  threadMessages?: {
+    id: string;
+    description?: string;
+    interaction?: Record<string, unknown>;
+  }[];
 }) {
+  const currentMessage = {
+    id: "message-1",
+    description:
+      props?.messageDescription || "@knowledge /learn Stored context",
+  };
+  const threadMessages = props?.threadMessages || [currentMessage];
+  const threadMessageRelations = threadMessages.map((message, index) => {
+    return {
+      threadId: "thread-1",
+      messageId: message.id,
+      orderIndex: index,
+      createdAt: new Date(
+        `2026-01-01T10:${String(index).padStart(2, "0")}:00.000Z`,
+      ),
+    };
+  });
+
   return {
     socialModuleChatLifecycleEnsureDefaultThreadForChat: jest
       .fn()
@@ -144,12 +170,35 @@ function createService(props?: {
         ]),
       },
       threadsToMessages: {
-        find: jest.fn().mockResolvedValue([
-          {
-            threadId: "thread-1",
-            messageId: "message-1",
-          },
-        ]),
+        find: jest.fn((request?: any) => {
+          const filters = request?.params?.filters?.and || [];
+          const threadIdFilter = filters.find((filter: any) => {
+            return filter.column === "threadId";
+          });
+          const messageIdFilter = filters.find((filter: any) => {
+            return filter.column === "messageId";
+          });
+
+          return Promise.resolve(
+            threadMessageRelations.filter((relation) => {
+              if (
+                threadIdFilter?.value &&
+                relation.threadId !== threadIdFilter.value
+              ) {
+                return false;
+              }
+
+              if (
+                messageIdFilter?.value &&
+                relation.messageId !== messageIdFilter.value
+              ) {
+                return false;
+              }
+
+              return true;
+            }),
+          );
+        }),
         create: jest.fn().mockResolvedValue({}),
       },
       messagesToFileStorageModuleFiles: {
@@ -163,6 +212,12 @@ function createService(props?: {
           id: "profile-document-relation-1",
         }),
       },
+      profilesToSkills: {
+        find: jest.fn().mockResolvedValue(props?.profileSkillRelations || []),
+      },
+      skill: {
+        find: jest.fn().mockResolvedValue(props?.skills || []),
+      },
       chat: {
         findById: jest.fn().mockResolvedValue({
           id: "chat-1",
@@ -170,10 +225,21 @@ function createService(props?: {
         }),
       },
       message: {
-        findById: jest.fn().mockResolvedValue({
-          id: "message-1",
-          description: props?.messageDescription || "/learn Stored context",
+        find: jest.fn((request?: any) => {
+          const idFilter = request?.params?.filters?.and?.find(
+            (filter: any) => {
+              return filter.column === "id";
+            },
+          );
+          const ids = Array.isArray(idFilter?.value) ? idFilter.value : null;
+
+          return Promise.resolve(
+            ids
+              ? threadMessages.filter((message) => ids.includes(message.id))
+              : threadMessages,
+          );
         }),
+        findById: jest.fn().mockResolvedValue(currentMessage),
       },
       profile: {
         findById: jest.fn().mockResolvedValue({
@@ -226,6 +292,13 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
         totalTokens: 12,
       },
     });
+    mockKnowledgeGetModel.mockResolvedValue({
+      id: "openai/gpt-5-5",
+      provider: "openai",
+      providerModel: "gpt-5.5",
+      task: "chat",
+      local: false,
+    });
     mockSocialModuleMessageCreate.mockResolvedValue({
       id: "assistant-message-1",
       description: "assistant response",
@@ -237,11 +310,11 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge chat message starts with /learn.
+   * Given: a Knowledge chat message starts with @knowledge /learn.
    * When: the subject asks the AI profile to react through Knowledge.
    * Then: message text is stripped, indexed for the AI profile, and acknowledged in the same thread.
    */
-  it("When: /learn is used Then: it learns stripped message content for the AI profile", async () => {
+  it("When: @knowledge /learn is used Then: it learns stripped message content for the AI profile", async () => {
     const handler = new Handler(createService());
     const context = createContext();
 
@@ -289,6 +362,9 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
         }),
       }),
     );
+    expect(
+      (handler.service as any).socialModule.profilesToSkills.find,
+    ).not.toHaveBeenCalled();
   });
 
   /**
@@ -299,7 +375,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
    */
   it("When: /learn reads non-string attachment content Then: it normalizes content before learning", async () => {
     const service = createService({
-      messageDescription: "/learn",
+      messageDescription: "@knowledge /learn",
     });
     service.socialModule.messagesToFileStorageModuleFiles.find = jest
       .fn()
@@ -363,6 +439,26 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     expect(
       service.socialModule.profilesToKnowledgeModuleDocuments.create,
     ).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat message starts with /learn without @knowledge.
+   * When: the subject asks the AI profile to react through Knowledge.
+   * Then: the handler rejects the command before indexing any knowledge.
+   */
+  it("When: bare /learn is used Then: it rejects without indexing knowledge", async () => {
+    const handler = new Handler(
+      createService({
+        messageDescription: "/learn Stored context",
+      }),
+    );
+
+    await expect(handler.execute(createContext(), jest.fn())).rejects.toThrow(
+      "/learn requires @knowledge mention",
+    );
+    expect(mockKnowledgeLearnContent).not.toHaveBeenCalled();
+    expect(mockSocialModuleMessageCreate).not.toHaveBeenCalled();
   });
 
   /**
@@ -431,11 +527,11 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge chat message is a normal question.
+   * Given: a Knowledge chat message is sent without @knowledge.
    * When: the subject asks the AI profile to react through Knowledge.
-   * Then: generation runs with that AI profile id and citations are saved in message metadata.
+   * Then: generation runs without hidden RAG side effects.
    */
-  it("When: a normal question is asked Then: it generates with profile-scoped Knowledge", async () => {
+  it("When: a normal question is asked without @knowledge Then: it skips RAG", async () => {
     const handler = new Handler(
       createService({
         messageDescription: "What should we answer?",
@@ -452,7 +548,9 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
       expect.objectContaining({
         query: "What should we answer?",
-        documentIds: ["document-1"],
+        documentIds: [],
+        providerSkills: [],
+        useKnowledgeSearch: false,
         persona: expect.objectContaining({
           title: "chat-gpt-1",
         }),
@@ -466,7 +564,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
             knowledge: expect.objectContaining({
               action: "generate",
               profileId: "assistant-profile-1",
-              documentIds: ["document-1"],
+              documentIds: [],
               citations: [
                 {
                   id: "chunk-1",
@@ -476,6 +574,100 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
             }),
           },
         }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat message explicitly mentions @knowledge.
+   * When: the subject asks the AI profile to react through Knowledge.
+   * Then: generation strips the @knowledge token and runs RAG in the AI profile document scope.
+   */
+  it("When: @knowledge is mentioned Then: it runs RAG with profile-scoped documents", async () => {
+    const handler = new Handler(
+      createService({
+        messageDescription: "@knowledge What should we answer?",
+        knowledgeDocumentRelations: [
+          {
+            knowledgeModuleDocumentId: "document-1",
+          },
+        ],
+      }),
+    );
+
+    await handler.execute(createContext(), jest.fn());
+
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "What should we answer?",
+        documentIds: ["document-1"],
+        useKnowledgeSearch: true,
+      }),
+    );
+    expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: {
+            knowledge: expect.objectContaining({
+              requestedKnowledgeSearch: true,
+              documentIds: ["document-1"],
+              useKnowledgeSearch: true,
+            }),
+          },
+        }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat thread already has an assistant response.
+   * When: the user asks to format or edit that prior response.
+   * Then: generation receives thread history and skips RAG search for that follow-up.
+   */
+  it("When: a follow-up edits prior text Then: it uses thread history without RAG", async () => {
+    const handler = new Handler(
+      createService({
+        messageDescription:
+          'Сделай нормальное форматирование текста и тут не "спикер", а Максим Иванов',
+        knowledgeDocumentRelations: [
+          {
+            knowledgeModuleDocumentId: "document-1",
+          },
+        ],
+        threadMessages: [
+          {
+            id: "assistant-message-previous",
+            description: "В этом фрагменте спикер оценивает помещение.",
+            interaction: {
+              role: "assistant",
+              content: "В этом фрагменте спикер оценивает помещение.",
+            },
+          },
+          {
+            id: "message-1",
+            description:
+              'Сделай нормальное форматирование текста и тут не "спикер", а Максим Иванов',
+          },
+        ],
+      }),
+    );
+
+    await handler.execute(createContext(), jest.fn());
+
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query:
+          'Сделай нормальное форматирование текста и тут не "спикер", а Максим Иванов',
+        documentIds: [],
+        useKnowledgeSearch: false,
+        chatHistory: [
+          {
+            role: "assistant",
+            content: "В этом фрагменте спикер оценивает помещение.",
+          },
+        ],
       }),
     );
   });
@@ -499,6 +691,188 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
       expect.objectContaining({
         query: "What should we answer?",
         documentIds: [],
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the replying AI profile has an active linked social skill.
+   * When: a normal Knowledge question is answered without an explicit @skill.
+   * Then: generation does not apply linked skills as a hidden provider-native side effect.
+   */
+  it("When: no skill ids are selected Then: it does not apply linked profile skills", async () => {
+    const skill = {
+      id: "skill-1",
+      slug: "brief-writer",
+      title: "Brief Writer",
+      description: "Write a concise product brief.",
+      status: "published",
+      metadata: {},
+    };
+    const handler = new Handler(
+      createService({
+        messageDescription: "What should we answer?",
+        profileSkillRelations: [{ skillId: "skill-1" }],
+        skills: [skill],
+      }),
+    );
+
+    await handler.execute(createContext(), jest.fn());
+
+    expect(
+      (handler.service as any).socialModule.profilesToSkills.find,
+    ).not.toHaveBeenCalled();
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerSkills: [],
+        skillInstructions: [],
+      }),
+    );
+    expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: {
+            knowledge: expect.objectContaining({
+              skills: [],
+            }),
+          },
+        }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat message mentions a selected skill from the replying AI profile.
+   * When: the subject asks the AI profile to answer through Knowledge.
+   * Then: RBAC scopes the selected skill to the replying AI profile and passes it as prompt instructions.
+   */
+  it("When: selected skill ids are passed Then: it uses prompt skills linked to the replying AI profile", async () => {
+    const skill = {
+      id: "skill-1",
+      slug: "brief-writer",
+      title: "Brief Writer",
+      description: "Write a concise product brief.",
+      status: "active",
+      metadata: {},
+    };
+    const handler = new Handler(
+      createService({
+        messageDescription: "@brief-writer What should we answer?",
+        profileSkillRelations: [{ skillId: "skill-1" }],
+        skills: [skill],
+      }),
+    );
+
+    await handler.execute(
+      createContext({
+        skillIds: ["skill-1"],
+      }),
+      jest.fn(),
+    );
+
+    expect(
+      (handler.service as any).socialModule.profilesToSkills.find,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: "assistant-profile-1",
+              },
+            ],
+          },
+        }),
+      }),
+    );
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "What should we answer?",
+        providerSkills: [],
+        skillInstructions: [
+          {
+            id: "skill-1",
+            slug: "brief-writer",
+            title: "Brief Writer",
+            instructions: "Write a concise product brief.",
+          },
+        ],
+      }),
+    );
+    expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: {
+            knowledge: expect.objectContaining({
+              requestedSkillIds: ["skill-1"],
+              skillsProfileId: "assistant-profile-1",
+              skills: [
+                {
+                  skillId: "skill-1",
+                  slug: "brief-writer",
+                  title: "Brief Writer",
+                  mode: "prompt-instruction",
+                },
+              ],
+            }),
+          },
+        }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat message mentions @knowledge and a linked selected skill.
+   * When: the subject asks the AI profile to answer through Knowledge.
+   * Then: generation combines RAG document scope with selected skill instructions.
+   */
+  it("When: @knowledge and selected skill ids are passed Then: it combines RAG and prompt skills", async () => {
+    const skill = {
+      id: "skill-1",
+      slug: "brief-writer",
+      title: "Brief Writer",
+      description: "Write a concise product brief.",
+      status: "active",
+      metadata: {},
+    };
+    const handler = new Handler(
+      createService({
+        messageDescription: "@knowledge @brief-writer What should we answer?",
+        knowledgeDocumentRelations: [
+          {
+            knowledgeModuleDocumentId: "document-1",
+          },
+        ],
+        profileSkillRelations: [{ skillId: "skill-1" }],
+        skills: [skill],
+      }),
+    );
+
+    await handler.execute(
+      createContext({
+        skillIds: ["skill-1"],
+      }),
+      jest.fn(),
+    );
+
+    expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "What should we answer?",
+        documentIds: ["document-1"],
+        useKnowledgeSearch: true,
+        skillInstructions: [
+          {
+            id: "skill-1",
+            slug: "brief-writer",
+            title: "Brief Writer",
+            instructions: "Write a concise product brief.",
+          },
+        ],
       }),
     );
   });
