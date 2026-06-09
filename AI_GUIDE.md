@@ -92,6 +92,81 @@ Sometimes variants are nested (e.g. `admin/form`, `article/overview/default`). A
 
 The MCP server (`apps/mcp`) exposes tools/resources for models and relations. Use those instead of inventing data or direct DB access.
 
+Connection details for Codex, Inspector, stdio clients, and remote HTTP deployments live in `apps/mcp/README.md`.
+
+To run MCP locally, start infrastructure and API first:
+
+```bash
+./up.sh
+npm run api:dev
+```
+
+Then start MCP:
+
+```bash
+npm run mcp:dev
+```
+
+This uses stdio. Use it when the MCP client launches the server process directly.
+
+For HTTP headers, cookies, or Inspector `Custom Headers`, start the Streamable HTTP transport:
+
+```bash
+npm run mcp:http
+```
+
+Then open Inspector:
+
+```bash
+npm run mcp:inspector:http
+```
+
+Choose `Streamable HTTP` and connect to `http://127.0.0.1:3001/mcp`. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available. The legacy Inspector command starts the MCP server through stdio:
+
+```bash
+npm run mcp:inspector
+```
+
+Codex and Claude Code use project-local HTTP MCP configs:
+
+- Codex: `.codex/config.toml`
+- Claude Code: `.mcp.json`
+
+Both configs point to `singlepagestartup`, matching the GitHub repository name, and map `X-RBAC-SECRET-KEY` from `RBAC_SECRET_KEY`. They do not store secrets and do not write username-specific `[projects."/Users/..."]` entries to `~/.codex/config.toml`.
+
+Start Codex or Claude Code from an environment that has the RBAC secret:
+
+```bash
+RBAC_SECRET_KEY="<secret>" codex
+RBAC_SECRET_KEY="<secret>" claude
+```
+
+Verify the Codex project config:
+
+```bash
+npm run mcp:codex:add:http
+```
+
+Claude Code can override the HTTP URL through `.mcp.json` env expansion:
+
+```bash
+MCP_URL="https://mcp.example.com/mcp" RBAC_SECRET_KEY="<secret>" claude
+```
+
+If Codex Desktop is launched only through the app UI and cannot read environment variables, configure `X-RBAC-SECRET-KEY` as a local MCP header in the app UI. Do not commit static secrets. If the app clears the header on restart, use an environment-aware launch or MCP OAuth/auth instead of repository config.
+
+Claude Desktop and Claude.ai remote connectors cannot reach local `127.0.0.1`; use Claude Code for local HTTP MCP, or expose the MCP server over HTTPS.
+
+MCP SDK calls require the configured API service URL. `./up.sh` creates the local env files expected by the API/MCP workflow, but MCP content/API access does not read `RBAC_SECRET_KEY` from the MCP `.env`. Pass auth with the MCP request, matching the frontend/API contract: `Authorization: Bearer <jwt>`, `X-RBAC-SECRET-KEY`, cookie `rbac.subject.jwt`, or cookie `rbac.secret-key`. Tool input schemas do not expose direct auth fields; resources and tools need auth from transport headers, cookies, MCP auth info, or request metadata.
+
+### 6.1 MCP content-management workflow
+
+For content edits through MCP, start with content entity discovery, then use filtered reads or host graph preview before any mutation.
+
+Use dry-run mutations first. For deletes, call delete preview and pass the returned confirmation token to delete apply. For localized fields such as `blog.widget.title`, use the localized field update tool so changing `title.en` preserves `title.ru` and other locale keys.
+
+For URL-based edits such as changing the Articles widget on `/about`, preview the host graph first. The path is `host.page` -> `host.pages-to-widgets` -> `host.widget` -> `host.widgets-to-external-widgets` -> external module widget, for example `blog.widget`.
+
 ## 7. Nx usage
 
 Prefer running tasks via Nx (`nx run`, `nx run-many`, `nx affected`).

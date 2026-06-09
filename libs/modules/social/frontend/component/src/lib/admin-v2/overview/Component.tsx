@@ -9,6 +9,7 @@ import { Component as AttributeKey } from "./attribute-key";
 import { Component as Chat } from "./chat";
 import { Component as Message } from "./message";
 import { Component as Profile } from "./profile";
+import { Component as Skill } from "./skill";
 import { Component as Thread } from "./thread";
 import { Component as Widget } from "./widget";
 
@@ -31,6 +32,7 @@ export function Component(props: IComponentProps) {
             <Chat variant="admin-v2-card" isServer={props.isServer} />
             <Message variant="admin-v2-card" isServer={props.isServer} />
             <Profile variant="admin-v2-card" isServer={props.isServer} />
+            <Skill variant="admin-v2-card" isServer={props.isServer} />
             <Thread variant="admin-v2-card" isServer={props.isServer} />
             <Widget variant="admin-v2-card" isServer={props.isServer} />
           </div>
@@ -62,6 +64,11 @@ export function Component(props: IComponentProps) {
           url={props.url}
         />
         <Profile
+          variant="admin-v2-table"
+          isServer={props.isServer}
+          url={props.url}
+        />
+        <Skill
           variant="admin-v2-table"
           isServer={props.isServer}
           url={props.url}

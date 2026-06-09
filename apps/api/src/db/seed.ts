@@ -7,6 +7,7 @@ import { app as crmApp } from "@sps/crm/backend/app/api";
 import { app as ecommerceApp } from "@sps/ecommerce/backend/app/api";
 import { app as fileStorageApp } from "@sps/file-storage/backend/app/api";
 import { app as hostApp } from "@sps/host/backend/app/api";
+import { app as knowledgeApp } from "@sps/knowledge/backend/app/api";
 import { app as notificationApp } from "@sps/notification/backend/app/api";
 import { app as socialApp } from "@sps/social/backend/app/api";
 import { app as rbacApp } from "@sps/rbac/backend/app/api";
@@ -157,6 +158,18 @@ import {
     });
   } else {
     seeds.push(socialModelsSeeds);
+  }
+
+  const knowledgeModelsSeeds = await knowledgeApp.seed({
+    type: "model",
+    seeds,
+  });
+  if (Array.isArray(knowledgeModelsSeeds)) {
+    knowledgeModelsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(knowledgeModelsSeeds);
   }
 
   const rbacModelsSeeds = await rbacApp.seed({
@@ -315,6 +328,18 @@ import {
     });
   } else {
     seeds.push(ecommerceRelationsSeeds);
+  }
+
+  const knowledgeRelationsSeeds = await knowledgeApp.seed({
+    type: "relation",
+    seeds,
+  });
+  if (Array.isArray(knowledgeRelationsSeeds)) {
+    knowledgeRelationsSeeds.forEach((seed) => {
+      seeds.push(seed);
+    });
+  } else {
+    seeds.push(knowledgeRelationsSeeds);
   }
 
   const socialRelationsSeeds = await socialApp.seed({

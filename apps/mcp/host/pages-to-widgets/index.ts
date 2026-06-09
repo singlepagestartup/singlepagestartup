@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as hostPagesToWidgetsApi } from "@sps/host/relations/pages-to-widgets/sdk/server";
 import { insertSchema as hostPagesToWidgetsInsertSchema } from "@sps/host/relations/pages-to-widgets/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "host-pages-to-widgets-count",
+    "Count host pages to widgets",
+    "Count host pages to widgets entities with optional filters.",
+    hostPagesToWidgetsApi,
+  );
+
   mcp.registerTool(
     "host-pages-to-widgets-get",
     {
@@ -38,15 +46,9 @@ export function registerTools(mcp: McpServer) {
     },
     async () => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await hostPagesToWidgetsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -120,16 +122,10 @@ export function registerTools(mcp: McpServer) {
     },
     async (args) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostPagesToWidgetsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -167,17 +163,11 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for update");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostPagesToWidgetsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -215,16 +205,10 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await hostPagesToWidgetsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 

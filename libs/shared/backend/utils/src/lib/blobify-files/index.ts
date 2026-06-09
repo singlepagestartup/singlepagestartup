@@ -17,7 +17,7 @@ export async function util(props: {
 
     return new File([blob], `${file.title}.${file.extension}`, {
       type: file.type,
-    });
+    }) as unknown as File;
   });
 
   return Promise.all(filePromises);

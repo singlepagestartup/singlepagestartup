@@ -82,6 +82,7 @@
       "@sps/shared-ui-shadcn": ["libs/shared/ui/shadcn/src/index.ts"],
       "@sps/shared-utils": ["libs/shared/utils/src/index.ts"],
       "@sps/social/*": ["libs/modules/social/*"],
+      "@sps/knowledge/*": ["libs/modules/knowledge/*"],
       "@sps/sps-generator-plugin": [
         "tools/plugins/sps-generator-plugin/src/index.ts"
       ],

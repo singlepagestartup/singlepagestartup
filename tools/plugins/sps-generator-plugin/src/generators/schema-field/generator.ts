@@ -1,6 +1,7 @@
-import { Tree, formatFiles } from "@nx/devkit";
+import { Tree } from "@nx/devkit";
 import { SchemaFieldGeneratorSchema } from "./schema";
 import { Coder } from "../../coder/Coder";
+import { formatGeneratorFiles } from "../format";
 
 export async function schemaFieldGenerator(
   tree: Tree,
@@ -44,7 +45,7 @@ export async function schemaFieldGenerator(
     });
   }
 
-  await formatFiles(tree);
+  await formatGeneratorFiles(tree);
 }
 
 export default schemaFieldGenerator;

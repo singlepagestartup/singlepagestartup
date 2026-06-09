@@ -1,5 +1,5 @@
 import { ISpsComponentBase } from "@sps/ui-adapter";
-import { IFindProps } from "@sps/shared-frontend-api";
+import { ICountProps } from "@sps/shared-frontend-api";
 
 /**
  * Contract for admin-v2 overview cards.
@@ -11,12 +11,12 @@ export interface IComponentProps<M extends { id?: string }, V>
   extends ISpsComponentBase {
   /** Card render variant. */
   variant: V;
-  /** Optional API `find` params/options for card-level counters/metrics. */
+  /** Optional API `count` params/options for card-level counters/metrics. */
   apiProps?: {
     /** Query params. */
-    params?: IFindProps["params"];
+    params?: ICountProps["params"];
     /** Additional transport options. */
-    options?: IFindProps["options"];
+    options?: ICountProps["options"];
   };
   /** Additional class names for card styling. */
   className?: string;
@@ -46,4 +46,6 @@ export type IComponentPropsExtended<
 > = IComponentProps & {
   /** Optional loaded entities used by specialized card variants. */
   data?: M[];
+  /** Loaded entity count displayed by the card. */
+  count?: number;
 };

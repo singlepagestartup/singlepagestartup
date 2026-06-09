@@ -12,6 +12,7 @@
 
 import { act } from "react";
 import { Component } from "./ClientComponent";
+import { TableContext, TableContextType } from "../table-controller/Context";
 import {
   cleanupHarness,
   createDomHarness,
@@ -28,6 +29,24 @@ function findButtonByText(container: HTMLDivElement, text: string) {
   return Array.from(container.querySelectorAll("button")).find((button) =>
     button.textContent?.includes(text),
   ) as HTMLButtonElement | undefined;
+}
+
+function createTableContextState(
+  overrides: Partial<TableContextType> = {},
+): TableContextType {
+  return {
+    search: "",
+    debouncedSearch: "",
+    offset: 0,
+    limit: 100,
+    searchField: "id",
+    selectedField: "id",
+    total: 0,
+    selectedRowIds: [],
+    visibleRowIds: [],
+    bulkDeletePending: false,
+    ...overrides,
+  };
 }
 
 describe("GIVEN: admin-v2 table-row client UI component", () => {
@@ -207,6 +226,57 @@ describe("GIVEN: admin-v2 table-row client UI component", () => {
     });
 
     expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario: table row selection uses shared table context.
+   *
+   * Given: a row is rendered inside an admin-v2 table context.
+   * When: its selection checkbox is checked.
+   * Then: the row id is added to selected row ids without blocking row actions.
+   */
+  it("WHEN row checkbox is checked THEN row id is added to table selection", () => {
+    const setState = jest.fn();
+    const state = createTableContextState({
+      visibleRowIds: ["row-6"],
+    });
+
+    renderInHarness(
+      harness,
+      <TableContext.Provider value={[state, setState]}>
+        <Component
+          isServer={false}
+          variant="admin-v2-table-row"
+          module="ecommerce"
+          name="product"
+          type="model"
+          data={
+            {
+              id: "row-6",
+              adminTitle: "Selectable Row",
+              slug: "selectable-row",
+              variant: "default",
+            } as any
+          }
+        />
+      </TableContext.Provider>,
+    );
+
+    const checkbox = harness.container.querySelector(
+      'input[aria-label="Select row row-6"]',
+    ) as HTMLInputElement | null;
+    expect(checkbox).toBeTruthy();
+    expect(harness.container.textContent).toContain("Preview");
+
+    act(() => {
+      checkbox!.click();
+    });
+
+    const selectionUpdate = setState.mock.calls.at(-1)?.[0];
+    expect(selectionUpdate(state)).toEqual({
+      ...state,
+      selectedRowIds: ["row-6"],
+    });
   });
 
   it("WHEN children are not provided THEN fallback fields and values are rendered", () => {

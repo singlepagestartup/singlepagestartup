@@ -99,7 +99,7 @@ If no issue number is given, infer one only when there is a clear local artifact
    - otherwise:
      - `thoughts/shared/retrospectives/REPO_NAME/YYYY-MM-DD_HH-MM-SS.md`
 
-   `REPO_NAME` must be resolved from `gh repo view --json name -q '.name'`.
+   `REPO_NAME` must be resolved from `.claude/helpers/get_repo_name.sh`; do not use bare `gh repo view` for artifact namespaces.
 
    Use this structure:
 
@@ -120,6 +120,7 @@ If no issue number is given, infer one only when there is a clear local artifact
    ## Findings
 
    ### 1. <Short title>
+
    - Surface:
    - Type:
    - Impact:

@@ -1,0 +1,9 @@
+{
+  "id": "25047252-bd65-4985-aadd-dc1002d640b3",
+  "createdAt": "2026-05-10T00:48:33.302Z",
+  "updatedAt": "2026-05-10T00:48:33.302Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/widgets-to-logotypes/count"
+}

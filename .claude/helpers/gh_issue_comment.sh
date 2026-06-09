@@ -43,7 +43,7 @@ while [ $# -gt 0 ]; do
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/gh_retry.sh"
+source "$SCRIPT_DIR/load_config.sh"
 
 TEMP_BODY_FILE=""
 if [ -z "$BODY_FILE" ]; then
@@ -61,9 +61,9 @@ fi
 ensure_gh_ready
 
 if [ "$EDIT_LAST" = "1" ]; then
-  gh_retry issue comment "$ISSUE_NUMBER" --edit-last --body-file "$BODY_FILE"
+  gh_retry issue comment "$ISSUE_NUMBER" --repo "$TARGET_REPO_FULL_NAME" --edit-last --body-file "$BODY_FILE"
 else
-  gh_retry issue comment "$ISSUE_NUMBER" --body-file "$BODY_FILE"
+  gh_retry issue comment "$ISSUE_NUMBER" --repo "$TARGET_REPO_FULL_NAME" --body-file "$BODY_FILE"
 fi
 
 if [ -n "$TEMP_BODY_FILE" ]; then

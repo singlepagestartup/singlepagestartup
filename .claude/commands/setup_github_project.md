@@ -7,13 +7,14 @@ description: Create and configure a GitHub Project with required statuses and la
 ### Step 1 — Detect context
 
 ```bash
-GITHUB_REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
-GITHUB_LOGIN=$(gh repo view --json owner -q '.owner.login')
-source .claude/.env
+source .claude/helpers/load_config.sh
+GITHUB_REPO="$TARGET_REPO_FULL_NAME"
+GITHUB_LOGIN="$GITHUB_AUTH_LOGIN"
+REPO_NAME="$TARGET_REPO_NAME"
 
 # Determine project owner and entity type
-PROJECT_OWNER="${GITHUB_PROJECT_OWNER:-$GITHUB_LOGIN}"
-PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
+PROJECT_OWNER="$GITHUB_OWNER"
+PROJECT_OWNER_TYPE="$GITHUB_PROJECT_OWNER_TYPE"
 ```
 
 ### Step 2 — Create or use existing project
@@ -23,7 +24,7 @@ If `GITHUB_PROJECT_NUMBER` is already set in `.claude/.env`, skip to Step 3.
 Otherwise, create a new project:
 
 ```bash
-PROJECT_URL=$(gh project create --owner "$PROJECT_OWNER" --title "$(gh repo view --json name -q '.name') Board" --format json | jq -r '.url')
+PROJECT_URL=$(gh project create --owner "$PROJECT_OWNER" --title "$REPO_NAME Board" --format json | jq -r '.url')
 GITHUB_PROJECT_NUMBER=$(echo "$PROJECT_URL" | grep -o '[0-9]*$')
 echo "Created project #$GITHUB_PROJECT_NUMBER: $PROJECT_URL"
 ```

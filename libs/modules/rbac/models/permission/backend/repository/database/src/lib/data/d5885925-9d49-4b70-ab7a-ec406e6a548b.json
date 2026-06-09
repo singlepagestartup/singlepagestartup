@@ -1,0 +1,9 @@
+{
+  "id": "d5885925-9d49-4b70-ab7a-ec406e6a548b",
+  "createdAt": "2026-05-10T00:47:59.714Z",
+  "updatedAt": "2026-05-10T00:47:59.714Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/messages/count"
+}

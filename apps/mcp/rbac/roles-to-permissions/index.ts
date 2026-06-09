@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as rbacRolesToPermissionsApi } from "@sps/rbac/relations/roles-to-permissions/sdk/server";
 import { insertSchema as rbacRolesToPermissionsInsertSchema } from "@sps/rbac/relations/roles-to-permissions/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "rbac-roles-to-permissions-count",
+    "Count rbac roles to permissions",
+    "Count rbac roles to permissions entities with optional filters.",
+    rbacRolesToPermissionsApi,
+  );
+
   mcp.registerTool(
     "rbac-roles-to-permissions-get",
     {
@@ -38,15 +46,9 @@ export function registerTools(mcp: McpServer) {
     },
     async () => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities = await rbacRolesToPermissionsApi.find({
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -121,16 +123,10 @@ export function registerTools(mcp: McpServer) {
     },
     async (args) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await rbacRolesToPermissionsApi.create({
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -168,17 +164,11 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for update");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await rbacRolesToPermissionsApi.update({
           id: args.id,
           data: args,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 
@@ -216,16 +206,10 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity = await rbacRolesToPermissionsApi.delete({
           id: args.id,
           options: {
-            headers: {
-              "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-            },
+            headers: {},
           },
         });
 

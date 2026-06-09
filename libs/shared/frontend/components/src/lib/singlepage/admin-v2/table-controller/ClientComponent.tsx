@@ -17,7 +17,7 @@ import {
 } from "@sps/shared-ui-shadcn";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { TableContext } from "./Context";
+import { TableContext, type TableContextType } from "./Context";
 import { type IComponentProps } from "./interface";
 
 const DEFAULT_SEARCHABLE_FIELDS = [
@@ -43,7 +43,7 @@ export function Component<M extends { id?: string }>(
   const baseSearchableFields =
     props.baseSearchableFields ?? DEFAULT_SEARCHABLE_FIELDS;
   const baseCount = props.baseCount ?? DEFAULT_PAGE_SIZES;
-  const [state, setState] = useState({
+  const [state, setState] = useState<TableContextType>({
     search: "",
     debouncedSearch: "",
     offset: 0,
@@ -51,6 +51,9 @@ export function Component<M extends { id?: string }>(
     selectedField: "id",
     searchField: props.searchField ?? "id",
     total: 0,
+    selectedRowIds: [],
+    visibleRowIds: [],
+    bulkDeletePending: false,
   });
 
   const { limit } = state;
@@ -66,7 +69,19 @@ export function Component<M extends { id?: string }>(
   useEffect(() => {
     const next = Number(selectedCount);
     if (!Number.isFinite(next) || next <= 0) return;
-    setState((prev) => ({ ...prev, limit: next, offset: 0 }));
+    setState((prev) => {
+      if (prev.limit === next) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        limit: next,
+        offset: 0,
+        selectedRowIds: [],
+        visibleRowIds: [],
+      };
+    });
   }, [selectedCount]);
 
   useEffect(() => {
@@ -77,6 +92,8 @@ export function Component<M extends { id?: string }>(
     setState((prev) => ({
       ...prev,
       searchField: props.searchField ?? prev.searchField ?? "id",
+      selectedRowIds: [],
+      visibleRowIds: [],
     }));
   }, [props.searchField]);
 
@@ -95,6 +112,8 @@ export function Component<M extends { id?: string }>(
       setState((prev) => ({
         ...prev,
         offset: maxOffset,
+        selectedRowIds: [],
+        visibleRowIds: [],
       }));
     }
   }, [state.total, state.limit, state.offset]);
@@ -130,7 +149,13 @@ export function Component<M extends { id?: string }>(
                 value={state.search}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setState((prev) => ({ ...prev, search: value, offset: 0 }));
+                  setState((prev) => ({
+                    ...prev,
+                    search: value,
+                    offset: 0,
+                    selectedRowIds: [],
+                    visibleRowIds: [],
+                  }));
                 }}
                 className="w-full py-2 pl-9 pr-3 text-sm"
               />
@@ -143,6 +168,8 @@ export function Component<M extends { id?: string }>(
                   ...prev,
                   selectedField: v,
                   offset: 0,
+                  selectedRowIds: [],
+                  visibleRowIds: [],
                 }));
               }}
             >
@@ -217,6 +244,8 @@ export function Component<M extends { id?: string }>(
                   setState((prev) => ({
                     ...prev,
                     offset: Math.max(0, prev.offset - prev.limit),
+                    selectedRowIds: [],
+                    visibleRowIds: [],
                   }))
                 }
                 className="gap-1"
@@ -234,6 +263,8 @@ export function Component<M extends { id?: string }>(
                   setState((prev) => ({
                     ...prev,
                     offset: prev.offset + prev.limit,
+                    selectedRowIds: [],
+                    visibleRowIds: [],
                   }))
                 }
                 className="gap-1"

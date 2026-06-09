@@ -1,0 +1,9 @@
+{
+  "id": "2285b10b-918f-42bb-a9a3-06a35e7e8a3d",
+  "createdAt": "2026-05-10T00:46:04.401Z",
+  "updatedAt": "2026-05-10T00:46:04.401Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/host/widgets-to-external-widgets/count"
+}

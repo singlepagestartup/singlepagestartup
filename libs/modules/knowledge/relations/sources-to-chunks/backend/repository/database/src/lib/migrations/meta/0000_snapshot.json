@@ -1,0 +1,112 @@
+{
+  "id": "01c55d4e-6d04-4d42-a760-6a685ec53b15",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.sps_ke_ss_to_cs_rae": {
+      "name": "sps_ke_ss_to_cs_rae",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "variant": {
+          "name": "variant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "se_id": {
+          "name": "se_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ck_id": {
+          "name": "ck_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sps_ke_ss_to_cs_rae_se_id_sps_ke_source_id_fk": {
+          "name": "sps_ke_ss_to_cs_rae_se_id_sps_ke_source_id_fk",
+          "tableFrom": "sps_ke_ss_to_cs_rae",
+          "tableTo": "sps_ke_source",
+          "columnsFrom": [
+            "se_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sps_ke_ss_to_cs_rae_ck_id_sps_ke_chunk_id_fk": {
+          "name": "sps_ke_ss_to_cs_rae_ck_id_sps_ke_chunk_id_fk",
+          "tableFrom": "sps_ke_ss_to_cs_rae",
+          "tableTo": "sps_ke_chunk",
+          "columnsFrom": [
+            "ck_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

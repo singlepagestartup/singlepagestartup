@@ -4,6 +4,7 @@ import "server-only";
 import { IComponentProps } from "./interface";
 import { Component as ChildComponent } from "./Component";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import { createSocialModuleMessagesAndActionsQuery } from "./timeline";
 
 export default async function Component(props: IComponentProps) {
   const socialModuleMessages =
@@ -12,6 +13,16 @@ export default async function Component(props: IComponentProps) {
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
       socialModuleThreadId: props.socialModuleThreadId,
+      params: {
+        orderBy: {
+          and: [
+            {
+              column: "createdAt",
+              method: "asc",
+            },
+          ],
+        },
+      },
       options: {
         headers: {
           "Cache-Control": "no-store",
@@ -23,6 +34,17 @@ export default async function Component(props: IComponentProps) {
       id: props.data.id,
       socialModuleProfileId: props.socialModuleProfile.id,
       socialModuleChatId: props.socialModuleChat.id,
+      params: {
+        socialModuleThreadId: props.socialModuleThreadId,
+        orderBy: {
+          and: [
+            {
+              column: "createdAt",
+              method: "asc",
+            },
+          ],
+        },
+      },
       options: {
         headers: {
           "Cache-Control": "no-store",
@@ -31,22 +53,10 @@ export default async function Component(props: IComponentProps) {
     });
 
   const socialModuleMessagesAndActionsQuery =
-    socialModuleMessages && socialModuleActions
-      ? [
-          ...socialModuleMessages.map((socialModuleMessage) => {
-            return {
-              type: "message" as const,
-              data: socialModuleMessage,
-            };
-          }),
-          ...socialModuleActions.map((socialModuleAction) => {
-            return {
-              type: "action" as const,
-              data: socialModuleAction,
-            };
-          }),
-        ]
-      : [];
+    createSocialModuleMessagesAndActionsQuery({
+      socialModuleMessages,
+      socialModuleActions,
+    });
 
   return (
     <ChildComponent

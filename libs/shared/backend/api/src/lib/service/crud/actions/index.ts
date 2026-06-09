@@ -1,4 +1,5 @@
 export { Action as FindAction } from "./find";
+export { Action as CountAction } from "./count";
 export { Action as FindByIdAction } from "./find-by-id";
 export { Action as CreateAction } from "./create";
 export { Action as UpdateAction } from "./update";

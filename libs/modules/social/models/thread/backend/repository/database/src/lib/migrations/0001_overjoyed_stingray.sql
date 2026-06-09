@@ -1,0 +1,1 @@
+ALTER TABLE "sl_thread" ADD COLUMN "source_system_id" text;

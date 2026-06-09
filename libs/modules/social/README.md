@@ -8,6 +8,7 @@ The Social module manages profiles, chats, messages, and related social interact
 
 - Stores social profiles with localized content.
 - Defines chats, threads, and messages.
+- Stores reusable AI skills for transcript-to-content workflows.
 - Attaches files and widgets to social entities.
 - Links social content to ecommerce products.
 
@@ -15,9 +16,19 @@ The Social module manages profiles, chats, messages, and related social interact
 
 - Profile pages and social feeds.
 - Chat and messaging interfaces.
+- Profile-scoped transcript processing through selected AI skills.
+- Profile-scoped Knowledge/RAG chats through `chat.variant="knowledge"`.
 - Social features tied to ecommerce products.
 
 ---
+
+## 4. Knowledge Chat Variant
+
+`social.chat.variant="knowledge"` is the explicit switch for profile-scoped Knowledge/RAG behavior. In this mode, agent profiles with `variant="artificial-intelligence"` and slugs like `chat-gpt-*` reply through the RBAC Knowledge reaction endpoint instead of the default OpenRouter flow.
+
+Users can send `/learn` in the existing chat UI to add the current message text and supported text/markdown attachments to the replying AI profile's Knowledge base. RBAC orchestrates the call to generic Knowledge learning and then creates the Social-owned `profiles-to-knowledge-module-documents` relation. Later Knowledge chat questions use only the document ids linked to the replying AI profile; Knowledge itself does not read Social profile or relation tables.
+
+`default` and `telegram` chat variants keep the existing non-RAG behavior.
 
 ## 2. Models
 
@@ -29,6 +40,7 @@ The Social module manages profiles, chats, messages, and related social interact
 | [chat](./models/chat/README.md)                   | Chat containers         |
 | [message](./models/message/README.md)             | Message content         |
 | [profile](./models/profile/README.md)             | Social profiles         |
+| [skill](./models/skill/README.md)                 | AI skill instructions   |
 | [thread](./models/thread/README.md)               | Chat threads            |
 | [widget](./models/widget/README.md)               | Social UI widgets       |
 
@@ -48,7 +60,9 @@ The Social module manages profiles, chats, messages, and related social interact
 | [profiles-to-chats](./relations/profiles-to-chats/README.md)                                                   | Link profiles to chats            |
 | [profiles-to-ecommerce-module-products](./relations/profiles-to-ecommerce-module-products/README.md)           | Link profiles to products         |
 | [profiles-to-file-storage-module-files](./relations/profiles-to-file-storage-module-files/README.md)           | Attach files to profiles          |
+| [profiles-to-knowledge-module-documents](./relations/profiles-to-knowledge-module-documents/README.md)         | Link profiles to knowledge docs   |
 | [profiles-to-messages](./relations/profiles-to-messages/README.md)                                             | Link profiles to messages         |
+| [profiles-to-skills](./relations/profiles-to-skills/README.md)                                                 | Link profiles to available skills |
 | [profiles-to-website-builder-module-widgets](./relations/profiles-to-website-builder-module-widgets/README.md) | Attach widgets to profiles        |
 | [threads-to-ecommerce-module-products](./relations/threads-to-ecommerce-module-products/README.md)             | Link threads to products          |
 | [threads-to-messages](./relations/threads-to-messages/README.md)                                               | Link threads to messages          |

@@ -1,0 +1,9 @@
+{
+  "id": "8011fa8c-080c-437b-b8a7-8e1aabd31876",
+  "createdAt": "2026-05-10T00:48:22.623Z",
+  "updatedAt": "2026-05-10T00:48:22.623Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/features-to-file-storage-module-files/count"
+}

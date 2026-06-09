@@ -1,4 +1,8 @@
-import { DI, type IRepository } from "@sps/shared-backend-api";
+import {
+  DI,
+  type FindServiceProps,
+  type IRepository,
+} from "@sps/shared-backend-api";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { api as subjectsToRolesApi } from "@sps/rbac/relations/subjects-to-roles/sdk/server";
 import { api as subjectsToBillingModuleCurrenciesApi } from "@sps/rbac/relations/subjects-to-billing-module-currencies/sdk/server";
@@ -27,6 +31,7 @@ import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subj
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
+import { logger } from "@sps/backend-utils";
 
 export type IExecuteProps = {
   subjectId?: string;
@@ -35,6 +40,77 @@ export type IExecuteProps = {
 type IExtendedEcommerceModuleOrder = IEcommerceModuleOrder & {
   checkoutAttributesByCurrency: IEcommerceOrderResult["ICheckoutAttributesByCurrencyResult"];
 } & IEcommerceOrderResult["IExtendedResult"];
+
+type ISubjectsToEcommerceModuleOrder = Awaited<
+  ReturnType<SubjectsToEcommerceModuleOrdersService["find"]>
+>[number];
+
+type IFindFilter = NonNullable<
+  NonNullable<FindServiceProps["params"]>["filters"]
+>["and"][number];
+
+export const ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT = 100;
+
+export const ECOMMERCE_ORDER_PROCEED_STATUSES = [
+  "paid",
+  "delivering",
+  "delivered",
+  "canceling",
+];
+
+function getBoundedUniqueOrders(orders: IEcommerceModuleOrder[]) {
+  const orderById = new Map<string, IEcommerceModuleOrder>();
+
+  for (const order of orders) {
+    if (!order.id || orderById.has(order.id)) {
+      continue;
+    }
+
+    orderById.set(order.id, order);
+
+    if (orderById.size >= ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT) {
+      break;
+    }
+  }
+
+  return {
+    orders: Array.from(orderById.values()),
+    orderIds: Array.from(orderById.keys()),
+  };
+}
+
+function getBoundedUniqueOrderIds(
+  subjectsToEcommerceModuleOrders: ISubjectsToEcommerceModuleOrder[],
+) {
+  return Array.from(
+    new Set(
+      subjectsToEcommerceModuleOrders
+        .map((item) => item.ecommerceModuleOrderId)
+        .filter((orderId): orderId is string => Boolean(orderId)),
+    ),
+  ).slice(0, ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT);
+}
+
+function groupSubjectOrderRelationsByOrderId(
+  subjectsToEcommerceModuleOrders: ISubjectsToEcommerceModuleOrder[],
+) {
+  const result = new Map<string, ISubjectsToEcommerceModuleOrder[]>();
+
+  for (const subjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
+    const orderId = subjectToEcommerceModuleOrder.ecommerceModuleOrderId;
+
+    if (!orderId) {
+      continue;
+    }
+
+    result.set(orderId, [
+      ...(result.get(orderId) ?? []),
+      subjectToEcommerceModuleOrder,
+    ]);
+  }
+
+  return result;
+}
 
 @injectable()
 export class Service {
@@ -91,62 +167,55 @@ export class Service {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
 
-    const subjectsToEcommerceModuleOrders =
-      await this.subjectsToEcommerceModuleOrders.find(
-        props.subjectId
-          ? {
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "subjectId",
-                      method: "eq",
-                      value: props.subjectId,
-                    },
-                  ],
+    const candidateOrderFilters: IFindFilter[] = [
+      {
+        column: "status",
+        method: "inArray",
+        value: ECOMMERCE_ORDER_PROCEED_STATUSES,
+      },
+    ];
+
+    if (props.subjectId) {
+      const scopedSubjectsToEcommerceModuleOrders =
+        await this.subjectsToEcommerceModuleOrders.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "subjectId",
+                  method: "eq",
+                  value: props.subjectId,
                 },
-              },
-            }
-          : {},
+              ],
+            },
+          },
+        });
+
+      const scopedOrderIds = getBoundedUniqueOrderIds(
+        scopedSubjectsToEcommerceModuleOrders ?? [],
       );
 
-    if (!subjectsToEcommerceModuleOrders?.length) {
-      return;
+      if (!scopedOrderIds.length) {
+        return;
+      }
+
+      candidateOrderFilters.unshift({
+        column: "id",
+        method: "inArray",
+        value: scopedOrderIds,
+      });
     }
 
-    const orderIds = subjectsToEcommerceModuleOrders
-      .map((item) => item.ecommerceModuleOrderId)
-      .filter((orderId): orderId is string => Boolean(orderId));
-
-    if (!orderIds.length) {
-      return;
-    }
-
-    const orders = await this.ecommerceModule.order.find({
+    const candidateOrders = await this.ecommerceModule.order.find({
       params: {
         filters: {
-          and: [
-            {
-              column: "id",
-              method: "inArray",
-              value: orderIds,
-            },
-            {
-              column: "status",
-              method: "ne",
-              value: "completed",
-            },
-            {
-              column: "status",
-              method: "ne",
-              value: "canceled",
-            },
-          ],
+          and: candidateOrderFilters,
         },
+        limit: ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT,
         orderBy: {
           and: [
             {
-              column: "createdAt",
+              column: "updatedAt",
               method: "asc",
             },
           ],
@@ -154,9 +223,43 @@ export class Service {
       },
     });
 
-    if (!orders?.length) {
+    const { orders, orderIds } = getBoundedUniqueOrders(candidateOrders ?? []);
+
+    if (!orderIds.length) {
       return;
     }
+
+    const relationFilters: IFindFilter[] = [
+      {
+        column: "ecommerceModuleOrderId",
+        method: "inArray",
+        value: orderIds,
+      },
+    ];
+
+    if (props.subjectId) {
+      relationFilters.unshift({
+        column: "subjectId",
+        method: "eq",
+        value: props.subjectId,
+      });
+    }
+
+    const subjectsToEcommerceModuleOrders =
+      await this.subjectsToEcommerceModuleOrders.find({
+        params: {
+          filters: {
+            and: relationFilters,
+          },
+        },
+      });
+
+    if (!subjectsToEcommerceModuleOrders?.length) {
+      return;
+    }
+
+    const subjectsToEcommerceModuleOrdersByOrderId =
+      groupSubjectOrderRelationsByOrderId(subjectsToEcommerceModuleOrders);
 
     for (const order of orders) {
       try {
@@ -164,13 +267,10 @@ export class Service {
           id: order.id,
         });
 
-        for (const subjectToEcommerceModuleOrder of subjectsToEcommerceModuleOrders) {
-          if (
-            subjectToEcommerceModuleOrder.ecommerceModuleOrderId !== order.id
-          ) {
-            continue;
-          }
+        const matchingSubjectsToEcommerceModuleOrders =
+          subjectsToEcommerceModuleOrdersByOrderId.get(order.id) ?? [];
 
+        for (const subjectToEcommerceModuleOrder of matchingSubjectsToEcommerceModuleOrders) {
           const rbacSubjectsToRoles = await this.subjectsToRoles.find({
             params: {
               filters: {
@@ -323,8 +423,13 @@ export class Service {
             });
           }
         }
-      } catch (error) {
-        //
+      } catch (error: any) {
+        logger.error("RBAC ecommerce order proceed failed", {
+          orderId: order.id,
+          orderStatus: order.status,
+          subjectId: props.subjectId,
+          error,
+        });
       }
     }
   }
@@ -769,7 +874,10 @@ export class Service {
           },
         );
       })
-      .flat(1);
+      .flat(1)
+      .filter((currency): currency is IBillingModuleCurrency =>
+        Boolean(currency),
+      );
 
     const invoices = props.extendedOrder.ordersToBillingModulePaymentIntents
       .map((orderToBillingModulePaymentIntent) => {
@@ -779,15 +887,25 @@ export class Service {
           },
         );
       })
-      .flat(1);
+      .flat(1)
+      .filter((invoice): invoice is NonNullable<typeof invoice> =>
+        Boolean(invoice),
+      );
 
-    const allOrderCurrenciesAreTheSame = currencies.every((entity) => {
-      return currencies[0].id === entity.id;
-    });
+    const firstCurrency = currencies[0];
+    const firstInvoice = invoices[0];
 
-    const allProvidersAreTheSame = invoices.every((invoice) => {
-      return invoice.provider === invoices[0].provider;
-    });
+    const allOrderCurrenciesAreTheSame =
+      Boolean(firstCurrency) &&
+      currencies.every((entity) => {
+        return firstCurrency.id === entity.id;
+      });
+
+    const allProvidersAreTheSame =
+      Boolean(firstInvoice) &&
+      invoices.every((invoice) => {
+        return invoice.provider === firstInvoice.provider;
+      });
 
     await ecommerceOrderApi.update({
       id: props.extendedOrder.id,
@@ -805,11 +923,13 @@ export class Service {
 
     if (
       needToCreateSubscriptionOrder &&
+      firstCurrency &&
+      firstInvoice &&
       allOrderCurrenciesAreTheSame &&
       allProvidersAreTheSame
     ) {
-      const provider = invoices[0].provider;
-      const currency = currencies[0];
+      const provider = firstInvoice.provider;
+      const currency = firstCurrency;
 
       if (provider === "telegram-star") {
         const subjectToSocialModuleProfiles =

@@ -1,0 +1,9 @@
+{
+  "id": "422d858a-2f02-42d0-ad87-e39773b68b39",
+  "createdAt": "2026-04-25T21:37:03.034Z",
+  "updatedAt": "2026-04-25T21:37:03.034Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/options-to-file-storage-module-files"
+}

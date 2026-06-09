@@ -1,4 +1,6 @@
 import "reflect-metadata";
+import { readFile } from "node:fs/promises";
+import { join, normalize } from "node:path";
 import { injectable } from "inversify";
 import { CRUDService } from "@sps/shared-backend-api";
 import { Table } from "@sps/notification/models/notification/backend/repository/database";
@@ -12,14 +14,16 @@ import {
 import { api as notificationsToTemplatesApi } from "@sps/notification/relations/notifications-to-templates/sdk/server";
 import { api as templateApi } from "@sps/notification/models/template/sdk/server";
 import { IModel as ITemplate } from "@sps/notification/models/template/sdk/model";
-import { Bot } from "grammy";
+import { Bot, InputFile } from "grammy";
 import { InlineKeyboardButton } from "@grammyjs/types";
 import { telegramMarkdownFormatter } from "@sps/backend-utils";
 import { IModel } from "@sps/notification/models/notification/sdk/model";
 
+type INotificationAttachment = NonNullable<IModel["attachments"]>[number];
+
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
-  private splitTelegramText(text: string, limit: number): string[] {
+  protected splitTelegramText(text: string, limit: number): string[] {
     if (!text) {
       return [""];
     }
@@ -49,7 +53,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return chunks;
   }
 
-  private normalizeTelegramProps(props: unknown[]) {
+  protected normalizeTelegramProps(props: unknown[]) {
     if (!props.length) {
       return props;
     }
@@ -79,7 +83,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return props;
   }
 
-  private normalizeInlineKeyboard(interaction?: {
+  protected normalizeInlineKeyboard(interaction?: {
     inline_keyboard?: {
       text: string;
       url?: string;
@@ -129,7 +133,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return keyboard.length ? keyboard : undefined;
   }
 
-  private normalizeReplyMarkup(
+  protected normalizeReplyMarkup(
     replyMarkup?:
       | {
           inline_keyboard?: {
@@ -481,6 +485,158 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return mimeTypes[ext] || "application/octet-stream";
   }
 
+  protected isTelegramWebpageMediaFetchFailed(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return (
+      message.includes("WEBPAGE_CURL_FAILED") ||
+      message.includes("WEBPAGE_MEDIA_EMPTY")
+    );
+  }
+
+  protected isTelegramBlockedRecipientError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    const lowerMessage = message.toLowerCase();
+
+    return (
+      lowerMessage.includes("bot was blocked by the user") &&
+      (lowerMessage.includes("403") ||
+        lowerMessage.includes("forbidden") ||
+        lowerMessage.includes("sendmessage"))
+    );
+  }
+
+  protected async markAsError(params: { notification: IModel }) {
+    const updatedNotification = await this.update({
+      id: params.notification.id,
+      data: {
+        ...params.notification,
+        status: "error",
+      },
+    });
+
+    if (!updatedNotification) {
+      throw new Error("Internal error. Notification not updated");
+    }
+
+    return updatedNotification;
+  }
+
+  protected getAttachmentFilename(attachment: INotificationAttachment) {
+    try {
+      const parsedUrl = new URL(attachment.url);
+      const filename = parsedUrl.pathname.split("/").filter(Boolean).pop();
+
+      if (filename) {
+        return filename;
+      }
+    } catch {
+      const filename = attachment.url.split("/").filter(Boolean).pop();
+
+      if (filename) {
+        return filename;
+      }
+    }
+
+    return "attachment";
+  }
+
+  protected async createTelegramAttachmentInputFile(props: {
+    attachment: INotificationAttachment;
+  }) {
+    let bytes: Uint8Array | undefined;
+
+    try {
+      const response = await fetch(props.attachment.url);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        if (arrayBuffer.byteLength) {
+          bytes = new Uint8Array(arrayBuffer);
+        }
+      }
+    } catch {
+      bytes = undefined;
+    }
+
+    if (!bytes) {
+      bytes = await this.readLocalPublicAttachmentBytes({
+        attachment: props.attachment,
+      });
+    }
+
+    if (!bytes?.byteLength) {
+      throw new Error(
+        `Telegram attachment upload fallback failed. Could not fetch ${props.attachment.url}`,
+      );
+    }
+
+    return new InputFile(bytes, this.getAttachmentFilename(props.attachment));
+  }
+
+  protected async readLocalPublicAttachmentBytes(props: {
+    attachment: INotificationAttachment;
+  }) {
+    let pathname: string;
+
+    try {
+      pathname = new URL(props.attachment.url).pathname;
+    } catch {
+      return;
+    }
+
+    if (!pathname.startsWith("/public/")) {
+      return;
+    }
+
+    const relativePath = normalize(
+      decodeURIComponent(pathname.replace(/^\/public\//, "")),
+    );
+
+    if (relativePath.startsWith("..")) {
+      return;
+    }
+
+    const candidates = [
+      join(process.cwd(), "public", relativePath),
+      join(process.cwd(), "apps/api/public", relativePath),
+    ];
+
+    for (const candidate of candidates) {
+      try {
+        return await readFile(candidate);
+      } catch {
+        continue;
+      }
+    }
+
+    return undefined;
+  }
+
+  protected async createTelegramMediaGroup(props: {
+    attachments: INotificationAttachment[];
+    formattedCaption: string;
+    finalParseMode: string;
+    uploadFiles?: boolean;
+  }) {
+    return Promise.all(
+      props.attachments.map(async (attachment, index) => {
+        const mimeType = this.getMimeType(attachment.url);
+        const media = props.uploadFiles
+          ? await this.createTelegramAttachmentInputFile({ attachment })
+          : attachment.url;
+
+        return {
+          type: mimeType.startsWith("image/") ? "photo" : "document",
+          media,
+          ...(index === 0 && {
+            caption: props.formattedCaption,
+            parse_mode: props.finalParseMode,
+          }),
+        };
+      }),
+    );
+  }
+
   async provider(props: {
     method: "email" | "telegram";
     provider: "Amazon SES" | "Telegram";
@@ -584,6 +740,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             const baseCaptionOptions = { ...(captionOptions || {}) };
             delete (baseCaptionOptions as { reply_markup?: unknown })
               .reply_markup;
+            const mediaGroupOptions = { ...baseCaptionOptions };
+            delete (mediaGroupOptions as { parse_mode?: unknown }).parse_mode;
             const normalizedReplyMarkup = this.normalizeReplyMarkup(
               (captionOptions as { reply_markup?: unknown })?.reply_markup as {
                 inline_keyboard?: {
@@ -607,20 +765,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 })
               : captionChunks.shift() || "";
             const finalParseMode = parseMode || "MarkdownV2";
-            const response = await bot.api.sendMediaGroup(
-              entity.reciever,
-              validAttachments.map((attachment, index) => {
-                const mimeType = this.getMimeType(attachment.url);
-                return {
-                  type: mimeType.startsWith("image/") ? "photo" : "document",
-                  media: attachment.url,
-                  ...(index === 0 && {
-                    caption: formattedCaption,
-                    parse_mode: finalParseMode,
-                  }),
-                };
-              }),
-            );
+            const mediaGroup = await this.createTelegramMediaGroup({
+              attachments: validAttachments,
+              formattedCaption,
+              finalParseMode,
+            });
+            let response;
+
+            try {
+              response = await bot.api.sendMediaGroup(
+                entity.reciever,
+                mediaGroup as any,
+                Object.keys(mediaGroupOptions).length
+                  ? (mediaGroupOptions as any)
+                  : undefined,
+              );
+            } catch (error) {
+              if (!this.isTelegramWebpageMediaFetchFailed(error)) {
+                throw error;
+              }
+
+              const uploadMediaGroup = await this.createTelegramMediaGroup({
+                attachments: validAttachments,
+                formattedCaption,
+                finalParseMode,
+                uploadFiles: true,
+              });
+
+              response = await bot.api.sendMediaGroup(
+                entity.reciever,
+                uploadMediaGroup as any,
+                Object.keys(mediaGroupOptions).length
+                  ? (mediaGroupOptions as any)
+                  : undefined,
+              );
+            }
 
             if (response.length) {
               const messageId = response[0].message_id;
@@ -757,7 +936,28 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return updatedNotification;
   }
 
-  async send(params: { id: string }): Promise<IModel> {
+  protected isExpired(notification: IModel): boolean {
+    const createdAtTimestamp = new Date(notification.createdAt).getTime();
+
+    if (Number.isNaN(createdAtTimestamp)) {
+      return false;
+    }
+
+    return (
+      createdAtTimestamp <
+      Date.now() - NOTIFICATION_MODULE_NOTIFICATION_EXPIRATION_TIMEOUT
+    );
+  }
+
+  protected async deleteBestEffort(params: { id: string }) {
+    try {
+      await this.delete({ id: params.id });
+    } catch {
+      return;
+    }
+  }
+
+  async send(params: { id: string }): Promise<IModel | null> {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. Secret key not found");
     }
@@ -767,7 +967,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!notification) {
-      throw new Error("Not Found error. Notification not found");
+      return null;
+    }
+
+    if (this.isExpired(notification)) {
+      await this.deleteBestEffort({ id: notification.id });
+      return null;
     }
 
     if (notification.status !== "new") {
@@ -855,12 +1060,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           template,
         });
       } else if (type === "telegram") {
-        return await this.provider({
-          method: "telegram",
-          provider: "Telegram",
-          id: params.id,
-          template,
-        });
+        try {
+          return await this.provider({
+            method: "telegram",
+            provider: "Telegram",
+            id: params.id,
+            template,
+          });
+        } catch (error) {
+          if (this.isTelegramBlockedRecipientError(error)) {
+            return await this.markAsError({ notification });
+          }
+
+          throw error;
+        }
       }
     }
 
@@ -885,7 +1098,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     });
 
-    Promise.allSettled(
+    await Promise.allSettled(
       expiredNotifications.map((notification) =>
         this.delete({ id: notification.id }).catch((error) => {
           //

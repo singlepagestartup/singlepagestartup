@@ -9,6 +9,10 @@ import {
   IQueryProps as IFindQueryProps,
 } from "./queries/find";
 import {
+  query as countQuery,
+  IQueryProps as ICountQueryProps,
+} from "./queries/count";
+import {
   mutation as createMutation,
   IMutationProps as ICreateMutationProps,
   IMutationFunctionProps as ICreateMutationFunctionProps,
@@ -43,12 +47,14 @@ export interface IFactoryProps<T> {
   params?:
     | IFindByIdQueryProps<T>["params"]
     | IFindQueryProps<T>["params"]
+    | ICountQueryProps["params"]
     | IUpdateMutationProps<T>["params"]
     | ICreateMutationProps<T>["params"]
     | IDeleteMutationProps<T>["params"];
   options?:
     | IFindByIdQueryProps<T>["options"]
     | IFindQueryProps<T>["options"]
+    | ICountQueryProps["options"]
     | IUpdateMutationProps<T>["options"]
     | ICreateMutationProps<T>["options"]
     | IDeleteMutationProps<T>["options"];
@@ -298,6 +304,46 @@ export function factory<T>(factoryProps: IFactoryProps<T>) {
           cb: (data) => {
             addToGlobalStore({
               name: factoryProps.route,
+              type: "query",
+              props,
+            });
+          },
+          ...props,
+        }),
+        staleTime:
+          factoryProps.staleTime !== undefined
+            ? factoryProps.staleTime
+            : STALE_TIME,
+        ...props?.reactQueryOptions,
+      });
+    },
+    count: (props?: {
+      params?: ICountQueryProps["params"];
+      options?: ICountQueryProps["options"];
+      reactQueryOptions?: any;
+    }) => {
+      const route = `${factoryProps.route}/count`;
+
+      useEffect(() => {
+        const unsubscribe = subscription(route, factoryProps.queryClient);
+
+        return unsubscribe;
+      }, [route]);
+
+      return useQuery<number | undefined>({
+        queryKey: [
+          route,
+          props?.params
+            ? QueryString.stringify(props.params, {
+                encodeValuesOnly: true,
+              })
+            : undefined,
+        ],
+        queryFn: countQuery({
+          ...factoryProps,
+          cb: (data) => {
+            addToGlobalStore({
+              name: route,
               type: "query",
               props,
             });

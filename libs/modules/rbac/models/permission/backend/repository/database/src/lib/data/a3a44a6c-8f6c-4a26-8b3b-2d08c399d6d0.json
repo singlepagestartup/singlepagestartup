@@ -1,0 +1,9 @@
+{
+  "id": "a3a44a6c-8f6c-4a26-8b3b-2d08c399d6d0",
+  "createdAt": "2026-06-03T00:00:00.000Z",
+  "updatedAt": "2026-06-03T00:00:00.000Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "PATCH",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents/[knowledge.documents.id]"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "d1e07e6e-16d7-406c-8c3e-803bb8257eb4",
+  "createdAt": "2026-05-10T00:46:04.600Z",
+  "updatedAt": "2026-05-10T00:46:04.600Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-actions/count"
+}

@@ -51,7 +51,7 @@ export class Handler {
         secure: true,
         httpOnly: false,
         maxAge: RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-        expires: new Date(decoded.exp),
+        expires: new Date(decoded.exp * 1000),
         sameSite: "Strict",
       });
 

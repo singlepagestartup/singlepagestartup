@@ -18,11 +18,6 @@ fi
 SCRIPT_DIR="$(dirname "$0")"
 source "$SCRIPT_DIR/load_config.sh"
 
-# Get repo owner from gh
-REPO_OWNER=$(gh_retry repo view --json owner -q '.owner.login')
-GITHUB_OWNER="${GITHUB_PROJECT_OWNER:-$REPO_OWNER}"
-GITHUB_PROJECT_OWNER_TYPE="${GITHUB_PROJECT_OWNER_TYPE:-user}"
-
 # Get project item ID using helper
 PROJECT_ITEM_ID=$("$SCRIPT_DIR/get_project_item_id.sh" "$ISSUE_NUMBER")
 

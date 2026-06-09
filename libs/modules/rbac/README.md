@@ -19,6 +19,35 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Guarding access to resources.
 - Linking subjects to application-specific data.
 
+### Authorization layering:
+
+- `subject/backend/app/api/src/lib/service/singlepage/is-authorized.ts` is only the global permission resolver.
+- Add route access through `rbac.permissions`; keep resource ownership and module-specific checks in `backend/app/middlewares/src/lib/*` middleware for that module.
+- Controllers should compose exported middleware instances, not define middleware bodies inline.
+- Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
+
+### Social Knowledge reactions:
+
+RBAC owns the authenticated subject endpoint that lets a `social.profile` react to a chat message through Knowledge/RAG:
+
+```text
+POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge
+```
+
+The endpoint validates subject/profile/chat/message access, requires `social.chat.variant="knowledge"`, requires the replying profile to have `variant="artificial-intelligence"`, and requires that replying profile to be connected to the chat.
+
+The Social chat frontend calls this endpoint automatically after creating a message in a Knowledge chat. If the message starts with `/learn`, the endpoint strips the command, calls `KnowledgeService.learnContent(...)` for the message text plus supported `.txt`, `.md`, or `.markdown` attachments, and creates the Social `profiles-to-knowledge-module-documents` relation for the replying AI profile if needed. For normal messages, RBAC loads linked document ids through Social, calls `KnowledgeService.generate({ query, documentIds, persona })`, and saves the AI answer as a social message in the same thread.
+
+RBAC also owns profile-scoped document operations for the Social chat sidebar:
+
+```text
+GET /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents
+PATCH /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId
+POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId/reindex
+```
+
+These routes validate subject/profile access and the Social profile-document relation before calling generic Knowledge document update or reindex methods.
+
 ---
 
 ## 2. Models

@@ -8,20 +8,20 @@
 
 import { util } from ".";
 
-describe("get-model-by-name", () => {
-  it("should take SPSWB from website-builder", () => {
+describe("get-module-cutted-styles", () => {
+  it("should take WeBr from website-builder", () => {
     const name = "website-builder";
 
     const result = util({ name });
 
-    expect(result.pascalCased).toBe("SPSWB");
+    expect(result.pascalCased).toBe("WeBr");
   });
 
-  it("should take sps_w_b from website-builder", () => {
+  it("should take we_br from website-builder", () => {
     const name = "website-builder";
 
     const result = util({ name });
 
-    expect(result.snakeCased).toBe("sps_w_b");
+    expect(result.snakeCased).toBe("we_br");
   });
 });

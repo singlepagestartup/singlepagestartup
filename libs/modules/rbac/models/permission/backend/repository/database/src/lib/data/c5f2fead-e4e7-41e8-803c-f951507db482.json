@@ -1,0 +1,9 @@
+{
+  "id": "c5f2fead-e4e7-41e8-803c-f951507db482",
+  "createdAt": "2026-05-10T00:46:04.461Z",
+  "updatedAt": "2026-05-10T00:46:04.461Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/permissions/count"
+}

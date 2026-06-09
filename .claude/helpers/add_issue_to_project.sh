@@ -21,16 +21,24 @@ if [ -z "${GITHUB_PROJECT_NUMBER:-}" ]; then
   exit 1
 fi
 
-REPO_FULL_NAME=$(gh_retry repo view --json nameWithOwner -q '.nameWithOwner')
-REPO_OWNER=$(gh_retry repo view --json owner -q '.owner.login')
-REPO_NAME=$(gh_retry repo view --json name -q '.name')
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+REPO_OWNER="$TARGET_REPO_OWNER"
+REPO_NAME="$TARGET_REPO_NAME"
 
 if [ -z "$ISSUE_URL" ]; then
   ISSUE_URL="https://github.com/$REPO_FULL_NAME/issues/$ISSUE_NUMBER"
 fi
 
+case "$ISSUE_URL" in
+  "https://github.com/$REPO_FULL_NAME/issues/"*) ;;
+  *)
+    echo "Error: Issue URL '$ISSUE_URL' does not belong to target repository '$REPO_FULL_NAME'." >&2
+    exit 1
+    ;;
+esac
+
 ITEM_ADD_ERROR_FILE="$(mktemp)"
-if gh_retry project item-add "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_OWNER" --url "$ISSUE_URL" >/dev/null 2>"$ITEM_ADD_ERROR_FILE"; then
+if gh_retry project item-add "$GITHUB_PROJECT_NUMBER" --owner "$GITHUB_PROJECT_CLI_OWNER" --url "$ISSUE_URL" >/dev/null 2>"$ITEM_ADD_ERROR_FILE"; then
   rm -f "$ITEM_ADD_ERROR_FILE"
   echo "Added issue #$ISSUE_NUMBER to project #$GITHUB_PROJECT_NUMBER via gh project item-add"
   exit 0

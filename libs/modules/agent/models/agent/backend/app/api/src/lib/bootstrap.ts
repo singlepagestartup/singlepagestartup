@@ -45,6 +45,8 @@ import { Repository as SocialChatsToActionsRepository } from "@sps/social/relati
 import { Configuration as SocialChatsToActionsConfiguration } from "@sps/social/relations/chats-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as SocialThreadsToMessagesRepository } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialThreadsToMessagesConfiguration } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/configuration";
+import { Repository as SocialThreadsToActionsRepository } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/repository";
+import { Configuration as SocialThreadsToActionsConfiguration } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as RbacSubjectRepository } from "@sps/rbac/models/subject/backend/app/api/src/lib/repository";
 import { Configuration as RbacSubjectConfiguration } from "@sps/rbac/models/subject/backend/app/api/src/lib/configuration";
 import { Repository as RbacRoleRepository } from "@sps/rbac/models/role/backend/app/api/src/lib/repository";
@@ -151,6 +153,11 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         threadsToMessages: new CRUDService<any>(
           new SocialThreadsToMessagesRepository(
             new SocialThreadsToMessagesConfiguration(),
+          ),
+        ),
+        threadsToActions: new CRUDService<any>(
+          new SocialThreadsToActionsRepository(
+            new SocialThreadsToActionsConfiguration(),
           ),
         ),
       };

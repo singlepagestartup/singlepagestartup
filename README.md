@@ -22,6 +22,36 @@ All 15 business modules participate in `unit + integration` lanes. DB-backed sce
 Browser E2E/Playwright is not part of scoped validation.
 For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is applied only to subject cart counter routes (`/orders/quantity`, `/orders/total`).
 
+## Remote MCP Connector
+
+`apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's SPS JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
+
+For Codex Desktop/CLI, register the remote MCP explicitly:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
+```
+
+For local Codex testing, use `http://127.0.0.1:3001/mcp` with the `<repo-name>-local` MCP name and restart Codex Desktop or open a new session after adding the server.
+
+For Claude Code, register the remote MCP and authenticate through `/mcp` inside Claude Code:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
+```
+
+For Claude UI / Claude Desktop, add a custom connector named `<repo-name>-production` in `Customize -> Connectors` with URL `https://mcp.<domain>/mcp`, then click `Connect` and complete the SPS OAuth login. Keep the project `.mcp.json` local MCP named `<repo-name>` separate from the production connector. Run `tools/mcp/setup-project-mcp.sh` to print exact repo-derived commands.
+
+To apply Claude or Codex setup from the helper, pass the real production URL:
+
+```bash
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-claude
+tools/mcp/setup-project-mcp.sh --remote-url "https://mcp.<domain>/mcp" --apply-codex
+```
+
 ### Key Principles:
 
 - Everything is based on Models, each having:
@@ -39,7 +69,7 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
-├── mcp/    # MCP server for generating contend in apps/api/
+├── mcp/    # MCP server for documentation and content operations through apps/api/
 ├── openapi/  # OpenAPI documentation app
 ├── redis/  # Docker service for Redis
 └── telegram/  # Telegram bot app
@@ -75,6 +105,107 @@ tools/
 └── knowledge/ # Project knowledge base
 ```
 
+## MCP Content Management
+
+`apps/mcp` exposes content-management tools for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with the content entity discovery tool/resource to find supported model and relation keys such as `host.page`, `host.widget`, `host.pages-to-widgets`, `host.widgets-to-external-widgets`, and `blog.widget`.
+
+For page content edits, use the host graph preview tool before writing. It resolves `host.page` by URL, follows `pages-to-widgets`, follows `widgets-to-external-widgets`, and returns external widget candidates with ids. Mutations should use dry-run first, delete preview before delete apply, and localized field updates for locale-keyed JSON fields.
+
+For client-specific connection steps, see `apps/mcp/README.md`.
+
+### Running MCP Content Management
+
+The MCP server uses the same runtime API path as other SPS SDK calls. Start infrastructure and the API first so reads and writes go through `apps/api`.
+
+```bash
+./up.sh
+npm run api:dev
+```
+
+Run the MCP server directly:
+
+```bash
+npm run mcp:dev
+```
+
+This starts the stdio transport. It is useful for local MCP clients that launch the server process directly, but HTTP headers from Inspector are not available to resource/tool handlers in this mode.
+
+Run the HTTP transport when you need request headers, cookies, or Inspector `Custom Headers`:
+
+```bash
+npm run mcp:http
+```
+
+Then inspect it interactively:
+
+```bash
+npm run mcp:inspector:http
+```
+
+In Inspector, choose `Streamable HTTP` and use `http://127.0.0.1:3001/mcp` as the URL. The compatibility endpoint `http://127.0.0.1:3001/sse` is also available for Inspector setups that already point at `/sse`.
+
+### Connecting MCP clients
+
+Prefer the Streamable HTTP transport for Codex, Claude Code, Inspector, and any remote client because it can carry request auth. The default local MCP URL is:
+
+```text
+http://127.0.0.1:3001/mcp
+```
+
+The project `.mcp.json` is local and stdio-focused for Claude Code. Codex uses its own MCP config, and remote production connectors should be registered separately with the `-production` suffix. Print repo-derived commands with:
+
+```bash
+tools/mcp/setup-project-mcp.sh
+```
+
+Register local HTTP clients:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
+codex mcp add "${REPO_NAME}-local" --url http://127.0.0.1:3001/mcp
+codex mcp login "${REPO_NAME}-local" --scopes mcp:content
+```
+
+Register production HTTP clients:
+
+```bash
+REPO_NAME=$(.claude/helpers/get_repo_name.sh)
+claude mcp add --transport http "${REPO_NAME}-production" "https://mcp.<domain>/mcp"
+codex mcp add "${REPO_NAME}-production" --url "https://mcp.<domain>/mcp"
+codex mcp login "${REPO_NAME}-production" --scopes mcp:content
+```
+
+Use `/mcp` inside Claude Code to inspect or authenticate connected MCP servers. Restart Codex Desktop or open a new Codex session after adding or logging in to a server so the tool list is reloaded.
+
+Claude Desktop or Claude.ai remote connectors cannot reach `127.0.0.1` on your machine. Add the public HTTPS MCP URL in `Customize -> Connectors`, leave OAuth Client ID/Secret empty, click `Connect`, and complete the SPS OAuth login.
+
+For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `Custom Headers`, for example `Authorization: Bearer <jwt>` or `X-RBAC-SECRET-KEY: <secret>`.
+
+For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
+
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_ALLOW_RBAC_SECRET_FALLBACK=true`.
+
+The legacy Inspector command starts the MCP server through stdio:
+
+```bash
+npm run mcp:inspector
+```
+
+Required environment values are loaded from the app env files created by `./up.sh`; SDK calls need the configured API service URL. MCP does not read `RBAC_SECRET_KEY` from its `.env` for content/API access. Pass authorization with the MCP request instead:
+
+- Prefer `Authorization: Bearer <jwt>` using the same JWT stored by the frontend in the `rbac.subject.jwt` cookie.
+- For root/service access, pass `X-RBAC-SECRET-KEY` as an MCP request header.
+- HTTP transports may also forward the frontend cookies `rbac.subject.jwt` or `rbac.secret-key`.
+- Tool input schemas do not expose direct auth fields; pass auth through the MCP transport instead.
+
+Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
+
+1. Call `content-entity-list` or read `sps://content/entities`.
+2. Use `content-record-find` for filtered model/relation reads, or `content-host-graph-preview` for URL-based page content.
+3. Use dry-run write tools first, such as `content-record-update` with `dryRun: true` or `content-host-graph-localized-field-update` with `dryRun: true`.
+4. Apply the write only after the preview is unambiguous. For deletes, call `content-record-delete-preview` first and pass its `confirmationToken` to `content-record-delete-apply`.
+
 ## Core Architecture
 
 ### Backend Architecture
@@ -85,7 +216,8 @@ Strict layered architecture: Repository → Service → Controller → App.
 
 - Direct database interaction using model Table descriptions
 - Fields defined in `fields/`, table schema in `schema.ts`
-- Database structure changes managed via SQL migrations
+- Database structure changes are managed via generated Drizzle SQL migrations
+- After changing `schema.ts` or any `fields/*` table definition, run the matching `repository-generate` Nx target, for example `npx nx run @sps/<module>:models:<model>:repository-generate` or the corresponding relation target. Do not hand-write migration SQL, `migrations/meta/*` snapshots, or `_journal.json` entries.
 
 #### Service Layer
 
@@ -124,6 +256,10 @@ Strict layered architecture: Repository → Service → Controller → App.
   - `index.tsx` — wrapper with `ParentComponent`
   - `Component.tsx` — UI implementation
   - Optional `ClientComponent.tsx` for client-side logic
+- If a variant requires `"use client"`, put the directive and client-only logic in `ClientComponent.tsx`; keep `Component.tsx` as a server-compatible wrapper that renders `ClientComponent`.
+- When `Component.tsx` renders `ClientComponent.tsx`, pass an explicit allowlist of props. Do not forward `{...props}` across the Server → Client boundary; Next.js requires props passed to Client Components to be serializable, and a spread can accidentally leak unsupported values.
+- `isServer` is part of the SPS base component contract. If the client component needs the SPS runtime context or renders lower-level SPS components, pass `isServer` explicitly from `Component.tsx` to `ClientComponent.tsx`.
+- Inside a file marked with `"use client"`, pass `isServer={false}` to nested SPS model/relation components declared in that client file. Function props are only safe when they are created and consumed inside an existing client-side subtree, not when created by a Server Component wrapper.
 
 #### Data Handling
 
@@ -207,6 +343,9 @@ If you need to understand why data updates/refetches happen in UI (chat, cart, c
   - `index.tsx`
   - `Component.tsx`
   - Optional `ClientComponent.tsx`
+- Do not put `"use client"` in `Component.tsx`; create `ClientComponent.tsx` and render it from `Component.tsx`.
+- Do not render `<ClientComponent {...props} />` from `Component.tsx`. Destructure or reference only the props the client file actually needs, including `isServer` when it is part of the downstream SPS contract.
+- In `ClientComponent.tsx`, nested SPS components created inside that client boundary must receive `isServer={false}`.
 
 ### TypeScript Standards
 
@@ -403,6 +542,18 @@ After creating repository based on singlepagestartup template, call command:
 ```bash
 git remote add upstream https://github.com/singlepagestartup/singlepagestartup.git
 git pull upstream main
+```
+
+After the downstream project has its own `origin`, update the project MCP name from the GitHub repository name:
+
+```bash
+tools/mcp/setup-project-mcp.sh --write-project
+```
+
+Use the same helper without flags to print Claude and Codex MCP setup commands for the downstream repository:
+
+```bash
+tools/mcp/setup-project-mcp.sh
 ```
 
 When you get an error

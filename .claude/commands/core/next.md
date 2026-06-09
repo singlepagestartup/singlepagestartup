@@ -7,6 +7,20 @@ model: sonnet
 
 You determine what the next action is for a given issue and run the appropriate phase command automatically. The developer should not need to look at GitHub Project to know what to run next.
 
+## Repository / Project Preflight
+
+Before listing Project items, reading issue status, or resolving progress files, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Project lists must be filtered to `TARGET_REPO_URL` when selecting issues automatically.
+
 ## Process
 
 1. **Resolve issue number**:
@@ -14,9 +28,9 @@ You determine what the next action is for a given issue and run the appropriate 
    - If an issue number is provided as argument, use it
    - Otherwise, list all issues in active workflow statuses and ask user to pick one:
      ```bash
-     source .claude/.env
-     gh project item-list $GITHUB_PROJECT_NUMBER --owner $GITHUB_PROJECT_OWNER --format json | \
-       jq '[.items[] | select(.status | IN("Research Needed","Research in Progress","Ready for Plan","Plan in Progress","Ready for Dev","In Dev"))]'
+     source .claude/helpers/load_config.sh
+     gh project item-list $GITHUB_PROJECT_NUMBER --owner $GITHUB_PROJECT_CLI_OWNER --format json | \
+       jq --arg repo "$TARGET_REPO_URL" '[.items[] | select((.repository // "") == $repo) | select(.status | IN("Research Needed","Research in Progress","Ready for Plan","Plan in Progress","Ready for Dev","In Dev"))]'
      ```
 
 2. **Read GitHub Project status**:
@@ -28,7 +42,7 @@ You determine what the next action is for a given issue and run the appropriate 
 3. **Check local progress file** (if exists):
 
    ```bash
-   REPO_NAME=$(gh repo view --json name -q '.name')
+   REPO_NAME=$(.claude/helpers/get_repo_name.sh)
    PROGRESS_FILE="thoughts/shared/handoffs/$REPO_NAME/ISSUE-${ISSUE_NUMBER}-progress.md"
    ```
 

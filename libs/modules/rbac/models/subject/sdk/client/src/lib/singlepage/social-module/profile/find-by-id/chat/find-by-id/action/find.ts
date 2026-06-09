@@ -24,7 +24,8 @@ export type IResult =
   IParentResult["ISocialModuleProfileFindByIdChatFindByIdActionFindResult"];
 
 export function action(props: IProps) {
-  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/actions`;
+  const queryParamsKey = JSON.stringify(props.params || {});
+  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/actions?${queryParamsKey}`;
   const topics = [
     `social.chats.${props.socialModuleChatId}.actions`,
     "social.actions",

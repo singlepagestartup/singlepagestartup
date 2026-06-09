@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "crm-inputs-to-options.yaml"
 
+  /crm/inputs-to-options/count:
+    get:
+      tags:
+        - "crm-inputs-to-options"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /crm/inputs-to-options/{id}:
     get:
       tags:

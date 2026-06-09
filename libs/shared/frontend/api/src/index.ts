@@ -3,6 +3,7 @@ export type {
   ICreateProps,
   IDeleteProps,
   IFindProps,
+  ICountProps,
   IFindByIdProps,
   IUpdateProps,
   IFindOrCreateProps,

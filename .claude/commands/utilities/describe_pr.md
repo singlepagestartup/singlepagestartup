@@ -11,6 +11,7 @@ You are tasked with generating a comprehensive pull request description followin
 1. **Read the PR description template:**
 
    - First, check if `thoughts/shared/pr_description.md` exists
+   - This repository should carry a portable default template at that path; downstream projects may edit it locally
    - If it doesn't exist, inform the user that their `humanlayer thoughts` setup is incomplete and they need to create a PR description template at `thoughts/shared/pr_description.md`
    - Read the template carefully to understand all sections and requirements
 
@@ -68,9 +69,16 @@ You are tasked with generating a comprehensive pull request description followin
    - Show the user the generated description
 
 9. **Update the PR:**
+
    - Update the PR description directly: `gh pr edit {number} --body-file thoughts/shared/prs/{number}_description.md`
    - Confirm the update was successful
    - If any verification steps remain unchecked, remind the user to complete them before merging
+
+10. **Return to implementation finalization when applicable:**
+
+- If this command created or updated a PR from an `issue-N` branch and `thoughts/shared/handoffs/REPO_NAME/ISSUE-N-progress.md` exists, do not treat PR description sync as the end of the implementation phase.
+- Return to `core/30-implement.md` finalization and run `.claude/helpers/submit_pr_for_code_review.sh N {number}` so the issue is commented and the GitHub Project status is verified as `Code Review`.
+- Resolve `REPO_NAME` through `.claude/helpers/get_repo_name.sh`; never hard-code a repository namespace.
 
 ## Important notes:
 

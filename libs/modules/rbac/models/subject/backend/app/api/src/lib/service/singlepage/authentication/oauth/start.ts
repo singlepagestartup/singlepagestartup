@@ -109,7 +109,7 @@ export class Service {
     };
   }
 
-  private async getSourceSubjectId(authorization?: string) {
+  protected async getSourceSubjectId(authorization?: string) {
     if (!authorization || !RBAC_JWT_SECRET) {
       return undefined;
     }
@@ -127,7 +127,7 @@ export class Service {
     return undefined;
   }
 
-  private buildGoogleAuthorizationUrl(props: { state: string }) {
+  protected buildGoogleAuthorizationUrl(props: { state: string }) {
     const redirectUri =
       RBAC_OAUTH_GOOGLE_REDIRECT_URI ||
       `${API_SERVICE_URL}/api/rbac/subjects/authentication/oauth/google/callback`;

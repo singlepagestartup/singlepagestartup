@@ -30,6 +30,9 @@ Each module contains:
 - Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
 - Backend only hosted in `apps/api/app.ts`.
+- Backend route middleware must live in the module's `backend/app/middlewares/src/lib/*` folder and be exported from that middleware package; controllers should only compose route definitions, middleware instances, and handlers.
+- Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
+- When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
 
 If anything is unclear, read the relevant README files instead of guessing.
 
@@ -100,4 +103,4 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 - Enforce TypeScript interface-first style, PascalCase components, and consistent export order.
 - Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
-- Ensure migrations/seeds or Nx targets are updated when schema changes.
+- Ensure schema changes were followed by the Drizzle generation command; do not manually create migration SQL, snapshots, or `_journal.json` entries.

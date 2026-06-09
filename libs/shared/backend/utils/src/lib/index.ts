@@ -4,3 +4,9 @@ export { util as websocketManager } from "./websocket-manager";
 export { util as getHttpErrorType } from "./http-error";
 export { util as blobifyFiles } from "./blobify-files";
 export { util as telegramMarkdownFormatter } from "./telegram-markdown-formatter";
+export {
+  normalizeLocalizedField,
+  localizedFieldHasValue,
+  type ILocalizedFieldValue,
+  type INormalizeLocalizedFieldOptions,
+} from "./localized-field";

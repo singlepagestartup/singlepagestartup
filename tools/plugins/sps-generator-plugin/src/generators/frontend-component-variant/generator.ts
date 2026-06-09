@@ -1,9 +1,15 @@
 import { FrontendComponentVariantGeneratorSchema } from "./schema";
 import { Coder } from "../../coder/Coder";
-import { Tree, formatFiles } from "@nx/devkit";
+import { Tree } from "@nx/devkit";
 import pluralize from "pluralize";
+import { formatGeneratorFiles } from "../format";
 
-// npx nx generate @sps/sps-generator-plugin:frontend-component-variant --level=singlepage --module_name=rbac --type=model --action=create --path=default --template=default --entity=widget --name=find --no-interactive --dry-run
+type RelationModel = {
+  name: string;
+  module: string;
+};
+
+// npx nx generate @sps/sps-generator-plugin:frontend-component-variant find --level=singlepage --module=rbac --type=model --action=create --path=find --template=find --entity=widget --no-interactive --dry-run
 export async function frontendComponentVariantGenerator(
   tree: Tree,
   options: FrontendComponentVariantGeneratorSchema,
@@ -70,86 +76,178 @@ export async function frontendComponentVariantGenerator(
       );
     }
   } else if (options.type === "relation") {
-    // const leftModelPluralized = options.entity_name.split("-to-")[0];
-    // const rightModelPluralized = options.entity_name.split("-to-")[1];
-    // const leftModelName = pluralize.singular(leftModelPluralized);
-    // const rightModelName = pluralize.singular(rightModelPluralized);
-    // const coder = new Coder({
-    //   tree,
-    //   root: {
-    //     libs: {
-    //       modules: [
-    //         {
-    //           module: {
-    //             name: moduleName,
-    //             models: [
-    //               {
-    //                 model: {
-    //                   name: leftModelName,
-    //                   isExternal: options.left_model_is_external,
-    //                   backend: {
-    //                     schema: {
-    //                       relations: {
-    //                         relations: [
-    //                           {
-    //                             name,
-    //                           },
-    //                         ],
-    //                       },
-    //                     },
-    //                   },
-    //                 },
-    //               },
-    //               {
-    //                 model: {
-    //                   name: rightModelName,
-    //                   isExternal: options.right_model_is_external,
-    //                   backend: {
-    //                     schema: {
-    //                       relations: {
-    //                         relations: [
-    //                           {
-    //                             name,
-    //                           },
-    //                         ],
-    //                       },
-    //                     },
-    //                   },
-    //                 },
-    //               },
-    //             ],
-    //             relations: [
-    //               {
-    //                 relation: {
-    //                   name: entityName,
-    //                   frontend: {
-    //                     component: {
-    //                       variants: [
-    //                         {
-    //                           name,
-    //                           level,
-    //                           template,
-    //                         },
-    //                       ],
-    //                     },
-    //                   },
-    //                 },
-    //               },
-    //             ],
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   },
-    // });
-    // if (options.action === "remove") {
-    //   await coder.project.root.project.libs.project.modules[0].project.module.project.relations[0].project.relation.project.frontend.project.component.project.variants?.[0].remove();
-    // } else {
-    //   await coder.project.root.project.libs.project.modules[0].project.module.project.relations[0].project.relation.project.frontend.project.component.project.variants?.[0].create();
-    // }
+    const relationModels = resolveRelationModels({
+      tree,
+      moduleName,
+      relationName: entityName,
+      options,
+    });
+
+    const coder = new Coder({
+      tree,
+      root: {
+        libs: {
+          modules: [
+            {
+              module: {
+                name: moduleName,
+                relations: [
+                  {
+                    relation: {
+                      name: entityName,
+                      models: relationModels,
+                      frontend: {
+                        component: {
+                          variants: [
+                            {
+                              name,
+                              level,
+                              template,
+                              path,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const component =
+      coder.project.root.project.libs.project.modules[0].project.module.project
+        .relations[0].project.relation.project.frontend.project.component;
+
+    if (options.action === "remove") {
+      await component.removeVariant({
+        name,
+        level,
+        template: template || "default",
+        path,
+      });
+    } else {
+      await component.createVariant({
+        name,
+        level,
+        template: template || "default",
+        path,
+      });
+    }
   }
 
-  await formatFiles(tree);
+  await formatGeneratorFiles(tree);
 }
 
 export default frontendComponentVariantGenerator;
+
+function resolveRelationModels(props: {
+  tree: Tree;
+  moduleName: string;
+  relationName: string;
+  options: FrontendComponentVariantGeneratorSchema;
+}): RelationModel[] {
+  const explicitModels = getExplicitRelationModels(props.options);
+
+  if (explicitModels) {
+    return explicitModels;
+  }
+
+  const schemaPath = `libs/modules/${props.moduleName}/relations/${props.relationName}/backend/repository/database/src/lib/schema.ts`;
+  const schema = props.tree.read(schemaPath)?.toString("utf8");
+
+  if (schema) {
+    const imports = Array.from(
+      schema.matchAll(
+        /@sps\/([^/]+)\/models\/([^/]+)\/backend\/repository\/database/g,
+      ),
+    ).map((match) => ({
+      module: match[1],
+      name: match[2],
+    }));
+
+    if (imports.length >= 2) {
+      return imports.slice(0, 2);
+    }
+  }
+
+  return inferRelationModelsFromName({
+    moduleName: props.moduleName,
+    relationName: props.relationName,
+  });
+}
+
+function getExplicitRelationModels(
+  options: FrontendComponentVariantGeneratorSchema,
+): RelationModel[] | null {
+  if (
+    !options.left_model_name ||
+    !options.right_model_name ||
+    !options.left_module_name ||
+    !options.right_module_name
+  ) {
+    return null;
+  }
+
+  return [
+    {
+      name: options.left_model_name,
+      module: options.left_module_name,
+    },
+    {
+      name: options.right_model_name,
+      module: options.right_module_name,
+    },
+  ];
+}
+
+function inferRelationModelsFromName(props: {
+  moduleName: string;
+  relationName: string;
+}): RelationModel[] {
+  const [leftModelPluralized, ...rightModelNameParts] =
+    props.relationName.split("-to-");
+  const rightModelPluralized = rightModelNameParts.join("-to-");
+
+  if (!leftModelPluralized || !rightModelPluralized) {
+    throw new Error(
+      `Cannot infer relation models from relation name "${props.relationName}". Provide left/right model and module overrides.`,
+    );
+  }
+
+  return [
+    inferRelationModelFromNamePart({
+      moduleName: props.moduleName,
+      namePart: leftModelPluralized,
+    }),
+    inferRelationModelFromNamePart({
+      moduleName: props.moduleName,
+      namePart: rightModelPluralized,
+    }),
+  ];
+}
+
+function inferRelationModelFromNamePart(props: {
+  moduleName: string;
+  namePart: string;
+}): RelationModel {
+  const moduleMarker = "-module-";
+
+  if (props.namePart.includes(moduleMarker)) {
+    const [moduleName, modelNamePluralized] =
+      props.namePart.split(moduleMarker);
+
+    return {
+      module: moduleName,
+      name: pluralize.singular(modelNamePluralized),
+    };
+  }
+
+  return {
+    module: props.moduleName,
+    name: pluralize.singular(props.namePart),
+  };
+}

@@ -1,544 +1,455 @@
 "use client";
 
+import { Composer } from "./components/Composer";
+import { KnowledgeDocumentDialog } from "./components/KnowledgeDocumentDialog";
+import { MessageEditDialog } from "./components/MessageEditDialog";
+import { MessageTimeline } from "./components/MessageTimeline";
+import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
+import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
+import { useChatComposer } from "./hooks/use-chat-composer";
+import { useKnowledgeDocuments } from "./hooks/use-knowledge-documents";
+import { useMessageActions } from "./hooks/use-message-actions";
+import { useMessageThreadScroll } from "./hooks/use-message-thread-scroll";
+import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
+import { useProfileSidebar } from "./hooks/use-profile-sidebar";
+import { useProfileSkills } from "./hooks/use-profile-skills";
+import { useThreadMessagesRefetch } from "./hooks/use-thread-messages-refetch";
 import { IComponentPropsExtended } from "./interface";
-import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as SocialModuleProfilesToMessages } from "@sps/social/relations/profiles-to-messages/frontend/component";
-import { Component as SocialModuleProfilesToActions } from "@sps/social/relations/profiles-to-actions/frontend/component";
-import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import Link from "next/link";
-import { saveLanguageContext } from "@sps/shared-utils";
-import { internationalization } from "@sps/shared-configuration";
-import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { FormField } from "@sps/ui-adapter";
 import {
-  Form,
-  Button,
-  CollapsibleTrigger,
-  CollapsibleContent,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@sps/shared-ui-shadcn";
-import { Component as SocialModuleMessagesToFileStorageModuleFiles } from "@sps/social/relations/messages-to-file-storage-module-files/frontend/component";
-import { Collapsible } from "@radix-ui/react-collapsible";
-import Markdown from "markdown-to-jsx";
-import MDEditor from "@uiw/react-md-editor";
+  filterSkillMentionOptions,
+  getKnowledgeCommandMatch,
+  getSkillMentionMatch,
+  getTimelineSignature,
+  hasKnowledgeMention,
+  knowledgeChatCommands,
+  knowledgeMentionOption,
+  shouldShowKnowledgeMentionOption,
+} from "./utils";
+import type { KnowledgeDocument, SocialSkill } from "./types";
+import { cn } from "@sps/shared-frontend-client-utils";
+import { Component as SocialModuleSkillChatCreateDialog } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-create-dialog";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { IModel as SocialProfile } from "@sps/social/models/profile/sdk/model";
 
-const formSchema = z.object({
-  description: z.string().min(1),
-  files: z
-    .custom<File[]>(
-      (v) => Array.isArray(v) && v.every((item) => item instanceof File),
-    )
-    .or(z.string().array())
-    .optional(),
-});
-const socialModuleActionFormSchema = z.object({
-  payload: z.any().optional(),
-});
-const messageEditFormSchema = z.object({
-  description: z.string().min(1),
-});
+interface SkillDialogTarget {
+  orderIndex: number;
+  profileId: string;
+}
 
 export function Component(props: IComponentPropsExtended) {
-  const socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate =
-    api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      socialModuleThreadId: props.socialModuleThreadId,
-    });
-  const socialModuleProfileFindByIdChatFindByIdMessageDelete =
-    api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      socialModuleMessageId: "unknown",
-    });
-  const socialModuleProfileFindByIdChatFindByIdActionCreate =
-    api.socialModuleProfileFindByIdChatFindByIdActionCreate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-    });
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const socialModuleProfileFindByIdChatFindByIdMessageUpdate =
-    api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      socialModuleMessageId: editingMessageId || "unknown",
-    });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      description: "",
+  const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<SocialSkill | null>(null);
+  const [skillDialogTarget, setSkillDialogTarget] =
+    useState<SkillDialogTarget | null>(null);
+  const focusComposerTextAreaRef = useRef<() => void>(() => {});
+  const refetchThreadMessages = useThreadMessagesRefetch({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    socialModuleThreadId: props.socialModuleThreadId,
+  });
+  const timelineSignature = useMemo(() => {
+    return getTimelineSignature(
+      props.socialModuleThreadId,
+      props.socialModuleMessagesAndActionsQuery,
+    );
+  }, [props.socialModuleMessagesAndActionsQuery, props.socialModuleThreadId]);
+  const timelineItemCount =
+    props.socialModuleMessagesAndActionsQuery?.length ?? 0;
+  const messageThreadScroll = useMessageThreadScroll({
+    socialModuleThreadId: props.socialModuleThreadId,
+    timelineItemCount,
+    timelineSignature,
+  });
+  const knowledgeDocuments = useKnowledgeDocuments({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChat: props.socialModuleChat,
+    knowledgeAssistantProfile: props.knowledgeAssistantProfile,
+  });
+  const profileSidebar = useProfileSidebar({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    isKnowledgeChat: knowledgeDocuments.isKnowledgeChat,
+  });
+  const composerSkillsProfileId =
+    knowledgeDocuments.knowledgeAssistantProfileId ||
+    props.socialModuleProfile.id;
+  const profileSkills = useProfileSkills({
+    socialModuleProfileId: composerSkillsProfileId,
+    onSkillSaved() {
+      focusComposerTextAreaRef.current();
     },
   });
-
-  const socialModuleActionForm = useForm<
-    z.infer<typeof socialModuleActionFormSchema>
-  >({
-    resolver: zodResolver(socialModuleActionFormSchema),
-    defaultValues: {
-      payload: {},
-    },
+  const openRouterModelControls = useOpenRouterModelControls({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    isKnowledgeChat: knowledgeDocuments.isKnowledgeChat,
   });
-  const messageEditForm = useForm<z.infer<typeof messageEditFormSchema>>({
-    resolver: zodResolver(messageEditFormSchema),
-    defaultValues: {
-      description: "",
+  const composer = useChatComposer({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    socialModuleThreadId: props.socialModuleThreadId,
+    assistantProfileId: knowledgeDocuments.knowledgeAssistantProfileId,
+    clearSelectedSkills: profileSkills.clearSelectedSkills,
+    isKnowledgeChat: knowledgeDocuments.isKnowledgeChat,
+    markShouldScrollToBottom: messageThreadScroll.markShouldScrollToBottom,
+    onKnowledgeReactionSuccess() {
+      knowledgeDocuments.refetchKnowledgeDocumentQueries();
+      profileSidebar.refetchKnowledgeDocumentQueries();
     },
+    openRouterModelId: openRouterModelControls.selectedModelId,
+    openRouterReasoning: openRouterModelControls.selectedReasoning,
+    profileSkills: profileSkills.profileSkills,
+    refetchThreadMessages,
+    selectedSkillIds: profileSkills.selectedSkillIds,
   });
-
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate.mutate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      socialModuleThreadId: props.socialModuleThreadId,
-      data: {
-        description: data.description,
-        files: data.files,
-      },
-    });
-  }
-
-  async function onMessageEditSubmit(
-    data: z.infer<typeof messageEditFormSchema>,
-  ) {
-    if (!editingMessageId) {
-      return;
-    }
-
-    socialModuleProfileFindByIdChatFindByIdMessageUpdate.mutate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      socialModuleMessageId: editingMessageId,
-      data: {
-        description: data.description,
-      },
-    });
-  }
-
-  async function socialModuleActionFormOnSubmit(
-    data: z.infer<typeof socialModuleActionFormSchema>,
-  ) {
-    socialModuleProfileFindByIdChatFindByIdActionCreate.mutate({
-      id: props.data.id,
-      socialModuleProfileId: props.socialModuleProfile.id,
-      socialModuleChatId: props.socialModuleChat.id,
-      data: {
-        payload: data.payload,
-      },
-    });
-  }
 
   useEffect(() => {
-    if (
-      socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate.isSuccess
-    ) {
-      toast.success("Message created successfully");
-    }
-  }, [socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate]);
+    profileSkills.syncSelectedSkillsToDescription(composer.description);
+  }, [composer.description, profileSkills.syncSelectedSkillsToDescription]);
 
-  useEffect(() => {
-    if (socialModuleProfileFindByIdChatFindByIdMessageUpdate.isSuccess) {
-      toast.success("Message updated successfully");
-      setIsEditOpen(false);
-      setEditingMessageId(null);
+  focusComposerTextAreaRef.current = composer.focusComposerTextArea;
+  const messageActions = useMessageActions({
+    subjectId: props.data.id,
+    socialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
+    refetchThreadMessages,
+  });
+  const knowledgeCommandMatch = getKnowledgeCommandMatch(composer.description);
+  const commandQuery = knowledgeCommandMatch?.query || "";
+  const visibleKnowledgeChatCommands = useMemo(() => {
+    if (!knowledgeDocuments.isKnowledgeChat || !knowledgeCommandMatch) {
+      return [];
     }
-  }, [socialModuleProfileFindByIdChatFindByIdMessageUpdate]);
+
+    const normalizedQuery = commandQuery.toLowerCase();
+    const commandNeedle = normalizedQuery ? `/${normalizedQuery}` : "";
+
+    return knowledgeChatCommands.filter((command) => {
+      return (
+        command.value.toLowerCase().includes(commandNeedle) ||
+        command.title.toLowerCase().includes(normalizedQuery)
+      );
+    });
+  }, [commandQuery, knowledgeCommandMatch, knowledgeDocuments.isKnowledgeChat]);
+  const isKnowledgeCommandPickerOpen =
+    knowledgeDocuments.isKnowledgeChat && Boolean(knowledgeCommandMatch);
+  const visibleSkillMentionOptions = useMemo(() => {
+    return filterSkillMentionOptions(
+      profileSkills.profileSkills,
+      composer.description,
+    );
+  }, [composer.description, profileSkills.profileSkills]);
+  const visibleKnowledgeMentionOption =
+    knowledgeDocuments.isKnowledgeChat &&
+    shouldShowKnowledgeMentionOption(composer.description)
+      ? knowledgeMentionOption
+      : null;
+  const isKnowledgeSearchSelected = hasKnowledgeMention(composer.description);
+  const isSkillMentionPickerOpen =
+    Boolean(getSkillMentionMatch(composer.description)) &&
+    !isKnowledgeCommandPickerOpen;
+
+  function selectKnowledgeCommand(commandValue: string) {
+    const currentDescription = composer.form.getValues("description") || "";
+    const currentMatch = getKnowledgeCommandMatch(currentDescription);
+    const resolvedCommandValue =
+      hasKnowledgeMention(currentDescription) &&
+      commandValue.toLowerCase().startsWith("@knowledge ")
+        ? commandValue.replace(/^@knowledge\s+/i, "")
+        : commandValue;
+    const nextDescription = currentMatch
+      ? `${currentDescription.slice(
+          0,
+          currentMatch.startIndex,
+        )}${resolvedCommandValue} `
+      : `${currentDescription.trimEnd()} ${resolvedCommandValue} `.trimStart();
+
+    composer.form.setValue("description", nextDescription, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    composer.focusComposerTextArea();
+  }
+
+  function selectKnowledgeMention() {
+    const currentDescription = composer.form.getValues("description") || "";
+    const currentMatch = getSkillMentionMatch(currentDescription);
+    const nextDescription = currentMatch
+      ? `${currentDescription.slice(0, currentMatch.startIndex)}@knowledge `
+      : `${currentDescription.trimEnd()} @knowledge `;
+
+    composer.form.setValue("description", nextDescription, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    composer.focusComposerTextArea();
+  }
+
+  function removeKnowledgeMention() {
+    const currentDescription = composer.form.getValues("description") || "";
+    const nextDescription = currentDescription
+      .replace(/(^|\s)@knowledge(?=\s|$)\s*/i, "$1")
+      .replace(/\s{2,}/g, " ")
+      .trimStart();
+
+    composer.form.setValue("description", nextDescription, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    composer.focusComposerTextArea();
+  }
+
+  function selectSkillMention(skill: (typeof profileSkills.profileSkills)[0]) {
+    const currentDescription = composer.form.getValues("description") || "";
+    const currentMatch = getSkillMentionMatch(currentDescription);
+    const nextDescription = currentMatch
+      ? `${currentDescription.slice(0, currentMatch.startIndex)}@${skill.slug} `
+      : `${currentDescription.trimEnd()} @${skill.slug} `;
+
+    profileSkills.selectSkill(skill);
+    composer.form.setValue("description", nextDescription, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    composer.focusComposerTextArea();
+  }
+
+  function openSidebarSkillCreateDialog(profile: SocialProfile) {
+    setEditingSkill(null);
+    profileSidebar.setIsMobileSheetOpen(false);
+    setSkillDialogTarget({
+      orderIndex: profileSidebar.profileSkillIds.length,
+      profileId: profile.id,
+    });
+    setIsSkillDialogOpen(true);
+  }
+
+  function openSidebarKnowledgeDocumentCreateDialog(profile: SocialProfile) {
+    profileSidebar.setIsMobileSheetOpen(false);
+    profileSidebar.onKnowledgeDocumentCreate(profile);
+  }
+
+  function openKnowledgeDocumentEditDialog(document: KnowledgeDocument) {
+    profileSidebar.setIsMobileSheetOpen(false);
+    profileSidebar.onKnowledgeDocumentSelect(document);
+  }
+
+  function openSkillEditDialog(skill: SocialSkill) {
+    setEditingSkill(skill);
+    profileSidebar.setIsMobileSheetOpen(false);
+    setSkillDialogTarget({
+      orderIndex: profileSkills.profileSkillIds.length,
+      profileId: composerSkillsProfileId,
+    });
+    setIsSkillDialogOpen(true);
+  }
+
+  const fallbackSkillDialogTarget = {
+    orderIndex: profileSkills.profileSkillIds.length,
+    profileId: composerSkillsProfileId,
+  };
+  const resolvedSkillDialogTarget =
+    skillDialogTarget || fallbackSkillDialogTarget;
+  const isArtificialIntelligenceOpponent =
+    (
+      props.artificialIntelligenceOpponentProfile ||
+      props.knowledgeAssistantProfile
+    )?.variant === "artificial-intelligence";
 
   return (
     <div
       data-module="rbac"
       data-model="subject"
       data-variant={props.variant}
-      className={cn("flex w-full flex-col gap-6", props.className)}
+      className={cn(
+        "flex h-full min-h-0 w-full flex-col overflow-hidden bg-white",
+        props.className,
+      )}
     >
-      {props.socialModuleMessagesAndActionsQuery?.map(
-        (socialModuleMessageOrAction, index) => {
-          if (socialModuleMessageOrAction.type === "message") {
-            return (
-              <div
-                key={index}
-                className="p-4 border rounded-xl flex flex-col gap-2"
-              >
-                <div className="w-fit text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
-                  <p>Message: {socialModuleMessageOrAction.data.id}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-fit"
-                  onClick={() => {
-                    setEditingMessageId(socialModuleMessageOrAction.data.id);
-                    messageEditForm.reset({
-                      description:
-                        socialModuleMessageOrAction.data.description || "",
-                    });
-                    setIsEditOpen(true);
-                  }}
-                >
-                  Edit message
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="w-fit"
-                  onClick={() => {
-                    socialModuleProfileFindByIdChatFindByIdMessageDelete.mutate(
-                      {
-                        id: props.data.id,
-                        socialModuleProfileId: props.socialModuleProfile.id,
-                        socialModuleChatId: props.socialModuleChat.id,
-                        socialModuleMessageId:
-                          socialModuleMessageOrAction.data.id,
-                      },
-                    );
-                  }}
-                  disabled={
-                    socialModuleProfileFindByIdChatFindByIdMessageDelete.isPending
-                  }
-                >
-                  {socialModuleProfileFindByIdChatFindByIdMessageDelete.isPending
-                    ? "Deleting..."
-                    : "Delete"}
-                </Button>
-                <SocialModuleProfilesToMessages
-                  isServer={false}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "messageId",
-                            method: "eq",
-                            value: socialModuleMessageOrAction.data.id,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                >
-                  {({ data }) => {
-                    return data?.map((socialModuleProfilesToMessage, index) => {
-                      return (
-                        <SocialModuleProfile
-                          key={index}
-                          isServer={false}
-                          variant="find"
-                          apiProps={{
-                            params: {
-                              filters: {
-                                and: [
-                                  {
-                                    column: "id",
-                                    method: "eq",
-                                    value:
-                                      socialModuleProfilesToMessage.profileId,
-                                  },
-                                ],
-                              },
-                            },
-                          }}
-                        >
-                          {({ data }) => {
-                            return data?.map((socialModuleProfile, index) => {
-                              const href = saveLanguageContext(
-                                `/social/profiles/${socialModuleProfile.slug}`,
-                                props.language,
-                                internationalization.languages,
-                              );
-
-                              return (
-                                <Link
-                                  key={index}
-                                  href={href}
-                                  className="p-2 border rounded-lg w-fit cursor-pointer"
-                                >
-                                  <p>{socialModuleProfile.slug}</p>
-                                </Link>
-                              );
-                            });
-                          }}
-                        </SocialModuleProfile>
-                      );
-                    });
-                  }}
-                </SocialModuleProfilesToMessages>
-
-                {socialModuleMessageOrAction.data.sourceSystemId ? (
-                  <p className="text-xs text-gray-500">
-                    Source System ID:{" "}
-                    {socialModuleMessageOrAction.data.sourceSystemId}
-                  </p>
-                ) : null}
-
-                <SocialModuleMessagesToFileStorageModuleFiles
-                  variant="find"
-                  isServer={false}
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "messageId",
-                            method: "eq",
-                            value: socialModuleMessageOrAction.data.id,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                >
-                  {({ data: socialModuleMessagesToFileStorageModuleFiles }) => {
-                    return (
-                      <div className="grid grid-cols-4 gap-2">
-                        {socialModuleMessagesToFileStorageModuleFiles?.map(
-                          (
-                            socialModuleMessageToFileStorageModuleFile,
-                            index,
-                          ) => {
-                            return (
-                              <SocialModuleMessagesToFileStorageModuleFiles
-                                variant="default"
-                                isServer={false}
-                                key={index}
-                                data={
-                                  socialModuleMessageToFileStorageModuleFile
-                                }
-                                language={props.language}
-                              />
-                            );
-                          },
-                        )}
-                      </div>
-                    );
-                  }}
-                </SocialModuleMessagesToFileStorageModuleFiles>
-                <Markdown>
-                  {socialModuleMessageOrAction.data.description}
-                </Markdown>
-                {socialModuleMessageOrAction.data.interaction &&
-                Object.keys(socialModuleMessageOrAction.data.interaction)
-                  .length ? (
-                  <Collapsible className="border border-primary rounded-lg p-2">
-                    <CollapsibleTrigger className="w-full text-start">
-                      Interaction
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <pre className="text-xs">
-                        {JSON.stringify(
-                          socialModuleMessageOrAction.data.interaction,
-                          null,
-                          2,
-                        )}
-                      </pre>
-                    </CollapsibleContent>
-                  </Collapsible>
-                ) : null}
-              </div>
-            );
+      <ProfileSidebarSheet
+        isOpen={profileSidebar.isMobileSheetOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            profileSidebar.setIsMobileSheetOpen(true);
+            return;
           }
 
-          return (
-            <Collapsible
-              key={index}
-              className="p-4 border rounded-xl flex flex-col gap-2"
-            >
-              <CollapsibleTrigger className="flex flex-col items-start underline cursor-pointer">
-                <div className="w-fit text-xs px-3 py-1 border border-gray-200 text-gray-800 rounded-full">
-                  <p>Action: {socialModuleMessageOrAction.data.id}</p>{" "}
-                </div>
-                <SocialModuleProfilesToActions
-                  isServer={false}
-                  variant="find"
-                  apiProps={{
-                    params: {
-                      filters: {
-                        and: [
-                          {
-                            column: "actionId",
-                            method: "eq",
-                            value: socialModuleMessageOrAction.data.id,
-                          },
-                        ],
-                      },
-                    },
-                  }}
-                >
-                  {({ data }) => {
-                    return data?.map((socialModuleProfilesToActions, index) => {
-                      return (
-                        <SocialModuleProfile
-                          key={index}
-                          isServer={false}
-                          variant="find"
-                          apiProps={{
-                            params: {
-                              filters: {
-                                and: [
-                                  {
-                                    column: "id",
-                                    method: "eq",
-                                    value:
-                                      socialModuleProfilesToActions.profileId,
-                                  },
-                                ],
-                              },
-                            },
-                          }}
-                        >
-                          {({ data }) => {
-                            return data?.map((socialModuleProfile, index) => {
-                              const href = saveLanguageContext(
-                                `/social/profiles/${socialModuleProfile.slug}`,
-                                props.language,
-                                internationalization.languages,
-                              );
-
-                              return (
-                                <Link
-                                  key={index}
-                                  href={href}
-                                  className="p-2 border rounded-lg w-fit cursor-pointer"
-                                >
-                                  <p>{socialModuleProfile.slug}</p>
-                                </Link>
-                              );
-                            });
-                          }}
-                        </SocialModuleProfile>
-                      );
-                    });
-                  }}
-                </SocialModuleProfilesToActions>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <pre className="text-xs">
-                  {JSON.stringify(
-                    socialModuleMessageOrAction.data.payload,
-                    null,
-                    2,
-                  )}
-                </pre>
-              </CollapsibleContent>
-            </Collapsible>
-          );
-        },
-      )}
-      <Dialog
-        open={isEditOpen}
-        onOpenChange={() => {
-          setIsEditOpen(!isEditOpen);
+          profileSidebar.closeProfile();
         }}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Message</DialogTitle>
-            <DialogDescription>
-              Update the message text and save changes.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...messageEditForm}>
-            <div className="w-full grid gap-4">
-              <div
-                className="w-full flex flex-col gap-2"
-                data-color-mode="light"
-              >
-                <label className="text-sm font-medium">Text</label>
-                <Controller
-                  name="description"
-                  control={messageEditForm.control}
-                  render={({ field }) => {
-                    return (
-                      <MDEditor
-                        value={field.value}
-                        onChange={(value) => {
-                          field.onChange(value ?? "");
-                        }}
-                        height={200}
-                        visibleDragbar={false}
-                      />
-                    );
-                  }}
-                />
-              </div>
-              <Button
-                variant="primary"
-                onClick={messageEditForm.handleSubmit(onMessageEditSubmit)}
-                disabled={
-                  socialModuleProfileFindByIdChatFindByIdMessageUpdate.isPending
-                }
-              >
-                {socialModuleProfileFindByIdChatFindByIdMessageUpdate.isPending
-                  ? "Updating..."
-                  : "Save changes"}
-              </Button>
-            </div>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      <Form {...socialModuleActionForm}>
-        <Button
-          variant="secondary"
-          onClick={socialModuleActionForm.handleSubmit(
-            socialModuleActionFormOnSubmit,
-          )}
-          className="cursor-pointer"
-        >
-          Create Action
-        </Button>
-      </Form>
-      <Form {...form}>
-        <div className="w-full grid gap-4">
-          <div className="w-full flex flex-col gap-2" data-color-mode="light">
-            <label className="text-sm font-medium">Text</label>
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field }) => {
-                return (
-                  <MDEditor
-                    value={field.value}
-                    onChange={(value) => {
-                      field.onChange(value ?? "");
-                    }}
-                    height={240}
-                    visibleDragbar={false}
-                  />
-                );
-              }}
+        <ProfileSidebarPanel
+          isKnowledgeDocumentsLoading={
+            profileSidebar.isKnowledgeDocumentsLoading
+          }
+          isSkillsLoading={profileSidebar.isSkillsLoading}
+          knowledgeDocuments={profileSidebar.knowledgeDocuments}
+          language={props.language}
+          onKnowledgeDocumentCreate={
+            knowledgeDocuments.isKnowledgeChat
+              ? openSidebarKnowledgeDocumentCreateDialog
+              : undefined
+          }
+          onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+          onSkillCreate={openSidebarSkillCreateDialog}
+          onSkillEdit={openSkillEditDialog}
+          profile={profileSidebar.selectedProfile}
+          selectedKnowledgeDocument={profileSidebar.selectedKnowledgeDocument}
+          skills={profileSidebar.skills}
+        />
+      </ProfileSidebarSheet>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div
+            ref={messageThreadScroll.messagesViewportRef}
+            onScroll={messageThreadScroll.updateIsAtBottom}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4"
+          >
+            <MessageTimeline
+              isDeleting={messageActions.deleteMessage.isPending}
+              items={props.socialModuleMessagesAndActionsQuery}
+              language={props.language}
+              messagesContentRef={messageThreadScroll.messagesContentRef}
+              onMessageDelete={messageActions.onMessageRowDelete}
+              onMessageEdit={messageActions.onMessageRowEdit}
+              onProfileOpen={profileSidebar.openProfile}
+            />
+            <div
+              ref={messageThreadScroll.messagesEndRef}
+              className="h-px"
+              aria-hidden="true"
             />
           </div>
-          <div className="w-1/4">
-            <FormField
-              ui="shadcn"
-              type="file"
-              label="File"
-              name="files"
-              multiple={true}
-              form={form}
-              placeholder="Select files"
-            />
-          </div>
+          <MessageEditDialog
+            form={messageActions.messageEditForm}
+            isOpen={messageActions.isEditOpen}
+            isUpdating={messageActions.updateMessage.isPending}
+            onOpenChange={(open) => {
+              messageActions.setIsEditOpen(open);
 
-          <Button variant="primary" onClick={form.handleSubmit(onSubmit)}>
-            Submit
-          </Button>
+              if (!open) {
+                messageActions.setEditingMessageId(null);
+              }
+            }}
+            onSubmit={messageActions.onMessageEditSubmit}
+          />
+          <SocialModuleSkillChatCreateDialog
+            isServer={false}
+            variant="chat-create-dialog"
+            language={props.language}
+            data={editingSkill}
+            mode={editingSkill ? "edit" : "create"}
+            open={isSkillDialogOpen}
+            onOpenChange={(open) => {
+              setIsSkillDialogOpen(open);
+
+              if (!open) {
+                setEditingSkill(null);
+                setSkillDialogTarget(null);
+              }
+            }}
+            profileId={resolvedSkillDialogTarget.profileId}
+            orderIndex={resolvedSkillDialogTarget.orderIndex}
+            isSubmitting={
+              profileSkills.isCreatingSkill || profileSkills.isUpdatingSkill
+            }
+            onCreate={profileSkills.createSkillAndLinkToProfile}
+            onUpdate={profileSkills.updateProfileSkill}
+          />
+          <KnowledgeDocumentDialog
+            document={profileSidebar.selectedKnowledgeDocument}
+            draft={profileSidebar.knowledgeDocumentDraft}
+            isDirty={profileSidebar.isKnowledgeDocumentDirty}
+            isOpen={Boolean(profileSidebar.selectedKnowledgeDocument)}
+            isReindexing={profileSidebar.isReindexingKnowledgeDocument}
+            isSaving={profileSidebar.isSavingKnowledgeDocument}
+            language={props.language}
+            mode={
+              profileSidebar.isCreatingKnowledgeDocument ? "create" : "edit"
+            }
+            needsReindex={profileSidebar.selectedKnowledgeDocumentNeedsReindex}
+            onDraftChange={profileSidebar.onKnowledgeDocumentDraftChange}
+            onOpenChange={(open) => {
+              if (!open) {
+                profileSidebar.closeKnowledgeDocument();
+              }
+            }}
+            onReindex={profileSidebar.onKnowledgeDocumentReindex}
+            onSave={profileSidebar.onKnowledgeDocumentSave}
+          />
+          <Composer
+            canSubmit={composer.canSubmit}
+            fileInputRef={composer.fileInputRef}
+            form={composer.form}
+            isArtificialIntelligenceOpponent={isArtificialIntelligenceOpponent}
+            isKnowledgeCommandPickerOpen={isKnowledgeCommandPickerOpen}
+            isKnowledgeSearchSelected={isKnowledgeSearchSelected}
+            isSkillMentionPickerOpen={isSkillMentionPickerOpen}
+            isSkillOptionsLoading={profileSkills.isLoadingSkills}
+            knowledgeMentionOption={visibleKnowledgeMentionOption}
+            language={props.language}
+            onKnowledgeCommandSelect={selectKnowledgeCommand}
+            onKnowledgeMentionSelect={selectKnowledgeMention}
+            onOpenRouterModelChange={openRouterModelControls.setSelectedModelId}
+            onOpenRouterReasoningChange={
+              openRouterModelControls.setSelectedReasoning
+            }
+            onRemoveKnowledgeSearch={removeKnowledgeMention}
+            onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
+            onSkillMentionSelect={selectSkillMention}
+            openRouterModelGroups={openRouterModelControls.modelGroups}
+            openRouterModelId={openRouterModelControls.selectedModelId}
+            openRouterModelLabel={openRouterModelControls.selectedModelLabel}
+            openRouterReasoning={openRouterModelControls.selectedReasoning}
+            openRouterReasoningLabel={
+              openRouterModelControls.selectedReasoningLabel
+            }
+            onSubmit={composer.onSubmit}
+            isOpenRouterModelsLoading={openRouterModelControls.isLoadingModels}
+            showOpenRouterControls={
+              knowledgeDocuments.isKnowledgeChat &&
+              isArtificialIntelligenceOpponent
+            }
+            selectedFileNames={composer.selectedFileNames}
+            selectedSkills={profileSkills.selectedSkills}
+            textareaRef={composer.textareaRef}
+            visibleKnowledgeChatCommands={visibleKnowledgeChatCommands}
+            visibleSkillMentionOptions={visibleSkillMentionOptions}
+          />
         </div>
-      </Form>
+        {profileSidebar.isSidebarOpen &&
+        profileSidebar.selectedProfile &&
+        !profileSidebar.isMobileSheetOpen ? (
+          <aside className="hidden min-h-0 w-96 shrink-0 border-l border-slate-200 2xl:block">
+            <ProfileSidebarPanel
+              isKnowledgeDocumentsLoading={
+                profileSidebar.isKnowledgeDocumentsLoading
+              }
+              isSkillsLoading={profileSidebar.isSkillsLoading}
+              knowledgeDocuments={profileSidebar.knowledgeDocuments}
+              language={props.language}
+              onKnowledgeDocumentCreate={
+                knowledgeDocuments.isKnowledgeChat
+                  ? openSidebarKnowledgeDocumentCreateDialog
+                  : undefined
+              }
+              onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+              onSkillCreate={openSidebarSkillCreateDialog}
+              onSkillEdit={openSkillEditDialog}
+              onClose={profileSidebar.closeProfile}
+              profile={profileSidebar.selectedProfile}
+              selectedKnowledgeDocument={
+                profileSidebar.selectedKnowledgeDocument
+              }
+              skills={profileSidebar.skills}
+            />
+          </aside>
+        ) : null}
+      </div>
     </div>
   );
 }

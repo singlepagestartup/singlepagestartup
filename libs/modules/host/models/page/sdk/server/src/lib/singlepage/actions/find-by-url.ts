@@ -11,12 +11,16 @@ interface Params {
   host?: string;
   url: string;
   catchErrors?: boolean;
+  silentErrorStatuses?: number[];
+  options?: Partial<NextRequestOptions>;
 }
 
 export async function action({
   host = serverHost,
   url,
   catchErrors = false,
+  silentErrorStatuses,
+  options: requestOptions,
 }: Params) {
   const productionBuild = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
 
@@ -27,10 +31,13 @@ export async function action({
     : {};
 
   const options: NextRequestOptions = {
+    ...requestOptions,
     headers: {
       ...cacheControlOptions,
+      ...requestOptions?.headers,
     },
     next: {
+      ...requestOptions?.next,
       tags: [route],
     },
   };
@@ -52,6 +59,7 @@ export async function action({
   const json = await responsePipe<{ data: IModel }>({
     res,
     catchErrors: catchErrors || productionBuild,
+    silentErrorStatuses,
   });
 
   if (!json) {

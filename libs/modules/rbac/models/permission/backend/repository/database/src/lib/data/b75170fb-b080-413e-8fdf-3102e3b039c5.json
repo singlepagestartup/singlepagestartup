@@ -1,0 +1,9 @@
+{
+  "id": "b75170fb-b080-413e-8fdf-3102e3b039c5",
+  "createdAt": "2026-05-10T00:48:00.039Z",
+  "updatedAt": "2026-05-10T00:48:00.039Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/threads-to-ecommerce-module-products/count"
+}

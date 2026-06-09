@@ -12,7 +12,7 @@ You are tasked with writing a handoff document to hand off your work to another 
 
 Use the following information to understand how to create your document:
 
-    - run `gh repo view --json name -q '.name'` to get REPO_NAME
+    - run `.claude/helpers/get_repo_name.sh` to get REPO_NAME; this uses the repository context contract rather than bare GitHub CLI defaults
     - create your file under `thoughts/shared/handoffs/REPO_NAME/ISSUE-NUM/YYYY-MM-DD_HH-MM-SS_description.md`, where:
         - REPO_NAME is the short repository name (e.g. `singlepagestartup`)
         - ISSUE-NUM is the GitHub issue number (replace with `general` if no issue)

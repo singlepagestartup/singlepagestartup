@@ -1,0 +1,9 @@
+{
+  "id": "d4ae4a11-dc6c-4162-ab85-e2f2b0ba4d3d",
+  "createdAt": "2026-05-10T00:46:30.181Z",
+  "updatedAt": "2026-05-10T00:46:30.181Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/billing/currencies/count"
+}

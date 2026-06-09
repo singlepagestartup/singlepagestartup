@@ -1,0 +1,9 @@
+{
+  "id": "1c2894a9-7dce-43e4-8176-afd3616c6253",
+  "createdAt": "2026-05-10T00:47:38.888Z",
+  "updatedAt": "2026-05-10T00:47:38.888Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/actions/count"
+}

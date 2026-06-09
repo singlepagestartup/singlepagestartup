@@ -43,7 +43,14 @@ describe("GIVEN: admin-v2 card component", () => {
     cleanupHarness(harness);
   });
 
-  it("WHEN model metadata and href are provided THEN title, route, and open link are rendered", () => {
+  /**
+   * BDD Scenario: renders model card metadata.
+   *
+   * Given: model metadata, count, route, and href are provided.
+   * When: the card renders.
+   * Then: title, count badge, route, and open link are visible.
+   */
+  it("WHEN model metadata, count, and href are provided THEN title, count, route, and open link are rendered", () => {
     renderInHarness(
       harness,
       <Component
@@ -54,20 +61,27 @@ describe("GIVEN: admin-v2 card component", () => {
         type="model"
         apiRoute="/api/ecommerce/products"
         href="/admin/ecommerce/product"
+        count={42}
       />,
     );
 
     expect(harness.container.textContent).toContain("product");
+    expect(harness.container.textContent).toContain("42");
     expect(harness.container.textContent).toContain("/api/ecommerce/products");
     expect(harness.container.textContent).toContain("Open model");
 
-    const openLink = harness.container.querySelector(
-      'a[href="/admin/ecommerce/product"]',
-    );
-    expect(openLink).toBeTruthy();
+    const openLink = harness.container.querySelector("a");
+    expect(openLink?.getAttribute("href")).toBe("/admin/ecommerce/product");
   });
 
-  it("WHEN href is absent THEN open model action content is not rendered", () => {
+  /**
+   * BDD Scenario: keeps count fallback.
+   *
+   * Given: the card receives metadata without count or href.
+   * When: the card renders.
+   * Then: the badge falls back to 0 and the open action stays empty.
+   */
+  it("WHEN count and href are absent THEN count falls back to 0 and open model action content is not rendered", () => {
     renderInHarness(
       harness,
       <Component
@@ -81,6 +95,7 @@ describe("GIVEN: admin-v2 card component", () => {
     );
 
     expect(harness.container.textContent).toContain("attribute");
+    expect(harness.container.textContent).toContain("0");
     expect(harness.container.textContent).toContain(
       "/api/ecommerce/attributes",
     );

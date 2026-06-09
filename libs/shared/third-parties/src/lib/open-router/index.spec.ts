@@ -21,6 +21,13 @@ jest.mock(
 import { Service } from "./index";
 
 describe("OpenRouter billing fallback for provider-reported costs", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
   /**
    * BDD Scenario
    * Given: an image generation response reports upstream inference cost but the selected model has no pricing payload.
@@ -73,6 +80,216 @@ describe("OpenRouter billing fallback for provider-reported costs", () => {
         imageUsd: 0.03,
         totalUsd: 0.03,
         outputImageCount: 1,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the runtime cannot verify the upstream TLS certificate.
+   * When: OpenRouter generation performs the HTTPS request.
+   * Then: the wrapper returns a structured generation error instead of throwing.
+   */
+  it("returns an error result for certificate verification failures", async () => {
+    const service = new Service();
+
+    global.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error("unknown certificate verification error"));
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: "Hello",
+        },
+      ],
+    });
+
+    expect("error" in result).toBe(true);
+    expect(result).toMatchObject({
+      error: {
+        message:
+          "OpenRouter request failed: unknown certificate verification error",
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the caller selected a concrete OpenRouter reasoning effort.
+   * When: generation sends the chat completion request.
+   * Then: the reasoning object is forwarded and reasoning text is excluded by default.
+   */
+  it("forwards reasoning effort payloads to OpenRouter", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        choices: [
+          {
+            message: {
+              content: "Reasoned answer",
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: "Hello",
+        },
+      ],
+      reasoning: {
+        effort: "high",
+        exclude: true,
+      },
+    });
+
+    const requestBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+
+    expect(requestBody.reasoning).toEqual({
+      effort: "high",
+      exclude: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter rejects a multimodal request before generation.
+   * When: non-text retry is enabled for generation.
+   * Then: the wrapper strips non-text content once and returns the retry success result.
+   */
+  it("strips non-text content once after a multimodal provider error", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        json: async () => ({
+          error: {
+            message: "context length exceeded",
+          },
+        }),
+      } as any)
+      .mockResolvedValueOnce({
+        json: async () => ({
+          model: "openai/gpt-5.2",
+          choices: [
+            {
+              message: {
+                content: "Recovered without images",
+              },
+            },
+          ],
+        }),
+      } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Summarize this page.",
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: "https://example.com/page.png",
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect("error" in result).toBe(false);
+    expect(result).toMatchObject({
+      text: "Recovered without images",
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    const retryBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[1][1].body,
+    );
+    expect(retryBody.messages).toEqual([
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Summarize this page.",
+          },
+        ],
+      },
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter rejects both the original multimodal request and the stripped retry.
+   * When: generation handles the retry result.
+   * Then: the wrapper returns a structured error from the retry attempt.
+   */
+  it("returns the retry error when stripped non-text fallback also fails", async () => {
+    const service = new Service();
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        json: async () => ({
+          error: {
+            message: "context length exceeded",
+          },
+        }),
+      } as any)
+      .mockResolvedValueOnce({
+        json: async () => ({
+          error: {
+            message: "retry context still failed",
+          },
+        }),
+      } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Summarize this page.",
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: "https://example.com/page.png",
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(result).toMatchObject({
+      error: {
+        message: "retry context still failed",
       },
     });
   });

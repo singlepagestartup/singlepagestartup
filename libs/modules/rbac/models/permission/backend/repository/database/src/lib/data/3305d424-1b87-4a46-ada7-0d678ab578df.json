@@ -1,0 +1,9 @@
+{
+  "id": "3305d424-1b87-4a46-ada7-0d678ab578df",
+  "createdAt": "2026-05-10T00:48:22.706Z",
+  "updatedAt": "2026-05-10T00:48:22.706Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/website-builder/slides-to-file-storage-module-files/count"
+}

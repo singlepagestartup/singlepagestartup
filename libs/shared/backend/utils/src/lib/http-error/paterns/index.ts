@@ -12,6 +12,9 @@ export const httpErrorPatterns: ErrorPatternEntry[] = [
       /authorization error/i,
       /no subject provided in the token/i,
       /invalid token issued/i,
+      /signature mismatched/i,
+      /invalid signature/i,
+      /jwt malformed/i,
     ],
   },
   {

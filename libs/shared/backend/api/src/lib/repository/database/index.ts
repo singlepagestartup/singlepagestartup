@@ -6,7 +6,7 @@ import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "fs/promises";
 import { inject, injectable } from "inversify";
 import "reflect-metadata";
-import { ZodDate, ZodError, ZodObject, ZodOptional } from "zod";
+import { ZodDate, ZodError, ZodNullable, ZodObject, ZodOptional } from "zod";
 import {
   IDumpResult,
   ISeedResult,
@@ -16,6 +16,18 @@ import { DI } from "../../di/constants";
 import { queryBuilder } from "../../query-builder";
 import { FindServiceProps } from "../../services/interfaces";
 import { type IRepository } from "../interface";
+
+function isDateSchema(value: unknown): boolean {
+  if (value instanceof ZodDate) {
+    return true;
+  }
+
+  if (value instanceof ZodOptional || value instanceof ZodNullable) {
+    return isDateSchema(value._def.innerType);
+  }
+
+  return false;
+}
 
 @injectable()
 export class Database<T extends PgTableWithColumns<any>>
@@ -97,6 +109,32 @@ export class Database<T extends PgTableWithColumns<any>>
     }
   }
 
+  async count(props?: FindServiceProps): Promise<number> {
+    try {
+      const filters = queryBuilder.filters({
+        table: this.Table as T,
+        queryFunctions: methods,
+        filters: props?.params?.filters,
+      });
+
+      const [record] = await this.db
+        .select({ count: methods.count() })
+        .from(this.Table)
+        .where(filters ? methods.and(...filters) : undefined)
+        .execute();
+
+      return Number(record?.count ?? 0);
+    } catch (error: any) {
+      logger.error(error);
+
+      if (error instanceof ZodError) {
+        throw new Error(JSON.stringify({ zodError: error.issues }));
+      }
+
+      throw error;
+    }
+  }
+
   async findByField(field: string, value: any): Promise<any> {
     try {
       if (!this.Table[field]) {
@@ -149,12 +187,7 @@ export class Database<T extends PgTableWithColumns<any>>
       delete data.id;
 
       Object.entries(shape).forEach(([key, value]) => {
-        const isOptionalDate =
-          value instanceof ZodOptional &&
-          value._def.innerType instanceof ZodDate;
-        const isDate = value instanceof ZodDate;
-
-        if ((isDate || isOptionalDate) && typeof data[key] === "string") {
+        if (isDateSchema(value) && typeof data[key] === "string") {
           data[key] = new Date(data[key]);
         }
 
@@ -236,12 +269,7 @@ export class Database<T extends PgTableWithColumns<any>>
       const shape = this.insertSchema.shape;
 
       Object.entries(shape).forEach(([key, value]) => {
-        const isOptionalDate =
-          value instanceof ZodOptional &&
-          value._def.innerType instanceof ZodDate;
-        const isDate = value instanceof ZodDate;
-
-        if ((isDate || isOptionalDate) && typeof data[key] === "string") {
+        if (isDateSchema(value) && typeof data[key] === "string") {
           data[key] = new Date(data[key]);
         }
 

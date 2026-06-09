@@ -10,6 +10,7 @@ import { Component as AttributeKey } from "./attribute-key/Component";
 import { Component as Chat } from "./chat/Component";
 import { Component as Message } from "./message/Component";
 import { Component as Profile } from "./profile/Component";
+import { Component as Skill } from "./skill/Component";
 import { Component as Thread } from "./thread/Component";
 import { Component as Widget } from "./widget/Component";
 
@@ -62,6 +63,7 @@ export function Component(props: IComponentProps) {
           <Chat isServer={props.isServer} url={props.url} />
           <Message isServer={props.isServer} url={props.url} />
           <Profile isServer={props.isServer} url={props.url} />
+          <Skill isServer={props.isServer} url={props.url} />
           <Thread isServer={props.isServer} url={props.url} />
           <Widget isServer={props.isServer} url={props.url} />
         </div>

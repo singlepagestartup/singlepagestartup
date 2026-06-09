@@ -1,0 +1,20 @@
+{
+  "$schema": "../../manifest.schema.json",
+  "id": "singlepagestartup",
+  "title": "SinglePageStartup (React + Vite)",
+  "description": "Incoming SinglePageStartup draft imported from Figma Make export.",
+  "type": "react",
+  "entry": "index.html",
+  "status": "incoming",
+  "tags": ["startup", "react", "vite", "incoming"],
+  "createdAt": "2026-04-25T00:00:00.000Z",
+  "updatedAt": "2026-04-25T00:00:00.000Z",
+  "run": {
+    "cwd": ".",
+    "install": "npm install --legacy-peer-deps",
+    "autoInstall": true,
+    "dev": "npm run dev -- --host 127.0.0.1 --port 5173",
+    "port": 5173,
+    "host": "127.0.0.1"
+  }
+}

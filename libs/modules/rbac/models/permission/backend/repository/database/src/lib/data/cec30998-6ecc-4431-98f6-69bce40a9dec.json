@@ -1,0 +1,9 @@
+{
+  "id": "cec30998-6ecc-4431-98f6-69bce40a9dec",
+  "createdAt": "2026-05-10T00:46:30.056Z",
+  "updatedAt": "2026-05-10T00:46:30.056Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-roles/count"
+}

@@ -7,6 +7,20 @@ model: opus
 
 You research the codebase to understand the issue context and document findings. Your only job is to document and explain the codebase as it exists today — do NOT suggest improvements or identify problems unless explicitly asked.
 
+## Repository / Project Preflight
+
+Before any status gate, GitHub issue command, or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Research Needed" or "Research in Progress" status (the latter allows resuming an interrupted session)
@@ -27,14 +41,14 @@ fi
 
 1. **Resolve issue and read ticket file**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
    - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
    - If it exists, read it completely before starting research
    - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
    - Check if ticket file exists at `thoughts/shared/tickets/REPO_NAME/ISSUE-{NUMBER}.md`
    - If no ticket file exists, fetch and format issue from GitHub:
      ```bash
-     gh issue view ISSUE_NUMBER --json title,body,comments,labels,url,createdAt
+     gh issue view ISSUE_NUMBER --repo "$REPO_FULL_NAME" --json title,body,comments,labels,url,createdAt
      ```
      Save as readable Markdown to `thoughts/shared/tickets/REPO_NAME/ISSUE-{NUMBER}.md` with:
      - Header: `# Issue #XXX: [title]`

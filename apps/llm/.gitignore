@@ -1,0 +1,57 @@
+############################
+# Local environment
+############################
+.env
+.env*.local
+.env*.testing
+.venv
+.venv/
+
+############################
+# Local services
+############################
+.ollama
+.ollama/
+
+############################
+# Python runtime
+############################
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.ipynb_checkpoints/
+
+############################
+# Python tooling
+############################
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.hypothesis/
+.tox/
+.nox/
+
+############################
+# Python packaging/build
+############################
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+############################
+# Testing
+############################
+coverage
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+
+############################
+# App build output
+############################
+out

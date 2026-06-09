@@ -1,21 +1,15 @@
 {
   "title": {
-    "en": "Single Page Startup – The Ultimate Framework for Next.js & Hono",
+    "en": "Single Page Startup – The Ultimate Framework for Next.js & Hono!",
     "ru": "Single Page Startup – Идеальный фреймворк для Next.js и Hono"
   },
-  "subtitle": {
-    "en": "Effortless project creation with Next.js and Hono, optimized for performance and scalability.",
-    "ru": "Легкое создание проектов на Next.js и Hono с акцентом на производительность и масштабируемость."
-  },
-  "description": {
-    "en": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Single Page Startup is a modern framework designed to streamline the development of web applications using \"},{\"type\":\"text\",\"marks\":[{\"type\":\"bold\"}],\"text\":\"Next.js\"},{\"type\":\"text\",\"text\":\" and \"},{\"type\":\"text\",\"marks\":[{\"type\":\"bold\"}],\"text\":\"Hono\"},{\"type\":\"text\",\"text\":\". It provides a robust, scalable architecture that ensures high performance, easy maintainability, and rapid deployment. With built-in API routing, serverless support, and seamless integration with modern frontend and backend technologies, Single Page Startup is the perfect solution for developers looking to build fast, secure, and dynamic web applications.\"}]}]}",
-    "ru": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Single Page Startup – это современный фреймворк, созданный для упрощения разработки веб-приложений с \"},{\"type\":\"text\",\"marks\":[{\"type\":\"bold\"}],\"text\":\"Next.js\"},{\"type\":\"text\",\"text\":\" и \"},{\"type\":\"text\",\"marks\":[{\"type\":\"bold\"}],\"text\":\"Hono\"},{\"type\":\"text\",\"text\":\". Он предлагает мощную и масштабируемую архитектуру, обеспечивающую высокую производительность, простоту сопровождения и быструю развертку. Благодаря встроенной маршрутизации API, поддержке серверлесс-функций и бесшовной интеграции с современными frontend и backend технологиями, Single Page Startup – это идеальное решение для разработчиков, стремящихся создать быстрые, безопасные и динамичные веб-приложения. 🚀\"}]}]}"
-  },
+  "subtitle": {},
+  "description": {},
   "anchor": "",
   "className": "",
   "id": "4e55875f-1298-4544-a61d-19af05367bef",
   "createdAt": "2025-01-30T13:15:03.021Z",
-  "updatedAt": "2025-12-29T09:06:09.174Z",
+  "updatedAt": "2026-05-10T01:01:24.628Z",
   "variant": "content-default",
   "adminTitle": "fundamental aqua finch",
   "slug": "welcome-to-single-page-startup"

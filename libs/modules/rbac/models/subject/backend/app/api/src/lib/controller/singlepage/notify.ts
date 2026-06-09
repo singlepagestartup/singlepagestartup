@@ -227,9 +227,11 @@ export class Handler {
             },
           });
 
-        sentNotificationServiceNotifications.push(
-          sentNotificationServiceNotification,
-        );
+        if (sentNotificationServiceNotification) {
+          sentNotificationServiceNotifications.push(
+            sentNotificationServiceNotification,
+          );
+        }
       }
 
       return c.json({

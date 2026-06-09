@@ -21,7 +21,7 @@ When this command is invoked:
 2. **If a ticket number (like ENG-XXXX) was provided**:
 
    - run `humanlayer thoughts sync` to ensure your `thoughts/` directory is up to date.
-   - run `gh repo view --json name -q '.name'` to get REPO_NAME, then locate the most recent handoff document for the issue. Handoffs are located in `thoughts/shared/handoffs/REPO_NAME/ISSUE-NUM/` e.g. for issue `42` in repo `singlepagestartup` the handoffs would be in `thoughts/shared/handoffs/singlepagestartup/ISSUE-42/`. **List this directory's contents.**
+   - run `.claude/helpers/get_repo_name.sh` to get REPO_NAME, then locate the most recent handoff document for the issue. Handoffs are located in `thoughts/shared/handoffs/REPO_NAME/ISSUE-NUM/` e.g. for issue `42` in repo `singlepagestartup` the handoffs would be in `thoughts/shared/handoffs/singlepagestartup/ISSUE-42/`. **List this directory's contents.**
    - There may be zero, one or multiple files in the directory.
    - **If there are zero files in the directory, or the directory does not exist**: tell the user: "I'm sorry, I can't seem to find that handoff document. Can you please provide me with a path to it?"
    - **If there is only one file in the directory**: proceed with that handoff

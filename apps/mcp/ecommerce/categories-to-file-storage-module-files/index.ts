@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { api as ecommerceCategoriesToFileStorageModuleFilesApi } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/sdk/server";
 import { insertSchema as ecommerceCategoriesToFileStorageModuleFilesInsertSchema } from "@sps/ecommerce/relations/categories-to-file-storage-module-files/sdk/model";
-import { RBAC_SECRET_KEY } from "@sps/shared-utils";
+import { registerCountTool } from "../../lib/count-tool";
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
@@ -28,6 +28,14 @@ export function registerResources(mcp: McpServer) {
 }
 
 export function registerTools(mcp: McpServer) {
+  registerCountTool(
+    mcp,
+    "ecommerce-categories-to-file-storage-module-files-count",
+    "Count ecommerce categories to file storage module files",
+    "Count ecommerce categories to file storage module files entities with optional filters.",
+    ecommerceCategoriesToFileStorageModuleFilesApi,
+  );
+
   mcp.registerTool(
     "ecommerce-categories-to-file-storage-module-files-get",
     {
@@ -39,16 +47,10 @@ export function registerTools(mcp: McpServer) {
     },
     async () => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entities =
           await ecommerceCategoriesToFileStorageModuleFilesApi.find({
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -128,17 +130,11 @@ export function registerTools(mcp: McpServer) {
     },
     async (args) => {
       try {
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await ecommerceCategoriesToFileStorageModuleFilesApi.create({
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -179,18 +175,12 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for update");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await ecommerceCategoriesToFileStorageModuleFilesApi.update({
             id: args.id,
             data: args,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 
@@ -231,17 +221,11 @@ export function registerTools(mcp: McpServer) {
           throw new Error("id is required for delete");
         }
 
-        if (!RBAC_SECRET_KEY) {
-          throw new Error("RBAC_SECRET_KEY is not set");
-        }
-
         const entity =
           await ecommerceCategoriesToFileStorageModuleFilesApi.delete({
             id: args.id,
             options: {
-              headers: {
-                "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-              },
+              headers: {},
             },
           });
 

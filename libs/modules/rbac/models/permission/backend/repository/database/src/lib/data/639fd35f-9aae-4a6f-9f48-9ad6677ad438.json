@@ -1,0 +1,9 @@
+{
+  "id": "639fd35f-9aae-4a6f-9f48-9ad6677ad438",
+  "createdAt": "2026-05-10T00:48:33.379Z",
+  "updatedAt": "2026-05-10T00:48:33.379Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/telegram/widgets/count"
+}

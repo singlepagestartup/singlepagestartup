@@ -1,0 +1,9 @@
+{
+  "id": "02699b5f-d195-4d71-be65-48ce26518c75",
+  "createdAt": "2026-05-10T00:46:04.580Z",
+  "updatedAt": "2026-05-10T00:46:04.580Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/permissions-to-billing-module-currencies/count"
+}

@@ -315,7 +315,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }).execute(props);
   }
 
-  private getChatLifecycleService() {
+  protected getChatLifecycleService() {
     return new ChatLifecycleService(this);
   }
 }

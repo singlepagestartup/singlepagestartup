@@ -1,0 +1,310 @@
+{
+  "name": "@sps/knowledge",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/knowledge",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "eslint:lint": {},
+    "jest:test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/modules/knowledge/jest.config.ts",
+        "passWithNoTests": false
+      }
+    },
+    "jest:integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage"],
+      "inputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/modules/knowledge/jest.integration.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "tsc:build": {},
+    "index": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "envFile": "apps/api/.env",
+        "command": "bun run libs/modules/knowledge/backend/app/api/src/lib/indexer/cli.ts"
+      }
+    },
+    "repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:models:repository-generate"
+          },
+          {
+            "command": "nx run @sps/knowledge:relations:repository-generate"
+          }
+        ]
+      }
+    },
+    "repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:models:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/knowledge:relations:repository-migrate"
+          }
+        ]
+      }
+    },
+    "models:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:models:source:repository-generate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:chunk:repository-generate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:document:repository-generate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:edit-suggestion:repository-generate"
+          }
+        ]
+      }
+    },
+    "relations:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:relations:sources-to-file-storage-module-files:repository-generate"
+          },
+          {
+            "command": "nx run @sps/knowledge:relations:sources-to-chunks:repository-generate"
+          }
+        ]
+      }
+    },
+    "models:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:models:source:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:chunk:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:document:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/knowledge:models:edit-suggestion:repository-migrate"
+          }
+        ]
+      }
+    },
+    "relations:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "commands": [
+          {
+            "command": "nx run @sps/knowledge:relations:sources-to-file-storage-module-files:repository-migrate"
+          },
+          {
+            "command": "nx run @sps/knowledge:relations:sources-to-chunks:repository-migrate"
+          }
+        ]
+      }
+    },
+    "models:source:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/models/source/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:source:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/models/source/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:chunk:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/models/chunk/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:chunk:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/models/chunk/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:sources-to-file-storage-module-files:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:sources-to-file-storage-module-files:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/relations/sources-to-file-storage-module-files/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "relations:sources-to-chunks:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/relations/sources-to-chunks/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "relations:sources-to-chunks:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/relations/sources-to-chunks/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:document:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/models/document/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:document:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/models/document/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    },
+    "models:edit-suggestion:repository-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "cwd": "libs/modules/knowledge/models/edit-suggestion/backend/repository/database",
+        "commands": [
+          {
+            "command": "drizzle-kit up --config=./src/lib/config.ts"
+          },
+          {
+            "command": "drizzle-kit generate --config=./src/lib/config.ts"
+          }
+        ]
+      }
+    },
+    "models:edit-suggestion:repository-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "parallel": false,
+        "envFile": "apps/api/.env",
+        "cwd": "libs/modules/knowledge/models/edit-suggestion/backend/repository/database",
+        "commands": [
+          {
+            "command": "bun run ./src/lib/migrate.ts"
+          }
+        ]
+      }
+    }
+  }
+}

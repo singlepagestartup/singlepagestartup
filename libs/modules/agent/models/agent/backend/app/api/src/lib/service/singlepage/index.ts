@@ -41,6 +41,11 @@ import {
   type ISocialModule,
 } from "../../di";
 
+const activeSubscriptionProductsCheckoutMessage =
+  "Checking out order has active subscription products.";
+const openRouterTerminalMessageWrittenMarker =
+  "open-router-terminal-message-written";
+
 interface ISocialModuleTelegramMessageData {
   description: string;
   interaction?:
@@ -49,6 +54,9 @@ interface ISocialModuleTelegramMessageData {
           text: string;
           url?: string;
           callback_data?: string;
+          copy_text?: {
+            text: string;
+          };
         }[][];
       }
     | {
@@ -60,6 +68,21 @@ interface ISocialModuleTelegramMessageData {
       };
   files?: File[];
 }
+
+type ITelegramBotReplyContext = {
+  jwtToken: string;
+  rbacModuleSubject: IRbacModuleSubject;
+  shouldReplySocialModuleProfile: ISocialModuleProfile;
+  socialModuleChat: ISocialModuleChat;
+  messageFromSocialModuleProfile: ISocialModuleProfile | null;
+} & (
+  | {
+      socialModuleMessage: ISocialModuleMessage;
+    }
+  | {
+      socialModuleAction: ISocialModuleAction;
+    }
+);
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -103,8 +126,116 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
       : "https://t.me");
 
-  telegramBotCommands = ["/start", "/help", "/referral", "/premium", "/new"];
+  telegramBotCommands = [
+    "/start",
+    "/help",
+    "/referral",
+    "/premium",
+    "/new",
+    "/threads",
+    "/thread_new",
+    "/thread_rename",
+    "/thread_delete",
+  ];
   statusMessages = telegramBotServiceMessages;
+
+  protected collectErrorMessages(error: unknown): string[] {
+    const messages = new Set<string>();
+    const seen = new WeakSet<object>();
+
+    const visit = (value: unknown) => {
+      if (!value) {
+        return;
+      }
+
+      if (typeof value === "string") {
+        messages.add(value);
+
+        try {
+          visit(JSON.parse(value));
+        } catch {
+          //
+        }
+
+        return;
+      }
+
+      if (value instanceof Error) {
+        visit(value.message);
+        visit((value as { cause?: unknown }).cause);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          visit(item);
+        }
+
+        return;
+      }
+
+      if (typeof value === "object") {
+        if (seen.has(value)) {
+          return;
+        }
+
+        seen.add(value);
+
+        const payload = value as {
+          message?: unknown;
+          error?: unknown;
+          data?: unknown;
+          cause?: unknown;
+        };
+
+        visit(payload.message);
+        visit(payload.error);
+        visit(payload.data);
+        visit(payload.cause);
+      }
+    };
+
+    visit(error);
+
+    return Array.from(messages);
+  }
+
+  protected isActiveSubscriptionProductsCheckoutError(error: unknown) {
+    return this.collectErrorMessages(error).some((message) => {
+      return message.includes(activeSubscriptionProductsCheckoutMessage);
+    });
+  }
+
+  protected activeSubscriptionProductsCheckoutTelegramMessage() {
+    return (
+      this.statusMessages.ecommerceModuleOrderAlreadyHaveSubscription?.ru ||
+      "У вас уже есть активная подписка."
+    );
+  }
+
+  protected isRecoverableOpenRouterReplyError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return [
+      "OpenRouter request failed",
+      "OpenRouter file fetch failed",
+      "No valid model response received",
+      "certificate",
+      "fetch failed",
+      "network",
+      "ECONNRESET",
+      "ETIMEDOUT",
+      "ENOTFOUND",
+    ].some((marker) => {
+      return message.toLowerCase().includes(marker.toLowerCase());
+    });
+  }
+
+  protected isOpenRouterTerminalMessageWrittenError(error: unknown) {
+    return this.collectErrorMessages(error).some((message) => {
+      return message.includes(openRouterTerminalMessageWrittenMarker);
+    });
+  }
 
   async agentSocialModuleProfileHandler(
     props:
@@ -151,6 +282,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
     if (!rbacModuleSubjectsToSocialModuleProfiles?.length) {
+      logger.warn(
+        "agentSocialModuleProfileHandler: missing RBAC subject relation for automatic social profile",
+        {
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleProfileSlug: props.shouldReplySocialModuleProfile.slug,
+          socialModuleChatId: props.socialModuleChat.id,
+        },
+      );
+
       return;
     }
 
@@ -205,6 +345,36 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           });
         }
       }
+    } else if (
+      this.shouldUseKnowledgeReplyProfile({
+        socialModuleChat: props.socialModuleChat,
+        shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
+      })
+    ) {
+      if ("socialModuleMessage" in props) {
+        const telegramBotCommandMessage = this.telegramBotCommands.find(
+          (command) => {
+            return props.socialModuleMessage.description?.startsWith(command);
+          },
+        );
+
+        if (telegramBotCommandMessage) {
+          return;
+        }
+
+        if (!props.socialModuleMessage.description?.trim()) {
+          return;
+        }
+
+        await this.openRouterReplyMessageCreate({
+          jwtToken,
+          rbacModuleSubject,
+          shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
+          socialModuleChat: props.socialModuleChat,
+          socialModuleMessage: props.socialModuleMessage,
+          messageFromSocialModuleProfile: props.messageFromSocialModuleProfile,
+        });
+      }
     } else if (props.shouldReplySocialModuleProfile.slug === "open-router") {
       if ("socialModuleMessage" in props) {
         const telegramBotCommandMessage = this.telegramBotCommands.find(
@@ -214,6 +384,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
 
         if (telegramBotCommandMessage) {
+          return;
+        }
+
+        if (!props.socialModuleMessage.description?.trim()) {
           return;
         }
 
@@ -248,6 +422,20 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
   }
 
+  protected shouldUseKnowledgeReplyProfile(props: {
+    socialModuleChat: ISocialModuleChat;
+    shouldReplySocialModuleProfile: ISocialModuleProfile;
+  }) {
+    return (
+      props.socialModuleChat.variant === "knowledge" &&
+      props.shouldReplySocialModuleProfile.variant ===
+        "artificial-intelligence" &&
+      Boolean(
+        props.shouldReplySocialModuleProfile.slug?.startsWith("chat-gpt-"),
+      )
+    );
+  }
+
   async telegramBotCommandReplyMessageCreate(props: {
     jwtToken: string;
     rbacModuleSubject: IRbacModuleSubject;
@@ -256,7 +444,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     socialModuleMessage: ISocialModuleMessage;
     messageFromSocialModuleProfile: ISocialModuleProfile | null;
   }) {
-    if (props.socialModuleMessage.description?.startsWith("/start")) {
+    const parsedCommand = this.parseTelegramBotCommand({
+      description: props.socialModuleMessage.description,
+    });
+
+    if (parsedCommand && this.isTelegramThreadCommand(parsedCommand.command)) {
+      return this.telegramBotThreadCommandReplyMessageCreate({
+        ...props,
+        command: parsedCommand.command,
+        args: parsedCommand.args,
+      });
+    }
+
+    if (parsedCommand?.command === "/start") {
       return this.telegramBotWelcomeMessageCreate(props).then(async () => {
         await new Promise((resolve) => {
           setTimeout(() => {
@@ -265,52 +465,403 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
         await this.telegramBotWelcomeMessageWithKeyboardCreate(props);
       });
-    } else if (props.socialModuleMessage.description?.startsWith("/help")) {
+    } else if (parsedCommand?.command === "/help") {
       return this.telegramBotHelpMessageWithKeyboardCreate(props);
-    } else if (props.socialModuleMessage.description?.startsWith("/premium")) {
+    } else if (parsedCommand?.command === "/premium") {
       return this.telegramBotPremiumMessageWithKeyboardCreate(props);
-    } else if (props.socialModuleMessage.description?.startsWith("/referral")) {
+    } else if (parsedCommand?.command === "/referral") {
       return this.telegramBotReferralMessageWithKeyboardCreate(props);
-    } else if (props.socialModuleMessage.description?.startsWith("/new")) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: this.statusMessages.openRouterContextResetByNew.ru,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+    } else if (parsedCommand?.command === "/new") {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: this.statusMessages.openRouterContextResetByNew.ru,
         },
+      });
+    }
+
+    await this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: `Caught command ${props.socialModuleMessage.description}`,
+        interaction: {
+          inline_keyboard: [
+            [
+              {
+                text: "Button 1",
+                callback_data: "button_1",
+              },
+              {
+                text: "Button 2",
+                callback_data: "button_2",
+              },
+            ],
+          ],
+        },
+      },
+    });
+  }
+
+  protected parseTelegramBotCommand(props: { description?: string | null }) {
+    const description = props.description?.trim();
+
+    if (!description?.startsWith("/")) {
+      return;
+    }
+
+    const rawCommand = description.split(/\s+/)[0] || "";
+    const command = rawCommand.split("@")[0];
+    const args = description.slice(rawCommand.length).trim();
+
+    if (!command) {
+      return;
+    }
+
+    return {
+      command,
+      args,
+    };
+  }
+
+  protected isTelegramThreadCommand(command: string) {
+    return [
+      "/threads",
+      "/thread_new",
+      "/thread_rename",
+      "/thread_delete",
+    ].includes(command);
+  }
+
+  protected async signRbacModuleSubjectJwt(props: {
+    rbacModuleSubject: IRbacModuleSubject;
+  }) {
+    if (!RBAC_JWT_SECRET) {
+      throw new Error("Configuration error. RBAC_JWT_SECRET not set");
+    }
+
+    if (!RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS) {
+      throw new Error(
+        "Configuration error. RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS not set",
       );
     }
 
-    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+    return jwt.sign(
+      {
+        exp: Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+        iat: Math.floor(Date.now() / 1000),
+        subject: props.rbacModuleSubject,
+      },
+      RBAC_JWT_SECRET,
+    );
+  }
+
+  protected async getTelegramThreadCommandSubjectContext(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+    },
+  ) {
+    const messageFromRbacModuleSubject =
+      await this.getMessageFromRbacModuleSubject(props);
+    const messageFromRbacModuleSubjectJwt = await this.signRbacModuleSubjectJwt(
+      {
+        rbacModuleSubject: messageFromRbacModuleSubject,
+      },
+    );
+
+    return {
+      rbacModuleSubject: messageFromRbacModuleSubject,
+      jwtToken: messageFromRbacModuleSubjectJwt,
+    };
+  }
+
+  protected formatTelegramThreadTitle(props: {
+    thread: { title?: string | null; variant?: string | null };
+    index: number;
+  }) {
+    const title = props.thread.title?.trim();
+
+    if (title) {
+      return title;
+    }
+
+    if (props.thread.variant === "default") {
+      return "Default thread";
+    }
+
+    return `Thread ${props.index + 1}`;
+  }
+
+  protected async getCurrentTelegramCommandThread(props: {
+    socialModuleChat: ISocialModuleChat;
+    socialModuleMessage: ISocialModuleMessage;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+    }
+
+    const socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleMessageId: props.socialModuleMessage.id,
+      secretKey: RBAC_SECRET_KEY,
+    });
+
+    const socialModuleThread = await this.socialModule.thread.findById({
+      id: socialModuleThreadId,
+    });
+
+    if (!socialModuleThread) {
+      throw new Error("Not found error. Social module thread not found");
+    }
+
+    return socialModuleThread;
+  }
+
+  protected async telegramBotThreadCommandReplyMessageCreate(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+      command: string;
+      args: string;
+    },
+  ) {
+    try {
+      switch (props.command) {
+        case "/threads":
+          return this.telegramBotThreadsMessageCreate(props);
+        case "/thread_new":
+          return this.telegramBotThreadCreateMessageCreate(props);
+        case "/thread_rename":
+          return this.telegramBotThreadRenameMessageCreate(props);
+        case "/thread_delete":
+          return this.telegramBotThreadDeleteMessageCreate(props);
+      }
+
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: `Unsupported thread command: ${props.command}`,
+        },
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : String(error || "Unknown");
+
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: `Error: ${message}`,
+        },
+      });
+    }
+  }
+
+  protected async telegramBotThreadsMessageCreate(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+    },
+  ) {
+    const commandSubject =
+      await this.getTelegramThreadCommandSubjectContext(props);
+    const threads =
+      await rbacModuleSubjectApi.socialModuleChatFindByIdThreadFind({
+        id: commandSubject.rbacModuleSubject.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        options: {
+          headers: {
+            Authorization: "Bearer " + commandSubject.jwtToken,
+          },
+        },
+      });
+    const lines = threads.length
+      ? threads.map((thread, index) => {
+          const title = this.formatTelegramThreadTitle({ thread, index });
+          return `${index + 1}. ${title}${thread.sourceSystemId ? ` (${thread.sourceSystemId})` : ""}`;
+        })
+      : ["No threads found."];
+
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: lines.join("\n"),
+      },
+    });
+  }
+
+  protected async telegramBotThreadCreateMessageCreate(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+      args: string;
+    },
+  ) {
+    const title = props.args.trim();
+
+    if (!title) {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Usage: /thread_new Thread title",
+        },
+      });
+    }
+
+    const commandSubject =
+      await this.getTelegramThreadCommandSubjectContext(props);
+    const socialModuleThread =
+      await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
+        id: commandSubject.rbacModuleSubject.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        data: {
+          title,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + commandSubject.jwtToken,
+          },
+        },
+      });
+
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: `Thread created: ${socialModuleThread.title || title}`,
+      },
+    });
+  }
+
+  protected async telegramBotThreadRenameMessageCreate(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+      args: string;
+    },
+  ) {
+    const title = props.args.trim();
+
+    if (!title) {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Usage: /thread_rename New thread title",
+        },
+      });
+    }
+
+    const socialModuleThread = await this.getCurrentTelegramCommandThread({
+      socialModuleChat: props.socialModuleChat,
+      socialModuleMessage: props.socialModuleMessage,
+    });
+
+    if (socialModuleThread.variant === "default") {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Run /thread_rename inside a Telegram topic.",
+        },
+      });
+    }
+
+    const commandSubject =
+      await this.getTelegramThreadCommandSubjectContext(props);
+    const updatedSocialModuleThread =
+      await rbacModuleSubjectApi.socialModuleChatFindByIdThreadUpdate({
+        id: commandSubject.rbacModuleSubject.id,
+        socialModuleChatId: props.socialModuleChat.id,
+        socialModuleThreadId: socialModuleThread.id,
+        data: {
+          title,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + commandSubject.jwtToken,
+          },
+        },
+      });
+
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: `Thread renamed: ${
+          updatedSocialModuleThread.title || title
+        }`,
+      },
+    });
+  }
+
+  protected async telegramBotThreadDeleteMessageCreate(
+    props: ITelegramBotReplyContext & {
+      socialModuleMessage: ISocialModuleMessage;
+      args: string;
+    },
+  ) {
+    const confirmation = props.args.trim().toLowerCase();
+
+    if (confirmation !== "confirm") {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Usage: /thread_delete confirm",
+        },
+      });
+    }
+
+    const socialModuleThread = await this.getCurrentTelegramCommandThread({
+      socialModuleChat: props.socialModuleChat,
+      socialModuleMessage: props.socialModuleMessage,
+    });
+
+    if (socialModuleThread.variant === "default") {
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description:
+            "Default thread cannot be deleted from Telegram. Use SPS UI or open a concrete topic.",
+        },
+      });
+    }
+
+    const commandSubject =
+      await this.getTelegramThreadCommandSubjectContext(props);
+
+    await this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: `Deleting thread: ${
+          socialModuleThread.title || "Untitled thread"
+        }`,
+      },
+    });
+
+    return rbacModuleSubjectApi.socialModuleChatFindByIdThreadDelete({
+      id: commandSubject.rbacModuleSubject.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      socialModuleThreadId: socialModuleThread.id,
+      options: {
+        headers: {
+          Authorization: "Bearer " + commandSubject.jwtToken,
+        },
+      },
+    });
+  }
+
+  protected async telegramBotReplyMessageCreate(
+    props: ITelegramBotReplyContext & {
+      data: ISocialModuleTelegramMessageData;
+    },
+  ) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+    }
+
+    const socialModuleThreadId = await this.resolveThreadIdForReplyContext({
+      ...props,
+      secretKey: RBAC_SECRET_KEY,
+    });
+
+    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
       {
         id: props.rbacModuleSubject.id,
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
         socialModuleChatId: props.socialModuleChat.id,
-        data: {
-          description: `Caught command ${props.socialModuleMessage.description}`,
-          interaction: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Button 1",
-                  callback_data: "button_1",
-                },
-                {
-                  text: "Button 2",
-                  callback_data: "button_2",
-                },
-              ],
-            ],
-          },
-        },
+        socialModuleThreadId,
+        data: props.data,
         options: {
           headers: {
             Authorization: "Bearer " + props.jwtToken,
@@ -318,6 +869,39 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
     );
+  }
+
+  protected async resolveThreadIdForReplyContext(
+    props: ITelegramBotReplyContext & {
+      secretKey: string;
+    },
+  ) {
+    if ("socialModuleMessage" in props) {
+      return this.resolveThreadIdForMessageInChat({
+        socialModuleChatId: props.socialModuleChat.id,
+        socialModuleMessageId: props.socialModuleMessage.id,
+        secretKey: props.secretKey,
+      });
+    }
+
+    const messageThreadId =
+      props.socialModuleAction.payload?.telegram?.callback_query?.message
+        ?.message_thread_id;
+
+    if (messageThreadId !== undefined && messageThreadId !== null) {
+      return this.resolveThreadIdBySourceSystemIdInChat({
+        socialModuleChatId: props.socialModuleChat.id,
+        sourceSystemId: String(messageThreadId),
+        secretKey: props.secretKey,
+      });
+    }
+
+    const defaultThread = await this.ensureDefaultThreadForChat({
+      socialModuleChatId: props.socialModuleChat.id,
+      secretKey: props.secretKey,
+    });
+
+    return defaultThread.id;
   }
 
   async telegramBotCallbackQueryHandler(props: {
@@ -386,21 +970,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data: {
-          description: "telegramBotCallbackQueryHandler",
-        },
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data: {
+        description: "telegramBotCallbackQueryHandler",
       },
-    );
+    });
   }
 
   async notificationMessageUpdate(props: {
@@ -577,21 +1152,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
     }
 
-    await rbacModuleSubjectApi
-      .socialModuleProfileFindByIdChatFindByIdMessageCreate({
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      })
-      .catch((error) => {
-        logger.error(error);
-      });
+    await this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    }).catch((error) => {
+      logger.error(error);
+    });
   }
 
   async telegramBotWelcomeMessageWithKeyboardCreate(props: {
@@ -630,19 +1196,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     };
 
-    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    });
   }
 
   async telegramBotEcommerceModuleProductFindById(props: {
@@ -659,21 +1216,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (!props.ecommerceModuleProductId) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: "'ecommerceModuleProductId' not passed.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "'ecommerceModuleProductId' not passed.",
         },
-      );
+      });
     }
 
     const extendedEcommerceModuleProduct =
@@ -682,21 +1230,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       });
 
     if (!extendedEcommerceModuleProduct) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: "'extendedEcommerceModuleProduct' not found.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "'extendedEcommerceModuleProduct' not found.",
         },
-      );
+      });
     }
 
     const data: ISocialModuleTelegramMessageData = {
@@ -736,19 +1275,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     console.log("🚀 ~ telegramBotCallbackQueryHandler ~ data:", data);
 
-    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    await this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    });
 
     const messageWithCTA: ISocialModuleTelegramMessageData = {
       description:
@@ -807,19 +1337,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }, 2000);
     });
 
-    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data: messageWithCTA,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    return await this.telegramBotReplyMessageCreate({
+      ...props,
+      data: messageWithCTA,
+    });
   }
 
   async telegramBotEcommerceModuleProductFindByIdCheckout(props: {
@@ -864,7 +1385,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       );
     }
 
-    const rbacModuleSubjectEcommerceModuleProductCheckoutResult =
+    try {
       await rbacModuleSubjectApi.ecommerceModuleProductCheckout({
         id: messageFromSubject.id,
         productId: extendedEcommerceModuleProduct.id,
@@ -876,6 +1397,21 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           account: props.socialModuleChat.sourceSystemId,
         },
       });
+    } catch (error) {
+      if (this.isActiveSubscriptionProductsCheckoutError(error)) {
+        await this.telegramBotReplyMessageCreate({
+          ...props,
+          data: {
+            description:
+              this.activeSubscriptionProductsCheckoutTelegramMessage(),
+          },
+        });
+
+        return;
+      }
+
+      throw error;
+    }
   }
 
   async telegramBotPremiumMessageWithKeyboardCreate(
@@ -908,22 +1444,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       await this.rbacModule.rolesToEcommerceModuleProducts.find({});
 
     if (!rbacModuleRolesToEcommerceModuleProducts?.length) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description:
-              "Can't find `rbacModuleRolesToEcommerceModuleProducts`.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Can't find `rbacModuleRolesToEcommerceModuleProducts`.",
         },
-      );
+      });
     }
 
     const rbacModulePayableRoles = await this.rbacModule.role.find({
@@ -945,21 +1471,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!rbacModulePayableRoles?.length) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: "Can't find `rbacModulePayableRoles`.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Can't find `rbacModulePayableRoles`.",
         },
-      );
+      });
     }
 
     const rbacModuleSubjectsToProSubscriberRoles =
@@ -1012,21 +1529,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     if (!ecommerceModuleProducts?.length) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description: "Can't find `ecommerceModuleProducts`.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description: "Can't find `ecommerceModuleProducts`.",
         },
-      );
+      });
     }
 
     data.description =
@@ -1096,19 +1604,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       ],
     };
 
-    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    });
   }
 
   async telegramBotReferralMessageWithKeyboardCreate(
@@ -1141,22 +1640,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     if (!props.messageFromSocialModuleProfile?.id) {
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description:
-              "Can't create referral link, because `props.messageFromSocialModuleProfile` is empty.",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
+      return this.telegramBotReplyMessageCreate({
+        ...props,
+        data: {
+          description:
+            "Can't create referral link, because `props.messageFromSocialModuleProfile` is empty.",
         },
-      );
+      });
     }
 
     const data = {
@@ -1176,19 +1666,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     };
 
-    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    });
   }
 
   async telegramBotHelpMessageWithKeyboardCreate(
@@ -1229,19 +1710,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       },
     };
 
-    return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-      {
-        id: props.rbacModuleSubject.id,
-        socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-        socialModuleChatId: props.socialModuleChat.id,
-        data,
-        options: {
-          headers: {
-            Authorization: "Bearer " + props.jwtToken,
-          },
-        },
-      },
-    );
+    return this.telegramBotReplyMessageCreate({
+      ...props,
+      data,
+    });
   }
 
   async openRouterReplyMessageCreate(props: {
@@ -1271,10 +1743,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!props.socialModuleMessage.description) {
-        throw new Error(
-          "Validation error. 'props.socialModuleMessage.description' is empty.",
-        );
+      if (!props.socialModuleMessage.description?.trim()) {
+        return;
       }
 
       socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
@@ -1506,6 +1976,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       }
 
+      if (this.isOpenRouterTerminalMessageWrittenError(error)) {
+        logger.error(error);
+        return;
+      }
+
       if (socialModuleThreadId) {
         await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
@@ -1549,7 +2024,130 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
+      if (this.isRecoverableOpenRouterReplyError(error)) {
+        logger.error(error);
+        return;
+      }
+
       throw error;
+    }
+  }
+
+  async knowledgeReplyMessageCreate(props: {
+    jwtToken: string;
+    rbacModuleSubject: IRbacModuleSubject;
+    shouldReplySocialModuleProfile: ISocialModuleProfile;
+    socialModuleChat: ISocialModuleChat;
+    socialModuleMessage: ISocialModuleMessage;
+    messageFromSocialModuleProfile: ISocialModuleProfile | null;
+  }) {
+    let socialModuleThreadId: string | undefined;
+
+    try {
+      const secretKey = RBAC_SECRET_KEY;
+
+      if (!secretKey) {
+        throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
+      }
+
+      if (!props.socialModuleMessage.description?.trim()) {
+        return;
+      }
+
+      socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
+        socialModuleChatId: props.socialModuleChat.id,
+        socialModuleMessageId: props.socialModuleMessage.id,
+        secretKey,
+      });
+
+      if (!socialModuleThreadId) {
+        throw new Error(
+          "Validation error. Failed to resolve social module thread",
+        );
+      }
+
+      if (!props.messageFromSocialModuleProfile?.id) {
+        throw new Error(
+          "Not found error. 'messageFromSocialModuleProfile.id' not found",
+        );
+      }
+
+      if (!RBAC_JWT_SECRET) {
+        throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
+      }
+
+      const messageFromRbacModuleSubject =
+        await this.getMessageFromRbacModuleSubject(props);
+      const messageFromRbacModuleSubjectJwt = await jwt.sign(
+        {
+          exp:
+            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+          iat: Math.floor(Date.now() / 1000),
+          subject: messageFromRbacModuleSubject,
+        },
+        RBAC_JWT_SECRET,
+      );
+
+      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge(
+        {
+          id: messageFromRbacModuleSubject.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          socialModuleMessageId: props.socialModuleMessage.id,
+          socialModuleProfileId: props.messageFromSocialModuleProfile.id,
+          data: {
+            shouldReplySocialModuleProfile:
+              props.shouldReplySocialModuleProfile,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + messageFromRbacModuleSubjectJwt,
+            },
+          },
+        },
+      );
+    } catch (error) {
+      logger.error(error);
+
+      if (socialModuleThreadId) {
+        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            socialModuleThreadId,
+            data: {
+              description:
+                "Knowledge/RAG response failed.\n`" +
+                (error as Error).message +
+                "`",
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + props.jwtToken,
+              },
+            },
+          },
+        );
+      }
+
+      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
+        {
+          id: props.rbacModuleSubject.id,
+          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+          socialModuleChatId: props.socialModuleChat.id,
+          data: {
+            description:
+              "Knowledge/RAG response failed.\n`" +
+              (error as Error).message +
+              "`",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + props.jwtToken,
+            },
+          },
+        },
+      );
     }
   }
 
@@ -1646,6 +2244,84 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     });
 
     return socialModuleDefaultThread.id;
+  }
+
+  async resolveThreadIdBySourceSystemIdInChat(props: {
+    socialModuleChatId: string;
+    sourceSystemId: string;
+    secretKey: string;
+  }): Promise<string> {
+    await this.normalizeChatThreadsAndMessageLinks({
+      socialModuleChatId: props.socialModuleChatId,
+      secretKey: props.secretKey,
+    });
+
+    const socialModuleChatsToThreads =
+      await this.socialModule.chatsToThreads.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      });
+
+    const threadIds =
+      socialModuleChatsToThreads
+        ?.map((socialModuleChatToThread) => {
+          return socialModuleChatToThread.threadId;
+        })
+        .filter((threadId): threadId is string => Boolean(threadId)) || [];
+
+    if (!threadIds.length) {
+      const defaultThread = await this.ensureDefaultThreadForChat({
+        socialModuleChatId: props.socialModuleChatId,
+        secretKey: props.secretKey,
+      });
+
+      return defaultThread.id;
+    }
+
+    const socialModuleThreads = await this.socialModule.thread.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: threadIds,
+            },
+            {
+              column: "sourceSystemId",
+              method: "eq",
+              value: props.sourceSystemId,
+            },
+          ],
+        },
+      },
+    });
+
+    if (socialModuleThreads?.length) {
+      if (socialModuleThreads.length > 1) {
+        throw new Error(
+          "Validation error. Requested Telegram topic is linked to multiple SPS threads",
+        );
+      }
+
+      return socialModuleThreads[0].id;
+    }
+
+    const defaultThread = await this.ensureDefaultThreadForChat({
+      socialModuleChatId: props.socialModuleChatId,
+      secretKey: props.secretKey,
+    });
+
+    return defaultThread.id;
   }
 
   async normalizeChatThreadsAndMessageLinks(props: {

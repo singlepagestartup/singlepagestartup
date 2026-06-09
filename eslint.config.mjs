@@ -7,7 +7,14 @@ import nxPlugin from "@nx/eslint-plugin";
 
 export default defineFlatConfig([
   {
-    ignores: ["node_modules/", ".nx/", "dist/", "tmp/", "apps/host/.next/"],
+    ignores: [
+      "node_modules/",
+      ".nx/",
+      "dist/",
+      "**/dist/",
+      "tmp/",
+      "apps/host/.next/",
+    ],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

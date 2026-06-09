@@ -28,10 +28,6 @@ export class Handler {
         }
       })();
 
-      if (!data || !Object.keys(data).length) {
-        throw new Error("Not Found error. Not found");
-      }
-
       return c.json({
         data,
       });

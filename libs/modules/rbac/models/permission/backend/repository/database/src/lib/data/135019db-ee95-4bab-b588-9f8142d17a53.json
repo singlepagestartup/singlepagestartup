@@ -1,0 +1,9 @@
+{
+  "id": "135019db-ee95-4bab-b588-9f8142d17a53",
+  "createdAt": "2026-04-29T20:22:23.715Z",
+  "updatedAt": "2026-04-29T20:22:23.715Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/chats/[social.chats.id]/threads/[social.threads.id]"
+}

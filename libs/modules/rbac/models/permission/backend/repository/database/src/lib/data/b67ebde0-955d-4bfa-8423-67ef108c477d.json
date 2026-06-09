@@ -1,0 +1,9 @@
+{
+  "id": "b67ebde0-955d-4bfa-8423-67ef108c477d",
+  "createdAt": "2026-05-10T00:46:04.627Z",
+  "updatedAt": "2026-05-10T00:46:04.627Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-billing-module-payment-intents/count"
+}

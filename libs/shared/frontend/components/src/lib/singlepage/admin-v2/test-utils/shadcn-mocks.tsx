@@ -53,6 +53,17 @@ const Button = ({ asChild, children, ...props }: any) => {
   );
 };
 
+const Checkbox = ({ checked, onCheckedChange, ...props }: any) => {
+  return (
+    <input
+      {...props}
+      type="checkbox"
+      checked={Boolean(checked)}
+      onChange={(event) => onCheckedChange?.(event.target.checked)}
+    />
+  );
+};
+
 const Dialog = ({ open = false, onOpenChange, children }: any) => {
   const value = useMemo(() => ({ open, onOpenChange }), [open, onOpenChange]);
 
@@ -178,12 +189,14 @@ export const adminV2ShadcnMocks = {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription: ({ children }: any) => <div>{children}</div>,
   AlertDialogFooter: ({ children }: any) => <div>{children}</div>,
   AlertDialogHeader: ({ children }: any) => <div>{children}</div>,
   AlertDialogTitle: ({ children }: any) => <div>{children}</div>,
   AlertDialogTrigger,
   Button,
   Card: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription: ({ children }: any) => <div>{children}</div>,

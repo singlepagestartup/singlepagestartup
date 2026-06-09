@@ -1,0 +1,9 @@
+{
+  "id": "e49fdd19-e71d-4c36-995a-9ae6a6643798",
+  "createdAt": "2026-05-10T00:47:59.912Z",
+  "updatedAt": "2026-05-10T00:47:59.912Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-attributes/count"
+}

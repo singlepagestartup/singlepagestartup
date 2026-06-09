@@ -31,7 +31,7 @@ export class Service {
     this.rolesToEcommerceModuleProducts = props.rolesToEcommerceModuleProducts;
   }
 
-  private getSdkHeaders() {
+  protected getSdkHeaders() {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
     }

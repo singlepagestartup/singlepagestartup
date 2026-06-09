@@ -559,10 +559,6 @@ export class Service {
                   return checkoutOrderProductIds.has(orderToProduct.productId);
                 })
               ) {
-                console.log(
-                  "🚀 ~ execute ~ ecommerceModuleOrder:",
-                  ecommerceModuleOrder,
-                );
                 throw new Error(
                   "Validation error. Checking out order has active subscription products.",
                 );

@@ -43,6 +43,84 @@ export class Handler {
       const limit = parsedQuery?.limit || 100;
       const offset = parsedQuery?.offset || 0;
       const orderBy = parsedQuery?.orderBy;
+      const socialModuleThreadId = c.req.query("socialModuleThreadId")?.trim();
+
+      if (socialModuleThreadId) {
+        const socialModuleChatsToThreads =
+          await this.service.socialModule.chatsToThreads.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "chatId",
+                    method: "eq",
+                    value: socialModuleChatId,
+                  },
+                  {
+                    column: "threadId",
+                    method: "eq",
+                    value: socialModuleThreadId,
+                  },
+                ],
+              },
+            },
+          });
+
+        if (!socialModuleChatsToThreads?.length) {
+          return c.json({
+            data: [],
+          });
+        }
+
+        const socialModuleThreadsToActions =
+          await this.service.socialModule.threadsToActions.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "threadId",
+                    method: "eq",
+                    value: socialModuleThreadId,
+                  },
+                ],
+              },
+              limit,
+              offset,
+              orderBy,
+            },
+          });
+
+        if (!socialModuleThreadsToActions?.length) {
+          return c.json({
+            data: [],
+          });
+        }
+
+        const socialModuleActions = await this.service.socialModule.action.find(
+          {
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: socialModuleThreadsToActions.map(
+                      (socialModuleThreadsToAction) => {
+                        return socialModuleThreadsToAction.actionId;
+                      },
+                    ),
+                  },
+                ],
+              },
+              orderBy,
+            },
+          },
+        );
+
+        return c.json({
+          data: socialModuleActions,
+        });
+      }
 
       const socialModuleChatsToActions =
         await this.service.socialModule.chatsToActions.find({

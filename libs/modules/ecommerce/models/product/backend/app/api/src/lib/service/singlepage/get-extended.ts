@@ -81,7 +81,7 @@ export class Service {
     this.fileStorageModule = props.fileStorageModule;
   }
 
-  private async extendedEcommerceModuleAttributeById(props: {
+  protected async extendedEcommerceModuleAttributeById(props: {
     id: IEcommerceModuleAttribute["id"];
   }): Promise<IExtendedEcommerceModuleAttribute> {
     const ecommerceModuleAttribute = await this.attribute.findById({

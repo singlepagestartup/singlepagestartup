@@ -1,0 +1,9 @@
+{
+  "id": "79403784-a734-43d5-b7e1-5ee8cc2e0add",
+  "createdAt": "2026-05-10T00:47:17.634Z",
+  "updatedAt": "2026-05-10T00:47:17.634Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/products/count"
+}

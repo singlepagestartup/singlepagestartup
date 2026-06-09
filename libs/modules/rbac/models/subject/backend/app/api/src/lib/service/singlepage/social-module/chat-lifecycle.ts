@@ -10,7 +10,7 @@ import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Service } from "../index";
 
 export class ChatLifecycleService {
-  private service: Service;
+  protected service: Service;
 
   constructor(service: Service) {
     this.service = service;
@@ -328,7 +328,7 @@ export class ChatLifecycleService {
     return persistedDefaultThread;
   }
 
-  private async resolveSubjectProfileId(props: {
+  protected async resolveSubjectProfileId(props: {
     subjectId: string;
     requestedSocialModuleProfileId?: string;
     autoBootstrapProfile: boolean;
@@ -449,7 +449,7 @@ export class ChatLifecycleService {
     return socialModuleProfile.id;
   }
 
-  private async getSubjectLinkedProfileIds(props: {
+  protected async getSubjectLinkedProfileIds(props: {
     subjectId: string;
     requireAny?: boolean;
   }): Promise<string[]> {
@@ -490,7 +490,7 @@ export class ChatLifecycleService {
     return linkedProfileIds;
   }
 
-  private async isSubjectAdmin(subjectId: string): Promise<boolean> {
+  protected async isSubjectAdmin(subjectId: string): Promise<boolean> {
     const subjectToRoles = await this.service.subjectsToRoles.find({
       params: {
         filters: {

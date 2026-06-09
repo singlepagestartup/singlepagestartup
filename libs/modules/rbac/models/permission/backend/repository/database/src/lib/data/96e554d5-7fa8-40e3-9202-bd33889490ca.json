@@ -1,0 +1,9 @@
+{
+  "id": "96e554d5-7fa8-40e3-9202-bd33889490ca",
+  "createdAt": "2026-05-10T00:47:38.750Z",
+  "updatedAt": "2026-05-10T00:47:38.750Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/file-storage/widgets-to-files/count"
+}

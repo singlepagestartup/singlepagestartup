@@ -14,6 +14,9 @@ export type IComponentProps = IParentComponentProps<IModel, typeof variant> & {
   threadsToMessages?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;
+  threadsToActions?: (
+    props: ISpsComponentBase & { data?: IModel },
+  ) => ReactNode;
   threadsToEcommerceModuleProducts?: (
     props: ISpsComponentBase & { data?: IModel },
   ) => ReactNode;

@@ -1,0 +1,9 @@
+{
+  "id": "b6f74bd9-bfbf-4842-bfa1-d9305af0c76e",
+  "createdAt": "2026-05-10T00:47:17.792Z",
+  "updatedAt": "2026-05-10T00:47:17.792Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/orders-to-billing-module-currencies/count"
+}

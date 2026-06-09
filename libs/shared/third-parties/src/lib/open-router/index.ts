@@ -44,6 +44,16 @@ export type IOpenRouterResponseFormat =
       };
     };
 
+export type IOpenRouterReasoning =
+  | {
+      effort: "none" | "low" | "medium" | "high" | "xhigh";
+      exclude?: boolean;
+    }
+  | {
+      enabled: true;
+      exclude?: boolean;
+    };
+
 const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
 let cachedModels:
   | {
@@ -63,6 +73,22 @@ export class Service {
 
     this.baseURL = "https://openrouter.ai/api/v1";
     this.apiKey = OPEN_ROUTER_API_KEY;
+  }
+
+  private stringifyError(error: unknown) {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
   }
 
   private async fetchAsDataUrl(props: {
@@ -206,32 +232,40 @@ export class Service {
     model: string;
     messages: IOpenRouterRequestMessage[];
     max_tokens?: number;
-    reasoning?: boolean;
+    reasoning?: IOpenRouterReasoning;
     response_format?: IOpenRouterResponseFormat;
     temperature?: number;
   }): Promise<any> {
-    const response = await fetch(`${this.baseURL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: props.model,
-        messages: props.messages,
-        stream: false,
-        max_tokens: props.max_tokens,
-        ...(props.reasoning && { reasoning: {} }),
-        ...(props.response_format && {
-          response_format: props.response_format,
+    try {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: props.model,
+          messages: props.messages,
+          stream: false,
+          max_tokens: props.max_tokens,
+          ...(props.reasoning && { reasoning: props.reasoning }),
+          ...(props.response_format && {
+            response_format: props.response_format,
+          }),
+          ...(typeof props.temperature === "number" && {
+            temperature: props.temperature,
+          }),
         }),
-        ...(typeof props.temperature === "number" && {
-          temperature: props.temperature,
-        }),
-      }),
-    });
+      });
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      return {
+        error: {
+          message: `OpenRouter request failed: ${this.stringifyError(error)}`,
+        },
+      };
+    }
   }
 
   private parseMessage(message: any): {
@@ -515,7 +549,7 @@ export class Service {
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
-    reasoning?: boolean;
+    reasoning?: IOpenRouterReasoning;
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
     stripNonTextOnRetry?: boolean;
@@ -596,16 +630,26 @@ export class Service {
       return cachedModels.models;
     }
 
-    const response = await fetch(`${this.baseURL}/models`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-    });
+    let models: IOpenRouterModel[] = [];
 
-    const data = await response.json();
-    const models = Array.isArray(data.data) ? data.data : [];
+    try {
+      const response = await fetch(`${this.baseURL}/models`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+      });
+
+      const data = await response.json();
+      models = Array.isArray(data.data) ? data.data : [];
+    } catch (error) {
+      console.warn("OpenRouter models fetch failed", {
+        error: this.stringifyError(error),
+      });
+
+      return cachedModels?.models || [];
+    }
 
     cachedModels = {
       expiresAt: Date.now() + MODEL_CACHE_TTL_MS,

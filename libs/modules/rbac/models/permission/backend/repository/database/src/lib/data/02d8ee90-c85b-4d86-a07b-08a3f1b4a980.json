@@ -1,0 +1,9 @@
+{
+  "id": "02d8ee90-c85b-4d86-a07b-08a3f1b4a980",
+  "createdAt": "2026-06-03T00:00:00.000Z",
+  "updatedAt": "2026-06-03T00:00:00.000Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/messages/[social.messages.id]/react-by/knowledge"
+}

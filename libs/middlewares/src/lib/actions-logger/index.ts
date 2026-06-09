@@ -15,25 +15,28 @@ import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 
 /**
- * Routes that are allowed to be accessed without authentication
+ * Routes that should be logged. Only requests matching these patterns will be logged.
  * @type {Array<{ regexPath: RegExp; methods: string[] }>}
  *
  * [..., {
- *   regexPath: /\/api\/rbac\/identities\/[a-zA-Z0-9-]+/,
- *   methods: ["GET"],
+ *   regexPath: /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages/,
+ *   methods: ["POST"],
  * }]
  */
-const notLoggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
+const loggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
-    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
+    regexPath:
+      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/actions/,
+    methods: ["POST", "PATCH", "DELETE"],
+  },
+  {
+    regexPath:
+      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages/,
     methods: ["POST"],
   },
   {
-    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /\/api\/agent\/agents\/(\w+)?/,
+    regexPath:
+      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/threads\/[a-zA-Z0-9-]+\/messages/,
     methods: ["POST"],
   },
 ];
@@ -44,14 +47,14 @@ export type IMiddlewareGeneric = {
 
 export class Middleware {
   storeProvider: StoreProvider;
-  private notLoggingRoutes: Map<string, Set<string>>;
+  private loggingRoutes: Map<string, Set<string>>;
 
   constructor() {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
-    this.notLoggingRoutes = new Map();
+    this.loggingRoutes = new Map();
 
-    notLoggingRoutes.forEach(({ regexPath, methods }) => {
-      this.notLoggingRoutes.set(regexPath.source, new Set(methods));
+    loggingRoutes.forEach(({ regexPath, methods }) => {
+      this.loggingRoutes.set(regexPath.source, new Set(methods));
     });
   }
 
@@ -65,10 +68,13 @@ export class Middleware {
 
       await next();
 
-      for (const [pattern, methods] of this.notLoggingRoutes.entries()) {
-        if (new RegExp(pattern).test(reqPath) && methods.has(method)) {
-          return;
-        }
+      const isLoggingRoute = [...this.loggingRoutes.entries()].some(
+        ([pattern, methods]) =>
+          new RegExp(pattern).test(reqPath) && methods.has(method),
+      );
+
+      if (!isLoggingRoute) {
+        return;
       }
 
       if (c.res.headers.get("X-SPS-SKIP-ACTION-LOGGER") === "1") {
@@ -82,92 +88,96 @@ export class Middleware {
           }
 
           void (async () => {
-            const resJson = await c.res.clone().json();
-            const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
+            try {
+              const resJson = await c.res.clone().json();
+              const decoded = await jwt.verify(token, RBAC_JWT_SECRET);
 
-            const contentType = c.req.header("content-type");
-            let requestData: any = {};
+              const contentType = c.req.header("content-type");
+              let requestData: any = {};
 
-            if (contentType?.includes("application/json")) {
-              requestData = await c.req.json().catch(() => ({}));
-            } else if (
-              contentType?.includes("multipart/form-data") ||
-              contentType?.includes("application/x-www-form-urlencoded")
-            ) {
-              const formData = await c.req
-                .formData()
-                .catch(() => new FormData());
-              requestData = Object.fromEntries(formData);
-            }
-
-            const parsedRequestData = { ...requestData };
-
-            if (typeof parsedRequestData.data === "string") {
-              try {
-                parsedRequestData.data = JSON.parse(parsedRequestData.data);
-              } catch (e) {
-                // Keep original string if parsing fails
+              if (contentType?.includes("application/json")) {
+                requestData = await c.req.json().catch(() => ({}));
+              } else if (
+                contentType?.includes("multipart/form-data") ||
+                contentType?.includes("application/x-www-form-urlencoded")
+              ) {
+                const formData = await c.req
+                  .formData()
+                  .catch(() => new FormData());
+                requestData = Object.fromEntries(formData);
               }
-            }
 
-            if (parsedRequestData.file instanceof File) {
-              parsedRequestData.file = {
-                name: parsedRequestData.file.name,
-                size: parsedRequestData.file.size,
-                type: parsedRequestData.file.type,
-              };
-            }
+              const parsedRequestData = { ...requestData };
 
-            if (decoded["subject"]?.["id"]) {
-              const subjectId = decoded["subject"]["id"];
-
-              void (async () => {
+              if (typeof parsedRequestData.data === "string") {
                 try {
-                  const rbacAction = await rbacActionApi.create({
-                    data: {
-                      payload: {
-                        route: path
-                          .replaceAll(API_SERVICE_URL, "")
-                          .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
-                        method,
-                        type: "HTTP",
-                        requestData: parsedRequestData,
-                        result: resJson,
-                      },
-                    },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      },
-                    },
-                  });
-
-                  await rbacSubjectsToActionsApi.create({
-                    data: {
-                      subjectId,
-                      actionId: rbacAction.id,
-                    },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      },
-                    },
-                  });
-
-                  await agentModuleAgentApi.telegramBot({
-                    data: {
-                      rbacModuleAction: rbacAction,
-                    },
-                    options: {
-                      headers: {
-                        "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
-                      },
-                    },
-                  });
-                } catch (error) {
-                  logger.error(error);
+                  parsedRequestData.data = JSON.parse(parsedRequestData.data);
+                } catch (e) {
+                  // Keep original string if parsing fails
                 }
-              })();
+              }
+
+              if (parsedRequestData.file instanceof File) {
+                parsedRequestData.file = {
+                  name: parsedRequestData.file.name,
+                  size: parsedRequestData.file.size,
+                  type: parsedRequestData.file.type,
+                };
+              }
+
+              if (decoded["subject"]?.["id"]) {
+                const subjectId = decoded["subject"]["id"];
+
+                void (async () => {
+                  try {
+                    const rbacAction = await rbacActionApi.create({
+                      data: {
+                        payload: {
+                          route: path
+                            .replaceAll(API_SERVICE_URL, "")
+                            .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
+                          method,
+                          type: "HTTP",
+                          requestData: parsedRequestData,
+                          result: resJson,
+                        },
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
+                      },
+                    });
+
+                    await rbacSubjectsToActionsApi.create({
+                      data: {
+                        subjectId,
+                        actionId: rbacAction.id,
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
+                      },
+                    });
+
+                    await agentModuleAgentApi.telegramBot({
+                      data: {
+                        rbacModuleAction: rbacAction,
+                      },
+                      options: {
+                        headers: {
+                          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+                        },
+                      },
+                    });
+                  } catch (error) {
+                    logger.error(error);
+                  }
+                })();
+              }
+            } catch (error) {
+              //
             }
           })();
         }

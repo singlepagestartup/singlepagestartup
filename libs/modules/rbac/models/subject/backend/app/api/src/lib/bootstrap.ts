@@ -49,6 +49,8 @@ import { Repository as SubjectsToEcommerceModuleOrdersRepository } from "@sps/rb
 import { Configuration as SubjectsToEcommerceModuleOrdersConfiguration } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfileRepository } from "@sps/social/models/profile/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfileConfiguration } from "@sps/social/models/profile/backend/app/api/src/lib/configuration";
+import { Repository as SocialSkillRepository } from "@sps/social/models/skill/backend/app/api/src/lib/repository";
+import { Configuration as SocialSkillConfiguration } from "@sps/social/models/skill/backend/app/api/src/lib/configuration";
 import { Repository as SocialChatRepository } from "@sps/social/models/chat/backend/app/api/src/lib/repository";
 import { Configuration as SocialChatConfiguration } from "@sps/social/models/chat/backend/app/api/src/lib/configuration";
 import { Repository as SocialThreadRepository } from "@sps/social/models/thread/backend/app/api/src/lib/repository";
@@ -63,6 +65,10 @@ import { Repository as SocialAttributeKeyRepository } from "@sps/social/models/a
 import { Configuration as SocialAttributeKeyConfiguration } from "@sps/social/models/attribute-key/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToChatsRepository } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToChatsConfiguration } from "@sps/social/relations/profiles-to-chats/backend/app/api/src/lib/configuration";
+import { Repository as SocialProfilesToSkillsRepository } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/repository";
+import { Configuration as SocialProfilesToSkillsConfiguration } from "@sps/social/relations/profiles-to-skills/backend/app/api/src/lib/configuration";
+import { Repository as SocialProfilesToKnowledgeModuleDocumentsRepository } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/repository";
+import { Configuration as SocialProfilesToKnowledgeModuleDocumentsConfiguration } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToMessagesRepository } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialProfilesToMessagesConfiguration } from "@sps/social/relations/profiles-to-messages/backend/app/api/src/lib/configuration";
 import { Repository as SocialProfilesToActionsRepository } from "@sps/social/relations/profiles-to-actions/backend/app/api/src/lib/repository";
@@ -77,6 +83,8 @@ import { Repository as SocialChatsToActionsRepository } from "@sps/social/relati
 import { Configuration as SocialChatsToActionsConfiguration } from "@sps/social/relations/chats-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as SocialThreadsToMessagesRepository } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/repository";
 import { Configuration as SocialThreadsToMessagesConfiguration } from "@sps/social/relations/threads-to-messages/backend/app/api/src/lib/configuration";
+import { Repository as SocialThreadsToActionsRepository } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/repository";
+import { Configuration as SocialThreadsToActionsConfiguration } from "@sps/social/relations/threads-to-actions/backend/app/api/src/lib/configuration";
 import { Repository as SocialMessagesToFileStorageModuleFilesRepository } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/repository";
 import { Configuration as SocialMessagesToFileStorageModuleFilesConfiguration } from "@sps/social/relations/messages-to-file-storage-module-files/backend/app/api/src/lib/configuration";
 import { Repository as SocialAttributeKeysToAttributesRepository } from "@sps/social/relations/attribute-keys-to-attributes/backend/app/api/src/lib/repository";
@@ -164,6 +172,9 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         profile: new CRUDService<any>(
           new SocialProfileRepository(new SocialProfileConfiguration()),
         ),
+        skill: new CRUDService<any>(
+          new SocialSkillRepository(new SocialSkillConfiguration()),
+        ),
         chat: new CRUDService<any>(
           new SocialChatRepository(new SocialChatConfiguration()),
         ),
@@ -187,6 +198,16 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         profilesToChats: new CRUDService<any>(
           new SocialProfilesToChatsRepository(
             new SocialProfilesToChatsConfiguration(),
+          ),
+        ),
+        profilesToSkills: new CRUDService<any>(
+          new SocialProfilesToSkillsRepository(
+            new SocialProfilesToSkillsConfiguration(),
+          ),
+        ),
+        profilesToKnowledgeModuleDocuments: new CRUDService<any>(
+          new SocialProfilesToKnowledgeModuleDocumentsRepository(
+            new SocialProfilesToKnowledgeModuleDocumentsConfiguration(),
           ),
         ),
         profilesToMessages: new CRUDService<any>(
@@ -222,6 +243,11 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
         threadsToMessages: new CRUDService<any>(
           new SocialThreadsToMessagesRepository(
             new SocialThreadsToMessagesConfiguration(),
+          ),
+        ),
+        threadsToActions: new CRUDService<any>(
+          new SocialThreadsToActionsRepository(
+            new SocialThreadsToActionsConfiguration(),
           ),
         ),
         messagesToFileStorageModuleFiles: new CRUDService<any>(

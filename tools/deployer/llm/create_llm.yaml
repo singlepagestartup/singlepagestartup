@@ -1,0 +1,116 @@
+---
+- name: Create llm
+  hosts: all
+  become: yes
+  vars:
+    service_name: "{{ SERVICE_NAME }}"
+    portainer_username: "{{ PORTAINER_USERNAME }}"
+    portainer_password: "{{ PORTAINER_PASSWORD }}"
+    portainer_url: "{{ PORTAINER_URL }}"
+  tasks:
+    - name: Create ollama_data directory
+      file:
+        path: /home/code/ollama_data
+        state: directory
+
+    - name: Copy set-portainer-webhook.js
+      copy:
+        src: ../portainer/set-portainer-webhook.js
+        dest: /home/code/set-portainer-webhook.js
+
+    - name: Get registry_id from file
+      shell: cat /home/code/docker_hub_registry_id
+      register: cmd_docker_hub_registry_id
+
+    - name: Create X-Registry-Auth
+      ansible.builtin.shell:
+        cmd: echo '{"registryId":{{ cmd_docker_hub_registry_id.stdout }}}' | base64
+      register: x_rgistry_auth
+
+    - name: Login to Portainer
+      uri:
+        url: "https://{{ portainer_url }}/api/auth"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ portainer_username }}"
+          password: "{{ portainer_password }}"
+      register: portainer_login
+
+    - name: Create llm.env file
+      ansible.builtin.template:
+        src: llm.env.j2
+        dest: "/home/code/{{ service_name }}.env"
+
+    - name: Copy docker-compose file
+      ansible.builtin.template:
+        src: docker-compose.llm.yaml.j2
+        dest: /home/code/docker-compose.llm.yaml
+
+    - name: Run llm service
+      shell: docker stack deploy --compose-file=/home/code/docker-compose.llm.yaml {{ service_name }}
+
+    - name: Get llm service id
+      shell:
+        cmd: "docker service ls -f name={{ service_name }}_{{ service_name }} -q"
+      register: cmd_llm_service_id
+
+    - name: Set llm_service_id
+      set_fact:
+        llm_service_id: "{{ cmd_llm_service_id.stdout_lines[0] }}"
+
+    - name: Get service version
+      shell:
+        cmd: "docker service inspect {{ llm_service_id }} {%raw%}--format='{{.Version}}'{%endraw%}"
+      register: cmd_service_version
+
+    - name: Set service_version
+      set_fact:
+        service_version: "{{ cmd_service_version.stdout_lines[0] }}"
+
+    - name: Get service ID
+      shell:
+        cmd: "docker service inspect {{ llm_service_id }} {%raw%}--format='{{.ID}}'{%endraw%}"
+      register: cmd_service_id
+
+    - name: Set service_id
+      set_fact:
+        service_id: "{{ cmd_service_id.stdout_lines[0] }}"
+
+    - name: Get service data
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ service_id }}"
+        method: GET
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+      register: service_data
+
+    - name: Run set-portainer-webhook.js
+      shell:
+        cmd: node /home/code/set-portainer-webhook.js "{{ llm_service_id }}" "{{ cmd_docker_hub_registry_id.stdout }}" "{{ portainer_url }}" "{{ portainer_username }}" "{{ portainer_password }}" "llm_webhook"
+      register: cmd_set_llm_webhook
+
+    - name: Set image
+      uri:
+        url: "https://{{ portainer_url }}/api/endpoints/1/docker/services/{{ llm_service_id }}/update?version={{ service_version }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ portainer_login.json.jwt }}"
+          X-Registry-Auth: "{{ x_rgistry_auth.stdout }}"
+        body: "{{ service_data.json.Spec }}"
+      register: service_update
+
+    - name: Copy webhook info file
+      fetch:
+        src: /home/code/llm_webhook.json
+        dest: "./"
+        flat: yes
+
+    - name: Delete artifacts
+      file:
+        path: "/home/code/{{ item }}"
+        state: absent
+      loop:
+        - "set-portainer-webhook.js"

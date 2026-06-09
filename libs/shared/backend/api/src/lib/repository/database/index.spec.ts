@@ -16,6 +16,14 @@ import { DI } from "../../di/constants";
 import { Database } from ".";
 import { IRepository } from "../interface";
 import fs from "fs/promises";
+import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { z } from "zod";
+
+const CountTestTable = pgTable("count_test", {
+  id: text("id"),
+  status: text("status"),
+  orderIndex: integer("order_index"),
+});
 
 const baseConfiguration: IConfiguration["repository"] = {
   type: "database",
@@ -36,6 +44,162 @@ const baseConfiguration: IConfiguration["repository"] = {
 };
 
 describe("Database", () => {
+  describe("count", () => {
+    /**
+     * BDD Scenario: unfiltered repository count.
+     *
+     * Given: a database repository with a mocked aggregate query chain.
+     * When: count is requested without filters.
+     * Then: the repository returns the numeric aggregate and does not require pagination or sorting.
+     */
+    it("returns numeric aggregate for unfiltered count", async () => {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table: CountTestTable,
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const execute = jest.fn().mockResolvedValue([{ count: "7" }]);
+      const where = jest.fn().mockReturnValue({ execute });
+      const from = jest.fn().mockReturnValue({ where });
+      const select = jest.fn().mockReturnValue({ from });
+
+      (repository as any).db = { select };
+
+      const result = await repository.count({
+        params: {
+          limit: 1,
+          offset: 2,
+          orderBy: {
+            and: [
+              {
+                column: "orderIndex",
+                method: "desc",
+              },
+            ],
+          },
+        },
+      });
+
+      expect(result).toBe(7);
+      expect(select).toHaveBeenCalledWith({ count: expect.anything() });
+      expect(from).toHaveBeenCalledWith(CountTestTable);
+      expect(where).toHaveBeenCalledWith(undefined);
+      expect(execute).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * BDD Scenario: filtered repository count.
+     *
+     * Given: a database repository with shared filter params.
+     * When: count is requested with filters.and.
+     * Then: the repository applies the shared predicate builder and returns the filtered aggregate.
+     */
+    it("applies filters.and when counting records", async () => {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          Table: CountTestTable,
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const execute = jest.fn().mockResolvedValue([{ count: 3 }]);
+      const where = jest.fn().mockReturnValue({ execute });
+      const from = jest.fn().mockReturnValue({ where });
+      const select = jest.fn().mockReturnValue({ from });
+
+      (repository as any).db = { select };
+
+      const result = await repository.count({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "status",
+                method: "eq",
+                value: "active",
+              },
+            ],
+          },
+          limit: 1,
+          offset: 2,
+        },
+      });
+
+      expect(result).toBe(3);
+      expect(where).toHaveBeenCalledWith(expect.anything());
+      expect(execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("insert", () => {
+    /**
+     * BDD Scenario: nullable timestamp fields arrive from JSON clients.
+     *
+     * Given: a repository insert schema has a nullable optional date field.
+     * When: insert receives that date as an ISO string from a JSON request.
+     * Then: the database layer coerces the value before zod parsing.
+     */
+    it("coerces nullable optional date strings before insert parsing", async () => {
+      const configuration = new Configuration({
+        repository: {
+          ...baseConfiguration,
+          insertSchema: z.object({
+            id: z.string().optional(),
+            finishedAt: z.date().nullable().optional(),
+          }),
+          selectSchema: z.object({
+            id: z.string(),
+            finishedAt: z.date().nullable().optional(),
+          }),
+        },
+      });
+      const container = new Container();
+      container
+        .bind<IConfiguration>(DI.IConfiguration)
+        .toConstantValue(configuration);
+      container.bind<IRepository>(DI.IRepository).to(Database);
+
+      const repository = container.get<IRepository>(DI.IRepository);
+      const insertedRows: any[] = [];
+
+      (repository as any).db = {
+        insert: () => ({
+          values: (data: any) => {
+            insertedRows.push(data);
+
+            return {
+              returning: () => ({
+                execute: async () => [{ ...data, id: "run-1" }],
+              }),
+            };
+          },
+        }),
+      };
+
+      const result = await repository.insert({
+        id: "client-id",
+        finishedAt: "2026-05-20T00:00:00.000Z",
+      });
+
+      expect(insertedRows[0].finishedAt).toBeInstanceOf(Date);
+      expect(result.finishedAt).toBeInstanceOf(Date);
+    });
+  });
+
   describe("dump", () => {
     it("should create files in config.repository.directory", async () => {
       const configuration = new Configuration({

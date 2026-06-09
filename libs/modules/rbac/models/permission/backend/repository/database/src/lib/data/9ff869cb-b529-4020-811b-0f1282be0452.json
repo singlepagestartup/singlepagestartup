@@ -1,0 +1,9 @@
+{
+  "id": "9ff869cb-b529-4020-811b-0f1282be0452",
+  "createdAt": "2026-05-10T00:46:54.629Z",
+  "updatedAt": "2026-05-10T00:46:54.629Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/articles-to-ecommerce-module-products/count"
+}

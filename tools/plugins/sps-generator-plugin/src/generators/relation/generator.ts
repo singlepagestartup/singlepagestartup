@@ -1,7 +1,8 @@
-import { Tree, formatFiles } from "@nx/devkit";
+import { Tree } from "@nx/devkit";
 import { RelationGeneratorSchema } from "./schema";
 import { Coder } from "../../coder/Coder";
 import pluralize from "pluralize";
+import { formatGeneratorFiles } from "../format";
 // import { IGeneratorProps as IModelFrontendComponentVariantGeneratorProps } from "../../coder/root/libs/modules/[module]/relations/[relation]/frontend/component/variants/[level]/[variant]/Coder";
 
 // npx nx generate @sps/sps-generator-plugin:relation --action=create --left_model_name=widget --right_model_name=banner --module=social --dry-run
@@ -107,6 +108,30 @@ export async function relationGenerator(
                             template: "admin-select-input",
                             path: "admin/select-input",
                           },
+                          {
+                            name: "admin-v2-table-row",
+                            level: "singlepage",
+                            template: "admin-v2-table-row",
+                            path: "admin-v2/table-row",
+                          },
+                          {
+                            name: "admin-v2-table",
+                            level: "singlepage",
+                            template: "admin-v2-table",
+                            path: "admin-v2/table",
+                          },
+                          {
+                            name: "admin-v2-select-input",
+                            level: "singlepage",
+                            template: "admin-v2-select-input",
+                            path: "admin-v2/select-input",
+                          },
+                          {
+                            name: "admin-v2-form",
+                            level: "singlepage",
+                            template: "admin-v2-form",
+                            path: "admin-v2/form",
+                          },
                         ],
                       },
                     },
@@ -142,7 +167,7 @@ export async function relationGenerator(
     }
   }
 
-  await formatFiles(tree);
+  await formatGeneratorFiles(tree);
 }
 
 export default relationGenerator;

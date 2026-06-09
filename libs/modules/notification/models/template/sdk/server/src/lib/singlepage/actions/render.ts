@@ -19,7 +19,7 @@ export interface IProps {
   data?: any;
 }
 
-export type IResult = string;
+export type IResult = string | null;
 
 export async function action(props: IProps): Promise<IResult> {
   const { id, params, data, options, host = serverHost } = props;

@@ -1,0 +1,9 @@
+{
+  "id": "cf5e3c26-2e37-48f5-970a-756b5fa0913b",
+  "createdAt": "2026-06-03T00:00:00.000Z",
+  "updatedAt": "2026-06-03T00:00:00.000Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "POST",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents/[knowledge.documents.id]/reindex"
+}

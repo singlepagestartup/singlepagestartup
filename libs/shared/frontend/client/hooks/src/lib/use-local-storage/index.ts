@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import { useCallback, useEffect, useState } from "react";
+
+const authenticationStorageEvent = "sps-rbac-auth-storage-change";
 
 export function useLocalStorage(key: string) {
   /**
-   * Debounce makes the first render with undefined, but subject.init component issues
-   * the new subject. To prevent that initially we set the value to empty string and check
-   * value by
+   * The hook starts from an empty string, then synchronizes with localStorage on mount.
+   * That lets auth init distinguish "not read yet" from "missing value" by checking
    *
    * ```typescript
    * if (!refreshToken && typeof refreshToken !== "string") {
@@ -19,37 +19,33 @@ export function useLocalStorage(key: string) {
    */
   const [storedValue, setStoredValue] = useState<string | undefined>("");
 
-  const handleStorageChange = useDebouncedCallback(() => {
-    const newValue = localStorage.getItem(key);
-
-    if (storedValue === newValue) {
-      return;
-    }
-
+  const handleStorageChange = useCallback(() => {
+    const newValue = localStorage.getItem(key) ?? undefined;
     setStoredValue((prevValue) => {
-      if (!newValue) {
-        return undefined;
-      }
-
       if (newValue === prevValue) {
         return prevValue;
       }
 
       return newValue;
     });
-  }, 100);
-
-  useEffect(() => {
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
   }, [key]);
 
   useEffect(() => {
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener(authenticationStorageEvent, handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        authenticationStorageEvent,
+        handleStorageChange,
+      );
+    };
+  }, [handleStorageChange]);
+
+  useEffect(() => {
     handleStorageChange();
-  }, []);
+  }, [handleStorageChange]);
 
   return storedValue;
 }

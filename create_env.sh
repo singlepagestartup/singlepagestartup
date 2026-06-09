@@ -18,6 +18,12 @@ elif [ "$1" = "telegram" ]; then
     printenv >> apps/telegram/.env
     exit 0
   fi
+elif [ "$1" = "mcp" ]; then
+  if [ "$2" = "deployment" ]; then
+    cat apps/mcp/.env.production > apps/mcp/.env
+    printenv >> apps/mcp/.env
+    exit 0
+  fi
 fi
 
 cd apps/db && ./create_env.sh
@@ -25,3 +31,4 @@ cd ../redis && ./create_env.sh
 cd ../host && ./create_env.sh
 cd ../api && ./create_env.sh
 cd ../telegram && ./create_env.sh
+cd ../mcp && ./create_env.sh

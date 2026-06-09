@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "crm-widgets-to-forms.yaml"
 
+  /crm/widgets-to-forms/count:
+    get:
+      tags:
+        - "crm-widgets-to-forms"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /crm/widgets-to-forms/{id}:
     get:
       tags:

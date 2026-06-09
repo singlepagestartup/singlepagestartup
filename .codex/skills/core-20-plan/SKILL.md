@@ -17,6 +17,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 6. Enforce explicit intent confirmation on ambiguous ticket wording before writing a new/rewritten plan.
 7. Use `.claude/helpers/gh_retry.sh` for direct `gh` comment/view operations described by the source command.
 8. For GitHub issue comments, use `.claude/helpers/gh_issue_comment.sh` with `--body-file` (or stdin) to avoid shell interpolation issues in markdown bodies.
+9. Follow `.claude/references/repository-context-contract.md` for repo/project context; never derive artifact namespaces from bare `gh repo view`.
 
 ## Codex Adaptation Rules
 
@@ -25,6 +26,7 @@ Primary workflow skill. Canonical source: `.claude/commands/core/20-plan.md`.
 - Keep failure handling and human-review gates equivalent to source behavior.
 - Quote shell-sensitive paths containing glob characters (for example `[[...url]]`) in command execution.
 - Prefer bash-compatible execution for helper flows that use heredoc/body-file patterns.
+- In sandboxed Codex sessions, proactively request elevated permissions for `.claude/helpers/get_issue_status.sh`, `.claude/helpers/update_issue_status.sh`, `.claude/helpers/gh_issue_comment.sh`, and other networked GitHub helper flows instead of waiting for `gh_retry` to exhaust on blocked network access.
 
 ## Inputs
 

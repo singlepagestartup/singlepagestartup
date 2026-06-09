@@ -1,0 +1,9 @@
+{
+  "id": "aa12baed-14e9-4b00-ac0a-31d5ae10e880",
+  "createdAt": "2026-05-10T00:48:00.018Z",
+  "updatedAt": "2026-05-10T00:48:00.018Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/profiles-to-website-builder-module-widgets/count"
+}

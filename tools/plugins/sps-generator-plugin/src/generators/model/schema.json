@@ -21,16 +21,21 @@
         "type": "list",
         "default": "website-builder",
         "items": [
+          { "value": "agent" },
+          { "value": "analytic" },
           { "value": "billing" },
+          { "value": "blog" },
           { "value": "broadcast" },
           { "value": "crm" },
+          { "value": "ecommerce" },
           { "value": "file-storage" },
           { "value": "host" },
           { "value": "notification" },
           { "value": "rbac" },
-          { "value": "sps-third-parties" },
-          { "value": "website-builder" },
-          { "value": "startup" }
+          { "value": "social" },
+          { "value": "startup" },
+          { "value": "telegram" },
+          { "value": "website-builder" }
         ]
       }
     },

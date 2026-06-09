@@ -8,6 +8,8 @@
         subdomain: "{{ HOST_SERVICE_SUBDOMAIN }}"
       - name: api
         subdomain: "{{ API_SERVICE_SUBDOMAIN }}"
+      - name: mcp
+        subdomain: "{{ MCP_SERVICE_SUBDOMAIN }}"
       - name: telegram
         subdomain: "{{ TELEGRAM_SERVICE_SUBDOMAIN }}"
       - name: traefik

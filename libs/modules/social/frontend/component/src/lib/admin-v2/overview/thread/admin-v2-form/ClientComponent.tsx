@@ -4,9 +4,11 @@ import { Component as ParentComponent } from "@sps/social/models/thread/frontend
 import { Component as ChatsToThreads } from "@sps/social/relations/chats-to-threads/frontend/component";
 import { Component as ThreadsToEcommerceModuleProducts } from "@sps/social/relations/threads-to-ecommerce-module-products/frontend/component";
 import { Component as ThreadsToMessages } from "@sps/social/relations/threads-to-messages/frontend/component";
+import { Component as ThreadsToActions } from "@sps/social/relations/threads-to-actions/frontend/component";
 import { Component as EcommerceProduct } from "@sps/ecommerce/models/product/frontend/component";
 import { IComponentProps } from "./interface";
 import { Component as Chat } from "../../chat";
+import { Component as Action } from "../../action";
 import { Component as Message } from "../../message";
 import { Component as Thread } from "../";
 
@@ -50,6 +52,59 @@ export function Component(props: IComponentProps) {
                   isServer={false}
                   variant="admin-v2-form"
                   data={{ id: data.messageId } as any}
+                />
+              );
+            }}
+            apiProps={{
+              params: {
+                filters: {
+                  and: [
+                    {
+                      column: "threadId",
+                      method: "eq",
+                      value: data.id,
+                    },
+                  ],
+                },
+              },
+            }}
+          />
+        );
+      }}
+      threadsToActions={({ data }) => {
+        if (!data) {
+          return;
+        }
+
+        return (
+          <ThreadsToActions
+            isServer={false}
+            variant="admin-v2-table"
+            leftModelAdminFormLabel="Thread"
+            rightModelAdminFormLabel="Message"
+            leftModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <Thread
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.threadId } as any}
+                />
+              );
+            }}
+            rightModelAdminForm={({ data }) => {
+              if (!data) {
+                return;
+              }
+
+              return (
+                <Action
+                  isServer={false}
+                  variant="admin-v2-form"
+                  data={{ id: data.threadId } as any}
                 />
               );
             }}

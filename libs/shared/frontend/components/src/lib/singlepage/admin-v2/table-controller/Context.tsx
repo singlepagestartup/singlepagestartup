@@ -11,6 +11,9 @@ export const TableContextSchema = z.object({
   searchField: z.string(),
   selectedField: z.string(),
   total: z.number().int().nonnegative(),
+  selectedRowIds: z.array(z.string()),
+  visibleRowIds: z.array(z.string()),
+  bulkDeletePending: z.boolean(),
 });
 
 export type TableContextType = z.infer<typeof TableContextSchema>;

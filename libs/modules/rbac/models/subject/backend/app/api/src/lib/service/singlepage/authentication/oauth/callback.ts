@@ -282,7 +282,7 @@ export class Service {
     };
   }
 
-  private async createFromProfile(profile: TGoogleProfile) {
+  protected async createFromProfile(profile: TGoogleProfile) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -305,7 +305,7 @@ export class Service {
     return subject.id;
   }
 
-  private async findIdentity(props: {
+  protected async findIdentity(props: {
     provider: string;
     account?: string;
     email?: string;
@@ -363,7 +363,7 @@ export class Service {
     return identities[0];
   }
 
-  private async findProviderIdentity(props: {
+  protected async findProviderIdentity(props: {
     provider: string;
     account: string;
     email?: string;
@@ -424,7 +424,7 @@ export class Service {
     return emailIdentity;
   }
 
-  private async pickOauthIdentity(identities: any[] = []) {
+  protected async pickOauthIdentity(identities: any[] = []) {
     if (!identities?.length) {
       return undefined;
     }
@@ -445,7 +445,7 @@ export class Service {
     return identities[0];
   }
 
-  private async findIdentities(props: {
+  protected async findIdentities(props: {
     provider: string;
     account?: string;
     email?: string;
@@ -493,7 +493,7 @@ export class Service {
     });
   }
 
-  private async findSubjectIdByIdentityId(identityId: string) {
+  protected async findSubjectIdByIdentityId(identityId: string) {
     const links = await this.findIdentitySubjects({
       identityId,
     });
@@ -509,7 +509,7 @@ export class Service {
     return links[0].subjectId;
   }
 
-  private async findIdentitySubjects(props: { identityId: string }) {
+  protected async findIdentitySubjects(props: { identityId: string }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -535,7 +535,7 @@ export class Service {
     });
   }
 
-  private async createOauthGoogleIdentity(profile: TGoogleProfile) {
+  protected async createOauthGoogleIdentity(profile: TGoogleProfile) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -571,7 +571,7 @@ export class Service {
     }
   }
 
-  private async linkIdentityToSubject(props: {
+  protected async linkIdentityToSubject(props: {
     subjectId: string;
     identityId: string;
   }) {
@@ -598,7 +598,7 @@ export class Service {
     }
   }
 
-  private isUniqueConstraintError(error: unknown) {
+  protected isUniqueConstraintError(error: unknown) {
     if (!(error instanceof Error)) {
       return false;
     }
@@ -608,7 +608,9 @@ export class Service {
     );
   }
 
-  private async assignRegistrationRolesIfMissing(props: { subjectId: string }) {
+  protected async assignRegistrationRolesIfMissing(props: {
+    subjectId: string;
+  }) {
     if (!RBAC_SECRET_KEY) {
       throw new Error("Configuration error. RBAC_SECRET_KEY not set");
     }
@@ -681,7 +683,7 @@ export class Service {
     }
   }
 
-  private async getGoogleProfile(props: {
+  protected async getGoogleProfile(props: {
     code: string;
   }): Promise<TGoogleProfile> {
     if (!RBAC_OAUTH_GOOGLE_CLIENT_ID || !RBAC_OAUTH_GOOGLE_CLIENT_SECRET) {
@@ -754,7 +756,7 @@ export class Service {
     };
   }
 
-  private errorResult(code: string, path?: string): IResult {
+  protected errorResult(code: string, path?: string): IResult {
     return {
       redirectUrl: this.buildHostRedirectUrl({
         path: path || this.getDefaultRedirectPath(),
@@ -765,7 +767,7 @@ export class Service {
     };
   }
 
-  private buildHostRedirectUrl(props: {
+  protected buildHostRedirectUrl(props: {
     path: string;
     params?: Record<string, string>;
   }) {
@@ -779,7 +781,7 @@ export class Service {
     return url.toString();
   }
 
-  private normalizeRedirectPath(path: string) {
+  protected normalizeRedirectPath(path: string) {
     if (!path || typeof path !== "string") {
       return this.getDefaultRedirectPath();
     }
@@ -791,7 +793,7 @@ export class Service {
     return this.getDefaultRedirectPath();
   }
 
-  private getDefaultRedirectPath() {
+  protected getDefaultRedirectPath() {
     if (
       RBAC_OAUTH_SUCCESS_REDIRECT_PATH &&
       RBAC_OAUTH_SUCCESS_REDIRECT_PATH.startsWith("/")

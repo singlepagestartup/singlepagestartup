@@ -32,7 +32,7 @@ You are tasked with creating git commits for the changes made during this sessio
 
 4. **Execute upon confirmation:**
    - Keep one consistent execution context for all git write operations in this step
-   - In sandboxed Codex environments, run `git add`/`git commit` with elevated permissions when required for `.git` writes
+   - In sandboxed Codex environments, prefer running the first `git add`/`git commit` block with elevated permissions up front because `.git` metadata writes commonly fail without it
    - If a command fails with `fatal: Unable to create '.git/index.lock': Operation not permitted`, retry the same command immediately in elevated mode
    - Use `git add` with specific files (never use `-A` or `.`)
    - Quote each file path in git commands when needed to avoid shell glob expansion
@@ -42,7 +42,8 @@ You are tasked with creating git commits for the changes made during this sessio
 ## Environment Notes
 
 - Read-only inspection commands (`git status`, `git diff`, `git log`) should run without elevation.
-- Escalation should be limited to git write commands that update repository metadata/index.
+- In Codex sandbox sessions, it is acceptable and preferred to request elevation before the first git write block instead of paying for an expected `.git/index.lock` failure.
+- Escalation should still be limited to git write commands that update repository metadata/index.
 
 ## Important:
 

@@ -87,7 +87,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return populatedPage;
   }
 
-  private async processPaginationSegment(segment: string): Promise<string[]> {
+  protected async processPaginationSegment(segment: string): Promise<string[]> {
     const [moduleInfo, paginationType, pageSize] = segment.split(":");
 
     if (paginationType !== "pagination") {
@@ -200,7 +200,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     return { ...result, urls };
   }
 
-  private async fetchAllModuleEntities(props: {
+  protected async fetchAllModuleEntities(props: {
     moduleName: string;
     modelName: string;
     secretKey: string;

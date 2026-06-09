@@ -13,10 +13,21 @@ import {
   OpenRouter,
   type IOpenRouterGenerateResult,
   type IOpenRouterGenerationSuccess,
+  type IOpenRouterMessageContent,
+  type IOpenRouterModel,
   type IOpenRouterRequestMessage,
+  type IOpenRouterReasoning,
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
+import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
+import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 import * as jwt from "hono/jwt";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { basename, extname, join, normalize } from "node:path";
 import {
   OPEN_ROUTER_PRECHARGE_TOKENS,
   summarizeOpenRouterBilling,
@@ -69,7 +80,46 @@ interface IModelCandidate {
 interface IModelSelectionResult {
   orderedCandidateIds: string[];
   selectedModelId: string | null;
-  selectedBy: "llm" | "priority";
+  selectedBy: "llm" | "priority" | "manual";
+}
+
+interface IFinalGenerationResult {
+  selectedModelId: string | null;
+  generationResult?: IOpenRouterGenerationSuccess;
+  fallbackReasons: string[];
+}
+
+interface IRequestData {
+  shouldReplySocialModuleProfile?: Partial<ISocialModuleProfile> & {
+    id?: string;
+  };
+  skillIds?: string[];
+  useKnowledgeSearch?: boolean;
+}
+
+interface IOpenRouterReactionQuery {
+  model: "auto" | string;
+  reasoning: "auto" | "none" | "low" | "medium" | "high" | "xhigh";
+}
+
+interface ILearnContentItem {
+  content: string;
+  title: string;
+  fileId?: string | null;
+  fileName?: string | null;
+  filePath?: string | null;
+}
+
+interface IResolvedOpenRouterKnowledgeContext {
+  query: string;
+  requestedSkillIds: string[];
+  requestedKnowledgeSearch: boolean;
+  useKnowledgeSearch: boolean;
+  knowledgeDocumentIds: string[];
+  searchDocumentIds: string[];
+  sources: KnowledgeSearchResult[];
+  promptSkills: ISocialModuleSkill[];
+  systemMessages: IOpenRouterRequestMessage[];
 }
 
 const MODEL_ROUTER_CONFIG = {
@@ -266,6 +316,9 @@ const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
 ];
 
 const ALLOWED_INPUT_MODALITIES: TInputModality[] = ["text", "image", "file"];
+const THREAD_CONTEXT_PAGE_SIZE = 100;
+const OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER =
+  "open-router-terminal-message-written";
 
 const CLASSIFICATION_RESPONSE_FORMAT = {
   type: "json_schema" as const,
@@ -322,13 +375,15 @@ const CLASSIFICATION_RESPONSE_FORMAT = {
 
 export class Handler {
   service: Service;
+  knowledgeService: KnowledgeService;
   statusMessages = telegramBotServiceMessages;
 
   constructor(service: Service) {
     this.service = service;
+    this.knowledgeService = new KnowledgeService();
   }
 
-  private stringifyError(error: unknown): string {
+  protected stringifyError(error: unknown): string {
     if (error instanceof Error) {
       return error.message;
     }
@@ -344,14 +399,14 @@ export class Handler {
     }
   }
 
-  private async generateWithBillingLedger(props: {
+  protected async generateWithBillingLedger(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     purpose: TOpenRouterBillingPurpose;
     openRouter: OpenRouter;
     model: string;
     context: IOpenRouterRequestMessage[];
     max_tokens?: number;
-    reasoning?: boolean;
+    reasoning?: IOpenRouterReasoning;
     responseFormat?:
       | {
           type: "json_object";
@@ -390,7 +445,7 @@ export class Handler {
     return result;
   }
 
-  private setLatestBillingLedgerFallbackReason(props: {
+  protected setLatestBillingLedgerFallbackReason(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     fallbackReason: string;
   }) {
@@ -403,7 +458,7 @@ export class Handler {
     latestEntry.fallbackReason = props.fallbackReason;
   }
 
-  private async settleOpenRouterBilling(props: {
+  protected async settleOpenRouterBilling(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     selectedModelId: string | null;
     route: string;
@@ -431,6 +486,291 @@ export class Handler {
       summary,
       settlement,
     };
+  }
+
+  protected async buildOpenRouterReplyMessageData(props: {
+    expectedOutputModality: TOutputModality;
+    generationResult: IOpenRouterGenerationSuccess;
+    selectModelForRequest: string;
+    billingSettlement: {
+      summary: ReturnType<typeof summarizeOpenRouterBilling>;
+      settlement: any;
+    };
+    metadata?: Record<string, unknown>;
+  }) {
+    const generatedMessageText = props.generationResult.text?.trim() || "";
+    let generatedMessageDescription = "";
+    const replyMessageData: any = {};
+
+    if (props.expectedOutputModality === "image") {
+      const imageUrl = props.generationResult.images?.[0]?.url;
+
+      if (!imageUrl) {
+        throw new Error(
+          "Model selected for image response returned no images.",
+        );
+      }
+
+      replyMessageData.files = await blobifyFiles({
+        files: [
+          {
+            title: "generated-image",
+            type: "image/png",
+            extension: "png",
+            url: imageUrl,
+          },
+        ],
+      });
+
+      generatedMessageDescription =
+        generatedMessageText || "Изображение сгенерировано";
+    } else if (props.expectedOutputModality === "text") {
+      if (!generatedMessageText) {
+        throw new Error("Generated message is empty");
+      }
+
+      generatedMessageDescription = generatedMessageText;
+    } else {
+      throw new Error(
+        `output modality is not supported by endpoint: ${props.expectedOutputModality}`,
+      );
+    }
+
+    replyMessageData.description = `${generatedMessageDescription}\n\n__${props.selectModelForRequest}__`;
+    replyMessageData.metadata = {
+      ...props.metadata,
+      openRouter: {
+        billing: {
+          ...props.billingSettlement.summary,
+          settlement: props.billingSettlement.settlement?.settlement || null,
+        },
+      },
+    };
+
+    return replyMessageData;
+  }
+
+  protected buildNoValidModelResponseMessage(fallbackReasons: string[]) {
+    const normalizedFallbackReasons = fallbackReasons.filter(Boolean);
+
+    if (!normalizedFallbackReasons.length) {
+      return "No valid model response received.";
+    }
+
+    return (
+      "No valid model response received. " +
+      normalizedFallbackReasons.join(" | ")
+    );
+  }
+
+  protected getGenerationFailureReason(props: {
+    modelId: string;
+    expectedOutputModality: TOutputModality;
+    result: IOpenRouterGenerateResult;
+  }): string | null {
+    if ("error" in props.result) {
+      return `model=${props.modelId}: generation error`;
+    }
+
+    const validationError = this.getGenerationValidationError({
+      expectedOutputModality: props.expectedOutputModality,
+      result: props.result,
+    });
+
+    if (!validationError) {
+      return null;
+    }
+
+    return `model=${props.modelId}: ${validationError}`;
+  }
+
+  protected async generateFinalOpenRouterReply(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    openRouter: OpenRouter;
+    modelSelection: IModelSelectionResult;
+    expectedOutputModality: TOutputModality;
+    generationContext: IOpenRouterRequestMessage[];
+    reasoning?: IOpenRouterReasoning;
+    onModelAttempt?: (modelId: string) => Promise<void>;
+  }): Promise<IFinalGenerationResult> {
+    const primaryModelId =
+      props.modelSelection.selectedModelId ||
+      props.modelSelection.orderedCandidateIds[0] ||
+      null;
+
+    if (!primaryModelId) {
+      return {
+        selectedModelId: null,
+        fallbackReasons: ["model=null: no model selected"],
+      };
+    }
+
+    const fallbackReasons: string[] = [];
+
+    await props.onModelAttempt?.(primaryModelId);
+
+    const primaryResult = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "generation",
+      openRouter: props.openRouter,
+      model: primaryModelId,
+      context: props.generationContext,
+      reasoning: props.reasoning,
+      stripNonTextOnRetry: true,
+    });
+
+    const primaryFailureReason = this.getGenerationFailureReason({
+      modelId: primaryModelId,
+      expectedOutputModality: props.expectedOutputModality,
+      result: primaryResult,
+    });
+
+    if (!primaryFailureReason) {
+      return {
+        selectedModelId: primaryModelId,
+        generationResult: primaryResult as IOpenRouterGenerationSuccess,
+        fallbackReasons,
+      };
+    }
+
+    fallbackReasons.push(primaryFailureReason);
+    this.setLatestBillingLedgerFallbackReason({
+      billingLedger: props.billingLedger,
+      fallbackReason: primaryFailureReason,
+    });
+    console.log("react-by-openrouter/fallback", primaryFailureReason);
+
+    const fallbackModelId =
+      props.modelSelection.orderedCandidateIds.find((modelId) => {
+        return modelId !== primaryModelId;
+      }) || primaryModelId;
+
+    await props.onModelAttempt?.(fallbackModelId);
+
+    const fallbackResult = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "generation",
+      openRouter: props.openRouter,
+      model: fallbackModelId,
+      context: props.generationContext,
+      reasoning: props.reasoning,
+      stripNonTextOnRetry: true,
+    });
+
+    const fallbackFailureReason = this.getGenerationFailureReason({
+      modelId: fallbackModelId,
+      expectedOutputModality: props.expectedOutputModality,
+      result: fallbackResult,
+    });
+
+    if (!fallbackFailureReason) {
+      return {
+        selectedModelId: fallbackModelId,
+        generationResult: fallbackResult as IOpenRouterGenerationSuccess,
+        fallbackReasons,
+      };
+    }
+
+    fallbackReasons.push(fallbackFailureReason);
+    this.setLatestBillingLedgerFallbackReason({
+      billingLedger: props.billingLedger,
+      fallbackReason: fallbackFailureReason,
+    });
+    console.log("react-by-openrouter/fallback", fallbackFailureReason);
+
+    return {
+      selectedModelId: fallbackModelId,
+      fallbackReasons,
+    };
+  }
+
+  async findThreadMessageIdsInChat(props: {
+    socialModuleChatId: string;
+    socialModuleThreadId: string;
+  }) {
+    const threadMessageIds: string[] = [];
+    let offset = 0;
+
+    while (true) {
+      const socialModuleThreadToMessages =
+        await this.service.socialModule.threadsToMessages.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "threadId",
+                  method: "eq",
+                  value: props.socialModuleThreadId,
+                },
+              ],
+            },
+            orderBy: {
+              and: [
+                {
+                  column: "createdAt",
+                  method: "asc",
+                },
+              ],
+            },
+            limit: THREAD_CONTEXT_PAGE_SIZE,
+            offset,
+          },
+        });
+
+      if (!socialModuleThreadToMessages?.length) {
+        break;
+      }
+
+      for (const socialModuleThreadToMessage of socialModuleThreadToMessages) {
+        if (socialModuleThreadToMessage.messageId) {
+          threadMessageIds.push(socialModuleThreadToMessage.messageId);
+        }
+      }
+
+      if (socialModuleThreadToMessages.length < THREAD_CONTEXT_PAGE_SIZE) {
+        break;
+      }
+
+      offset += THREAD_CONTEXT_PAGE_SIZE;
+    }
+
+    const uniqueThreadMessageIds = [...new Set(threadMessageIds)];
+
+    if (!uniqueThreadMessageIds.length) {
+      return [];
+    }
+
+    const socialModuleChatToMessages =
+      await this.service.socialModule.chatsToMessages.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+              {
+                column: "messageId",
+                method: "inArray",
+                value: uniqueThreadMessageIds,
+              },
+            ],
+          },
+        },
+      });
+
+    const chatMessageIds = new Set(
+      socialModuleChatToMessages
+        ?.map((socialModuleChatToMessage) => {
+          return socialModuleChatToMessage.messageId;
+        })
+        .filter((messageId): messageId is string => Boolean(messageId)) || [],
+    );
+
+    return uniqueThreadMessageIds.filter((messageId) => {
+      return chatMessageIds.has(messageId);
+    });
   }
 
   async execute(c: Context, next: any): Promise<Response> {
@@ -503,7 +843,7 @@ export class Handler {
         );
       }
 
-      let data;
+      let data: IRequestData;
       try {
         data = JSON.parse(body["data"]);
       } catch (error) {
@@ -512,6 +852,7 @@ export class Handler {
             body["data"],
         );
       }
+      const reactionQuery = this.parseReactionQuery(c);
 
       const socialModuleProfile =
         await this.service.socialModule.profile.findById({
@@ -540,33 +881,23 @@ export class Handler {
         socialModuleMessageId,
       });
 
-      const socialModuleThreadToMessages =
-        await this.service.socialModule.threadsToMessages.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "threadId",
-                  method: "eq",
-                  value: socialModuleThreadId,
-                },
-              ],
-            },
-            orderBy: {
-              and: [
-                {
-                  column: "createdAt",
-                  method: "desc",
-                },
-              ],
-            },
-            limit: 20,
-          },
-        });
-
       const context: IOpenRouterRequestMessage[] = [];
+      const requestedSkillIds = this.normalizeSkillIds(data.skillIds);
+      const requestedKnowledgeSearch =
+        data.useKnowledgeSearch === true ||
+        this.hasKnowledgeMention(socialModuleMessage.description);
+      const hasMentionedSkill = Boolean(
+        this.getMentionedSkillSlugs(socialModuleMessage.description).length,
+      );
+      const sanitizedTriggerDescription = this.toOpenRouterUserQuery({
+        rawQuery: socialModuleMessage.description,
+        requestedKnowledgeSearch,
+        hasMentionedSkill,
+        requestedSkillIds,
+      });
 
-      const replyBySocialModuleProfile = data.shouldReplySocialModuleProfile;
+      const replyBySocialModuleProfile =
+        await this.loadReplyBySocialModuleProfile(data);
 
       if (!replyBySocialModuleProfile) {
         throw new Error(
@@ -574,48 +905,18 @@ export class Handler {
         );
       }
 
-      if (socialModuleThreadToMessages?.length) {
-        const threadMessageIds = socialModuleThreadToMessages
-          .map((socialModuleThreadToMessage) => {
-            return socialModuleThreadToMessage.messageId;
-          })
-          .filter((messageId): messageId is string => Boolean(messageId));
+      if (this.hasLearnCommand(socialModuleMessage.description)) {
+        this.assertLearnCommandHasKnowledgeMention(
+          socialModuleMessage.description,
+        );
+      }
 
-        const socialModuleChatToMessages = threadMessageIds.length
-          ? await this.service.socialModule.chatsToMessages.find({
-              params: {
-                filters: {
-                  and: [
-                    {
-                      column: "chatId",
-                      method: "eq",
-                      value: socialModuleChatId,
-                    },
-                    {
-                      column: "messageId",
-                      method: "inArray",
-                      value: threadMessageIds,
-                    },
-                  ],
-                },
-              },
-            })
-          : [];
+      const chatThreadMessageIds = await this.findThreadMessageIdsInChat({
+        socialModuleChatId,
+        socialModuleThreadId,
+      });
 
-        const chatThreadMessageIds =
-          socialModuleChatToMessages
-            ?.map((socialModuleChatToMessage) => {
-              return socialModuleChatToMessage.messageId;
-            })
-            .filter((messageId): messageId is string => Boolean(messageId)) ||
-          [];
-
-        if (!chatThreadMessageIds.length) {
-          throw new Error(
-            "Validation error. No thread messages found in the requested chat",
-          );
-        }
-
+      if (chatThreadMessageIds.length) {
         const socialModuleMessages =
           await this.service.socialModule.message.find({
             params: {
@@ -669,7 +970,9 @@ export class Handler {
           if (socialModuleProfilesToMessages?.length) {
             for (const socialModuleMessage of socialModuleMessages) {
               const messageDescription =
-                socialModuleMessage.description?.trim() || "";
+                socialModuleMessage.id === socialModuleMessageId
+                  ? sanitizedTriggerDescription
+                  : socialModuleMessage.description?.trim() || "";
 
               // Soft context reset marker: keep messages only after the latest /new.
               if (messageDescription.startsWith("/new")) {
@@ -746,7 +1049,35 @@ export class Handler {
                     },
                   });
               }
-              if (fileStorageFiles?.length) {
+              const contextFileParts: IOpenRouterMessageContent[] = (
+                fileStorageFiles || []
+              ).flatMap((fileStorageFile): IOpenRouterMessageContent[] => {
+                if (this.isAudioFileStorageFile(fileStorageFile)) {
+                  return [];
+                }
+
+                if (fileStorageFile.mimeType?.includes("image")) {
+                  return [
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
+                      },
+                    },
+                  ];
+                }
+
+                return [
+                  {
+                    type: "file_url",
+                    file_url: {
+                      url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
+                    },
+                  },
+                ];
+              });
+
+              if (contextFileParts.length) {
                 context.push({
                   role: isAssistantMessage ? "assistant" : "user",
                   content: [
@@ -754,23 +1085,7 @@ export class Handler {
                       type: "text",
                       text: messageDescription,
                     },
-                    ...fileStorageFiles?.map((fileStorageFile) => {
-                      if (fileStorageFile.mimeType?.includes("image")) {
-                        return {
-                          type: "image_url" as const,
-                          image_url: {
-                            url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                          },
-                        };
-                      }
-
-                      return {
-                        type: "file_url" as const,
-                        file_url: {
-                          url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                        },
-                      };
-                    }),
+                    ...contextFileParts,
                   ],
                 });
               } else {
@@ -823,6 +1138,26 @@ export class Handler {
         RBAC_JWT_SECRET,
       );
 
+      if (this.hasLearnCommand(socialModuleMessage.description)) {
+        const learnedMessage = await this.learnFromMessage({
+          jwtToken: replyByJwt,
+          replyBySubjectId: replyBySubject.id,
+          replyProfile: replyBySocialModuleProfile,
+          socialModuleChatId,
+          socialModuleThreadId,
+          socialModuleMessage,
+          sourceSocialModuleProfileId: socialModuleProfileId,
+        });
+
+        return c.json({
+          data: {
+            socialModule: {
+              message: learnedMessage,
+            },
+          },
+        });
+      }
+
       const openRouter = new OpenRouter();
 
       const statusMessage =
@@ -858,130 +1193,43 @@ export class Handler {
         },
       });
 
-      await openRouter.getModels();
-
-      await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-        id: replyBySubject.id,
-        socialModuleProfileId: replyBySocialModuleProfile.id,
-        socialModuleChatId: socialModuleChatId,
-        socialModuleMessageId: statusMessage.id,
-        data: {
-          description: this.statusMessages.openRouterDetectingLanguage.ru,
-        },
-        options: {
-          headers: {
-            Authorization: "Bearer " + replyByJwt,
-          },
-        },
-      });
+      const openRouterModels = await openRouter.getModels();
 
       const requiredInputModalitiesList =
         this.detectInputModalitiesFromContext(context);
+      let requestClassification: IRequestClassification;
+      let selectedModelClass: TModelClass = "CHAT";
+      let expectedOutputModality: TOutputModality = "text";
+      let modelCandidates: IModelCandidate[] = [];
+      let modelSelection: IModelSelectionResult;
 
-      const rawRequestClassification = await this.classifyRequest({
-        billingLedger,
-        openRouter,
-        requestText: socialModuleMessage.description,
-        requiredInputModalitiesList,
-      });
+      if (reactionQuery.model !== "auto") {
+        const manualModel = this.resolveManualOpenRouterModel({
+          models: openRouterModels,
+          modelId: reactionQuery.model,
+          requiredInputModalitiesList,
+        });
 
-      const requestClassification = this.adaptClassificationForEndpoint({
-        classification: rawRequestClassification,
-        requiredInputModalitiesList,
-      });
-
-      console.log("react-by-openrouter/classification", {
-        raw: rawRequestClassification,
-        adapted: requestClassification,
-      });
-
-      await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-        id: replyBySubject.id,
-        socialModuleProfileId: replyBySocialModuleProfile.id,
-        socialModuleChatId: socialModuleChatId,
-        socialModuleMessageId: statusMessage.id,
-        data: {
-          description: this.statusMessages.openRouterSelectingModels.ru,
-        },
-        options: {
-          headers: {
-            Authorization: "Bearer " + replyByJwt,
-          },
-        },
-      });
-
-      const selectedModelClass = this.resolveModelClass({
-        classification: requestClassification,
-        requiredInputModalitiesList,
-      });
-      const expectedOutputModality: TOutputModality =
-        selectedModelClass === "IMAGE"
-          ? "image"
-          : requestClassification.output_modality;
-      const modelCandidates = this.resolveModelCandidates({
-        modelClass: selectedModelClass,
-        requiredInputModalitiesList,
-        expectedOutputModality,
-      });
-
-      if (!modelCandidates.length) {
-        throw new Error(
-          `No models configured for model class: ${selectedModelClass}`,
-        );
-      }
-
-      const modelSelection = await this.selectModelCandidatesForRequest({
-        billingLedger,
-        openRouter,
-        requestText: socialModuleMessage.description,
-        requestClassification,
-        selectedModelClass,
-        modelCandidates,
-      });
-
-      console.log("react-by-openrouter/router", {
-        configVersion: MODEL_ROUTER_CONFIG.version,
-        selectedModelClass,
-        modelCandidates: modelCandidates.map((candidate) => candidate.id),
-        selection: modelSelection,
-      });
-
-      const generationContext: IOpenRouterRequestMessage[] = [
-        {
-          role: "system",
-          content: `Answer in ${requestClassification.language} language.`,
-        },
-        {
-          role: "system",
-          content:
-            expectedOutputModality === "image"
-              ? "The user requested image output. You must return at least one generated image."
-              : "Return a text response only.",
-        },
-        {
-          role: "user",
-          content:
-            "Ensure the response fits within 4000 characters for Telegram.",
-        },
-        ...context,
-      ];
-
-      let selectModelForRequest: string | null = null;
-      let generationResult: IOpenRouterGenerationSuccess | undefined;
-      const fallbackReasons: string[] = [];
-
-      for (const modelCandidateId of modelSelection.orderedCandidateIds) {
+        expectedOutputModality =
+          this.resolveManualExpectedOutputModality(manualModel);
+        requestClassification = this.buildManualRequestClassification({
+          requestText: sanitizedTriggerDescription,
+          requiredInputModalitiesList,
+          expectedOutputModality,
+        });
+        modelSelection = {
+          orderedCandidateIds: [manualModel.id],
+          selectedModelId: manualModel.id,
+          selectedBy: "manual",
+        };
+      } else {
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
           id: replyBySubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description:
-              this.statusMessages.openRouterGeneratingResponse.ru.replace(
-                "[selectModelForRequest]",
-                modelCandidateId,
-              ),
+            description: this.statusMessages.openRouterDetectingLanguage.ru,
           },
           options: {
             headers: {
@@ -990,50 +1238,133 @@ export class Handler {
           },
         });
 
-        const candidateResult = await this.generateWithBillingLedger({
+        const rawRequestClassification = await this.classifyRequest({
           billingLedger,
-          purpose: "generation",
           openRouter,
-          model: modelCandidateId,
-          context: generationContext,
-          stripNonTextOnRetry: false,
+          requestText: sanitizedTriggerDescription,
+          requiredInputModalitiesList,
         });
 
-        if ("error" in candidateResult) {
-          const reason = `model=${modelCandidateId}: generation error`;
-          fallbackReasons.push(reason);
-          this.setLatestBillingLedgerFallbackReason({
-            billingLedger,
-            fallbackReason: reason,
-          });
-          console.log("react-by-openrouter/fallback", reason);
-          continue;
-        }
+        requestClassification = this.adaptClassificationForEndpoint({
+          classification: rawRequestClassification,
+          requiredInputModalitiesList,
+        });
 
-        const validationError = this.getGenerationValidationError({
+        console.log("react-by-openrouter/classification", {
+          raw: rawRequestClassification,
+          adapted: requestClassification,
+        });
+
+        await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+          id: replyBySubject.id,
+          socialModuleProfileId: replyBySocialModuleProfile.id,
+          socialModuleChatId: socialModuleChatId,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description: this.statusMessages.openRouterSelectingModels.ru,
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + replyByJwt,
+            },
+          },
+        });
+
+        selectedModelClass = this.resolveModelClass({
+          classification: requestClassification,
+          requiredInputModalitiesList,
+        });
+        expectedOutputModality =
+          selectedModelClass === "IMAGE"
+            ? "image"
+            : requestClassification.output_modality;
+        modelCandidates = this.resolveModelCandidates({
+          modelClass: selectedModelClass,
+          requiredInputModalitiesList,
           expectedOutputModality,
-          result: candidateResult,
         });
 
-        if (validationError) {
-          const reason = `model=${modelCandidateId}: ${validationError}`;
-          fallbackReasons.push(reason);
-          this.setLatestBillingLedgerFallbackReason({
-            billingLedger,
-            fallbackReason: reason,
-          });
-          console.log("react-by-openrouter/fallback", reason);
-          continue;
+        if (!modelCandidates.length) {
+          throw new Error(
+            `No models configured for model class: ${selectedModelClass}`,
+          );
         }
 
-        selectModelForRequest = modelCandidateId;
-        selectedModelIdForBilling = modelCandidateId;
-        generationResult = candidateResult;
-        break;
+        modelSelection = await this.selectModelCandidatesForRequest({
+          billingLedger,
+          openRouter,
+          requestText: sanitizedTriggerDescription,
+          requestClassification,
+          selectedModelClass,
+          modelCandidates,
+        });
       }
 
+      console.log("react-by-openrouter/router", {
+        configVersion: MODEL_ROUTER_CONFIG.version,
+        selectedModelClass,
+        modelCandidates: modelCandidates.map((candidate) => candidate.id),
+        selection: modelSelection,
+      });
+
+      const openRouterKnowledgeContext =
+        await this.resolveOpenRouterKnowledgeContext({
+          data,
+          replyProfile: replyBySocialModuleProfile,
+          socialModuleMessage,
+          sanitizedQuery: sanitizedTriggerDescription,
+          requestedKnowledgeSearch,
+          requestedSkillIds,
+        });
+      const generationContext = this.buildGenerationContext({
+        context,
+        expectedOutputModality,
+        language: requestClassification.language,
+        prependedSystemMessages: openRouterKnowledgeContext.systemMessages,
+      });
+      const openRouterReasoning = this.toOpenRouterReasoning(
+        reactionQuery.reasoning,
+      );
+
+      let selectModelForRequest: string | null = null;
+      let generationResult: IOpenRouterGenerationSuccess | undefined;
+      const finalGenerationResult = await this.generateFinalOpenRouterReply({
+        billingLedger,
+        openRouter,
+        modelSelection,
+        expectedOutputModality,
+        generationContext,
+        reasoning: openRouterReasoning,
+        onModelAttempt: async (modelCandidateId) => {
+          await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+            id: replyBySubject.id,
+            socialModuleProfileId: replyBySocialModuleProfile.id,
+            socialModuleChatId: socialModuleChatId,
+            socialModuleMessageId: statusMessage.id,
+            data: {
+              description:
+                this.statusMessages.openRouterGeneratingResponse.ru.replace(
+                  "[selectModelForRequest]",
+                  modelCandidateId,
+                ),
+            },
+            options: {
+              headers: {
+                Authorization: "Bearer " + replyByJwt,
+              },
+            },
+          });
+        },
+      });
+
+      selectModelForRequest = finalGenerationResult.selectedModelId;
+      selectedModelIdForBilling = finalGenerationResult.selectedModelId;
+      generationResult = finalGenerationResult.generationResult;
+
       if (!selectModelForRequest || !generationResult) {
-        selectedModelIdForBilling = modelSelection.selectedModelId;
+        selectedModelIdForBilling =
+          finalGenerationResult.selectedModelId ||
+          modelSelection.selectedModelId;
         await this.settleOpenRouterBilling({
           billingLedger,
           selectedModelId: selectedModelIdForBilling,
@@ -1042,8 +1373,30 @@ export class Handler {
           authorization: requestAuthorization,
         });
         billingSettled = true;
+        const fallbackMessage = this.buildNoValidModelResponseMessage(
+          finalGenerationResult.fallbackReasons,
+        );
+        await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+          id: replyBySubject.id,
+          socialModuleProfileId: replyBySocialModuleProfile.id,
+          socialModuleChatId: socialModuleChatId,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description:
+              this.statusMessages.openRouterError.ru +
+              "\n`" +
+              fallbackMessage +
+              "`",
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + replyByJwt,
+            },
+          },
+        });
+
         throw new Error(
-          "No valid model response received. " + fallbackReasons.join(" | "),
+          `${fallbackMessage} [${OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER}]`,
         );
       }
 
@@ -1056,50 +1409,41 @@ export class Handler {
       });
       billingSettled = true;
 
-      let generatedMessageDescription = "";
-      const replyMessageData: any = {};
-
-      if (expectedOutputModality === "image") {
-        const imageUrl = generationResult.images?.[0]?.url;
-
-        if (!imageUrl) {
-          throw new Error(
-            "Model selected for image response returned no images.",
-          );
-        }
-
-        replyMessageData.files = await blobifyFiles({
-          files: [
-            {
-              title: "generated-image",
-              type: "image/png",
-              extension: "png",
-              url: imageUrl,
+      const replyMessageData = await this.buildOpenRouterReplyMessageData({
+        expectedOutputModality,
+        generationResult,
+        selectModelForRequest,
+        billingSettlement,
+        metadata: {
+          knowledge: {
+            action: this.hasLearnCommand(socialModuleMessage.description)
+              ? "learn"
+              : "generate",
+            profileId: replyBySocialModuleProfile.id,
+            triggerMessageId: socialModuleMessage.id,
+            useKnowledgeSearch: openRouterKnowledgeContext.useKnowledgeSearch,
+            documentIds: openRouterKnowledgeContext.searchDocumentIds,
+            citations: openRouterKnowledgeContext.sources,
+            sources: openRouterKnowledgeContext.sources,
+            requestedKnowledgeSearch:
+              openRouterKnowledgeContext.requestedKnowledgeSearch,
+            requestedSkillIds: openRouterKnowledgeContext.requestedSkillIds,
+            skills: openRouterKnowledgeContext.promptSkills.map((skill) => {
+              return {
+                skillId: skill.id,
+                slug: skill.slug,
+                mode: "prompt-instruction",
+              };
+            }),
+            openRouter: {
+              model: reactionQuery.model,
+              reasoning: reactionQuery.reasoning,
+              selectedModelId: selectModelForRequest,
+              selectedBy: modelSelection.selectedBy,
             },
-          ],
-        });
-
-        generatedMessageDescription =
-          generationResult.text?.trim() || "Изображение сгенерировано";
-      } else {
-        generatedMessageDescription = generationResult.text?.trim() || "";
-      }
-
-      generatedMessageDescription += `\n\n__${selectModelForRequest}__`;
-
-      replyMessageData.description = generatedMessageDescription;
-      replyMessageData.metadata = {
-        openRouter: {
-          billing: {
-            ...billingSettlement.summary,
-            settlement: billingSettlement.settlement?.settlement || null,
           },
         },
-      };
-
-      if (replyMessageData.description == "") {
-        throw new Error("Generated message is empty");
-      }
+      });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
         id: replyBySubject.id,
@@ -1159,6 +1503,840 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  private parseReactionQuery(c: Context): IOpenRouterReactionQuery {
+    const model = this.toLearnText(c.req.query("model")).trim() || "auto";
+    const reasoning = this.toLearnText(c.req.query("reasoning")).trim();
+    const allowedReasoning: IOpenRouterReactionQuery["reasoning"][] = [
+      "auto",
+      "none",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+    ];
+
+    return {
+      model,
+      reasoning: allowedReasoning.includes(reasoning as any)
+        ? (reasoning as IOpenRouterReactionQuery["reasoning"])
+        : "auto",
+    };
+  }
+
+  private async loadReplyBySocialModuleProfile(
+    data: IRequestData,
+  ): Promise<ISocialModuleProfile | undefined> {
+    const replyProfileId = data.shouldReplySocialModuleProfile?.id;
+
+    if (!replyProfileId) {
+      return undefined;
+    }
+
+    return this.service.socialModule.profile.findById({
+      id: replyProfileId,
+    });
+  }
+
+  private toOpenRouterUserQuery(props: {
+    rawQuery: string;
+    requestedKnowledgeSearch: boolean;
+    hasMentionedSkill: boolean;
+    requestedSkillIds: string[];
+  }) {
+    return props.requestedKnowledgeSearch ||
+      props.hasMentionedSkill ||
+      props.requestedSkillIds.length
+      ? this.stripSkillMentions(props.rawQuery)
+      : this.toLearnText(props.rawQuery).trim();
+  }
+
+  private hasKnowledgeMention(value: string) {
+    return /(^|\s)@knowledge(?=\s|$)/i.test(value);
+  }
+
+  private hasLearnCommand(value: string) {
+    return Boolean(this.stripSkillMentions(value).match(/^\/learn\b/i));
+  }
+
+  private assertLearnCommandHasKnowledgeMention(value: string) {
+    if (this.hasKnowledgeMention(value)) {
+      return;
+    }
+
+    throw new Error(
+      "Validation error. /learn requires @knowledge mention. Use @knowledge /learn ...",
+    );
+  }
+
+  private async resolveOpenRouterKnowledgeContext(props: {
+    data: IRequestData;
+    replyProfile: ISocialModuleProfile;
+    socialModuleMessage: ISocialModuleMessage;
+    sanitizedQuery: string;
+    requestedKnowledgeSearch: boolean;
+    requestedSkillIds: string[];
+  }): Promise<IResolvedOpenRouterKnowledgeContext> {
+    const mentionedSkillSlugs = this.getMentionedSkillSlugs(
+      props.socialModuleMessage.description || "",
+    );
+    const promptSkills = await this.findPromptSkillsForProfile({
+      socialModuleProfileId: props.replyProfile.id,
+      skillIds: props.requestedSkillIds,
+      skillSlugs: mentionedSkillSlugs,
+    });
+    const requestedSkillIds = Array.from(
+      new Set([
+        ...props.requestedSkillIds,
+        ...promptSkills.map((skill) => skill.id),
+      ]),
+    );
+    const query = props.sanitizedQuery.trim();
+
+    if (
+      !query &&
+      !this.hasLearnCommand(props.socialModuleMessage.description || "")
+    ) {
+      throw new Error(
+        "Validation error. OpenRouter message description is required after removing control mentions.",
+      );
+    }
+
+    const knowledgeDocumentIds = await this.findKnowledgeDocumentIdsForProfile(
+      props.replyProfile.id,
+    );
+    const useKnowledgeSearch = props.requestedKnowledgeSearch;
+    const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
+    const sources =
+      useKnowledgeSearch && query
+        ? await this.knowledgeService.search({
+            query,
+            documentIds: searchDocumentIds,
+          })
+        : [];
+    const systemMessages: IOpenRouterRequestMessage[] = [
+      ...(promptSkills.length
+        ? [
+            {
+              role: "system" as const,
+              content: this.toSkillSystemPrompt(promptSkills),
+            },
+          ]
+        : []),
+      ...(useKnowledgeSearch
+        ? [
+            {
+              role: "system" as const,
+              content: this.toKnowledgeSystemPrompt({
+                query,
+                sources,
+              }),
+            },
+          ]
+        : []),
+    ];
+
+    return {
+      query,
+      requestedSkillIds,
+      requestedKnowledgeSearch: props.requestedKnowledgeSearch,
+      useKnowledgeSearch,
+      knowledgeDocumentIds,
+      searchDocumentIds,
+      sources,
+      promptSkills,
+      systemMessages,
+    };
+  }
+
+  private async findKnowledgeDocumentIdsForProfile(
+    socialModuleProfileId: string,
+  ) {
+    const relations =
+      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: socialModuleProfileId,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              {
+                column: "orderIndex",
+                method: "asc",
+              },
+              {
+                column: "createdAt",
+                method: "asc",
+              },
+            ],
+          },
+        },
+      });
+
+    return (
+      relations
+        ?.map((relation: { knowledgeModuleDocumentId?: string }) => {
+          return relation.knowledgeModuleDocumentId;
+        })
+        .filter((documentId: unknown): documentId is string => {
+          return typeof documentId === "string" && Boolean(documentId);
+        }) || []
+    );
+  }
+
+  private async ensureProfileKnowledgeDocumentRelation(props: {
+    socialModuleProfileId: string;
+    knowledgeModuleDocumentId: string;
+  }) {
+    const existing =
+      await this.service.socialModule.profilesToKnowledgeModuleDocuments.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "eq",
+                value: props.socialModuleProfileId,
+              },
+              {
+                column: "knowledgeModuleDocumentId",
+                method: "eq",
+                value: props.knowledgeModuleDocumentId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      });
+
+    if (existing?.length) {
+      return existing[0];
+    }
+
+    return this.service.socialModule.profilesToKnowledgeModuleDocuments.create({
+      data: {
+        profileId: props.socialModuleProfileId,
+        knowledgeModuleDocumentId: props.knowledgeModuleDocumentId,
+      },
+    });
+  }
+
+  private async findPromptSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    skillIds: string[];
+    skillSlugs: string[];
+  }) {
+    if (!props.skillIds.length && !props.skillSlugs.length) {
+      return [];
+    }
+
+    const skillsById = new Map<string, ISocialModuleSkill>();
+
+    if (props.skillIds.length) {
+      const requestedSkills = await this.findActiveSkillsForProfile({
+        socialModuleProfileId: props.socialModuleProfileId,
+        skillIds: props.skillIds,
+        requireRequestedSkillsLinked: true,
+      });
+
+      for (const skill of requestedSkills) {
+        skillsById.set(skill.id, skill);
+      }
+    }
+
+    if (props.skillSlugs.length) {
+      const slugSet = new Set(props.skillSlugs);
+      const linkedSkills = await this.findActiveSkillsForProfile({
+        socialModuleProfileId: props.socialModuleProfileId,
+        requireRequestedSkillsLinked: false,
+      });
+
+      for (const skill of linkedSkills) {
+        if (slugSet.has(skill.slug.toLowerCase())) {
+          skillsById.set(skill.id, skill);
+        }
+      }
+    }
+
+    return Array.from(skillsById.values());
+  }
+
+  private async findActiveSkillsForProfile(props: {
+    socialModuleProfileId: string;
+    skillIds?: string[];
+    requireRequestedSkillsLinked: boolean;
+  }) {
+    const relations = await this.service.socialModule.profilesToSkills.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.socialModuleProfileId,
+            },
+          ],
+        },
+        orderBy: {
+          and: [
+            {
+              column: "orderIndex",
+              method: "asc",
+            },
+            {
+              column: "createdAt",
+              method: "asc",
+            },
+          ],
+        },
+      },
+    });
+    const linkedSkillIds =
+      relations
+        ?.map((relation: { skillId?: string }) => relation.skillId)
+        .filter((skillId: unknown): skillId is string => {
+          return typeof skillId === "string" && Boolean(skillId);
+        }) || [];
+    const requestedSkillIds = this.normalizeSkillIds(props.skillIds);
+    const skillIds = requestedSkillIds.length
+      ? requestedSkillIds
+      : linkedSkillIds;
+
+    if (!skillIds.length) {
+      return [];
+    }
+
+    if (props.requireRequestedSkillsLinked && requestedSkillIds.length) {
+      const linkedSkillIdSet = new Set(linkedSkillIds);
+      const unlinkedSkillIds = requestedSkillIds.filter((skillId) => {
+        return !linkedSkillIdSet.has(skillId);
+      });
+
+      if (unlinkedSkillIds.length) {
+        throw new Error(
+          `Authorization error. Selected social skills are not linked to profile ${props.socialModuleProfileId}: ${unlinkedSkillIds.join(", ")}`,
+        );
+      }
+    }
+
+    const skills = await this.service.socialModule.skill.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: skillIds,
+            },
+          ],
+        },
+      },
+    });
+    const skillsById = new Map(
+      (skills || []).map((skill: ISocialModuleSkill) => [skill.id, skill]),
+    );
+
+    return skillIds
+      .map((skillId) => skillsById.get(skillId))
+      .filter((skill): skill is ISocialModuleSkill => {
+        return Boolean(skill && skill.status !== "archived");
+      });
+  }
+
+  private toSkillSystemPrompt(skills: ISocialModuleSkill[]) {
+    const skillText = skills
+      .map((skill) => {
+        return [
+          `@${skill.slug}${skill.title ? ` (${skill.title})` : ""}`,
+          skill.description,
+        ].join("\n");
+      })
+      .join("\n\n---\n\n");
+
+    return [
+      "Selected social skills are active for this reply.",
+      "Follow these instructions for formatting, tone, and task behavior.",
+      "Use the latest user message and thread context as source material when the user asks to transform or edit text.",
+      "",
+      skillText,
+    ].join("\n");
+  }
+
+  private toKnowledgeSystemPrompt(props: {
+    query: string;
+    sources: KnowledgeSearchResult[];
+  }) {
+    const fragments = props.sources.length
+      ? props.sources
+          .map((source, index) => {
+            return [
+              `Source ${index + 1}: ${source.sourceTitle || "Untitled"}`,
+              `Path: ${source.sourceOriginalPath || "unknown"}`,
+              `Similarity: ${source.similarity.toFixed(3)}`,
+              source.text,
+            ].join("\n");
+          })
+          .join("\n\n---\n\n")
+      : "No indexed knowledge fragments matched the query.";
+
+    return [
+      "Use the following profile-scoped knowledge fragments for factual grounding.",
+      "If the fragments do not support a claim, say that the indexed sources do not contain it.",
+      "Use conversation history only to resolve follow-ups and source text for edits.",
+      `Knowledge query: ${props.query}`,
+      "",
+      "Knowledge fragments:",
+      fragments,
+    ].join("\n");
+  }
+
+  private async learnFromMessage(props: {
+    jwtToken: string;
+    replyBySubjectId: string;
+    replyProfile: ISocialModuleProfile;
+    socialModuleChatId: string;
+    socialModuleThreadId: string;
+    socialModuleMessage: ISocialModuleMessage;
+    sourceSocialModuleProfileId: string;
+  }) {
+    const contentItems = await this.collectLearnContentItems({
+      socialModuleMessage: props.socialModuleMessage,
+    });
+
+    if (!contentItems.length) {
+      throw new Error(
+        "Validation error. /learn requires message text or .txt/.md/.markdown attachments.",
+      );
+    }
+
+    const learned: Awaited<ReturnType<KnowledgeService["learnContent"]>>[] = [];
+
+    for (const [index, item] of contentItems.entries()) {
+      const content = this.toLearnText(item.content).trim();
+
+      if (!content) {
+        continue;
+      }
+
+      const contentHash = this.sha256(content);
+      const slug = this.toSlug(
+        [
+          "knowledge",
+          props.replyProfile.id,
+          props.socialModuleMessage.id,
+          item.fileId || "message",
+          contentHash.slice(0, 16),
+        ].join("-"),
+      );
+      const entry = await this.knowledgeService.learnContent({
+        slug,
+        title: this.toLearnText(item.title),
+        content,
+        summary: "Content learned from social chat message",
+        metadata: {
+          sourceKind: "chat-message",
+          sourceSystem: "social-chat-learn",
+          assistantSocialModuleProfileId: props.replyProfile.id,
+          socialModuleChatId: props.socialModuleChatId,
+          socialModuleThreadId: props.socialModuleThreadId,
+          socialModuleMessageId: props.socialModuleMessage.id,
+          fileId: item.fileId || null,
+          fileName: this.toLearnText(item.fileName) || null,
+          filePath: this.toLearnText(item.filePath) || null,
+          contentHash,
+          sourceSocialModuleProfileId: props.sourceSocialModuleProfileId,
+          triggerMessageId: props.socialModuleMessage.id,
+          learnItemIndex: index,
+        },
+      });
+
+      learned.push(entry);
+      await this.ensureProfileKnowledgeDocumentRelation({
+        socialModuleProfileId: props.replyProfile.id,
+        knowledgeModuleDocumentId: entry.document.id,
+      });
+    }
+
+    const content =
+      learned.length === 1
+        ? "Learned 1 knowledge item."
+        : `Learned ${learned.length} knowledge items.`;
+
+    return api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: props.replyBySubjectId,
+        socialModuleProfileId: props.replyProfile.id,
+        socialModuleChatId: props.socialModuleChatId,
+        socialModuleThreadId: props.socialModuleThreadId,
+        data: {
+          description: content,
+          interaction: {
+            role: "assistant",
+            content,
+          },
+          metadata: {
+            knowledge: {
+              action: "learn",
+              profileId: props.replyProfile.id,
+              triggerMessageId: props.socialModuleMessage.id,
+              documents: learned.map((entry) => {
+                return {
+                  id: entry.document.id,
+                  slug: entry.document.slug,
+                  title: entry.document.title,
+                };
+              }),
+              indexes: learned.map((entry) => entry.index),
+            },
+          },
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + props.jwtToken,
+          },
+        },
+      },
+    );
+  }
+
+  private async collectLearnContentItems(props: {
+    socialModuleMessage: ISocialModuleMessage;
+  }): Promise<ILearnContentItem[]> {
+    const items: ILearnContentItem[] = [];
+    const strippedMessage = this.stripLearnPrefix(
+      props.socialModuleMessage.description || "",
+    );
+
+    if (strippedMessage) {
+      items.push({
+        content: this.toLearnText(strippedMessage),
+        title: this.toTitle(strippedMessage),
+      });
+    }
+
+    const relations =
+      await this.service.socialModule.messagesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "messageId",
+                method: "eq",
+                value: props.socialModuleMessage.id,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              {
+                column: "orderIndex",
+                method: "asc",
+              },
+            ],
+          },
+        },
+      });
+    const fileIds =
+      relations
+        ?.map((relation) => relation.fileStorageModuleFileId)
+        .filter((fileId): fileId is string => Boolean(fileId)) || [];
+
+    if (!fileIds.length) {
+      return items;
+    }
+
+    const files = await this.service.fileStorageModule.file.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: fileIds,
+            },
+          ],
+        },
+      },
+    });
+
+    for (const file of files || []) {
+      if (!this.isSupportedLearnAttachment(file)) {
+        continue;
+      }
+
+      const content = this.toLearnText(
+        await this.readFileStorageModuleFile(file),
+      );
+      const filePath = this.toLearnText(file.file);
+      const fileName =
+        this.toLearnText(file.adminTitle) || basename(filePath) || "Attachment";
+
+      if (!content.trim()) {
+        continue;
+      }
+
+      items.push({
+        content,
+        title: fileName,
+        fileId: file.id,
+        fileName,
+        filePath,
+      });
+    }
+
+    return items;
+  }
+
+  private resolveManualOpenRouterModel(props: {
+    models: IOpenRouterModel[];
+    modelId: string;
+    requiredInputModalitiesList: TInputModality[];
+    expectedOutputModality?: TOutputModality;
+  }) {
+    const model = props.models.find((item) => item.id === props.modelId);
+
+    if (!model) {
+      throw new Error(
+        `Validation error. OpenRouter model ${props.modelId} is not available.`,
+      );
+    }
+
+    const inputModalities = this.getOpenRouterModelModalities(
+      model.architecture?.input_modalities,
+    );
+    const outputModalities = this.getOpenRouterModelModalities(
+      model.architecture?.output_modalities,
+    );
+    const expectedOutputModality =
+      props.expectedOutputModality ||
+      this.resolvePreferredOpenRouterOutputModality(outputModalities);
+    const missingInputModalities = props.requiredInputModalitiesList.filter(
+      (modality) => {
+        return !inputModalities.includes(modality);
+      },
+    );
+
+    if (missingInputModalities.length) {
+      throw new Error(
+        `Validation error. OpenRouter model ${model.id} does not support required input modalities: ${missingInputModalities.join(", ")}`,
+      );
+    }
+
+    if (!outputModalities.includes(expectedOutputModality)) {
+      throw new Error(
+        `Validation error. OpenRouter model ${model.id} does not support expected output modality: ${expectedOutputModality}`,
+      );
+    }
+
+    return model;
+  }
+
+  private resolvePreferredOpenRouterOutputModality(
+    outputModalities: string[],
+  ): TOutputModality {
+    const allowedOutputModalities = outputModalities.filter(
+      (modality): modality is TOutputModality => {
+        return ALLOWED_OUTPUT_MODALITIES.includes(modality as TOutputModality);
+      },
+    );
+
+    for (const preferredOutputModality of [
+      "text",
+      "image",
+      "audio",
+      "file",
+    ] satisfies TOutputModality[]) {
+      if (allowedOutputModalities.includes(preferredOutputModality)) {
+        return preferredOutputModality;
+      }
+    }
+
+    return "text";
+  }
+
+  private resolveManualExpectedOutputModality(
+    model: IOpenRouterModel,
+  ): TOutputModality {
+    return this.resolvePreferredOpenRouterOutputModality(
+      this.getOpenRouterModelModalities(model.architecture?.output_modalities),
+    );
+  }
+
+  private buildManualRequestClassification(props: {
+    expectedOutputModality: TOutputModality;
+    requestText: string;
+    requiredInputModalitiesList: TInputModality[];
+  }): IRequestClassification {
+    return {
+      language: this.normalizeLanguage(props.requestText),
+      task: "qa",
+      input_modalities: props.requiredInputModalitiesList.length
+        ? props.requiredInputModalitiesList
+        : ["text"],
+      output_modality: props.expectedOutputModality,
+      need_web: false,
+      complexity: "medium",
+      risk_level: "low",
+    };
+  }
+
+  private toOpenRouterReasoning(
+    reasoning: IOpenRouterReactionQuery["reasoning"],
+  ): IOpenRouterReasoning | undefined {
+    if (reasoning === "auto") {
+      return undefined;
+    }
+
+    return {
+      effort: reasoning,
+      exclude: true,
+    };
+  }
+
+  private getOpenRouterModelModalities(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => {
+        return typeof item === "string" ? item.toLowerCase().trim() : "";
+      })
+      .filter((item): item is string => Boolean(item));
+  }
+
+  private getMentionedSkillSlugs(value: string) {
+    return Array.from(
+      new Set(
+        Array.from(value.matchAll(/(^|\s)@([a-zA-Z0-9._-]+)(?=\s|$)/g))
+          .map((match) => match[2].toLowerCase())
+          .filter((slug) => slug !== "knowledge"),
+      ),
+    );
+  }
+
+  private stripLearnPrefix(value: string) {
+    return this.stripSkillMentions(value)
+      .replace(/^\/learn\b/i, "")
+      .trim();
+  }
+
+  private stripSkillMentions(value: string) {
+    return this.toLearnText(value)
+      .replace(/(^|\s)@[a-zA-Z0-9._-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  private normalizeSkillIds(value?: string[]) {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        value
+          .map((skillId) => {
+            return typeof skillId === "string" ? skillId.trim() : "";
+          })
+          .filter((skillId): skillId is string => Boolean(skillId)),
+      ),
+    );
+  }
+
+  private isSupportedLearnAttachment(file: IFileStorageModuleFile) {
+    const filePath = this.toLearnText(file.file);
+    const extension = (
+      this.toLearnText(file.extension) ||
+      extname(filePath.split("?")[0]).replace(".", "")
+    ).toLowerCase();
+
+    return ["txt", "md", "markdown"].includes(extension);
+  }
+
+  private async readFileStorageModuleFile(file: IFileStorageModuleFile) {
+    const source = this.toLearnText(file.file);
+
+    if (!source) {
+      throw new Error("Validation error. File-storage path is required");
+    }
+
+    if (/^https?:\/\//i.test(source)) {
+      const response = await fetch(source);
+
+      if (!response.ok) {
+        throw new Error(
+          `Knowledge attachment download failed with status ${response.status}`,
+        );
+      }
+
+      return response.text();
+    }
+
+    const relativePath = normalize(source.replace(/^\/+/, ""));
+
+    if (!relativePath || relativePath.startsWith("..")) {
+      throw new Error("Validation error. Invalid file-storage path");
+    }
+
+    const candidates = [
+      join(process.cwd(), "public", relativePath),
+      join(process.cwd(), "apps/api/public", relativePath),
+    ];
+    let lastError: unknown;
+
+    for (const candidate of candidates) {
+      try {
+        return await readFile(candidate, "utf8");
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw new Error(
+      `Knowledge attachment could not be read from file-storage: ${
+        lastError instanceof Error ? lastError.message : String(lastError)
+      }`,
+    );
+  }
+
+  private toTitle(value: string) {
+    return this.toLearnText(value).replace(/\s+/g, " ").trim().slice(0, 120);
+  }
+
+  private toSlug(value: string) {
+    return this.toLearnText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 180);
+  }
+
+  private sha256(value: string) {
+    return createHash("sha256").update(value, "utf8").digest("hex");
+  }
+
+  private toLearnText(value: unknown) {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    return String(value);
   }
 
   async resolveThreadIdForMessageInChat(props: {
@@ -1268,7 +2446,7 @@ export class Handler {
     return socialModuleDefaultThread.id;
   }
 
-  private detectInputModalitiesFromContext(
+  protected detectInputModalitiesFromContext(
     context: IOpenRouterRequestMessage[],
   ): TInputModality[] {
     const latestMessage = context[context.length - 1];
@@ -1302,7 +2480,149 @@ export class Handler {
     );
   }
 
-  private isOpenRouterProgressStatusMessage(
+  protected buildGenerationContext(props: {
+    context: IOpenRouterRequestMessage[];
+    expectedOutputModality: TOutputModality;
+    language: string;
+    prependedSystemMessages?: IOpenRouterRequestMessage[];
+  }): IOpenRouterRequestMessage[] {
+    if (props.expectedOutputModality === "image") {
+      const prompt = this.buildImageGenerationPrompt({
+        context: props.context,
+      });
+      const imageParts = this.collectImageContextParts(props.context);
+
+      return [
+        {
+          role: "system",
+          content: [
+            "Create the requested image.",
+            `Use ${props.language} for any visible text only if text is explicitly requested.`,
+            "Resolve pronouns and ellipses from the conversation context before generating.",
+            "Do not reinterpret a pronoun as a person when the previous context points to an object, place, concept, or file.",
+            "Return image output.",
+          ].join(" "),
+        },
+        ...(props.prependedSystemMessages || []),
+        {
+          role: "user",
+          content: imageParts.length
+            ? [
+                {
+                  type: "text",
+                  text: prompt,
+                },
+                ...imageParts,
+              ]
+            : prompt,
+        },
+      ];
+    }
+
+    return [
+      {
+        role: "system",
+        content: `Answer in ${props.language} language.`,
+      },
+      {
+        role: "system",
+        content: "Return a text response only.",
+      },
+      ...(props.prependedSystemMessages || []),
+      {
+        role: "user",
+        content:
+          "Ensure the response fits within 4000 characters for Telegram.",
+      },
+      ...props.context,
+    ];
+  }
+
+  protected buildImageGenerationPrompt(props: {
+    context: IOpenRouterRequestMessage[];
+  }) {
+    const conversation = props.context
+      .map((message) => {
+        const text = this.getMessageTextContent(message);
+
+        if (!text) {
+          return;
+        }
+
+        return `${message.role}: ${text}`;
+      })
+      .filter((line): line is string => Boolean(line))
+      .slice(-8);
+
+    return [
+      "Conversation context:",
+      conversation.length ? conversation.join("\n") : "(no prior context)",
+      "",
+      "Image task:",
+      "Generate the image requested by the latest user message.",
+      "The prompt is conversational, so resolve references such as it, this, her, him, them, ее, его, это, эта, этот from the prior messages.",
+      "If the latest message asks for a photo of a previously discussed object or place, generate that object or place, not a portrait of an unrelated person.",
+    ].join("\n");
+  }
+
+  protected collectImageContextParts(context: IOpenRouterRequestMessage[]) {
+    return context.flatMap((message) => {
+      if (typeof message.content === "string") {
+        return [];
+      }
+
+      return message.content
+        .filter((part) => part.type === "image_url")
+        .map((part) => {
+          return {
+            type: "image_url" as const,
+            image_url: part.image_url,
+          };
+        });
+    });
+  }
+
+  protected getMessageTextContent(message: IOpenRouterRequestMessage) {
+    if (typeof message.content === "string") {
+      return message.content.trim();
+    }
+
+    return message.content
+      .filter((part) => part.type === "text")
+      .map((part) => part.text.trim())
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+  }
+
+  protected isAudioFileStorageFile(file: IFileStorageModuleFile) {
+    const mimeType = file.mimeType || "";
+    const extension =
+      file.extension ||
+      file.file.split("?")[0].split(".").pop()?.toLowerCase() ||
+      "";
+    const audioExtensions = [
+      "aac",
+      "flac",
+      "m4a",
+      "mp3",
+      "oga",
+      "ogg",
+      "opus",
+      "wav",
+      "webm",
+    ];
+
+    return Boolean(
+      mimeType.startsWith("audio/") ||
+        (mimeType === "video/webm" &&
+          !(file as IFileStorageModuleFile & { width?: unknown }).width &&
+          !(file as IFileStorageModuleFile & { height?: unknown }).height) ||
+        audioExtensions.includes(extension.toLowerCase()),
+    );
+  }
+
+  protected isOpenRouterProgressStatusMessage(
     messageDescription: string,
   ): boolean {
     const selectingVariants = [
@@ -1345,7 +2665,7 @@ export class Handler {
     return false;
   }
 
-  private getEnabledCandidatesByClass(
+  protected getEnabledCandidatesByClass(
     modelClass: TModelConfigClass,
   ): IModelCandidate[] {
     return [...MODEL_ROUTER_CONFIG.classes[modelClass]]
@@ -1353,7 +2673,7 @@ export class Handler {
       .sort((a, b) => b.priority - a.priority);
   }
 
-  private resolveModelCandidates(props: {
+  protected resolveModelCandidates(props: {
     modelClass: TModelClass;
     requiredInputModalitiesList: TInputModality[];
     expectedOutputModality: TOutputModality;
@@ -1379,7 +2699,7 @@ export class Handler {
     return enabledCandidates;
   }
 
-  private buildModelSelectionResponseFormat(candidateIds: string[]) {
+  protected buildModelSelectionResponseFormat(candidateIds: string[]) {
     return {
       type: "json_schema" as const,
       json_schema: {
@@ -1403,7 +2723,7 @@ export class Handler {
     };
   }
 
-  private async selectModelCandidatesForRequest(props: {
+  protected async selectModelCandidatesForRequest(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
@@ -1428,7 +2748,6 @@ export class Handler {
         purpose: "model_selection",
         openRouter: props.openRouter,
         model: selectorModelId,
-        reasoning: false,
         max_tokens: 300,
         responseFormat: modelSelectionResponseFormat,
         temperature: 0,
@@ -1521,7 +2840,7 @@ No markdown. No extra keys.`,
     };
   }
 
-  private async parseAndNormalizeModelSelection(props: {
+  protected async parseAndNormalizeModelSelection(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     selectorModelId: string;
@@ -1574,7 +2893,6 @@ No markdown. No extra keys.`,
       purpose: "model_selection_repair",
       openRouter: props.openRouter,
       model: props.selectorModelId,
-      reasoning: false,
       max_tokens: 300,
       responseFormat: props.modelSelectionResponseFormat,
       temperature: 0,
@@ -1619,7 +2937,7 @@ No markdown. No extra keys.`,
     return parseSelectedModelId(repairedParsed);
   }
 
-  private async classifyRequest(props: {
+  protected async classifyRequest(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     requestText: string;
@@ -1642,7 +2960,6 @@ No markdown. No extra keys.`,
         purpose: "classification",
         openRouter: props.openRouter,
         model: classifierModel,
-        reasoning: false,
         max_tokens: 600,
         responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
         temperature: 0,
@@ -1715,7 +3032,6 @@ No markdown. No explanation. No extra keys.`,
         purpose: "classification",
         openRouter: props.openRouter,
         model: classifierModel,
-        reasoning: false,
         max_tokens: 600,
         temperature: 0,
         context: [
@@ -1795,7 +3111,7 @@ No markdown. No explanation.`,
     return heuristicClassification;
   }
 
-  private getHeuristicClassification(props: {
+  protected getHeuristicClassification(props: {
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
   }): IRequestClassification {
@@ -1856,7 +3172,7 @@ No markdown. No explanation.`,
     };
   }
 
-  private resolveModelClass(props: {
+  protected resolveModelClass(props: {
     classification: IRequestClassification;
     requiredInputModalitiesList: TInputModality[];
   }): TModelClass {
@@ -1882,7 +3198,7 @@ No markdown. No explanation.`,
     return "CHAT";
   }
 
-  private getGenerationValidationError(props: {
+  protected getGenerationValidationError(props: {
     expectedOutputModality: TOutputModality;
     result: { text: string; images?: { url?: string; b64_json?: string }[] };
   }): string | null {
@@ -1890,6 +3206,11 @@ No markdown. No explanation.`,
       if (!props.result.images?.length) {
         return "expected image output, but model returned no images";
       }
+
+      if (!props.result.images.some((image) => image.url)) {
+        return "expected image output, but model returned no image URL";
+      }
+
       return null;
     }
 
@@ -1903,7 +3224,7 @@ No markdown. No explanation.`,
     return `output modality is not supported by endpoint: ${props.expectedOutputModality}`;
   }
 
-  private async parseAndNormalizeClassification(props: {
+  protected async parseAndNormalizeClassification(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
     openRouter: OpenRouter;
     classifierModel: string;
@@ -1930,7 +3251,6 @@ No markdown. No explanation.`,
       purpose: "classification_repair",
       openRouter: props.openRouter,
       model: repairModelId,
-      reasoning: false,
       max_tokens: 300,
       responseFormat: CLASSIFICATION_RESPONSE_FORMAT,
       temperature: 0,
@@ -1981,7 +3301,7 @@ No markdown. No explanation. No extra keys.`,
     });
   }
 
-  private normalizeClassificationPayload(props: {
+  protected normalizeClassificationPayload(props: {
     parsedJson: Record<string, unknown>;
     requestText: string;
     requiredInputModalitiesList: TInputModality[];
@@ -2028,7 +3348,7 @@ No markdown. No explanation. No extra keys.`,
     };
   }
 
-  private adaptClassificationForEndpoint(props: {
+  protected adaptClassificationForEndpoint(props: {
     classification: IRequestClassification;
     requiredInputModalitiesList: TInputModality[];
   }): IRequestClassification {
@@ -2067,7 +3387,7 @@ No markdown. No explanation. No extra keys.`,
     };
   }
 
-  private normalizeLanguage(value: unknown): string {
+  protected normalizeLanguage(value: unknown): string {
     if (typeof value !== "string") {
       return "en";
     }
@@ -2093,7 +3413,7 @@ No markdown. No explanation. No extra keys.`,
     return "en";
   }
 
-  private tryParseJsonObject(value: string): Record<string, unknown> | null {
+  protected tryParseJsonObject(value: string): Record<string, unknown> | null {
     const trimmed = value.trim();
     const candidateValues = [trimmed];
 

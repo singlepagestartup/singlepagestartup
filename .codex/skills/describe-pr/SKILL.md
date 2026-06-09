@@ -13,6 +13,7 @@ Codex wrapper for `.claude/commands/utilities/describe_pr.md`.
 2. Execute the same workflow semantics and status gates.
 3. Keep all artifacts in the same paths under `thoughts/shared/*`.
 4. Use existing helper scripts in `.claude/helpers/*.sh` for GitHub status logic.
+5. If describing a PR for an `issue-N` branch with an implementation progress file, continue or hand control back to `core-30-implement` finalization and ensure `.claude/helpers/submit_pr_for_code_review.sh N PR_NUMBER_OR_URL` succeeds before reporting implementation completion.
 
 ## Codex Adaptation Rules
 

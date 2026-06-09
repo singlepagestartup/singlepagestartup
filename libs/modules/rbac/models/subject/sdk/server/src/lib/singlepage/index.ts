@@ -228,6 +228,41 @@ import {
   type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult,
 } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
 import {
+  action as socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge";
+import {
+  action as socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
+  type IProps as ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps,
+  type IResult as ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult,
+} from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/models";
+import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentFind,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindResult,
+} from "./social-module/profile/find-by-id/knowledge/document/find";
+import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentCreate,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult,
+} from "./social-module/profile/find-by-id/knowledge/document/create";
+import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult,
+} from "./social-module/profile/find-by-id/knowledge/document/find-by-id/update";
+import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult,
+} from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
+import {
+  action as socialModuleProfileFindByIdSkillProviderSync,
+  type IProps as ISocialModuleProfileFindByIdSkillProviderSyncProps,
+  type IResult as ISocialModuleProfileFindByIdSkillProviderSyncResult,
+} from "./social-module/profile/find-by-id/skill/provider-sync";
+import {
   action as socialModuleProfileFindByIdChatFindByIdDelete,
   type IProps as ISocialModuleProfileFindByIdChatFindByIdDeleteProps,
   type IResult as ISocialModuleProfileFindByIdChatFindByIdDeleteResult,
@@ -248,6 +283,11 @@ import {
   type IResult as ISocialModuleChatCreateResult,
 } from "./social-module/chat/create";
 import {
+  action as socialModuleChatFindByIdUpdate,
+  type IProps as ISocialModuleChatFindByIdUpdateProps,
+  type IResult as ISocialModuleChatFindByIdUpdateResult,
+} from "./social-module/chat/find-by-id/update";
+import {
   action as socialModuleChatFindByIdThreadFind,
   type IProps as ISocialModuleChatFindByIdThreadFindProps,
   type IResult as ISocialModuleChatFindByIdThreadFindResult,
@@ -257,6 +297,31 @@ import {
   type IProps as ISocialModuleChatFindByIdThreadCreateProps,
   type IResult as ISocialModuleChatFindByIdThreadCreateResult,
 } from "./social-module/chat/find-by-id/thread/create";
+import {
+  action as socialModuleChatFindByIdThreadUpdate,
+  type IProps as ISocialModuleChatFindByIdThreadUpdateProps,
+  type IResult as ISocialModuleChatFindByIdThreadUpdateResult,
+} from "./social-module/chat/find-by-id/thread/update";
+import {
+  action as socialModuleChatFindByIdThreadDelete,
+  type IProps as ISocialModuleChatFindByIdThreadDeleteProps,
+  type IResult as ISocialModuleChatFindByIdThreadDeleteResult,
+} from "./social-module/chat/find-by-id/thread/delete";
+import {
+  action as socialModuleChatFindByIdProfileCreate,
+  type IProps as ISocialModuleChatFindByIdProfileCreateProps,
+  type IResult as ISocialModuleChatFindByIdProfileCreateResult,
+} from "./social-module/chat/find-by-id/profile/create";
+import {
+  action as socialModuleChatFindByIdProfileSearch,
+  type IProps as ISocialModuleChatFindByIdProfileSearchProps,
+  type IResult as ISocialModuleChatFindByIdProfileSearchResult,
+} from "./social-module/chat/find-by-id/profile/search";
+import {
+  action as socialModuleChatFindByIdProfileDelete,
+  type IProps as ISocialModuleChatFindByIdProfileDeleteProps,
+  type IResult as ISocialModuleChatFindByIdProfileDeleteResult,
+} from "./social-module/chat/find-by-id/profile/delete";
 
 export type IProps = {
   INotifyProps: INotifyProps;
@@ -307,12 +372,25 @@ export type IProps = {
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateProps;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterProps;
+  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeProps: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeProps;
+  ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps: ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps;
+  ISocialModuleProfileFindByIdSkillProviderSyncProps: ISocialModuleProfileFindByIdSkillProviderSyncProps;
   ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateProps: ISocialModuleProfileFindByIdChatFindByIdActionCreateProps;
   ISocialModuleProfileFindByIdChatFindByIdActionFindProps: ISocialModuleProfileFindByIdChatFindByIdActionFindProps;
   ISocialModuleChatCreateProps: ISocialModuleChatCreateProps;
+  ISocialModuleChatFindByIdUpdateProps: ISocialModuleChatFindByIdUpdateProps;
   ISocialModuleChatFindByIdThreadFindProps: ISocialModuleChatFindByIdThreadFindProps;
   ISocialModuleChatFindByIdThreadCreateProps: ISocialModuleChatFindByIdThreadCreateProps;
+  ISocialModuleChatFindByIdThreadUpdateProps: ISocialModuleChatFindByIdThreadUpdateProps;
+  ISocialModuleChatFindByIdThreadDeleteProps: ISocialModuleChatFindByIdThreadDeleteProps;
+  ISocialModuleChatFindByIdProfileCreateProps: ISocialModuleChatFindByIdProfileCreateProps;
+  ISocialModuleChatFindByIdProfileSearchProps: ISocialModuleChatFindByIdProfileSearchProps;
+  ISocialModuleChatFindByIdProfileDeleteProps: ISocialModuleChatFindByIdProfileDeleteProps;
 };
 
 export type IResult = {
@@ -364,12 +442,25 @@ export type IResult = {
   ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult: ISocialModuleProfileFindByIdChatFindByIdMessageDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult: ISocialModuleProfileFindByIdChatFindByIdMessageUpdateResult;
   ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouterResult;
+  ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult: ISocialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledgeResult;
+  ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult: ISocialModuleProfileFindByIdChatFindByIdOpenrouterModelFindResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult: ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult;
+  ISocialModuleProfileFindByIdSkillProviderSyncResult: ISocialModuleProfileFindByIdSkillProviderSyncResult;
   ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateResult: ISocialModuleProfileFindByIdChatFindByIdActionCreateResult;
   ISocialModuleProfileFindByIdChatFindByIdActionFindResult: ISocialModuleProfileFindByIdChatFindByIdActionFindResult;
   ISocialModuleChatCreateResult: ISocialModuleChatCreateResult;
+  ISocialModuleChatFindByIdUpdateResult: ISocialModuleChatFindByIdUpdateResult;
   ISocialModuleChatFindByIdThreadFindResult: ISocialModuleChatFindByIdThreadFindResult;
   ISocialModuleChatFindByIdThreadCreateResult: ISocialModuleChatFindByIdThreadCreateResult;
+  ISocialModuleChatFindByIdThreadUpdateResult: ISocialModuleChatFindByIdThreadUpdateResult;
+  ISocialModuleChatFindByIdThreadDeleteResult: ISocialModuleChatFindByIdThreadDeleteResult;
+  ISocialModuleChatFindByIdProfileCreateResult: ISocialModuleChatFindByIdProfileCreateResult;
+  ISocialModuleChatFindByIdProfileSearchResult: ISocialModuleChatFindByIdProfileSearchResult;
+  ISocialModuleChatFindByIdProfileDeleteResult: ISocialModuleChatFindByIdProfileDeleteResult;
 };
 
 export const api = {
@@ -428,10 +519,23 @@ export const api = {
   socialModuleProfileFindByIdChatFindByIdMessageDelete,
   socialModuleProfileFindByIdChatFindByIdMessageUpdate,
   socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter,
+  socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge,
+  socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind,
+  socialModuleProfileFindByIdKnowledgeDocumentFind,
+  socialModuleProfileFindByIdKnowledgeDocumentCreate,
+  socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
+  socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex,
+  socialModuleProfileFindByIdSkillProviderSync,
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
   socialModuleProfileFindByIdChatFindByIdActionFind,
   socialModuleChatCreate,
+  socialModuleChatFindByIdUpdate,
   socialModuleChatFindByIdThreadFind,
   socialModuleChatFindByIdThreadCreate,
+  socialModuleChatFindByIdThreadUpdate,
+  socialModuleChatFindByIdThreadDelete,
+  socialModuleChatFindByIdProfileCreate,
+  socialModuleChatFindByIdProfileSearch,
+  socialModuleChatFindByIdProfileDelete,
 };

@@ -18,6 +18,16 @@ export function Component<
   CP extends IComponentProps<M, V>,
 >(props: CP & A) {
   const { Component: Child } = props;
+  const { data: count } = props.api.count({
+    params: props.apiProps?.params,
+    options: {
+      ...props.apiProps?.options,
+      headers: {
+        ...props.apiProps?.options?.headers,
+        "Cache-Control": "no-store",
+      },
+    },
+  });
 
-  return <Child {...props} isServer={false} data={[]} />;
+  return <Child {...props} isServer={false} data={[]} count={count ?? 0} />;
 }

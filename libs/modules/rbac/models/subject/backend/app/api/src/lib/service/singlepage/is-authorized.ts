@@ -39,7 +39,7 @@ export class Service {
     this.subjectsToRolesService = subjectsToRolesService;
   }
 
-  private async getSubjectRoleIds(subjectId: string) {
+  protected async getSubjectRoleIds(subjectId: string) {
     const cacheKey = `subjects-to-roles:subject:${subjectId}`;
     const cachedRoleIds = cache.get<string[]>(cacheKey);
 
@@ -78,7 +78,7 @@ export class Service {
     return roleIds;
   }
 
-  private getRoleIdsByPermissionId(props: {
+  protected getRoleIdsByPermissionId(props: {
     rolesToPermissions: IRolesToPermissions[];
     permissionId?: string;
   }) {
@@ -244,7 +244,7 @@ export class Service {
 
     if (!authorized) {
       throw new Error(
-        `Authorization error. You do not have access to this resource: ${JSON.stringify(props.permission)}`,
+        `Permission error. You do not have access to this resource: ${JSON.stringify(props.permission)}`,
       );
     } else {
       return {

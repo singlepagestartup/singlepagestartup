@@ -1,0 +1,9 @@
+{
+  "id": "cb8b9f98-3d37-48f4-8d91-eda2f110b630",
+  "createdAt": "2026-05-10T00:46:54.726Z",
+  "updatedAt": "2026-05-10T00:46:54.726Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/categories-to-website-builder-module-widgets/count"
+}

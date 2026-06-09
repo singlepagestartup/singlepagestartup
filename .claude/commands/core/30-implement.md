@@ -7,6 +7,20 @@ model: sonnet
 
 You implement an approved plan phase-by-phase with progress tracking. Plans are carefully designed, but reality can be messy — follow the plan's intent while adapting to what you find.
 
+## Repository / Project Preflight
+
+Before any status gate, GitHub issue command, or `thoughts/shared/...` path resolution, follow `.claude/references/repository-context-contract.md`.
+
+Use:
+
+```bash
+source .claude/helpers/load_config.sh
+REPO_NAME="$TARGET_REPO_NAME"
+REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
+```
+
+Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Dev" or "In Dev" status (the latter allows resuming an interrupted session)
@@ -33,7 +47,7 @@ fi
 
 2. **Resolve issue, read ticket and plan**:
 
-   - Run `gh repo view --json name -q '.name'` to get REPO_NAME
+   - Use `REPO_NAME="$TARGET_REPO_NAME"` from `.claude/helpers/load_config.sh` (or run `.claude/helpers/get_repo_name.sh`) to get REPO_NAME
    - Check for process file at `thoughts/shared/processes/REPO_NAME/ISSUE-{NUMBER}.md`
    - If it exists, read it completely before implementation
    - If it does not exist, create it using `.claude/references/process-artifact-contract.md`
@@ -70,7 +84,7 @@ fi
 4. **Sync GitHub comments** (before starting any code changes):
 
    ```bash
-   gh issue view ISSUE_NUMBER --json comments | jq -r '.comments'
+   gh issue view ISSUE_NUMBER --repo "$REPO_FULL_NAME" --json comments | jq -r '.comments'
    ```
 
    Check `<!-- Last synced at: ... -->` marker in the plan file to determine the cutoff date. Read all comments since the plan was last synced.
@@ -246,26 +260,15 @@ fi
      - `Next step: code review / merge`
    - **Promote recurring incidents to research**: review `## Incident Log`. For every incident with `Occurrences >= 2`, append it to `thoughts/shared/research/REPO_NAME/ISSUE-{NUMBER}.md` under a `## Known Pitfalls (from implementation)` section (create the section if absent). Use the same incident format. This makes the knowledge permanent and visible to future agents working on related issues.
 
-   d. **Comment on issue with PR link**:
+   d. **Submit PR for code review**:
 
    ```bash
-   COMMENT_FILE="$(mktemp)"
-   cat > "$COMMENT_FILE" <<'EOF'
-   PR submitted: [PR_URL]
-
-   Implementation summary:
-   - [Key change 1]
-   - [Key change 2]
-   EOF
-   .claude/helpers/gh_issue_comment.sh ISSUE_NUMBER --body-file "$COMMENT_FILE"
-   rm -f "$COMMENT_FILE"
+   .claude/helpers/submit_pr_for_code_review.sh ISSUE_NUMBER PR_NUMBER_OR_URL
    ```
 
-9. **Update status to "Code Review"**:
+9. **Verify status is "Code Review"**:
 
-   ```bash
-   .claude/helpers/update_issue_status.sh ISSUE_NUMBER "Code Review"
-   ```
+   The helper above comments on the issue with the PR link, updates the GitHub Project status to `Code Review`, and rereads the status. Do not finish the implementation phase until it succeeds.
 
 ## Exit
 
@@ -275,8 +278,8 @@ fi
 - [ ] Commit created with descriptive message
 - [ ] PR created with comprehensive description
 - [ ] Progress file updated with PR link and marked `status: complete`
-- [ ] Issue commented with PR link
-- [ ] Status updated to "Code Review" in GitHub Project
+- [ ] Issue commented with PR link through `submit_pr_for_code_review.sh`
+- [ ] Status verified as "Code Review" in GitHub Project
 
 ## Post-Merge Cleanup
 

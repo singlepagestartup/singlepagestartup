@@ -46,6 +46,10 @@ function Probe() {
       <span data-testid="offset">{ctx?.offset}</span>
       <span data-testid="limit">{ctx?.limit}</span>
       <span data-testid="total">{ctx?.total}</span>
+      <span data-testid="selected-row-ids">
+        {ctx?.selectedRowIds.join(",")}
+      </span>
+      <span data-testid="visible-row-ids">{ctx?.visibleRowIds.join(",")}</span>
     </div>
   );
 }
@@ -65,6 +69,26 @@ function SearchSetter() {
   }, [ctx, ctx?.search]);
 
   return null;
+}
+
+function SelectionSetter() {
+  const ctx = useTableContext();
+
+  return (
+    <button
+      type="button"
+      aria-label="Seed selection"
+      onClick={() => {
+        ctx?.setState((prev) => ({
+          ...prev,
+          selectedRowIds: ["row-1"],
+          visibleRowIds: ["row-1"],
+        }));
+      }}
+    >
+      Seed selection
+    </button>
+  );
 }
 
 describe("GIVEN: admin-v2 table-controller integration", () => {
@@ -144,6 +168,65 @@ describe("GIVEN: admin-v2 table-controller integration", () => {
     expect(
       harness.container.querySelector('[data-testid="offset"]')?.textContent,
     ).toBe("100");
+  });
+
+  /**
+   * BDD Scenario: page-scoped selection clears on pagination.
+   *
+   * Given: selected row ids belong to the currently visible page.
+   * When: the next page button is clicked.
+   * Then: selected and visible row ids are cleared with the page transition.
+   */
+  it("WHEN pagination changes THEN selected and visible row ids are cleared", () => {
+    renderInHarness(
+      harness,
+      <Component
+        isServer={false}
+        module="ecommerce"
+        name="product"
+        variant="admin-v2-table"
+      >
+        <Probe />
+        <SelectionSetter />
+      </Component>,
+    );
+
+    const seedSelectionButton = harness.container.querySelector(
+      'button[aria-label="Seed selection"]',
+    ) as HTMLButtonElement | null;
+    expect(seedSelectionButton).toBeTruthy();
+
+    act(() => {
+      seedSelectionButton?.click();
+    });
+
+    expect(
+      harness.container.querySelector('[data-testid="selected-row-ids"]')
+        ?.textContent,
+    ).toBe("row-1");
+    expect(
+      harness.container.querySelector('[data-testid="visible-row-ids"]')
+        ?.textContent,
+    ).toBe("row-1");
+
+    const nextButton = harness.container.querySelector(
+      'button[aria-label="Next page"]',
+    ) as HTMLButtonElement | null;
+
+    expect(nextButton).toBeTruthy();
+
+    act(() => {
+      nextButton?.click();
+    });
+
+    expect(
+      harness.container.querySelector('[data-testid="selected-row-ids"]')
+        ?.textContent,
+    ).toBe("");
+    expect(
+      harness.container.querySelector('[data-testid="visible-row-ids"]')
+        ?.textContent,
+    ).toBe("");
   });
 });
 beforeAll(() => {

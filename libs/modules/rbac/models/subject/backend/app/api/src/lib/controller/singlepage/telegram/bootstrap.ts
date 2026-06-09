@@ -25,6 +25,8 @@ export class Handler {
           fromId?: string | number;
           chatId?: string | number;
           messageText?: string;
+          messageThreadId?: string | number;
+          isTopicMessage?: boolean;
         };
       };
 
@@ -52,6 +54,12 @@ export class Handler {
         fromId: String(fromId),
         chatId: String(chatId),
         messageText: data?.telegram?.messageText,
+        messageThreadId:
+          data?.telegram?.messageThreadId === undefined ||
+          data?.telegram?.messageThreadId === null
+            ? undefined
+            : String(data.telegram.messageThreadId),
+        isTopicMessage: data?.telegram?.isTopicMessage,
       });
 
       return c.json({

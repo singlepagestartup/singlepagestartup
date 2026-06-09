@@ -45,6 +45,28 @@ paths:
               schema:
                 $ref: "ecommerce-orders-to-billing-module-payment-intents.yaml"
 
+  /ecommerce/orders-to-billing-module-payment-intents/count:
+    get:
+      tags:
+        - "ecommerce-orders-to-billing-module-payment-intents"
+      summary: Count entities
+      description: Retrieve a count of all entities with optional filtering
+      parameters:
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/query-builder/filters.yaml"
+        - $ref: "../../../../../../../../../libs/shared/backend/api/src/lib/middleware/no-cache.yaml"
+      responses:
+        "200":
+          description: Count of entities
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: integer
+
   /ecommerce/orders-to-billing-module-payment-intents/{id}:
     get:
       tags:

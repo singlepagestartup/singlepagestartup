@@ -6,6 +6,8 @@ import { action as remove } from "./delete";
 export type { IProps as IDeleteProps } from "./delete";
 import { action as find } from "./find";
 export type { IProps as IFindProps } from "./find";
+import { action as count } from "./count";
+export type { IProps as ICountProps } from "./count";
 import { action as update } from "./update";
 export type { IProps as IUpdateProps } from "./update";
 import { action as findOrCreate } from "./find-or-create";
@@ -20,6 +22,7 @@ export const actions = {
   create,
   delete: remove,
   find,
+  count,
   update,
   findOrCreate,
   bulkCreate,

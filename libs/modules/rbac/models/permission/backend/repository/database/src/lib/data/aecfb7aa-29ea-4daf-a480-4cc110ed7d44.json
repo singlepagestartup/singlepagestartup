@@ -1,0 +1,9 @@
+{
+  "id": "aecfb7aa-29ea-4daf-a480-4cc110ed7d44",
+  "createdAt": "2026-05-10T00:46:54.707Z",
+  "updatedAt": "2026-05-10T00:46:54.707Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/blog/categories-to-articles/count"
+}

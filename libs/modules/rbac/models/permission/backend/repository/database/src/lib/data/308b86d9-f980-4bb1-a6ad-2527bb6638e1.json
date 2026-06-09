@@ -1,0 +1,9 @@
+{
+  "id": "308b86d9-f980-4bb1-a6ad-2527bb6638e1",
+  "createdAt": "2026-05-10T00:46:04.539Z",
+  "updatedAt": "2026-05-10T00:46:04.539Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/roles-to-ecommerce-module-products/count"
+}

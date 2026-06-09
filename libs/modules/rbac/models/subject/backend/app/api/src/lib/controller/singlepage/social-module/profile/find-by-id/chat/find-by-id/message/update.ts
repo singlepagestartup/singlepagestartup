@@ -1,4 +1,8 @@
-import { RBAC_JWT_SECRET, RBAC_SECRET_KEY } from "@sps/shared-utils";
+import {
+  AUDIO_TRANSCRIPTION_ACTION_TYPE,
+  RBAC_JWT_SECRET,
+  RBAC_SECRET_KEY,
+} from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../service";
@@ -7,6 +11,8 @@ import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleMessagesToFileStorageModuleFilesApi } from "@sps/social/relations/messages-to-file-storage-module-files/sdk/server";
 import { api as fileStorageModuleFileApi } from "@sps/file-storage/models/file/sdk/server";
 import { getHttpErrorType, logger } from "@sps/backend-utils";
+import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { getAudioTranscriptionMetadata } from "./audio-transcription";
 
 export class Handler {
   service: Service;
@@ -169,6 +175,10 @@ export class Handler {
       }
 
       try {
+        const actionType = this.getMessageUpdateActionType({
+          socialModuleMessage,
+        });
+
         await rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdActionCreate(
           {
             id,
@@ -176,7 +186,7 @@ export class Handler {
             socialModuleChatId,
             data: {
               payload: {
-                type: "update",
+                type: actionType,
                 message: socialModuleMessage,
               },
             },
@@ -196,5 +206,31 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  protected getMessageUpdateActionType(props: {
+    socialModuleMessage: ISocialModuleMessage;
+  }) {
+    const metadata = props.socialModuleMessage.metadata;
+
+    if (!metadata || typeof metadata !== "object") {
+      return "update";
+    }
+
+    const audioTranscription = getAudioTranscriptionMetadata(
+      props.socialModuleMessage,
+    );
+
+    if (
+      audioTranscription &&
+      typeof audioTranscription === "object" &&
+      (audioTranscription as Record<string, unknown>).status === "completed" &&
+      (audioTranscription as Record<string, unknown>).agentTrigger ===
+        AUDIO_TRANSCRIPTION_ACTION_TYPE
+    ) {
+      return AUDIO_TRANSCRIPTION_ACTION_TYPE;
+    }
+
+    return "update";
   }
 }

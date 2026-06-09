@@ -27,7 +27,7 @@ describe("Coder", () => {
 
   bindApps() {
     this.apps.push({
-      type: "model",
+      type: "relation",
       route: "/wide-slide-route",
       app: wideSlideRoute,
     });
@@ -56,13 +56,13 @@ describe("Coder", () => {
 
   bindApps() {
     this.apps.push({
-      type: "model",
+      type: "relation",
       route: "/wide-slide-route",
       app: wideSlideRoute,
     });
     
     this.apps.push({
-      type: "model",
+      type: "relation",
       route: "/layouts",
       app: layouts,
     });
@@ -72,7 +72,7 @@ describe("Coder", () => {
       const result = string.replace(regex, "");
       const normalizedResult = result.replace(/\s+/g, " ").trim();
       const normalizedExpected =
-        'export class Apps { apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] = []; constructor() { this.bindApps(); } bindApps() {this.apps.push({ type: "model", route: "/layouts", app: layouts, }); } }'
+        'export class Apps { apps: { type: "model" | "relation"; route: string; app: DefaultApp<any> }[] = []; constructor() { this.bindApps(); } bindApps() {this.apps.push({ type: "relation", route: "/layouts", app: layouts, }); } }'
           .replace(/\s+/g, " ")
           .trim();
 
@@ -83,7 +83,7 @@ describe("Coder", () => {
       const content = bindApp.onCreate.content;
       const expected = `bindApps() {
     this.apps.push({
-      type: "model",
+      type: "relation",
       route: "/wide-slide-route",
       app: wideSlideRoute,
     });`;

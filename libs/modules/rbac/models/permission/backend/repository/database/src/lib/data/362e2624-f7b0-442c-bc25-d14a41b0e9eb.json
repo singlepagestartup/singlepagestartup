@@ -1,0 +1,9 @@
+{
+  "id": "362e2624-f7b0-442c-bc25-d14a41b0e9eb",
+  "createdAt": "2026-05-10T00:47:59.767Z",
+  "updatedAt": "2026-05-10T00:47:59.767Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/social/threads/count"
+}

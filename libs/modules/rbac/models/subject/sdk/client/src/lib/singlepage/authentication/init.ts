@@ -3,7 +3,6 @@
 import { STALE_TIME } from "@sps/shared-utils";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { route, clientHost } from "@sps/rbac/models/subject/sdk/model";
-import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { globalActionsStore } from "@sps/shared-frontend-client-store";
 import { createId } from "@paralleldrive/cuid2";
@@ -13,6 +12,7 @@ import {
   type IResult as IParentResult,
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
+import { persistAuthenticationTokens } from "./persist-authentication-tokens";
 
 export type IProps = IParentProps["IAuthenticationInitProps"] & {
   reactQueryOptions?: Partial<UseQueryOptions<any>>;
@@ -38,8 +38,7 @@ export function action(props: IProps) {
           throw new Error("Not Found error. No result");
         }
 
-        localStorage.setItem("rbac.subject.refresh", result.refresh);
-        Cookies.set("rbac.subject.jwt", result.jwt);
+        persistAuthenticationTokens(result);
 
         return result;
       } catch (error: any) {

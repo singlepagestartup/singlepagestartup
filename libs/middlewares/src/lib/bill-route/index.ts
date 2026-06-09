@@ -8,21 +8,19 @@ import { getCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 
 /**
- * Routes that are allowed to be accessed without authentication
+ * Routes that require billing to be checked.
+ * Only requests matching these patterns will be billed; everything else is let through.
  * @type {Array<{ regexPath: RegExp; methods: string[] }>}
  *
  * [..., {
- *   regexPath: /\/api\/rbac\/identities\/[a-zA-Z0-9-]+/,
- *   methods: ["GET"],
+ *   regexPath: /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages\/[a-zA-Z0-9-]+\/react-by\/openrouter/,
+ *   methods: ["POST"],
  * }]
  */
-const notBillingRoutes: { regexPath: RegExp; methods: string[] }[] = [
+const billingRoutes: { regexPath: RegExp; methods: string[] }[] = [
   {
-    regexPath: /\/api\/rbac\/subjects\/(authentication)\/(\w+)?/,
-    methods: ["POST"],
-  },
-  {
-    regexPath: /\/api\/rbac\/subjects\/authentication\/oauth\/.*/,
+    regexPath:
+      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages\/[a-zA-Z0-9-]+\/react-by\/openrouter/,
     methods: ["POST"],
   },
 ];
@@ -33,14 +31,14 @@ export type IMiddlewareGeneric = {
 
 export class Middleware {
   storeProvider: StoreProvider;
-  private notBillingRoutes: Map<string, Set<string>>;
+  private billingRoutes: Map<string, Set<string>>;
 
   constructor() {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
-    this.notBillingRoutes = new Map();
+    this.billingRoutes = new Map();
 
-    notBillingRoutes.forEach(({ regexPath, methods }) => {
-      this.notBillingRoutes.set(regexPath.source, new Set(methods));
+    billingRoutes.forEach(({ regexPath, methods }) => {
+      this.billingRoutes.set(regexPath.source, new Set(methods));
     });
   }
 
@@ -53,14 +51,13 @@ export class Middleware {
 
       const method = c.req.method;
 
-      if (["GET"].includes(method)) {
-        return await next();
-      }
+      const isBillingRoute = [...this.billingRoutes.entries()].some(
+        ([pattern, methods]) =>
+          new RegExp(pattern).test(route) && methods.has(method),
+      );
 
-      for (const [pattern, methods] of this.notBillingRoutes.entries()) {
-        if (new RegExp(pattern).test(route) && methods.has(method)) {
-          return next();
-        }
+      if (!isBillingRoute) {
+        return await next();
       }
 
       try {
@@ -87,12 +84,6 @@ export class Middleware {
       }
 
       await next();
-
-      for (const [pattern, methods] of this.notBillingRoutes.entries()) {
-        if (new RegExp(pattern).test(route) && methods.has(method)) {
-          return;
-        }
-      }
 
       // if (c.res.status >= 200 && c.res.status < 300) {
       //   if (method !== "GET") {

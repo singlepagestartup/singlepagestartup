@@ -50,6 +50,9 @@ describe("util — HTTP error classification", () => {
       "No subject provided in the token",
       "Token required",
       "invalid token issued",
+      "token(abc.def.ghi) signature mismatched",
+      "invalid signature",
+      "jwt malformed",
     ])("maps '%s' → 401 Authentication error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(401);
@@ -65,6 +68,7 @@ describe("util — HTTP error classification", () => {
       "Authentication failed",
       "Only order owner can update order",
       "Only identity owner can create identity",
+      'Permission error. You do not have access to this resource: {"route":"/api/crm/forms-to-steps","method":"GET","type":"HTTP"}',
     ])("maps '%s' → 403 Permission error", (msg) => {
       const result = util(new Error(msg));
       expect(result.status).toBe(403);

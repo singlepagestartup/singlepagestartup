@@ -8,6 +8,7 @@ export interface ITransferable {
 
 interface IDefaultRepository extends ITransferable {
   find: (props?: FindServiceProps) => Promise<any[]>;
+  count: (props?: FindServiceProps) => Promise<number>;
   findByField: (field: string, value: any) => Promise<any>;
   findFirstByField: (field: string, value: any) => Promise<any>;
   insert: (data: any) => Promise<any>;

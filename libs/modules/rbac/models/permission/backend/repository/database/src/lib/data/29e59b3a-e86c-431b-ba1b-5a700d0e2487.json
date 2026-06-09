@@ -1,0 +1,9 @@
+{
+  "id": "29e59b3a-e86c-431b-ba1b-5a700d0e2487",
+  "createdAt": "2026-05-10T00:47:38.709Z",
+  "updatedAt": "2026-05-10T00:47:38.709Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/file-storage/files/count"
+}

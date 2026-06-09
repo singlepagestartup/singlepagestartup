@@ -1,4 +1,7 @@
+import { app as profilesToSkills } from "@sps/social/relations/profiles-to-skills/backend/app/api";
+import { app as skill } from "@sps/social/models/skill/backend/app/api";
 import { app as profilesToFileStorageModuleFiles } from "@sps/social/relations/profiles-to-file-storage-module-files/backend/app/api";
+import { app as profilesToKnowledgeModuleDocuments } from "@sps/social/relations/profiles-to-knowledge-module-documents/backend/app/api";
 import { app as profilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/backend/app/api";
 import { app as profile } from "@sps/social/models/profile/backend/app/api";
 import { app as action } from "@sps/social/models/action/backend/app/api";
@@ -19,6 +22,7 @@ import { app as messagesToFileStorageModuleFiles } from "@sps/social/relations/m
 import { app as thread } from "@sps/social/models/thread/backend/app/api";
 import { app as chatsToThreads } from "@sps/social/relations/chats-to-threads/backend/app/api";
 import { app as threadsToMessages } from "@sps/social/relations/threads-to-messages/backend/app/api";
+import { app as threadsToActions } from "@sps/social/relations/threads-to-actions/backend/app/api";
 import { app as threadsToEcommerceModuleProducts } from "@sps/social/relations/threads-to-ecommerce-module-products/backend/app/api";
 import { DefaultApp } from "@sps/shared-backend-api";
 
@@ -33,8 +37,23 @@ export class Apps {
   bindApps() {
     this.apps.push({
       type: "relation",
+      route: "/profiles-to-skills",
+      app: profilesToSkills,
+    });
+    this.apps.push({
+      type: "model",
+      route: "/skills",
+      app: skill,
+    });
+    this.apps.push({
+      type: "relation",
       route: "/profiles-to-file-storage-module-files",
       app: profilesToFileStorageModuleFiles,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/profiles-to-knowledge-module-documents",
+      app: profilesToKnowledgeModuleDocuments,
     });
     this.apps.push({
       type: "relation",
@@ -140,6 +159,11 @@ export class Apps {
       type: "relation",
       route: "/chats-to-actions",
       app: chatsToActions,
+    });
+    this.apps.push({
+      type: "relation",
+      route: "/threads-to-actions",
+      app: threadsToActions,
     });
   }
 }

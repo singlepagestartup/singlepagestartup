@@ -1,0 +1,68 @@
+version: "3.7"
+
+services:
+  {{ SERVICE_NAME }}:
+    image: {{ DOCKER_HUB_URL }}/{{ DOCKER_HUB_SERVICE_REPOSITORY }}
+    networks:
+      - traefik_overlay
+    env_file:
+      - ./{{ SERVICE_NAME }}.env
+    command: "uvicorn main:app --host 0.0.0.0 --port 8765"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      update_config:
+        order: start-first
+      placement:
+        constraints:
+          - node.role == manager
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - /home/code/ollama_data:/root/.ollama
+    networks:
+      - traefik_overlay
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      update_config:
+        order: start-first
+      placement:
+        constraints:
+          - node.role == manager
+
+  ollama-init:
+    image: ollama/ollama:latest
+    volumes:
+      - /home/code/ollama_data:/root/.ollama
+    networks:
+      - traefik_overlay
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until ollama list >/dev/null 2>&1; do
+          sleep 2
+        done
+        printf '%s\n' "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}" | tr ',' '\n' | xargs -n 1 ollama pull
+    deploy:
+      restart_policy:
+        condition: none
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  traefik_overlay:
+    external: true

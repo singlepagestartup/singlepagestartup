@@ -1,0 +1,9 @@
+{
+  "id": "1cf589b2-4e3e-435a-adb7-d2640251338c",
+  "createdAt": "2026-05-10T00:46:54.889Z",
+  "updatedAt": "2026-05-10T00:46:54.889Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/options/count"
+}

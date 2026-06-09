@@ -1,0 +1,9 @@
+{
+  "id": "87dab34c-5106-42c3-bf43-2d98feb3b2d7",
+  "createdAt": "2026-05-10T00:47:17.593Z",
+  "updatedAt": "2026-05-10T00:47:17.593Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/ecommerce/categories/count"
+}

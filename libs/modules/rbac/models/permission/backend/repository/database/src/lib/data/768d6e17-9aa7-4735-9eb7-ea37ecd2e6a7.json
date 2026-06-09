@@ -1,0 +1,9 @@
+{
+  "id": "768d6e17-9aa7-4735-9eb7-ea37ecd2e6a7",
+  "createdAt": "2026-05-10T00:46:30.012Z",
+  "updatedAt": "2026-05-10T00:46:30.012Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/rbac/subjects-to-identities/count"
+}

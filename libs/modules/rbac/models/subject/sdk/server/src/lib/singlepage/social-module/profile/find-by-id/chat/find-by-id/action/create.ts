@@ -19,7 +19,9 @@ export interface IProps {
     [key: string]: any;
   };
   options?: Partial<NextRequestOptions>;
-  data: Partial<ISocialModuleAction>;
+  data: Partial<ISocialModuleAction> & {
+    socialModuleThreadId?: string;
+  };
 }
 
 export type IResult = ISocialModuleAction;

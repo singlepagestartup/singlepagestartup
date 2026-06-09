@@ -57,6 +57,16 @@ export function Component(props: IComponentPropsExtended) {
   const relationSections = useMemo(() => {
     return [
       {
+        id: "profiles-to-knowledge-module-documents",
+        title: "Knowledge Documents",
+        render: props.profilesToKnowledgeModuleDocuments,
+      },
+      {
+        id: "profiles-to-skills",
+        title: "Skills",
+        render: props.profilesToSkills,
+      },
+      {
         id: "profiles-to-website-builder-module-widgets",
         title: "Website Widgets",
         render: props.profilesToWebsiteBuilderModuleWidgets,
@@ -101,6 +111,8 @@ export function Component(props: IComponentPropsExtended) {
       } => Boolean(section.render),
     );
   }, [
+    props.profilesToKnowledgeModuleDocuments,
+    props.profilesToSkills,
     props.profilesToWebsiteBuilderModuleWidgets,
     props.profilesToFileStorageModuleFiles,
     props.profilesToAttributes,

@@ -1,0 +1,9 @@
+{
+  "id": "58f42c5e-62ea-4d86-b35d-232c91134576",
+  "createdAt": "2026-05-10T00:46:54.980Z",
+  "updatedAt": "2026-05-10T00:46:54.980Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "GET",
+  "path": "/api/crm/forms-to-steps/count"
+}
