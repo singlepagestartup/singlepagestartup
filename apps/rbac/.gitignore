@@ -1,0 +1,26 @@
+############################
+# Next.js
+############################
+.next
+out
+build
+.env
+.env*.local
+.env*.testing
+.vercel
+next-env.d.ts
+
+############################
+# Testing
+############################
+coverage
+
+############################
+# ICP
+############################
+.dfx
+*.key
+*.pem
+*.pem.base64
+*-wallet.txt
+.env.cloudflare

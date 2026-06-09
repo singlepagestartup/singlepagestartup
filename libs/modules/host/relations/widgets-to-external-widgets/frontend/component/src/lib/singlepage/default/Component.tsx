@@ -1,18 +1,69 @@
 import { IComponentPropsExtended } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Component as Analytic } from "./analytic/Component";
-import { Component as Billing } from "./billing/Component";
-import { Component as Blog } from "./blog/Component";
-import { Component as Crm } from "./crm/Component";
-import { Component as Ecommerce } from "./ecommerce/Component";
-import { Component as FileStorage } from "./file-storage/Component";
-import { Component as Notification } from "./notification/Component";
-import { Component as Rbac } from "./rbac/Component";
-import { Component as Social } from "./social/Component";
-import { Component as Startup } from "./startup/Component";
-import { Component as WebsiteBuilder } from "./website-builder/Component";
+import dynamic from "next/dynamic";
+
+const externalWidgetLoaders = {
+  analytic: () =>
+    import("./analytic/Component").then((module) => module.Component),
+  billing: () =>
+    import("./billing/Component").then((module) => module.Component),
+  blog: () => import("./blog/Component").then((module) => module.Component),
+  crm: () => import("./crm/Component").then((module) => module.Component),
+  ecommerce: () =>
+    import("./ecommerce/Component").then((module) => module.Component),
+  "file-storage": () =>
+    import("./file-storage/Component").then((module) => module.Component),
+  notification: () =>
+    import("./notification/Component").then((module) => module.Component),
+  rbac: () => import("./rbac/Component").then((module) => module.Component),
+  social: () => import("./social/Component").then((module) => module.Component),
+  startup: () =>
+    import("./startup/Component").then((module) => module.Component),
+  "website-builder": () =>
+    import("./website-builder/Component").then((module) => module.Component),
+} as const;
+
+const externalWidgetClientComponents = {
+  analytic: dynamic(externalWidgetLoaders.analytic),
+  billing: dynamic(externalWidgetLoaders.billing),
+  blog: dynamic(externalWidgetLoaders.blog),
+  crm: dynamic(externalWidgetLoaders.crm),
+  ecommerce: dynamic(externalWidgetLoaders.ecommerce),
+  "file-storage": dynamic(externalWidgetLoaders["file-storage"]),
+  notification: dynamic(externalWidgetLoaders.notification),
+  rbac: dynamic(externalWidgetLoaders.rbac),
+  social: dynamic(externalWidgetLoaders.social),
+  startup: dynamic(externalWidgetLoaders.startup),
+  "website-builder": dynamic(externalWidgetLoaders["website-builder"]),
+} as const;
+
+async function ServerExternalWidget(props: IComponentPropsExtended) {
+  const loadExternalWidget =
+    externalWidgetLoaders[
+      props.data.externalModule as keyof typeof externalWidgetLoaders
+    ];
+
+  if (!loadExternalWidget) {
+    return null;
+  }
+
+  const ExternalWidgetComponent = await loadExternalWidget();
+
+  return (
+    <ExternalWidgetComponent
+      {...props}
+      isServer={props.isServer}
+      data={props.data}
+    />
+  );
+}
 
 export function Component(props: IComponentPropsExtended) {
+  const ExternalWidgetComponent =
+    externalWidgetClientComponents[
+      props.data.externalModule as keyof typeof externalWidgetClientComponents
+    ];
+
   return (
     <div
       data-module="host"
@@ -25,48 +76,10 @@ export function Component(props: IComponentPropsExtended) {
         props.className,
       )}
     >
-      {props.data.externalModule === "analytic" ? (
-        <Analytic {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "billing" ? (
-        <Billing {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "blog" ? (
-        <Blog {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "crm" ? (
-        <Crm {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "ecommerce" ? (
-        <Ecommerce {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "file-storage" ? (
-        <FileStorage {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "notification" ? (
-        <Notification {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "rbac" ? (
-        <Rbac {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "social" ? (
-        <Social {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "startup" ? (
-        <Startup {...props} isServer={props.isServer} data={props.data} />
-      ) : null}
-
-      {props.data.externalModule === "website-builder" ? (
-        <WebsiteBuilder
+      {props.isServer ? (
+        <ServerExternalWidget {...props} />
+      ) : ExternalWidgetComponent ? (
+        <ExternalWidgetComponent
           {...props}
           isServer={props.isServer}
           data={props.data}

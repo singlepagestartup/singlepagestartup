@@ -1,0 +1,44 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"],
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "../../apps/ecommerce/.next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "e2e",
+    "*.spec.ts",
+    "**/*.spec.ts",
+    "*.test.ts",
+    "**/*.test.ts",
+    "*.spec.tsx",
+    "**/*.spec.tsx",
+    "*.test.tsx",
+    "**/*.test.tsx"
+  ]
+}
