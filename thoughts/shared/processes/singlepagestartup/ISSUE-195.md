@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-06-10T11:23:52Z
 last_updated: 2026-06-10T12:12:06Z
 status: active
-current_phase: research
+current_phase: plan
 ---
 
 # Process Log: ISSUE-195 - Smooth realtime data updates without full component rerenders
@@ -18,10 +18,10 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 - Create: completed
 - Research: completed
-- Plan: not_started
+- Plan: completed
 - Implement: not_started
-- Current phase: research
-- Next step: Human review of research, then `core-20-plan` (advance to Ready for Plan).
+- Current phase: plan
+- Next step: human review, then core/30-implement.
 
 ## Phase Notes
 
@@ -52,9 +52,15 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Plan
 
-- Summary:
+- Summary: Produced a 6-phase implementation plan: (1) shared React Query cache helpers + factory mutation integration (automatic coverage of all 168 factory-backed SDK clients across 16 modules), (2) chat composer rerender isolation, (3) chat timeline row memoization, (4) chat targeted cache patches + scroll-signature fix, (5) ecommerce cart universality verification, (6) convention documentation (shared-api README, revalidation README, CLAUDE.md review checklist). WS invalidation is preserved everywhere as the background consistency fallback.
 - Outputs:
+  - Plan: `thoughts/shared/plans/singlepagestartup/ISSUE-195.md`
 - Notes:
+  - User requested (in review of the plan outline) that the approach be explicitly codebase-wide; verified that all model/relation SDK clients spread `factory<IModel>()` (168 files importing `@sps/shared-frontend-client-api`), so factory integration covers all modules automatically; ~41 hand-written SDK files follow the documented contract opportunistically, with chat as the reference implementation.
+  - Plan resolves the research open question on the chat update SDK returning `ISocialModuleMessage[]` (array): Phase 4 selects the message by edited id, falling back to refetch.
+  - Phase 1 was expanded beyond the ticket's Layer 0 to handle `findById` (`route/id`) and `count` (`route/count`) key prefixes, since `[route]` prefix matching does not cover them (array-element matching).
+  - Migration note flags an audit of existing `reactQueryOptions.onSuccess` factory-mutation callers, since internal cache handling will now run before user callbacks.
+  - Plan-review amendment (user question): the original plan missed the backend HTTP cache middleware (`libs/middlewares/src/lib/http-cache/index.ts`). Analysis: factory base routes are version-bumped correctly (mutation path minus UUID = list GET path), but chat message update/delete (chat-scoped paths) never bump the thread-scoped timeline GET path, so within `KV_TTL` (30 s) a reconciliation refetch can serve stale data and revert a correct local patch. Phase 4 now includes excluding the chat thread-messages GET (and evaluating the actions GET, which is fed by server-internal creations that never bump) from HTTP caching, following the in-file issue-152 exclusion precedent.
 
 ### Implement
 
