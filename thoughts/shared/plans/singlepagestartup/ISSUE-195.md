@@ -2,7 +2,7 @@
 
 ## Overview
 
-Introduce a React Query cache-patching layer that makes create/update/delete render as local, visually-stable UI updates across the whole codebase (all factory-backed models/relations in all 16 modules plus hand-written SDKs like chat), while keeping the existing WebSocket invalidation pipeline as the background consistency fallback.
+Introduce a React Query cache-patching layer that makes create/update/delete render as local, visually-stable UI updates across the whole codebase (all factory-backed models/relations in all 16 modules plus hand-written SDKs like chat), and upgrade the WebSocket invalidation pipeline from a 1000 ms-deferred background fallback into an immediate cross-client reconciliation path — when another user changes data, subscribed clients must see the update right away.
 
 ## Current State Analysis
 
@@ -20,10 +20,10 @@ Introduce a React Query cache-patching layer that makes create/update/delete ren
 - Factory `create`/`update`/`delete` mutations patch the React Query cache locally (append/patch/remove with safety rules) before any user callback, for every model and relation in every module, with no per-model changes required.
 - Chat: typing rerenders only the composer; create appends one row; edit patches one row without scrolling to bottom; delete removes one row; unchanged rows keep stable props and do not rerender; AI/OpenRouter flow still refetches.
 - Ecommerce cart benefits from the factory integration with zero cart-specific code changes.
-- WebSocket topic/route invalidation continues to run as the background consistency guarantee.
+- Cross-client realtime: WebSocket topic/route invalidation fires immediately (no artificial 1000 ms delay), so when another user changes data, every subscribed client refetches right away and — thanks to structural sharing + memoized rows — renders it as a local row update. Perceived cross-client latency = WS push + refetch round trip (sub-second).
 - Conventions are documented so all future components/SDKs follow the same pattern.
 
-Verification: BDD specs for cache helpers, factory callback merging, and chat patching pass; manual browser checks confirm no timeline flicker/jumps for chat and faster cart updates.
+Verification: BDD specs for cache helpers, factory callback merging, subscription timing, and chat patching pass; manual browser checks confirm no timeline flicker/jumps for chat, faster cart updates, and sub-second propagation of changes to a second browser window.
 
 ### Key Discoveries:
 
@@ -38,18 +38,17 @@ Verification: BDD specs for cache helpers, factory callback merging, and chat pa
 
 ## What We're NOT Doing
 
-- Not adding entity payloads to WS broadcasts or patching other clients' caches from WS messages — cross-client updates stay on the invalidation fallback.
+- Not adding entity payloads to WS broadcasts or patching other clients' caches from WS data. `/ws/revalidation` is a shared broadcast channel delivered to ALL connected clients; carrying entity bodies would leak private data (chat messages, orders) across users, and per-topic WS authorization is out of scope. Cross-client immediacy is achieved instead by removing the artificial invalidation delay (Phase 5) — broadcasts stay metadata-only.
 - Not introducing a Zustand (or any second) store for server data.
 - Not changing chat SDK query-key structures, `meta.topics`, or the revalidation middleware/topic rules.
-- Not removing or tuning the 1000 ms `setTimeout` in `subscription()`.
 - Not refactoring add-to-cart away from its server-SDK + `router.refresh()` path.
-- Not memoizing ecommerce cart rows in this issue (explicit follow-up only if flicker remains after Phase 5 verification).
+- Not memoizing ecommerce cart rows in this issue (explicit follow-up only if flicker remains after Phase 6 verification).
 - Not building a generic mutation-path → read-path bump-rules engine for the HTTP cache middleware; for the chat timeline a targeted cache exclusion (issue-152 precedent) is sufficient, and factory base routes already bump correctly.
-- Not migrating the other ~40 hand-written SDK files to the new mutation contract — the convention is documented (Phase 6) and applied opportunistically in future work; chat is the reference implementation.
+- Not migrating the other ~40 hand-written SDK files to the new mutation contract — the convention is documented (Phase 7) and applied opportunistically in future work; chat is the reference implementation.
 
 ## Implementation Approach
 
-Four coverage levels, delivered bottom-up: (A) shared cache helpers integrated into the generic factory → automatic coverage for all factory-backed models/relations; (B) the same helpers used with explicit keys by hand-written SDK flows, with chat as the reference; (C) component-level conventions (row memoization, scoped pending state, localized form subscriptions) proven on the chat timeline; (D) the untouched WS invalidation pipeline as the consistency fallback for everything, including server-created data (AI replies) and other clients. Each phase is independently shippable and verifiable.
+Four coverage levels, delivered bottom-up: (A) shared cache helpers integrated into the generic factory → automatic coverage for all factory-backed models/relations; (B) the same helpers used with explicit keys by hand-written SDK flows, with chat as the reference; (C) component-level conventions (row memoization, scoped pending state, localized form subscriptions) proven on the chat timeline; (D) the WS invalidation pipeline upgraded from a 1000 ms-deferred fallback into the immediate, metadata-only cross-client reconciliation path — covering other users' changes and server-created data (AI replies). Levels A–C make refetches visually local; level D makes them immediate, so together they deliver realtime freshness without flicker. Each phase is independently shippable and verifiable.
 
 ## Phase 1: Shared Cache Helpers + Factory Integration (Layer 0)
 
@@ -262,16 +261,59 @@ Replace full-list invalidation on chat mutation success with targeted cache patc
 - [ ] Editing a message updates only that row and does NOT scroll to bottom.
 - [ ] Deleting a message removes only that row.
 - [ ] AI/OpenRouter reply still appears reliably (server-created message arrives via refetch).
-- [ ] Background WS refetch still reconciles (e.g. a second browser window receives the message within the fallback window).
+- [ ] WS refetch still reconciles a second browser window (cross-client immediacy itself is delivered in Phase 5; at this point the legacy 1000 ms delay is still acceptable).
 - [ ] After editing/deleting a message, the background refetch (within 30 s of the mutation) returns fresh data and does NOT revert the patched row (verifies the http-cache exclusion).
 
 ---
 
-## Phase 5: Ecommerce Cart Universality Check
+## Phase 5: Immediate Cross-Client Reconciliation
 
 ### Overview
 
-Verify that factory-backed cart/order flows benefit from Phase 1 with zero cart-specific code changes. This phase is verification-first; code changes only if a defect in the shared layer is exposed.
+Turn the WS revalidation path from a deferred background fallback into the immediate realtime sync mechanism: when another user changes data, subscribed clients refetch and render the change right away. Combined with Phases 2–3 (memoization + structural sharing), the refetch renders as a local row update, so immediacy does not reintroduce flicker. Broadcasts remain metadata-only (no entity payloads — see "What We're NOT Doing").
+
+### Changes Required:
+
+#### 1. Remove the artificial invalidation delay
+
+**File**: `libs/shared/frontend/client/api/src/lib/factory/index.ts` (`subscription()`, `:155-200`)
+**Why**: Both the topic path and the route-fallback path defer `invalidateQueries` behind a hardcoded `setTimeout(…, 1000)` — the main source of cross-client latency. `invalidateQueries` refetches active queries immediately regardless of `staleTime`, so removing the delay is sufficient on the client side.
+**Changes**: Invalidate immediately on message receipt for both topic matching and route-fallback matching. Replace the fixed 1000 ms delay with a small randomized jitter (~0–200 ms) so many clients receiving the same broadcast do not refetch in lockstep. Keep the existing `topicTriggerKey` dedup so one broadcast triggers at most one invalidation per subscribed route.
+
+#### 2. Guarantee cache-version bump ordering on the backend
+
+**Files**: `libs/middlewares/src/lib/http-cache/index.ts` (`:133-213`), `apps/api/app.ts` (middleware registration order — verify only)
+**Why**: HTTP-cache version bumps currently run fire-and-forget after the response. With the 1000 ms client delay gone, another client's immediate refetch can outrun the bump and receive a stale cached response, defeating the realtime guarantee.
+**Changes**: Await the cache-version bumps for mutation methods (POST/PUT/PATCH/DELETE) before the middleware completes, so the revalidation WS broadcast can only reach clients after the backend HTTP cache is already invalidated. Verify the registration order of the http-cache and revalidation middlewares in `apps/api/app.ts` supports this ordering and document the assumption with comments in both middleware files. GET response-caching writes may remain fire-and-forget.
+
+#### 3. BDD specs
+
+**Files**: factory `subscription()` spec (new or extended) in `libs/shared/frontend/client/api`
+**Why**: The subscription timing contract changes from "deferred by 1000 ms" to "immediate with bounded jitter".
+**Changes**: Scenarios: a revalidation message with matching topics triggers invalidation without the fixed 1-second delay; the route-fallback path likewise; duplicate broadcasts with the same `topicTriggerKey` do not double-invalidate; jitter stays within its bound (use fake timers).
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- [ ] Shared api tests pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:jest:test`
+- [ ] Middlewares type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:tsc:build`
+- [ ] API suite stays green: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run api:jest:test`
+
+#### Manual Verification:
+
+- [ ] Two browser windows, same chat: a message sent in window A appears in window B sub-second, rendered as a single appended row (no list flicker); repeat for edit and delete.
+- [ ] Two windows, cart: removing an item in window A updates window B promptly (no ~1 s+ lag).
+- [ ] Editing a message in window A never shows stale (pre-edit) content in window B after the update lands (bump-ordering guarantee works).
+- [ ] Mutation response latency on the API is not measurably degraded by awaiting version bumps (Redis incr is ~1 ms).
+
+---
+
+## Phase 6: Ecommerce Cart Universality Check
+
+### Overview
+
+Verify that factory-backed cart/order flows benefit from Phases 1 and 5 with zero cart-specific code changes. This phase is verification-first; code changes only if a defect in the shared layer is exposed.
 
 ### Changes Required:
 
@@ -296,7 +338,7 @@ Verify that factory-backed cart/order flows benefit from Phase 1 with zero cart-
 
 ---
 
-## Phase 6: Document Conventions (Codebase-Wide Reproducibility)
+## Phase 7: Document Conventions (Codebase-Wide Reproducibility)
 
 ### Overview
 
@@ -314,7 +356,7 @@ Make the approach the documented default for all future models, relations, hand-
 
 **File**: `libs/middlewares/src/lib/revalidation/README.md`
 **Why**: It currently describes invalidation as the only freshness mechanism.
-**Changes**: Describe the new two-tier model: local cache patches for the acting client + WS topic/route invalidation as the background consistency fallback for all clients and server-created data.
+**Changes**: Describe the new two-tier model: local cache patches for the acting client + immediate (jittered, metadata-only) WS topic/route invalidation for all other clients and server-created data. Document why broadcasts must never carry entity payloads (shared unauthenticated channel) and the bump-before-broadcast ordering guarantee.
 
 #### 3. Code review checklist
 
@@ -341,6 +383,7 @@ Make the approach the documented default for all future models, relations, hand-
 - Cache helpers: append dedup, filtered-append → targeted invalidation, patch/remove no-ops, structural sharing/reference stability, prefix vs exact key modes, non-array cache tolerance.
 - Factory: internal `onSuccess` ordering with user `reactQueryOptions.onSuccess`; `findById`/`count` handling on update/delete; fallback to targeted invalidation when the response lacks an id.
 - Chat: create append, AI-flow refetch retention, update array-shape patch, delete remove, error → refetch, scroll signature excludes `updatedAt`, `deletingMessageId` scoping, composer/timeline rerender isolation at prop level.
+- Subscription: immediate invalidation on topic/route match (no fixed 1 s delay), jitter bound, `topicTriggerKey` dedup under duplicate broadcasts.
 
 ### Integration Tests:
 
@@ -350,19 +393,19 @@ Make the approach the documented default for all future models, relations, hand-
 
 1. Start infra + apps (`./up.sh`, `npm run api:dev`, `npm run host:dev`) — research noted `localhost:4000` was down during the research browser check, so end-to-end WS behavior MUST be verified during implementation.
 2. Chat: with React DevTools "Highlight updates" on — type (only composer updates), send (one row appended), edit last message (row updates, no scroll jump), delete (only that row pending, then removed), trigger AI reply (assistant message appears via refetch). Re-check the edited/deleted row ~5–30 s after the mutation to confirm the background refetch does not revert it (backend HTTP cache exclusion working).
-3. Open the same chat in a second browser window: verify the fallback WS invalidation still syncs the passive window.
-4. Cart: add item (existing path), remove item (row disappears immediately), verify totals.
+3. Open the same chat in a second browser window: verify a message sent in window A appears in window B sub-second as a single appended row (after Phase 5); repeat for edit (row updates in place, no stale revert) and delete (row removed).
+4. Cart: add item (existing path), remove item (row disappears immediately), verify totals; repeat remove with a second window open to confirm prompt cross-client propagation.
 
 ## Performance Considerations
 
 - Patches must preserve React Query structural sharing: when the eventual WS-triggered background refetch returns data identical to the patched cache, unchanged items must keep their references so memoized rows do not rerender.
 - `setQueriesData` with a `[route]` prefix iterates all cached query variants for the route; updaters must be cheap (single-pass map/filter) and return the original reference when nothing matched.
-- The 1000 ms deferred WS invalidation stays; net effect is strictly fewer full refetches, never more.
-- HTTP-cache version bumps are fire-and-forget after the mutation response (`http-cache/index.ts:133`); the 1000 ms WS delay comfortably covers that race for factory routes. An immediate error-fallback `refetch()` could theoretically race a bump, but the WS fallback reconciles shortly after — no additional handling planned.
+- Phase 5 removes the artificial 1000 ms delay; the small randomized jitter (~0–200 ms) plus the existing `topicTriggerKey` dedup prevent a synchronized refetch stampede when many clients receive one broadcast. Net effect: fewer full refetches for the acting client (patched locally), faster reconciliation for everyone else.
+- HTTP-cache version bumps are currently fire-and-forget after the mutation response (`http-cache/index.ts:133`); Phase 5 awaits mutation-path bumps so the WS broadcast cannot outrun backend cache invalidation. The added mutation latency is a few Redis `incr` round trips (~ms).
 
 ## Migration Notes
 
-- Purely additive; no data or schema changes. Rollback per layer: removing the internal `onSuccess` wiring in the factory restores today's behavior exactly (WS invalidation never stopped running). Chat hooks can fall back to `refetch()`-only by reverting Phase 4 call sites.
+- Purely additive; no data or schema changes. Rollback per layer: removing the internal `onSuccess` wiring in the factory restores today's behavior exactly (WS invalidation never stopped running). Chat hooks can fall back to `refetch()`-only by reverting Phase 4 call sites. Phase 5 rollback = restoring the deferred timeout in `subscription()` and reverting the awaited bumps to fire-and-forget.
 - The factory mutation callback-merge changes the semantics for callers that today rely on `reactQueryOptions.onSuccess` being the ONLY success handler — internal cache handling now runs first. Audit existing `reactQueryOptions.onSuccess` usages of factory mutations during Phase 1 implementation; their callbacks still run, only after cache patching.
 
 ## References
@@ -370,6 +413,6 @@ Make the approach the documented default for all future models, relations, hand-
 - Original ticket: `thoughts/shared/tickets/singlepagestartup/ISSUE-195.md`
 - Related research: `thoughts/shared/research/singlepagestartup/ISSUE-195.md`
 - Process log: `thoughts/shared/processes/singlepagestartup/ISSUE-195.md`
-- Crux files: `libs/shared/frontend/client/api/src/lib/factory/index.ts`, `libs/middlewares/src/lib/revalidation/index.ts`, `libs/middlewares/src/lib/http-cache/index.ts`, `apps/host/src/components/revalidation/ClientComponent.tsx`, chat list dir `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/`
+- Crux files: `libs/shared/frontend/client/api/src/lib/factory/index.ts`, `libs/middlewares/src/lib/revalidation/index.ts`, `libs/middlewares/src/lib/http-cache/index.ts`, `apps/api/app.ts`, `apps/host/src/components/revalidation/ClientComponent.tsx`, chat list dir `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/`
 
-<!-- Last synced at: 2026-06-10T12:37:59Z -->
+<!-- Last synced at: 2026-06-10T12:43:35Z -->
