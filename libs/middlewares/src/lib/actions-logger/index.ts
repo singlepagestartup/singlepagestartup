@@ -2,10 +2,12 @@ import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
   API_SERVICE_URL,
+  IRouteRule,
   KV_PROVIDER,
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
+  RouteMatcher,
 } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { authorization, logger } from "@sps/backend-utils";
@@ -13,49 +15,31 @@ import * as jwt from "hono/jwt";
 import { api as rbacActionApi } from "@sps/rbac/models/action/sdk/server";
 import { api as rbacSubjectsToActionsApi } from "@sps/rbac/relations/subjects-to-actions/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
-
-/**
- * Routes that should be logged. Only requests matching these patterns will be logged.
- * @type {Array<{ regexPath: RegExp; methods: string[] }>}
- *
- * [..., {
- *   regexPath: /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages/,
- *   methods: ["POST"],
- * }]
- */
-const loggingRoutes: { regexPath: RegExp; methods: string[] }[] = [
-  {
-    regexPath:
-      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/actions/,
-    methods: ["POST", "PATCH", "DELETE"],
-  },
-  {
-    regexPath:
-      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages/,
-    methods: ["POST"],
-  },
-  {
-    regexPath:
-      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/threads\/[a-zA-Z0-9-]+\/messages/,
-    methods: ["POST"],
-  },
-];
+import { createLoggingRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = {
   Variables: undefined;
 };
 
+/**
+ * Project extension seam: framework consumers register routes whose mutations
+ * are logged as RBAC actions via constructor options, merged with the
+ * framework defaults (`routes/singlepage.ts`) and the project layer
+ * (`routes/startup.ts`).
+ */
+export interface IMiddlewareOptions {
+  loggingRoutes?: IRouteRule[];
+}
+
 export class Middleware {
   storeProvider: StoreProvider;
-  private loggingRoutes: Map<string, Set<string>>;
+  private loggingRoutesMatcher: RouteMatcher;
 
-  constructor() {
+  constructor(options?: IMiddlewareOptions) {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
-    this.loggingRoutes = new Map();
-
-    loggingRoutes.forEach(({ regexPath, methods }) => {
-      this.loggingRoutes.set(regexPath.source, new Set(methods));
-    });
+    this.loggingRoutesMatcher = createLoggingRoutesMatcher(
+      options?.loggingRoutes,
+    );
   }
 
   init(): MiddlewareHandler<any, any, {}> {
@@ -68,12 +52,7 @@ export class Middleware {
 
       await next();
 
-      const isLoggingRoute = [...this.loggingRoutes.entries()].some(
-        ([pattern, methods]) =>
-          new RegExp(pattern).test(reqPath) && methods.has(method),
-      );
-
-      if (!isLoggingRoute) {
+      if (!this.loggingRoutesMatcher.matches(reqPath, method)) {
         return;
       }
 
