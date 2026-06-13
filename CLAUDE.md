@@ -2,6 +2,8 @@
 
 Use this file as the Claude-specific entry point for working in this repository.
 
+The provider-neutral entry point (for any AI agent) is the root `AGENTS.md` — it is canonical for shared repository rules and the AI development workflow. Shared sections in both files must stay in sync; when editing one, mirror the change in the other.
+
 ## Repository Overview
 
 SinglePageStartup (SPS) is an Nx monorepo with:
@@ -30,6 +32,9 @@ Each module contains:
 - Always use SDK providers for data access from `libs/modules/<module>/models/<model|relation>/sdk/<client|server>`.
 - Use relation components with `variant="find"` and filter via `apiProps.params.filters.and`.
 - Backend only hosted in `apps/api/app.ts`.
+- Backend route middleware must live in the module's `backend/app/middlewares/src/lib/*` folder and be exported from that middleware package; controllers should only compose route definitions, middleware instances, and handlers.
+- Do not edit repository data snapshots under `libs/modules/<module>/<relations|models>/<name>/backend/repository/database/src/lib/data/*` to implement behavior or UI fixes; change runtime code, configuration, migrations, or explicit data-management flows instead.
+- When changing a Drizzle table schema or fields, run the appropriate `repository-generate` target instead of hand-writing migration SQL or `migrations/meta/*` journal/snapshot files. For example, use `npx nx run @sps/<module>:models:<model>:repository-generate` or the matching relation target; use `npx nx run api:db:generate` only when intentionally regenerating all repository migrations.
 
 If anything is unclear, read the relevant README files instead of guessing.
 
@@ -83,3 +88,7 @@ For special-purpose tasks, see `.claude/commands/README.md` for the full command
 - Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
 - Ensure migrations/seeds or Nx targets are updated when schema changes.
+- List rows are memoized (`React.memo`) with stable id-based keys; handlers passed to rows are wrapped in `useCallback`.
+- Pending state is scoped per item (`<action>ingId: string | null`), never a shared boolean broadcast to every row.
+- Form `watch` subscriptions live in the lowest component that needs them; child components must use `useWatch({ control })` — `form.watch(name)` rerenders the `useForm` host component.
+- Mutations patch the React Query cache via the shared helpers (`@sps/shared-frontend-client-api` — factory mutations do this automatically; hand-written SDKs follow the documented contract in `libs/shared/frontend/client/api/README.md`) and never replace WebSocket invalidation as the consistency fallback.
