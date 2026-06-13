@@ -97,10 +97,10 @@ Create the reusable cache-patching helpers and wire them into the factory mutati
 
 #### Automated Verification:
 
-- [ ] Shared api tests pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:jest:test`
-- [ ] Type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:tsc:build`
-- [ ] Lint passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:eslint:lint`
-- [ ] Shared unit suite stays green: `npm run test:unit:shared`
+- [x] Shared api tests pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:jest:test`
+- [x] Type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:tsc:build`
+- [x] Lint passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:eslint:lint`
+- [x] Shared unit suite stays green: `npm run test:unit:shared`
 
 #### Manual Verification:
 
@@ -147,8 +147,8 @@ Chat directory (all relative paths below): `libs/modules/rbac/models/subject/fro
 
 #### Automated Verification:
 
-- [ ] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
-- [ ] Lint/type for the rbac module pass (eslint:lint / tsc:build targets).
+- [x] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
+- [x] Lint/type for the rbac module pass (eslint:lint / tsc:build targets).
 
 #### Manual Verification:
 
@@ -194,8 +194,8 @@ Make timeline rows rerender only when their own data changes.
 
 #### Automated Verification:
 
-- [ ] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
-- [ ] New BDD scenario: deleting one message marks only that row as pending (assert via `deletingMessageId` prop propagation).
+- [x] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
+- [x] New BDD scenario: deleting one message marks only that row as pending (assert via `deletingMessageId` prop propagation).
 
 #### Manual Verification:
 
@@ -252,9 +252,9 @@ Replace full-list invalidation on chat mutation success with targeted cache patc
 
 #### Automated Verification:
 
-- [ ] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
-- [ ] Shared suite stays green: `npm run test:unit:shared`
-- [ ] Middlewares type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:tsc:build` (note: `@sps/middlewares` has no jest target, so the http-cache exclusion is verified by type check + the manual staleness check below)
+- [x] Chat specs pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/rbac:jest:test`
+- [x] Shared suite stays green: `npm run test:unit:shared`
+- [x] Middlewares type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:tsc:build` (note: `@sps/middlewares` has no jest target, so the http-cache exclusion is verified by type check + the manual staleness check below)
 
 #### Manual Verification:
 
@@ -297,9 +297,9 @@ Turn the WS revalidation path from a deferred background fallback into the immed
 
 #### Automated Verification:
 
-- [ ] Shared api tests pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:jest:test`
-- [ ] Middlewares type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:tsc:build`
-- [ ] API suite stays green: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run api:jest:test`
+- [x] Shared api tests pass: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-frontend-client-api:jest:test`
+- [x] Middlewares type check passes: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/middlewares:tsc:build`
+- [x] API suite stays green: `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run api:jest:test` (baseline-equal: the issue-158 OpenRouter billing scenario and one suite bootstrap failure pre-exist on the branch without these changes — verified via git stash comparison; the middleware-order contract test was updated to the new issue-195 ordering)
 
 #### Manual Verification:
 
@@ -329,7 +329,7 @@ Verify that factory-backed cart/order flows benefit from Phases 1 and 5 with zer
 
 #### Automated Verification:
 
-- [ ] Ecommerce suite stays green: `npm run test:unit:ecommerce`
+- [x] Ecommerce suite stays green: `npm run test:unit:ecommerce`
 
 #### Manual Verification:
 
@@ -369,7 +369,7 @@ Make the approach the documented default for all future models, relations, hand-
 
 #### Automated Verification:
 
-- [ ] Markdown files pass lint (if configured); no build impact.
+- [x] Markdown files pass lint (if configured); no build impact.
 
 #### Manual Verification:
 
@@ -418,3 +418,149 @@ Make the approach the documented default for all future models, relations, hand-
 - Crux files: `libs/shared/frontend/client/api/src/lib/factory/index.ts`, `libs/middlewares/src/lib/revalidation/index.ts`, `libs/middlewares/src/lib/http-cache/index.ts`, `apps/api/app.ts`, `apps/host/src/components/revalidation/ClientComponent.tsx`, chat list dir `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/`
 
 <!-- Last synced at: 2026-06-10T13:10:07Z -->
+
+---
+
+# Framework-Grade Realtime Addendum (Phases 10–14)
+
+## Context
+
+Phases 1–9 delivered the acceptance criteria for the chat reference implementation, but a universality audit found that the PRECISION layer is hand-tuned, not framework-grade:
+
+- `meta.topics` exist in only 5 hand-written SDK files (all chat); all 156 factory-backed queries have NO topics and rely on bidirectional segment-prefix route fallback (broad).
+- The topic emitter's generic fallback broadcasts ALL ancestor entity topics (`social.chats.[cid]`, `social.profiles.[pid]`), which is exactly the "page rerenders on child mutation" class fixed point-wise for chat in Phase 9 — any project adding a nested mutation route reproduces it.
+- `topic-rules.ts`, `notRevalidatingRoutes`, and http-cache exclusions are hardcoded inside `libs/middlewares` — projects built on the framework (extending controllers via `startup`) cannot register their own without forking.
+- http-cache invalidation is path-derived; nested read scopes (thread messages, cart counters) cannot be derived from mutation paths — the staleness class already has two precedents (issue-152, issue-195) and currently relies on hardcoded exclusions + clients remembering `Cache-Control: no-store`.
+
+Hard requirements from the maintainer:
+
+1. **Realtime for every listener**: when a model changes, EVERY client that loaded that data must receive the update (cross-client, sub-second).
+2. **Reliable caching**: the http-cache middleware must never serve stale data after a mutation, for arbitrary project routing.
+3. **Minimal rerenders**: reconciliation must not flash/blink the frontend — only components reading the changed data may rerender.
+
+## Architectural Core: One Shared Topic Algebra
+
+A single derivation algorithm, shared by THREE layers (revalidation emitter, frontend query subscriptions, http-cache versioning), so precision is symmetric by construction for any model in any project:
+
+**Canonical topic space** (module = first segment after `/api/` for flat routes, or the `<name>-module` segment for subject-scoped routes; both URL shapes reduce to the same space):
+
+- Collection topic: `module.collection` (e.g. `ecommerce.orders`, `social.messages`)
+- Entity topic: `module.collection.{id}`
+- Scoped-chain topics for nested reads/mutations, one per ancestor level:
+  `social.threads.{tid}.messages`, `social.chats.{cid}.threads.{tid}.messages`
+
+**Emitter policy (mutation path → topics):** emit the terminal collection topic, the terminal entity topic (when the mutated id is known), and every scoped-chain level of the terminal collection. **Never emit bare ancestor entity topics** (`social.chats.{cid}`) by default — ancestor invalidation is opt-in via explicit rules only (e.g. a project that orders its chat list by last message registers a rule adding `social.chats.{cid}`).
+
+**Subscriber policy (read path → topics):**
+
+- `find` list: the scoped-chain topics + terminal collection topic of ITS OWN scope only. A flat admin table (`/api/social/messages`) subscribes to `social.messages` (reads everything → invalidated by any message mutation — correct). A thread timeline subscribes to `social.threads.{tid}.messages` (+ chain) — invalidated only by its own thread's mutations.
+- `findById`: the entity topic `module.collection.{id}`.
+- `count`: the collection topic.
+
+Matching = non-empty intersection (existing `invalidateByTopics` predicate, unchanged).
+
+This satisfies requirement 1 precisely: every query whose topics intersect the mutation's topics IS a listener of that data and gets invalidated (immediately, ≤200 ms jitter, globally deduped); nobody else rerenders (requirement 3).
+
+## Phase 10: Shared Topic Derivation (`@sps/shared-utils`)
+
+### Changes
+
+1. **New module** `libs/shared/utils/src/lib/topics/index.ts` (client- and server-safe, pure):
+   - `deriveMutationTopics(path: string): string[]` — emitter policy above. Handles flat (`/api/<module>/<collection>[/{id}]`), subject-scoped (`/api/.../<name>-module/<chain>`), `/bulk` suffixes, UUID and numeric ids; skips non-model paths (auth, ws, broadcast) by returning `[]`.
+   - `deriveReadTopics(path: string): string[]` — subscriber policy; same parser, different selection.
+   - Export from `@sps/shared-utils` barrel.
+2. **BDD specs** `topics/index.spec.ts` — the heart of the framework guarantee; cover at minimum: flat collection/entity, subject-scoped nested chains (2 and 3 levels), both module URL shapes mapping to the SAME canonical topics, numeric ids, bulk paths, malformed/unknown paths → `[]`, and a symmetry property test: for every fixture, `deriveReadTopics(readPath) ∩ deriveMutationTopics(mutationPath) ≠ ∅` exactly when the read scope contains the mutated collection.
+
+### Success Criteria
+
+- [x] `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx run @sps/shared-utils:jest:test` green (new specs included)
+- [x] Derived topics for the chat thread path equal the topics currently hand-written in the chat SDK files (symmetry with Phase 9's explicit rule — proven by a dedicated spec fixture).
+
+## Phase 11: Backend Adoption + Extension API
+
+### Changes
+
+1. `libs/middlewares/src/lib/revalidation/index.ts`:
+   - Replace local `getGenericTopics` with `deriveMutationTopics` from `@sps/shared-utils`.
+   - Constructor options: `new Middleware({ topicRules?: ITopicRule[], notRevalidatingRoutes?: INotRevalidatingRoute[] })` — merged AFTER built-in defaults (project rules win via `stop`). Built-in chat rules remain as defaults; the Phase 9 thread-scoped rule becomes redundant once the deriver emits the equivalent chain — remove it only after the Phase 10 equivalence spec passes.
+   - Broadcast message shape unchanged (metadata-only contract preserved).
+2. `apps/api/app.ts`: pass project-level extension arrays (empty by default in the framework template) — the documented seam for `startup`-style projects.
+3. Add a jest target to `@sps/middlewares` (the lib is now mostly pure logic); BDD specs for: explicit rule overrides generic deriver, extension rules merge order, notRevalidating extension.
+4. Docs: `revalidation/README.md` — "How a project registers its own topic rules" section.
+
+### Success Criteria
+
+- [x] `@sps/middlewares` jest target green; `@sps/middlewares:tsc:build` green
+- [x] `api:jest:test` baseline-equal (middleware-order contract test untouched)
+- [x] Manual: send a chat message → broadcast topics contain ONLY the scoped message chain + `social.messages` (no `social.chats.{cid}`/`social.profiles.{pid}`) — verify via WS frame inspection or api log.
+
+## Phase 12: Topic-Versioned HTTP Cache (reliability for arbitrary routing)
+
+### Changes
+
+1. `libs/middlewares/src/lib/http-cache/index.ts`:
+   - **Versioning by topics in ADDITION to paths** (strictly safer — any bump invalidates):
+     - GET: `readTopics = deriveReadTopics(path)`; fetch per-topic versions (`Promise.all` over `storeProvider.get`, ≤6 keys; KV provider has no mget — acceptable) and build the cache key as `…:v{pathVersion}:t{topicVersionVector}`.
+     - Mutations (2xx, POST/PUT/PATCH/DELETE): bump `deriveMutationTopics(path)` versions, AWAITED inline next to the existing awaited path bumps (the Phase 5 bump-before-broadcast ordering contract automatically covers them).
+   - Constructor options: `new Middleware({ excludedPathPatterns?: RegExp[] })`, merged with built-in defaults. Existing chat/cart exclusions stay as defense-in-depth (they cost nothing) but are no longer the correctness mechanism: thread-messages GET reads topic `social.threads.{tid}.messages`, whose version is bumped by any thread message mutation → cache key rotates → fresh data even WITHOUT `no-store` and WITHOUT exclusions.
+   - Extract the pure key-building/version-merging logic into a testable function with BDD specs (new middlewares jest target from Phase 11).
+2. `apps/api/app.ts`: pass project exclusions (empty default).
+3. Docs: http-cache section in middleware README — topic-version mechanics + extension API.
+
+### Success Criteria
+
+- [x] Middlewares specs green (key rotation on topic bump; nested read invalidated by child mutation that path-bumps CANNOT cover)
+- [x] Manual with `MIDDLEWARE_HTTP_CACHE=true` locally: (a) GET thread messages WITHOUT `no-store` → cached; (b) send message; (c) repeat GET → fresh (topic version rotated the key). Repeat for cart quantity counter (issue-152 class).
+- [x] Mutation latency delta ≤ a few ms (Redis incr per topic, ≤6).
+
+## Phase 13: Frontend Factory Auto-Topics
+
+### Changes
+
+1. `libs/shared/frontend/client/api/src/lib/factory/index.ts`:
+   - `find` → `meta.topics = deriveReadTopics(route)`; `findById` → entity topic; `count` → collection topic. User-provided `reactQueryOptions.meta` merges on top (project override).
+   - Route-fallback branch KEPT as legacy compatibility for hand-written queries without topics; with auto-topics on all factory queries it becomes rarely-taken.
+2. Chat SDK precision cleanup: drop the global `social.messages` from the thread timeline's hand-written meta.topics (keep the two scoped chain topics) so other threads' mutations no longer refetch this timeline; keep `social.messages` on the flat admin messages query.
+3. BDD specs: factory query meta derivation (flat find/findById/count); subscription end-to-end — a broadcast with scoped topics invalidates ONLY the matching-scope query among several cached factory queries (precision proof); global dedup scenario re-verified (already exists).
+4. Chat test-utils: no changes expected (`...actual` spread picks up the deriver); fix fallout if any.
+
+### Success Criteria
+
+- [x] `@sps/shared-frontend-client-api:jest:test`, `npm run test:unit:shared`, `@sps/rbac:jest:test`, `npm run test:unit:ecommerce` all green
+- [x] Lint/tsc green across touched projects.
+
+## Phase 14: End-to-End Verification + Regression (browser, two clients)
+
+Re-instrument temporarily (`console.count` at overview/shell/section/composer levels — pattern from Phase 9; remove before commit). `bun --watch` does NOT reload `libs/` changes — `touch apps/api/server.ts` after middleware edits.
+
+### Regression of Phases 1–9 acceptance criteria (window A)
+
+- [x] Typing: composer-only renders (0 shell/timeline)
+- [x] Send: 0 overview/shell renders; timeline-section-only; one append, no flash
+- [x] Edit/delete: single-row updates, no scroll jump
+- [x] AI flow: reply arrives; refetches contained in timeline-section; per-broadcast (not per-route) network counts — no storm (~10 GETs for an AI session, not ~50 per send)
+- [x] Automated: full suite matrix (rbac 146+, shared-api, shared unit, ecommerce, api baseline-equal) — counts may grow with new specs but zero failures vs baseline.
+
+### Cross-client realtime (requirement 1) — window A + window B on the same chat/page
+
+- [x] B sees A's message sub-second as ONE appended row; 0 shell/page renders in B (auto-topics → only B's timeline query invalidated)
+- [x] Edit/delete in A → only that row updates in B
+- [x] Cart: quantity change in A → B's cart row updates promptly; B's unrelated widgets (header counters refetch allowed, no visible flash)
+- [x] Admin table (`/api/social/messages` flat route, factory): create a message in A → B's table refreshes (collection topic listener) while an OPEN DIFFERENT thread timeline in B does NOT rerender (scoped topic precision)
+
+### Cache reliability (requirement 2) — `MIDDLEWARE_HTTP_CACHE=true`
+
+- [x] Cached GET (no `no-store`) of thread messages → mutate → immediate GET from second client → fresh (bump-before-broadcast + topic versions)
+- [x] Cart counters (issue-152 class) same check
+- [x] GET cache-hit path latency unchanged within noise
+
+### Rerender minimization (requirement 3)
+
+- [x] React DevTools highlight during all of the above: no full-page highlights in either window; only data-bearing areas repaint
+
+## Risks / Migration Notes
+
+- **Topic-space compatibility**: Phase 10 equivalence spec guarantees derived chat topics match the existing hand-written ones before any rule/manual topic is removed; rollout order (10 → 11 → 12 → 13) keeps every intermediate state consistent (emitters only become MORE precise; subscribers only gain topics).
+- **Wider topic matching after Phase 13**: many more queries become topic-matched; the Phase 9 global dedup is the storm guard — the Phase 14 network counts are the regression gate.
+- **KV without mget**: per-topic `get`/`incr` via `Promise.all` (≤6 keys); provider `mget` is an optional later optimization.
+- **Rollback per phase**: 13 (drop meta auto-derive) → 12 (key reverts to path version only) → 11 (restore local generic fn) — each independently revertible.

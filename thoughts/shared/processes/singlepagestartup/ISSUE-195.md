@@ -20,8 +20,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Research: completed
 - Plan: completed
 - Implement: not_started
-- Current phase: plan
-- Next step: human review, then core/30-implement.
+- Current phase: implement
+- Next step: complete implementation and submit PR.
 
 ## Phase Notes
 
@@ -66,15 +66,39 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Implement
 
-- Summary:
+- Summary: in_progress (Phases 1–9 complete; Phases 10–14 framework-grade canonical topic algebra complete: shared deriver, middleware extension APIs, topic-versioned http-cache, factory auto-meta.topics, two-tab browser + live cache verification)
 - Outputs:
-- Notes:
+  - Shared cache helpers + factory mutation integration (`libs/shared/frontend/client/api/src/lib/cache/`)
+  - Chat boundary split: `MessageTimelineSection` (queries + scroll + rows + edit dialog), `Composer` (form + create/AI mutations), shell (`ClientComponent`) connected via stable callback refs and `ThreadMessagesCache`
+  - Immediate WS reconciliation (≤200 ms jitter), revalidation-before-http-cache middleware reorder + awaited mutation bumps, http-cache chat-path exclusions
+  - Docs: shared-api README, revalidation README (two-tier model), CLAUDE.md review checklist
+- Notes: Phase 1 and Phase 2 verified earlier (reviewer browser pass on a registered chat thread route). Phase 8 (review follow-up): message/action queries moved from `client.tsx` into `MessageTimelineSection`, so sends, AI refetches, and WS invalidation rerender only the timeline boundary; new BDD scenario asserts the shell does not rerender on message send; `clearSelectedSkills` now bails out when already empty (was scheduling a no-op shell rerender on every send).
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 1 -->
+<!-- incident-count: 3 -->
+
+### Incident 3 — Per-listener topic dedup caused a refetch storm; missing thread-scoped topic rule rerendered the page
+
+- **Phase**: Implement (Phase 9 - live-browser follow-up)
+- **Occurrences**: 1
+- **Symptom**: User reported full page rerender on every message send despite boundary isolation. Live measurement: ~440 API requests per send (~50 identical thread-messages GETs), chat overview page rerendering twice ~1–2 s after send.
+- **Root Cause**: (1) `topic-rules.ts` had no rule for the thread-scoped message create path; the generic fallback broadcast broad topics (`social.chats.[cid]`, `social.profiles.[pid]`) matching the chat findById query's meta.topics — page-level invalidation on every send. (2) Factory `subscription()` deduplicated topic invalidations per listener while `invalidateByTopics` is global — one broadcast scheduled one global invalidation per subscribed route.
+- **Fix**: Explicit thread-scoped topic rule emitting exactly the timeline topics; module-scope `globalTriggeredTopicKeys` dedup in the factory. Verified live in Chrome: 0 shell/page renders on send, one invalidation per broadcast.
+- **Preventive Action**: Every new nested mutation route MUST get an explicit topic rule (generic fallback emits parent-entity topics). Global invalidation mechanisms must deduplicate globally. jsdom specs cannot catch cross-layer storm effects — verify realtime flows live with render counters + network capture. Dev note: `bun --watch` does not pick up `libs/` changes; `touch apps/api/server.ts` to reload middlewares.
+- **References**: `libs/middlewares/src/lib/revalidation/topic-rules.ts`, `libs/shared/frontend/client/api/src/lib/factory/index.ts`, `subscription.spec.ts` ("deduplicates one broadcast across many route subscriptions").
+
+### Incident 2 — form.watch rerenders the useForm host, not the caller
+
+- **Phase**: Implement (Phase 2 - Composer isolation)
+- **Occurrences**: 1
+- **Symptom**: Rerender-isolation spec kept failing after moving `form.watch("description")` into `<Composer>`; `MessageTimeline` re-invoked on every keystroke despite bisecting out the sync setter and the watch-callback effect.
+- **Root Cause**: react-hook-form `form.watch(name)` subscribes the `useForm` HOST component for re-render (here: chat `ClientComponent` via `useChatComposer`), regardless of which component calls `.watch()`.
+- **Fix**: Replaced with `useWatch({ control: form.control, name })` inside `Composer`, which subscribes only the calling component. Kept the non-rendering `form.watch(callback)` form for side-effect-only sync in the parent.
+- **Preventive Action**: For rerender isolation of form state, always use `useWatch` + `control` in the child; verify with a render-count spec that mocks the sibling component.
+- **References**: `…/chat/message/list/default/components/Composer.tsx`, `ClientComponent.rerender.spec.tsx`.
 
 ### Incident 1 — Sandboxed GitHub network retry
 
