@@ -166,6 +166,35 @@ describe("knowledge vector repository contract", () => {
       }),
     );
   });
+
+  /**
+   * BDD Scenario: hard-delete cleanup.
+   *
+   * Given: a Knowledge document has indexed sources, chunks, files, and edit suggestions.
+   * When: the repository implementation is inspected.
+   * Then: document deletion cleans Knowledge-owned derived rows instead of reindexing.
+   */
+  it("cleans document-derived vectors and suggestions during hard delete", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("deleteDocumentWithDerivedData");
+    expect(source).toContain("deleteSourceFilesBySourceIds");
+    expect(source).toContain("deleteSourceChunkRelationsBySourceIds");
+    expect(source).toContain("deleteOrphanChunks");
+    expect(source).toContain("deleteSourcesByIds");
+    expect(source).toContain("EditSuggestionTable");
+    expect(source).toContain("DocumentTable");
+    expect(source).toContain("metadata}->>'documentId'");
+    expect(source).not.toContain(
+      "deleteDocumentWithDerivedData(documentId) {\n    await this.index",
+    );
+  });
 });
 
 function collectValues(value: unknown, seen = new Set<unknown>()): unknown[] {

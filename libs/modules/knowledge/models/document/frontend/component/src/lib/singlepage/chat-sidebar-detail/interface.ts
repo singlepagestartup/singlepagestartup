@@ -15,11 +15,13 @@ export interface IClientComponentProps
   language: string;
   draft: IKnowledgeDocumentDraft;
   isDirty?: boolean;
+  isDeleting?: boolean;
   isReindexing?: boolean;
   isSaving?: boolean;
   mode?: "create" | "edit";
   needsReindex?: boolean;
   onDraftChange: (draft: IKnowledgeDocumentDraft) => void;
+  onDelete?: (document: IModel) => Promise<void> | void;
   onReindex: (document: IModel) => Promise<void> | void;
   onSave: (document: IModel) => void;
 }
