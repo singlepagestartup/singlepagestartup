@@ -6,18 +6,20 @@ import { queryClient } from "@sps/shared-frontend-client-api";
 import type { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { useCallback, useMemo } from "react";
+import QueryString from "qs";
 
 interface UseKnowledgeDocumentsProps {
-  knowledgeAssistantProfile?: ISocialModuleProfile | null;
+  assistantProfile?: ISocialModuleProfile | null;
   socialModuleChat: ISocialModuleChat;
   socialModuleProfileId: string;
   subjectId: string;
 }
 
 export function useKnowledgeDocuments(props: UseKnowledgeDocumentsProps) {
-  const isKnowledgeChat = props.socialModuleChat.variant === "knowledge";
-  const knowledgeAssistantProfileId = isKnowledgeChat
-    ? props.knowledgeAssistantProfile?.id
+  const canUseKnowledge =
+    props.assistantProfile?.variant === "artificial-intelligence";
+  const knowledgeAssistantProfileId = canUseKnowledge
+    ? props.assistantProfile?.id
     : undefined;
   const knowledgeDocumentScopeParams = useMemo(() => {
     if (!knowledgeAssistantProfileId) {
@@ -44,12 +46,18 @@ export function useKnowledgeDocuments(props: UseKnowledgeDocumentsProps) {
       },
     });
   const knowledgeDocumentsQueryKey = useMemo(() => {
-    const scope = knowledgeDocumentScopeParams
-      ? `?targetSocialModuleProfileId=${knowledgeDocumentScopeParams.targetSocialModuleProfileId}&socialModuleChatId=${knowledgeDocumentScopeParams.socialModuleChatId}`
-      : "";
+    // Mirror the SDK read key exactly (issue #195): the SDK always appends
+    // `?${QueryString.stringify(params)}`, so build the invalidation key the
+    // same way instead of hand-concatenating params.
+    const stringifiedQuery = QueryString.stringify(
+      knowledgeDocumentScopeParams,
+      {
+        encodeValuesOnly: true,
+      },
+    );
 
     return [
-      `${route}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents${scope}`,
+      `${route}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents?${stringifiedQuery}`,
     ];
   }, [
     knowledgeDocumentScopeParams,
@@ -64,9 +72,7 @@ export function useKnowledgeDocuments(props: UseKnowledgeDocumentsProps) {
   }, [knowledgeDocumentsQueryKey, refetchKnowledgeDocuments]);
 
   return {
-    isKnowledgeChat,
     knowledgeAssistantProfileId,
-    knowledgeDocumentScopeParams,
     refetchKnowledgeDocumentQueries,
   };
 }

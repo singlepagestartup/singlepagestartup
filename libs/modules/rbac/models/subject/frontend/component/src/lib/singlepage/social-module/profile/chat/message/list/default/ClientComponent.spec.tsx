@@ -1,17 +1,18 @@
 /**
  * @jest-environment jsdom
  *
- * BDD Suite: Knowledge chat profile sidebar.
+ * BDD Suite: OpenRouter chat profile sidebar.
  *
- * Given: the default social chat composer is reused for Knowledge chats.
+ * Given: the default social chat composer supports AI/OpenRouter chats.
  * When: a user interacts with Knowledge chat commands, skills, and message profile names.
- * Then: the /learn command picker and profile sidebar are scoped to chat behavior.
+ * Then: /learn, @knowledge, profile skills, and profile knowledge work when an AI profile is present.
  */
 
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockChatComponentState,
   mockKnowledgeDocumentCreateMutate,
+  mockKnowledgeDocumentDeleteMutateAsync,
   mockKnowledgeDocumentUpdateMutate,
   mockKnowledgeReindexDocumentMutateAsync,
   mockMessageCreateMutate,
@@ -24,7 +25,14 @@ import {
   resetChatComponentMocks,
 } from "./test-utils";
 
-describe("Given: Knowledge chat profile sidebar", () => {
+const aiOpponentProfile = {
+  id: "assistant-profile-1",
+  slug: "chat-gpt-1",
+  variant: "artificial-intelligence",
+  adminTitle: "Chat GPT 1",
+};
+
+describe("Given: OpenRouter chat profile sidebar", () => {
   beforeEach(() => {
     resetChatComponentMocks();
   });
@@ -127,11 +135,11 @@ describe("Given: Knowledge chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: the active chat has variant default.
+   * Given: the active chat has variant default and no AI opponent.
    * When: the user types a slash prefix in the composer.
    * Then: Knowledge commands are not shown.
    */
-  it("When: typing slash in a default chat Then: Knowledge commands are hidden", () => {
+  it("When: typing slash in a non-AI default chat Then: Knowledge commands are hidden", () => {
     renderComponent("default");
 
     fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
@@ -141,6 +149,29 @@ describe("Given: Knowledge chat profile sidebar", () => {
     });
 
     expect(screen.queryByText("Learn")).toBeNull();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the active chat has variant default and an AI opponent.
+   * When: the user types a slash prefix in the composer.
+   * Then: Knowledge commands are available because OpenRouter handles all AI chats.
+   */
+  it("When: typing slash in an AI default chat Then: Knowledge commands are visible", () => {
+    renderComponent("default", {
+      artificialIntelligenceOpponentProfile: aiOpponentProfile,
+    });
+
+    const textarea = screen.getByPlaceholderText("Write a message...");
+
+    fireEvent.change(textarea, {
+      target: {
+        value: "/",
+      },
+    });
+
+    expect(screen.getByText("Learn")).toBeTruthy();
+    expect(screen.getByText("/learn")).toBeTruthy();
   });
 
   /**
@@ -192,7 +223,7 @@ describe("Given: Knowledge chat profile sidebar", () => {
     const { container } = renderComponent("knowledge");
     const textarea = screen.getByPlaceholderText("Write a message...");
     const submitButton = screen.getByLabelText("Send message");
-    const fileInput = container.querySelector('input[type="file"]');
+    const fileInput = container.querySelector("input[type=file]");
     const file = new File(["Knowledge notes"], "notes.md", {
       type: "text/markdown",
     });
@@ -231,6 +262,114 @@ describe("Given: Knowledge chat profile sidebar", () => {
         expect.any(Object),
       );
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the user selected a local file in the chat composer.
+   * When: the user opens and removes the attached file before submit.
+   * Then: the composer previews the local file and omits the removed file from the payload.
+   */
+  it("When: managing a selected attachment Then: it can be opened and removed before submit", async () => {
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    const originalOpen = window.open;
+    const createObjectURL = jest.fn(() => {
+      return "blob:notes-preview";
+    });
+    const revokeObjectURL = jest.fn();
+    const open = jest.fn(() => {
+      return {} as Window;
+    });
+
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: createObjectURL,
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: revokeObjectURL,
+    });
+    Object.defineProperty(window, "open", {
+      configurable: true,
+      value: open,
+    });
+    jest.useFakeTimers();
+
+    try {
+      const { container } = renderComponent("knowledge");
+      const textarea = screen.getByPlaceholderText("Write a message...");
+      const submitButton = screen.getByLabelText("Send message");
+      const fileInput = container.querySelector("input[type=file]");
+      const file = new File(["Knowledge notes"], "notes.md", {
+        type: "text/markdown",
+      });
+
+      expect(fileInput).toBeTruthy();
+
+      fireEvent.change(fileInput as HTMLInputElement, {
+        target: {
+          files: [file],
+        },
+      });
+
+      fireEvent.click(screen.getByLabelText("Open attached file notes.md"));
+
+      expect(createObjectURL).toHaveBeenCalledWith(file);
+      expect(open).toHaveBeenCalledWith(
+        "blob:notes-preview",
+        "_blank",
+        "noopener,noreferrer",
+      );
+      jest.runOnlyPendingTimers();
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:notes-preview");
+      jest.useRealTimers();
+
+      fireEvent.click(screen.getByLabelText("Remove attached file notes.md"));
+
+      expect(screen.queryByText("notes.md")).toBeNull();
+
+      fireEvent.change(textarea, {
+        target: {
+          value: "Please store this without attachments",
+        },
+      });
+
+      await waitFor(() => {
+        expect((submitButton as HTMLButtonElement).disabled).toBe(false);
+      });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+          {
+            id: "subject-1",
+            socialModuleProfileId: "profile-1",
+            socialModuleChatId: "chat-1",
+            socialModuleThreadId: "thread-1",
+            data: {
+              description: "Please store this without attachments",
+              files: undefined,
+            },
+          },
+          expect.any(Object),
+        );
+      });
+    } finally {
+      jest.useRealTimers();
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: originalCreateObjectURL,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      });
+      Object.defineProperty(window, "open", {
+        configurable: true,
+        value: originalOpen,
+      });
+    }
   });
 
   /**
@@ -607,6 +746,44 @@ describe("Given: Knowledge chat profile sidebar", () => {
 
   /**
    * BDD Scenario
+   * Given: a default chat has chat-gpt-1 as an AI opponent with a linked skill.
+   * When: the user opens the mention picker.
+   * Then: the skill from chat-gpt-1 is shown in that default chat.
+   */
+  it("When: opening mentions in an AI default chat Then: chat-gpt-1 skills are shown", () => {
+    mockChatComponentState.profileSkillRelations = [
+      {
+        id: "profile-skill-1",
+        profileId: "assistant-profile-1",
+        skillId: "skill-1",
+      },
+    ];
+    mockChatComponentState.socialSkills = [
+      {
+        id: "skill-1",
+        title: "RAG Helper",
+        adminTitle: "RAG Helper",
+        slug: "rag-helper",
+        description: "Use RAG context.",
+        status: "active",
+      },
+    ];
+
+    renderComponent("default", {
+      artificialIntelligenceOpponentProfile: aiOpponentProfile,
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+      target: {
+        value: "@",
+      },
+    });
+
+    expect(screen.getByText("RAG Helper")).toBeTruthy();
+  });
+
+  /**
+   * BDD Scenario
    * Given: the active chat has variant knowledge.
    * When: the user mentions @knowledge and submits a message.
    * Then: the OpenRouter reaction endpoint receives an explicit RAG search flag.
@@ -889,11 +1066,11 @@ describe("Given: Knowledge chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: a default chat message starts with /learn.
+   * Given: a default chat without an AI opponent starts with /learn.
    * When: the message is created from the composer.
-   * Then: OpenRouter reaction is not called because learning is scoped to Knowledge chats.
+   * Then: OpenRouter reaction is not called because there is no AI profile to answer.
    */
-  it("When: creating /learn in a default chat Then: it does not trigger Knowledge learning", async () => {
+  it("When: creating /learn in a non-AI default chat Then: it does not trigger OpenRouter", async () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-1",
@@ -914,6 +1091,54 @@ describe("Given: Knowledge chat profile sidebar", () => {
       expect(mockMessageCreateMutate).toHaveBeenCalled();
     });
     expect(mockMessageReactByOpenrouterMutate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a default chat has an AI opponent with OpenRouter support.
+   * When: a message starts with @knowledge /learn.
+   * Then: OpenRouter reaction is called for that AI profile.
+   */
+  it("When: creating @knowledge /learn in an AI default chat Then: it triggers OpenRouter learning", async () => {
+    mockMessageCreateMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.({
+        id: "message-1",
+        description: "@knowledge /learn Stored context",
+      });
+    });
+
+    renderComponent("default", {
+      artificialIntelligenceOpponentProfile: aiOpponentProfile,
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
+      target: {
+        value: "@knowledge /learn Stored context",
+      },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+
+    await waitFor(() => {
+      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
+        {
+          id: "subject-1",
+          socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          socialModuleMessageId: "message-1",
+          params: {
+            model: "auto",
+            reasoning: "auto",
+          },
+          data: {
+            shouldReplySocialModuleProfile: {
+              id: "assistant-profile-1",
+            },
+            useKnowledgeSearch: true,
+          },
+        },
+        expect.any(Object),
+      );
+    });
   });
 
   /**
@@ -1188,6 +1413,9 @@ describe("Given: Knowledge chat profile sidebar", () => {
     );
 
     expect(screen.getByText("Create Knowledge")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Delete knowledge" }),
+    ).toBeNull();
     fireEvent.change(screen.getByLabelText("Knowledge title"), {
       target: {
         value: "Sidebar Knowledge",
@@ -1220,6 +1448,86 @@ describe("Given: Knowledge chat profile sidebar", () => {
         },
         expect.any(Object),
       );
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Knowledge chat profile sidebar shows a linked Knowledge document.
+   * When: the user confirms deleting the document.
+   * Then: the RBAC scoped delete endpoint receives the selected profile scope and the dialog closes.
+   */
+  it("When: deleting a profile Knowledge document Then: it hard-deletes in that profile scope", async () => {
+    mockChatComponentState.profiles = [
+      {
+        id: "assistant-profile-1",
+        slug: "chat-gpt-1",
+        variant: "artificial-intelligence",
+        adminTitle: "Chat GPT 1",
+      },
+    ];
+    mockChatComponentState.profileMessageRelations = [
+      {
+        id: "profile-message-1",
+        profileId: "assistant-profile-1",
+        messageId: "message-1",
+      },
+    ];
+    mockChatComponentState.knowledgeDocuments = [
+      {
+        id: "document-1",
+        title: "Temporary Knowledge",
+        description: "Temporary details",
+        slug: "temporary-knowledge",
+        adminTitle: "Temporary Knowledge",
+        variant: "default",
+        className: null,
+        status: "indexed",
+        summary: "",
+        tags: [],
+        metadata: {},
+        contentHash: "hash-1",
+        lastIndexedAt: new Date("2026-01-01T10:00:00.000Z"),
+      },
+    ];
+
+    renderComponent("knowledge", {
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "message-1",
+            description: "Hello",
+            createdAt: new Date("2026-01-01T10:00:00.000Z"),
+          },
+        },
+      ],
+    });
+
+    fireEvent.click(await screen.findByRole("button", { name: "chat-gpt-1" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Temporary Knowledge" }),
+    );
+
+    expect(screen.getByText("Edit Knowledge")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete knowledge" }));
+    expect(screen.getByText("Delete Knowledge")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete Knowledge" }));
+
+    await waitFor(() => {
+      expect(mockKnowledgeDocumentDeleteMutateAsync).toHaveBeenCalledWith({
+        id: "subject-1",
+        socialModuleProfileId: "profile-1",
+        knowledgeModuleDocumentId: "document-1",
+        params: {
+          targetSocialModuleProfileId: "assistant-profile-1",
+          socialModuleChatId: "chat-1",
+        },
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Edit Knowledge")).toBeNull();
     });
   });
 

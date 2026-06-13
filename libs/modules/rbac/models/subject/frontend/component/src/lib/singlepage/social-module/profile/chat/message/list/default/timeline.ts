@@ -1,8 +1,10 @@
-import type { IComponentPropsExtended } from "./interface";
+import type {
+  ISocialModuleActions,
+  ISocialModuleMessages,
+  ISocialModuleMessagesAndActionsQuery,
+} from "./interface";
 
-type TimelineItem = NonNullable<
-  IComponentPropsExtended["socialModuleMessagesAndActionsQuery"]
->[number];
+type TimelineItem = ISocialModuleMessagesAndActionsQuery[number];
 
 function getTime(value?: string | Date | null) {
   if (!value) {
@@ -35,8 +37,8 @@ export function sortSocialModuleMessagesAndActions(items: TimelineItem[]) {
 }
 
 export function createSocialModuleMessagesAndActionsQuery(props: {
-  socialModuleMessages?: IComponentPropsExtended["socialModuleMessages"];
-  socialModuleActions?: IComponentPropsExtended["socialModuleActions"];
+  socialModuleMessages?: ISocialModuleMessages;
+  socialModuleActions?: ISocialModuleActions;
 }) {
   if (!props.socialModuleMessages || !props.socialModuleActions) {
     return [];

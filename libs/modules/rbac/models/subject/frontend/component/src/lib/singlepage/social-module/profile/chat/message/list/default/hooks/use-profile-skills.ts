@@ -123,7 +123,11 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
   }
 
   function clearSelectedSkills() {
-    setSelectedSkillIds([]);
+    // Bail out when already empty so callers (e.g. the composer reset that
+    // runs after every send) do not schedule a no-op shell rerender.
+    setSelectedSkillIds((current) => {
+      return current.length === 0 ? current : [];
+    });
   }
 
   const syncSelectedSkillsToDescription = useCallback(

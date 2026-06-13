@@ -9,6 +9,7 @@ export const mockMessageReactByOpenrouterMutate = jest.fn();
 export const mockKnowledgeDocumentUpdateMutate = jest.fn();
 export const mockKnowledgeDocumentCreateMutate = jest.fn();
 export const mockKnowledgeReindexDocumentMutateAsync = jest.fn();
+export const mockKnowledgeDocumentDeleteMutateAsync = jest.fn();
 export const mockKnowledgeDocumentFindRefetch = jest.fn();
 export const mockSocialSkillCreateMutateAsync = jest.fn();
 export const mockSocialSkillUpdateMutateAsync = jest.fn();
@@ -21,6 +22,8 @@ export const mockChatComponentState = {
   profileMessageRelations: [] as any[],
   profiles: [] as any[],
   profileSkillRelations: [] as any[],
+  socialModuleActions: [] as any[],
+  socialModuleMessages: [] as any[],
   socialSkills: [] as any[],
 };
 
@@ -201,6 +204,21 @@ jest.mock(
                 Reindex knowledge
               </button>
             ) : null}
+            {props.mode !== "create" && props.onDelete ? (
+              <>
+                <button type="button" aria-label="Delete knowledge">
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void props.onDelete?.(props.data);
+                  }}
+                >
+                  Delete Knowledge
+                </button>
+              </>
+            ) : null}
           </div>
         );
       },
@@ -283,6 +301,20 @@ jest.mock("@sps/social/relations/profiles-to-skills/sdk/client", () => {
 jest.mock("@sps/rbac/models/subject/sdk/client", () => {
   return {
     api: {
+      socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind: jest.fn(
+        () => {
+          return {
+            data: mockChatComponentState.socialModuleMessages,
+            isLoading: false,
+          };
+        },
+      ),
+      socialModuleProfileFindByIdChatFindByIdActionFind: jest.fn(() => {
+        return {
+          data: mockChatComponentState.socialModuleActions,
+          isLoading: false,
+        };
+      }),
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate:
         jest.fn(() => {
           return {
@@ -381,6 +413,14 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           };
         },
       ),
+      socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete: jest.fn(
+        () => {
+          return {
+            mutateAsync: mockKnowledgeDocumentDeleteMutateAsync,
+            isPending: false,
+          };
+        },
+      ),
     },
     queryClient: {
       invalidateQueries: jest.fn(),
@@ -390,14 +430,36 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
 
 jest.mock("@sps/shared-frontend-client-api", () => {
   const actual = jest.requireActual("@sps/shared-frontend-client-api");
+  const { QueryClient } = jest.requireActual("@tanstack/react-query");
+
+  // A REAL QueryClient (issue #195): the cache helpers (appendToListQueries /
+  // patchInListQueries / removeFromListQueries) must run their updater bodies
+  // against real cached arrays so the cache specs can assert the resulting
+  // array — not merely that setQueryData/getQueryCache were invoked. The
+  // methods are spied (not replaced) so the existing call/no-call assertions
+  // keep working while the real cache mutation still happens.
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity, staleTime: Infinity },
+    },
+  });
+  jest.spyOn(queryClient, "invalidateQueries");
+  jest.spyOn(queryClient, "setQueryData");
+  jest.spyOn(queryClient, "getQueryCache");
 
   return {
     ...actual,
-    queryClient: {
-      invalidateQueries: jest.fn(),
-    },
+    queryClient,
   };
 });
+
+export const mockSharedApiQueryClient = jest.requireMock(
+  "@sps/shared-frontend-client-api",
+).queryClient as import("@tanstack/react-query").QueryClient & {
+  invalidateQueries: jest.Mock;
+  setQueryData: jest.Mock;
+  getQueryCache: jest.Mock;
+};
 
 jest.mock("@uiw/react-md-editor", () => {
   return function MDEditorMock() {
@@ -415,6 +477,17 @@ export function renderComponent(
   chatVariant: "default" | "knowledge",
   options: RenderComponentOptions = {},
 ) {
+  // Timeline data now flows through the mocked SDK find queries consumed by
+  // MessageTimelineSection (issue #195) — translate the legacy option shape
+  // into mock query state instead of passing message arrays as props.
+  const timelineItems = options.socialModuleMessagesAndActionsQuery || [];
+  mockChatComponentState.socialModuleMessages = timelineItems
+    .filter((item) => item.type === "message")
+    .map((item) => item.data);
+  mockChatComponentState.socialModuleActions = timelineItems
+    .filter((item) => item.type === "action")
+    .map((item) => item.data);
+
   return render(
     <Component
       isServer={false}
@@ -453,15 +526,15 @@ export function renderComponent(
         } as any
       }
       socialModuleThreadId="thread-1"
-      socialModuleMessagesAndActionsQuery={
-        options.socialModuleMessagesAndActionsQuery || []
-      }
     />,
   );
 }
 
 export function resetChatComponentMocks() {
   jest.clearAllMocks();
+  // Reset the real shared QueryClient cache between tests so seeded list
+  // queries do not leak across cache specs (issue #195).
+  mockSharedApiQueryClient.clear();
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();
@@ -470,6 +543,7 @@ export function resetChatComponentMocks() {
   mockKnowledgeDocumentUpdateMutate.mockReset();
   mockKnowledgeDocumentCreateMutate.mockReset();
   mockKnowledgeReindexDocumentMutateAsync.mockReset();
+  mockKnowledgeDocumentDeleteMutateAsync.mockReset();
   mockKnowledgeDocumentFindRefetch.mockReset();
   mockSocialSkillCreateMutateAsync.mockReset();
   mockSocialSkillUpdateMutateAsync.mockReset();
@@ -480,6 +554,8 @@ export function resetChatComponentMocks() {
   mockChatComponentState.profileMessageRelations = [];
   mockChatComponentState.profiles = [];
   mockChatComponentState.profileSkillRelations = [];
+  mockChatComponentState.socialModuleActions = [];
+  mockChatComponentState.socialModuleMessages = [];
   mockChatComponentState.socialSkills = [];
   mockKnowledgeReindexDocumentMutateAsync.mockResolvedValue({
     data: {
@@ -488,6 +564,9 @@ export function resetChatComponentMocks() {
       dryRun: false,
       sources: [],
     },
+  });
+  mockKnowledgeDocumentDeleteMutateAsync.mockResolvedValue({
+    id: "document-1",
   });
   mockKnowledgeDocumentCreateMutate.mockImplementation((payload, options) => {
     options?.onSuccess?.({

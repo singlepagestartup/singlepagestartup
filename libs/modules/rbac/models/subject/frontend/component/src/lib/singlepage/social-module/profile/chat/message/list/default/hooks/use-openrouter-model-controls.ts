@@ -6,12 +6,13 @@ import {
   OpenRouterReasoningValue,
 } from "../types";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface UseOpenRouterModelControlsProps {
-  isKnowledgeChat: boolean;
+  enabled: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
+  socialModuleThreadId: string;
   subjectId: string;
 }
 
@@ -51,13 +52,23 @@ export function useOpenRouterModelControls(
   const [selectedModelId, setSelectedModelId] = useState("auto");
   const [selectedReasoning, setSelectedReasoning] =
     useState<OpenRouterReasoningValue>("auto");
+
+  // The chat shell stays mounted across chats/threads, so a stale model
+  // selection would otherwise leak into a new chat whose assistant may not
+  // expose it (issue #195). Reset to defaults whenever the chat or thread
+  // changes; the next chat re-selects intentionally.
+  useEffect(() => {
+    setSelectedModelId("auto");
+    setSelectedReasoning("auto");
+  }, [props.socialModuleChatId, props.socialModuleThreadId]);
+
   const modelsQuery =
     api.socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind({
       id: props.subjectId,
       socialModuleProfileId: props.socialModuleProfileId,
       socialModuleChatId: props.socialModuleChatId,
       reactQueryOptions: {
-        enabled: props.isKnowledgeChat,
+        enabled: props.enabled,
       },
     });
   const modelGroups = useMemo<OpenRouterChatModelGroup[]>(() => {

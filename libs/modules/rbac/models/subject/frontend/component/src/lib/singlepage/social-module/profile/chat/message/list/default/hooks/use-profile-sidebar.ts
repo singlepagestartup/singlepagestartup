@@ -13,9 +13,10 @@ import { queryClient } from "@sps/shared-frontend-client-api";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import QueryString from "qs";
 
 interface UseProfileSidebarProps {
-  isKnowledgeChat: boolean;
+  canUseKnowledge: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   subjectId: string;
@@ -134,7 +135,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   }, [profileSkillIds, skillsFind.data]);
 
   const knowledgeDocumentScopeParams = useMemo(() => {
-    if (!selectedProfileId || !props.isKnowledgeChat) {
+    if (!selectedProfileId || !props.canUseKnowledge) {
       return undefined;
     }
 
@@ -142,7 +143,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       targetSocialModuleProfileId: selectedProfileId,
       socialModuleChatId: props.socialModuleChatId,
     };
-  }, [props.isKnowledgeChat, props.socialModuleChatId, selectedProfileId]);
+  }, [props.canUseKnowledge, props.socialModuleChatId, selectedProfileId]);
 
   const {
     data: knowledgeDocumentsQuery,
@@ -213,6 +214,13 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       knowledgeModuleDocumentId:
         selectedKnowledgeDocumentId || "missing-document",
     });
+  const knowledgeDocumentDelete =
+    rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete({
+      id: props.subjectId,
+      socialModuleProfileId: props.socialModuleProfileId,
+      knowledgeModuleDocumentId:
+        selectedKnowledgeDocumentId || "missing-document",
+    });
   const knowledgeDocumentCreate =
     rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentCreate({
       id: props.subjectId,
@@ -220,12 +228,18 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     });
 
   const knowledgeDocumentsQueryKey = useMemo(() => {
-    const scope = knowledgeDocumentScopeParams
-      ? `?targetSocialModuleProfileId=${knowledgeDocumentScopeParams.targetSocialModuleProfileId}&socialModuleChatId=${knowledgeDocumentScopeParams.socialModuleChatId}`
-      : "";
+    // Mirror the SDK read key exactly (issue #195): the SDK always appends
+    // `?${QueryString.stringify(params)}`, so build the invalidation key the
+    // same way instead of hand-concatenating params.
+    const stringifiedQuery = QueryString.stringify(
+      knowledgeDocumentScopeParams,
+      {
+        encodeValuesOnly: true,
+      },
+    );
 
     return [
-      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents${scope}`,
+      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents?${stringifiedQuery}`,
     ];
   }, [
     knowledgeDocumentScopeParams,
@@ -247,7 +261,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     refetchKnowledgeDocuments,
   ]);
 
-  function openProfile(profile: ISocialModuleProfile) {
+  // Stable reference: passed as onProfileOpen to every memoized timeline row.
+  const openProfile = useCallback((profile: ISocialModuleProfile) => {
     setSelectedProfile(profile);
     setSelectedKnowledgeDocumentId(null);
     setCreatedKnowledgeDocument(null);
@@ -263,7 +278,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       window.matchMedia("(max-width: 1535px)").matches;
 
     setIsMobileSheetOpen(shouldUseSheet);
-  }
+  }, []);
 
   function closeProfile() {
     setIsSidebarOpen(false);
@@ -404,6 +419,39 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     }
   }
 
+  async function deleteKnowledgeDocument(document: KnowledgeDocument) {
+    if (
+      !knowledgeDocumentScopeParams ||
+      document.id === newKnowledgeDocumentId
+    ) {
+      return;
+    }
+
+    try {
+      await knowledgeDocumentDelete.mutateAsync({
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        knowledgeModuleDocumentId: document.id,
+        params: knowledgeDocumentScopeParams,
+      });
+      toast.success("Knowledge document deleted");
+      setSelectedKnowledgeDocumentId(null);
+      setCreatedKnowledgeDocument(null);
+      setKnowledgeDocumentsNeedingReindex((current) => {
+        const next = { ...current };
+        delete next[document.id];
+        return next;
+      });
+      setKnowledgeDocumentDraft({
+        title: "",
+        description: "",
+      });
+      refetchKnowledgeDocumentQueries();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Knowledge document");
+    }
+  }
+
   useEffect(() => {
     setSelectedKnowledgeDocumentId(null);
     setCreatedKnowledgeDocument(null);
@@ -445,6 +493,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     isCreatingKnowledgeDocument,
     isSavingKnowledgeDocument:
       knowledgeDocumentUpdate.isPending || knowledgeDocumentCreate.isPending,
+    isDeletingKnowledgeDocument: knowledgeDocumentDelete.isPending,
     isReindexingKnowledgeDocument: Boolean(
       selectedKnowledgeDocument &&
         reindexingKnowledgeDocumentId === selectedKnowledgeDocument.id,
@@ -454,6 +503,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     knowledgeDocuments,
     onKnowledgeDocumentDraftChange: setKnowledgeDocumentDraft,
     onKnowledgeDocumentCreate: createKnowledgeDocument,
+    onKnowledgeDocumentDelete: deleteKnowledgeDocument,
     onKnowledgeDocumentReindex: reindexKnowledgeDocument,
     onKnowledgeDocumentSave: saveKnowledgeDocument,
     onKnowledgeDocumentSelect: selectKnowledgeDocument,

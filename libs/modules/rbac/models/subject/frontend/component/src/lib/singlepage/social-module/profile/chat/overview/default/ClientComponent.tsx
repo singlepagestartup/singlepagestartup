@@ -531,10 +531,6 @@ export function Component(props: IComponentPropsExtended) {
     });
   }, [props.language, socialModuleMemberProfiles]);
   const knowledgeAssistantProfile = useMemo(() => {
-    if (props.socialModuleChat.variant !== "knowledge") {
-      return null;
-    }
-
     const profilesById = new Map(
       (socialModuleMemberProfiles || []).map((socialModuleProfile) => {
         return [socialModuleProfile.id, socialModuleProfile];
@@ -557,11 +553,7 @@ export function Component(props: IComponentPropsExtended) {
     }
 
     return null;
-  }, [
-    props.socialModuleChat.variant,
-    socialModuleMemberProfiles,
-    socialModuleProfilesToChats,
-  ]);
+  }, [socialModuleMemberProfiles, socialModuleProfilesToChats]);
   const artificialIntelligenceOpponentProfile = useMemo(() => {
     if (knowledgeAssistantProfile) {
       return knowledgeAssistantProfile;

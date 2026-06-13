@@ -3,27 +3,27 @@
 import { ChatMessageFormValues, chatMessageFormSchema } from "../schemas";
 import { OpenRouterReasoningValue, SocialSkill } from "../types";
 import { hasKnowledgeMention } from "../utils";
+import { ThreadMessagesCache } from "./use-thread-messages-refetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface UseChatComposerProps {
   assistantProfileId?: string;
   clearSelectedSkills: () => void;
-  isKnowledgeChat: boolean;
   markShouldScrollToBottom: () => void;
   onKnowledgeReactionSuccess: () => void;
   openRouterModelId: string;
   openRouterReasoning: OpenRouterReasoningValue;
   profileSkills: SocialSkill[];
-  refetchThreadMessages: () => void;
   selectedSkillIds: string[];
   socialModuleChatId: string;
   socialModuleProfileId: string;
   socialModuleThreadId: string;
   subjectId: string;
+  threadMessagesCache: ThreadMessagesCache;
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -69,15 +69,6 @@ export function useChatComposer(props: UseChatComposerProps) {
         socialModuleMessageId: "pending",
       },
     );
-
-  const selectedFiles = form.watch("files");
-  const description = form.watch("description");
-  const selectedFileNames = Array.isArray(selectedFiles)
-    ? selectedFiles.map((file) => {
-        return typeof file === "string" ? file : file.name;
-      })
-    : [];
-  const canSubmit = Boolean(description?.trim()) && !createMessage.isPending;
 
   const focusComposerTextArea = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -143,11 +134,18 @@ export function useChatComposer(props: UseChatComposerProps) {
       },
       {
         onSuccess(createdMessage) {
-          if (
-            !props.isKnowledgeChat ||
-            !props.assistantProfileId ||
-            !createdMessage.id
-          ) {
+          toast.success("Message created successfully");
+          // Targeted append (exact server response) instead of a full
+          // invalidation - the timeline gains one row without refetching.
+          // WS topic invalidation remains the background consistency check.
+          if (createdMessage?.id) {
+            props.threadMessagesCache.append(createdMessage);
+          } else {
+            props.threadMessagesCache.refetch();
+          }
+          resetComposer();
+
+          if (!props.assistantProfileId || !createdMessage?.id) {
             return;
           }
 
@@ -179,11 +177,13 @@ export function useChatComposer(props: UseChatComposerProps) {
             },
             {
               onSuccess() {
-                props.refetchThreadMessages();
+                // The AI reply is created server-side - the client cannot
+                // predict it, so a full refetch is the correct sync here.
+                props.threadMessagesCache.refetch();
                 props.onKnowledgeReactionSuccess();
               },
               onError(error: unknown) {
-                props.refetchThreadMessages();
+                props.threadMessagesCache.refetch();
                 toast.error(
                   getErrorMessage(error, "OpenRouter response failed"),
                 );
@@ -210,27 +210,14 @@ export function useChatComposer(props: UseChatComposerProps) {
     }
   }
 
-  useEffect(() => {
-    if (!createMessage.isSuccess) {
-      return;
-    }
-
-    toast.success("Message created successfully");
-    props.refetchThreadMessages();
-    resetComposer();
-  }, [createMessage.isSuccess]);
-
   return {
-    canSubmit,
     createMessage,
-    description,
     fileInputRef,
     focusComposerTextArea,
     form,
     onSubmit,
     reactByOpenrouter,
     resetComposer,
-    selectedFileNames,
     textareaRef,
   };
 }
