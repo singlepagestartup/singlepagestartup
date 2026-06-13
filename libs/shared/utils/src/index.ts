@@ -6,6 +6,8 @@ export { util as buildTreePaths } from "./lib/build-tree-paths";
 export { util as hash } from "./lib/hash";
 export * from "./lib/envs";
 export * from "./lib/constants";
+export * from "./lib/topics";
+export * from "./lib/routes";
 export type { NextRequestOptions } from "./lib/types";
 export { util as responsePipe } from "./lib/response-pipe";
 export { util as randomWordsGenerator } from "./lib/random-words-generator";
