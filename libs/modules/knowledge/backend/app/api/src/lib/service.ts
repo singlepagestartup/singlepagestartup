@@ -107,6 +107,16 @@ export class KnowledgeService {
     });
   }
 
+  async deleteDocument(documentId: string) {
+    const document = await this.repository.findDocumentById(documentId);
+
+    if (!document) {
+      throw new Error(`Knowledge document ${documentId} was not found.`);
+    }
+
+    return this.repository.deleteDocumentWithDerivedData(documentId);
+  }
+
   async search(props: {
     query: string;
     topK?: number;

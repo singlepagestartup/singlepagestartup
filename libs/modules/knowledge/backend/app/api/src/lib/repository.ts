@@ -12,7 +12,7 @@ import {
   KnowledgeSearchResult,
   KnowledgeSourceInput,
 } from "./types";
-import { and, eq, inArray, not, sql } from "drizzle-orm";
+import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import { FILE_STORAGE_FOLDER, FILE_STORAGE_PROVIDER } from "@sps/shared-utils";
 import { Provider } from "@sps/providers-file-storage";
 import fs from "node:fs/promises";
@@ -234,6 +234,35 @@ export class KnowledgeRepository {
     return updated;
   }
 
+  async deleteDocumentWithDerivedData(documentId: string) {
+    const document = await this.findDocumentById(documentId);
+
+    if (!document) {
+      return undefined;
+    }
+
+    const sources = await this.findSourcesByDocumentId(documentId);
+    const sourceIds = sources
+      .map((source) => source.id)
+      .filter((sourceId): sourceId is string => {
+        return Boolean(sourceId);
+      });
+
+    await this.deleteSourceFilesBySourceIds(sourceIds);
+    await this.deleteSourceChunkRelationsBySourceIds(sourceIds);
+    await this.deleteSourcesByIds(sourceIds);
+    await this.db
+      .delete(EditSuggestionTable)
+      .where(eq(EditSuggestionTable.targetDocumentId, documentId))
+      .execute();
+    await this.db
+      .delete(DocumentTable)
+      .where(eq(DocumentTable.id, documentId))
+      .execute();
+
+    return document;
+  }
+
   async createDocumentFromSuggestion(props: {
     title: string;
     description: string;
@@ -334,6 +363,123 @@ export class KnowledgeRepository {
       .execute();
 
     await this.deleteOrphanChunks();
+  }
+
+  private async findSourcesByDocumentId(documentId: string) {
+    return this.db
+      .select()
+      .from(SourceTable)
+      .where(
+        or(
+          eq(
+            SourceTable.originalPath,
+            this.getDocumentOriginalPath(documentId),
+          ),
+          sql`${SourceTable.metadata}->>'documentId' = ${documentId}`,
+        ),
+      )
+      .execute();
+  }
+
+  private async deleteSourceFilesBySourceIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    const fileRelations = await this.db
+      .select({
+        fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        file: FileTable.file,
+      })
+      .from(SourcesToFileStorageModuleFilesTable)
+      .leftJoin(
+        FileTable,
+        eq(
+          FileTable.id,
+          SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        ),
+      )
+      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
+      .execute();
+    const fileIds = fileRelations
+      .map((relation) => relation.fileId)
+      .filter((fileId): fileId is string => {
+        return Boolean(fileId);
+      });
+    const fileById = new Map(
+      fileRelations.map((relation) => {
+        return [relation.fileId, relation.file] as const;
+      }),
+    );
+
+    await this.db
+      .delete(SourcesToFileStorageModuleFilesTable)
+      .where(inArray(SourcesToFileStorageModuleFilesTable.sourceId, sourceIds))
+      .execute();
+
+    if (fileIds.length) {
+      const remainingRelations = await this.db
+        .select({
+          fileId: SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+        })
+        .from(SourcesToFileStorageModuleFilesTable)
+        .where(
+          inArray(
+            SourcesToFileStorageModuleFilesTable.fileStorageModuleFileId,
+            fileIds,
+          ),
+        )
+        .execute();
+      const remainingFileIds = new Set(
+        remainingRelations
+          .map((relation) => relation.fileId)
+          .filter((fileId): fileId is string => {
+            return Boolean(fileId);
+          }),
+      );
+      const orphanFileIds = fileIds.filter((fileId) => {
+        return !remainingFileIds.has(fileId);
+      });
+
+      await Promise.all(
+        orphanFileIds.map((fileId) => {
+          return this.deleteStoredFile(fileById.get(fileId));
+        }),
+      );
+
+      if (!orphanFileIds.length) {
+        return;
+      }
+
+      await this.db
+        .delete(FileTable)
+        .where(inArray(FileTable.id, orphanFileIds))
+        .execute();
+    }
+  }
+
+  private async deleteSourceChunkRelationsBySourceIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    await this.db
+      .delete(SourcesToChunksTable)
+      .where(inArray(SourcesToChunksTable.sourceId, sourceIds))
+      .execute();
+
+    await this.deleteOrphanChunks();
+  }
+
+  private async deleteSourcesByIds(sourceIds: string[]) {
+    if (!sourceIds.length) {
+      return;
+    }
+
+    await this.db
+      .delete(SourceTable)
+      .where(inArray(SourceTable.id, sourceIds))
+      .execute();
   }
 
   async insertChunksForSource(sourceId: string, chunks: KnowledgeChunkInput[]) {

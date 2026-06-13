@@ -21,6 +21,10 @@ REPO_FULL_NAME="$TARGET_REPO_FULL_NAME"
 
 Do not use bare `gh repo view` to derive `REPO_NAME`, and do not run raw `gh issue ...` commands without `--repo "$REPO_FULL_NAME"` unless a shared helper is being used.
 
+## Knowledge Preflight
+
+Follow `.claude/references/knowledge-first-contract.md`: the approved research document is the primary source for this phase. Use its `file:line` references directly and spot-check only the claims the plan depends on; spawn new investigation sub-tasks only for questions the research does not answer.
+
 ## Status Gate
 
 **Entry**: Issue must be in "Ready for Plan" or "Plan in Progress" status (the latter allows resuming an interrupted session or revising a plan after review feedback)
@@ -119,6 +123,14 @@ fi
    - If confirmation is not explicit, pause and clarify before writing.
 
    ```markdown
+   ---
+   date: [Current date and time with timezone in ISO format]
+   issue_number: ISSUE_NUMBER
+   repository: REPO_NAME
+   topic: "[Feature/Task Name]"
+   status: in_review
+   ---
+
    # [Feature/Task Name] Implementation Plan
 
    ## Overview

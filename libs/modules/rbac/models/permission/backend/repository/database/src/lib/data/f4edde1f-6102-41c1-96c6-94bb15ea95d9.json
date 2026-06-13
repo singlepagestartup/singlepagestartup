@@ -1,0 +1,9 @@
+{
+  "id": "f4edde1f-6102-41c1-96c6-94bb15ea95d9",
+  "createdAt": "2026-06-13T00:00:00.000Z",
+  "updatedAt": "2026-06-13T00:00:00.000Z",
+  "variant": "default",
+  "type": "HTTP",
+  "method": "DELETE",
+  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents/[knowledge.documents.id]"
+}

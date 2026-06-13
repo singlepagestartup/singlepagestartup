@@ -16,9 +16,10 @@ describe("apps/api singlepage contract", () => {
       "utf-8",
     );
 
-    expect(appSource).toContain(
-      'app.route("/api/ecommerce", ecommerceApp.hono);',
-    );
+    const ecommerceRoute =
+      "app.route(" + JSON.stringify("/api/ecommerce") + ", ecommerceApp.hono);";
+
+    expect(appSource).toContain(ecommerceRoute);
   });
 
   it("keeps critical middlewares in expected order", () => {
@@ -33,11 +34,14 @@ describe("apps/api singlepage contract", () => {
     const observerIndex = appSource.indexOf(
       "app.use(observerMiddleware.init());",
     );
-    const authIndex = appSource.indexOf(
-      "app.use(isAuthorizedMiddleware.init());",
-    );
     const revalidationIndex = appSource.indexOf(
       "app.use(revalidationMiddleware.init());",
+    );
+    const httpCacheIndex = appSource.indexOf(
+      "app.use(httpCacheMiddleware.init());",
+    );
+    const authIndex = appSource.indexOf(
+      "app.use(isAuthorizedMiddleware.init());",
     );
     const parseQueryIndex = appSource.indexOf(
       "app.use(parseQueryMiddleware.init());",
@@ -45,8 +49,25 @@ describe("apps/api singlepage contract", () => {
 
     expect(requestIdIndex).toBeGreaterThan(-1);
     expect(observerIndex).toBeGreaterThan(requestIdIndex);
-    expect(authIndex).toBeGreaterThan(observerIndex);
-    expect(revalidationIndex).toBeGreaterThan(authIndex);
-    expect(parseQueryIndex).toBeGreaterThan(revalidationIndex);
+
+    // Issue-195 bump-before-broadcast contract (LOAD-BEARING ORDER).
+    //
+    // Hono middleware is an onion: code after `await next()` unwinds in
+    // REVERSE registration order (the LAST-registered middleware's post-next
+    // block runs FIRST). The http-cache middleware AWAITS its cache-version
+    // bump after next(); the revalidation middleware fires the WebSocket
+    // broadcast after next() (not awaited for cache).
+    //
+    // If revalidation were registered AFTER http-cache, its broadcast would
+    // unwind BEFORE http-cache finished bumping — clients would be told "data
+    // changed" and immediately refetch a STILL-STALE cached read. Registering
+    // revalidation BEFORE http-cache makes the http-cache bump (inner) complete
+    // before the revalidation broadcast (outer) runs. Do NOT reorder these.
+    expect(revalidationIndex).toBeGreaterThan(-1);
+    expect(httpCacheIndex).toBeGreaterThan(-1);
+    expect(revalidationIndex).toBeLessThan(httpCacheIndex);
+
+    expect(authIndex).toBeGreaterThan(httpCacheIndex);
+    expect(parseQueryIndex).toBeGreaterThan(authIndex);
   });
 });

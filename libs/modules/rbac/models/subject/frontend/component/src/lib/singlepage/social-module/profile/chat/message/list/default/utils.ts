@@ -1,4 +1,4 @@
-import { IComponentPropsExtended } from "./interface";
+import { ISocialModuleMessagesAndActionsQuery } from "./interface";
 import { KnowledgeMentionOption, ProfileSummary, SocialSkill } from "./types";
 import { internationalization } from "@sps/shared-configuration";
 import { saveLanguageContext } from "@sps/shared-utils";
@@ -68,16 +68,17 @@ export function getProfileSummary(
 
 export function getTimelineSignature(
   socialModuleThreadId: string,
-  items: IComponentPropsExtended["socialModuleMessagesAndActionsQuery"] = [],
+  items: ISocialModuleMessagesAndActionsQuery = [],
 ) {
   const lastItem = items[items.length - 1];
 
+  // updatedAt is intentionally excluded: editing an existing message must not
+  // change the signature, otherwise the scroll-to-bottom effect fires on edit.
   return [
     socialModuleThreadId,
     items.length,
     lastItem?.type || "",
     lastItem?.data.id || "",
-    lastItem?.data.updatedAt || "",
     lastItem?.data.createdAt || "",
   ].join(":");
 }

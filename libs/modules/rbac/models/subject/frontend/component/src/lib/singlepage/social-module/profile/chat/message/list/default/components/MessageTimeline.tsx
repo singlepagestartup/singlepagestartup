@@ -4,20 +4,87 @@ import { ActionProfileLoader } from "./ActionProfileLoader";
 import { MessageProfileLoader } from "./MessageProfileLoader";
 import { Component as SocialModuleActionChatActionRow } from "@sps/social/models/action/frontend/component/src/lib/singlepage/chat-action-row";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
-import type { IComponentPropsExtended } from "../interface";
+import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import type { RefObject } from "react";
+import { memo, type RefObject } from "react";
+
+type TimelineItem = ISocialModuleMessagesAndActionsQuery[number];
+type TimelineMessage = Extract<TimelineItem, { type: "message" }>["data"];
+type TimelineAction = Extract<TimelineItem, { type: "action" }>["data"];
 
 interface MessageTimelineProps {
-  isDeleting: boolean;
-  items: IComponentPropsExtended["socialModuleMessagesAndActionsQuery"];
+  deletingMessageId: string | null;
+  items: ISocialModuleMessagesAndActionsQuery | undefined;
   language: string;
   messagesContentRef: RefObject<HTMLDivElement | null>;
   onMessageDelete: (message: ISocialModuleMessage) => void;
   onMessageEdit: (message: ISocialModuleMessage) => void;
   onProfileOpen: (profile: ISocialModuleProfile) => void;
 }
+
+interface MessageRowProps {
+  isDeleting: boolean;
+  language: string;
+  message: TimelineMessage;
+  onMessageDelete: (message: ISocialModuleMessage) => void;
+  onMessageEdit: (message: ISocialModuleMessage) => void;
+  onProfileOpen: (profile: ISocialModuleProfile) => void;
+}
+
+/**
+ * Memoized row boundary: the per-message profile loader query and the message
+ * row markup rerender only when this row's own props change - appending or
+ * mutating sibling rows leaves this row untouched (issue #195).
+ */
+const MemoizedMessageRow = memo(function MemoizedMessageRow(
+  props: MessageRowProps,
+) {
+  return (
+    <MessageProfileLoader messageId={props.message.id}>
+      {(profile) => {
+        return (
+          <SocialModuleProfile
+            isServer={false}
+            variant="chat-message-row"
+            data={profile}
+            language={props.language}
+            message={props.message}
+            isDeleting={props.isDeleting}
+            onProfileOpen={props.onProfileOpen}
+            onEdit={props.onMessageEdit}
+            onDelete={props.onMessageDelete}
+          />
+        );
+      }}
+    </MessageProfileLoader>
+  );
+});
+
+interface ActionRowProps {
+  action: TimelineAction;
+  language: string;
+}
+
+const MemoizedActionRow = memo(function MemoizedActionRow(
+  props: ActionRowProps,
+) {
+  return (
+    <ActionProfileLoader actionId={props.action.id} language={props.language}>
+      {(profile) => {
+        return (
+          <SocialModuleActionChatActionRow
+            isServer={false}
+            variant="chat-action-row"
+            data={props.action}
+            language={props.language}
+            profile={profile}
+          />
+        );
+      }}
+    </ActionProfileLoader>
+  );
+});
 
 export function MessageTimeline(props: MessageTimelineProps) {
   if (!props.items?.length) {
@@ -41,46 +108,26 @@ export function MessageTimeline(props: MessageTimelineProps) {
           const message = socialModuleMessageOrAction.data;
 
           return (
-            <MessageProfileLoader key={message.id} messageId={message.id}>
-              {(profile) => {
-                return (
-                  <SocialModuleProfile
-                    isServer={false}
-                    variant="chat-message-row"
-                    data={profile}
-                    language={props.language}
-                    message={message}
-                    isDeleting={props.isDeleting}
-                    onProfileOpen={props.onProfileOpen}
-                    onEdit={props.onMessageEdit}
-                    onDelete={props.onMessageDelete}
-                  />
-                );
-              }}
-            </MessageProfileLoader>
+            <MemoizedMessageRow
+              key={message.id}
+              isDeleting={props.deletingMessageId === message.id}
+              language={props.language}
+              message={message}
+              onMessageDelete={props.onMessageDelete}
+              onMessageEdit={props.onMessageEdit}
+              onProfileOpen={props.onProfileOpen}
+            />
           );
         }
 
         const action = socialModuleMessageOrAction.data;
 
         return (
-          <ActionProfileLoader
+          <MemoizedActionRow
             key={action.id || index}
-            actionId={action.id}
+            action={action}
             language={props.language}
-          >
-            {(profile) => {
-              return (
-                <SocialModuleActionChatActionRow
-                  isServer={false}
-                  variant="chat-action-row"
-                  data={action}
-                  language={props.language}
-                  profile={profile}
-                />
-              );
-            }}
-          </ActionProfileLoader>
+          />
         );
       })}
     </div>

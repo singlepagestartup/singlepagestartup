@@ -14,12 +14,14 @@ interface KnowledgeDocumentDialogProps {
   document: KnowledgeDocument | null | undefined;
   draft: KnowledgeDocumentDraft;
   isDirty: boolean;
+  isDeleting: boolean;
   isOpen: boolean;
   isReindexing: boolean;
   isSaving: boolean;
   language: string;
   mode: "create" | "edit";
   needsReindex: boolean;
+  onDelete: (document: KnowledgeDocument) => Promise<void> | void;
   onDraftChange: (draft: KnowledgeDocumentDraft) => void;
   onOpenChange: (open: boolean) => void;
   onReindex: (document: KnowledgeDocument) => Promise<void> | void;
@@ -47,11 +49,13 @@ export function KnowledgeDocumentDialog(props: KnowledgeDocumentDialogProps) {
             data={props.document}
             language={props.language}
             draft={props.draft}
+            isDeleting={props.isDeleting}
             isDirty={props.isDirty}
             isSaving={props.isSaving}
             isReindexing={props.isReindexing}
             needsReindex={props.needsReindex}
             mode={props.mode}
+            onDelete={props.mode === "edit" ? props.onDelete : undefined}
             onDraftChange={props.onDraftChange}
             onSave={props.onSave}
             onReindex={props.onReindex}

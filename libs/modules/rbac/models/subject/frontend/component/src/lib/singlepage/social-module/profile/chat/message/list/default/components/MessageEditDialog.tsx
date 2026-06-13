@@ -11,8 +11,7 @@ import {
   Form,
 } from "@sps/shared-ui-shadcn";
 import MDEditor from "@uiw/react-md-editor";
-import { Controller } from "react-hook-form";
-import type { UseFormReturn } from "react-hook-form";
+import { Controller, type UseFormReturn } from "react-hook-form";
 
 interface MessageEditDialogProps {
   form: UseFormReturn<MessageEditFormValues>;

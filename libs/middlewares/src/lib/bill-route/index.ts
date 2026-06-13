@@ -1,45 +1,35 @@
 import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
-import { KV_PROVIDER } from "@sps/shared-utils";
+import { IRouteRule, KV_PROVIDER, RouteMatcher } from "@sps/shared-utils";
 import { MiddlewareHandler } from "hono";
 import { authorization, getHttpErrorType } from "@sps/backend-utils";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { getCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
-
-/**
- * Routes that require billing to be checked.
- * Only requests matching these patterns will be billed; everything else is let through.
- * @type {Array<{ regexPath: RegExp; methods: string[] }>}
- *
- * [..., {
- *   regexPath: /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages\/[a-zA-Z0-9-]+\/react-by\/openrouter/,
- *   methods: ["POST"],
- * }]
- */
-const billingRoutes: { regexPath: RegExp; methods: string[] }[] = [
-  {
-    regexPath:
-      /\/api\/rbac\/subjects\/[a-zA-Z0-9-]+\/social-module\/profiles\/[a-zA-Z0-9-]+\/chats\/[a-zA-Z0-9-]+\/messages\/[a-zA-Z0-9-]+\/react-by\/openrouter/,
-    methods: ["POST"],
-  },
-];
+import { createBillingRoutesMatcher } from "./routes";
 
 export type IMiddlewareGeneric = {
   Variables: undefined;
 };
 
+/**
+ * Project extension seam: framework consumers register routes that require a
+ * billing check via constructor options, merged with the framework defaults
+ * (`routes/singlepage.ts`) and the project layer (`routes/startup.ts`).
+ */
+export interface IMiddlewareOptions {
+  billingRoutes?: IRouteRule[];
+}
+
 export class Middleware {
   storeProvider: StoreProvider;
-  private billingRoutes: Map<string, Set<string>>;
+  private billingRoutesMatcher: RouteMatcher;
 
-  constructor() {
+  constructor(options?: IMiddlewareOptions) {
     this.storeProvider = new StoreProvider({ type: KV_PROVIDER });
-    this.billingRoutes = new Map();
-
-    billingRoutes.forEach(({ regexPath, methods }) => {
-      this.billingRoutes.set(regexPath.source, new Set(methods));
-    });
+    this.billingRoutesMatcher = createBillingRoutesMatcher(
+      options?.billingRoutes,
+    );
   }
 
   init(): MiddlewareHandler<any, any, {}> {
@@ -51,12 +41,7 @@ export class Middleware {
 
       const method = c.req.method;
 
-      const isBillingRoute = [...this.billingRoutes.entries()].some(
-        ([pattern, methods]) =>
-          new RegExp(pattern).test(route) && methods.has(method),
-      );
-
-      if (!isBillingRoute) {
+      if (!this.billingRoutesMatcher.matches(route, method)) {
         return await next();
       }
 

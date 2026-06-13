@@ -1,6 +1,6 @@
 # SinglePageStartup
 
-Use this file as the specific entry point for working in this repository.
+Use this file as the universal entry point for any AI agent (any provider) working in this repository. Claude Code additionally reads `CLAUDE.md`; shared rules in both files must stay in sync, and this file is canonical for provider-neutral content.
 
 ## Repository Overview
 
@@ -50,44 +50,89 @@ If anything is unclear, read the relevant README files instead of guessing.
 - Start API server: `npm run api:dev`
 - Start host (Next.js) server: `npm run host:dev`
 
-## Codex Workflow (Phase 1)
+## AI Development Workflow (any agent, any provider)
 
-Codex workflow now runs in parallel with `.claude` and preserves the same issue lifecycle and artifacts.
+This repository uses one provider-agnostic, status-gated development workflow. Claude Code, Codex, and any other AI agent must follow the same process definitions and produce the same artifacts.
 
-### Core skills
+### Single source of truth
 
-- `core-next` - dispatcher by current GitHub Project status.
-- `core-00-create` - create/initialize issue in workflow.
-- `core-10-research` - research phase.
-- `core-20-plan` - plan phase.
-- `core-30-implement` - implementation phase.
+| Concern                                                         | Canonical location                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Process definitions (phases, gates, artifact templates)         | `.claude/commands/**/*.md`                                                |
+| Workflow contracts (repo context, process log, knowledge reuse) | `.claude/references/*.md`                                                 |
+| GitHub Project / issue automation                               | `.claude/helpers/*.sh` (plain bash, provider-independent)                 |
+| Per-checkout configuration                                      | `.claude/.env` (gitignored; created by `./ai.sh`)                         |
+| Provider adapters                                               | Claude Code: `.claude/commands` as slash commands; Codex: `.codex/skills` |
 
-### Utility skills
+The `.claude/` directory name is historical: the command documents, helper scripts, and reference contracts inside it are provider-neutral and are the canonical definition of the workflow. Adapters for other providers must wrap these files (read them and execute their instructions), never fork or duplicate their content.
 
-- `github`, `github-status`, `validate-plan`, `create-handoff`, `resume-handoff`, `implement-plan`, `commit`, `describe-pr`.
+### GitHub Project is the control plane
 
-### Legacy aliases
+All phase decisions are made through the GitHub Project status field — not chat history and not local state:
 
-- `ralph-research` / `ralph_research`, `ralph-plan` / `ralph_plan`, `ralph-impl` / `ralph_impl`, `oneshot`, `oneshot-plan` / `oneshot_plan`.
-- They are compatibility wrappers and delegate to `core-*` semantics.
+- Each issue moves through 12 statuses: Triage → Spec Needed → Research Needed → Research in Progress → Research in Review → Ready for Plan → Plan in Progress → Plan in Review → Ready for Dev → In Dev → Code Review → Done.
+- Every phase command has an entry status gate and an exit status transition. Agents must refuse to run a phase when the current status does not match the gate — even when asked directly.
+- Human review gates: `Research in Review`, `Plan in Review`, `Code Review`. Only the human operator moves an issue out of these statuses; this is where work is reviewed and the decision to proceed is made.
+- Status reads/writes go through `.claude/helpers/get_issue_status.sh` and `.claude/helpers/update_issue_status.sh`.
 
-### How to invoke skills
+Phases (canonical files in `.claude/commands/core/`):
 
-- In Codex App/IDE, type `/` and select skill by name (for example, `core-next`).
-- Explicit invocation also works via `$` mention (for example, `$core-next`).
-- Pass issue number in the same prompt (for example: `Run core-next for issue 142`).
+| Phase        | Canonical file    | Status transition                       |
+| ------------ | ----------------- | --------------------------------------- |
+| Dispatch     | `next.md`         | reads status, routes to the right phase |
+| Create issue | `00-create.md`    | — → Triage → Research Needed            |
+| Research     | `10-research.md`  | Research Needed → Research in Review    |
+| Plan         | `20-plan.md`      | Ready for Plan → Plan in Review         |
+| Implement    | `30-implement.md` | Ready for Dev → Code Review             |
 
-### Status gates and artifacts
+### Workflow artifacts
 
-- Status transitions and gate logic remain equivalent to `.claude/commands/core/*.md`.
-- GitHub status operations still use `.claude/helpers/*.sh` in this phase.
-- Research/plans/handoffs remain in `thoughts/shared/{research,plans,handoffs}/...`.
+All artifacts live under `thoughts/shared/<kind>/<repo-name>/` and are committed to git:
 
-### Run modes
+| Kind        | Path                                                  | Purpose                                          |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------ |
+| Ticket      | `thoughts/shared/tickets/<repo>/ISSUE-N.md`           | Local snapshot of the GitHub issue               |
+| Process log | `thoughts/shared/processes/<repo>/ISSUE-N.md`         | Cross-phase incidents, fixes, reusable learnings |
+| Research    | `thoughts/shared/research/<repo>/ISSUE-N.md`          | Codebase findings with file:line references      |
+| Plan        | `thoughts/shared/plans/<repo>/ISSUE-N.md`             | Phased implementation plan with success criteria |
+| Handoff     | `thoughts/shared/handoffs/<repo>/ISSUE-N-progress.md` | Operational progress (deleted after merge)       |
 
-- Safe default: `codex --profile sps-safe`
-- No confirmation prompts (workspace sandbox): `codex --profile sps-auto`
-- Equivalent one-off flags: `codex --ask-for-approval never --sandbox workspace-write`
+These artifacts are the durable memory of the project. Before searching the codebase, agents must consult them first — see `.claude/references/knowledge-first-contract.md`.
+
+### Running the workflow from any provider
+
+- **Claude Code**: `/core/next [issue]` — slash commands map 1:1 onto `.claude/commands/**`.
+- **Codex**: `core-next` and the other skills in `.codex/skills/` — thin wrappers over the canonical files (see `.codex/README.md`). Run modes: `codex --profile sps-safe` (default) or `codex --profile sps-auto`.
+- **Any other agent**: read the canonical command file (start with `.claude/commands/core/next.md`) and execute its instructions in the current context, applying this tool mapping:
+
+| Canonical instruction                   | Any-provider equivalent                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Spawn sub-agent (`codebase-locator`, …) | Use the provider's sub-agent/task feature if available; otherwise perform the same investigation sequentially        |
+| `TodoWrite` task tracking               | Any progress tracking; a plain markdown checklist is sufficient                                                      |
+| `SlashCommand()` / "run command X"      | Read the referenced command file and follow it in the same context (never spawn a detached context that loses state) |
+| Read/Edit/Write tools                   | The provider's file tools; preserve exact artifact paths                                                             |
+| Shell blocks that source helpers        | Run inside a single `bash -lc '…'` block (not zsh) so `source .claude/helpers/load_config.sh` exports stay in scope  |
+
+Hard requirements for every provider: respect status gates, write artifacts at the exact canonical paths, use `.claude/helpers/*.sh` for GitHub operations, and keep issue comments and review checkpoints identical to the canonical command.
+
+### Upstream and child repositories
+
+`singlepagestartup/sps-lite` is the upstream framework repository. Projects built on SPS use it as an upstream remote (the child repository name is chosen by the developer) and sync workflow improvements in both directions. To keep this safe:
+
+- Shared workflow files (`AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.codex/**`) must stay project-agnostic — never hard-code a repository or project name in them.
+- Repository identity comes from the checkout, not from these files: `TARGET_REPO` in `.claude/.env`, or `remote.origin.url` — see `.claude/references/repository-context-contract.md`.
+- Artifacts self-identify their home: every ticket/process/research/plan file lives under `thoughts/shared/<kind>/<repo-name>/` and carries a `repository:` frontmatter field, so upstream artifacts and each child project's artifacts never mix — even if a `thoughts/` directory is shared or synced.
+- Each checkout has its own `.claude/.env` (gitignored) pointing at its own GitHub repository and its own GitHub Project.
+- Framework-level fixes discovered in a child project should be backported to `sps-lite`; project-specific behavior must stay in the child repository.
+
+### Token efficiency
+
+The workflow is designed to spend tokens once and reuse the result:
+
+- Consult recorded knowledge before searching the codebase: follow `.claude/references/knowledge-first-contract.md` (lookup order: process log → ticket → research/plans → READMEs → targeted search).
+- Each phase reads the previous phase's artifact instead of re-deriving it; artifacts must be self-contained for exactly this reason.
+- Incidents and their fixes are recorded once in the process log (`.claude/references/process-artifact-contract.md`); future agents read them instead of re-debugging.
+- Documentation order (root `README.md` → module README → model/relation README) is the cheapest way to understand a module — read it before scanning code.
 
 ## Test format (BDD)
 
@@ -104,3 +149,7 @@ All test files (`*.spec.*`, `*.test.*`, `*.e2e.*`) must use the repository BDD f
 - Confirm frontend changes obey the Tailwind/shadcn preset rules, variant structure, and SDK-based data fetching.
 - Confirm backend changes preserve the layered architecture (repository/service/controller) and never bypass shared utilities (logging, caching, RBAC, revalidation).
 - Ensure schema changes were followed by the Drizzle generation command; do not manually create migration SQL, snapshots, or `_journal.json` entries.
+- List rows are memoized (`React.memo`) with stable id-based keys; handlers passed to rows are wrapped in `useCallback`.
+- Pending state is scoped per item (`<action>ingId: string | null`), never a shared boolean broadcast to every row.
+- Form `watch` subscriptions live in the lowest component that needs them; child components must use `useWatch({ control })` — `form.watch(name)` rerenders the `useForm` host component.
+- Mutations patch the React Query cache via the shared helpers (`@sps/shared-frontend-client-api` — factory mutations do this automatically; hand-written SDKs follow the documented contract in `libs/shared/frontend/client/api/README.md`) and never replace WebSocket invalidation as the consistency fallback.

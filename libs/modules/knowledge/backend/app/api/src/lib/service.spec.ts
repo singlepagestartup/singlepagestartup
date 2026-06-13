@@ -369,4 +369,63 @@ describe("knowledge service", () => {
       index: { indexed: 1, skipped: 0 },
     });
   });
+
+  /**
+   * BDD Scenario: missing document deletion.
+   *
+   * Given: a delete request references a missing Knowledge document.
+   * When: the service validates the document id.
+   * Then: cleanup is not attempted.
+   */
+  it("rejects deleting a missing document before cleanup", async () => {
+    const deleteDocumentWithDerivedData = jest.fn();
+    const service = new KnowledgeService({
+      repository: {
+        findDocumentById: jest.fn().mockResolvedValue(undefined),
+        deleteDocumentWithDerivedData,
+      } as any,
+      embeddingClient: {} as any,
+      generationClient: {} as any,
+      modelClient: {} as any,
+    });
+
+    await expect(service.deleteDocument("missing-document")).rejects.toThrow(
+      "Knowledge document missing-document was not found.",
+    );
+    expect(deleteDocumentWithDerivedData).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario: document deletion cleanup.
+   *
+   * Given: a Knowledge document exists.
+   * When: the service deletes it.
+   * Then: repository cleanup runs without embedding generation or reindexing.
+   */
+  it("deletes a document through cleanup without embedding generation", async () => {
+    const document = { id: "document-1", title: "Temporary knowledge" };
+    const deleteDocumentWithDerivedData = jest.fn().mockResolvedValue(document);
+    const embeddingClient = {
+      embed: jest.fn(),
+      embedMany: jest.fn(),
+    };
+    const service = new KnowledgeService({
+      repository: {
+        findDocumentById: jest.fn().mockResolvedValue(document),
+        deleteDocumentWithDerivedData,
+      } as any,
+      embeddingClient: embeddingClient as any,
+      generationClient: {} as any,
+      modelClient: {
+        get: jest.fn(),
+      } as any,
+    });
+    const index = jest.spyOn(service, "index");
+
+    await expect(service.deleteDocument("document-1")).resolves.toBe(document);
+    expect(deleteDocumentWithDerivedData).toHaveBeenCalledWith("document-1");
+    expect(embeddingClient.embed).not.toHaveBeenCalled();
+    expect(embeddingClient.embedMany).not.toHaveBeenCalled();
+    expect(index).not.toHaveBeenCalled();
+  });
 });

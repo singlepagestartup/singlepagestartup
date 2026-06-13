@@ -62,6 +62,7 @@ import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFind } from "./s
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentCreate } from "./social-module/profile/find-by-id/knowledge/document/create";
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/update";
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
+import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/delete";
 import { Handler as SocialModuleProfileFindByIdSkillProviderSync } from "./social-module/profile/find-by-id/skill/provider-sync";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun } from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/skill/find-by-id/run";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
@@ -494,6 +495,13 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
+        method: "DELETE",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/knowledge/documents/:knowledgeModuleDocumentId",
+        handler:
+          this.socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
+      },
+      {
         method: "POST",
         path: "/:id/social-module/profiles/:socialModuleProfileId/skills/provider-sync",
         handler: this.socialModuleProfileFindByIdSkillProviderSync,
@@ -913,6 +921,15 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     next: any,
   ): Promise<Response> {
     return new SocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex(
+      this.service,
+    ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete(
+    c: Context,
+    next: any,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete(
       this.service,
     ).execute(c, next);
   }

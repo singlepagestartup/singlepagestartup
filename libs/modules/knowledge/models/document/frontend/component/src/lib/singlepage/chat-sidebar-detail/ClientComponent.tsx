@@ -2,8 +2,21 @@
 
 import { IClientComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { Button, ScrollArea, Textarea } from "@sps/shared-ui-shadcn";
-import { RefreshCw, Save } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  ScrollArea,
+  Textarea,
+} from "@sps/shared-ui-shadcn";
+import { RefreshCw, Save, Trash2 } from "lucide-react";
 
 function formatKnowledgeDate(value?: string | Date | null) {
   if (!value) {
@@ -26,13 +39,14 @@ function formatKnowledgeDate(value?: string | Date | null) {
 
 export function Component(props: IClientComponentProps) {
   const isCreating = props.mode === "create";
+  const isBusy = Boolean(
+    props.isSaving || props.isReindexing || props.isDeleting,
+  );
   const canSave = isCreating
     ? Boolean(
-        props.draft.title.trim() &&
-          props.draft.description.trim() &&
-          !props.isSaving,
+        props.draft.title.trim() && props.draft.description.trim() && !isBusy,
       )
-    : Boolean(props.isDirty && !props.isSaving);
+    : Boolean(props.isDirty && !isBusy);
 
   return (
     <ScrollArea
@@ -126,7 +140,7 @@ export function Component(props: IClientComponentProps) {
               onClick={() => {
                 void props.onReindex(props.data);
               }}
-              disabled={props.isReindexing}
+              disabled={isBusy}
             >
               <RefreshCw
                 className={cn(
@@ -136,6 +150,47 @@ export function Component(props: IClientComponentProps) {
               />
               {props.isReindexing ? "Reindexing" : "Reindex"}
             </Button>
+          ) : null}
+          {!isCreating && props.onDelete ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="w-auto"
+                  aria-label="Delete knowledge"
+                  disabled={isBusy}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {props.isDeleting ? "Deleting" : "Delete"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Knowledge</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Delete this knowledge document and its indexed vectors? This
+                    removes the document from every linked profile and cannot be
+                    undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={props.isDeleting}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={props.isDeleting}
+                    className="bg-red-600 text-white hover:bg-red-500"
+                    onClick={() => {
+                      void props.onDelete?.(props.data);
+                    }}
+                  >
+                    {props.isDeleting ? "Deleting" : "Delete Knowledge"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           ) : null}
         </div>
       </div>
