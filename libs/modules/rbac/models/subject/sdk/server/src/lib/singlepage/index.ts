@@ -258,6 +258,11 @@ import {
   type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult,
 } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
 import {
+  action as socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete,
+  type IProps as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteProps,
+  type IResult as ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteResult,
+} from "./social-module/profile/find-by-id/knowledge/document/find-by-id/delete";
+import {
   action as socialModuleProfileFindByIdSkillProviderSync,
   type IProps as ISocialModuleProfileFindByIdSkillProviderSyncProps,
   type IResult as ISocialModuleProfileFindByIdSkillProviderSyncResult,
@@ -378,6 +383,7 @@ export type IProps = {
   ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps: ISocialModuleProfileFindByIdKnowledgeDocumentCreateProps;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateProps;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexProps;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteProps: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteProps;
   ISocialModuleProfileFindByIdSkillProviderSyncProps: ISocialModuleProfileFindByIdSkillProviderSyncProps;
   ISocialModuleProfileFindByIdChatFindByIdDeleteProps: ISocialModuleProfileFindByIdChatFindByIdDeleteProps;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateProps: ISocialModuleProfileFindByIdChatFindByIdActionCreateProps;
@@ -448,6 +454,7 @@ export type IResult = {
   ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult: ISocialModuleProfileFindByIdKnowledgeDocumentCreateResult;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdateResult;
   ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindexResult;
+  ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteResult: ISocialModuleProfileFindByIdKnowledgeDocumentFindByIdDeleteResult;
   ISocialModuleProfileFindByIdSkillProviderSyncResult: ISocialModuleProfileFindByIdSkillProviderSyncResult;
   ISocialModuleProfileFindByIdChatFindByIdDeleteResult: ISocialModuleProfileFindByIdChatFindByIdDeleteResult;
   ISocialModuleProfileFindByIdChatFindByIdActionCreateResult: ISocialModuleProfileFindByIdChatFindByIdActionCreateResult;
@@ -525,6 +532,7 @@ export const api = {
   socialModuleProfileFindByIdKnowledgeDocumentCreate,
   socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate,
   socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex,
+  socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete,
   socialModuleProfileFindByIdSkillProviderSync,
   socialModuleProfileFindByIdChatFindByIdDelete,
   socialModuleProfileFindByIdChatFindByIdActionCreate,
