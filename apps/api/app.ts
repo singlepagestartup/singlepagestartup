@@ -144,6 +144,16 @@ app.get(
 );
 
 /**
+ * Ordering contract (issue #195): RevalidationMiddleware MUST be registered
+ * BEFORE HTTPCacheMiddleware. Hono unwinds post-next() code inner-first, so
+ * the inner http-cache version bump completes before the outer revalidation
+ * WS broadcast. Otherwise another client's immediate refetch (triggered by
+ * the broadcast) could be served a stale cached response.
+ */
+const revalidationMiddleware = new RevalidationMiddleware();
+app.use(revalidationMiddleware.init());
+
+/**
  * It's not secure, because authorized requests can be cached and served to unauthorized users.
  * But perfomance of the application will rediqulesly increase.
  * Now added "Cache-Control": "no-store" for preventing caching of authorized requests,
@@ -163,9 +173,6 @@ app.use(isAuthorizedMiddleware.init());
 
 const billRouteMiddleware = new BillRouteMiddleware();
 app.use(billRouteMiddleware.init());
-
-const revalidationMiddleware = new RevalidationMiddleware();
-app.use(revalidationMiddleware.init());
 
 const parseQueryMiddleware = new ParseQueryMiddleware();
 app.use(parseQueryMiddleware.init());
