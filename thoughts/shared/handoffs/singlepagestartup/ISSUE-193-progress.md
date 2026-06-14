@@ -4,6 +4,8 @@ issue_number: 193
 repository: singlepagestartup
 branch: codex/issue-193-openrouter-skill-prefix
 status: in_progress
+pr_number: 198
+pr_url: https://github.com/singlepagestartup/singlepagestartup/pull/198
 ---
 
 # ISSUE-193 Implementation Progress
@@ -38,5 +40,4 @@ Implement OpenRouter-compatible SPS skills as text instructions attached to the 
 
 ## Next Steps
 
-- Commit the implementation branch.
-- Open a PR and submit it for code review.
+- Submit PR #198 for code review through `.claude/helpers/submit_pr_for_code_review.sh`.

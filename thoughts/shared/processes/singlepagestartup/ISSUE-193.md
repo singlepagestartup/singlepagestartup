@@ -61,6 +61,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Verification: `npx nx run @sps/rbac:jest:test --testFile=libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts`; `npx nx run @sps/rbac:jest:test --testFile=libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/ClientComponent.spec.tsx`; `npx nx run @sps/rbac:tsc:build`.
 - Verification: Browser checked `RAG` chat on `localhost:3000` with `npm run api:dev` logs. `/` and `@knowledge /` showed `/learn` plus linked `/youtube-description`, ArrowDown+Tab inserted `/youtube-description`, a single slash skill badge appeared, keyboard deletion cleared it, and no new API errors appeared during valid-page checks.
 - Notes: The planned `npm run test:file -- <path>` command is incompatible with the current Nx script because it invokes `nx run` without a project. Equivalent direct `npx nx run @sps/rbac:jest:test --testFile=...` commands were used.
+- Outputs: Draft PR #198 https://github.com/singlepagestartup/singlepagestartup/pull/198.
 
 ## Incident Log
 
