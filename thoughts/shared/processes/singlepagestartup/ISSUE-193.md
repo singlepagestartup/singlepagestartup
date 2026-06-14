@@ -3,9 +3,9 @@ issue_number: 193
 issue_title: "feat: sync profile skills to provider-native AI Skills for Knowledge chats"
 repository: singlepagestartup
 created_at: 2026-06-04T20:44:33Z
-last_updated: 2026-06-14T23:07:15Z
+last_updated: 2026-06-15T00:00:00Z
 status: active
-current_phase: plan
+current_phase: implement
 ---
 
 # Process Log: ISSUE-193 - feat: sync profile skills to provider-native AI Skills for Knowledge chats
@@ -19,9 +19,9 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Create: completed
 - Research: completed
 - Plan: completed
-- Implement: completed_direct
-- Current phase: plan
-- Next step: human review, then core/30-implement
+- Implement: in_progress
+- Current phase: implement
+- Next step: complete implementation and submit PR for code review
 
 ## Phase Notes
 
@@ -53,6 +53,14 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Summary: Implemented provider-native profile skills sync and Knowledge chat usage directly from the user-provided plan.
 - Outputs: Added RBAC profile skill provider-sync endpoint, SDK actions, Knowledge `providerSkills` propagation, OpenAI/Anthropic gateway payload support, and focused tests.
 - Notes: This implementation bypassed the normal `core/10-research` and `core/20-plan` issue phases because the user explicitly requested direct implementation after the create artifact was produced. The previous plan was later invalidated; planning must restart from the corrected `react-by/openrouter` research.
+- Summary: Started corrected implementation from the approved OpenRouter message-attached skill plan.
+- Outputs: Implementation branch `codex/issue-193-openrouter-skill-prefix`.
+- Notes: GitHub comments were synchronized before coding; the only post-plan comment was the review clarification already applied in commit `f32c07a8d9`.
+- Summary: Implemented corrected OpenRouter slash-skill flow.
+- Outputs: `react-by/openrouter` now injects linked profile skills as a trigger-message prefix, adds profile persona as system context, keeps `@knowledge` RAG fragments as system grounding, and updates composer slash picker behavior.
+- Verification: `npx nx run @sps/rbac:jest:test --testFile=libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts`; `npx nx run @sps/rbac:jest:test --testFile=libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/ClientComponent.spec.tsx`; `npx nx run @sps/rbac:tsc:build`.
+- Verification: Browser checked `RAG` chat on `localhost:3000` with `npm run api:dev` logs. `/` and `@knowledge /` showed `/learn` plus linked `/youtube-description`, ArrowDown+Tab inserted `/youtube-description`, a single slash skill badge appeared, keyboard deletion cleared it, and no new API errors appeared during valid-page checks.
+- Notes: The planned `npm run test:file -- <path>` command is incompatible with the current Nx script because it invokes `nx run` without a project. Equivalent direct `npx nx run @sps/rbac:jest:test --testFile=...` commands were used.
 
 ## Incident Log
 

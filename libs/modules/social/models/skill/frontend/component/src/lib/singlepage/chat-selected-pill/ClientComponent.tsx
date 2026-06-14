@@ -2,7 +2,7 @@
 
 import { IClientComponentProps } from "./interface";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { AtSign, Pencil, X } from "lucide-react";
+import { Pencil, Slash, X } from "lucide-react";
 
 export function Component(props: IClientComponentProps) {
   return (
@@ -16,8 +16,8 @@ export function Component(props: IClientComponentProps) {
         props.className,
       )}
     >
-      <AtSign className="h-3 w-3 shrink-0" />
-      <span className="truncate">{props.data.slug}</span>
+      <Slash className="h-3 w-3 shrink-0" />
+      <span className="truncate">/{props.data.slug}</span>
       {props.onEdit ? (
         <button
           type="button"

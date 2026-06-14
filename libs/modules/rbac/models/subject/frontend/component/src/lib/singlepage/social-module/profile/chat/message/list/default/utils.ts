@@ -113,7 +113,7 @@ export function filterSkillMentionOptions(
   profileSkills: SocialSkill[],
   description?: string | null,
 ) {
-  const skillMentionMatch = getSkillMentionMatch(description);
+  const skillMentionMatch = getKnowledgeCommandMatch(description);
 
   if (!skillMentionMatch) {
     return [];
@@ -153,11 +153,15 @@ export function hasKnowledgeMention(value?: string | null) {
 }
 
 export function getMentionedSkillSlugs(value?: string | null) {
-  const matches = (value || "").matchAll(/(^|\s)@([a-zA-Z0-9._-]+)(?=\s|$)/g);
+  const matches = (value || "").matchAll(/(^|\s)\/([a-zA-Z0-9._-]+)(?=\s|$)/g);
 
   return new Set(
-    Array.from(matches).map((match) => {
-      return match[2].toLowerCase();
-    }),
+    Array.from(matches)
+      .map((match) => {
+        return match[2].toLowerCase();
+      })
+      .filter((slug) => {
+        return !["learn", "new"].includes(slug);
+      }),
   );
 }

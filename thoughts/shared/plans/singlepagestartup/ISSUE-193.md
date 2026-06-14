@@ -313,4 +313,4 @@ No database migration is required. Existing `social.skill`, `profiles-to-skills`
 - Process log: `thoughts/shared/processes/singlepagestartup/ISSUE-193.md`
 - Related baseline research: `thoughts/shared/research/singlepagestartup/ISSUE-192.md`
 
-<!-- Last synced at: 2026-06-14T23:07:15Z -->
+<!-- Last synced at: 2026-06-14T23:10:50Z -->

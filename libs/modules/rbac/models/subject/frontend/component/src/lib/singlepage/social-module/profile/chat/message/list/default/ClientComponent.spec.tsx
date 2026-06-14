@@ -512,10 +512,10 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   /**
    * BDD Scenario
    * Given: the Knowledge assistant profile has a linked skill.
-   * When: the user mentions that skill with @ and submits a Knowledge chat message.
+   * When: the user invokes that skill with / and submits a Knowledge chat message.
    * Then: the selected skill id is passed to the OpenRouter reaction endpoint.
    */
-  it("When: mentioning a linked skill Then: Knowledge generation receives selected skill ids", async () => {
+  it("When: invoking a linked skill Then: Knowledge generation receives selected skill ids", async () => {
     mockChatComponentState.profileSkillRelations = [
       {
         id: "profile-skill-1",
@@ -536,7 +536,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-1",
-        description: "@brief-writer What should we answer?",
+        description: "/brief-writer What should we answer?",
       });
     });
 
@@ -545,17 +545,17 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     const textarea = screen.getByPlaceholderText("Write a message...");
     fireEvent.change(textarea, {
       target: {
-        value: "@br",
+        value: "/br",
       },
     });
     fireEvent.click(screen.getByText("Brief Writer"));
 
-    expect((textarea as HTMLTextAreaElement).value).toBe("@brief-writer ");
-    expect(screen.getByText("brief-writer")).toBeTruthy();
+    expect((textarea as HTMLTextAreaElement).value).toBe("/brief-writer ");
+    expect(screen.getByLabelText("Remove brief-writer")).toBeTruthy();
 
     fireEvent.change(textarea, {
       target: {
-        value: "@brief-writer What should we answer?",
+        value: "/brief-writer What should we answer?",
       },
     });
     fireEvent.click(screen.getByLabelText("Send message"));
@@ -600,11 +600,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: the user selected a linked skill through the @ picker.
-   * When: the user removes that @skill mention from the composer text.
+   * Given: the user selected a linked skill through the / picker.
+   * When: the user removes that /skill command from the composer text.
    * Then: the selected skill badge is removed and the OpenRouter reaction does not receive stale skill ids.
    */
-  it("When: removing a typed skill mention Then: the selected skill badge is removed", async () => {
+  it("When: removing a typed skill command Then: the selected skill badge is removed", async () => {
     mockChatComponentState.profileSkillRelations = [
       {
         id: "profile-skill-1",
@@ -634,7 +634,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     const textarea = screen.getByPlaceholderText("Write a message...");
     fireEvent.change(textarea, {
       target: {
-        value: "@br",
+        value: "/br",
       },
     });
     fireEvent.click(screen.getByText("Brief Writer"));
@@ -685,11 +685,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: the mention picker contains @knowledge and a linked skill.
+   * Given: the slash picker contains /learn and a linked skill.
    * When: the user navigates the picker with ArrowDown and presses Tab.
-   * Then: the active mention option is inserted into the composer.
+   * Then: the active slash option is inserted into the composer.
    */
-  it("When: selecting a mention option with arrows and Tab Then: it fills the composer", () => {
+  it("When: selecting a slash option with arrows and Tab Then: it fills the composer", () => {
     mockChatComponentState.profileSkillRelations = [
       {
         id: "profile-skill-1",
@@ -713,11 +713,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     const textarea = screen.getByPlaceholderText("Write a message...");
     fireEvent.change(textarea, {
       target: {
-        value: "@kn",
+        value: "/",
       },
     });
 
-    expect(screen.getByText("Knowledge")).toBeTruthy();
+    expect(screen.getByText("/learn")).toBeTruthy();
     expect(screen.getByText("Knowledge Helper")).toBeTruthy();
     expect(
       screen
@@ -740,17 +740,17 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       key: "Tab",
     });
 
-    expect((textarea as HTMLTextAreaElement).value).toBe("@knowledge-helper ");
+    expect((textarea as HTMLTextAreaElement).value).toBe("/knowledge-helper ");
     expect(document.activeElement).toBe(textarea);
   });
 
   /**
    * BDD Scenario
    * Given: a default chat has chat-gpt-1 as an AI opponent with a linked skill.
-   * When: the user opens the mention picker.
+   * When: the user opens the slash picker.
    * Then: the skill from chat-gpt-1 is shown in that default chat.
    */
-  it("When: opening mentions in an AI default chat Then: chat-gpt-1 skills are shown", () => {
+  it("When: opening slash commands in an AI default chat Then: chat-gpt-1 skills are shown", () => {
     mockChatComponentState.profileSkillRelations = [
       {
         id: "profile-skill-1",
@@ -775,7 +775,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
       target: {
-        value: "@",
+        value: "/",
       },
     });
 
@@ -855,10 +855,10 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   /**
    * BDD Scenario
    * Given: the Knowledge assistant profile has a linked skill.
-   * When: the user mentions @knowledge and a linked skill.
+   * When: the user mentions @knowledge and invokes a linked skill.
    * Then: the OpenRouter reaction endpoint combines RAG search with selected skill instructions.
    */
-  it("When: mentioning @knowledge and a linked skill Then: RAG and selected skills are combined", async () => {
+  it("When: mentioning @knowledge and invoking a linked skill Then: RAG and selected skills are combined", async () => {
     mockChatComponentState.profileSkillRelations = [
       {
         id: "profile-skill-1",
@@ -879,7 +879,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-1",
-        description: "@knowledge @brief-writer What should we answer?",
+        description: "@knowledge /brief-writer What should we answer?",
       });
     });
 
@@ -894,20 +894,20 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByText("Knowledge"));
     fireEvent.change(textarea, {
       target: {
-        value: "@knowledge @br",
+        value: "@knowledge /br",
       },
     });
     fireEvent.click(screen.getByText("Brief Writer"));
 
     expect((textarea as HTMLTextAreaElement).value).toBe(
-      "@knowledge @brief-writer ",
+      "@knowledge /brief-writer ",
     );
     expect(screen.getByText("@knowledge")).toBeTruthy();
-    expect(screen.getByText("brief-writer")).toBeTruthy();
+    expect(screen.getByLabelText("Remove brief-writer")).toBeTruthy();
 
     fireEvent.change(textarea, {
       target: {
-        value: "@knowledge @brief-writer What should we answer?",
+        value: "@knowledge /brief-writer What should we answer?",
       },
     });
     fireEvent.click(screen.getByLabelText("Send message"));
@@ -1017,7 +1017,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
   /**
    * BDD Scenario
    * Given: the Knowledge assistant profile has a linked skill.
-   * When: the user opens the @ picker and selects the skill.
+   * When: the user opens the / picker and selects the skill.
    * Then: the composer exposes only mention selection and removal, not skill editing.
    */
   it("When: using a linked skill in the composer Then: it does not expose skill editing", () => {
@@ -1050,7 +1050,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Write a message..."), {
       target: {
-        value: "@br",
+        value: "/br",
       },
     });
 

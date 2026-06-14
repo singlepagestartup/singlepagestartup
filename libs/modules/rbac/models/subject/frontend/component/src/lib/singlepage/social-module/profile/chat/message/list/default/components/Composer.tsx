@@ -120,7 +120,7 @@ export function Composer(props: ComposerProps) {
     props.registerFocusComposerTextArea(composer.focusComposerTextArea);
   }, [composer.focusComposerTextArea, props.registerFocusComposerTextArea]);
 
-  // Keeps selected skills in sync with typed @mentions. The skill-selection
+  // Keeps selected skills in sync with typed /skill commands. The skill-selection
   // state lives in the shell, but its setter bails out when nothing changed,
   // so plain typing does not rerender the shell.
   useEffect(() => {
@@ -186,11 +186,11 @@ export function Composer(props: ComposerProps) {
       );
     });
   }, [commandQuery, knowledgeCommandMatch, props.canUseKnowledge]);
-  const isKnowledgeCommandPickerOpen =
-    props.canUseKnowledge && Boolean(knowledgeCommandMatch);
-  const visibleSkillMentionOptions = useMemo(() => {
+  const visibleSlashSkillOptions = useMemo(() => {
     return filterSkillMentionOptions(props.profileSkills, description);
   }, [description, props.profileSkills]);
+  const isKnowledgeCommandPickerOpen =
+    props.canUseKnowledge && Boolean(knowledgeCommandMatch);
   const visibleKnowledgeMentionOption =
     props.canUseKnowledge && shouldShowKnowledgeMentionOption(description)
       ? knowledgeMentionOption
@@ -199,29 +199,22 @@ export function Composer(props: ComposerProps) {
   const isSkillMentionPickerOpen =
     Boolean(getSkillMentionMatch(description)) && !isKnowledgeCommandPickerOpen;
 
-  const knowledgeCommandCount = visibleKnowledgeChatCommands.length;
-  const skillMentionOptionCount =
-    (visibleKnowledgeMentionOption ? 1 : 0) + visibleSkillMentionOptions.length;
+  const knowledgeCommandCount =
+    visibleKnowledgeChatCommands.length + visibleSlashSkillOptions.length;
+  const skillMentionOptionCount = visibleKnowledgeMentionOption ? 1 : 0;
   const visibleKnowledgeCommandSignature = useMemo(() => {
-    return visibleKnowledgeChatCommands
-      .map((command) => command.value)
-      .join(":");
-  }, [visibleKnowledgeChatCommands]);
-  const visibleSkillMentionOptionSignature = useMemo(() => {
-    return visibleSkillMentionOptions.map((skill) => skill.id).join(":");
-  }, [visibleSkillMentionOptions]);
-
+    return [
+      ...visibleKnowledgeChatCommands.map((command) => command.value),
+      ...visibleSlashSkillOptions.map((skill) => skill.id),
+    ].join(":");
+  }, [visibleKnowledgeChatCommands, visibleSlashSkillOptions]);
   useEffect(() => {
     setActiveKnowledgeCommandIndex(0);
   }, [isKnowledgeCommandPickerOpen, visibleKnowledgeCommandSignature]);
 
   useEffect(() => {
     setActiveSkillMentionOptionIndex(0);
-  }, [
-    isSkillMentionPickerOpen,
-    visibleKnowledgeMentionOption?.slug,
-    visibleSkillMentionOptionSignature,
-  ]);
+  }, [isSkillMentionPickerOpen, visibleKnowledgeMentionOption?.slug]);
 
   function selectKnowledgeCommand(commandValue: string) {
     const currentDescription = composer.form.getValues("description") || "";
@@ -238,6 +231,21 @@ export function Composer(props: ComposerProps) {
         )}${resolvedCommandValue} `
       : `${currentDescription.trimEnd()} ${resolvedCommandValue} `.trimStart();
 
+    composer.form.setValue("description", nextDescription, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    composer.focusComposerTextArea();
+  }
+
+  function selectSkillMention(skill: SocialSkill) {
+    const currentDescription = composer.form.getValues("description") || "";
+    const currentMatch = getKnowledgeCommandMatch(currentDescription);
+    const nextDescription = currentMatch
+      ? `${currentDescription.slice(0, currentMatch.startIndex)}/${skill.slug} `
+      : `${currentDescription.trimEnd()} /${skill.slug} `.trimStart();
+
+    props.onSkillSelect(skill);
     composer.form.setValue("description", nextDescription, {
       shouldDirty: true,
       shouldValidate: true,
@@ -270,6 +278,29 @@ export function Composer(props: ComposerProps) {
       shouldDirty: true,
       shouldValidate: true,
     });
+    composer.focusComposerTextArea();
+  }
+
+  function removeSelectedSkill(skillId: string) {
+    const skill = props.profileSkills.find((item) => {
+      return item.id === skillId;
+    });
+
+    if (skill) {
+      const currentDescription = composer.form.getValues("description") || "";
+      const escapedSlug = skill.slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const nextDescription = currentDescription
+        .replace(new RegExp(`(^|\\s)/${escapedSlug}(?=\\s|$)\\s*`, "i"), "$1")
+        .replace(/\s{2,}/g, " ")
+        .trimStart();
+
+      composer.form.setValue("description", nextDescription, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+
+    props.onRemoveSelectedSkill(skillId);
     composer.focusComposerTextArea();
   }
 
@@ -328,21 +359,6 @@ export function Composer(props: ComposerProps) {
     }
   }
 
-  function selectSkillMention(skill: SocialSkill) {
-    const currentDescription = composer.form.getValues("description") || "";
-    const currentMatch = getSkillMentionMatch(currentDescription);
-    const nextDescription = currentMatch
-      ? `${currentDescription.slice(0, currentMatch.startIndex)}@${skill.slug} `
-      : `${currentDescription.trimEnd()} @${skill.slug} `;
-
-    props.onSkillSelect(skill);
-    composer.form.setValue("description", nextDescription, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    composer.focusComposerTextArea();
-  }
-
   const selectActiveSkillMentionOption = useCallback(() => {
     if (!isSkillMentionPickerOpen || skillMentionOptionCount <= 0) {
       return false;
@@ -353,22 +369,12 @@ export function Composer(props: ComposerProps) {
       return true;
     }
 
-    const skillIndex =
-      activeSkillMentionOptionIndex - (visibleKnowledgeMentionOption ? 1 : 0);
-    const skill = visibleSkillMentionOptions[skillIndex];
-
-    if (!skill) {
-      return false;
-    }
-
-    selectSkillMention(skill);
-    return true;
+    return false;
   }, [
     activeSkillMentionOptionIndex,
     isSkillMentionPickerOpen,
     skillMentionOptionCount,
     visibleKnowledgeMentionOption,
-    visibleSkillMentionOptions,
   ]);
 
   const selectActiveKnowledgeCommand = useCallback(() => {
@@ -378,17 +384,28 @@ export function Composer(props: ComposerProps) {
 
     const command = visibleKnowledgeChatCommands[activeKnowledgeCommandIndex];
 
-    if (!command) {
+    if (command) {
+      selectKnowledgeCommand(command.insertValue || command.value);
+      return true;
+    }
+
+    const skill =
+      visibleSlashSkillOptions[
+        activeKnowledgeCommandIndex - visibleKnowledgeChatCommands.length
+      ];
+
+    if (!skill) {
       return false;
     }
 
-    selectKnowledgeCommand(command.insertValue || command.value);
+    selectSkillMention(skill);
     return true;
   }, [
     activeKnowledgeCommandIndex,
     isKnowledgeCommandPickerOpen,
     knowledgeCommandCount,
     visibleKnowledgeChatCommands,
+    visibleSlashSkillOptions,
   ]);
 
   function onComposerTextareaKeyDown(
@@ -564,15 +581,18 @@ export function Composer(props: ComposerProps) {
           onOpenFile={openSelectedFile}
           onRemoveKnowledgeSearch={removeKnowledgeMention}
           onRemoveFile={removeSelectedFile}
-          onRemoveSkill={props.onRemoveSelectedSkill}
+          onRemoveSkill={removeSelectedSkill}
         />
         {isKnowledgeCommandPickerOpen ? (
           <KnowledgeCommandPicker
             activeIndex={activeKnowledgeCommandIndex}
             commands={visibleKnowledgeChatCommands}
+            language={props.language}
             onSelect={(command) => {
               selectKnowledgeCommand(command.insertValue || command.value);
             }}
+            onSkillSelect={selectSkillMention}
+            skills={visibleSlashSkillOptions}
           />
         ) : null}
         {isSkillMentionPickerOpen ? (
@@ -581,7 +601,7 @@ export function Composer(props: ComposerProps) {
             isLoading={props.isSkillOptionsLoading}
             knowledgeOption={visibleKnowledgeMentionOption}
             language={props.language}
-            skills={visibleSkillMentionOptions}
+            skills={[]}
             onKnowledgeSelect={selectKnowledgeMention}
             onSelect={selectSkillMention}
           />
