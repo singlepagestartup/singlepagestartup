@@ -3,7 +3,8 @@ date: 2026-06-15T00:00:00Z
 issue_number: 193
 repository: singlepagestartup
 branch: codex/issue-193-openrouter-skill-prefix
-status: in_progress
+status: complete
+completed_date: 2026-06-15T00:00:00Z
 pr_number: 198
 pr_url: https://github.com/singlepagestartup/singlepagestartup/pull/198
 ---
@@ -38,6 +39,8 @@ Implement OpenRouter-compatible SPS skills as text instructions attached to the 
 - Opening the older user-provided `bdbd3330.../42e59...` URL produced a host page 404 because that page URL is no longer present in local data; verification used the available `RAG` AI chat instead.
 - The `npm run test:file -- <path>` helper script currently fails before running Jest because it calls `nx run` without a project. Direct `npx nx run @sps/rbac:jest:test --testFile=...` was used.
 
-## Next Steps
+## Summary
 
-- Submit PR #198 for code review through `.claude/helpers/submit_pr_for_code_review.sh`.
+- Implementation complete.
+- PR: https://github.com/singlepagestartup/singlepagestartup/pull/198.
+- Awaiting code review.
