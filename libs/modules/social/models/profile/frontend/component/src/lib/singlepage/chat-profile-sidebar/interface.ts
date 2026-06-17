@@ -17,6 +17,7 @@ export interface IClientComponentProps
   isKnowledgeDocumentsLoading?: boolean;
   onKnowledgeDocumentCreate?: (profile: IModel) => void;
   onKnowledgeDocumentSelect?: (document: IKnowledgeModuleDocument) => void;
+  onProfileEdit?: (profile: IModel) => void;
   onSkillCreate?: (profile: IModel) => void;
   onSkillEdit?: (skill: ISocialModuleSkill) => void;
   onClose?: () => void;

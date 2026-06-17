@@ -10,20 +10,6 @@ export const fields = {
   title: pgCore.text("title").notNull(),
   description: pgCore.text("description").notNull().default(""),
   status: pgCore.text("status").notNull().default("draft"),
-  defaultModelSlug: pgCore
-    .text("default_model_slug")
-    .notNull()
-    .default("openai/gpt-5-5"),
-  allowedModelSlugs: pgCore
-    .jsonb("allowed_model_slugs")
-    .$type<string[]>()
-    .notNull()
-    .default([]),
-  metadata: pgCore
-    .jsonb("metadata")
-    .$type<Record<string, unknown>>()
-    .notNull()
-    .default({}),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()

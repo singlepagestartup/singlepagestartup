@@ -5,10 +5,7 @@ import { ISpsComponentBase } from "@sps/ui-adapter";
 export const variant = "chat-create-dialog" as const;
 
 export interface IChatSkillCreateValues {
-  allowedModelSlugs: string[];
-  defaultModelSlug: string;
   description: string;
-  metadata: Record<string, unknown>;
   slug: string;
   status: "draft" | "active" | "archived";
   title: string;

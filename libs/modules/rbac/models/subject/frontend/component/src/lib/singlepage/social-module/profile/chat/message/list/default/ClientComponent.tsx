@@ -3,6 +3,7 @@
 import { Composer } from "./components/Composer";
 import { KnowledgeDocumentDialog } from "./components/KnowledgeDocumentDialog";
 import { MessageTimelineSection } from "./components/MessageTimelineSection";
+import { ProfileEditDialog } from "./components/ProfileEditDialog";
 import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
 import { useChatActionsRefetch } from "./hooks/use-chat-actions-refetch";
@@ -34,6 +35,7 @@ interface SkillDialogTarget {
  */
 export function Component(props: IComponentPropsExtended) {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
+  const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SocialSkill | null>(null);
   const [skillDialogTarget, setSkillDialogTarget] =
     useState<SkillDialogTarget | null>(null);
@@ -71,7 +73,6 @@ export function Component(props: IComponentPropsExtended) {
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
-    canUseKnowledge: isArtificialIntelligenceAssistant,
   });
   const refetchChatActions = useChatActionsRefetch({
     subjectId: props.data.id,
@@ -82,9 +83,13 @@ export function Component(props: IComponentPropsExtended) {
     knowledgeDocuments.knowledgeAssistantProfileId ||
     props.socialModuleProfile.id;
   const profileSkills = useProfileSkills({
+    subjectId: props.data.id,
+    requesterSocialModuleProfileId: props.socialModuleProfile.id,
+    socialModuleChatId: props.socialModuleChat.id,
     socialModuleProfileId: composerSkillsProfileId,
     onSkillSaved() {
       focusComposerTextAreaRef.current();
+      profileSidebar.refetchSkillQueries();
     },
   });
   const openRouterModelControls = useOpenRouterModelControls({
@@ -124,6 +129,11 @@ export function Component(props: IComponentPropsExtended) {
     profileSidebar.onKnowledgeDocumentCreate(profile);
   }
 
+  function openProfileEditDialog() {
+    profileSidebar.setIsMobileSheetOpen(false);
+    setIsProfileEditDialogOpen(true);
+  }
+
   function openKnowledgeDocumentEditDialog(document: KnowledgeDocument) {
     profileSidebar.setIsMobileSheetOpen(false);
     profileSidebar.onKnowledgeDocumentSelect(document);
@@ -134,7 +144,7 @@ export function Component(props: IComponentPropsExtended) {
     profileSidebar.setIsMobileSheetOpen(false);
     setSkillDialogTarget({
       orderIndex: profileSkills.profileSkillIds.length,
-      profileId: composerSkillsProfileId,
+      profileId: profileSidebar.selectedProfile?.id || composerSkillsProfileId,
     });
     setIsSkillDialogOpen(true);
   }
@@ -175,13 +185,26 @@ export function Component(props: IComponentPropsExtended) {
           knowledgeDocuments={profileSidebar.knowledgeDocuments}
           language={props.language}
           onKnowledgeDocumentCreate={
-            isArtificialIntelligenceAssistant
+            profileSidebar.canManageSelectedProfile
               ? openSidebarKnowledgeDocumentCreateDialog
               : undefined
           }
           onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
-          onSkillCreate={openSidebarSkillCreateDialog}
-          onSkillEdit={openSkillEditDialog}
+          onProfileEdit={
+            profileSidebar.canManageSelectedProfile
+              ? openProfileEditDialog
+              : undefined
+          }
+          onSkillCreate={
+            profileSidebar.canManageSelectedProfile
+              ? openSidebarSkillCreateDialog
+              : undefined
+          }
+          onSkillEdit={
+            profileSidebar.canManageSelectedProfile
+              ? openSkillEditDialog
+              : undefined
+          }
           profile={profileSidebar.selectedProfile}
           selectedKnowledgeDocument={profileSidebar.selectedKnowledgeDocument}
           skills={profileSidebar.skills}
@@ -220,7 +243,13 @@ export function Component(props: IComponentPropsExtended) {
               profileSkills.isCreatingSkill || profileSkills.isUpdatingSkill
             }
             onCreate={profileSkills.createSkillAndLinkToProfile}
-            onUpdate={profileSkills.updateProfileSkill}
+            onUpdate={(skill, values) => {
+              return profileSkills.updateProfileSkill(
+                skill,
+                values,
+                resolvedSkillDialogTarget.profileId,
+              );
+            }}
           />
           <KnowledgeDocumentDialog
             document={profileSidebar.selectedKnowledgeDocument}
@@ -245,12 +274,29 @@ export function Component(props: IComponentPropsExtended) {
             onReindex={profileSidebar.onKnowledgeDocumentReindex}
             onSave={profileSidebar.onKnowledgeDocumentSave}
           />
+          <ProfileEditDialog
+            isOpen={isProfileEditDialogOpen}
+            isSaving={profileSidebar.isSavingProfile}
+            language={props.language}
+            onOpenChange={setIsProfileEditDialogOpen}
+            onSave={(values) => {
+              profileSidebar.onProfileSave(values);
+              setIsProfileEditDialogOpen(false);
+            }}
+            profile={profileSidebar.selectedProfile}
+          />
           <Composer
             assistantProfileId={knowledgeDocuments.knowledgeAssistantProfileId}
+            canSelectOpenRouterReasoning={
+              openRouterModelControls.canSelectReasoning
+            }
             canUseKnowledge={isArtificialIntelligenceAssistant}
             clearSelectedSkills={profileSkills.clearSelectedSkills}
             isArtificialIntelligenceOpponent={isArtificialIntelligenceAssistant}
             isOpenRouterModelsLoading={openRouterModelControls.isLoadingModels}
+            isOpenRouterModelFavoritesUpdating={
+              openRouterModelControls.isUpdatingFavoriteModels
+            }
             isSkillOptionsLoading={profileSkills.isLoadingSkills}
             language={props.language}
             markShouldScrollToBottom={markShouldScrollToBottom}
@@ -259,8 +305,14 @@ export function Component(props: IComponentPropsExtended) {
             onOpenRouterReasoningChange={
               openRouterModelControls.setSelectedReasoning
             }
+            onOpenRouterModelFavoriteToggle={
+              openRouterModelControls.toggleFavoriteModelId
+            }
             onRemoveSelectedSkill={profileSkills.removeSelectedSkill}
             onSkillSelect={profileSkills.selectSkill}
+            openRouterFavoriteModelIds={
+              openRouterModelControls.favoriteModelIds
+            }
             openRouterModelGroups={openRouterModelControls.modelGroups}
             openRouterModelId={openRouterModelControls.selectedModelId}
             openRouterModelLabel={openRouterModelControls.selectedModelLabel}
@@ -295,13 +347,26 @@ export function Component(props: IComponentPropsExtended) {
               knowledgeDocuments={profileSidebar.knowledgeDocuments}
               language={props.language}
               onKnowledgeDocumentCreate={
-                isArtificialIntelligenceAssistant
+                profileSidebar.canManageSelectedProfile
                   ? openSidebarKnowledgeDocumentCreateDialog
                   : undefined
               }
               onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
-              onSkillCreate={openSidebarSkillCreateDialog}
-              onSkillEdit={openSkillEditDialog}
+              onProfileEdit={
+                profileSidebar.canManageSelectedProfile
+                  ? openProfileEditDialog
+                  : undefined
+              }
+              onSkillCreate={
+                profileSidebar.canManageSelectedProfile
+                  ? openSidebarSkillCreateDialog
+                  : undefined
+              }
+              onSkillEdit={
+                profileSidebar.canManageSelectedProfile
+                  ? openSkillEditDialog
+                  : undefined
+              }
               onClose={profileSidebar.closeProfile}
               profile={profileSidebar.selectedProfile}
               selectedKnowledgeDocument={

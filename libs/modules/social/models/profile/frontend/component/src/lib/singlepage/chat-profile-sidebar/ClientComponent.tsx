@@ -1,11 +1,13 @@
 "use client";
 
 import { IClientComponentProps } from "./interface";
+import { getLocalizedPlainText } from "../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
-import { ScrollArea, TipTap } from "@sps/shared-ui-shadcn";
+import { ScrollArea } from "@sps/shared-ui-shadcn";
 import { Component as KnowledgeModuleDocumentChatSidebarItem } from "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/chat-sidebar-item";
+import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import { Component as SocialModuleSkillChatSidebarItem } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item";
-import { BookOpen, Package, Plus, UserRound, X } from "lucide-react";
+import { BookOpen, Package, Pencil, Plus, UserRound, X } from "lucide-react";
 
 function getLocalizedText(
   value: Record<string, unknown> | null | undefined,
@@ -31,8 +33,10 @@ function getProfileTitle(props: IClientComponentProps) {
 export function Component(props: IClientComponentProps) {
   const title = getProfileTitle(props);
   const subtitle = getLocalizedText(props.data.subtitle, props.language);
-  const description = getLocalizedText(props.data.description, props.language);
-  const initial = props.data.slug.charAt(0).toUpperCase() || "?";
+  const description = getLocalizedPlainText(
+    props.data.description,
+    props.language,
+  );
   const skills = props.skills || [];
   const knowledgeDocuments = props.knowledgeDocuments || [];
 
@@ -46,9 +50,33 @@ export function Component(props: IClientComponentProps) {
     >
       <div className="border-b border-slate-200 px-4 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-medium text-slate-700">
-            {initial}
-          </div>
+          {props.onProfileEdit ? (
+            <button
+              type="button"
+              className="shrink-0 rounded-full outline-none ring-offset-2 transition hover:opacity-80 focus-visible:ring-2 focus-visible:ring-slate-400"
+              aria-label={`Edit profile photo ${props.data.slug}`}
+              title="Edit profile photo"
+              onClick={() => {
+                props.onProfileEdit?.(props.data);
+              }}
+            >
+              <SocialModuleProfileChatProfileAvatar
+                isServer={props.isServer}
+                variant="chat-profile-avatar"
+                data={props.data}
+                language={props.language}
+                className="h-10 w-10 text-sm"
+              />
+            </button>
+          ) : (
+            <SocialModuleProfileChatProfileAvatar
+              isServer={props.isServer}
+              variant="chat-profile-avatar"
+              data={props.data}
+              language={props.language}
+              className="h-10 w-10 text-sm"
+            />
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-slate-950">
               {title}
@@ -73,21 +101,36 @@ export function Component(props: IClientComponentProps) {
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-6 p-4">
           <section className="space-y-2">
-            <div className="flex items-center gap-2">
-              <UserRound className="h-4 w-4 text-slate-400" />
-              <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
-                Profile
-              </h3>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <UserRound className="h-4 w-4 text-slate-400" />
+                <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
+                  Profile
+                </h3>
+              </div>
+              {props.onProfileEdit ? (
+                <button
+                  type="button"
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  aria-label={`Edit profile ${props.data.slug}`}
+                  title="Edit profile"
+                  onClick={() => {
+                    props.onProfileEdit?.(props.data);
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
             </div>
             {subtitle ? (
-              <p className="text-sm leading-6 text-slate-700">{subtitle}</p>
+              <p className="text-xs leading-5 text-slate-600">{subtitle}</p>
             ) : null}
             {description ? (
-              <div className="max-w-none text-sm leading-6 text-slate-700">
-                <TipTap value={description} />
-              </div>
+              <p className="whitespace-pre-line text-xs leading-5 text-slate-600">
+                {description}
+              </p>
             ) : (
-              <p className="text-sm leading-6 text-slate-400">
+              <p className="text-xs leading-5 text-slate-400">
                 No profile description.
               </p>
             )}

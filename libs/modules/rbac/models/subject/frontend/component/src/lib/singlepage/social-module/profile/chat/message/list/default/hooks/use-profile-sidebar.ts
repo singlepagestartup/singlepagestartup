@@ -7,20 +7,24 @@ import {
 } from "../types";
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { route as rbacSubjectRoute } from "@sps/rbac/models/subject/sdk/model";
-import { api as socialModuleProfilesToSkillsApi } from "@sps/social/relations/profiles-to-skills/sdk/client";
-import { api as socialModuleSkillApi } from "@sps/social/models/skill/sdk/client";
 import { queryClient } from "@sps/shared-frontend-client-api";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import QueryString from "qs";
 
 interface UseProfileSidebarProps {
-  canUseKnowledge: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
   subjectId: string;
 }
+
+export type ProfileSidebarProfileUpdateValues = {
+  adminTitle?: string;
+  title?: Record<string, string | undefined>;
+  subtitle?: Record<string, string | undefined>;
+  description?: Record<string, string | undefined>;
+  avatarFile?: File | null;
+};
 
 const newKnowledgeDocumentId = "new-knowledge-document";
 
@@ -65,103 +69,82 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   const [reindexingKnowledgeDocumentId, setReindexingKnowledgeDocumentId] =
     useState<string | null>(null);
   const selectedProfileId = selectedProfile?.id;
+  const canManageSelectedProfile = Boolean(
+    selectedProfileId && selectedProfile?.variant === "artificial-intelligence",
+  );
 
-  const profilesToSkillsFind = socialModuleProfilesToSkillsApi.find({
-    params: {
-      filters: {
-        and: [
-          {
-            column: "profileId",
-            method: "eq",
-            value: selectedProfileId || "missing-profile",
-          },
-        ],
+  const profileUpdate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate(
+      {
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
       },
-      orderBy: {
-        and: [
-          {
-            column: "orderIndex",
-            method: "asc",
-          },
-          {
-            column: "createdAt",
-            method: "asc",
-          },
-        ],
-      },
-    },
-    reactQueryOptions: {
-      enabled: Boolean(selectedProfileId),
-    },
-  });
-
-  const profileSkillIds = useMemo(() => {
-    return (
-      profilesToSkillsFind.data
-        ?.map((relation) => relation.skillId)
-        .filter((skillId): skillId is string => {
-          return Boolean(skillId);
-        }) || []
     );
-  }, [profilesToSkillsFind.data]);
+  const profileAvatarUpdate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate(
+      {
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+      },
+    );
 
-  const skillsFind = socialModuleSkillApi.find({
-    params: {
-      filters: {
-        and: [
-          {
-            column: "id",
-            method: "inArray",
-            value: profileSkillIds,
-          },
-        ],
+  const {
+    data: skillsQuery,
+    isLoading: isSkillsLoading,
+    refetch: refetchSkills,
+  } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind(
+    {
+      id: props.subjectId,
+      socialModuleProfileId: props.socialModuleProfileId,
+      socialModuleChatId: props.socialModuleChatId,
+      targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+      options: {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+      reactQueryOptions: {
+        enabled: canManageSelectedProfile,
       },
     },
-    reactQueryOptions: {
-      enabled: profileSkillIds.length > 0,
-    },
-  });
+  );
 
   const skills = useMemo(() => {
-    const skillsById = new Map(
-      (skillsFind.data || []).map((skill) => [skill.id, skill]),
-    );
+    return ((skillsQuery || []) as SocialSkill[]).filter((skill) => {
+      return skill.status !== "archived";
+    });
+  }, [skillsQuery]);
 
-    return profileSkillIds
-      .map((skillId) => skillsById.get(skillId))
-      .filter((skill): skill is SocialSkill => {
-        return Boolean(skill && skill.status !== "archived");
-      });
-  }, [profileSkillIds, skillsFind.data]);
-
-  const knowledgeDocumentScopeParams = useMemo(() => {
-    if (!selectedProfileId || !props.canUseKnowledge) {
-      return undefined;
-    }
-
-    return {
-      targetSocialModuleProfileId: selectedProfileId,
-      socialModuleChatId: props.socialModuleChatId,
-    };
-  }, [props.canUseKnowledge, props.socialModuleChatId, selectedProfileId]);
+  const profileSkillIds = useMemo(() => {
+    return skills.map((skill) => {
+      return skill.id;
+    });
+  }, [skills]);
 
   const {
     data: knowledgeDocumentsQuery,
     isLoading: isKnowledgeDocumentsLoading,
     refetch: refetchKnowledgeDocuments,
-  } = rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentFind({
-    id: props.subjectId,
-    socialModuleProfileId: props.socialModuleProfileId,
-    params: knowledgeDocumentScopeParams,
-    options: {
-      headers: {
-        "Cache-Control": "no-store",
+  } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
+    {
+      id: props.subjectId,
+      socialModuleProfileId: props.socialModuleProfileId,
+      socialModuleChatId: props.socialModuleChatId,
+      targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+      options: {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+      reactQueryOptions: {
+        enabled: canManageSelectedProfile,
       },
     },
-    reactQueryOptions: {
-      enabled: Boolean(knowledgeDocumentScopeParams),
-    },
-  });
+  );
 
   const knowledgeDocuments = useMemo(() => {
     const documents = (knowledgeDocumentsQuery || []) as KnowledgeDocument[];
@@ -175,6 +158,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
 
     return documents;
   }, [createdKnowledgeDocument, knowledgeDocumentsQuery]);
+
   const isCreatingKnowledgeDocument =
     selectedKnowledgeDocumentId === newKnowledgeDocumentId;
   const selectedKnowledgeDocument = useMemo(() => {
@@ -200,68 +184,110 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     selectedKnowledgeDocument &&
       knowledgeDocumentsNeedingReindex[selectedKnowledgeDocument.id],
   );
-  const knowledgeDocumentUpdate =
-    rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-      knowledgeModuleDocumentId:
-        selectedKnowledgeDocumentId || "missing-document",
-    });
-  const knowledgeDocumentReindex =
-    rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-      knowledgeModuleDocumentId:
-        selectedKnowledgeDocumentId || "missing-document",
-    });
-  const knowledgeDocumentDelete =
-    rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-      knowledgeModuleDocumentId:
-        selectedKnowledgeDocumentId || "missing-document",
-    });
-  const knowledgeDocumentCreate =
-    rbacSubjectApi.socialModuleProfileFindByIdKnowledgeDocumentCreate({
-      id: props.subjectId,
-      socialModuleProfileId: props.socialModuleProfileId,
-    });
 
-  const knowledgeDocumentsQueryKey = useMemo(() => {
-    // Mirror the SDK read key exactly (issue #195): the SDK always appends
-    // `?${QueryString.stringify(params)}`, so build the invalidation key the
-    // same way instead of hand-concatenating params.
-    const stringifiedQuery = QueryString.stringify(
-      knowledgeDocumentScopeParams,
+  const knowledgeDocumentUpdate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate(
       {
-        encodeValuesOnly: true,
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+        knowledgeModuleDocumentId:
+          selectedKnowledgeDocumentId || "missing-document",
+      },
+    );
+  const knowledgeDocumentReindex =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex(
+      {
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+        knowledgeModuleDocumentId:
+          selectedKnowledgeDocumentId || "missing-document",
+      },
+    );
+  const knowledgeDocumentDelete =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete(
+      {
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
+        knowledgeModuleDocumentId:
+          selectedKnowledgeDocumentId || "missing-document",
+      },
+    );
+  const knowledgeDocumentCreate =
+    rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate(
+      {
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId || "missing-profile",
       },
     );
 
+  const skillQueryKey = useMemo(() => {
     return [
-      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/knowledge/documents?${stringifiedQuery}`,
+      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${selectedProfileId || "missing-profile"}/skills`,
     ];
   }, [
-    knowledgeDocumentScopeParams,
+    props.socialModuleChatId,
     props.socialModuleProfileId,
     props.subjectId,
+    selectedProfileId,
   ]);
+
+  const knowledgeDocumentsQueryKey = useMemo(() => {
+    return [
+      `${rbacSubjectRoute}/${props.subjectId}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${selectedProfileId || "missing-profile"}/knowledge/documents`,
+    ];
+  }, [
+    props.socialModuleChatId,
+    props.socialModuleProfileId,
+    props.subjectId,
+    selectedProfileId,
+  ]);
+
+  const refetchSkillQueries = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: skillQueryKey,
+    });
+
+    if (canManageSelectedProfile) {
+      void refetchSkills();
+    }
+  }, [canManageSelectedProfile, refetchSkills, skillQueryKey]);
 
   const refetchKnowledgeDocumentQueries = useCallback(() => {
     void queryClient.invalidateQueries({
       queryKey: knowledgeDocumentsQueryKey,
     });
 
-    if (knowledgeDocumentScopeParams) {
+    if (canManageSelectedProfile) {
       void refetchKnowledgeDocuments();
     }
   }, [
-    knowledgeDocumentScopeParams,
+    canManageSelectedProfile,
     knowledgeDocumentsQueryKey,
     refetchKnowledgeDocuments,
   ]);
 
-  // Stable reference: passed as onProfileOpen to every memoized timeline row.
+  const refetchProfileAvatarQueries = useCallback(() => {
+    void queryClient.invalidateQueries({
+      predicate(query) {
+        const queryKey = JSON.stringify(query.queryKey);
+
+        return (
+          queryKey.includes(
+            "/api/social/profiles-to-file-storage-module-files",
+          ) || queryKey.includes("/api/file-storage/files")
+        );
+      },
+    });
+  }, []);
+
   const openProfile = useCallback((profile: ISocialModuleProfile) => {
     setSelectedProfile(profile);
     setSelectedKnowledgeDocumentId(null);
@@ -314,8 +340,45 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     });
   }
 
+  async function saveProfile(values: ProfileSidebarProfileUpdateValues) {
+    if (!canManageSelectedProfile || !selectedProfileId) {
+      return;
+    }
+
+    const { avatarFile, ...profileValues } = values;
+
+    try {
+      const updatedProfile = await profileUpdate.mutateAsync({
+        id: props.subjectId,
+        socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId,
+        data: profileValues,
+      });
+
+      setSelectedProfile(updatedProfile);
+
+      if (avatarFile) {
+        await profileAvatarUpdate.mutateAsync({
+          id: props.subjectId,
+          socialModuleProfileId: props.socialModuleProfileId,
+          socialModuleChatId: props.socialModuleChatId,
+          targetSocialModuleProfileId: selectedProfileId,
+          data: {
+            file: avatarFile,
+          },
+        });
+        refetchProfileAvatarQueries();
+      }
+
+      toast.success("Profile saved");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to save profile");
+    }
+  }
+
   function saveKnowledgeDocument(document: KnowledgeDocument) {
-    if (!knowledgeDocumentScopeParams) {
+    if (!canManageSelectedProfile || !selectedProfileId) {
       return;
     }
 
@@ -333,7 +396,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
         {
           id: props.subjectId,
           socialModuleProfileId: props.socialModuleProfileId,
-          params: knowledgeDocumentScopeParams,
+          socialModuleChatId: props.socialModuleChatId,
+          targetSocialModuleProfileId: selectedProfileId,
           data: {
             title,
             description,
@@ -364,8 +428,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       {
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId,
         knowledgeModuleDocumentId: document.id,
-        params: knowledgeDocumentScopeParams,
         data: {
           title,
           description: knowledgeDocumentDraft.description,
@@ -392,7 +457,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   }
 
   async function reindexKnowledgeDocument(document: KnowledgeDocument) {
-    if (!knowledgeDocumentScopeParams) {
+    if (!canManageSelectedProfile || !selectedProfileId) {
       return;
     }
 
@@ -402,8 +467,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       await knowledgeDocumentReindex.mutateAsync({
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId,
         knowledgeModuleDocumentId: document.id,
-        params: knowledgeDocumentScopeParams,
       });
       toast.success("Knowledge document reindexed");
       setKnowledgeDocumentsNeedingReindex((current) => {
@@ -421,7 +487,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
 
   async function deleteKnowledgeDocument(document: KnowledgeDocument) {
     if (
-      !knowledgeDocumentScopeParams ||
+      !canManageSelectedProfile ||
+      !selectedProfileId ||
       document.id === newKnowledgeDocumentId
     ) {
       return;
@@ -431,8 +498,9 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       await knowledgeDocumentDelete.mutateAsync({
         id: props.subjectId,
         socialModuleProfileId: props.socialModuleProfileId,
+        socialModuleChatId: props.socialModuleChatId,
+        targetSocialModuleProfileId: selectedProfileId,
         knowledgeModuleDocumentId: document.id,
-        params: knowledgeDocumentScopeParams,
       });
       toast.success("Knowledge document deleted");
       setSelectedKnowledgeDocumentId(null);
@@ -484,9 +552,11 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   }, [knowledgeDocuments, selectedKnowledgeDocumentId]);
 
   return {
+    canManageSelectedProfile,
     closeKnowledgeDocument,
     closeProfile,
-    isKnowledgeDocumentsLoading,
+    isKnowledgeDocumentsLoading:
+      canManageSelectedProfile && isKnowledgeDocumentsLoading,
     isKnowledgeDocumentDirty,
     isMobileSheetOpen,
     isSidebarOpen,
@@ -498,22 +568,25 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
       selectedKnowledgeDocument &&
         reindexingKnowledgeDocumentId === selectedKnowledgeDocument.id,
     ),
-    isSkillsLoading: profilesToSkillsFind.isLoading || skillsFind.isLoading,
+    isSavingProfile: profileUpdate.isPending || profileAvatarUpdate.isPending,
+    isSkillsLoading: canManageSelectedProfile && isSkillsLoading,
     knowledgeDocumentDraft,
-    knowledgeDocuments,
+    knowledgeDocuments: canManageSelectedProfile ? knowledgeDocuments : [],
     onKnowledgeDocumentDraftChange: setKnowledgeDocumentDraft,
     onKnowledgeDocumentCreate: createKnowledgeDocument,
     onKnowledgeDocumentDelete: deleteKnowledgeDocument,
     onKnowledgeDocumentReindex: reindexKnowledgeDocument,
     onKnowledgeDocumentSave: saveKnowledgeDocument,
     onKnowledgeDocumentSelect: selectKnowledgeDocument,
+    onProfileSave: saveProfile,
     openProfile,
     profileSkillIds,
     refetchKnowledgeDocumentQueries,
+    refetchSkillQueries,
     selectedKnowledgeDocument,
     selectedKnowledgeDocumentNeedsReindex,
     selectedProfile,
     setIsMobileSheetOpen,
-    skills,
+    skills: canManageSelectedProfile ? skills : [],
   };
 }

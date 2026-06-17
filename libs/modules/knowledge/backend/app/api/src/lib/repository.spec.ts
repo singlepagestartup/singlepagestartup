@@ -54,7 +54,33 @@ describe("knowledge vector repository contract", () => {
     );
 
     expect(source).toContain("LEFT JOIN sps_ke_ss_to_cs_rae sc");
+    expect(source).toContain('sc.se_id AS "sourceId"');
     expect(source).not.toContain("c.source_id");
+  });
+
+  /**
+   * BDD Scenario: neighbor chunks.
+   *
+   * Given: RAG retrieval uses parent context from adjacent chunks.
+   * When: the repository source is read.
+   * Then: neighbors are selected by the same source relation and chunk index window.
+   */
+  it("loads neighbor chunks by source relation and chunk index window", () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        "libs/modules/knowledge/backend/app/api/src/lib/repository.ts",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("async findNeighborChunks");
+    expect(source).toContain("WITH seed_values");
+    expect(source).toContain(
+      "INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.se_id = seed_values.source_id",
+    );
+    expect(source).toContain("WHERE c.chunk_index BETWEEN");
+    expect(source).toContain('retrievalRole: "neighbor"');
   });
 
   /**

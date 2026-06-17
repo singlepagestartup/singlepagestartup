@@ -14,6 +14,7 @@ interface IOpenRouterChatModelOption {
   inputModalities: string[];
   outputModalities: string[];
   supportedParameters: string[];
+  supportsReasoning: boolean;
 }
 
 interface IOpenRouterChatModelGroup {
@@ -178,6 +179,14 @@ export class Handler {
     inputModalities: string[];
     outputModalities: string[];
   }): IOpenRouterChatModelOption {
+    const supportedParameters = Array.isArray(props.model.supported_parameters)
+      ? props.model.supported_parameters
+          .map((item) => {
+            return typeof item === "string" ? item.toLowerCase().trim() : "";
+          })
+          .filter((item): item is string => Boolean(item))
+      : [];
+
     return {
       id: props.model.id,
       name: props.model.name || props.model.id,
@@ -188,9 +197,10 @@ export class Handler {
         0,
       inputModalities: props.inputModalities,
       outputModalities: props.outputModalities,
-      supportedParameters: Array.isArray(props.model.supported_parameters)
-        ? props.model.supported_parameters
-        : [],
+      supportedParameters,
+      supportsReasoning:
+        supportedParameters.includes("reasoning") ||
+        supportedParameters.includes("include_reasoning"),
     };
   }
 

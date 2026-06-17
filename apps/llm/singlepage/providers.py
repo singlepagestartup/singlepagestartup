@@ -38,30 +38,6 @@ def _messages_to_prompt(messages: list[ChatMessage]) -> str:
     return "\n\n".join([f"{message.role}: {message.content}" for message in messages])
 
 
-def _openai_skill_payload(skill: ProviderSkillReference) -> dict:
-    payload = {
-        "type": "skill_reference",
-        "skill_id": skill.provider_skill_id,
-    }
-
-    if skill.version:
-        payload["version"] = skill.version
-
-    return payload
-
-
-def _anthropic_skill_payload(skill: ProviderSkillReference) -> dict:
-    payload = {
-        "type": "custom",
-        "skill_id": skill.provider_skill_id,
-    }
-
-    if skill.version:
-        payload["version"] = skill.version
-
-    return payload
-
-
 class OllamaProvider:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip("/")
@@ -72,7 +48,6 @@ class OllamaProvider:
         messages: list[ChatMessage],
         temperature: float | None = None,
         max_tokens: int | None = None,
-        provider_skills: list[ProviderSkillReference] | None = None,
     ) -> ChatResult:
         import requests
 
@@ -149,7 +124,6 @@ class AnthropicProvider:
         messages: list[ChatMessage],
         temperature: float | None = None,
         max_tokens: int | None = None,
-        provider_skills: list[ProviderSkillReference] | None = None,
     ) -> ChatResult:
         if not self.api_key:
             raise GatewayError(
@@ -181,33 +155,7 @@ class AnthropicProvider:
             **({"system": system} if system else {}),
         }
 
-        if provider_skills:
-            beta_messages = getattr(getattr(client, "beta", None), "messages", None)
-
-            if beta_messages is None:
-                raise GatewayError(
-                    "Anthropic provider_skills require the beta Messages API.",
-                    status_code=400,
-                    error_type="unsupported_parameter",
-                )
-
-            message = beta_messages.create(
-                **payload,
-                betas=[
-                    "code-execution-2025-08-25",
-                    "skills-2025-10-02",
-                    "files-api-2025-04-14",
-                ],
-                container={
-                    "skills": [
-                        _anthropic_skill_payload(skill)
-                        for skill in provider_skills
-                    ]
-                },
-                tools=[{"type": "code_execution_20250825", "name": "code_execution"}],
-            )
-        else:
-            message = client.messages.create(**payload)
+        message = client.messages.create(**payload)
         text = "".join(
             [block.text for block in message.content if getattr(block, "type", "") == "text"]
         ).strip()
@@ -245,7 +193,6 @@ class OpenAIProvider:
         messages: list[ChatMessage],
         temperature: float | None = None,
         max_tokens: int | None = None,
-        provider_skills: list[ProviderSkillReference] | None = None,
     ) -> ChatResult:
         if not self.api_key:
             raise GatewayError(
@@ -260,13 +207,6 @@ class OpenAIProvider:
         input_messages = [message.model_dump() for message in messages]
 
         try:
-            if provider_skills and not hasattr(client, "responses"):
-                raise GatewayError(
-                    "OpenAI provider_skills require the Responses API.",
-                    status_code=400,
-                    error_type="unsupported_parameter",
-                )
-
             if hasattr(client, "responses"):
                 payload = {
                     "model": model.provider_model,
@@ -275,19 +215,6 @@ class OpenAIProvider:
                 }
                 if temperature is not None and self._supports_temperature(model):
                     payload["temperature"] = temperature
-                if provider_skills:
-                    payload["tools"] = [
-                        {
-                            "type": "shell",
-                            "environment": {
-                                "type": "container_auto",
-                                "skills": [
-                                    _openai_skill_payload(skill)
-                                    for skill in provider_skills
-                                ],
-                            },
-                        }
-                    ]
 
                 response = client.responses.create(**payload)
                 text = getattr(response, "output_text", "") or ""
@@ -373,7 +300,6 @@ class HuggingFaceProvider:
         messages: list[ChatMessage],
         temperature: float | None = None,
         max_tokens: int | None = None,
-        provider_skills: list[ProviderSkillReference] | None = None,
     ) -> ChatResult:
         import torch
 

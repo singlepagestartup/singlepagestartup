@@ -4,6 +4,10 @@ import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../service";
 import { getHttpErrorType } from "@sps/backend-utils";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
+import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
+import { api as subjectsToSocialModuleProfilesApi } from "@sps/rbac/relations/subjects-to-social-module-profiles/sdk/server";
+import { createId } from "@paralleldrive/cuid2";
+import { internationalization } from "@sps/shared-configuration";
 
 export class Handler {
   service: Service;
@@ -62,14 +66,29 @@ export class Handler {
         throw new Error("Validation error. Invalid profile payload");
       }
 
+      const agentSubjectId =
+        typeof data.agentSubjectId === "string"
+          ? data.agentSubjectId.trim()
+          : undefined;
       const socialModuleProfileId =
         typeof data.socialModuleProfileId === "string"
           ? data.socialModuleProfileId.trim()
           : undefined;
 
+      if (agentSubjectId) {
+        const socialModuleProfileToChat = await this.createAgentProfileForChat({
+          agentSubjectId,
+          socialModuleChatId,
+        });
+
+        return c.json({
+          data: socialModuleProfileToChat,
+        });
+      }
+
       if (!socialModuleProfileId) {
         throw new Error(
-          "Validation error. Social module profile id is required",
+          "Validation error. Social module profile id or agent subject id is required",
         );
       }
 
@@ -130,5 +149,174 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     }
+  }
+
+  private async createAgentProfileForChat(props: {
+    agentSubjectId: string;
+    socialModuleChatId: string;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    const agentSubject = await this.service.findById({
+      id: props.agentSubjectId,
+    });
+
+    if (!agentSubject?.id) {
+      throw new Error("Not found error. Requested agent subject not found");
+    }
+
+    if (agentSubject.variant !== "agent") {
+      throw new Error(
+        'Validation error. Requested subject must have variant="agent"',
+      );
+    }
+
+    const existingAgentProfileRelation =
+      await this.findExistingAgentProfileChatRelation({
+        agentSubjectId: props.agentSubjectId,
+        socialModuleChatId: props.socialModuleChatId,
+      });
+
+    if (existingAgentProfileRelation) {
+      return existingAgentProfileRelation;
+    }
+
+    const slugBase = this.toSlug(agentSubject.slug || "agent");
+    const title = agentSubject.slug || "Agent";
+    const defaultLanguageCode = internationalization.defaultLanguage.code;
+    const socialModuleProfile = await socialModuleProfileApi.create({
+      data: {
+        variant: "artificial-intelligence",
+        className: "",
+        adminTitle: title,
+        slug: `${slugBase}-${createId().slice(0, 8)}`,
+        title: {
+          [defaultLanguageCode]: title,
+        },
+        subtitle: {},
+        description: {},
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    await subjectsToSocialModuleProfilesApi.create({
+      data: {
+        subjectId: props.agentSubjectId,
+        socialModuleProfileId: socialModuleProfile.id,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    return socialModuleProfilesToChatsApi.create({
+      data: {
+        profileId: socialModuleProfile.id,
+        chatId: props.socialModuleChatId,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+  }
+
+  private async findExistingAgentProfileChatRelation(props: {
+    agentSubjectId: string;
+    socialModuleChatId: string;
+  }) {
+    const subjectProfileRelations =
+      await this.service.subjectsToSocialModuleProfiles.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "subjectId",
+                method: "eq",
+                value: props.agentSubjectId,
+              },
+            ],
+          },
+        },
+      });
+    const profileIds =
+      subjectProfileRelations
+        ?.map((relation) => relation.socialModuleProfileId)
+        .filter((profileId): profileId is string => Boolean(profileId)) || [];
+
+    if (!profileIds.length) {
+      return null;
+    }
+
+    const [profiles, profileChatRelations] = await Promise.all([
+      this.service.socialModule.profile.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "id",
+                method: "inArray",
+                value: profileIds,
+              },
+              {
+                column: "variant",
+                method: "eq",
+                value: "artificial-intelligence",
+              },
+            ],
+          },
+        },
+      }),
+      this.service.socialModule.profilesToChats.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "profileId",
+                method: "inArray",
+                value: profileIds,
+              },
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+          limit: 1,
+        },
+      }),
+    ]);
+
+    const artificialIntelligenceProfileIds = new Set(
+      (profiles || [])
+        .map((profile) => profile.id)
+        .filter((profileId): profileId is string => Boolean(profileId)),
+    );
+
+    return (
+      profileChatRelations?.find((relation) => {
+        return artificialIntelligenceProfileIds.has(relation.profileId);
+      }) || null
+    );
+  }
+
+  private toSlug(value: string) {
+    return (
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80) || "agent"
+    );
   }
 }

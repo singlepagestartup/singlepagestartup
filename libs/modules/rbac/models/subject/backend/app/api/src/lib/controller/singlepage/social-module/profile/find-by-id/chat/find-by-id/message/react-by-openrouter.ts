@@ -34,6 +34,7 @@ import {
   type IOpenRouterBillingLedgerEntry,
   type TOpenRouterBillingPurpose,
 } from "../../../../../../../../service/singlepage/open-router-billing";
+import { getLocalizedProfilePlainText } from "../../../../plain-text";
 
 type TRequestTask =
   | "qa"
@@ -117,10 +118,22 @@ interface IResolvedOpenRouterKnowledgeContext {
   useKnowledgeSearch: boolean;
   knowledgeDocumentIds: string[];
   searchDocumentIds: string[];
+  candidateSources: KnowledgeSearchResult[];
   sources: KnowledgeSearchResult[];
+  retrieval: IOpenRouterKnowledgeRetrievalMetadata;
   promptSkills: ISocialModuleSkill[];
   skillMessagePrefix: string;
   systemMessages: IOpenRouterRequestMessage[];
+}
+
+interface IOpenRouterKnowledgeRetrievalMetadata {
+  initialTopK: number;
+  neighborWindow: number;
+  candidateCount: number;
+  rerankTopK: number;
+  rerankedSourceIds: string[];
+  rerankFallbackReason: string | null;
+  rerankReason: string | null;
 }
 
 const MODEL_ROUTER_CONFIG = {
@@ -318,6 +331,12 @@ const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
 
 const ALLOWED_INPUT_MODALITIES: TInputModality[] = ["text", "image", "file"];
 const THREAD_CONTEXT_PAGE_SIZE = 100;
+const OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS = 8192;
+const KNOWLEDGE_INITIAL_TOP_K = 30;
+const KNOWLEDGE_NEIGHBOR_WINDOW = 1;
+const KNOWLEDGE_RERANK_TOP_K = 12;
+const KNOWLEDGE_RERANK_THREAD_CONTEXT_MESSAGES = 8;
+const KNOWLEDGE_RERANK_THREAD_CONTEXT_CHARS = 800;
 const OPEN_ROUTER_TERMINAL_MESSAGE_WRITTEN_MARKER =
   "open-router-terminal-message-written";
 
@@ -368,6 +387,30 @@ const CLASSIFICATION_RESPONSE_FORMAT = {
         risk_level: {
           type: "string",
           enum: ["low", "medium", "high"],
+        },
+      },
+    },
+  },
+};
+
+const KNOWLEDGE_RERANK_RESPONSE_FORMAT = {
+  type: "json_schema" as const,
+  json_schema: {
+    name: "knowledge_rerank",
+    strict: true,
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["selected_chunk_ids", "reason"],
+      properties: {
+        selected_chunk_ids: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+        },
+        reason: {
+          type: "string",
         },
       },
     },
@@ -607,6 +650,10 @@ export class Handler {
     }
 
     const fallbackReasons: string[] = [];
+    const maxTokens =
+      props.expectedOutputModality === "text"
+        ? OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS
+        : undefined;
 
     await props.onModelAttempt?.(primaryModelId);
 
@@ -616,6 +663,7 @@ export class Handler {
       openRouter: props.openRouter,
       model: primaryModelId,
       context: props.generationContext,
+      max_tokens: maxTokens,
       reasoning: props.reasoning,
       stripNonTextOnRetry: true,
     });
@@ -654,6 +702,7 @@ export class Handler {
       openRouter: props.openRouter,
       model: fallbackModelId,
       context: props.generationContext,
+      max_tokens: maxTokens,
       reasoning: props.reasoning,
       stripNonTextOnRetry: true,
     });
@@ -1000,6 +1049,10 @@ export class Handler {
                 continue;
               }
 
+              if (this.isOpenRouterLearnContextMessage(messageDescription)) {
+                continue;
+              }
+
               if (!messageDescription) {
                 continue;
               }
@@ -1310,12 +1363,19 @@ export class Handler {
 
       const openRouterKnowledgeContext =
         await this.resolveOpenRouterKnowledgeContext({
+          billingLedger,
           data,
+          openRouter,
           replyProfile: replyBySocialModuleProfile,
           socialModuleMessage,
           sanitizedQuery: sanitizedTriggerDescription,
           requestedKnowledgeSearch,
           requestedSkillIds,
+          selectedModelId:
+            modelSelection.selectedModelId ||
+            modelSelection.orderedCandidateIds[0] ||
+            null,
+          threadContext: context,
         });
       const openRouterContext = this.attachSkillMessagePrefixToContext({
         context,
@@ -1434,6 +1494,7 @@ export class Handler {
             documentIds: openRouterKnowledgeContext.searchDocumentIds,
             citations: openRouterKnowledgeContext.sources,
             sources: openRouterKnowledgeContext.sources,
+            retrieval: openRouterKnowledgeContext.retrieval,
             requestedKnowledgeSearch:
               openRouterKnowledgeContext.requestedKnowledgeSearch,
             requestedSkillIds: openRouterKnowledgeContext.requestedSkillIds,
@@ -1580,13 +1641,30 @@ export class Handler {
     );
   }
 
+  private isOpenRouterLearnContextMessage(value: string) {
+    const normalizedValue = this.toLearnText(value).trim();
+
+    if (!normalizedValue) {
+      return false;
+    }
+
+    return (
+      this.hasLearnCommand(normalizedValue) ||
+      /^Learned \d+ knowledge items?\.$/i.test(normalizedValue)
+    );
+  }
+
   private async resolveOpenRouterKnowledgeContext(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
     data: IRequestData;
+    openRouter: OpenRouter;
     replyProfile: ISocialModuleProfile;
     socialModuleMessage: ISocialModuleMessage;
     sanitizedQuery: string;
     requestedKnowledgeSearch: boolean;
     requestedSkillIds: string[];
+    selectedModelId: string | null;
+    threadContext: IOpenRouterRequestMessage[];
   }): Promise<IResolvedOpenRouterKnowledgeContext> {
     const mentionedSkillSlugs = this.getMentionedSkillSlugs(
       props.socialModuleMessage.description || "",
@@ -1618,13 +1696,25 @@ export class Handler {
     );
     const useKnowledgeSearch = props.requestedKnowledgeSearch;
     const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
-    const sources =
+    const candidateSources =
       useKnowledgeSearch && query
         ? await this.knowledgeService.search({
             query,
+            topK: KNOWLEDGE_INITIAL_TOP_K,
+            neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
             documentIds: searchDocumentIds,
           })
         : [];
+    const knowledgeRerankResult = await this.rerankKnowledgeSources({
+      billingLedger: props.billingLedger,
+      candidateSources,
+      openRouter: props.openRouter,
+      query,
+      rerankTopK: KNOWLEDGE_RERANK_TOP_K,
+      selectedModelId: props.selectedModelId,
+      threadContext: props.threadContext,
+    });
+    const sources = knowledgeRerankResult.sources;
     const systemMessages: IOpenRouterRequestMessage[] = [
       ...(useKnowledgeSearch
         ? [
@@ -1646,11 +1736,177 @@ export class Handler {
       useKnowledgeSearch,
       knowledgeDocumentIds,
       searchDocumentIds,
+      candidateSources,
       sources,
+      retrieval: {
+        initialTopK: KNOWLEDGE_INITIAL_TOP_K,
+        neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
+        candidateCount: candidateSources.length,
+        rerankTopK: KNOWLEDGE_RERANK_TOP_K,
+        rerankedSourceIds: sources.map((source) => source.id),
+        rerankFallbackReason: knowledgeRerankResult.fallbackReason,
+        rerankReason: knowledgeRerankResult.reason,
+      },
       promptSkills,
       skillMessagePrefix: this.toSkillMessagePrefix(promptSkills),
       systemMessages,
     };
+  }
+
+  private async rerankKnowledgeSources(props: {
+    billingLedger: IOpenRouterBillingLedgerEntry[];
+    candidateSources: KnowledgeSearchResult[];
+    openRouter: OpenRouter;
+    query: string;
+    rerankTopK: number;
+    selectedModelId: string | null;
+    threadContext: IOpenRouterRequestMessage[];
+  }): Promise<{
+    sources: KnowledgeSearchResult[];
+    reason: string | null;
+    fallbackReason: string | null;
+  }> {
+    const fallbackSources = props.candidateSources.slice(0, props.rerankTopK);
+
+    if (!props.candidateSources.length) {
+      return {
+        sources: [],
+        reason: null,
+        fallbackReason: null,
+      };
+    }
+
+    if (!props.selectedModelId) {
+      return {
+        sources: fallbackSources,
+        reason: null,
+        fallbackReason: "no selected model id for knowledge rerank",
+      };
+    }
+
+    const rerankResponse = await this.generateWithBillingLedger({
+      billingLedger: props.billingLedger,
+      purpose: "knowledge_rerank",
+      openRouter: props.openRouter,
+      model: props.selectedModelId,
+      max_tokens: 800,
+      responseFormat: KNOWLEDGE_RERANK_RESPONSE_FORMAT,
+      temperature: 0,
+      context: this.buildKnowledgeRerankContext({
+        candidateSources: props.candidateSources,
+        query: props.query,
+        rerankTopK: props.rerankTopK,
+        threadContext: props.threadContext,
+      }),
+    });
+
+    if ("error" in rerankResponse) {
+      return {
+        sources: fallbackSources,
+        reason: null,
+        fallbackReason: "knowledge rerank generation error",
+      };
+    }
+
+    const parsed = this.tryParseJsonObject(rerankResponse.text);
+    const selectedChunkIds = Array.isArray(parsed?.selected_chunk_ids)
+      ? parsed.selected_chunk_ids
+          .filter((value): value is string => typeof value === "string")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      : [];
+    const sourcesById = new Map(
+      props.candidateSources.map((source) => [source.id, source]),
+    );
+    const selectedSources = Array.from(new Set(selectedChunkIds))
+      .map((chunkId) => sourcesById.get(chunkId))
+      .filter((source): source is KnowledgeSearchResult => Boolean(source))
+      .slice(0, props.rerankTopK);
+
+    if (!selectedSources.length) {
+      return {
+        sources: fallbackSources,
+        reason: null,
+        fallbackReason: "knowledge rerank returned no valid selected_chunk_ids",
+      };
+    }
+
+    return {
+      sources: selectedSources,
+      reason: typeof parsed?.reason === "string" ? parsed.reason : null,
+      fallbackReason: null,
+    };
+  }
+
+  private buildKnowledgeRerankContext(props: {
+    candidateSources: KnowledgeSearchResult[];
+    query: string;
+    rerankTopK: number;
+    threadContext: IOpenRouterRequestMessage[];
+  }): IOpenRouterRequestMessage[] {
+    return [
+      {
+        role: "system",
+        content: [
+          "You are reranking profile-scoped RAG chunks before answer generation.",
+          "Select only chunks that directly help answer the user query.",
+          "Prefer chunks that preserve the source meaning and avoid misleading partial context.",
+          `Return at most ${props.rerankTopK} chunk ids.`,
+          "Return STRICT JSON only.",
+        ].join(" "),
+      },
+      {
+        role: "user",
+        content: `User query:\n${props.query}`,
+      },
+      {
+        role: "user",
+        content: [
+          "Recent thread context:",
+          this.toKnowledgeRerankThreadContext(props.threadContext),
+        ].join("\n"),
+      },
+      {
+        role: "user",
+        content: `Candidate chunks JSON:\n${JSON.stringify(
+          props.candidateSources.map((source, index) => {
+            return {
+              order: index + 1,
+              id: source.id,
+              retrievalRole: source.retrievalRole,
+              sourceId: source.sourceId,
+              sourceTitle: source.sourceTitle,
+              sourceOriginalPath: source.sourceOriginalPath,
+              chunkIndex: source.chunkIndex,
+              similarity: source.similarity,
+              text: source.text,
+            };
+          }),
+        )}`,
+      },
+    ];
+  }
+
+  private toKnowledgeRerankThreadContext(context: IOpenRouterRequestMessage[]) {
+    const lines = context
+      .map((message) => {
+        const text = this.getMessageTextContent(message).trim();
+
+        if (!text) {
+          return null;
+        }
+
+        const truncated =
+          text.length > KNOWLEDGE_RERANK_THREAD_CONTEXT_CHARS
+            ? `${text.slice(0, KNOWLEDGE_RERANK_THREAD_CONTEXT_CHARS)}...`
+            : text;
+
+        return `${message.role}: ${truncated}`;
+      })
+      .filter((line): line is string => Boolean(line))
+      .slice(-KNOWLEDGE_RERANK_THREAD_CONTEXT_MESSAGES);
+
+    return lines.length ? lines.join("\n") : "(no prior context)";
   }
 
   private async findKnowledgeDocumentIdsForProfile(
@@ -1960,7 +2216,8 @@ export class Handler {
             return [
               `Source ${index + 1}: ${source.sourceTitle || "Untitled"}`,
               `Path: ${source.sourceOriginalPath || "unknown"}`,
-              `Similarity: ${source.similarity.toFixed(3)}`,
+              `Similarity: ${this.formatKnowledgeSimilarity(source.similarity)}`,
+              `Retrieval role: ${source.retrievalRole}`,
               source.text,
             ].join("\n");
           })
@@ -1976,6 +2233,14 @@ export class Handler {
       "Knowledge fragments:",
       fragments,
     ].join("\n");
+  }
+
+  private formatKnowledgeSimilarity(value: number | null) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      return "n/a";
+    }
+
+    return value.toFixed(3);
   }
 
   private async learnFromMessage(props: {
@@ -2575,14 +2840,14 @@ export class Handler {
     replyProfile: ISocialModuleProfile;
   }): IOpenRouterRequestMessage {
     const profileTitle =
-      this.getLocalizedProfileText(props.replyProfile.title, props.language) ||
+      getLocalizedProfilePlainText(props.replyProfile.title, props.language) ||
       props.replyProfile.adminTitle ||
       props.replyProfile.slug;
-    const profileSubtitle = this.getLocalizedProfileText(
+    const profileSubtitle = getLocalizedProfilePlainText(
       props.replyProfile.subtitle,
       props.language,
     );
-    const profileDescription = this.getLocalizedProfileText(
+    const profileDescription = getLocalizedProfilePlainText(
       props.replyProfile.description,
       props.language,
     );
@@ -2605,57 +2870,6 @@ export class Handler {
         .filter(Boolean)
         .join("\n"),
     };
-  }
-
-  private getLocalizedProfileText(value: unknown, language: string) {
-    if (typeof value === "string") {
-      return value.trim();
-    }
-
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      return "";
-    }
-
-    const record = value as Record<string, unknown>;
-    const languageKeys = this.getProfileLanguageKeys(language);
-
-    for (const key of languageKeys) {
-      const localizedValue = record[key];
-
-      if (typeof localizedValue === "string" && localizedValue.trim()) {
-        return localizedValue.trim();
-      }
-    }
-
-    for (const fallbackKey of ["ru", "en"]) {
-      const fallbackValue = record[fallbackKey];
-
-      if (typeof fallbackValue === "string" && fallbackValue.trim()) {
-        return fallbackValue.trim();
-      }
-    }
-
-    for (const localizedValue of Object.values(record)) {
-      if (typeof localizedValue === "string" && localizedValue.trim()) {
-        return localizedValue.trim();
-      }
-    }
-
-    return "";
-  }
-
-  private getProfileLanguageKeys(language: string) {
-    const normalizedLanguage = this.toLearnText(language).toLowerCase();
-
-    if (["ru", "rus", "russian", "русский"].includes(normalizedLanguage)) {
-      return ["ru", "en"];
-    }
-
-    if (["en", "eng", "english", "английский"].includes(normalizedLanguage)) {
-      return ["en", "ru"];
-    }
-
-    return [normalizedLanguage, normalizedLanguage.slice(0, 2)].filter(Boolean);
   }
 
   protected buildGenerationContext(props: {

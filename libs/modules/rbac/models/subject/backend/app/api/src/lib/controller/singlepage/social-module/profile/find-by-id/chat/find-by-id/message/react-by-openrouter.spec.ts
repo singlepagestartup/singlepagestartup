@@ -23,6 +23,7 @@ jest.mock("@sps/backend-utils", () => {
 
 import { Handler } from "./react-by-openrouter";
 import { blobifyFiles } from "@sps/backend-utils";
+import type { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
 
 interface IFindThreadMessageIdsInChatHandler {
   findThreadMessageIdsInChat(props: {
@@ -160,6 +161,7 @@ interface IOpenRouterKnowledgeControlsHandler {
     skillSlugs: string[];
   }): Promise<{ id: string; slug: string; status?: string }[]>;
   getMentionedSkillSlugs(value: string): string[];
+  isOpenRouterLearnContextMessage(value: string): boolean;
   attachSkillMessagePrefixToContext(props: {
     context: {
       role: "user" | "assistant" | "system";
@@ -204,9 +206,13 @@ interface IOpenRouterKnowledgeControlsHandler {
     };
   };
   resolveOpenRouterKnowledgeContext(props: {
+    billingLedger: any[];
     data: {
       skillIds?: string[];
       useKnowledgeSearch?: boolean;
+    };
+    openRouter: {
+      generate: jest.Mock;
     };
     replyProfile: {
       id: string;
@@ -218,10 +224,17 @@ interface IOpenRouterKnowledgeControlsHandler {
     sanitizedQuery: string;
     requestedKnowledgeSearch: boolean;
     requestedSkillIds: string[];
+    selectedModelId: string | null;
+    threadContext: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    }[];
   }): Promise<{
     useKnowledgeSearch: boolean;
     searchDocumentIds: string[];
+    candidateSources: unknown[];
     sources: unknown[];
+    retrieval: Record<string, unknown>;
     promptSkills: { id: string; slug: string; status?: string }[];
     skillMessagePrefix: string;
     systemMessages: {
@@ -235,9 +248,9 @@ interface IOpenRouterKnowledgeControlsHandler {
       id: string;
       slug: string;
       adminTitle?: string;
-      title?: Record<string, string>;
-      subtitle?: Record<string, string>;
-      description?: Record<string, string>;
+      title?: Record<string, unknown>;
+      subtitle?: Record<string, unknown>;
+      description?: Record<string, unknown>;
     };
   }): {
     role: "user" | "assistant" | "system";
@@ -247,6 +260,24 @@ interface IOpenRouterKnowledgeControlsHandler {
 
 function createMessageId(index: number) {
   return `message-${String(index).padStart(3, "0")}`;
+}
+
+function createKnowledgeSearchResult(
+  props: Partial<KnowledgeSearchResult> & { id: string },
+): KnowledgeSearchResult {
+  return {
+    text: "Policy fragment",
+    chunkIndex: 0,
+    sourceId: "source-1",
+    sourceTitle: "Policy",
+    sourceOriginalPath: "policy.md",
+    sourceType: "text",
+    distance: 0.1,
+    similarity: 0.9,
+    retrievalRole: "seed",
+    metadata: {},
+    ...props,
+  };
 }
 
 describe("Given: OpenRouter thread context and reply validation", () => {
@@ -399,6 +430,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       1,
       expect.objectContaining({
         model: "openai/gpt-5.2",
+        max_tokens: 8192,
         stripNonTextOnRetry: true,
       }),
     );
@@ -406,6 +438,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       2,
       expect.objectContaining({
         model: "anthropic/claude-haiku-4.5",
+        max_tokens: 8192,
         stripNonTextOnRetry: true,
       }),
     );
@@ -781,6 +814,36 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
+   * Given: a thread history contains Knowledge learning messages and normal slash skills.
+   * When: OpenRouter decides which messages are eligible for generation context.
+   * Then: learning commands and confirmations are skipped while slash skills remain usable.
+   */
+  it("When: learn messages are classified Then: only learning context is skipped", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    expect(
+      handler.isOpenRouterLearnContextMessage("@knowledge /learn Store this"),
+    ).toBe(true);
+    expect(handler.isOpenRouterLearnContextMessage("/learn Store this")).toBe(
+      true,
+    );
+    expect(
+      handler.isOpenRouterLearnContextMessage("Learned 1 knowledge item."),
+    ).toBe(true);
+    expect(
+      handler.isOpenRouterLearnContextMessage("Learned 2 knowledge items."),
+    ).toBe(true);
+    expect(
+      handler.isOpenRouterLearnContextMessage(
+        "/brief-writer Rewrite this message",
+      ),
+    ).toBe(false);
+  });
+
+  /**
+   * BDD Scenario
    * Given: the user invokes a linked profile skill with slash syntax.
    * When: OpenRouter resolves Knowledge context for generation.
    * Then: the skill is exposed as a user-message prefix and not as a system message.
@@ -813,7 +876,11 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
 
     const context = await handler.resolveOpenRouterKnowledgeContext({
+      billingLedger: [],
       data: {},
+      openRouter: {
+        generate: jest.fn(),
+      },
       replyProfile: {
         id: "profile-1",
       },
@@ -824,6 +891,8 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "What should we answer?",
       requestedKnowledgeSearch: false,
       requestedSkillIds: [],
+      selectedModelId: "openai/gpt-5.5",
+      threadContext: [],
     });
 
     expect(context.promptSkills).toEqual([
@@ -964,19 +1033,70 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
+   * Given: the replying profile has an old TipTap JSON description.
+   * When: OpenRouter builds profile system context.
+   * Then: the profile persona contains plain text and not raw TipTap JSON.
+   */
+  it("When: profile description is legacy TipTap JSON Then: profile persona uses plain text", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+    const profileSystemMessage = handler.toProfileSystemMessage({
+      language: "en",
+      replyProfile: {
+        id: "profile-1",
+        slug: "chat-gpt-1",
+        adminTitle: "Chat GPT 1",
+        title: {
+          en: "Real Estate Expert",
+        },
+        description: {
+          en: JSON.stringify({
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Uses personal deal experience as expertise.",
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      },
+    });
+
+    expect(profileSystemMessage.content).toContain(
+      "Uses personal deal experience as expertise.",
+    );
+    expect(profileSystemMessage.content).not.toContain('"type":"doc"');
+  });
+
+  /**
+   * BDD Scenario
    * Given: a replying profile has scoped Knowledge documents.
    * When: OpenRouter resolves generation context with and without @knowledge.
    * Then: RAG search runs only when Knowledge was explicitly requested.
    */
   it("When: Knowledge is requested Then: only profile document ids are searched", async () => {
     const search = jest.fn(async () => [
-      {
-        sourceTitle: "Policy",
-        sourceOriginalPath: "policy.md",
-        similarity: 0.9,
+      createKnowledgeSearchResult({
+        id: "chunk-1",
         text: "Policy fragment",
-      },
+      }),
     ]);
+    const openRouter = {
+      generate: jest.fn(async () => ({
+        text: JSON.stringify({
+          selected_chunk_ids: ["chunk-1"],
+          reason: "Directly answers the question.",
+        }),
+        billing: null,
+      })),
+    };
     const handler = new Handler({
       socialModule: {
         profilesToSkills: {
@@ -1000,7 +1120,9 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
     await expect(
       handler.resolveOpenRouterKnowledgeContext({
+        billingLedger: [],
         data: {},
+        openRouter,
         replyProfile: {
           id: "profile-1",
         },
@@ -1011,6 +1133,8 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         sanitizedQuery: "Question",
         requestedKnowledgeSearch: false,
         requestedSkillIds: [],
+        selectedModelId: "openai/gpt-5.5",
+        threadContext: [],
       }),
     ).resolves.toMatchObject({
       useKnowledgeSearch: false,
@@ -1020,9 +1144,11 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(search).not.toHaveBeenCalled();
 
     const context = await handler.resolveOpenRouterKnowledgeContext({
+      billingLedger: [],
       data: {
         useKnowledgeSearch: true,
       },
+      openRouter,
       replyProfile: {
         id: "profile-1",
       },
@@ -1033,21 +1159,125 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "Question",
       requestedKnowledgeSearch: true,
       requestedSkillIds: [],
+      selectedModelId: "openai/gpt-5.5",
+      threadContext: [
+        {
+          role: "user",
+          content: "Earlier question",
+        },
+      ],
     });
 
     expect(search).toHaveBeenCalledWith({
       query: "Question",
+      topK: 30,
+      neighborWindow: 1,
       documentIds: ["document-1"],
     });
+    expect(openRouter.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "openai/gpt-5.5",
+      }),
+    );
     expect(context).toMatchObject({
       useKnowledgeSearch: true,
       searchDocumentIds: ["document-1"],
+      candidateSources: [
+        {
+          text: "Policy fragment",
+        },
+      ],
       sources: [
         {
           text: "Policy fragment",
         },
       ],
+      retrieval: {
+        initialTopK: 30,
+        neighborWindow: 1,
+        candidateCount: 1,
+        rerankTopK: 12,
+        rerankedSourceIds: ["chunk-1"],
+        rerankFallbackReason: null,
+      },
     });
     expect(context.systemMessages[0].content).toContain("Policy fragment");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter returns invalid JSON during Knowledge rerank.
+   * When: Knowledge context is resolved.
+   * Then: deterministic retrieval order is used and fallback metadata is recorded.
+   */
+  it("When: Knowledge rerank returns invalid JSON Then: retrieval order fallback is used", async () => {
+    const search = jest.fn(async () => [
+      createKnowledgeSearchResult({
+        id: "chunk-1",
+        text: "First fragment",
+      }),
+      createKnowledgeSearchResult({
+        id: "chunk-2",
+        text: "Second fragment",
+        chunkIndex: 1,
+      }),
+    ]);
+    const openRouter = {
+      generate: jest.fn(async () => ({
+        text: "not json",
+        billing: null,
+      })),
+    };
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () => []),
+        },
+        profilesToKnowledgeModuleDocuments: {
+          find: jest.fn(async () => [
+            {
+              knowledgeModuleDocumentId: "document-1",
+            },
+          ]),
+        },
+      },
+    } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    (
+      handler as unknown as { knowledgeService: { search: typeof search } }
+    ).knowledgeService = {
+      search,
+    };
+
+    const context = await handler.resolveOpenRouterKnowledgeContext({
+      billingLedger: [],
+      data: {
+        useKnowledgeSearch: true,
+      },
+      openRouter,
+      replyProfile: {
+        id: "profile-1",
+      },
+      socialModuleMessage: {
+        id: "message-1",
+        description: "@knowledge Question",
+      },
+      sanitizedQuery: "Question",
+      requestedKnowledgeSearch: true,
+      requestedSkillIds: [],
+      selectedModelId: "openai/gpt-5.5",
+      threadContext: [],
+    });
+
+    expect(context.sources).toEqual([
+      expect.objectContaining({ id: "chunk-1" }),
+      expect.objectContaining({ id: "chunk-2" }),
+    ]);
+    expect(context.retrieval).toMatchObject({
+      candidateCount: 2,
+      rerankedSourceIds: ["chunk-1", "chunk-2"],
+      rerankFallbackReason:
+        "knowledge rerank returned no valid selected_chunk_ids",
+    });
   });
 });
