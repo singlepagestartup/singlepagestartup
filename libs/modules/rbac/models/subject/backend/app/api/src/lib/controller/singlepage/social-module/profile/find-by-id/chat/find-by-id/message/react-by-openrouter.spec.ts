@@ -97,6 +97,10 @@ interface IOpenRouterReplyValidationHandler {
     }[];
     expectedOutputModality: "text" | "image";
     language: string;
+    profileSystemMessage?: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    };
   }): {
     role: "user" | "assistant" | "system";
     content:
@@ -135,11 +139,47 @@ interface IOpenRouterKnowledgeControlsHandler {
     complexity: string;
     risk_level: string;
   };
+  buildGenerationContext(props: {
+    context: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    }[];
+    expectedOutputModality: "text" | "image";
+    language: string;
+    profileSystemMessage?: {
+      role: "user" | "assistant" | "system";
+      content: string;
+    };
+  }): {
+    role: "user" | "assistant" | "system";
+    content: string | { type: "text"; text: string }[];
+  }[];
   findPromptSkillsForProfile(props: {
     socialModuleProfileId: string;
     skillIds: string[];
     skillSlugs: string[];
   }): Promise<{ id: string; slug: string; status?: string }[]>;
+  getMentionedSkillSlugs(value: string): string[];
+  attachSkillMessagePrefixToContext(props: {
+    context: {
+      role: "user" | "assistant" | "system";
+      content:
+        | string
+        | (
+            | { type: "text"; text: string }
+            | { type: "image_url"; image_url: { url: string } }
+          )[];
+    }[];
+    skillMessagePrefix: string;
+  }): {
+    role: "user" | "assistant" | "system";
+    content:
+      | string
+      | (
+          | { type: "text"; text: string }
+          | { type: "image_url"; image_url: { url: string } }
+        )[];
+  }[];
   resolveManualExpectedOutputModality(model: {
     architecture?: {
       output_modalities?: string[];
@@ -182,11 +222,27 @@ interface IOpenRouterKnowledgeControlsHandler {
     useKnowledgeSearch: boolean;
     searchDocumentIds: string[];
     sources: unknown[];
+    promptSkills: { id: string; slug: string; status?: string }[];
+    skillMessagePrefix: string;
     systemMessages: {
       role: "user" | "assistant" | "system";
       content: string;
     }[];
   }>;
+  toProfileSystemMessage(props: {
+    language: string;
+    replyProfile: {
+      id: string;
+      slug: string;
+      adminTitle?: string;
+      title?: Record<string, string>;
+      subtitle?: Record<string, string>;
+      description?: Record<string, string>;
+    };
+  }): {
+    role: "user" | "assistant" | "system";
+    content: string;
+  };
 }
 
 function createMessageId(index: number) {
@@ -648,7 +704,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: the user selected and mentioned skills in a Knowledge chat.
+   * Given: the user selected and invoked skills in a Knowledge chat.
    * When: OpenRouter resolves prompt skills for the replying profile.
    * Then: only linked active skills are returned and unlinked requested ids are rejected.
    */
@@ -703,6 +759,207 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         skillSlugs: [],
       }),
     ).rejects.toThrow("Selected social skills are not linked");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a chat message contains slash skills and reserved slash commands.
+   * When: OpenRouter parses invoked social skills.
+   * Then: only non-reserved slash tokens are treated as skills.
+   */
+  it("When: slash tokens are parsed Then: reserved commands are excluded", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    expect(
+      handler.getMentionedSkillSlugs(
+        "@knowledge /learn Store this /brief-writer /new",
+      ),
+    ).toEqual(["brief-writer"]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the user invokes a linked profile skill with slash syntax.
+   * When: OpenRouter resolves Knowledge context for generation.
+   * Then: the skill is exposed as a user-message prefix and not as a system message.
+   */
+  it("When: slash skills are resolved Then: they become a message prefix", async () => {
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () => [
+            {
+              skillId: "skill-1",
+            },
+          ]),
+        },
+        profilesToKnowledgeModuleDocuments: {
+          find: jest.fn(async () => []),
+        },
+        skill: {
+          find: jest.fn(async () => [
+            {
+              id: "skill-1",
+              title: "Brief Writer",
+              slug: "brief-writer",
+              description: "Write a concise brief.",
+              status: "active",
+            },
+          ]),
+        },
+      },
+    } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    const context = await handler.resolveOpenRouterKnowledgeContext({
+      data: {},
+      replyProfile: {
+        id: "profile-1",
+      },
+      socialModuleMessage: {
+        id: "message-1",
+        description: "/brief-writer What should we answer?",
+      },
+      sanitizedQuery: "What should we answer?",
+      requestedKnowledgeSearch: false,
+      requestedSkillIds: [],
+    });
+
+    expect(context.promptSkills).toEqual([
+      expect.objectContaining({
+        id: "skill-1",
+        slug: "brief-writer",
+      }),
+    ]);
+    expect(context.skillMessagePrefix).toContain("/brief-writer");
+    expect(context.skillMessagePrefix).toContain("Write a concise brief.");
+    expect(context.systemMessages).toEqual([]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the OpenRouter context contains a trigger user message.
+   * When: a selected skill prefix is attached.
+   * Then: only the latest user message receives the prefix while file parts are preserved.
+   */
+  it("When: a skill prefix is attached Then: the latest user message is prefixed", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    expect(
+      handler.attachSkillMessagePrefixToContext({
+        context: [
+          {
+            role: "assistant",
+            content: "Previous answer",
+          },
+          {
+            role: "user",
+            content: "Rewrite this",
+          },
+        ],
+        skillMessagePrefix: "Selected social skills for this message:",
+      }),
+    ).toEqual([
+      {
+        role: "assistant",
+        content: "Previous answer",
+      },
+      {
+        role: "user",
+        content: "Selected social skills for this message:\n\nRewrite this",
+      },
+    ]);
+
+    expect(
+      handler.attachSkillMessagePrefixToContext({
+        context: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Use this image",
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: "https://example.test/image.png",
+                },
+              },
+            ],
+          },
+        ],
+        skillMessagePrefix: "Skill instructions",
+      }),
+    ).toEqual([
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Skill instructions\n\nUse this image",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: "https://example.test/image.png",
+            },
+          },
+        ],
+      },
+    ]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the replying profile has localized title and description.
+   * When: OpenRouter builds generation context.
+   * Then: profile persona is included as system context before conversation history.
+   */
+  it("When: generation context is built Then: profile persona is a system message", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+    const profileSystemMessage = handler.toProfileSystemMessage({
+      language: "ru",
+      replyProfile: {
+        id: "profile-1",
+        slug: "chat-gpt-1",
+        adminTitle: "Chat GPT 1",
+        title: {
+          ru: "Редактор",
+        },
+        description: {
+          ru: "Редактирует пользовательский текст без переписывания смысла.",
+        },
+      },
+    });
+
+    const generationContext = handler.buildGenerationContext({
+      context: [
+        {
+          role: "user",
+          content: "Поправь текст",
+        },
+      ],
+      expectedOutputModality: "text",
+      language: "ru",
+      profileSystemMessage,
+    });
+
+    expect(generationContext[2]).toMatchObject({
+      role: "system",
+      content: expect.stringContaining(
+        "Редактирует пользовательский текст без переписывания смысла.",
+      ),
+    });
+    expect(generationContext[generationContext.length - 1]).toEqual({
+      role: "user",
+      content: "Поправь текст",
+    });
   });
 
   /**

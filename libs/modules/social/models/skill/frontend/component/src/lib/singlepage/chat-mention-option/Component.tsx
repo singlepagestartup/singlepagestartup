@@ -8,6 +8,7 @@ function getSkillTitle(skill: IComponentPropsExtended["data"]) {
 
 export function Component(props: IComponentPropsExtended) {
   const canEditOnClick = Boolean(props.editOnClick && props.onEdit);
+  const mentionPrefix = props.mentionPrefix || "@";
   const content = (
     <>
       <Package className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
@@ -16,7 +17,8 @@ export function Component(props: IComponentPropsExtended) {
           {getSkillTitle(props.data)}
         </span>
         <span className="block truncate text-xs text-slate-500">
-          @{props.data.slug}
+          {mentionPrefix}
+          {props.data.slug}
         </span>
       </span>
       {props.onEdit && !props.editOnClick ? (

@@ -119,6 +119,7 @@ interface IResolvedOpenRouterKnowledgeContext {
   searchDocumentIds: string[];
   sources: KnowledgeSearchResult[];
   promptSkills: ISocialModuleSkill[];
+  skillMessagePrefix: string;
   systemMessages: IOpenRouterRequestMessage[];
 }
 
@@ -1316,10 +1317,18 @@ export class Handler {
           requestedKnowledgeSearch,
           requestedSkillIds,
         });
-      const generationContext = this.buildGenerationContext({
+      const openRouterContext = this.attachSkillMessagePrefixToContext({
         context,
+        skillMessagePrefix: openRouterKnowledgeContext.skillMessagePrefix,
+      });
+      const generationContext = this.buildGenerationContext({
+        context: openRouterContext,
         expectedOutputModality,
         language: requestClassification.language,
+        profileSystemMessage: this.toProfileSystemMessage({
+          language: requestClassification.language,
+          replyProfile: replyBySocialModuleProfile,
+        }),
         prependedSystemMessages: openRouterKnowledgeContext.systemMessages,
       });
       const openRouterReasoning = this.toOpenRouterReasoning(
@@ -1432,7 +1441,8 @@ export class Handler {
               return {
                 skillId: skill.id,
                 slug: skill.slug,
-                mode: "prompt-instruction",
+                title: skill.title,
+                mode: "message-prefix-instruction",
               };
             }),
             openRouter: {
@@ -1616,14 +1626,6 @@ export class Handler {
           })
         : [];
     const systemMessages: IOpenRouterRequestMessage[] = [
-      ...(promptSkills.length
-        ? [
-            {
-              role: "system" as const,
-              content: this.toSkillSystemPrompt(promptSkills),
-            },
-          ]
-        : []),
       ...(useKnowledgeSearch
         ? [
             {
@@ -1646,6 +1648,7 @@ export class Handler {
       searchDocumentIds,
       sources,
       promptSkills,
+      skillMessagePrefix: this.toSkillMessagePrefix(promptSkills),
       systemMessages,
     };
   }
@@ -1850,23 +1853,101 @@ export class Handler {
       });
   }
 
-  private toSkillSystemPrompt(skills: ISocialModuleSkill[]) {
+  private toSkillMessagePrefix(skills: ISocialModuleSkill[]) {
+    if (!skills.length) {
+      return "";
+    }
+
     const skillText = skills
       .map((skill) => {
         return [
-          `@${skill.slug}${skill.title ? ` (${skill.title})` : ""}`,
+          `/${skill.slug}${skill.title ? ` (${skill.title})` : ""}`,
           skill.description,
         ].join("\n");
       })
       .join("\n\n---\n\n");
 
     return [
-      "Selected social skills are active for this reply.",
+      "Selected social skills for this message:",
       "Follow these instructions for formatting, tone, and task behavior.",
       "Use the latest user message and thread context as source material when the user asks to transform or edit text.",
       "",
       skillText,
+      "",
+      "User message:",
     ].join("\n");
+  }
+
+  private attachSkillMessagePrefixToContext(props: {
+    context: IOpenRouterRequestMessage[];
+    skillMessagePrefix: string;
+  }): IOpenRouterRequestMessage[] {
+    const skillMessagePrefix = props.skillMessagePrefix.trim();
+
+    if (!skillMessagePrefix) {
+      return props.context;
+    }
+
+    const nextContext = [...props.context];
+
+    for (let index = nextContext.length - 1; index >= 0; index -= 1) {
+      const message = nextContext[index];
+
+      if (message.role !== "user") {
+        continue;
+      }
+
+      nextContext[index] = {
+        ...message,
+        content: this.prefixOpenRouterMessageContent({
+          content: message.content,
+          prefix: skillMessagePrefix,
+        }),
+      };
+
+      return nextContext;
+    }
+
+    return nextContext;
+  }
+
+  private prefixOpenRouterMessageContent(props: {
+    content: IOpenRouterRequestMessage["content"];
+    prefix: string;
+  }): IOpenRouterRequestMessage["content"] {
+    if (typeof props.content === "string") {
+      return this.joinSkillPrefixAndMessage(props.prefix, props.content);
+    }
+
+    let prefixedTextPart = false;
+    const content = props.content.map((part) => {
+      if (part.type !== "text" || prefixedTextPart) {
+        return part;
+      }
+
+      prefixedTextPart = true;
+
+      return {
+        ...part,
+        text: this.joinSkillPrefixAndMessage(props.prefix, part.text),
+      };
+    });
+
+    if (prefixedTextPart) {
+      return content;
+    }
+
+    return [
+      {
+        type: "text",
+        text: props.prefix,
+      },
+      ...content,
+    ];
+  }
+
+  private joinSkillPrefixAndMessage(prefix: string, message: string) {
+    return [prefix.trim(), message.trim()].filter(Boolean).join("\n\n");
   }
 
   private toKnowledgeSystemPrompt(props: {
@@ -2215,9 +2296,9 @@ export class Handler {
   private getMentionedSkillSlugs(value: string) {
     return Array.from(
       new Set(
-        Array.from(value.matchAll(/(^|\s)@([a-zA-Z0-9._-]+)(?=\s|$)/g))
+        Array.from(value.matchAll(/(^|\s)\/([a-zA-Z0-9._-]+)(?=\s|$)/g))
           .map((match) => match[2].toLowerCase())
-          .filter((slug) => slug !== "knowledge"),
+          .filter((slug) => !this.isReservedSlashCommandSlug(slug)),
       ),
     );
   }
@@ -2230,9 +2311,18 @@ export class Handler {
 
   private stripSkillMentions(value: string) {
     return this.toLearnText(value)
-      .replace(/(^|\s)@[a-zA-Z0-9._-]+/g, " ")
+      .replace(/(^|\s)@[a-zA-Z0-9._-]+(?=\s|$)/g, " ")
+      .replace(/(^|\s)\/([a-zA-Z0-9._-]+)(?=\s|$)/g, (_, prefix, slug) => {
+        return this.isReservedSlashCommandSlug(slug)
+          ? `${prefix}/${slug}`
+          : prefix || " ";
+      })
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  private isReservedSlashCommandSlug(value: string) {
+    return ["learn", "new"].includes(value.toLowerCase());
   }
 
   private normalizeSkillIds(value?: string[]) {
@@ -2480,10 +2570,99 @@ export class Handler {
     );
   }
 
+  private toProfileSystemMessage(props: {
+    language: string;
+    replyProfile: ISocialModuleProfile;
+  }): IOpenRouterRequestMessage {
+    const profileTitle =
+      this.getLocalizedProfileText(props.replyProfile.title, props.language) ||
+      props.replyProfile.adminTitle ||
+      props.replyProfile.slug;
+    const profileSubtitle = this.getLocalizedProfileText(
+      props.replyProfile.subtitle,
+      props.language,
+    );
+    const profileDescription = this.getLocalizedProfileText(
+      props.replyProfile.description,
+      props.language,
+    );
+
+    return {
+      role: "system",
+      content: [
+        "You are replying as a SinglePageStartup social profile specialist.",
+        `Profile slug: ${props.replyProfile.slug}.`,
+        `Profile title: ${profileTitle}.`,
+        profileSubtitle ? `Profile subtitle: ${profileSubtitle}.` : "",
+        profileDescription
+          ? ["Profile description and expertise:", profileDescription].join(
+              "\n",
+            )
+          : "",
+        "Use the profile description as persona, expertise, and communication boundary.",
+        "Do not treat selected social skills as part of the profile unless they are attached to the current user message.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    };
+  }
+
+  private getLocalizedProfileText(value: unknown, language: string) {
+    if (typeof value === "string") {
+      return value.trim();
+    }
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return "";
+    }
+
+    const record = value as Record<string, unknown>;
+    const languageKeys = this.getProfileLanguageKeys(language);
+
+    for (const key of languageKeys) {
+      const localizedValue = record[key];
+
+      if (typeof localizedValue === "string" && localizedValue.trim()) {
+        return localizedValue.trim();
+      }
+    }
+
+    for (const fallbackKey of ["ru", "en"]) {
+      const fallbackValue = record[fallbackKey];
+
+      if (typeof fallbackValue === "string" && fallbackValue.trim()) {
+        return fallbackValue.trim();
+      }
+    }
+
+    for (const localizedValue of Object.values(record)) {
+      if (typeof localizedValue === "string" && localizedValue.trim()) {
+        return localizedValue.trim();
+      }
+    }
+
+    return "";
+  }
+
+  private getProfileLanguageKeys(language: string) {
+    const normalizedLanguage = this.toLearnText(language).toLowerCase();
+
+    if (["ru", "rus", "russian", "русский"].includes(normalizedLanguage)) {
+      return ["ru", "en"];
+    }
+
+    if (["en", "eng", "english", "английский"].includes(normalizedLanguage)) {
+      return ["en", "ru"];
+    }
+
+    return [normalizedLanguage, normalizedLanguage.slice(0, 2)].filter(Boolean);
+  }
+
   protected buildGenerationContext(props: {
     context: IOpenRouterRequestMessage[];
     expectedOutputModality: TOutputModality;
     language: string;
+    profileSystemMessage?: IOpenRouterRequestMessage;
     prependedSystemMessages?: IOpenRouterRequestMessage[];
   }): IOpenRouterRequestMessage[] {
     if (props.expectedOutputModality === "image") {
@@ -2503,6 +2682,7 @@ export class Handler {
             "Return image output.",
           ].join(" "),
         },
+        ...(props.profileSystemMessage ? [props.profileSystemMessage] : []),
         ...(props.prependedSystemMessages || []),
         {
           role: "user",
@@ -2528,6 +2708,7 @@ export class Handler {
         role: "system",
         content: "Return a text response only.",
       },
+      ...(props.profileSystemMessage ? [props.profileSystemMessage] : []),
       ...(props.prependedSystemMessages || []),
       {
         role: "user",

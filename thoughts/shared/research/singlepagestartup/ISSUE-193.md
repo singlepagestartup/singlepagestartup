@@ -1,175 +1,253 @@
 ---
-date: 2026-06-13T23:22:05+0300
+date: 2026-06-14T16:46:38+0300
 researcher: flakecode
-git_commit: 93fcafc4c767f0cf7c72b703e851ab673c0bee5b
-branch: issue-195
+git_commit: 633776785d5375b31566363e2dd5cd0646ef4ba0
+branch: main
 repository: singlepagestartup
-topic: "Provider-native profile skills for Knowledge chats"
-tags: [research, codebase, social, rbac, knowledge, llm, skills]
+topic: "Provider-native profile skills in react-by/openrouter Knowledge chats"
+tags: [research, codebase, social, rbac, knowledge, llm, openrouter, skills]
 status: complete
-last_updated: 2026-06-13
+last_updated: 2026-06-15
 last_updated_by: flakecode
 ---
 
-# Research: Provider-Native Profile Skills For Knowledge Chats
+# Research: Provider-Native Profile Skills In `react-by/openrouter` Knowledge Chats
 
-**Date**: 2026-06-13T23:22:05+0300
+**Date**: 2026-06-14T16:46:38+0300
 **Researcher**: flakecode
-**Git Commit**: 93fcafc4c767f0cf7c72b703e851ab673c0bee5b
-**Branch**: issue-195
+**Git Commit**: 633776785d5375b31566363e2dd5cd0646ef4ba0
+**Branch**: main
 **Repository**: singlepagestartup
 
 ## Research Question
 
-Document how the current codebase represents `social.skill`, links skills to `social.profile`, syncs linked skills to provider-native OpenAI/Anthropic Skills, and passes skill references through Knowledge/LLM generation for `social.chat.variant="knowledge"` flows.
+Document how profile-linked `social.skill` records currently flow through the live social Knowledge chat stack, specifically the `react-by/openrouter` endpoint, and identify the existing code surfaces that already support provider-native OpenAI/Anthropic Skills.
 
-This is reconciliation research for issue 193: the process log records that implementation happened directly before the normal research and plan phases, so this document describes the live code as it exists now.
+This replaces the previous research/plan scope. The previous plan incorrectly treated provider-native Skills as a `react-by/knowledge` implementation detail and left `react-by/openrouter` as follow-up scope. The current product requirement is that Knowledge chats use `react-by/openrouter` as the primary reply path and that skill integration belongs in that path.
 
 ## Summary
 
-`social.skill` stores skill instructions in ordinary model fields and keeps provider sync state in generic `metadata` JSONB. The model has `title`, `description`, `status`, `defaultModelSlug`, `allowedModelSlugs`, `metadata`, `adminTitle`, and unique `slug` fields (`libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:4`). Profiles link to skills through `profiles-to-skills`, whose relation table stores `profileId`, `skillId`, `orderIndex`, and `variant` (`libs/modules/social/relations/profiles-to-skills/backend/repository/database/src/lib/schema.ts:10`).
+`social.skill` and `profiles-to-skills` already exist. A skill stores its user-facing instructions in model fields, especially `title`, `slug`, `description`, `status`, `defaultModelSlug`, `allowedModelSlugs`, and generic `metadata` JSONB. Profiles link to skills through `profiles-to-skills`, which stores `profileId`, `skillId`, `orderIndex`, and `variant`.
 
-RBAC exposes a profile-scoped provider sync endpoint at `POST /:id/social-module/profiles/:socialModuleProfileId/skills/provider-sync`, registered behind `RequestProfileSubjectIdOwner` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:504`). The handler loads skills linked through `profiles-to-skills`, rejects unlinked requested skill ids, skips archived skills, uploads a generated `SKILL.md` bundle to OpenAI and/or Anthropic, and writes returned references under `social.skill.metadata.providerSkills` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:46`).
+The codebase already has provider-native infrastructure outside the OpenRouter reaction path:
 
-Provider bundle creation and metadata freshness are centralized in `provider-skills.ts`. A bundle is rendered from `slug`, `title`, and `description` as a markdown `SKILL.md` with frontmatter; its SHA-256 hash is stored as `contentHash` and used to detect stale provider refs (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:44`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:113`).
+- RBAC exposes a profile-scoped provider sync endpoint that uploads linked skills to OpenAI and Anthropic and stores references in `social.skill.metadata.providerSkills`.
+- Knowledge generation can pass `providerSkills` to the local LLM gateway as `provider_skills`.
+- The local LLM gateway validates provider skills for OpenAI/Anthropic models and mounts them into OpenAI Responses API shell skills or Anthropic beta `container.skills`.
 
-The Knowledge generation client and local LLM gateway support provider-native skill references. `LlmChatClient.complete(...)` conditionally serializes `provider_skills` into the `/v1/chat/completions` request body (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:99`). The LLM gateway schema accepts `provider_skills`, validates that they match OpenAI or Anthropic models, and mounts them into provider-specific payloads (`apps/llm/singlepage/schemas.py:11`, `apps/llm/singlepage/service.py:56`, `apps/llm/singlepage/service.py:162`).
+The current `react-by/openrouter` endpoint is the active rich chat reply path for Knowledge chats. It accepts `skillIds`, detects `@knowledge`, supports `/learn`, includes thread context, supports manual/auto OpenRouter model selection, and supports reasoning controls. Its skill handling is prompt-based: linked selected skills are resolved as `promptSkills`, converted to a system prompt by `toSkillSystemPrompt(...)`, prepended to the OpenRouter message context, and written to metadata as `mode: "prompt-instruction"`.
 
-The current `react-by-knowledge` handler contains provider-native helper code, but its active `resolveKnowledgeSkills(...)` path returns selected skills as prompt instructions and returns `providerSkills: []` in both selected-skill and no-skill branches (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:727`). The file also contains `findProviderSkillsForProfile(...)`, which can validate fresh provider refs and convert them for Knowledge generation, but current references in the file show it is declared and not invoked (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:928`).
+The shared OpenRouter wrapper currently sends only OpenRouter chat completion fields such as `model`, `messages`, `max_tokens`, `reasoning`, `response_format`, and `temperature`. It has no `provider_skills`, `skills`, OpenAI `skill_reference`, or Anthropic `container.skills` request surface.
 
-The current OpenRouter reaction path, which the later chat controls work uses as the main chat reply path, has its own `@knowledge`, `/learn`, and `@skill` handling. It resolves selected or mentioned linked skills as prompt-instruction system messages and does not contain `providerSkills` handling (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1573`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1853`).
+OpenRouter official documentation describes an OpenAI-compatible Chat Completions shape with `tools` and provider routing parameters, plus a Responses endpoint with `tools`, `plugins`, `provider`, and `reasoning`. The documentation checked for this research does not document OpenAI Agent Skills `skill_reference` mounting or Anthropic `container.skills` mounting through OpenRouter. That means the current OpenRouter path cannot be assumed to support provider-native Skills by simply forwarding existing gateway `provider_skills`.
+
+Decision clarification: when a request is generated through OpenRouter, skills should be treated as SPS-managed text/tool instructions. OpenRouter can receive a selected skill as extra system/developer context, or through a normal function/tool activation loop that returns the skill instructions. This is the only documented and reliable OpenRouter-compatible skill approach found in the checked sources. It should not be described as provider-native OpenAI/Anthropic Skills.
+
+After checking the current OpenRouter OpenAPI spec and external Agent Skills documentation, the documented OpenRouter-compatible implementation choices are:
+
+- Use OpenRouter prompt/tool-call skill activation: disclose a skill catalog, then inject or load selected skill instructions into context. This matches the Agent Skills client implementation guide, but it is not provider-native OpenAI/Anthropic Skills.
+- Use a hybrid `react-by/openrouter` endpoint that keeps the OpenRouter chat UX and model controls, but switches to direct OpenAI/Anthropic provider-native generation when selected skills require native mounting. This satisfies provider-native Skills using documented OpenAI/Anthropic APIs, but billing/metadata must explicitly reflect the non-OpenRouter generation path.
+- Treat OpenRouter provider-specific passthrough for Skills as experimental only. OpenRouter documents that some provider-specific parameters are forwarded, but its docs and OpenAPI schema checked here do not list `skills`, `skill_reference`, or Anthropic `container.skills`, and unsupported parameters can be ignored.
 
 ## Detailed Findings
 
 ### Social Skill Model And Profile Links
 
-- `social.skill` uses `metadata: jsonb` for arbitrary structured state, which is the storage location used for `providerSkills` references (`libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:22`).
-- The public skill SDK currently exposes only the `default` variant for `social.skill` (`libs/modules/social/models/skill/sdk/model/src/lib/index.ts:17`).
-- `profiles-to-skills` is the profile/skill link relation. It stores foreign keys to profile and skill rows with cascade delete, and includes `orderIndex` for ordered rendering/use (`libs/modules/social/relations/profiles-to-skills/backend/repository/database/src/lib/schema.ts:10`).
-- The admin-v2 skill form renders editable fields for title, slug, description, status, default model slug, class name, and variant (`libs/modules/social/models/skill/frontend/component/src/lib/singlepage/admin-v2/form/ClientComponent.tsx:30`). It also exposes a `Relations` tab for `profilesToSkills` when the parent supplies that relation component (`libs/modules/social/models/skill/frontend/component/src/lib/singlepage/admin-v2/form/ClientComponent.tsx:58`).
+- `social.skill` defines the core fields used by provider skill bundles: `title`, unique `slug`, `description`, `status`, `defaultModelSlug`, `allowedModelSlugs`, `metadata`, and `adminTitle` (`libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:4`).
+- `metadata` is JSONB and is the existing storage location for provider sync references (`libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:22`).
+- `profiles-to-skills` is the profile/skill link relation. It stores `profileId`, `skillId`, `orderIndex`, and `variant`, with cascade delete foreign keys to profile and skill rows (`libs/modules/social/relations/profiles-to-skills/backend/repository/database/src/lib/schema.ts:10`).
+- The admin-v2 skill form exposes skill fields and has a `Relations` tab when relation components are provided, including profile links (`libs/modules/social/models/skill/frontend/component/src/lib/singlepage/admin-v2/form/ClientComponent.tsx:58`).
 
-### Provider Sync Endpoint
+### Provider Sync Already Exists
 
-- RBAC imports the provider sync handler in the subject singlepage controller (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:66`) and registers `POST /:id/social-module/profiles/:socialModuleProfileId/skills/provider-sync` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:504`).
-- The provider sync request body accepts `providers?: ("openai" | "anthropic")[]`, `skillIds?: string[]`, and `force?: boolean` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:17`).
-- Omitted or empty `providers` defaults to both supported providers; invalid provider entries throw a validation error (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:81`).
-- The handler verifies the profile exists, loads linked skill ids through `profilesToSkills.find(...)`, targets either requested ids or all linked ids, and rejects requested ids that are not linked to the profile (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:56`).
-- Archived linked skills are reported in `skipped` and are not uploaded (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:78`).
-- For each non-archived target skill/provider pair, the handler reuses a fresh reference unless `force` is true; otherwise it uploads the bundle, builds an `IProviderSkillReference`, writes it into metadata, and updates the skill row (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:220`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:251`).
+- The RBAC subject singlepage controller registers `POST /:id/social-module/profiles/:socialModuleProfileId/skills/provider-sync` behind the profile subject owner middleware (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:504`).
+- The sync request accepts `providers?: ("openai" | "anthropic")[]`, `skillIds?: string[]`, and `force?: boolean` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:17`).
+- The handler loads `profilesToSkills`, rejects requested skill ids that are not linked to the profile, skips archived skills, uploads provider bundles, and updates the skill `metadata` with provider refs (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:56`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:78`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:251`).
+- `buildProviderSkillBundle(...)` renders a minimal markdown `SKILL.md` from the skill slug/title/description and computes a SHA-256 `contentHash` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:44`).
+- Stored provider references include `provider`, `providerSkillId`, optional `version`, `name`, `sourceSkillId`, `sourceSkillSlug`, `contentHash`, and `syncedAt` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:17`).
+- Freshness validation checks the stored provider skill id, source skill id, and bundle hash (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:113`).
+- OpenAI sync posts a `files[]` markdown bundle to `https://api.openai.com/v1/skills` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:197`).
+- Anthropic sync posts the bundle to `https://api.anthropic.com/v1/skills` with Anthropic version and beta headers (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:234`).
 
-### Provider Skill Bundle And Metadata
-
-- `buildProviderSkillBundle(...)` derives `title`, normalized `name`, stringified instructions, normalized provider description, rendered `SKILL.md`, and SHA-256 `contentHash` from a `social.skill` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:44`).
-- The generated markdown uses YAML-like frontmatter fields `name` and `description`, followed by an H1 title and the skill instructions (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:53`).
-- Stored provider references contain `provider`, `providerSkillId`, optional `version`, `name`, `sourceSkillId`, `sourceSkillSlug`, `contentHash`, and `syncedAt` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:17`).
-- Freshness requires a stored `providerSkillId`, a matching rendered bundle hash, and the same source skill id (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:113`).
-- `putProviderSkillReference(...)` preserves existing metadata and merges the new reference at `metadata.providerSkills[provider]` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:144`).
-
-### Provider Upload Calls
-
-- OpenAI sync reads `OPEN_AI_API_KEY` from shared utils or falls back to `process.env.OPENAI_API_KEY`, appends a `${bundle.name}/SKILL.md` markdown blob as `files[]`, and posts to `https://api.openai.com/v1/skills` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:197`).
-- Anthropic sync reads `ANTHROPIC_API_KEY`, appends the same `files[]` style payload, and posts to `https://api.anthropic.com/v1/skills` with `anthropic-version` and beta headers for code execution, skills, and files (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:234`).
-- Upload response parsing accepts provider skill ids from `id`, `skill_id`, `skill.id`, or `data.id`, and derives version from `version`, `latest_version`, `skill.version`, or `"latest"` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:274`).
-
-### SDK Surface
-
-- The server SDK action posts JSON to `/api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/skills/provider-sync` and exposes typed request/result shapes for providers, skill ids, force, synced results, skipped results, and references (`libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:1`).
-- The client SDK wraps the server action in a React Query mutation, saturates headers, uses `clientHost`, reports errors through `sonner`, and logs successful mutations to `globalActionsStore` (`libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:1`).
-- Both client and server singlepage SDK barrels export the provider sync props, result, and action names (`libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/index.ts:233`, `libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/index.ts:266`).
-
-### Knowledge Generation And Provider Skills
+### Knowledge Generation And Local LLM Gateway Support Provider Skills
 
 - `KnowledgeGenerationProps` and `KnowledgeChatCompletionProps` both accept `providerSkills?: IKnowledgeProviderSkillReference[]` (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:28`, `libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:49`).
-- `LlmChatClient.generate(...)` forwards `props.providerSkills` to `complete(...)` after building the grounded prompt (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:74`).
-- `LlmChatClient.complete(...)` serializes `provider_skills` only when the provider skill array is non-empty (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:99`).
-- `buildGroundedPrompt(...)` keeps selected prompt skills in prompt text under `Selected skills`, while provider-native skill refs are not inserted into the prompt (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:170`).
-- `KnowledgeService.generate(...)` accepts `providerSkills` and passes them to the generation client alongside query, contexts, persona, prompt skill instructions, and chat history (`libs/modules/knowledge/backend/app/api/src/lib/service.ts:154`).
+- `LlmChatClient.complete(...)` serializes non-empty `providerSkills` as `provider_skills` in the local gateway request (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:99`).
+- The local gateway schema defines `ProviderSkillReference` and `ChatCompletionRequest.provider_skills` (`apps/llm/singlepage/schemas.py:11`, `apps/llm/singlepage/schemas.py:26`).
+- `GatewayService.chat_completion(...)` filters/validates provider skills for the selected model and passes them to the provider adapter (`apps/llm/singlepage/service.py:56`).
+- `_provider_skills_for_model(...)` rejects provider skills for non-OpenAI/non-Anthropic providers and rejects refs whose stored provider does not match the selected model provider (`apps/llm/singlepage/service.py:162`).
+- OpenAI provider skills become `{ type: "skill_reference", skill_id, version? }` (`apps/llm/singlepage/providers.py:41`).
+- Anthropic provider skills become `{ type: "custom", skill_id, version? }` (`apps/llm/singlepage/providers.py:53`).
+- The OpenAI provider uses `responses.create(...)` and mounts skills under a hosted shell tool environment (`apps/llm/singlepage/providers.py:270`).
+- The Anthropic provider uses beta Messages with `container.skills` and Skills/code execution/files beta headers (`apps/llm/singlepage/providers.py:184`).
 
-### LLM Gateway Provider-Native Mounts
+### Legacy `react-by/knowledge` Has Provider-Skill Helper Code But Is Not The Current Main Path
 
-- The gateway request schema defines `ProviderSkillReference` and `ChatCompletionRequest.provider_skills` (`apps/llm/singlepage/schemas.py:11`).
-- `GatewayService.chat_completion(...)` resolves a chat model, filters/validates provider skills with `_provider_skills_for_model(...)`, and passes them to the selected provider's `chat(...)` call (`apps/llm/singlepage/service.py:56`).
-- `_provider_skills_for_model(...)` rejects provider skills for non-OpenAI/non-Anthropic models and rejects refs whose `provider` does not match the selected model provider (`apps/llm/singlepage/service.py:162`).
-- OpenAI skill refs are converted to `{ type: "skill_reference", skill_id, version? }` (`apps/llm/singlepage/providers.py:41`).
-- Anthropic skill refs are converted to `{ type: "custom", skill_id, version? }` (`apps/llm/singlepage/providers.py:53`).
-- When OpenAI provider skills are present, `OpenAIProvider` uses `client.responses.create(...)` and adds a shell tool with `environment.type = "container_auto"` and `environment.skills = [...]` (`apps/llm/singlepage/providers.py:270`).
-- When Anthropic provider skills are present, `AnthropicProvider` uses `client.beta.messages.create(...)`, sends betas including `skills-2025-10-02`, passes `container.skills`, and enables code execution (`apps/llm/singlepage/providers.py:184`).
+- The legacy Knowledge reaction route is registered at `POST /:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:457`).
+- `react-by-knowledge.ts` contains `findProviderSkillsForProfile(...)`, which validates fresh provider refs and converts them to Knowledge provider-skill format (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:928`).
+- The active `resolveKnowledgeSkills(...)` path in that file returns selected skills as prompt instructions and returns `providerSkills: []` for selected-skill and no-skill branches (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:727`).
+- The current UI/agent direction after the OpenRouter chat controls work is to route Knowledge chats through `react-by/openrouter`, so the legacy endpoint is compatibility context rather than the primary implementation surface for this issue.
 
-### Legacy `react-by-knowledge` Skill Behavior
+### Current `react-by/openrouter` Skill Flow
 
-- The Knowledge reaction route remains registered at `POST /:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:457`).
-- `answerFromKnowledge(...)` reads `data.skillIds`, detects `@knowledge`, strips control mentions for selected skills/knowledge, loads profile-linked knowledge document ids, reads thread chat history, resolves the selected Knowledge model, resolves skills, and calls `KnowledgeService.generate(...)` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:627`).
-- `resolveKnowledgeSkills(...)` currently returns prompt skills when `requestedSkillIds` are present and returns `providerSkills: []`; with no requested skill ids it returns empty prompt and provider skill arrays (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:727`).
-- The same file contains `findProviderSkillsForProfile(...)`, which loads active profile skills, verifies OpenAI/Anthropic provider support, checks stale provider metadata, and converts references to Knowledge provider-skill format, but the current file references show it is not called by `resolveKnowledgeSkills(...)` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:928`).
-- Applied skill metadata can serialize both prompt-instruction and provider-native modes, depending on the arrays passed into `toAppliedKnowledgeSkillMetadata(...)` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:893`).
+- `IRequestData` for `react-by-openrouter` accepts `skillIds?: string[]` and `useKnowledgeSearch?: boolean` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:92`).
+- `IResolvedOpenRouterKnowledgeContext` contains `promptSkills` and `systemMessages`, but no `providerSkills` field (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:113`).
+- The handler normalizes `data.skillIds`, detects `@knowledge`, detects mentioned skill slugs, strips control mentions, and then loads the reply profile (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:884`).
+- `/learn` is validated to require `@knowledge` before generation proceeds (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:908`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1563`).
+- `resolveOpenRouterKnowledgeContext(...)` loads prompt skills linked to the reply profile by ids and mentioned slugs, then runs Knowledge search only when `@knowledge` was requested (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1573`).
+- `findPromptSkillsForProfile(...)` verifies selected skill ids are linked to the profile, filters archived skills, and returns active linked skill rows (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1731`).
+- `toSkillSystemPrompt(...)` formats selected skills into a system prompt that includes `@slug`, optional title, and the skill description (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1853`).
+- The generated OpenRouter context prepends the prompt skill and Knowledge system messages before calling `generateFinalOpenRouterReply(...)` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1319`).
+- Reply metadata records selected skills as `mode: "prompt-instruction"` under `metadata.knowledge.skills` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1417`).
 
-### Current OpenRouter Knowledge/Skill Path
+### Current OpenRouter Wrapper Surface
 
-- `react-by-openrouter` parses query params `model` and `reasoning`, with `reasoning` allowed values `auto`, `none`, `low`, `medium`, `high`, and `xhigh` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1510`).
-- During execution, the handler reads `data.skillIds`, detects `@knowledge`, detects mentioned skill slugs, and sanitizes the trigger query by removing control mentions when skills or knowledge are active (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:884`).
-- `resolveOpenRouterKnowledgeContext(...)` loads mentioned skill slugs, resolves selected prompt skills linked to the reply profile, resolves profile-linked document ids, runs Knowledge search only when knowledge was requested, and returns system messages for prompt skills and Knowledge fragments (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1573`).
-- `findPromptSkillsForProfile(...)` accepts selected skill ids and mentioned skill slugs, verifies selected ids are linked to the profile, filters archived skills, and returns active linked skill rows (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1731`).
-- `toSkillSystemPrompt(...)` formats selected skills as a system prompt containing each `@slug`, optional title, and `description` instructions (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1853`).
-- OpenRouter reply metadata stores `useKnowledgeSearch`, `documentIds`, citations/sources, `requestedSkillIds`, prompt skill metadata, and selected OpenRouter model/reasoning values (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1417`).
-- A repo search for `providerSkills` in `react-by-openrouter.ts` returns no matches, so current OpenRouter skill usage is prompt-instruction based rather than provider-native.
+- `IOpenRouterRequestMessage` is only `{ role, content }` (`libs/shared/third-parties/src/lib/open-router/index.ts:29`).
+- `requestCompletion(...)` posts to `/chat/completions` with `model`, `messages`, `stream`, `max_tokens`, optional `reasoning`, optional `response_format`, and optional `temperature` (`libs/shared/third-parties/src/lib/open-router/index.ts:231`).
+- `generate(...)` passes context/model/fallback/reasoning/format/temperature into `requestCompletion(...)`; it has no provider skills argument (`libs/shared/third-parties/src/lib/open-router/index.ts:547`).
+- The retry path after multimodal failures repeats the same request shape and also has no provider skills argument (`libs/shared/third-parties/src/lib/open-router/index.ts:586`).
+- `IOpenRouterModel.supported_parameters` includes standard OpenRouter parameters such as `"tools"`, `"reasoning"`, `"response_format"`, and `"web_search_options"`, but no `"skills"`, `"provider_skills"`, `"skill_reference"`, or `"container.skills"` parameter (`libs/shared/third-parties/src/lib/open-router/interface.ts:117`).
 
-### Tests
+### OpenRouter Documentation Checked
 
-- `provider-sync.spec.ts` covers fresh sync upload/storage, fresh metadata skip, stale hash detection, archived skill skip, and unlinked skill rejection (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.spec.ts:98`).
-- `generation/index.spec.ts` covers that Knowledge generation includes provider-native skill references as `provider_skills` outside the prompt body (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.spec.ts:87`).
+- OpenRouter Chat Completions is documented as an OpenAI-compatible shape with `models`, `route`, and `provider` OpenRouter-specific fields, plus standard fields such as `tools` and `tool_choice`: https://openrouter.ai/docs/api/reference/overview.
+- OpenRouter parameter docs list supported request parameters and note that OpenRouter may accept additional provider-specific parameters, but the documented common parameter set does not include Skills-specific fields: https://openrouter.ai/docs/api/reference/parameters.
+- OpenRouter Responses API docs show `tools`, `plugins`, `provider`, and `reasoning` fields for `/api/v1/responses`; the checked documentation has no `skills`, `skill_reference`, or Anthropic `container.skills` entries: https://openrouter.ai/docs/api/api-reference/responses/create-responses.
+- The codebase OpenRouter wrapper currently uses Chat Completions, not the OpenRouter Responses endpoint (`libs/shared/third-parties/src/lib/open-router/index.ts:240`).
+
+### Decision Note: OpenRouter Skills Are Text Or Tool Instructions
+
+For the next implementation plan, treat OpenRouter skill support as a prompt/tool feature:
+
+- `@skill` can select a linked active `social.skill`.
+- The selected skill can be injected into the OpenRouter request as explicit instructions in system/developer context.
+- Alternatively, OpenRouter `tools` can expose a local activation function that returns the selected skill's `SKILL.md`/description content when the model asks for it.
+- In both cases, the skill remains an SPS-managed instruction bundle. OpenRouter receives normal text messages or normal tool-call results.
+
+Do not plan an OpenRouter-only implementation that assumes native OpenAI `skill_reference` or Anthropic `container.skills` mounting. The checked OpenRouter docs and OpenAPI schema do not document those fields. A provider-native implementation must branch from the `react-by/openrouter` orchestration into the direct OpenAI/Anthropic gateway when the final model/provider supports native Skills.
+
+### External Implementation Options For Skills With OpenRouter
+
+The current OpenRouter docs and OpenAPI schema do not expose a first-class Agent Skills parameter. The practical implementation options are therefore different in how close they stay to provider-native Skills.
+
+#### Option A: Prompt catalog plus skill instruction injection through OpenRouter
+
+This is the most portable OpenRouter approach. The Agent Skills client implementation guide describes the generic pattern: discover `SKILL.md`, expose a catalog with `name` and `description`, and activate a skill by either letting the model read `SKILL.md` through a file-read tool or by returning the content from a dedicated activation tool. The same guide notes that when the model cannot read files directly, the client can inject skill content programmatically or provide an `activate_skill` tool.
+
+OpenRouter supports this because it supports ordinary messages and standard function/tool calling. OpenRouter's tool-calling docs describe a client-side loop: send tools, let the model request a tool call, execute the tool locally, then send tool results back. OpenRouter also documents the `tools` parameter using OpenAI's function calling request shape and transforms it for other providers.
+
+For SPS this maps to:
+
+- Keep `react-by/openrouter` as the generation path.
+- Convert linked `social.skill` records into a compact available-skills catalog.
+- When the user explicitly mentions `@skill`, inject the selected skill's instructions into the system/developer context or expose a local `activate_skill` tool.
+- Store metadata as prompt/tool-activated skill use, not provider-native skill use.
+
+This is compatible with OpenRouter, multi-provider, and current billing. It does not satisfy a strict requirement that OpenAI/Anthropic receive native Skills objects.
+
+#### Option B: OpenRouter function tool wrapper around skill activation
+
+This is a variation of Option A. Instead of injecting selected skill text immediately, register a function tool such as `activate_social_skill`. Its schema should constrain the name/id to linked active skills. When the model calls the tool, the server returns the selected `SKILL.md` body and optionally a resource listing.
+
+For SPS this maps to:
+
+- Use OpenRouter `tools` and a client-side tool loop.
+- Keep full skill bodies out of the initial context until the model needs them.
+- Preserve progressive disclosure more closely than always injecting full skill prompts.
+
+This is still not provider-native OpenAI/Anthropic Skills. It is a documented OpenRouter-compatible agent pattern.
+
+#### Option C: Direct provider-native branch inside `react-by/openrouter`
+
+This is the option that satisfies provider-native Skills using documented provider APIs. OpenAI documents Skills as versioned bundles with `SKILL.md`, uploaded through `/v1/skills`, and mounted in Responses API hosted shell through `tools[].environment.skills` with `skill_reference`. Anthropic documents Skills through beta Messages with `container.skills`, Skills beta headers, and code execution.
+
+For SPS this maps to:
+
+- Keep the public endpoint and UI flow as `react-by/openrouter`.
+- Resolve the selected final model/provider before generation.
+- If selected skills require provider-native mounting and the model provider is OpenAI or Anthropic, call the local LLM gateway/provider adapter that already supports `provider_skills`.
+- If the selected/manual/auto model is not OpenAI or Anthropic, fail clearly or require Auto to choose a compatible OpenAI/Anthropic model.
+- Record metadata showing the endpoint was `react-by/openrouter` but generation provider was direct OpenAI/Anthropic provider-native Skills, not OpenRouter prompt skills.
+
+This is the strongest match for the issue requirement. The tradeoff is that OpenRouter billing/routing cannot be treated as if the request was generated by OpenRouter; billing and metadata need an explicit separate path.
+
+#### Option D: OpenRouter provider-specific passthrough experiment
+
+OpenRouter docs say some provider-specific parameters are forwarded to providers, and the API overview says unsupported parameters may be ignored while the rest are forwarded. Provider routing also documents pass-through for certain Anthropic beta headers, but the supported Anthropic beta feature list checked here includes interleaved thinking and structured outputs, not Skills.
+
+The current OpenRouter OpenAPI schema includes OpenAI Responses-style tools, OpenRouter server tools, and an OpenRouter shell server tool, but a direct search of the schema found no `skill` field. The OpenRouter `openrouter:shell` schema has a managed container environment but does not document `environment.skills`.
+
+For SPS this means an implementation could experimentally try:
+
+- OpenAI-shaped Responses request with `tools[].environment.skills`.
+- Anthropic-shaped request with `container.skills` and Skills beta headers.
+- `provider.require_parameters=true` and provider restrictions to prevent accidental fallback.
+
+However, this should be treated as unverified and feature-flagged. It should not be the main plan unless a live API probe proves OpenRouter forwards the exact fields and headers without stripping or ignoring them.
+
+#### Option E: OpenRouter server shell without Skills
+
+OpenRouter's OpenAPI schema includes an `openrouter:shell` server tool with an OpenRouter-managed `container_auto` environment. This resembles the shell/container part of OpenAI Skills, but the checked schema does not expose mounted skills under that environment. It can execute shell commands, but it is not a documented Agent Skills mounting mechanism.
+
+For SPS this is useful only if a future plan decides to implement a custom skill runtime by writing generated skill files into an OpenRouter shell container and driving the model/tool loop manually. That would be a custom runtime, not provider-native Skills.
+
+### Test Coverage That Already Exists
+
+- `provider-sync.spec.ts` covers fresh sync upload/storage, stale hash detection, archived skill skip, and unlinked skill rejection (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.spec.ts:98`).
+- `generation/index.spec.ts` covers that Knowledge generation includes provider-native skill references as `provider_skills` outside the prompt (`libs/modules/knowledge/backend/app/api/src/lib/generation/index.spec.ts:87`).
 - `apps/llm/tests/test_gateway.py` covers matching-provider dispatch, unsupported provider rejection, OpenAI Responses shell skill mounts, and Anthropic beta `container.skills` mounts (`apps/llm/tests/test_gateway.py:216`, `apps/llm/tests/test_gateway.py:375`, `apps/llm/tests/test_gateway.py:446`).
-- `react-by-knowledge.spec.ts` covers `/learn`, `@knowledge` RAG, no-hidden-RAG normal generation, thread history, no silent linked-skill application, selected prompt skills, and combining `@knowledge` with selected prompt skills (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.spec.ts:311`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.spec.ts:698`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.spec.ts:745`).
+- `react-by-openrouter.spec.ts` currently covers OpenRouter thread context, reply validation, reasoning mapping, manual model selection, prompt skill resolution, and Knowledge search behavior (`libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts:196`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts:582`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts:607`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts:652`, `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.spec.ts:711`).
 
 ## Code References
 
-- `libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:4` - `social.skill` field set, including `description`, `status`, `allowedModelSlugs`, and `metadata`.
-- `libs/modules/social/relations/profiles-to-skills/backend/repository/database/src/lib/schema.ts:10` - profile/skill link relation.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:504` - provider-sync route registration.
+- `libs/modules/social/models/skill/backend/repository/database/src/lib/fields/singlepage.ts:4` - `social.skill` fields used as source data for skill bundles.
+- `libs/modules/social/relations/profiles-to-skills/backend/repository/database/src/lib/schema.ts:10` - profile-to-skill link relation.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:504` - RBAC provider-sync route registration.
 - `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:46` - provider sync handler entrypoint.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:44` - provider bundle creation.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:197` - OpenAI Skills upload.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:234` - Anthropic Skills upload.
-- `libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:1` - server SDK provider-sync action.
-- `libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/skill/provider-sync.ts:1` - client SDK provider-sync mutation.
-- `libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:19` - Knowledge provider skill reference shape.
-- `libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:99` - conditional `provider_skills` gateway payload serialization.
-- `apps/llm/singlepage/schemas.py:11` - LLM gateway provider skill request schema.
-- `apps/llm/singlepage/service.py:162` - gateway validation for supported/matching provider skills.
-- `apps/llm/singlepage/providers.py:41` - OpenAI/Anthropic provider skill payload helpers.
-- `apps/llm/singlepage/providers.py:184` - Anthropic beta Messages `container.skills` branch.
-- `apps/llm/singlepage/providers.py:270` - OpenAI Responses API branch with shell environment skills.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:727` - current legacy Knowledge skill resolution returns prompt skills and empty provider skill refs.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1573` - current OpenRouter knowledge/skill context resolver.
-- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1853` - OpenRouter prompt skill system message builder.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:44` - provider bundle rendering.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/skill/provider-skills.ts:113` - provider reference freshness check.
+- `libs/modules/knowledge/backend/app/api/src/lib/generation/index.ts:99` - Knowledge gateway payload includes `provider_skills`.
+- `apps/llm/singlepage/service.py:162` - local gateway provider skill validation.
+- `apps/llm/singlepage/providers.py:184` - Anthropic beta `container.skills` branch.
+- `apps/llm/singlepage/providers.py:270` - OpenAI Responses shell skills branch.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts:928` - legacy provider-skill resolver helper.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:92` - OpenRouter reaction request data includes `skillIds`.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:113` - OpenRouter resolved context contains prompt skills, not provider skills.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1573` - OpenRouter Knowledge/skill context resolution.
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts:1853` - prompt skill system prompt rendering.
+- `libs/shared/third-parties/src/lib/open-router/index.ts:231` - OpenRouter chat completion request body shape.
+- `libs/shared/third-parties/src/lib/open-router/index.ts:547` - OpenRouter generate API surface.
+- `libs/shared/third-parties/src/lib/open-router/interface.ts:117` - OpenRouter model supported parameter type list.
 
 ## Architecture Documentation
 
-The current implementation keeps provider-native sync state on the `social.skill` record rather than introducing a new table. `profiles-to-skills` remains the ownership/scope relation that determines which skills can be synced or selected for a replying profile.
+Profile ownership and skill scoping currently live in RBAC orchestration and Social relations. `profiles-to-skills` determines which skills a reply profile can use, while `social.skill.metadata.providerSkills` stores provider upload references without a schema migration.
 
-RBAC owns subject/profile-scoped orchestration. The provider-sync endpoint is mounted under the RBAC subject profile route and uses the same owner middleware pattern as the chat reaction endpoints. The sync handler itself loads profile-linked skill ids from the Social relation service before it touches provider APIs.
+The existing provider-native path is split across three layers:
 
-Provider sync and provider use are split. Sync uploads the generated `SKILL.md` and stores provider references in `social.skill.metadata.providerSkills`. Generation support is implemented lower in the Knowledge client and LLM gateway: when a non-empty provider skill reference array reaches `LlmChatClient.complete(...)`, it becomes `provider_skills` in the local gateway request, and the gateway maps it to OpenAI or Anthropic native request fields.
+1. RBAC provider sync uploads linked skills and stores provider refs.
+2. Knowledge generation accepts provider refs and forwards them to the local LLM gateway.
+3. The local LLM gateway maps refs into OpenAI/Anthropic native request fields.
 
-Knowledge chats currently have two related reply implementations. The legacy `react-by-knowledge` endpoint can call `KnowledgeService.generate(...)` and has interfaces for provider skill refs, but the active resolver currently supplies selected `@skill` behavior as prompt instructions. The current OpenRouter endpoint is the richer chat path for model/reasoning controls, `@knowledge`, `/learn`, and `@skill`; it also uses prompt-instruction skills and profile-scoped Knowledge fragments.
+The current OpenRouter path is separate. It builds an OpenRouter message context and passes it to `OpenRouter.generate(...)`. Selected skills enter that context as ordinary system text. OpenRouter billing is settled from the `IOpenRouterGenerationSuccess.billing` returned by the OpenRouter wrapper, and the assistant message metadata records the OpenRouter selected model and reasoning values.
 
-Knowledge itself remains the RAG engine. It accepts provider skills and prompt skill instructions as generation inputs, but profile/document scoping is still resolved by RBAC or Knowledge service callers before generation.
+Because the current OpenRouter wrapper has no provider-native skill field and the checked OpenRouter docs do not document OpenAI/Anthropic Skills mounting through OpenRouter, provider-native skill use in `react-by/openrouter` is not present in the current codebase. The current behavior is prompt instruction skill use.
 
 ## Historical Context
 
-- `thoughts/shared/tickets/singlepagestartup/ISSUE-193.md` created the provider-native Skills scope: reuse `social.skill` and `profiles-to-skills`, store references in `metadata.providerSkills`, add provider sync, extend the LLM gateway, and integrate with Knowledge chats.
-- `thoughts/shared/processes/singlepagestartup/ISSUE-193.md` records that implementation was done directly before normal research/plan workflow, and that this research is a reconciliation pass over live code.
-- `thoughts/shared/research/singlepagestartup/ISSUE-192.md` documented the predecessor state for profile-scoped Knowledge RAG in social chats: Knowledge had profile-scoped search/generation/indexing, while the social chat bridge was still being introduced.
-- `thoughts/shared/plans/singlepagestartup/ISSUE-192.md` planned `social.chat.variant="knowledge"`, `/learn`, RBAC Knowledge reaction, agent dispatch, and frontend command picker. Issue 193 builds on those profile-scoped Knowledge chat surfaces.
-- `thoughts/shared/processes/singlepagestartup/ISSUE-192.md` records completion of the baseline Knowledge/RAG social chat implementation and reusable learnings around `social.chat.variant` as the RAG routing switch.
+- `thoughts/shared/tickets/singlepagestartup/ISSUE-193.md` created the provider-native Skills scope and originally named `react-by/knowledge` in the implementation notes.
+- The current operator correction supersedes the earlier narrow endpoint note: provider-native skills must be researched and planned for `react-by/openrouter`, because that endpoint is now the primary Knowledge chat reply path.
+- `thoughts/shared/processes/singlepagestartup/ISSUE-193.md` records that implementation happened directly before normal research/plan workflow and that the first plan was later invalidated.
+- `thoughts/shared/research/singlepagestartup/ISSUE-192.md` documented the predecessor state for profile-scoped Knowledge RAG in social chats.
+- `thoughts/shared/plans/singlepagestartup/ISSUE-192.md` planned `social.chat.variant="knowledge"`, `/learn`, RBAC Knowledge reaction, agent dispatch, and frontend command picker.
 
 ## Related Research
 
-- `thoughts/shared/research/singlepagestartup/ISSUE-192.md` - Baseline profile-scoped Knowledge/RAG in social chats.
-- `thoughts/shared/plans/singlepagestartup/ISSUE-192.md` - Implementation plan for Knowledge chat variant, `/learn`, and RBAC reaction integration.
-- `thoughts/shared/processes/singlepagestartup/ISSUE-193.md` - Process log for this issue, including direct implementation history.
+- `thoughts/shared/research/singlepagestartup/ISSUE-192.md` - baseline profile-scoped Knowledge/RAG in social chats.
+- `thoughts/shared/processes/singlepagestartup/ISSUE-193.md` - process log for this issue, including the invalidated plan scope.
 
 ## Open Questions
 
-- The live provider-sync endpoint and LLM gateway support provider-native skill references, while current `react-by-knowledge` and `react-by-openrouter` selected-skill behavior uses prompt instructions. The codebase therefore contains both provider-native infrastructure and prompt-instruction chat behavior.
-- `findProviderSkillsForProfile(...)` exists in `react-by-knowledge.ts` and implements fresh provider-ref validation, but current live references show no call site in that file.
-- Current OpenRouter chat flow has no `providerSkills` references; OpenRouter selected skills are rendered into system prompts.
+- OpenRouter docs checked for this research do not document provider-native Skills fields. The codebase therefore has no verified OpenRouter-native request shape for OpenAI `skill_reference` or Anthropic `container.skills`.
+- If provider-native Skills are required while the chat entrypoint remains `react-by/openrouter`, implementation must decide how `react-by/openrouter` selects or routes OpenAI/Anthropic provider-native generation while preserving the existing model/reasoning controls, metadata, and billing semantics.
+- Auto model selection currently can produce any configured OpenRouter model candidate. Provider-native skills in the existing LLM gateway are limited to OpenAI and Anthropic providers, so auto-selection behavior with selected skills needs an explicit compatibility rule.
