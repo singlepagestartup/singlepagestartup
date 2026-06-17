@@ -12,6 +12,7 @@ import { Component as AgregatedInput } from "@sps/shared-frontend-components/sin
 import { internationalization } from "@sps/shared-configuration";
 import { useGetAdminFormState } from "@sps/shared-frontend-client-hooks";
 import { randomWordsGenerator } from "@sps/shared-utils";
+import { normalizeLocalizedPlainTextFields } from "../../plain-text";
 import {
   Tabs,
   TabsContent,
@@ -34,7 +35,7 @@ export function Component(props: IComponentPropsExtended) {
     defaultValues: {
       title: props.data?.title ?? {},
       subtitle: props.data?.subtitle ?? {},
-      description: props.data?.description ?? {},
+      description: normalizeLocalizedPlainTextFields(props.data?.description),
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
@@ -229,7 +230,8 @@ export function Component(props: IComponentPropsExtended) {
                   <FormField
                     key={language.code}
                     ui="shadcn"
-                    type="tiptap"
+                    type="textarea"
+                    rows={8}
                     name={`description.${language.code}`}
                     label={language.title}
                     form={form}

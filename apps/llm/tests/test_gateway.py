@@ -31,7 +31,6 @@ class FakeProvider:
         messages,
         temperature=None,
         max_tokens=None,
-        provider_skills=None,
     ):
         self.chat_calls.append(
             {
@@ -39,7 +38,6 @@ class FakeProvider:
                 "messages": messages,
                 "temperature": temperature,
                 "max_tokens": max_tokens,
-                "provider_skills": provider_skills,
             }
         )
         return ChatResult(
@@ -62,31 +60,12 @@ class TestMessage:
 
 
 class TestChatRequest:
-    def __init__(self, model, messages, provider_skills=None):
+    def __init__(self, model, messages):
         self.model = model
         self.messages = messages
         self.temperature = None
         self.max_tokens = None
         self.stream = False
-        self.provider_skills = provider_skills or []
-
-
-class TestProviderSkill:
-    def __init__(
-        self,
-        provider,
-        provider_skill_id,
-        version="latest",
-        content_hash="hash-1",
-        name="brief-writer",
-        source_skill_id="skill-1",
-    ):
-        self.provider = provider
-        self.provider_skill_id = provider_skill_id
-        self.version = version
-        self.content_hash = content_hash
-        self.name = name
-        self.source_skill_id = source_skill_id
 
 
 class TestEmbeddingRequest:
@@ -213,62 +192,6 @@ class GatewayServiceTest(unittest.TestCase):
 
         self.assertIn("qwen/qwen3-1-7b", context.exception.details["available_models"])
 
-    def test_forwards_provider_skills_to_matching_provider(self):
-        """
-        BDD Scenario: provider skill dispatch.
-
-        Given: a chat model is backed by OpenAI.
-        When: provider_skills contain OpenAI references.
-        Then: the selected provider receives those references.
-        """
-        service, _ = build_service()
-        fake_provider = FakeProvider()
-        service.providers["openai"] = fake_provider
-
-        service.chat_completion(
-            TestChatRequest(
-                model="openai/gpt-5-5",
-                messages=[TestMessage(role="user", content="hello")],
-                provider_skills=[
-                    TestProviderSkill(
-                        provider="openai",
-                        provider_skill_id="skill_openai_1",
-                    )
-                ],
-            )
-        )
-
-        self.assertEqual(
-            fake_provider.chat_calls[0]["provider_skills"][0].provider_skill_id,
-            "skill_openai_1",
-        )
-
-    def test_rejects_provider_skills_for_unsupported_provider(self):
-        """
-        BDD Scenario: unsupported provider skills.
-
-        Given: a chat model is backed by a local provider.
-        When: provider_skills are supplied.
-        Then: the gateway fails clearly instead of silently ignoring them.
-        """
-        service, _ = build_service()
-
-        with self.assertRaises(GatewayError) as context:
-            service.chat_completion(
-                TestChatRequest(
-                    model="qwen/qwen3-1-7b",
-                    messages=[TestMessage(role="user", content="hello")],
-                    provider_skills=[
-                        TestProviderSkill(
-                            provider="openai",
-                            provider_skill_id="skill_openai_1",
-                        )
-                    ],
-                )
-            )
-
-        self.assertEqual(context.exception.error_type, "unsupported_parameter")
-
 
 class OpenAIProviderTest(unittest.TestCase):
     def setUp(self):
@@ -372,13 +295,13 @@ class OpenAIProviderTest(unittest.TestCase):
         self.assertIn("OpenAI generation request failed with status 400", str(context.exception))
         self.assertEqual(context.exception.error_type, "provider_error")
 
-    def test_responses_api_mounts_provider_skills(self):
+    def test_responses_api_generates_chat_completion(self):
         """
-        BDD Scenario: OpenAI provider-native skills.
+        BDD Scenario: OpenAI Responses API chat completion.
 
-        Given: OpenAI provider receives synced skill references.
+        Given: OpenAI provider receives normal chat messages.
         When: the provider calls the Responses API.
-        Then: the shell tool environment contains skill_reference entries.
+        Then: it returns generated text without mounting provider skills.
         """
         calls = []
 
@@ -408,29 +331,10 @@ class OpenAIProviderTest(unittest.TestCase):
             local=False,
         )
 
-        result = provider.chat(
-            model,
-            [TestMessage(role="user", content="hello")],
-            provider_skills=[
-                TestProviderSkill(
-                    provider="openai",
-                    provider_skill_id="skill_openai_1",
-                    version="v1",
-                )
-            ],
-        )
+        result = provider.chat(model, [TestMessage(role="user", content="hello")])
 
         self.assertEqual(result.text, "answer")
-        self.assertEqual(
-            calls[0]["tools"][0]["environment"]["skills"],
-            [
-                {
-                    "type": "skill_reference",
-                    "skill_id": "skill_openai_1",
-                    "version": "v1",
-                }
-            ],
-        )
+        self.assertNotIn("tools", calls[0])
 
 
 class AnthropicProviderTest(unittest.TestCase):
@@ -443,17 +347,17 @@ class AnthropicProviderTest(unittest.TestCase):
         else:
             sys.modules.pop("anthropic", None)
 
-    def test_beta_messages_mount_provider_skills(self):
+    def test_messages_api_generates_chat_completion(self):
         """
-        BDD Scenario: Anthropic provider-native skills.
+        BDD Scenario: Anthropic Messages API chat completion.
 
-        Given: Anthropic provider receives synced custom skill references.
-        When: the provider calls beta Messages.
-        Then: container.skills includes custom skill references and code execution is enabled.
+        Given: Anthropic provider receives normal chat messages.
+        When: the provider calls Messages API.
+        Then: it returns generated text without mounting provider skills.
         """
         calls = []
 
-        class FakeBetaMessages:
+        class FakeMessages:
             def create(self, **kwargs):
                 calls.append(kwargs)
                 usage = types.SimpleNamespace(input_tokens=2, output_tokens=3)
@@ -462,13 +366,8 @@ class AnthropicProviderTest(unittest.TestCase):
                     usage=usage,
                 )
 
-        class FakeMessages:
-            def create(self, **kwargs):
-                raise AssertionError("plain Messages API should not be used")
-
         class FakeAnthropic:
             def __init__(self, api_key):
-                self.beta = types.SimpleNamespace(messages=FakeBetaMessages())
                 self.messages = FakeMessages()
 
         sys.modules["anthropic"] = types.SimpleNamespace(Anthropic=FakeAnthropic)
@@ -483,34 +382,11 @@ class AnthropicProviderTest(unittest.TestCase):
             local=False,
         )
 
-        result = provider.chat(
-            model,
-            [TestMessage(role="user", content="hello")],
-            provider_skills=[
-                TestProviderSkill(
-                    provider="anthropic",
-                    provider_skill_id="skill_anthropic_1",
-                    version="v1",
-                )
-            ],
-        )
+        result = provider.chat(model, [TestMessage(role="user", content="hello")])
 
         self.assertEqual(result.text, "answer")
-        self.assertIn("skills-2025-10-02", calls[0]["betas"])
-        self.assertEqual(
-            calls[0]["container"]["skills"],
-            [
-                {
-                    "type": "custom",
-                    "skill_id": "skill_anthropic_1",
-                    "version": "v1",
-                }
-            ],
-        )
-        self.assertEqual(
-            calls[0]["tools"],
-            [{"type": "code_execution_20250825", "name": "code_execution"}],
-        )
+        self.assertNotIn("container", calls[0])
+        self.assertNotIn("tools", calls[0])
 
 
 if __name__ == "__main__":

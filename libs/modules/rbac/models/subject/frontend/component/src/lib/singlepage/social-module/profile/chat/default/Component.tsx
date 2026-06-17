@@ -7,7 +7,6 @@ import { getLocalizedText } from "../title";
 
 export function Component(props: IComponentPropsExtended) {
   const createdAt = new Date(props.socialModuleChat.createdAt);
-  const shortId = props.socialModuleChat.id.slice(0, 8);
   const isActive =
     props.currentSocialModuleChatId === props.socialModuleChat.id;
   const chatTitle = getLocalizedText(
@@ -65,10 +64,10 @@ export function Component(props: IComponentPropsExtended) {
             ) {
               return (
                 <>
-                  <div className="flex min-w-0 items-center justify-between gap-2">
+                  <div className="flex w-full min-w-0 items-center justify-between gap-2">
                     <h2
                       className={cn(
-                        "truncate text-sm font-medium",
+                        "min-w-0 flex-1 truncate text-sm font-medium",
                         isActive ? "text-white" : "text-slate-900",
                       )}
                     >
@@ -121,10 +120,10 @@ export function Component(props: IComponentPropsExtended) {
 
                   return (
                     <>
-                      <div className="flex min-w-0 items-center justify-between gap-2">
+                      <div className="flex w-full min-w-0 items-center justify-between gap-2">
                         <h2
                           className={cn(
-                            "truncate text-sm font-medium",
+                            "min-w-0 flex-1 truncate text-sm font-medium",
                             isActive ? "text-white" : "text-slate-900",
                           )}
                         >
@@ -185,14 +184,6 @@ export function Component(props: IComponentPropsExtended) {
             );
           }}
         </SocialModuleProfilesToChats>
-      </div>
-      <div
-        className={cn(
-          "hidden shrink-0 text-[10px] sm:block",
-          isActive ? "text-white/40" : "text-slate-400",
-        )}
-      >
-        {shortId}
       </div>
     </Link>
   );

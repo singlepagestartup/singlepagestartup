@@ -1,9 +1,14 @@
-import { TipTap } from "@sps/shared-ui-shadcn";
 import { IComponentPropsExtended } from "./interface";
+import { getLocalizedPlainText } from "../../plain-text";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Component as ProfilesToWebsiteBuilderModuleWidgets } from "@sps/social/relations/profiles-to-website-builder-module-widgets/frontend/component";
 
 export function Component(props: IComponentPropsExtended) {
+  const description = getLocalizedPlainText(
+    props.data.description,
+    props.language,
+  );
+
   return (
     <div
       data-module="social"
@@ -27,8 +32,10 @@ export function Component(props: IComponentPropsExtended) {
             {props.data?.title[props.language]}
           </h1>
         ) : null}
-        {props.data.description?.[props.language] ? (
-          <TipTap value={props.data.description[props.language] ?? ""} />
+        {description ? (
+          <p className="max-w-3xl whitespace-pre-line text-base leading-7 text-gray-600">
+            {description}
+          </p>
         ) : null}
         <ProfilesToWebsiteBuilderModuleWidgets
           isServer={props.isServer}

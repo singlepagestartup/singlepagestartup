@@ -6,6 +6,8 @@ export const mockMessageDeleteMutate = jest.fn();
 export const mockMessageUpdateMutate = jest.fn();
 export const mockMessageReactByKnowledgeMutate = jest.fn();
 export const mockMessageReactByOpenrouterMutate = jest.fn();
+export const mockOpenRouterModelFavoriteUpdateMutate = jest.fn();
+export const mockProfileUpdateMutate = jest.fn();
 export const mockKnowledgeDocumentUpdateMutate = jest.fn();
 export const mockKnowledgeDocumentCreateMutate = jest.fn();
 export const mockKnowledgeReindexDocumentMutateAsync = jest.fn();
@@ -98,16 +100,29 @@ jest.mock("@sps/social/models/profile/frontend/component", () => {
         return (
           <aside>
             <h2>{props.data.adminTitle || props.data.slug}</h2>
-            <section>
-              <h3>Skills</h3>
+            {props.onProfileEdit ? (
               <button
                 type="button"
+                aria-label={`Edit profile ${props.data.slug}`}
                 onClick={() => {
-                  props.onSkillCreate?.(props.data);
+                  props.onProfileEdit?.(props.data);
                 }}
               >
-                New skill for {props.data.slug}
+                Edit profile
               </button>
+            ) : null}
+            <section>
+              <h3>Skills</h3>
+              {props.onSkillCreate ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    props.onSkillCreate?.(props.data);
+                  }}
+                >
+                  New skill for {props.data.slug}
+                </button>
+              ) : null}
               {props.skills?.map((skill: any) => {
                 return (
                   <button
@@ -299,6 +314,30 @@ jest.mock("@sps/social/relations/profiles-to-skills/sdk/client", () => {
 });
 
 jest.mock("@sps/rbac/models/subject/sdk/client", () => {
+  function getTargetProfileSkills(request: any) {
+    const targetProfileId = request?.targetSocialModuleProfileId;
+
+    if (!targetProfileId) {
+      return mockChatComponentState.socialSkills;
+    }
+
+    const relationSkillIds = mockChatComponentState.profileSkillRelations
+      .filter((relation) => {
+        return relation.profileId === targetProfileId;
+      })
+      .map((relation) => {
+        return relation.skillId;
+      });
+
+    if (relationSkillIds.length === 0) {
+      return mockChatComponentState.socialSkills;
+    }
+
+    return mockChatComponentState.socialSkills.filter((skill) => {
+      return relationSkillIds.includes(skill.id);
+    });
+  }
+
   return {
     api: {
       socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageFind: jest.fn(
@@ -375,6 +414,17 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
                       inputModalities: ["text"],
                       outputModalities: ["text"],
                       supportedParameters: ["reasoning"],
+                      supportsReasoning: true,
+                    },
+                    {
+                      id: "openai/gpt-basic",
+                      name: "GPT Basic",
+                      description: "Text model without reasoning",
+                      contextLength: 32000,
+                      inputModalities: ["text"],
+                      outputModalities: ["text"],
+                      supportedParameters: [],
+                      supportsReasoning: false,
                     },
                   ],
                 },
@@ -384,6 +434,90 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           };
         },
       ),
+      socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteFind:
+        jest.fn(() => {
+          return {
+            data: {
+              favoriteModelIds: [],
+            },
+            isLoading: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdOpenrouterModelFavoriteUpdate:
+        jest.fn(() => {
+          return {
+            mutate: mockOpenRouterModelFavoriteUpdateMutate,
+            isPending: false,
+            isSuccess: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate: jest.fn(
+        () => {
+          return {
+            mutate: mockProfileUpdateMutate,
+            isPending: false,
+          };
+        },
+      ),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind: jest.fn(
+        (request) => {
+          return {
+            data: getTargetProfileSkills(request),
+            isLoading: false,
+            refetch: jest.fn(),
+          };
+        },
+      ),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillCreate:
+        jest.fn(() => {
+          return {
+            mutateAsync: mockSocialSkillCreateMutateAsync,
+            isPending: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillUpdate:
+        jest.fn(() => {
+          return {
+            mutateAsync: mockSocialSkillUpdateMutateAsync,
+            isPending: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind:
+        jest.fn(() => {
+          return {
+            data: mockChatComponentState.knowledgeDocuments,
+            isLoading: false,
+            refetch: mockKnowledgeDocumentFindRefetch,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate:
+        jest.fn(() => {
+          return {
+            mutate: mockKnowledgeDocumentCreateMutate,
+            isPending: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdUpdate:
+        jest.fn(() => {
+          return {
+            mutate: mockKnowledgeDocumentUpdateMutate,
+            isPending: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdReindex:
+        jest.fn(() => {
+          return {
+            mutateAsync: mockKnowledgeReindexDocumentMutateAsync,
+            isPending: false,
+          };
+        }),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindByIdDelete:
+        jest.fn(() => {
+          return {
+            mutateAsync: mockKnowledgeDocumentDeleteMutateAsync,
+            isPending: false,
+          };
+        }),
       socialModuleProfileFindByIdKnowledgeDocumentFind: jest.fn(() => {
         return {
           data: mockChatComponentState.knowledgeDocuments,
@@ -540,6 +674,8 @@ export function resetChatComponentMocks() {
   mockMessageUpdateMutate.mockReset();
   mockMessageReactByKnowledgeMutate.mockReset();
   mockMessageReactByOpenrouterMutate.mockReset();
+  mockOpenRouterModelFavoriteUpdateMutate.mockReset();
+  mockProfileUpdateMutate.mockReset();
   mockKnowledgeDocumentUpdateMutate.mockReset();
   mockKnowledgeDocumentCreateMutate.mockReset();
   mockKnowledgeReindexDocumentMutateAsync.mockReset();
@@ -567,6 +703,17 @@ export function resetChatComponentMocks() {
   });
   mockKnowledgeDocumentDeleteMutateAsync.mockResolvedValue({
     id: "document-1",
+  });
+  mockProfileUpdateMutate.mockImplementation((payload, options) => {
+    options?.onSuccess?.({
+      id: payload.targetSocialModuleProfileId,
+      slug: "chat-gpt-1",
+      variant: "artificial-intelligence",
+      adminTitle: payload.data.adminTitle || "Chat GPT 1",
+      title: payload.data.title || {},
+      subtitle: payload.data.subtitle || {},
+      description: payload.data.description || {},
+    });
   });
   mockKnowledgeDocumentCreateMutate.mockImplementation((payload, options) => {
     options?.onSuccess?.({

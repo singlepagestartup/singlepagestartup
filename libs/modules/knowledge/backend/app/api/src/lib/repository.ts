@@ -604,6 +604,7 @@ export class KnowledgeRepository {
         c.text,
         c.chunk_index AS "chunkIndex",
         c.metadata,
+        sc.se_id AS "sourceId",
         s.title AS "sourceTitle",
         s.original_path AS "sourceOriginalPath",
         s.type AS "sourceType",
@@ -623,11 +624,87 @@ export class KnowledgeRepository {
         id: row.id,
         text: row.text,
         chunkIndex: Number(row.chunkIndex),
+        sourceId: row.sourceId,
         sourceTitle: row.sourceTitle,
         sourceOriginalPath: row.sourceOriginalPath,
         sourceType: row.sourceType,
         distance: Number(row.distance),
         similarity: Number(row.similarity),
+        retrievalRole: "seed",
+        metadata: row.metadata || {},
+      };
+    });
+  }
+
+  async findNeighborChunks(props: {
+    seeds: Array<{
+      sourceId: string;
+      chunkIndex: number;
+      distance?: number | null;
+      similarity?: number | null;
+    }>;
+    window: number;
+  }): Promise<KnowledgeSearchResult[]> {
+    const seeds = props.seeds.filter((seed) => {
+      return Boolean(seed.sourceId) && Number.isFinite(seed.chunkIndex);
+    });
+    const window = Math.max(0, Math.floor(Number(props.window || 0)));
+
+    if (!seeds.length || !window) {
+      return [];
+    }
+
+    const seedValues = sql.join(
+      seeds.map((seed) => {
+        return sql`(${seed.sourceId}::uuid, ${seed.chunkIndex}::int, ${
+          seed.distance ?? null
+        }::double precision, ${seed.similarity ?? null}::double precision)`;
+      }),
+      sql`, `,
+    );
+
+    const rows = await this.db.execute<Record<string, unknown>>(sql`
+      WITH seed_values(source_id, seed_chunk_index, seed_distance, seed_similarity) AS (
+        VALUES ${seedValues}
+      )
+      SELECT
+        c.id,
+        c.text,
+        c.chunk_index AS "chunkIndex",
+        c.metadata,
+        sc.se_id AS "sourceId",
+        s.title AS "sourceTitle",
+        s.original_path AS "sourceOriginalPath",
+        s.type AS "sourceType",
+        seed_values.seed_distance AS distance,
+        seed_values.seed_similarity AS similarity
+      FROM seed_values
+      INNER JOIN sps_ke_ss_to_cs_rae sc ON sc.se_id = seed_values.source_id
+      INNER JOIN sps_ke_chunk c ON c.id = sc.ck_id
+      LEFT JOIN sps_ke_source s ON s.id = sc.se_id
+      WHERE c.chunk_index BETWEEN seed_values.seed_chunk_index - ${window}
+        AND seed_values.seed_chunk_index + ${window}
+      ORDER BY seed_values.seed_distance NULLS LAST, sc.se_id, c.chunk_index
+    `);
+
+    return rows.map((row: any) => {
+      return {
+        id: row.id,
+        text: row.text,
+        chunkIndex: Number(row.chunkIndex),
+        sourceId: row.sourceId,
+        sourceTitle: row.sourceTitle,
+        sourceOriginalPath: row.sourceOriginalPath,
+        sourceType: row.sourceType,
+        distance:
+          row.distance === null || row.distance === undefined
+            ? null
+            : Number(row.distance),
+        similarity:
+          row.similarity === null || row.similarity === undefined
+            ? null
+            : Number(row.similarity),
+        retrievalRole: "neighbor",
         metadata: row.metadata || {},
       };
     });

@@ -166,8 +166,6 @@ function createService(
           title: "YouTube Description",
           description: "Return a YouTube description.",
           status: "active",
-          defaultModelSlug: "openai/gpt-5-5",
-          allowedModelSlugs: [],
         }),
       },
     },
@@ -295,6 +293,51 @@ describe("Given: rbac social skill transcript run", () => {
         }),
       }),
     );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the social profile description was stored as TipTap JSON.
+   * When: the profile skill run prompt is built.
+   * Then: the LLM receives plain profile description text instead of editor JSON.
+   */
+  it("When: profile description is legacy TipTap JSON Then: skill prompt uses plain text", async () => {
+    const service = createService();
+
+    service.socialModule.profile.findById.mockResolvedValue({
+      id: "profile-1",
+      slug: "signlepagestartup",
+      adminTitle: "signlepagestartup",
+      description: {
+        en: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Uses profile knowledge as business context.",
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    });
+
+    const handler = new Handler(service);
+
+    await handler.execute(createContext(), jest.fn());
+
+    const userMessage = mockLlmComplete.mock.calls[0][0].messages.find(
+      (message: { role: string }) => message.role === "user",
+    );
+
+    expect(userMessage.content).toContain(
+      "Uses profile knowledge as business context.",
+    );
+    expect(userMessage.content).not.toContain('"type":"doc"');
   });
 
   /**

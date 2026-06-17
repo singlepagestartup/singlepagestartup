@@ -14,3 +14,7 @@ export {
   Middleware as RequestSocialModuleThreadBelongsToChat,
   type IMiddlewareGeneric as IRequestSocialModuleThreadBelongsToChatMiddlewareGeneric,
 } from "./lib/request-social-module-thread-belongs-to-chat";
+export {
+  Middleware as RequestSubjectCanManageChatAgentProfile,
+  type IMiddlewareGeneric as IRequestSubjectCanManageChatAgentProfileMiddlewareGeneric,
+} from "./lib/request-subject-can-manage-chat-agent-profile";

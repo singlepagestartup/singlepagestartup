@@ -7,6 +7,7 @@ export const OPEN_ROUTER_PRECHARGE_TOKENS = 1;
 export type TOpenRouterBillingPurpose =
   | "classification"
   | "classification_repair"
+  | "knowledge_rerank"
   | "model_selection"
   | "model_selection_repair"
   | "generation";

@@ -7,6 +7,25 @@
  */
 
 import { KnowledgeService } from "./service";
+import type { KnowledgeSearchResult } from "./types";
+
+function createSearchResult(
+  props: Partial<KnowledgeSearchResult> & { id: string },
+): KnowledgeSearchResult {
+  return {
+    text: "Knowledge fragment",
+    chunkIndex: 0,
+    sourceId: "source-1",
+    sourceTitle: "Source",
+    sourceOriginalPath: "source.txt",
+    sourceType: "text",
+    distance: 0.1,
+    similarity: 0.9,
+    retrievalRole: "seed",
+    metadata: {},
+    ...props,
+  };
+}
 
 describe("knowledge service", () => {
   /**
@@ -52,8 +71,74 @@ describe("knowledge service", () => {
     await service.search({ query: "project documentation", topK: 100 });
 
     expect(searchChunks).toHaveBeenCalledWith(
-      expect.objectContaining({ topK: 20 }),
+      expect.objectContaining({ topK: 50 }),
     );
+  });
+
+  /**
+   * BDD Scenario: expanded neighbor search.
+   *
+   * Given: vector search finds seed chunks inside profile-scoped documents.
+   * When: search is requested with a neighbor window.
+   * Then: same-source neighboring chunks are loaded and duplicate chunk ids are removed.
+   */
+  it("expands seed chunks with same-source neighbors and removes duplicates", async () => {
+    const seed = createSearchResult({
+      id: "chunk-2",
+      chunkIndex: 2,
+      sourceId: "source-1",
+    });
+    const duplicateSeedNeighbor = createSearchResult({
+      id: "chunk-2",
+      chunkIndex: 2,
+      sourceId: "source-1",
+      retrievalRole: "neighbor",
+    });
+    const neighbor = createSearchResult({
+      id: "chunk-3",
+      chunkIndex: 3,
+      sourceId: "source-1",
+      retrievalRole: "neighbor",
+    });
+    const searchChunks = jest.fn().mockResolvedValue([seed]);
+    const findNeighborChunks = jest
+      .fn()
+      .mockResolvedValue([duplicateSeedNeighbor, neighbor]);
+    const service = new KnowledgeService({
+      repository: {
+        searchChunks,
+        findNeighborChunks,
+      } as any,
+      embeddingClient: {
+        embed: jest
+          .fn()
+          .mockResolvedValue(Array.from({ length: 768 }, () => 0)),
+      } as any,
+      generationClient: {} as any,
+      modelClient: {} as any,
+    });
+
+    await expect(
+      service.search({
+        query: "project documentation",
+        topK: 30,
+        neighborWindow: 1,
+      }),
+    ).resolves.toEqual([seed, neighbor]);
+    expect(searchChunks).toHaveBeenCalledWith(
+      expect.objectContaining({ topK: 30 }),
+    );
+    expect(findNeighborChunks).toHaveBeenCalledWith({
+      window: 1,
+      seeds: [
+        {
+          sourceId: "source-1",
+          chunkIndex: 2,
+          distance: 0.1,
+          similarity: 0.9,
+        },
+      ],
+    });
   });
 
   /**
@@ -158,17 +243,11 @@ describe("knowledge service", () => {
    */
   it("passes explicit document scope and generic persona to generation", async () => {
     const contexts = [
-      {
+      createSearchResult({
         id: "chunk-1",
         text: "Documentation context",
         chunkIndex: 0,
-        sourceTitle: "Source",
-        sourceOriginalPath: "source.txt",
-        sourceType: "text",
-        distance: 0.1,
-        similarity: 0.9,
-        metadata: {},
-      },
+      }),
     ];
     const searchChunks = jest.fn().mockResolvedValue(contexts);
     const generate = jest.fn().mockResolvedValue({ answer: "answer" });

@@ -13,6 +13,7 @@ export interface IOpenRouterChatModelOption {
   inputModalities: string[];
   outputModalities: string[];
   supportedParameters: string[];
+  supportsReasoning: boolean;
 }
 
 export interface IOpenRouterChatModelGroup {

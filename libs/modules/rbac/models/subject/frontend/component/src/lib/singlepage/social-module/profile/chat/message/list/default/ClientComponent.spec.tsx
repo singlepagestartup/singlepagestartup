@@ -17,7 +17,7 @@ import {
   mockKnowledgeReindexDocumentMutateAsync,
   mockMessageCreateMutate,
   mockMessageReactByOpenrouterMutate,
-  mockProfilesToSkillsCreateMutateAsync,
+  mockOpenRouterModelFavoriteUpdateMutate,
   mockSocialSkillCreateMutateAsync,
   mockSocialSkillUpdateMutateAsync,
   mockToastError,
@@ -434,11 +434,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     });
     mockMessageReactByOpenrouterMutate.mockImplementation(
       (_payload, options) => {
-        options?.onError?.(
-          new Error(
-            "Validation error. Social skill youtube-description is not synced to openai or has stale provider metadata.",
-          ),
-        );
+        options?.onError?.(new Error("OpenRouter generation failed."));
       },
     );
 
@@ -454,7 +450,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith(
-        "Validation error. Social skill youtube-description is not synced to openai or has stale provider metadata.",
+        "OpenRouter generation failed.",
       );
     });
   });
@@ -506,6 +502,101 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         }),
         expect.any(Object),
       );
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter live model metadata marks a selected model as not supporting reasoning.
+   * When: the user selects that concrete model after choosing a Thinking effort.
+   * Then: the Thinking control is hidden and the request falls back to reasoning auto.
+   */
+  it("When: selected model does not support reasoning Then: Thinking is hidden", async () => {
+    (window as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent =
+      MouseEvent;
+    mockMessageCreateMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.({
+        id: "message-1",
+        description: "What should we answer?",
+      });
+    });
+
+    renderComponent("knowledge");
+
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    fireEvent.click(await screen.findByText("High"));
+
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    fireEvent.click(await screen.findByText("GPT Basic"));
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText("Select OpenRouter thinking")).toBeNull();
+    });
+
+    const textarea = screen.getByPlaceholderText("Write a message...");
+    fireEvent.change(textarea, {
+      target: {
+        value: "What should we answer?",
+      },
+    });
+    fireEvent.click(screen.getByLabelText("Send message"));
+
+    await waitFor(() => {
+      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: {
+            model: "openai/gpt-basic",
+            reasoning: "auto",
+          },
+        }),
+        expect.any(Object),
+      );
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the OpenRouter model dropdown contains live model names and slugs.
+   * When: the user searches by slug and favorites the matching model.
+   * Then: the model remains selectable and the favorites mutation stores its id.
+   */
+  it("When: searching and favoriting a model Then: the model id is stored", async () => {
+    (window as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent =
+      MouseEvent;
+
+    renderComponent("knowledge");
+
+    fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter model"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    fireEvent.change(
+      await screen.findByPlaceholderText("Search model or slug..."),
+      {
+        target: {
+          value: "openai/gpt-5.2",
+        },
+      },
+    );
+
+    expect(await screen.findByText("GPT-5.2")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Add model to favorites"));
+
+    await waitFor(() => {
+      expect(mockOpenRouterModelFavoriteUpdateMutate).toHaveBeenCalledWith({
+        id: "subject-1",
+        socialModuleProfileId: "profile-1",
+        socialModuleChatId: "chat-1",
+        data: {
+          favoriteModelIds: ["openai/gpt-5.2"],
+        },
+      });
     });
   });
 
@@ -1006,11 +1097,17 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create skill" }));
 
     await waitFor(() => {
-      expect(mockSocialSkillCreateMutateAsync).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          slug: "support-tone",
+      expect(mockSocialSkillCreateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "subject-1",
+          socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          targetSocialModuleProfileId: "assistant-profile-1",
+          data: expect.objectContaining({
+            slug: "support-tone",
+          }),
         }),
-      });
+      );
     });
   });
 
@@ -1038,11 +1135,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         slug: "brief-writer",
         description: "Write a concise brief.",
         status: "active",
-        defaultModelSlug: "openai/gpt-5-5",
-        allowedModelSlugs: ["openai/gpt-5-5"],
-        metadata: {
-          source: "chat",
-        },
       },
     ];
 
@@ -1229,6 +1321,55 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
+   * Given: a chat-local AI profile is opened from a message but no assistant profile prop is available.
+   * When: the user opens that profile in the sidebar.
+   * Then: profile, skill, and knowledge edit controls are still shown for the AI profile.
+   */
+  it("When: opening an AI profile without assistant props Then: sidebar edit controls remain available", async () => {
+    mockChatComponentState.profiles = [
+      {
+        id: "assistant-profile-1",
+        slug: "chat-gpt-1",
+        variant: "artificial-intelligence",
+        adminTitle: "Chat GPT 1",
+      },
+    ];
+    mockChatComponentState.profileMessageRelations = [
+      {
+        id: "profile-message-1",
+        profileId: "assistant-profile-1",
+        messageId: "message-1",
+      },
+    ];
+
+    renderComponent("knowledge", {
+      artificialIntelligenceOpponentProfile: null,
+      knowledgeAssistantProfile: null,
+      socialModuleMessagesAndActionsQuery: [
+        {
+          type: "message",
+          data: {
+            id: "message-1",
+            description: "Hello",
+            createdAt: new Date("2026-01-01T10:00:00.000Z"),
+          },
+        },
+      ],
+    });
+
+    fireEvent.click(await screen.findByRole("button", { name: "chat-gpt-1" }));
+
+    expect(screen.getByLabelText("Edit profile chat-gpt-1")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "New skill for chat-gpt-1" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "New knowledge for chat-gpt-1" }),
+    ).toBeTruthy();
+  });
+
+  /**
+   * BDD Scenario
    * Given: a Knowledge chat profile sidebar shows a linked skill.
    * When: the user clicks the skill in that sidebar.
    * Then: the existing social.skill edit form opens for that skill.
@@ -1266,11 +1407,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         slug: "youtube-description",
         description: "Write YouTube descriptions.",
         status: "active",
-        defaultModelSlug: "openai/gpt-5-5",
-        allowedModelSlugs: ["openai/gpt-5-5"],
-        metadata: {
-          source: "chat",
-        },
       },
     ];
 
@@ -1355,19 +1491,19 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create skill" }));
 
     await waitFor(() => {
-      expect(mockSocialSkillCreateMutateAsync).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          title: "Sidebar Skill",
-          slug: "sidebar-skill",
-          description: "Created from the sidebar profile.",
+      expect(mockSocialSkillCreateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "subject-1",
+          socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          targetSocialModuleProfileId: "assistant-profile-1",
+          data: expect.objectContaining({
+            title: "Sidebar Skill",
+            slug: "sidebar-skill",
+            description: "Created from the sidebar profile.",
+          }),
         }),
-      });
-      expect(mockProfilesToSkillsCreateMutateAsync).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          profileId: "assistant-profile-1",
-          skillId: "skill-created-1",
-        }),
-      });
+      );
     });
   });
 
@@ -1433,10 +1569,8 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         {
           id: "subject-1",
           socialModuleProfileId: "profile-1",
-          params: {
-            targetSocialModuleProfileId: "assistant-profile-1",
-            socialModuleChatId: "chat-1",
-          },
+          socialModuleChatId: "chat-1",
+          targetSocialModuleProfileId: "assistant-profile-1",
           data: {
             title: "Sidebar Knowledge",
             description: "Created from the sidebar profile.",
@@ -1518,11 +1652,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       expect(mockKnowledgeDocumentDeleteMutateAsync).toHaveBeenCalledWith({
         id: "subject-1",
         socialModuleProfileId: "profile-1",
+        socialModuleChatId: "chat-1",
+        targetSocialModuleProfileId: "assistant-profile-1",
         knowledgeModuleDocumentId: "document-1",
-        params: {
-          targetSocialModuleProfileId: "assistant-profile-1",
-          socialModuleChatId: "chat-1",
-        },
       });
     });
 
@@ -1607,11 +1739,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         expect.objectContaining({
           id: "subject-1",
           socialModuleProfileId: "profile-1",
+          socialModuleChatId: "chat-1",
+          targetSocialModuleProfileId: "assistant-profile-1",
           knowledgeModuleDocumentId: "document-1",
-          params: {
-            targetSocialModuleProfileId: "assistant-profile-1",
-            socialModuleChatId: "chat-1",
-          },
           data: expect.objectContaining({
             title: "Policy updated",
           }),
@@ -1626,11 +1756,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       expect(mockKnowledgeReindexDocumentMutateAsync).toHaveBeenCalledWith({
         id: "subject-1",
         socialModuleProfileId: "profile-1",
+        socialModuleChatId: "chat-1",
+        targetSocialModuleProfileId: "assistant-profile-1",
         knowledgeModuleDocumentId: "document-1",
-        params: {
-          targetSocialModuleProfileId: "assistant-profile-1",
-          socialModuleChatId: "chat-1",
-        },
       });
     });
   });

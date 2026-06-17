@@ -15,6 +15,7 @@ export function Component(props: IComponentPropsExtended) {
       isKnowledgeDocumentsLoading={props.isKnowledgeDocumentsLoading}
       onKnowledgeDocumentCreate={props.onKnowledgeDocumentCreate}
       onKnowledgeDocumentSelect={props.onKnowledgeDocumentSelect}
+      onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}
       onClose={props.onClose}

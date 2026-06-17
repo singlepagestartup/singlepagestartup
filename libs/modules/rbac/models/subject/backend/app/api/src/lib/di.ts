@@ -11,6 +11,8 @@ export interface IUpdateService extends IReadService {
   update: (props: { id: string; data: any }) => Promise<any>;
 }
 
+export interface ICreateUpdateService extends ICreateService, IUpdateService {}
+
 export interface IExtendedReadService extends IReadService {
   findByIdExtended: (props: { id: string }) => Promise<any>;
 }
@@ -30,7 +32,7 @@ export interface IEcommerceOrderReadService extends IExtendedReadService {
 
 export interface ISocialModule {
   profile: IReadService;
-  skill: IUpdateService;
+  skill: ICreateUpdateService;
   chat: IReadService;
   thread: IReadService;
   message: IReadService;
@@ -38,7 +40,7 @@ export interface ISocialModule {
   attribute: IReadService;
   attributeKey: IReadService;
   profilesToChats: IReadService;
-  profilesToSkills: IReadService;
+  profilesToSkills: ICreateService;
   profilesToKnowledgeModuleDocuments: ICreateService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;

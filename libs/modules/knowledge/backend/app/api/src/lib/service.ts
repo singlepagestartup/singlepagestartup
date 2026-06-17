@@ -1,6 +1,6 @@
 import { getKnowledgeConfiguration } from "./configuration";
 import { LlmEmbeddingClient } from "./embedding";
-import { IKnowledgeProviderSkillReference, LlmChatClient } from "./generation";
+import { LlmChatClient } from "./generation";
 import { KnowledgeIndexer } from "./indexer";
 import { LlmModelClient } from "./models";
 import { KnowledgeRepository } from "./repository";
@@ -9,6 +9,7 @@ import {
   KnowledgeGenerationModelSlug,
   KnowledgeModelTask,
 } from "@sps/knowledge/sdk/model";
+import { KnowledgeSearchResult } from "./types";
 
 export interface IKnowledgePersona {
   title?: string | null;
@@ -120,6 +121,8 @@ export class KnowledgeService {
   async search(props: {
     query: string;
     topK?: number;
+    neighborWindow?: number;
+    finalTopK?: number;
     minSimilarity?: number;
     documentIds?: string[];
   }) {
@@ -139,16 +142,45 @@ export class KnowledgeService {
 
     const config = getKnowledgeConfiguration();
     const embedding = await this.embeddingClient.embed(query);
-
-    return this.repository.searchChunks({
+    const topK = Math.min(
+      Math.max(Number(props.topK || config.search.defaultTopK), 1),
+      50,
+    );
+    const neighborWindow = Math.min(
+      Math.max(Math.floor(Number(props.neighborWindow || 0)), 0),
+      5,
+    );
+    const seedChunks = await this.repository.searchChunks({
       embedding,
-      topK: Math.min(
-        Math.max(Number(props.topK || config.search.defaultTopK), 1),
-        20,
-      ),
+      topK,
       minSimilarity: props.minSimilarity,
       documentIds,
     });
+
+    const neighborChunks = neighborWindow
+      ? await this.repository.findNeighborChunks({
+          window: neighborWindow,
+          seeds: seedChunks
+            .filter((chunk) => Boolean(chunk.sourceId))
+            .map((chunk) => {
+              return {
+                sourceId: chunk.sourceId as string,
+                chunkIndex: chunk.chunkIndex,
+                distance: chunk.distance,
+                similarity: chunk.similarity,
+              };
+            }),
+        })
+      : [];
+    const results = this.dedupeSearchResults([
+      ...seedChunks,
+      ...neighborChunks,
+    ]);
+    const finalTopK = props.finalTopK
+      ? Math.min(Math.max(Number(props.finalTopK), 1), 50)
+      : null;
+
+    return finalTopK ? results.slice(0, finalTopK) : results;
   }
 
   async generate(props: {
@@ -168,7 +200,6 @@ export class KnowledgeService {
       role: "user" | "assistant";
       content: string;
     }[];
-    providerSkills?: IKnowledgeProviderSkillReference[];
     useKnowledgeSearch?: boolean;
   }) {
     const generationModelSlug =
@@ -190,7 +221,6 @@ export class KnowledgeService {
       persona: props.persona,
       skillInstructions: props.skillInstructions,
       chatHistory: props.chatHistory,
-      providerSkills: props.providerSkills,
     });
 
     return {
@@ -377,6 +407,19 @@ export class KnowledgeService {
           .filter((documentId) => Boolean(documentId)),
       ),
     );
+  }
+
+  private dedupeSearchResults(results: KnowledgeSearchResult[]) {
+    const seen = new Set<string>();
+
+    return results.filter((result) => {
+      if (seen.has(result.id)) {
+        return false;
+      }
+
+      seen.add(result.id);
+      return true;
+    });
   }
 
   private toTitle(value: string) {

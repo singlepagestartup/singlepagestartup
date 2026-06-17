@@ -38,9 +38,11 @@ import { toast } from "sonner";
 
 interface ComposerProps {
   assistantProfileId?: string;
+  canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
   isArtificialIntelligenceOpponent: boolean;
+  isOpenRouterModelFavoritesUpdating: boolean;
   isOpenRouterModelsLoading: boolean;
   isSkillOptionsLoading: boolean;
   language: string;
@@ -51,10 +53,12 @@ interface ComposerProps {
    */
   markShouldScrollToBottom: () => void;
   onKnowledgeReactionSuccess: () => void;
+  onOpenRouterModelFavoriteToggle: (modelId: string) => void;
   onOpenRouterModelChange: (value: string) => void;
   onOpenRouterReasoningChange: (value: OpenRouterReasoningValue) => void;
   onRemoveSelectedSkill: (skillId: string) => void;
   onSkillSelect: (skill: SocialSkill) => void;
+  openRouterFavoriteModelIds: string[];
   openRouterModelGroups: OpenRouterChatModelGroup[];
   openRouterModelId: string;
   openRouterModelLabel: string;
@@ -511,12 +515,16 @@ export function Composer(props: ComposerProps) {
 
   const openRouterControls = props.showOpenRouterControls ? (
     <OpenRouterControls
+      favoriteModelIds={props.openRouterFavoriteModelIds}
+      isUpdatingFavorites={props.isOpenRouterModelFavoritesUpdating}
       isLoadingModels={props.isOpenRouterModelsLoading}
       modelGroups={props.openRouterModelGroups}
+      onFavoriteToggle={props.onOpenRouterModelFavoriteToggle}
       selectedModelId={props.openRouterModelId}
       selectedModelLabel={props.openRouterModelLabel}
       selectedReasoning={props.openRouterReasoning}
       selectedReasoningLabel={props.openRouterReasoningLabel}
+      showReasoningControl={props.canSelectOpenRouterReasoning}
       onModelChange={props.onOpenRouterModelChange}
       onReasoningChange={props.onOpenRouterReasoningChange}
     />

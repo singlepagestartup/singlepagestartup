@@ -27,10 +27,7 @@ export interface KnowledgeDocumentDraft {
 }
 
 export interface SkillCreateValues {
-  allowedModelSlugs: string[];
-  defaultModelSlug: string;
   description: string;
-  metadata: Record<string, unknown>;
   slug: string;
   status: "draft" | "active" | "archived";
   title: string;
@@ -59,6 +56,7 @@ export interface OpenRouterChatModelOption {
   inputModalities: string[];
   outputModalities: string[];
   supportedParameters: string[];
+  supportsReasoning: boolean;
 }
 
 export interface OpenRouterChatModelGroup {

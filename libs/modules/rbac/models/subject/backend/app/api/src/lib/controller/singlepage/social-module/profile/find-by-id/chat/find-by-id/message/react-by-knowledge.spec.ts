@@ -549,7 +549,6 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
       expect.objectContaining({
         query: "What should we answer?",
         documentIds: [],
-        providerSkills: [],
         useKnowledgeSearch: false,
         persona: expect.objectContaining({
           title: "chat-gpt-1",
@@ -699,7 +698,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
    * BDD Scenario
    * Given: the replying AI profile has an active linked social skill.
    * When: a normal Knowledge question is answered without an explicit @skill.
-   * Then: generation does not apply linked skills as a hidden provider-native side effect.
+   * Then: generation does not apply linked skills as a hidden prompt side effect.
    */
   it("When: no skill ids are selected Then: it does not apply linked profile skills", async () => {
     const skill = {
@@ -725,7 +724,6 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     ).not.toHaveBeenCalled();
     expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
       expect.objectContaining({
-        providerSkills: [],
         skillInstructions: [],
       }),
     );
@@ -792,7 +790,6 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
     expect(mockKnowledgeGenerate).toHaveBeenCalledWith(
       expect.objectContaining({
         query: "What should we answer?",
-        providerSkills: [],
         skillInstructions: [
           {
             id: "skill-1",

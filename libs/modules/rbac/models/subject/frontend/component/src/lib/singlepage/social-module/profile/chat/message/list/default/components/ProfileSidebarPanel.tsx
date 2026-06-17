@@ -11,8 +11,9 @@ interface ProfileSidebarPanelProps {
   language: string;
   onKnowledgeDocumentCreate?: (profile: ISocialModuleProfile) => void;
   onKnowledgeDocumentSelect: (document: KnowledgeDocument) => void;
-  onSkillCreate: (profile: ISocialModuleProfile) => void;
-  onSkillEdit: (skill: SocialSkill) => void;
+  onProfileEdit?: (profile: ISocialModuleProfile) => void;
+  onSkillCreate?: (profile: ISocialModuleProfile) => void;
+  onSkillEdit?: (skill: SocialSkill) => void;
   onClose?: () => void;
   profile: ISocialModuleProfile | null;
   selectedKnowledgeDocument?: KnowledgeDocument | null;
@@ -37,6 +38,7 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       isKnowledgeDocumentsLoading={props.isKnowledgeDocumentsLoading}
       onKnowledgeDocumentSelect={props.onKnowledgeDocumentSelect}
       onKnowledgeDocumentCreate={props.onKnowledgeDocumentCreate}
+      onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}
       onClose={props.onClose}
