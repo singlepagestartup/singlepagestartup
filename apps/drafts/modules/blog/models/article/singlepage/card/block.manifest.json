@@ -1,0 +1,82 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.card",
+  "title": "Blog Article / Card",
+  "description": "Vertical blog card: cover image, category + date, title, truncated excerpt, author byline (via social.profile.byline), comment count, and read time.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "coverImage",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "date",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "excerpt",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "authorName",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "authorAvatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "authorSlug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "commentCount",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "readTime",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "home.default",
+  "title": "Home / Default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the current SinglePageStartup home page.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "website-builder.widget.content-hero",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-hero"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-feature-find-default"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-card",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-feature-find-card"
+    },
+    {
+      "id": "website-builder.widget.content-files-find-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-files-find-default"
+    },
+    {
+      "id": "website-builder.widget.content-buttons-array-find-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-buttons-array-find-default"
+    },
+    {
+      "id": "ecommerce.widget.product-find-tiers",
+      "path": "../../../../../ecommerce/models/widget/singlepage/product-find-tiers"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-testimotionals",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-feature-find-testimotionals"
+    },
+    {
+      "id": "blog.widget.article-find-default",
+      "path": "../../../../../blog/models/widget/singlepage/article-find-default"
+    },
+    {
+      "id": "website-builder.widget.content-cta",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-cta"
+    },
+    {
+      "id": "website-builder.widget.content-feature-find-row",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-feature-find-row"
+    },
+    {
+      "id": "website-builder.widget.footer-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "home-default",
+    "syncStatus": "created",
+    "metadataFile": "figma.json",
+    "nodeId": "716:300",
+    "variantNodeId": "716:3"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.password-reset-default",
+  "title": "RBAC Identity / Forgot Password Default",
+  "description": "Singlepage identity forgot password request and sent-state variant.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "password-reset-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "sent",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

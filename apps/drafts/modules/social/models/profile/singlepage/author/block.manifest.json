@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.author",
+  "title": "Social Profile / Author",
+  "description": "Author profile hero section with breadcrumb, background, and compact profile identity content.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "author"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "joinedYear",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "website",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "socials.twitter",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "socials.linkedin",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "socials.github",
+      "type": "link",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": "782:31",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "profile", "author"]
+}

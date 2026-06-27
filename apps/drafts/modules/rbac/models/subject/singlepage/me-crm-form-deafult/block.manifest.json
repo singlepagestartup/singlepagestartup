@@ -1,0 +1,83 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-crm-form-deafult",
+  "title": "RBAC Subject / me-crm-form-deafult",
+  "description": "Static CRM contact form for the current subject.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-crm-form-deafult"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "firstNameLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "firstNamePlaceholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "lastNameLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "lastNamePlaceholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "emailLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "emailPlaceholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "companyLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "companyPlaceholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "messageLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "messagePlaceholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "submitLabel",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": "859:27",
+    "syncStatus": "synced",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "crm", "form"]
+}

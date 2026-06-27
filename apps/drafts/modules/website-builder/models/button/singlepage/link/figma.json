@@ -1,0 +1,20 @@
+{
+  "componentName": "website-builder.button",
+  "pageName": "website-builder",
+  "nodeId": null,
+  "variantName": "link",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.button.link",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "website-builder/models/button/singlepage/link",
+    "sps.figma.component": "website-builder.button",
+    "sps.figma.variant": "link",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "button",
+    "sps.source.variant": "link",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/button/singlepage/link/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/button/singlepage/link/Component.stories.tsx"
+  }
+}

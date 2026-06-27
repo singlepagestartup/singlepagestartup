@@ -1,0 +1,22 @@
+{
+  "componentName": "blog.widget",
+  "pageName": "blog",
+  "nodeId": "735:17",
+  "variantNodeId": "785:19",
+  "variantName": "article-find-featured",
+  "metadata": {
+    "sps.drafts.blockId": "blog.widget.article-find-featured",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "blog/models/widget/singlepage/article-find-featured",
+    "sps.drafts.imports": "blog.article.featured",
+    "sps.figma.component": "blog.widget",
+    "sps.figma.variant": "article-find-featured",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "article-find-featured",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/blog/models/widget/singlepage/article-find-featured/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/blog/models/widget/singlepage/article-find-featured/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-feature-find-row",
+  "title": "Website Builder Widget / Content / Feature Find Row",
+  "description": "Singlepage draft block for a content features list row with contact actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "contacts",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": "700:24",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["content", "website-builder", "widget", "content-feature-find-row"]
+}

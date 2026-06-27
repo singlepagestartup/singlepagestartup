@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.feature.list-item-default",
+  "title": "Website Builder Feature / list-item-default",
+  "description": "Compact feature list item with an icon and label.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "list-item-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "icon",
+      "type": "media",
+      "required": false
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "nodeId": "871:5",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

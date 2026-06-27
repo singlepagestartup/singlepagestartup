@@ -1,0 +1,42 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:276",
+  "variantName": "footer-compact",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.footer-compact",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "footer",
+    "sps.drafts.groupVariant": "compact",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/footer-compact",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "footer-compact",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "footer-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/footer-compact/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/footer-compact/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "brand",
+      "type": "TEXT",
+      "slot": "brand"
+    },
+    {
+      "name": "links",
+      "type": "TEXT",
+      "slot": "links"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

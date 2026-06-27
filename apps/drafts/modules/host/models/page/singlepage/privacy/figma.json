@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "privacy",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.privacy",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/privacy",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "privacy",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "privacy",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/privacy/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/privacy/Component.stories.tsx"
+  }
+}

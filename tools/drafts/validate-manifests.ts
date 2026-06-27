@@ -4,9 +4,8 @@ import * as path from "node:path";
 import { discoverDrafts } from "./lib/discovery";
 
 const VALID_TYPES = new Set(["html", "react", "next"]);
-const VALID_STATUSES = new Set(["incoming", "approved", "archived"]);
-const REQUIRED = ["id", "title", "type", "entry", "status"];
-const COLLECTION_STATUSES = new Set(["incoming", "approved", "archived"]);
+const VALID_SCOPES = new Set(["singlepage", "startup"]);
+const REQUIRED = ["id", "title", "type", "entry", "scope"];
 
 type DraftRecord = Awaited<ReturnType<typeof discoverDrafts>>["drafts"][number];
 
@@ -58,9 +57,9 @@ async function validateManifest(draft: DraftRecord): Promise<{
     errors.push(`"entry" must be string`);
   }
 
-  if (json.status && !VALID_STATUSES.has(json.status)) {
+  if (json.scope && !VALID_SCOPES.has(json.scope)) {
     errors.push(
-      `"status" must be one of: ${Array.from(VALID_STATUSES).join(", ")}`,
+      `"scope" must be one of: ${Array.from(VALID_SCOPES).join(", ")}`,
     );
   }
 
@@ -76,12 +75,12 @@ async function validateManifest(draft: DraftRecord): Promise<{
   }
 
   if (
-    COLLECTION_STATUSES.has(draft.collection) &&
-    json.status &&
-    json.status !== draft.collection
+    VALID_SCOPES.has(draft.scope) &&
+    json.scope &&
+    json.scope !== draft.scope
   ) {
     errors.push(
-      `"status" (${json.status}) does not match folder collection (${draft.collection})`,
+      `"scope" (${json.scope}) does not match folder scope (${draft.scope})`,
     );
   }
 

@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.order.checkout-confirmation-default",
+  "title": "Ecommerce Order / Checkout Confirmation Default",
+  "description": "Singlepage order checkout confirmation model variant with success state, order details, next steps, and follow-up actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "checkout-confirmation-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "nextSteps",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "orderId",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

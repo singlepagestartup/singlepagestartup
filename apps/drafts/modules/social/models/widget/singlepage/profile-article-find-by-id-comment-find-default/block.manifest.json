@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.widget.profile-article-find-by-id-comment-find-default",
+  "title": "Social Widget / Profile Article Find By Id Comment Find Default",
+  "description": "Threaded list of profile article comments with replies.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "profile-article-find-by-id-comment-find-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "comments",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.widget",
+    "pageName": "social",
+    "nodeId": "855:1498",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantName": "cart-default",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.product.cart-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/product/singlepage/cart-default",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "cart-default",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "cart-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/cart-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/cart-default/Component.stories.tsx"
+  }
+}

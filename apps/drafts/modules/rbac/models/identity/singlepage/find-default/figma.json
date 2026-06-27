@@ -1,0 +1,10 @@
+{
+  "pageName": "rbac",
+  "componentName": "rbac.identity",
+  "variant": "find-default",
+  "module": "rbac",
+  "entity": "identity",
+  "layer": "singlepage",
+  "path": "apps/drafts/modules/rbac/models/identity/singlepage/find-default",
+  "status": "pending"
+}

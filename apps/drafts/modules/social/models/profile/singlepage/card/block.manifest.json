@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.card",
+  "title": "Social Profile / Card",
+  "description": "Sidebar author card with uppercase label, avatar, name and role. Root is an anchor.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "href",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

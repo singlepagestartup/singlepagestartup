@@ -1,0 +1,72 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.row",
+  "title": "Blog Article / Row",
+  "description": "Horizontal article card: cover image on the left, content on the right with category + tags, title, excerpt, and meta (date, read time, comments).",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "row"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "coverImage",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "tags",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "excerpt",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "date",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "readTime",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "commentCount",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

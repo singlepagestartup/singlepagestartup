@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.cover",
+  "title": "Blog Article / Cover",
+  "description": "Singlepage draft model part for the full-width article cover image with gradient overlay.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "coverImage",
+      "type": "image",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "article", "article-cover"]
+}

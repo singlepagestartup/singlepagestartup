@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.widget.article-find-by-id-tag-find-default",
+  "title": "Blog Widget / Article Find By Id Tag Find",
+  "description": "Card listing the tags of an article (find-by-id), composing blog tag chips.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-find-by-id-tag-find-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "tags",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

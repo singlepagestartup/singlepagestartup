@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-files-find-default",
+  "title": "Website Builder Widget / Content / Files Find Default",
+  "description": "Singlepage draft block for the current home page content files list section.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "paragraphs",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "media",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "features",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": "700:24",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "home",
+    "landing",
+    "website-builder",
+    "widget",
+    "content",
+    "content-files-find-default"
+  ]
+}

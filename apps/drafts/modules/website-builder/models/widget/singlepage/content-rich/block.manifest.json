@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-rich",
+  "title": "Website Builder Widget / Content / Rich",
+  "description": "Rich-text HTML body renderer with shared prose styling (content family).",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-rich"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "content",
+      "type": "richText",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

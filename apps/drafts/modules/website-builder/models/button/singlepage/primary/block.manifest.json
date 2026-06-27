@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.button.primary",
+  "title": "Website Builder Button / Primary",
+  "description": "Primary action button used by buttons-array compositions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "button",
+    "variant": "primary"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "href",
+      "type": "link",
+      "required": true
+    },
+    {
+      "name": "icon",
+      "type": "media",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.button",
+    "pageName": "website-builder",
+    "nodeId": "895:8",
+    "variantNodeId": "895:2",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["button", "website-builder", "primary"]
+}

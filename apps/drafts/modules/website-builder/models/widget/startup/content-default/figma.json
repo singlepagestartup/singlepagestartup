@@ -1,0 +1,55 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "variantName": "content-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-default",
+    "sps.drafts.layer": "startup",
+    "sps.drafts.syncKey": "website-builder/models/widget/startup/content-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/startup/content-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/startup/content-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "Counter Label",
+      "type": "TEXT",
+      "slot": "counterLabel"
+    },
+    {
+      "name": "Counter Value",
+      "type": "TEXT",
+      "slot": "counterValue"
+    },
+    {
+      "name": "Eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "Title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "Description",
+      "type": "TEXT",
+      "slot": "description"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary",
+    "color/secondary",
+    "color/accent"
+  ]
+}

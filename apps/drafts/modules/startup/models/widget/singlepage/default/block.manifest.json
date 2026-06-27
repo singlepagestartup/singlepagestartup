@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "startup.widget.default",
+  "title": "Startup Widget / Default",
+  "description": "Singlepage-layer draft block for the startup module widget surface.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "startup",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "default"
+  },
+  "files": {
+    "component": "StartupWidgetDefault.tsx",
+    "story": "StartupWidgetDefault.draft-story.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": true
+    },
+    {
+      "name": "metrics",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "Startup / Widget / Default",
+    "pageName": "Blocks / Startup",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["startup", "widget"]
+}

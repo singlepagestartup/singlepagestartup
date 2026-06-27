@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.featured",
+  "title": "Blog Article / Featured",
+  "description": "Featured article card: cover image, featured/category badges, title, excerpt, author byline, date, and read time.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "featured"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "excerpt",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "coverImage",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "authorName",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "authorSlug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "authorAvatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "date",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "readTime",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": "785:18",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "article", "featured"]
+}

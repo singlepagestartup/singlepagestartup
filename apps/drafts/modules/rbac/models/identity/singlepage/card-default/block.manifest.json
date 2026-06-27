@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.card-default",
+  "title": "RBAC Identity / Card Default",
+  "description": "Singlepage identity card variant with provider metadata and account actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "card-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "identity",
+      "type": "object",
+      "required": true
+    },
+    {
+      "name": "relation",
+      "type": "object",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

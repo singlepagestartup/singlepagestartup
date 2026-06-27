@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.gallery",
+  "title": "Ecommerce Product / Gallery",
+  "description": "Singlepage product model variant for a static gallery with a main image and thumbnail strip.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "images",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

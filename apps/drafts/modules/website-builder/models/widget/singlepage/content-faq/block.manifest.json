@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-faq",
+  "title": "Website Builder Widget / Content / FAQ",
+  "description": "Singlepage draft block for a 2-column FAQ section with left copy and right native details/summary accordion.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "faq",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

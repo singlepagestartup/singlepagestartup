@@ -1,0 +1,50 @@
+{
+  "componentName": "blog.widget",
+  "pageName": "blog",
+  "nodeId": "735:17",
+  "variantNodeId": "735:3",
+  "variantName": "article-find-default",
+  "metadata": {
+    "sps.drafts.blockId": "blog.widget.article-find-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "blog/models/widget/singlepage/article-find-default",
+    "sps.figma.component": "blog.widget",
+    "sps.figma.variant": "article-find-default",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "article-find-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/blog/models/widget/singlepage/article-find-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/blog/models/widget/singlepage/article-find-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "posts",
+      "type": "TEXT",
+      "slot": "posts"
+    },
+    {
+      "name": "action",
+      "type": "TEXT",
+      "slot": "action"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

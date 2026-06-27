@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.widget.article-overview-default",
+  "title": "Blog Widget / Article Overview Default",
+  "description": "Singlepage widget route wrapper that delegates article rendering to blog.article.overview-default.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "widget", "article-overview-default"]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.article-find-by-id-comment-form-default",
+  "title": "Social Profile / Article Find By Id Comment Form Default",
+  "description": "Article comment composer form for a social profile context.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "article-find-by-id-comment-form-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "placeholder",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "submitLabel",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": "782:31",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "overview-default",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.product.overview-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/product/singlepage/overview-default",
+    "sps.drafts.imports": "ecommerce.product.overview-purchase ecommerce.product.gallery ecommerce.product.card-related ecommerce.product.overview-cta website-builder.widget.content-feature-find-grid website-builder.widget.content-testimonials website-builder.widget.content-faq",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "overview-default",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "overview-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/overview-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/overview-default/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.order.summary-default",
+  "title": "Ecommerce Order / Summary Default",
+  "description": "Singlepage order summary model variant with checkout items, totals, and trust badges.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "summary-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "items",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "compact",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

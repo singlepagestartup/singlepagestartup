@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "nodeId": "782:31",
+  "variantNodeId": "855:1474",
+  "variantName": "article-find-by-id-comment-form-default",
+  "metadata": {
+    "sps.drafts.blockId": "social.profile.article-find-by-id-comment-form-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "social/models/profile/singlepage/article-find-by-id-comment-form-default",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "article-find-by-id-comment-form-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "article-find-by-id-comment-form-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx"
+  }
+}

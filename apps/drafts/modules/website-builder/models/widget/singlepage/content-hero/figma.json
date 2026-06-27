@@ -1,0 +1,63 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:28",
+  "variantName": "content-hero",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-hero",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "hero",
+    "sps.drafts.imports": "website-builder.feature.badge-default,website-builder.buttons-array.default,website-builder.feature.status-default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-hero",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-hero",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-hero/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-hero/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "feature",
+      "type": "TEXT",
+      "slot": "feature"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "description",
+      "type": "TEXT",
+      "slot": "description"
+    },
+    {
+      "name": "buttons",
+      "type": "TEXT",
+      "slot": "buttons"
+    },
+    {
+      "name": "media",
+      "type": "INSTANCE_SWAP",
+      "slot": "media"
+    },
+    {
+      "name": "statusFeature",
+      "type": "TEXT",
+      "slot": "statusFeature"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

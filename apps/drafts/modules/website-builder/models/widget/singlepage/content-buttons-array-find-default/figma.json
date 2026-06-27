@@ -1,0 +1,42 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:150",
+  "variantName": "content-buttons-array-find-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-buttons-array-find-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "buttons-array-find-default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-buttons-array-find-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-buttons-array-find-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-buttons-array-find-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-buttons-array-find-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "label",
+      "type": "TEXT",
+      "slot": "label"
+    },
+    {
+      "name": "integrations",
+      "type": "TEXT",
+      "slot": "integrations"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

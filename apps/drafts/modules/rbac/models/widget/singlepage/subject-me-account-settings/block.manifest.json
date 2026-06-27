@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.widget.subject-me-account-settings",
+  "title": "RBAC Widget / subject-me-account-settings",
+  "description": "Account settings widget for the current RBAC subject, assembled from subject model variants.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "subject-me-account-settings"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "subject",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "user",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "identities",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "identityRelations",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "profiles",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.widget",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "widget", "subject-me-account-settings"]
+}

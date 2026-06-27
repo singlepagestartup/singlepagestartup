@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.detail",
+  "title": "Blog Article / Detail",
+  "description": "Singlepage draft model part for the article 2-col detail layout: left (content, comments), right (products, author, tags, related).",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "content",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "tags",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "pinnedProducts",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "relatedArticles",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "article", "article-detail"]
+}

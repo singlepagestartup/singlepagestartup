@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.widget.article-find-default",
+  "title": "Widget / Article Find Default",
+  "description": "Singlepage draft block for a blog article find preview section.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-find-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "posts",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "action",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "nodeId": "735:17",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "widget", "article-find-default"]
+}

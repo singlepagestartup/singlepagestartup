@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.byline",
+  "title": "Social Profile / Byline",
+  "description": "Small inline avatar + name chip for blog featured cards and article grid cards.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "byline"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "href",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "size",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

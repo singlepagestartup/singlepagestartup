@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.author-find-by-id-overview-default",
+  "title": "Social Profile / Author Find By Id Overview Default",
+  "description": "Singlepage draft profile overview for an author route: profile header, author stats, authored article rows, biography, skills, category breakdown, and related authors.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "profile",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "profile.name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "bio",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "skills",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "articles",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "profile", "author", "find-by-id", "overview-default"]
+}

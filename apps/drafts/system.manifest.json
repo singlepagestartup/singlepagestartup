@@ -1,0 +1,24 @@
+{
+  "$schema": "./system.manifest.schema.json",
+  "id": "sps-drafts",
+  "title": "SPS Draft System",
+  "version": "0.1.0",
+  "state": "active",
+  "description": "Singlepage draft system for fast SPS prototypes and Figma mirroring.",
+  "runtime": {
+    "css": "runtime/styles.css",
+    "js": "runtime/runtime.js"
+  },
+  "foundations": {
+    "tokens": "foundations/tokens.json",
+    "figmaVariables": "foundations/figma.variables.json"
+  },
+  "inventory": {
+    "modules": "inventory/modules.generated.json"
+  },
+  "storybook": {
+    "configDir": ".storybook"
+  },
+  "modulesRoot": "modules",
+  "pagesRoot": "modules/host/models/page"
+}

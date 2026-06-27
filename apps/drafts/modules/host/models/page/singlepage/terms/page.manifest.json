@@ -1,0 +1,30 @@
+{
+  "id": "terms",
+  "title": "Terms",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the terms of service route.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "terms",
+    "syncStatus": "pending",
+    "metadataFile": "figma.json",
+    "nodeId": null,
+    "variantNodeId": null
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-information",
+  "title": "RBAC Subject / me-information",
+  "description": "Current-subject account metadata card.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-information"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "subject",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "me-information"]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.profile.find-row",
+  "title": "Social Profile / Find Row",
+  "description": "Other authors sidebar row: avatar, name, role, meta text, and trailing ArrowUpRight icon.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "profile",
+    "variant": "find-row"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "href",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "meta",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "social.profile",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

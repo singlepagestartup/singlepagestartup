@@ -1,0 +1,34 @@
+{
+  "id": "social-profile-find-by-id-overview-author",
+  "title": "Social Profile Find By Id Overview Author",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for a social profile author overview page.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "social.profile.author-find-by-id-overview-default",
+      "path": "../../../../../social/models/profile/singlepage/author-find-by-id-overview-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "social-profile-find-by-id-overview-author",
+    "syncStatus": "created",
+    "metadataFile": "figma.json",
+    "nodeId": "716:300",
+    "variantNodeId": "844:293"
+  }
+}

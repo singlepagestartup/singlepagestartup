@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-social-module-profile-find-information",
+  "title": "RBAC Subject / me-social-module-profile-find-information",
+  "description": "Current-subject social profile relation list.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-social-module-profile-find-information"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "profiles",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "social", "profile", "find", "information"]
+}

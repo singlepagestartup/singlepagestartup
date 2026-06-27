@@ -1,0 +1,20 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "me-social-module-profile-find-information",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.subject.me-social-module-profile-find-information",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/subject/singlepage/me-social-module-profile-find-information",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-social-module-profile-find-information",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-social-module-profile-find-information",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
+  }
+}

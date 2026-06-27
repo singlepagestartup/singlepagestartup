@@ -1,0 +1,13 @@
+{
+  "name": "@sps/drafts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Draft module system for SPS prototypes, Storybook preview, and Figma sync.",
+  "scripts": {
+    "storybook": "cd ../.. && storybook dev -c apps/drafts/.storybook -p 4320 -h 127.0.0.1",
+    "storybook:build": "cd ../.. && storybook build -c apps/drafts/.storybook -o dist/drafts/storybook",
+    "inventory": "cd ../.. && bun tools/drafts/design-system/inventory.ts",
+    "validate": "cd ../.. && bun tools/drafts/design-system/validate.ts"
+  }
+}

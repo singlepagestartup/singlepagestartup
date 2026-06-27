@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "716:3",
+  "variantName": "home-default",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.home-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/home-default",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "home-default",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "home-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/home-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/home-default/Component.stories.tsx"
+  }
+}

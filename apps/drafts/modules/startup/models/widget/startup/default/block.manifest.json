@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "startup.widget.default",
+  "title": "Startup Widget / Default / Startup Override",
+  "description": "Startup-layer override for the startup module widget block.",
+  "layer": "startup",
+  "state": "draft",
+  "source": {
+    "module": "startup",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "default"
+  },
+  "files": {
+    "component": "StartupWidgetStartup.tsx",
+    "story": "StartupWidgetStartup.draft-story.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "Startup / Widget / Default / Startup",
+    "pageName": "Blocks / Startup",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["startup", "widget"]
+}

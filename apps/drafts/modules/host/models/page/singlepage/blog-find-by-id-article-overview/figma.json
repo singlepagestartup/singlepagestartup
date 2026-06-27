@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "847:584",
+  "variantName": "blog-find-by-id-article-overview",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.blog-find-by-id-article-overview",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/blog-find-by-id-article-overview",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "blog-find-by-id-article-overview",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "blog-find-by-id-article-overview",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/blog-find-by-id-article-overview/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/blog-find-by-id-article-overview/Component.stories.tsx"
+  }
+}

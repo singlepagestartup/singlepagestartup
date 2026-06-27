@@ -1,0 +1,20 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": null,
+  "variantName": "content-faq",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-faq",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-faq",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-faq",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-faq/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-faq/Component.stories.tsx"
+  }
+}

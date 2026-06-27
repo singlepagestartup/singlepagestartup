@@ -1,0 +1,20 @@
+{
+  "componentName": "ecommerce.order",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantName": "checkout-payment-default",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.order.checkout-payment-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/order/singlepage/checkout-payment-default",
+    "sps.figma.component": "ecommerce.order",
+    "sps.figma.variant": "checkout-payment-default",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "order",
+    "sps.source.variant": "checkout-payment-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/order/singlepage/checkout-payment-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/order/singlepage/checkout-payment-default/Component.stories.tsx"
+  }
+}

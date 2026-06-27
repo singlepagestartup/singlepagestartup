@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://singlepagestartup.local/schemas/drafts/block.schema.json",
+  "title": "SPS Draft Block Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "layer",
+    "state",
+    "source",
+    "files",
+    "contentSlots",
+    "figma"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "layer": {
+      "type": "string",
+      "enum": ["singlepage", "startup"]
+    },
+    "state": {
+      "type": "string",
+      "enum": ["scaffold", "draft", "ready"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "entityType", "entity", "variant"],
+      "properties": {
+        "module": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entityType": {
+          "type": "string",
+          "enum": ["model", "relation", "module"]
+        },
+        "entity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variant": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component", "story"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "minLength": 1
+        },
+        "story": {
+          "type": "string",
+          "minLength": 1
+        },
+        "html": {
+          "type": "string",
+          "minLength": 1
+        },
+        "css": {
+          "type": "string",
+          "minLength": 1
+        },
+        "js": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "contentSlots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "richText",
+              "image",
+              "link",
+              "list",
+              "media",
+              "boolean"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "figma": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["componentName", "syncStatus", "metadataFile"],
+      "properties": {
+        "componentName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pageName": {
+          "type": "string"
+        },
+        "nodeId": {
+          "type": ["string", "null"]
+        },
+        "syncStatus": {
+          "type": "string",
+          "enum": ["not-created", "created", "needs-update", "verified"]
+        },
+        "metadataFile": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

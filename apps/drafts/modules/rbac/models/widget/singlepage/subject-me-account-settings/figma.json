@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.widget",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "subject-me-account-settings",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.widget.subject-me-account-settings",
+    "sps.drafts.imports": "rbac.subject.me-information rbac.subject.me-identity-find-information rbac.subject.me-social-module-profile-find-information rbac.subject.me-profile-information rbac.subject.me-delete",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/widget/singlepage/subject-me-account-settings",
+    "sps.figma.component": "rbac.widget",
+    "sps.figma.variant": "subject-me-account-settings",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "subject-me-account-settings",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.stories.tsx"
+  }
+}

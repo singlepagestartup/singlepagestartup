@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.order.checkout-payment-default",
+  "title": "Ecommerce Order / Checkout Payment Default",
+  "description": "Singlepage order checkout payment model variant with selectable payment methods and payment details.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "checkout-payment-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "initialMethod",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "agreementLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "actionLabel",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

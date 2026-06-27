@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.login-default",
+  "title": "RBAC Identity / Login Default",
+  "description": "Singlepage identity login form variant with credential and external provider actions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "login-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "providers",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "me-delete",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.subject.me-delete",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/subject/singlepage/me-delete",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-delete",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-delete",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-delete/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-delete/Component.stories.tsx"
+  }
+}

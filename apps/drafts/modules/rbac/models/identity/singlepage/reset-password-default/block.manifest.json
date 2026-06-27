@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.reset-password-default",
+  "title": "RBAC Identity / Reset Password Default",
+  "description": "Singlepage identity password reset completion form with new password and confirmation fields.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "reset-password-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "passwordLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "confirmPasswordLabel",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

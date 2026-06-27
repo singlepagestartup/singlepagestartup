@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.related-default",
+  "title": "Blog Article / Related Default",
+  "description": "Compact related-article item: border card with category chip, title, and date + read time.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "date",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "readTime",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

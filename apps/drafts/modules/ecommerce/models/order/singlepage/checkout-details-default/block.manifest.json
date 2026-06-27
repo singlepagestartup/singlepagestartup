@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.order.checkout-details-default",
+  "title": "Ecommerce Order / Checkout Details Default",
+  "description": "Singlepage order checkout details form variant for contact, billing, notes, and continue action.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "checkout-details-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "contactFields",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "billingFields",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "notesLabel",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

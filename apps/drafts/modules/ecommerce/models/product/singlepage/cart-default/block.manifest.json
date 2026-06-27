@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.cart-default",
+  "title": "Ecommerce Product / Cart Default",
+  "description": "Singlepage product variant for cart and order summary rows with thumbnail, quantity controls, remove action, and line total.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "cart-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "item",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "compact",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

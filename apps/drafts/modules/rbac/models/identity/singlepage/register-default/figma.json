@@ -1,0 +1,20 @@
+{
+  "componentName": "rbac.identity",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "register-default",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.identity.register-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/identity/singlepage/register-default",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "register-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "register-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/identity/singlepage/register-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/register-default/Component.stories.tsx"
+  }
+}

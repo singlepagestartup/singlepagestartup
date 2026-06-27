@@ -1,0 +1,10 @@
+{
+  "pageName": "rbac",
+  "componentName": "rbac.subject",
+  "variant": "account-menu-default",
+  "module": "rbac",
+  "entity": "subject",
+  "layer": "singlepage",
+  "path": "apps/drafts/modules/rbac/models/subject/singlepage/account-menu-default",
+  "status": "pending"
+}

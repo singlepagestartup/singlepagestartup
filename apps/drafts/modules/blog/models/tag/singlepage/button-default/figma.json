@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.tag",
+  "pageName": "blog",
+  "nodeId": "791:19",
+  "variantNodeId": "791:17",
+  "variantName": "button-default",
+  "metadata": {
+    "sps.drafts.blockId": "blog.tag.button-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "blog/models/tag/singlepage/button-default",
+    "sps.figma.component": "blog.tag",
+    "sps.figma.variant": "button-default",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "tag",
+    "sps.source.variant": "button-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/blog/models/tag/singlepage/button-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/blog/models/tag/singlepage/button-default/Component.stories.tsx"
+  }
+}

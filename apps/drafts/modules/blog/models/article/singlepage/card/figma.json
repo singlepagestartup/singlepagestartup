@@ -1,0 +1,20 @@
+{
+  "componentName": "blog.article",
+  "pageName": "blog",
+  "nodeId": null,
+  "variantName": "card",
+  "metadata": {
+    "sps.drafts.blockId": "blog.article.card",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "blog/models/article/singlepage/card",
+    "sps.figma.component": "blog.article",
+    "sps.figma.variant": "card",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "article",
+    "sps.source.variant": "card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/blog/models/article/singlepage/card/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/card/Component.stories.tsx"
+  }
+}

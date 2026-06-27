@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.feature.testimotional",
+  "title": "Website Builder Feature / testimotional",
+  "description": "Single testimonial feature card with rating, quote, avatar, and author metadata.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "testimotional"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "avatar",
+      "type": "image",
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "text",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "rating",
+      "type": "number",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "nodeId": "871:5",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

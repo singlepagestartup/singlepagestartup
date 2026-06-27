@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.buttons-array.default",
+  "title": "Website Builder Buttons Array / Default",
+  "description": "Default buttons-array composition that maps button data into button model variants.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "buttons-array",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "buttons",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "orientation",
+      "type": "enum",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.buttons-array",
+    "pageName": "website-builder",
+    "nodeId": "895:16",
+    "variantNodeId": "895:9",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["buttons-array", "website-builder", "default"]
+}

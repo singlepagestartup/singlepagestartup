@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.buttons-array",
+  "pageName": "website-builder",
+  "nodeId": "895:16",
+  "variantNodeId": "895:9",
+  "variantName": "default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.buttons-array.default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "website-builder/models/buttons-array/singlepage/default",
+    "sps.figma.component": "website-builder.buttons-array",
+    "sps.figma.variant": "default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "buttons-array",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/buttons-array/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/buttons-array/singlepage/default/Component.stories.tsx"
+  }
+}

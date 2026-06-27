@@ -30,6 +30,41 @@
         "forwardAllArgs": true
       }
     },
+    "drafts:ds:inventory": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/design-system/inventory.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:ds:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/design-system/dev.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:ds:validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/drafts/design-system/validate.ts",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev -c apps/drafts/.storybook -p 4320 -h 127.0.0.1",
+        "forwardAllArgs": true
+      }
+    },
+    "drafts:storybook:build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook build -c apps/drafts/.storybook -o dist/drafts/storybook",
+        "forwardAllArgs": true
+      }
+    },
     "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {

@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": "859:27",
+  "variantNodeId": "859:3",
+  "variantName": "me-crm-form-deafult",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.subject.me-crm-form-deafult",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/subject/singlepage/me-crm-form-deafult",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-crm-form-deafult",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-crm-form-deafult",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx"
+  }
+}

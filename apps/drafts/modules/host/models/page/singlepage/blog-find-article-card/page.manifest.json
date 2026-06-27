@@ -1,0 +1,46 @@
+{
+  "id": "blog-find-article-card",
+  "title": "Blog Find Article Card",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for a blog find page with article cards.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "website-builder.widget.content-page-header",
+      "path": "../../../../../website-builder/models/widget/singlepage/content-page-header"
+    },
+    {
+      "id": "blog.widget.article-find-featured",
+      "path": "../../../../../blog/models/widget/singlepage/article-find-featured"
+    },
+    {
+      "id": "blog.widget.article-find-card-default",
+      "path": "../../../../../blog/models/widget/singlepage/article-find-card-default"
+    },
+    {
+      "id": "blog.widget.tag-find-button",
+      "path": "../../../../../blog/models/widget/singlepage/tag-find-button"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "blog-find-article-card",
+    "syncStatus": "created",
+    "metadataFile": "figma.json",
+    "nodeId": "716:300",
+    "variantNodeId": "850:875"
+  }
+}

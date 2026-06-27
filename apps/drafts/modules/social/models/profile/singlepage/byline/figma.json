@@ -1,0 +1,20 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "nodeId": null,
+  "variantName": "byline",
+  "metadata": {
+    "sps.drafts.blockId": "social.profile.byline",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "social/models/profile/singlepage/byline",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "byline",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "byline",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/social/models/profile/singlepage/byline/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/byline/Component.stories.tsx"
+  }
+}

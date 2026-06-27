@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.tag.button-default",
+  "title": "Blog Tag / Button Default",
+  "description": "Single article tag button.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "tag",
+    "variant": "button-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "href",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.tag",
+    "pageName": "blog",
+    "nodeId": "791:19",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "tag", "button-default"]
+}

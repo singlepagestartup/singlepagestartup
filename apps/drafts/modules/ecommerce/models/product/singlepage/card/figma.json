@@ -1,0 +1,20 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantName": "card",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.product.card",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/product/singlepage/card",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "card",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/card/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/card/Component.stories.tsx"
+  }
+}

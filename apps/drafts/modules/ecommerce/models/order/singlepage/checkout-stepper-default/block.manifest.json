@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.order.checkout-stepper-default",
+  "title": "Ecommerce Order / Checkout Stepper Default",
+  "description": "Singlepage order checkout stepper model variant for details, payment, and confirmation.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "order",
+    "variant": "checkout-stepper-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "currentStep",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.order",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

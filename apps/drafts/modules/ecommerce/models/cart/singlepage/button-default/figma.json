@@ -1,0 +1,20 @@
+{
+  "componentName": "ecommerce.cart",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantName": "button-default",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.cart.button-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/cart/singlepage/button-default",
+    "sps.figma.component": "ecommerce.cart",
+    "sps.figma.variant": "button-default",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "cart",
+    "sps.source.variant": "button-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/cart/singlepage/button-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/cart/singlepage/button-default/Component.stories.tsx"
+  }
+}

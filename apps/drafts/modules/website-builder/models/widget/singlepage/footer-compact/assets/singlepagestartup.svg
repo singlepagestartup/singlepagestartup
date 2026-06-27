@@ -1,0 +1,16 @@
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1000 6.10351e-05L1000 1000L-4.37114e-05 1000L0 1.73238e-05L1000 6.10351e-05Z" fill="white"/>
+<rect x="445.598" y="227.999" width="108.801" height="108.801" fill="black"/>
+<rect x="336.799" y="336.8" width="108.801" height="108.801" fill="black"/>
+<rect x="554.398" y="227.999" width="108.801" height="108.801" fill="black"/>
+<rect x="663.199" y="336.8" width="108.801" height="108.801" fill="black"/>
+<rect x="227.997" y="554.401" width="108.801" height="108.801" fill="black"/>
+<rect x="336.799" y="445.599" width="108.801" height="108.801" fill="black"/>
+<rect x="445.598" y="445.599" width="108.801" height="108.801" fill="black"/>
+<rect x="554.398" y="554.401" width="108.801" height="108.801" fill="black"/>
+<rect x="554.398" y="445.599" width="108.801" height="108.801" fill="black"/>
+<path d="M445.598 336.8L336.797 336.8L445.598 227.999L445.598 336.8Z" fill="black"/>
+<path d="M554.398 663.201H663.199L554.398 772.002V663.201Z" fill="black"/>
+<rect x="445.598" y="663.201" width="108.801" height="108.801" fill="black"/>
+<rect x="336.799" y="663.201" width="108.801" height="108.801" fill="black"/>
+</svg>

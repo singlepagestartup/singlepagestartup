@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": "716:300",
+  "variantNodeId": "850:875",
+  "variantName": "blog-find-article-card",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.blog-find-article-card",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/blog-find-article-card",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "blog-find-article-card",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "blog-find-article-card",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/blog-find-article-card/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/blog-find-article-card/Component.stories.tsx"
+  }
+}

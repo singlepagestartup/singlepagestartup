@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.overview-default",
+  "title": "Ecommerce Product / Overview Default",
+  "description": "Singlepage product model variant that composes the full service detail overview from product model parts and shared content sections.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "hero",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "purchase",
+      "type": "list",
+      "required": true
+    },
+    {
+      "name": "stats",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "related",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "cta",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

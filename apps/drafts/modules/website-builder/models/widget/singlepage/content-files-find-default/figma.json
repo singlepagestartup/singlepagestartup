@@ -1,0 +1,58 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:81",
+  "variantName": "content-files-find-default",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-files-find-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "files-find-default",
+    "sps.drafts.imports": "website-builder.feature.list-item-default",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-files-find-default",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-files-find-default",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-files-find-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-files-find-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-files-find-default/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "paragraphs",
+      "type": "TEXT",
+      "slot": "paragraphs"
+    },
+    {
+      "name": "media",
+      "type": "INSTANCE_SWAP",
+      "slot": "media"
+    },
+    {
+      "name": "features",
+      "type": "TEXT",
+      "slot": "features"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}

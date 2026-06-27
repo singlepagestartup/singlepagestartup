@@ -8,12 +8,12 @@ import {
 } from "./lib/discovery";
 
 const VALID_TYPES = new Set(["html", "react", "next"]);
-const VALID_STATUSES = new Set(["incoming", "approved", "archived"]);
+const VALID_SCOPES = new Set(["singlepage", "startup"]);
 
 interface InitOptions {
   draftRef: string | null;
   type: "html" | "react" | "next" | null;
-  status: "incoming" | "approved" | "archived" | null;
+  scope: "singlepage" | "startup" | null;
   id: string | null;
   title: string | null;
   entry: string | null;
@@ -34,13 +34,13 @@ function printHelp(): void {
 Usage: bun tools/drafts/init.ts <draft-path> [options]
 
 Examples:
-  bun tools/drafts/init.ts incoming/admin-v3
-  bun tools/drafts/init.ts apps/drafts/incoming/ui/checkout-v1 --type react
+  bun tools/drafts/init.ts runnable/singlepage/admin-v3
+  bun tools/drafts/init.ts apps/drafts/runnable/startup/checkout-v1 --type react
 
 Options:
   --draft <path>                         Draft path (relative to apps/drafts or absolute)
   --type <html|react|next>              Override detected type
-  --status <incoming|approved|archived> Override status
+  --scope <singlepage|startup>          Override scope
   --id <id>                              Override manifest id
   --title <title>                        Override title
   --entry <relative-file>                Override entry file
@@ -54,7 +54,7 @@ function parseArgs(argv: string[]): InitOptions {
   const options: InitOptions = {
     draftRef: null,
     type: null,
-    status: null,
+    scope: null,
     id: null,
     title: null,
     entry: null,
@@ -98,14 +98,14 @@ function parseArgs(argv: string[]): InitOptions {
       continue;
     }
 
-    if (arg === "--status") {
-      options.status = (argv[index + 1] ?? null) as InitOptions["status"];
+    if (arg === "--scope") {
+      options.scope = (argv[index + 1] ?? null) as InitOptions["scope"];
       index += 1;
       continue;
     }
 
-    if (arg.startsWith("--status=")) {
-      options.status = arg.slice("--status=".length) as InitOptions["status"];
+    if (arg.startsWith("--scope=")) {
+      options.scope = arg.slice("--scope=".length) as InitOptions["scope"];
       continue;
     }
 
@@ -159,9 +159,9 @@ function parseArgs(argv: string[]): InitOptions {
     );
   }
 
-  if (options.status && !VALID_STATUSES.has(options.status)) {
+  if (options.scope && !VALID_SCOPES.has(options.scope)) {
     throw new Error(
-      `--status must be one of: ${Array.from(VALID_STATUSES).join(", ")}`,
+      `--scope must be one of: ${Array.from(VALID_SCOPES).join(", ")}`,
     );
   }
 
@@ -394,7 +394,7 @@ async function main(): Promise<void> {
 
   if (!options.draftRef) {
     throw new Error(
-      `Draft path is required. Example: npm run drafts:init -- incoming/my-draft`,
+      `Draft path is required. Example: npm run drafts:init -- runnable/startup/my-draft`,
     );
   }
 
@@ -413,12 +413,32 @@ async function main(): Promise<void> {
   }
 
   const relativeDraftDir = toPosixPath(path.relative(DRAFTS_DIR, draftDir));
-  const [collection = "incoming"] = relativeDraftDir.split("/");
-  const inferredStatus = VALID_STATUSES.has(collection)
-    ? (collection as "incoming" | "approved" | "archived")
-    : "incoming";
+  const pathSegments = relativeDraftDir.split("/");
 
-  const status = options.status ?? inferredStatus;
+  if (pathSegments[0] !== "runnable") {
+    throw new Error(`Runnable draft path must start with runnable/.`);
+  }
+
+  const scopeSegment = pathSegments[1] ?? "";
+  if (!VALID_SCOPES.has(scopeSegment) && !options.scope) {
+    throw new Error(
+      `Pass --scope <singlepage|startup> or place the draft under runnable/singlepage or runnable/startup.`,
+    );
+  }
+
+  const inferredScope = VALID_SCOPES.has(scopeSegment)
+    ? (scopeSegment as "singlepage" | "startup")
+    : options.scope;
+  const scope = options.scope ?? inferredScope;
+  if (!scope) {
+    throw new Error(`Unable to infer draft scope.`);
+  }
+
+  if (VALID_SCOPES.has(scopeSegment) && scope !== inferredScope) {
+    throw new Error(
+      `--scope (${scope}) must match draft folder scope (${inferredScope})`,
+    );
+  }
   const packageInfo = await readPackageJson(draftDir);
   const type = await inferType(options, draftDir, packageInfo);
   const entry = await inferEntry(options, draftDir, type);
@@ -444,7 +464,7 @@ async function main(): Promise<void> {
     title,
     type,
     entry,
-    status,
+    scope,
     createdAt: now,
     updatedAt: now,
   };
@@ -463,7 +483,7 @@ async function main(): Promise<void> {
   console.log(`[drafts] Generated manifest: ${manifestPath}`);
   console.log(`[drafts] id=${manifest.id}`);
   console.log(`[drafts] type=${manifest.type}`);
-  console.log(`[drafts] status=${manifest.status}`);
+  console.log(`[drafts] scope=${manifest.scope}`);
   console.log(`[drafts] entry=${manifest.entry}`);
 }
 

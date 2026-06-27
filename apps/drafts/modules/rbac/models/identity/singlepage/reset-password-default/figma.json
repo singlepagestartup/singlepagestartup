@@ -1,0 +1,20 @@
+{
+  "componentName": "rbac.identity",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "reset-password-default",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.identity.reset-password-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/identity/singlepage/reset-password-default",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "reset-password-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "reset-password-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/identity/singlepage/reset-password-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/reset-password-default/Component.stories.tsx"
+  }
+}

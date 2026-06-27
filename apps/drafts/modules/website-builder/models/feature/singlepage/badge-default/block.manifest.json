@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.feature.badge-default",
+  "title": "Website Builder Feature / badge-default",
+  "description": "Compact feature badge with a status dot for hero announcements.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "badge-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "nodeId": "871:5",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

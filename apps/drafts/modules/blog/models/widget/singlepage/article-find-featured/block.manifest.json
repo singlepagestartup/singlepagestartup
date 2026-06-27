@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.widget.article-find-featured",
+  "title": "Widget / Article Find Featured",
+  "description": "Singlepage draft widget that maps a list of featured articles through blog.article.featured.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "article-find-featured"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "articles",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "nodeId": "735:17",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "widget", "article-find-featured"]
+}

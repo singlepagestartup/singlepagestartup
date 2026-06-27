@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantName": "me-identity-find-information",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.subject.me-identity-find-information",
+    "sps.drafts.imports": "rbac.identity.card-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/subject/singlepage/me-identity-find-information",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "me-identity-find-information",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "me-identity-find-information",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx"
+  }
+}

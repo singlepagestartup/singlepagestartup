@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-default",
+  "title": "Website Builder Widget / Content / Default / Startup Override",
+  "description": "Startup-layer override for the singlepage content block. Keeps the same block ID and source mapping.",
+  "layer": "startup",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "counterLabel",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "counterValue",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "primaryAction",
+      "type": "link",
+      "required": false
+    },
+    {
+      "name": "secondaryAction",
+      "type": "link",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["landing", "content", "website-builder", "widget", "startup"]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-profile-information",
+  "title": "RBAC Subject / me-profile-information",
+  "description": "Current-subject editable profile information draft card.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-profile-information"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "user",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "bio",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "me-profile-information"]
+}

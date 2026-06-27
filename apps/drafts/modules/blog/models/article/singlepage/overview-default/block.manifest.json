@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.overview-default",
+  "title": "Blog Article / Overview Default",
+  "description": "Singlepage article model overview that composes article.cover and article.detail.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "coverImage",
+      "type": "image",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "content",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "relatedArticles",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "article", "overview-default"]
+}

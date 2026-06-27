@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.me-identity-find-information",
+  "title": "RBAC Subject / me-identity-find-information",
+  "description": "Current-subject identity relation list, rendered through identity cards.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "me-identity-find-information"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "identities",
+      "type": "list",
+      "required": false
+    },
+    {
+      "name": "relations",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "identity", "find", "information"]
+}

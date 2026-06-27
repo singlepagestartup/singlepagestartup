@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.content-feature-find-card",
+  "title": "Website Builder Widget / Content / Feature Find Card",
+  "description": "Singlepage draft block for a content feature list with cards.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "content-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "features",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": "700:24",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "content",
+    "landing",
+    "website-builder",
+    "widget",
+    "content-feature-find-card"
+  ]
+}

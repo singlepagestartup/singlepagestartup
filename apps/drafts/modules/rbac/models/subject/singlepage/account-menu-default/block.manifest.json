@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.account-menu-default",
+  "title": "RBAC Subject / account-menu-default",
+  "description": "Static account menu for the current RBAC subject.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "account-menu-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "user",
+      "type": "object",
+      "required": false
+    },
+    {
+      "name": "actions",
+      "type": "collection",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "pending",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "account", "menu"]
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "social.profile",
+  "pageName": "social",
+  "nodeId": null,
+  "variantName": "author-find-by-id-overview-default",
+  "metadata": {
+    "sps.drafts.blockId": "social.profile.author-find-by-id-overview-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "social/models/profile/singlepage/author-find-by-id-overview-default",
+    "sps.drafts.imports": "social.profile.author blog.article.row social.profile.find-row",
+    "sps.figma.component": "social.profile",
+    "sps.figma.variant": "author-find-by-id-overview-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "profile",
+    "sps.source.variant": "overview-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/author-find-by-id-overview-default/Component.stories.tsx"
+  }
+}

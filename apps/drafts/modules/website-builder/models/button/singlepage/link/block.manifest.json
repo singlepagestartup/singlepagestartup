@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.button.link",
+  "title": "Website Builder Button / Link",
+  "description": "Link-style text button used by buttons-array utility compositions.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "button",
+    "variant": "link"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "href",
+      "type": "link",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.button",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "pending",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["button", "website-builder", "link"]
+}

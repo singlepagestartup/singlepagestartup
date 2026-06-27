@@ -1,0 +1,28 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "storybook",
+      "autoPort": false,
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "drafts:storybook"],
+      "port": 4320
+    },
+    {
+      "name": "runnable",
+      "autoPort": false,
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "apps/drafts/runnable/startup/singlepagestartup",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5180",
+        "--strictPort"
+      ],
+      "port": 5180
+    }
+  ]
+}

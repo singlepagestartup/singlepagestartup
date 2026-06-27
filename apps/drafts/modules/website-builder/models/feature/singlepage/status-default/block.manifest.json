@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.feature.status-default",
+  "title": "Website Builder Feature / status-default",
+  "description": "Compact status proof card with an icon, label, and value.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "status-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "icon",
+      "type": "media",
+      "required": false
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "value",
+      "type": "text",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "nodeId": "871:5",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  }
+}

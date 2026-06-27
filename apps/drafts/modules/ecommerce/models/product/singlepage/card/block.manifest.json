@@ -1,0 +1,72 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.card",
+  "title": "Ecommerce Product / Card",
+  "description": "Full catalog service card with image, badge, category, price, title, subtitle, truncated description, tech stack tags, and Details link.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "card"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "slug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "image",
+      "type": "image",
+      "required": true
+    },
+    {
+      "name": "badge",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "priceLabel",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "shortDescription",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "techStack",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

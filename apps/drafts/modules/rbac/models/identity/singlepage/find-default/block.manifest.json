@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.identity.find-default",
+  "title": "RBAC Identity / find-default",
+  "description": "Aggregates subject identities and renders each item through rbac.identity.card-default.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "identity",
+    "variant": "find-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "identities",
+      "type": "collection",
+      "required": false
+    },
+    {
+      "name": "relations",
+      "type": "collection",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "rbac.identity",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "pending",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "identity", "find", "auth"]
+}

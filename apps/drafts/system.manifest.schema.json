@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://singlepagestartup.local/schemas/drafts/system.manifest.schema.json",
+  "title": "SPS Draft System Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "version",
+    "state",
+    "runtime",
+    "foundations",
+    "inventory",
+    "storybook",
+    "modulesRoot",
+    "pagesRoot"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": ["active", "disabled"]
+    },
+    "description": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["css", "js"],
+      "properties": {
+        "css": {
+          "type": "string",
+          "minLength": 1
+        },
+        "js": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "foundations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tokens", "figmaVariables"],
+      "properties": {
+        "tokens": {
+          "type": "string",
+          "minLength": 1
+        },
+        "figmaVariables": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modules"],
+      "properties": {
+        "modules": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "storybook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configDir"],
+      "properties": {
+        "configDir": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "modulesRoot": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pagesRoot": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

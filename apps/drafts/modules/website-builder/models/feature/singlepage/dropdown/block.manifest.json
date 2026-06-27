@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.feature.dropdown",
+  "title": "Website Builder Feature / Dropdown",
+  "description": "Single expandable feature item (native details disclosure) for accordion/FAQ lists.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "feature",
+    "variant": "dropdown"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "question",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "answer",
+      "type": "richText",
+      "required": true
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "website-builder.feature",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

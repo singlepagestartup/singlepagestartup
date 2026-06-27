@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.widget.product-find-tiers",
+  "title": "Ecommerce Widget / Product Find Tiers",
+  "description": "Singlepage draft block for product or plan tiers.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "product-find-tiers"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "eyebrow",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "richText",
+      "required": false
+    },
+    {
+      "name": "products",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "ecommerce.widget",
+    "pageName": "ecommerce",
+    "nodeId": "743:3",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "ecommerce",
+    "widget",
+    "product-find-tiers",
+    "ecommerce.product.tier"
+  ]
+}

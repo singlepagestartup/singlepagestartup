@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.widget.tag-find-button",
+  "title": "Widget / Tag Find Button",
+  "description": "Singlepage draft block for a popular tag button list.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "tag-find-button"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "tags",
+      "type": "list",
+      "required": false
+    }
+  ],
+  "figma": {
+    "componentName": "blog.widget",
+    "pageName": "blog",
+    "nodeId": "735:17",
+    "syncStatus": "created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "widget", "tag-find-button"]
+}

@@ -1,0 +1,53 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": "700:24",
+  "variantNodeId": "715:226",
+  "variantName": "content-feature-find-row",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.content-feature-find-row",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.group": "content",
+    "sps.drafts.groupVariant": "feature-find-row",
+    "sps.drafts.imports": "rbac.subject.me-crm-form-deafult",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/content-feature-find-row",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "content-feature-find-row",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "content-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-row/Component.stories.tsx"
+  },
+  "properties": [
+    {
+      "name": "eyebrow",
+      "type": "TEXT",
+      "slot": "eyebrow"
+    },
+    {
+      "name": "title",
+      "type": "TEXT",
+      "slot": "title"
+    },
+    {
+      "name": "description",
+      "type": "TEXT",
+      "slot": "description"
+    },
+    {
+      "name": "contacts",
+      "type": "TEXT",
+      "slot": "contacts"
+    }
+  ],
+  "tokens": [
+    "color/background",
+    "color/foreground",
+    "color/surface",
+    "color/border",
+    "color/primary"
+  ]
+}
