@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { type ComponentPropsWithoutRef, forwardRef } from "react";
 import {
-  type AnalyticsMetadata,
+  type TrackAnalyticsEventInput,
   trackAnalyticsEvent,
 } from "@sps/shared-frontend-client-utils";
 
 export interface AnalyticsLinkProps
   extends ComponentPropsWithoutRef<typeof Link> {
-  analytics?: {
-    name: string;
-    metadata?: AnalyticsMetadata;
-  };
+  analytics?: TrackAnalyticsEventInput | TrackAnalyticsEventInput[];
 }
 
 export const AnalyticsLink = forwardRef<HTMLAnchorElement, AnalyticsLinkProps>(
@@ -23,7 +20,13 @@ export const AnalyticsLink = forwardRef<HTMLAnchorElement, AnalyticsLinkProps>(
         ref={ref}
         onClick={(event) => {
           if (analytics) {
-            trackAnalyticsEvent(analytics);
+            const analyticsEvents = Array.isArray(analytics)
+              ? analytics
+              : [analytics];
+
+            for (const analyticsEvent of analyticsEvents) {
+              trackAnalyticsEvent(analyticsEvent);
+            }
           }
 
           onClick?.(event);

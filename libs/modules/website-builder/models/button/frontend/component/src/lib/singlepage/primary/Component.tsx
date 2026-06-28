@@ -26,15 +26,26 @@ export function Component(props: IComponentPropsExtended) {
       <AnalyticsLink
         href={href}
         target={withProtocol ? "_blank" : undefined}
-        analytics={{
-          name: "website_builder_button_click",
-          metadata: {
-            id: props.data.id,
-            module: "website-builder",
-            model: "button",
-            variant: props.data.variant,
+        analytics={[
+          {
+            name: "website_builder_button_click",
+            metadata: {
+              id: props.data.id,
+              module: "website-builder",
+              model: "button",
+              variant: props.data.variant,
+            },
           },
-        }}
+          {
+            name: `website_builder_button_click_${props.data.id}`,
+            metadata: {
+              id: props.data.id,
+              module: "website-builder",
+              model: "button",
+              variant: props.data.variant,
+            },
+          },
+        ]}
       >
         {props.data.title?.[props.language]}
       </AnalyticsLink>
