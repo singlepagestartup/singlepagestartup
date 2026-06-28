@@ -1,5 +1,5 @@
 import { IComponentPropsExtended } from "./interface";
-import Link from "next/link";
+import { AnalyticsLink } from "@sps/shared-frontend-components/singlepage/analytics-link";
 import { cn } from "@sps/shared-frontend-client-utils";
 import { Button } from "@sps/shared-ui-shadcn";
 import { internationalization } from "@sps/shared-configuration";
@@ -23,9 +23,21 @@ export function Component(props: IComponentPropsExtended) {
       variant="secondary"
       asChild={true}
     >
-      <Link href={href} target={withProtocol ? "_blank" : undefined}>
+      <AnalyticsLink
+        href={href}
+        target={withProtocol ? "_blank" : undefined}
+        analytics={{
+          name: "website_builder_button_click",
+          metadata: {
+            id: props.data.id,
+            module: "website-builder",
+            model: "button",
+            variant: props.data.variant,
+          },
+        }}
+      >
         {props.data.title?.[props.language]}
-      </Link>
+      </AnalyticsLink>
     </Button>
   );
 }
