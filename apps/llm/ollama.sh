@@ -79,7 +79,7 @@ ensure_env_file() {
   fi
 
   if [ -z "${OLLAMA_MODEL_IDS:-}" ]; then
-    OLLAMA_MODEL_IDS="${OLLAMA_MODELS:-nomic-embed-text,qwen3:1.7b}"
+    OLLAMA_MODEL_IDS="${OLLAMA_MODELS:-nomic-embed-text}"
     upsert_env "OLLAMA_MODEL_IDS" "$OLLAMA_MODEL_IDS"
   fi
 
@@ -208,7 +208,7 @@ require_ollama() {
 }
 
 pull_models() {
-  printf "%s\n" "${OLLAMA_MODEL_IDS:-nomic-embed-text,qwen3:1.7b}" |
+  printf "%s\n" "${OLLAMA_MODEL_IDS:-nomic-embed-text}" |
     tr ',' '\n' |
     while IFS= read -r model_id; do
       model_id="$(printf "%s" "$model_id" | xargs)"

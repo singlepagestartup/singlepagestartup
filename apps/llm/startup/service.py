@@ -10,7 +10,7 @@ def get_service() -> GatewayService:
 
     if _service is None:
         _service = GatewayService(
-            catalog=build_catalog(whisper_model=settings.whisper_model),
+            catalog=build_catalog(),
             ollama_url=settings.ollama_url,
             anthropic_api_key=settings.anthropic_api_key,
             openai_api_key=settings.openai_api_key or settings.open_ai_api_key,

@@ -48,14 +48,14 @@ services:
       - traefik_overlay
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}"
+      OLLAMA_MODEL_IDS: "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text', true) }}"
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         until ollama list >/dev/null 2>&1; do
           sleep 2
         done
-        printf '%s\n' "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text,qwen3:1.7b', true) }}" | tr ',' '\n' | xargs -n 1 ollama pull
+        printf '%s\n' "{{ OLLAMA_MODEL_IDS | default('nomic-embed-text', true) }}" | tr ',' '\n' | xargs -n 1 ollama pull
     deploy:
       restart_policy:
         condition: none

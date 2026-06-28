@@ -262,7 +262,17 @@ class HuggingFaceModelManager:
         self._loaded: OrderedDict[str, tuple[object, object]] = OrderedDict()
 
     def _load(self, model: ModelDefinition) -> tuple[object, object]:
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        try:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+        except ImportError as error:
+            raise GatewayError(
+                (
+                    "HuggingFace local models are disabled because optional "
+                    "transformers/PyTorch dependencies are not installed."
+                ),
+                status_code=501,
+                error_type="unsupported_model",
+            ) from error
 
         token = _settings().hf_token or None
         tokenizer = AutoTokenizer.from_pretrained(model.provider_model, token=token)
@@ -301,7 +311,17 @@ class HuggingFaceProvider:
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> ChatResult:
-        import torch
+        try:
+            import torch
+        except ImportError as error:
+            raise GatewayError(
+                (
+                    "HuggingFace local models are disabled because optional "
+                    "transformers/PyTorch dependencies are not installed."
+                ),
+                status_code=501,
+                error_type="unsupported_model",
+            ) from error
 
         settings = _settings()
 
