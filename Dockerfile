@@ -2,7 +2,7 @@ FROM node:24
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
-    apt-get install -qy curl ffmpeg && \
+    apt-get install -qy curl ffmpeg python3 python3-venv && \
     curl -fsSL https://bun.sh/install | bash && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -37,12 +37,15 @@ RUN if [ -n "$YANDEX_METRIKA_ID" ]; then echo "YANDEX_METRIKA_ID=$YANDEX_METRIKA
 RUN if [ -n "$NEXT_PUBLIC_YANDEX_METRIKA_ID" ]; then echo "NEXT_PUBLIC_YANDEX_METRIKA_ID=$NEXT_PUBLIC_YANDEX_METRIKA_ID" >> /usr/src/app/apps/host/.env.production; fi
 
 RUN npm ci
+RUN python3 -m venv /usr/src/app/apps/llm/.venv && \
+    /usr/src/app/apps/llm/.venv/bin/pip install --no-cache-dir -r /usr/src/app/apps/llm/requirements.txt
 RUN npm run host:build
 
 EXPOSE 3000
 EXPOSE 4000
 EXPOSE 3001
 EXPOSE 8000
+EXPOSE 8765
 
 # Running the app
 # RUN ["chmod", "-R", "777", "/usr/src/app"]

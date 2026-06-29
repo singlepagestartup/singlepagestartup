@@ -25,9 +25,12 @@ jobs:
       - name: Set environment variables based on PRERELEASE
         run: |
           if [ "${{ inputs.PRERELEASE }}" = "true" ]; then
-            echo "IMAGE_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}/${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
-            echo "LLM_IMAGE_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}/${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}" >> $GITHUB_ENV
+            echo "HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.PREVIEW_DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
@@ -35,9 +38,12 @@ jobs:
             echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.PREVIEW_NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
             echo "YANDEX_METRIKA_ID=${{ secrets.PREVIEW_YANDEX_METRIKA_ID }}" >> $GITHUB_ENV
           else
-            echo "IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
-            echo "LLM_IMAGE_URL=${{ secrets.DOCKER_HUB_URL }}/${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}" >> $GITHUB_ENV
+            echo "HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "API_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
+            echo "MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME=${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_HUB_PASSWORD=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_SERVICE_URL=${{ secrets.NEXT_PUBLIC_API_SERVICE_URL }}" >> $GITHUB_ENV
@@ -45,6 +51,52 @@ jobs:
             echo "NEXT_PUBLIC_HOST_SERVICE_URL=${{ secrets.NEXT_PUBLIC_HOST_SERVICE_URL }}" >> $GITHUB_ENV
             echo "YANDEX_METRIKA_ID=${{ secrets.YANDEX_METRIKA_ID }}" >> $GITHUB_ENV
           fi
+
+      - name: Set image tags
+        id: image-tags
+        run: |
+          repos=(
+            "$HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME"
+            "$API_SERVICE_DOCKER_HUB_REPOSITORY_NAME"
+            "$TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME"
+            "$LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME"
+            "$MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME"
+          )
+
+          unique_repos=()
+          for repo in "${repos[@]}"; do
+            if [ -z "$repo" ]; then
+              continue
+            fi
+
+            duplicate=false
+            for existing_repo in "${unique_repos[@]}"; do
+              if [ "$existing_repo" = "$repo" ]; then
+                duplicate=true
+                break
+              fi
+            done
+
+            if [ "$duplicate" = "false" ]; then
+              unique_repos+=("$repo")
+            fi
+          done
+
+          if [ "${#unique_repos[@]}" -eq 0 ]; then
+            echo "No Docker Hub repository names configured"
+            exit 1
+          fi
+
+          {
+            echo "tags<<EOF"
+            for repo in "${unique_repos[@]}"; do
+              echo "$DOCKER_HUB_URL/$repo:${{ inputs.TAG }}"
+              if [ "${{ inputs.PRERELEASE }}" = "false" ]; then
+                echo "$DOCKER_HUB_URL/$repo:latest"
+              fi
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
       - name: Login to registry
         uses: docker/login-action@v4
         with:
@@ -59,23 +111,12 @@ jobs:
         with:
           context: ./
           push: true
-          tags: |
-            ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
+          tags: ${{ steps.image-tags.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
             NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
             YANDEX_METRIKA_ID=${{ env.YANDEX_METRIKA_ID }}
-
-      - if: ${{ inputs.PRERELEASE == true }}
-        name: Build LLM image for pre-release
-        uses: docker/build-push-action@v7
-        with:
-          context: ./apps/llm
-          file: ./apps/llm/Dockerfile
-          push: true
-          tags: |
-            ${{ env.LLM_IMAGE_URL }}:${{ inputs.TAG }}
 
       - if: ${{ inputs.PRERELEASE == false }}
         name: Build image for release
@@ -83,22 +124,9 @@ jobs:
         with:
           context: ./
           push: true
-          tags: |
-            ${{ env.IMAGE_URL }}:${{ inputs.TAG }}
-            ${{ env.IMAGE_URL }}:latest
+          tags: ${{ steps.image-tags.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_API_SERVICE_URL=${{ env.NEXT_PUBLIC_API_SERVICE_URL }}
             NEXT_PUBLIC_HOST_SERVICE_URL=${{ env.NEXT_PUBLIC_HOST_SERVICE_URL }}
             NEXT_PUBLIC_API_SERVICE_WS_URL=${{ env.NEXT_PUBLIC_API_SERVICE_WS_URL }}
             YANDEX_METRIKA_ID=${{ env.YANDEX_METRIKA_ID }}
-
-      - if: ${{ inputs.PRERELEASE == false }}
-        name: Build LLM image for release
-        uses: docker/build-push-action@v7
-        with:
-          context: ./apps/llm
-          file: ./apps/llm/Dockerfile
-          push: true
-          tags: |
-            ${{ env.LLM_IMAGE_URL }}:${{ inputs.TAG }}
-            ${{ env.LLM_IMAGE_URL }}:latest

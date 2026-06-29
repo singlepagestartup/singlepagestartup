@@ -7,7 +7,7 @@ services:
       - traefik_overlay
     env_file:
       - ./{{ SERVICE_NAME }}.env
-    command: "uvicorn main:app --host 0.0.0.0 --port 8765"
+    command: "sh -c './start.sh llm'"
     logging:
       driver: "json-file"
       options:
