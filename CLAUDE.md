@@ -40,7 +40,7 @@ If anything is unclear, read the relevant README files instead of guessing.
 
 ## Environment & Requirements
 
-- Node.js 20+, npm 10+ (as per package engines).
+- Node.js 24+, npm 11+ (as per package engines).
 - Bun runtime installed (used by `apps/api`).
 - Docker & Docker Compose **required** for Postgres and Redis (the `./up.sh` script expects Docker to be available on the agent machine).
 
