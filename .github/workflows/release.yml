@@ -19,7 +19,6 @@ jobs:
     secrets: inherit
     needs:
       - docker-image
-      - update-llm
     with:
       TAG: ${{ github.event.release.tag_name }}
       PRERELEASE: ${{ github.event.release.prerelease }}
@@ -29,6 +28,7 @@ jobs:
     secrets: inherit
     needs:
       - docker-image
+      - update-api
     with:
       TAG: ${{ github.event.release.tag_name }}
       PRERELEASE: ${{ github.event.release.prerelease }}
