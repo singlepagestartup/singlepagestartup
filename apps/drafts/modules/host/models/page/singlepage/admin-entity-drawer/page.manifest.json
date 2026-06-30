@@ -1,0 +1,28 @@
+{
+  "id": "admin.entity-drawer",
+  "title": "Admin / Entity Drawer",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable EntityDrawer state.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "ecommerce.product.admin-v2-form",
+      "path": "../../../../../ecommerce/models/product/singlepage/admin-v2-form"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "admin-entity-drawer",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

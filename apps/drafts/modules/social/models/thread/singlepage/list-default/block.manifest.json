@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.thread.list-default",
+  "title": "Social Thread / List / Default",
+  "description": "Singlepage presentation block for a chat thread list.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "thread",
+    "variant": "list-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.thread",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "thread", "chat"]
+}

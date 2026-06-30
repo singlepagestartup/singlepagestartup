@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.admin-v2-navigation",
+  "title": "Website Builder Widget / Admin V2 Navigation",
+  "description": "Reusable admin-v2 navigation shell owned by website-builder widget content.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "admin-v2-navigation"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "admin-v2", "navigation"]
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-preview-dialog",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.admin-preview-dialog",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/admin-preview-dialog",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "admin-preview-dialog",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "admin-preview-dialog",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/admin-preview-dialog/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/admin-preview-dialog/Component.stories.tsx"
+  }
+}

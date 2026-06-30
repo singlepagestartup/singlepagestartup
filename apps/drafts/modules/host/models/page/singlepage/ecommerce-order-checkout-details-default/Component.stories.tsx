@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/rbac/subjects/[rbac.subjects.id]/subjects-to-ecommerce-module-orders/checkout",
 };
+
+export const RunnableCheckoutRoute: Story = {
+  name: "/checkout",
+};

@@ -1,0 +1,32 @@
+{
+  "id": "chat.default",
+  "title": "Chat / Default",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable /chat route, composed from social-owned chat blocks.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "social.widget.chat-workspace-default",
+      "path": "../../../../../social/models/widget/singlepage/chat-workspace-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "chat-default",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/rbac/subjects/[rbac.subjects.id]/account/settings",
 };
+
+export const RunnableAdminAccountSettingsRoute: Story = {
+  name: "/admin/settings/account",
+};

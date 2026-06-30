@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.relation.products-to-attributes",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-v2-manager",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.relation.products-to-attributes.admin-v2-manager",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager",
+    "sps.figma.component": "ecommerce.relation.products-to-attributes",
+    "sps.figma.variant": "admin-v2-manager",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "relation",
+    "sps.source.entity": "products-to-attributes",
+    "sps.source.variant": "admin-v2-manager",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.stories.tsx"
+  }
+}

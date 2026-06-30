@@ -10,7 +10,7 @@
     "sps.source.variant": "default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.tsx",
-    "sps.code.story": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.draft-story.tsx"
+    "sps.code.story": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.stories.tsx"
   },
   "properties": [
     {

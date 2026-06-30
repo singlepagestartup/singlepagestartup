@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/rbac/subject/authentication/select-method",
 };
+
+export const RunnableLoginRoute: Story = {
+  name: "/login",
+};

@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/ecommerce",
 };
+
+export const RunnableServicesRoute: Story = {
+  name: "/services",
+};

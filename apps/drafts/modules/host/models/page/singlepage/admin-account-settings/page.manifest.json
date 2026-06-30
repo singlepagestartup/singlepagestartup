@@ -1,0 +1,28 @@
+{
+  "id": "admin.account-settings",
+  "title": "Admin / Account Settings",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable /admin/settings/account route.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "rbac.widget.subject-me-account-settings",
+      "path": "../../../../../rbac/models/widget/singlepage/subject-me-account-settings"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "admin-account-settings",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

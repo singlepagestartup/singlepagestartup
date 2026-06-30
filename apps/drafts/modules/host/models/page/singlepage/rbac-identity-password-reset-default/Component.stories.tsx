@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/rbac/subject/authentication/forgot-password",
 };
+
+export const RunnableForgotPasswordRoute: Story = {
+  name: "/forgot-password",
+};

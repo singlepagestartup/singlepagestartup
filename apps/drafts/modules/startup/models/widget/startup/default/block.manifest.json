@@ -13,7 +13,7 @@
   },
   "files": {
     "component": "StartupWidgetStartup.tsx",
-    "story": "StartupWidgetStartup.draft-story.tsx"
+    "story": "StartupWidgetStartup.stories.tsx"
   },
   "contentSlots": [
     {

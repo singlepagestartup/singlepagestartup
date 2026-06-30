@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/blog/articles/[blog.articles.slug]",
 };
+
+export const RunnableBlogArticleRoute: Story = {
+  name: "/blog/:slug",
+};

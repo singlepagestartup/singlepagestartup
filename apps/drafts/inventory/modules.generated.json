@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-27T20:08:27.184Z",
+  "generatedAt": "2026-06-30T23:25:29.175Z",
   "modulesRoot": "libs/modules",
   "draftsRoot": "apps/drafts",
   "totals": {
     "modules": 16,
     "entities": 156,
     "variants": 1836,
-    "coveredVariants": 14
+    "coveredVariants": 15
   },
   "modules": [
     {
@@ -3236,7 +3236,9 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "ecommerce.product.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",

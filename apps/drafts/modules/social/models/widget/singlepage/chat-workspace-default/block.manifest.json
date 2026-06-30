@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.widget.chat-workspace-default",
+  "title": "Social Widget / Chat Workspace / Default",
+  "description": "Social widget that exposes the reusable chat workspace for host page composition.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "chat-workspace-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.widget",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "widget", "chat"]
+}

@@ -18,3 +18,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "/social/profiles/[social.profiles.id]",
 };
+
+export const RunnableAuthorRoute: Story = {
+  name: "/blog/author/:authorSlug",
+};

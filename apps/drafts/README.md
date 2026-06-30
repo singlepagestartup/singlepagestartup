@@ -63,7 +63,7 @@ apps/drafts/modules/startup/models/widget/singlepage/default
 Storybook is the main draft viewer. It loads every story from:
 
 ```txt
-apps/drafts/modules/**/*.stories.tsx
+apps/drafts/modules/**/*.stories.@(ts|tsx|mdx)
 ```
 
 Run:
@@ -78,7 +78,9 @@ Build:
 npm run drafts:storybook:build
 ```
 
-Use Storybook to compare `singlepage` and `startup` variants of the same block.
+Manifest `files.story` values must point to a Storybook-discoverable
+`*.stories.ts`, `*.stories.tsx`, or `*.stories.mdx` file. Use Storybook to
+compare `singlepage` and `startup` variants of the same block.
 Startup overrides should keep the same source contract and normally the same
 `id`, while setting `"layer": "startup"` in `block.manifest.json`.
 
