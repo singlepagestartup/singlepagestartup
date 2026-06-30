@@ -5,7 +5,7 @@ repository: singlepagestartup
 created_at: 2026-06-29T22:24:46Z
 last_updated: 2026-06-30T23:22:41Z
 status: active
-current_phase: implement
+current_phase: complete
 ---
 
 # Process Log: ISSUE-201 - Migrate remaining runnable drafts into the Storybook module catalog
@@ -20,8 +20,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Current phase: implement
-- Next step: Create PR, move issue to Code Review, and let the user review the running Storybook catalog before any Figma work.
+- Current phase: complete
+- Next step: code review / merge; user Storybook review before any Figma work.
 
 ## Phase Notes
 
@@ -47,7 +47,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 ### Implement
 
 - Summary: Implementation completed after the user confirmed continuing through all phases without separate phase pauses. Runnable source material is classified in the migration matrix; reusable public, chat/profile, and admin/admin-v2 surfaces are represented by Storybook host page recipes or module-owned blocks; retained runnable scope is documented.
-- Outputs: Progress artifact at `thoughts/shared/handoffs/singlepagestartup/ISSUE-201-progress.md`; migration matrix at `apps/drafts/inventory/runnable-migration.md`; runnable contract at `apps/drafts/runnable/README.md`; updated `apps/drafts/README.md`; new/updated Storybook module entries under `apps/drafts/modules`; regenerated inventory at `apps/drafts/inventory/modules.generated.json`.
+- Outputs: Progress artifact at `thoughts/shared/handoffs/singlepagestartup/ISSUE-201-progress.md`; migration matrix at `apps/drafts/inventory/runnable-migration.md`; runnable contract at `apps/drafts/runnable/README.md`; updated `apps/drafts/README.md`; new/updated Storybook module entries under `apps/drafts/modules`; regenerated inventory at `apps/drafts/inventory/modules.generated.json`; PR at `https://github.com/singlepagestartup/singlepagestartup/pull/202`.
 - Notes: Storybook migration stayed inside repository code only. No Figma file/plugin/sync work was performed. The only retained standalone runnable entry is `singlepage/examples/basic-html`; imported React/admin source trees remain only as traceability/source material until user Storybook review. Verification passed with `npm run drafts:validate`, `npm run drafts:ds:inventory`, `npm run drafts:ds:validate`, and `npm run drafts:storybook:build`. Browser verification confirmed the running Storybook index and representative preview iframe stories for host admin dashboard, chat page, admin model edit, and startup override.
 
 ## Incident Log

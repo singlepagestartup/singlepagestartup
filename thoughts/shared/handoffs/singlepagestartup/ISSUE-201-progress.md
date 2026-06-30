@@ -3,7 +3,8 @@ issue_number: 201
 issue_title: "Migrate remaining runnable drafts into the Storybook module catalog"
 start_date: 2026-06-30T22:48:07Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-201.md
-status: in_progress
+status: complete
+completed_date: 2026-06-30T23:22:41Z
 ---
 
 # Implementation Progress: ISSUE-201 - Migrate remaining runnable drafts into the Storybook module catalog
@@ -84,14 +85,14 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/202
+- [x] PR number: 202
 
 ### Final Status
 
 - [x] All phases completed
 - [x] All automated verification passed
-- [ ] Issue moved to Code Review
+- [x] Issue moved to Code Review
 
 ---
 
