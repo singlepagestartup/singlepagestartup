@@ -4,7 +4,7 @@ import { SocialWidgetChatOverviewDefault } from "./Component";
 
 const meta = {
   id: "modules-social-models-widget-singlepage-chat-overview-default",
-  title: "Modules/Social/Models/Widget/Singlepage",
+  title: "Modules/Social/Models/Widget/Singlepage/chat-overview-default",
   component: SocialWidgetChatOverviewDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "chat-overview-default",
+  name: "default",
 };
