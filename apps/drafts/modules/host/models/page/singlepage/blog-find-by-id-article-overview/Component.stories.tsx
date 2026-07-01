@@ -4,7 +4,7 @@ import { BlogFindByIdArticleOverview } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-blog-find-by-id-article-overview",
-  title: "Modules/Host/Models/Page/Singlepage/blog-find-by-id-article-overview",
+  title: "Modules/Host/Models/Page/Singlepage",
   component: BlogFindByIdArticleOverview,
   parameters: {
     layout: "fullscreen",
@@ -16,9 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "default",
-};
-
-export const BlogArticleRoute: Story = {
   name: "/blog/articles/[blog.articles.slug]",
 };

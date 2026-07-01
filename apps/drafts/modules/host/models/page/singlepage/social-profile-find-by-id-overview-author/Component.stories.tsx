@@ -4,8 +4,7 @@ import { SocialProfileFindByIdOverviewAuthor } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-social-profile-find-by-id-overview-author",
-  title:
-    "Modules/Host/Models/Page/Singlepage/social-profile-find-by-id-overview-author",
+  title: "Modules/Host/Models/Page/Singlepage",
   component: SocialProfileFindByIdOverviewAuthor,
   parameters: {
     layout: "fullscreen",
@@ -17,9 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "default",
-};
-
-export const RunnableAuthorRoute: Story = {
   name: "/blog/author/:authorSlug",
 };

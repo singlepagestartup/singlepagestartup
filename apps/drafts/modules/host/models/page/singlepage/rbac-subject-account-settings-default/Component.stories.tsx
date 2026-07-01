@@ -4,8 +4,7 @@ import { RbacSubjectAccountSettingsDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-rbac-subject-account-settings-default",
-  title:
-    "Modules/Host/Models/Page/Singlepage/rbac-subject-account-settings-default",
+  title: "Modules/Host/Models/Page/Singlepage",
   component: RbacSubjectAccountSettingsDefault,
   parameters: {
     layout: "fullscreen",
@@ -17,9 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "default",
-};
-
-export const RunnableAdminAccountSettingsRoute: Story = {
   name: "/admin/settings/account",
 };

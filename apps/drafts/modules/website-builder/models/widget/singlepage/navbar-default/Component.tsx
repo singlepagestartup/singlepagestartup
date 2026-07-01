@@ -27,9 +27,6 @@ const hostStoryHrefs = {
   home: hostStoryHref(
     "modules-host-models-page-singlepage-home-default--default",
   ),
-  login: hostStoryHref(
-    "modules-host-models-page-singlepage-rbac-identity-login-default--default",
-  ),
   services: hostStoryHref(
     "modules-host-models-page-singlepage-ecommerce-product-find-card--default",
   ),
@@ -79,8 +76,8 @@ export const defaultNavbarDefaultProps = {
   ] satisfies DraftLink[],
   adminHref: "/admin/settings/account",
   adminStoryHref: hostStoryHrefs.accountSettings,
-  loginHref: "/login",
-  loginStoryHref: hostStoryHrefs.login,
+  loginHref: "/rbac/subject/authentication/select-method",
+  loginStoryHref: undefined,
 };
 
 export interface NavbarDefaultProps {
@@ -96,7 +93,7 @@ export interface NavbarDefaultProps {
   adminStoryHref: string;
   cartButton?: ReactNode;
   loginHref: string;
-  loginStoryHref: string;
+  loginStoryHref?: string;
   onCartClick?: () => void;
 }
 

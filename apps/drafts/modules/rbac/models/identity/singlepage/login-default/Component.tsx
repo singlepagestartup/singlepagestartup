@@ -38,7 +38,7 @@ export const defaultIdentityLoginDefaultProps: IdentityLoginDefaultProps = {
   passwordPlaceholder: "Password",
   rememberLabel: "Remember me for 30 days",
   forgotLabel: "Forgot password?",
-  forgotHref: "/rbac/subject/authentication/forgot-password",
+  forgotHref: "/rbac/subject/authentication/email-and-password/forgot-password",
   submitLabel: "Sign In",
   providers: [
     { key: "google", label: "Google", icon: "google" },
@@ -46,7 +46,7 @@ export const defaultIdentityLoginDefaultProps: IdentityLoginDefaultProps = {
   ],
   registerPrompt: "Don't have an account?",
   registerLabel: "Sign up for free",
-  registerHref: "/rbac/subject/authentication/registration",
+  registerHref: "/rbac/subject/authentication/email-and-password/registration",
 };
 
 function getStoryLinkProps(href: string, storyHref?: string) {

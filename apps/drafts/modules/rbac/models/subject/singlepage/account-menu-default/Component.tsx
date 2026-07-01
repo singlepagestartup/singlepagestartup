@@ -19,7 +19,7 @@ export const defaultSubjectAccountMenuDefaultProps: SubjectAccountMenuDefaultPro
     user: defaultRbacUser,
     actions: defaultAccountMenuActions,
     signedIn: true,
-    loginHref: "/login",
+    loginHref: "/rbac/subject/authentication/select-method",
   };
 
 export function SubjectAccountMenuDefault(

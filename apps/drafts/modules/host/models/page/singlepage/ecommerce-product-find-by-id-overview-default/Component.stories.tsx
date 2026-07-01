@@ -4,8 +4,7 @@ import { EcommerceProductFindByIdOverviewDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-ecommerce-product-find-by-id-overview-default",
-  title:
-    "Modules/Host/Models/Page/Singlepage/ecommerce-product-find-by-id-overview-default",
+  title: "Modules/Host/Models/Page/Singlepage",
   component: EcommerceProductFindByIdOverviewDefault,
   parameters: {
     layout: "fullscreen",
@@ -17,9 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "default",
-};
-
-export const RunnableServiceDetailRoute: Story = {
   name: "/services/:slug",
 };

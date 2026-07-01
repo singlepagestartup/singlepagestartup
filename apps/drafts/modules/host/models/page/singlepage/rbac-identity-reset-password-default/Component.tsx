@@ -11,7 +11,7 @@ export function RbacIdentityResetPasswordDefault() {
       <HostNavbarDefault activeHref="/reset-password" />
       <section className="w-full py-12">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <IdentityResetPasswordDefault backStoryHref="/?path=/story/modules-host-models-page-singlepage-rbac-identity-login-default--default" />
+          <IdentityResetPasswordDefault />
         </div>
       </section>
       <FooterCompact />
