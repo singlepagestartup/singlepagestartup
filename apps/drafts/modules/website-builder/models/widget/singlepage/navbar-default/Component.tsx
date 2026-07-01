@@ -68,7 +68,7 @@ export const defaultNavbarDefaultProps = {
     { label: "Home", href: "/", storyHref: hostStoryHrefs.home },
     {
       label: "Services",
-      href: "/services",
+      href: "/ecommerce/products",
       storyHref: hostStoryHrefs.services,
     },
     { label: "Blog", href: "/blog", storyHref: hostStoryHrefs.blog },

@@ -33,7 +33,7 @@ export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
 
   return (
     <a
-      href={`/services/${slug}`}
+      href={`/ecommerce/products/${slug}`}
       className="group overflow-hidden rounded-xl border border-slate-200 bg-[#eaf0f7] transition hover:border-slate-400"
       data-ds-block="ecommerce.product.card-related"
       data-ds-layer="singlepage"

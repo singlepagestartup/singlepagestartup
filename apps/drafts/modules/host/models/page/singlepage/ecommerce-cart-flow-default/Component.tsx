@@ -78,7 +78,7 @@ export function EcommerceCartFlowDefault() {
       data-ds-page="host.page.ecommerce-cart-flow-default"
     >
       <NavbarDefault
-        activeHref="/services"
+        activeHref="/ecommerce/products"
         cartButton={
           <CartButtonDefault
             count={cartCount}

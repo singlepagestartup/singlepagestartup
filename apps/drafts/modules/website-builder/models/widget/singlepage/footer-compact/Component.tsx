@@ -30,7 +30,7 @@ export const defaultFooterCompactProps = {
   links: [
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
-    { label: "Services", href: "/services" },
+    { label: "Services", href: "/ecommerce/products" },
     { label: "Blog", href: "/blog" },
     { label: "Admin", href: "/admin" },
   ] satisfies DraftLink[],

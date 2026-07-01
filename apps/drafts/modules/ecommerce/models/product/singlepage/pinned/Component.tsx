@@ -34,7 +34,7 @@ export function ProductPinned(props?: Partial<ProductPinnedProps>) {
 
   return (
     <a
-      href={`/services/${slug}`}
+      href={`/ecommerce/products/${slug}`}
       className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
       data-ds-block="ecommerce.product.pinned"
       data-ds-layer="singlepage"

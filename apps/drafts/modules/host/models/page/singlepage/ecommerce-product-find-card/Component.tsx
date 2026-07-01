@@ -8,8 +8,9 @@ export function EcommerceProductFindCard() {
     <main
       className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
       data-ds-page="host.page.ecommerce-product-find-card"
+      data-ds-route="/ecommerce/products"
     >
-      <HostNavbarDefault />
+      <HostNavbarDefault activeHref="/ecommerce/products" />
       <ContentPageHeader />
       <ProductFindCard />
       <FooterCompact />

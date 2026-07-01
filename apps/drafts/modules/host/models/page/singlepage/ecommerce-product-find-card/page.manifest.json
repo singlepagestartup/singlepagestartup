@@ -3,7 +3,7 @@
   "title": "Ecommerce Product Find Card",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for an ecommerce product find page rendered as product cards.",
+  "description": "Host page recipe for the /ecommerce/products route rendered as product cards.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

@@ -42,7 +42,7 @@ export function OrderCheckoutStepperDefault(
             <ChevronRight className="h-4 w-4" />
             <a
               className="no-underline transition hover:text-slate-600"
-              href="/services"
+              href="/ecommerce/products"
             >
               Services
             </a>
