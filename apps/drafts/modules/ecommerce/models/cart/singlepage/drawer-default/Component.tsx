@@ -9,7 +9,7 @@ import {
 } from "../../shared";
 
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-cart-flow-default--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
 
 export interface CartDrawerDefaultProps {
   items: CartItem[];
@@ -27,9 +27,9 @@ export const defaultCartDrawerDefaultProps: CartDrawerDefaultProps = {
   items: defaultCartItems,
   isOpen: true,
   checkoutHref:
-    "/?path=/story/modules-host-models-page-singlepage-ecommerce-order-checkout-details-default--default",
+    "/?path=/story/modules-host-models-page-singlepage-rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout--default",
   productsHref:
-    "/?path=/story/modules-host-models-page-singlepage-ecommerce-product-find-card--default",
+    "/?path=/story/modules-host-models-page-singlepage-ecommerce-products--default",
 };
 
 export function CartDrawerDefault(props?: Partial<CartDrawerDefaultProps>) {

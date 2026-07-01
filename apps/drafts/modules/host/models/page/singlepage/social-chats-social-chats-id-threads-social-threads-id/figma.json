@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "social-chats-social-chats-id-threads-social-threads-id",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.social-chats-social-chats-id-threads-social-threads-id",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "social-chats-social-chats-id-threads-social-threads-id",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "social-chats-social-chats-id-threads-social-threads-id",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/social-chats-social-chats-id-threads-social-threads-id/Component.stories.tsx"
+  }
+}

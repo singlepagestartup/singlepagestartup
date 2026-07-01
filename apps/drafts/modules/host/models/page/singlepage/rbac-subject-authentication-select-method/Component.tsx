@@ -3,7 +3,7 @@ import { FooterCompact } from "../../../../../website-builder/models/widget/sing
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
 const authorProfileStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
 
 export function RbacSubjectAuthenticationSelectMethod() {
   return (

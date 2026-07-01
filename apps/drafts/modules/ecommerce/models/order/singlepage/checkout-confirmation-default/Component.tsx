@@ -49,10 +49,9 @@ export const defaultOrderCheckoutConfirmationDefaultProps: OrderCheckoutConfirma
     ],
     continueShoppingLabel: "Continue Shopping",
     continueShoppingHref:
-      "?path=/story/modules-host-models-page-singlepage-ecommerce-product-find-card--default",
+      "?path=/story/modules-host-models-page-singlepage-ecommerce-products--default",
     homeLabel: "Back to Home",
-    homeHref:
-      "?path=/story/modules-host-models-page-singlepage-home-default--default",
+    homeHref: "?path=/story/modules-host-models-page-singlepage-root--default",
   };
 
 export function OrderCheckoutConfirmationDefault(

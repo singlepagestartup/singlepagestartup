@@ -39,29 +39,25 @@ const hostStoryHrefs = {
   adminSettings: hostStoryHref(
     "modules-host-models-page-singlepage-admin-settings--default",
   ),
-  blog: hostStoryHref(
-    "modules-host-models-page-singlepage-blog-find-article-card--default",
-  ),
+  blog: hostStoryHref("modules-host-models-page-singlepage-blog--default"),
   cart: hostStoryHref(
-    "modules-host-models-page-singlepage-ecommerce-cart-flow-default--default",
+    "modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default",
   ),
-  home: hostStoryHref(
-    "modules-host-models-page-singlepage-home-default--default",
-  ),
+  home: hostStoryHref("modules-host-models-page-singlepage-root--default"),
   login: hostStoryHref(
     "modules-host-models-page-singlepage-rbac-subject-authentication-select-method--default",
   ),
   chat: hostStoryHref(
-    "modules-host-models-page-singlepage-chat-default--default",
+    "modules-host-models-page-singlepage-social-chats-social-chats-id-threads-social-threads-id--default",
   ),
   authorProfile: hostStoryHref(
-    "modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default",
+    "modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default",
   ),
   profile: hostStoryHref(
-    "modules-host-models-page-singlepage-profile-default--default",
+    "modules-host-models-page-singlepage-rbac-subject-settings--default",
   ),
   services: hostStoryHref(
-    "modules-host-models-page-singlepage-ecommerce-product-find-card--default",
+    "modules-host-models-page-singlepage-ecommerce-products--default",
   ),
 };
 

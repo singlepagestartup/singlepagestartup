@@ -17,7 +17,7 @@ import {
 } from "../../../../../website-builder/models/widget/singlepage/navbar-default/Component";
 
 const authorProfileStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
 
 export function HostNavbarDefault(props?: Partial<NavbarDefaultProps>) {
   const [isCartOpen, setIsCartOpen] = useState(false);

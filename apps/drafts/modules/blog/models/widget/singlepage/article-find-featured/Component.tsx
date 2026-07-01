@@ -5,7 +5,7 @@ import {
 } from "../../../article/singlepage/featured/Component";
 
 const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-find-by-id-article-overview--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
 
 type ArticleFindFeaturedItem = ArticleFeaturedProps & {
   id: string;

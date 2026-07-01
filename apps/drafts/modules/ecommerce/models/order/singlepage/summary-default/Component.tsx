@@ -9,7 +9,7 @@ import { ProductCartDefault } from "../../../product/singlepage/cart-default/Com
 import { defaultCheckoutItems } from "../../shared";
 
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-cart-flow-default--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
 
 export interface OrderSummaryDefaultProps {
   items: CartItem[];
