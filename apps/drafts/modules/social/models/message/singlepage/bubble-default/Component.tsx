@@ -52,17 +52,15 @@ export function SocialMessageBubbleDefault(
       data-ds-block="social.message.bubble-default"
       data-ds-layer="singlepage"
     >
-      <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-          isOutgoing ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-700"
-        }`}
-      >
-        {author
-          .split(" ")
-          .map((part) => part[0])
-          .join("")
-          .slice(0, 2)}
-      </div>
+      {!isOutgoing ? (
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
+          {author
+            .split(" ")
+            .map((part) => part[0])
+            .join("")
+            .slice(0, 2)}
+        </div>
+      ) : null}
       <div className={`max-w-3xl ${isOutgoing ? "items-end" : "items-start"}`}>
         <div
           className={`mb-1 flex items-center gap-2 text-xs ${
