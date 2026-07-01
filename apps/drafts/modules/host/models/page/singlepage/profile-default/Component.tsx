@@ -10,7 +10,7 @@ export function ProfileDefault() {
       data-ds-page="host.page.profile-default"
       data-ds-route="/rbac/subject/settings"
     >
-      <HostNavbarDefault activeHref="/rbac/subject/settings" />
+      <HostNavbarDefault activeHref="/rbac/subject/settings" isAuthenticated />
       <SubjectMeAccountSettings />
       <ProfileAuthorFindByIdOverviewDefault />
       <FooterCompact />

@@ -1,6 +1,13 @@
 import { type ReactNode, useState } from "react";
 
-import { LogIn, Menu, Shield, ShoppingCart, X } from "lucide-react";
+import {
+  CircleUserRound,
+  LogIn,
+  Menu,
+  Shield,
+  ShoppingCart,
+  X,
+} from "lucide-react";
 
 const brandMarkSrc = new URL("./assets/singlepagestartup.svg", import.meta.url)
   .href;
@@ -26,6 +33,12 @@ const hostStoryHrefs = {
   ),
   home: hostStoryHref(
     "modules-host-models-page-singlepage-home-default--default",
+  ),
+  login: hostStoryHref(
+    "modules-host-models-page-singlepage-rbac-subject-authentication-select-method--default",
+  ),
+  profile: hostStoryHref(
+    "modules-host-models-page-singlepage-profile-default--default",
   ),
   services: hostStoryHref(
     "modules-host-models-page-singlepage-ecommerce-product-find-card--default",
@@ -76,8 +89,11 @@ export const defaultNavbarDefaultProps = {
   ] satisfies DraftLink[],
   adminHref: "/admin/settings",
   adminStoryHref: hostStoryHrefs.adminSettings,
+  isAuthenticated: false,
   loginHref: "/rbac/subject/authentication/select-method",
-  loginStoryHref: undefined,
+  loginStoryHref: hostStoryHrefs.login,
+  profileHref: "/rbac/subject/settings",
+  profileStoryHref: hostStoryHrefs.profile,
 };
 
 export interface NavbarDefaultProps {
@@ -92,9 +108,12 @@ export interface NavbarDefaultProps {
   adminHref: string;
   adminStoryHref: string;
   cartButton?: ReactNode;
+  isAuthenticated: boolean;
   loginHref: string;
   loginStoryHref?: string;
   onCartClick?: () => void;
+  profileHref: string;
+  profileStoryHref: string;
 }
 
 export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
@@ -111,13 +130,20 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
     adminHref,
     adminStoryHref,
     cartButton,
+    isAuthenticated,
     loginHref,
     loginStoryHref,
     onCartClick,
+    profileHref,
+    profileStoryHref,
   } = {
     ...defaultNavbarDefaultProps,
     ...props,
   };
+  const authHref = isAuthenticated ? profileHref : loginHref;
+  const authStoryHref = isAuthenticated ? profileStoryHref : loginStoryHref;
+  const authLabel = isAuthenticated ? "Profile" : "Sign In";
+  const AuthIcon = isAuthenticated ? CircleUserRound : LogIn;
   const mobileMenuButtonLabel = isMobileMenuOpen
     ? "Close navigation menu"
     : "Open navigation menu";
@@ -221,10 +247,11 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
             ))}
           <a
             className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
-            {...getStoryLinkProps(loginHref, loginStoryHref)}
+            aria-label={authLabel}
+            {...getStoryLinkProps(authHref, authStoryHref)}
           >
-            <LogIn className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign In</span>
+            <AuthIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">{authLabel}</span>
           </a>
           <a
             className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
@@ -304,10 +331,10 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
               <a
                 className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
                 onClick={closeMobileMenu}
-                {...getStoryLinkProps(loginHref, loginStoryHref)}
+                {...getStoryLinkProps(authHref, authStoryHref)}
               >
-                <LogIn className="h-4 w-4" />
-                Sign In
+                <AuthIcon className="h-4 w-4" />
+                {authLabel}
               </a>
               <a
                 className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
