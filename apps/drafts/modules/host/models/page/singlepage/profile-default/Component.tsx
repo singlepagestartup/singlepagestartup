@@ -1,5 +1,4 @@
 import { SubjectMeAccountSettings } from "../../../../../rbac/models/widget/singlepage/subject-me-account-settings/Component";
-import { ProfileAuthorFindByIdOverviewDefault } from "../../../../../social/models/profile/singlepage/author-find-by-id-overview-default/Component";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
@@ -12,7 +11,6 @@ export function ProfileDefault() {
     >
       <HostNavbarDefault activeHref="/rbac/subject/settings" isAuthenticated />
       <SubjectMeAccountSettings />
-      <ProfileAuthorFindByIdOverviewDefault />
       <FooterCompact />
     </main>
   );
