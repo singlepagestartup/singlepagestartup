@@ -14,8 +14,8 @@
       "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
     },
     {
-      "id": "social.widget.chat-workspace-default",
-      "path": "../../../../../social/models/widget/singlepage/chat-workspace-default"
+      "id": "social.widget.chat-overview-default",
+      "path": "../../../../../social/models/widget/singlepage/chat-overview-default"
     },
     {
       "id": "website-builder.widget.footer-compact",

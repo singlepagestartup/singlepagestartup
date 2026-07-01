@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-30T23:25:29.175Z",
+  "generatedAt": "2026-07-01T07:53:21.019Z",
   "modulesRoot": "libs/modules",
   "draftsRoot": "apps/drafts",
   "totals": {
     "modules": 16,
     "entities": 156,
     "variants": 1836,
-    "coveredVariants": 15
+    "coveredVariants": 17
   },
   "modules": [
     {
@@ -9312,13 +9312,17 @@
               "variant": "chat-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "social.widget.chat-list-default"
+              ]
             },
             {
               "variant": "chat-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "social.widget.chat-overview-default"
+              ]
             },
             {
               "variant": "default",

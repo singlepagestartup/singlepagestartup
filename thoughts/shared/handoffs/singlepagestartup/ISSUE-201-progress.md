@@ -36,7 +36,7 @@ completed_date: 2026-06-30T23:22:41Z
 - [x] Completed: 2026-06-30T23:22:41Z
 - [x] Automated verification: `npm run drafts:validate`, `npm run drafts:ds:inventory`, `npm run drafts:ds:validate`, and `npm run drafts:storybook:build` passed.
 
-**Notes**: Added social chat/thread/message/widget Storybook blocks and host page recipes for chat and profile. Existing runnable public routes for services, service detail, checkout, auth, blog article, and author pages are exposed through host page story aliases in the Storybook index.
+**Notes**: Added social chat/thread/message/widget Storybook blocks and host page recipes for chat and profile. The runnable chat list and composed chat overview are owned by `social.widget` as `chat-list-default` and `chat-overview-default`; no `social.chat.workspace-default` story remains. Existing runnable public routes for services, service detail, checkout, auth, blog article, and author pages are exposed through host page story aliases in the Storybook index.
 
 ### Phase 4: Admin Panel And Admin-V2 Storybook Migration
 
@@ -60,7 +60,7 @@ completed_date: 2026-06-30T23:22:41Z
 - [x] Completed: 2026-06-30T23:22:41Z
 - [x] Automated verification: `npm run drafts:validate`, `npm run drafts:ds:inventory`, `npm run drafts:ds:validate`, and `npm run drafts:storybook:build` passed.
 
-**Notes**: Storybook is running at `http://127.0.0.1:4320/`. Browser verification confirmed `http://127.0.0.1:4320/index.json` returns the migrated story IDs; final local HTTP check returned `200` with 153 entries and no missing required story IDs. Preview iframe checks passed for `host.page.admin-dashboard`, `host.page.chat-default`, `host.page.admin-model-edit`, and the startup widget override.
+**Notes**: Storybook is running at `http://127.0.0.1:4320/`. Browser verification confirmed `http://127.0.0.1:4320/index.json` returns the migrated story IDs; final local HTTP check returned `200` with 153 entries and no missing required story IDs. Preview iframe checks passed for `host.page.admin-dashboard`, `host.page.chat-default`, `social.widget.chat-list-default`, `social.widget.chat-overview-default`, `host.page.admin-model-edit`, and the startup widget override.
 
 ## Incident Log
 
@@ -78,7 +78,7 @@ completed_date: 2026-06-30T23:22:41Z
 - Added/updated Storybook stories and manifests for host page routes, social chat surfaces, admin-v2 pages, module-owned admin blocks, and relation management.
 - Updated design-system validation so manifest-declared story paths must be Storybook-discoverable.
 - Verified runnable manifests with `npm run drafts:validate` (4 manifests OK).
-- Regenerated `apps/drafts/inventory/modules.generated.json` with `npm run drafts:ds:inventory` (`modules=16 entities=156 variants=1836 covered=15`).
+- Regenerated `apps/drafts/inventory/modules.generated.json` with `npm run drafts:ds:inventory` (`modules=16 entities=156 variants=1836 covered=17`).
 - Verified design-system manifests with `npm run drafts:ds:validate`.
 - Built Storybook with `npm run drafts:storybook:build`.
 - Verified the running Storybook index and representative preview iframe stories in Browser.
@@ -96,4 +96,4 @@ completed_date: 2026-06-30T23:22:41Z
 
 ---
 
-**Last updated**: 2026-06-30T23:22:41Z
+**Last updated**: 2026-07-01T07:57:07Z

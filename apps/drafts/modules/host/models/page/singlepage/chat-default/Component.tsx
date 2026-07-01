@@ -1,4 +1,4 @@
-import { SocialWidgetChatWorkspaceDefault } from "../../../../../social/models/widget/singlepage/chat-workspace-default/Component";
+import { SocialWidgetChatOverviewDefault } from "../../../../../social/models/widget/singlepage/chat-overview-default/Component";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
@@ -9,7 +9,7 @@ export function ChatDefault() {
       data-ds-page="host.page.chat-default"
     >
       <HostNavbarDefault activeHref="/chat" />
-      <SocialWidgetChatWorkspaceDefault />
+      <SocialWidgetChatOverviewDefault />
       <FooterCompact />
     </main>
   );

@@ -1,19 +1,19 @@
 import { Paperclip, Search, Send, Settings, Smile, Users } from "lucide-react";
 
-import { SocialChatListDefault } from "../list-default/Component";
 import { SocialMessageBubbleDefault } from "../../../message/singlepage/bubble-default/Component";
 import { SocialThreadListDefault } from "../../../thread/singlepage/list-default/Component";
+import { SocialWidgetChatListDefault } from "../chat-list-default/Component";
 
-export function SocialChatWorkspaceDefault() {
+export function SocialWidgetChatOverviewDefault() {
   return (
     <section
       className="w-full bg-white"
-      data-ds-block="social.chat.workspace-default"
-      data-ds-imports="social.chat.list-default social.thread.list-default social.message.bubble-default"
+      data-ds-block="social.widget.chat-overview-default"
+      data-ds-imports="social.widget.chat-list-default social.thread.list-default social.message.bubble-default"
       data-ds-layer="singlepage"
     >
       <div className="grid h-[calc(100vh-2rem)] min-h-[760px] w-full overflow-hidden border border-slate-200 bg-white md:grid-cols-[256px_300px_minmax(0,1fr)]">
-        <SocialChatListDefault />
+        <SocialWidgetChatListDefault />
         <SocialThreadListDefault />
         <div className="flex min-h-0 flex-col">
           <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-3">
@@ -22,7 +22,7 @@ export function SocialChatWorkspaceDefault() {
                 Q1 Goals & OKRs
               </h2>
               <p className="mt-0.5 text-xs text-slate-400">
-                Started by James Carter · 26 messages
+                Started by James Carter - 26 messages
               </p>
             </div>
             <div className="flex items-center gap-2">

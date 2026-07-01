@@ -16,8 +16,8 @@ Completes issue #201 by moving the remaining reusable runnable draft surfaces in
 - [x] `npm run drafts:ds:inventory`
 - [x] `npm run drafts:ds:validate`
 - [x] `npm run drafts:storybook:build`
-- [x] Running Storybook `index.json` check on `http://127.0.0.1:4320/index.json` returned `200`, 154 entries, and no missing required migrated story IDs.
-- [x] Browser preview iframe checks passed for representative admin dashboard, chat page, chat list/workspace, admin model edit, and startup override stories.
+- [x] Running Storybook `index.json` check on `http://127.0.0.1:4320/index.json` returned `200`, 153 entries, and no missing required migrated story IDs.
+- [x] Browser preview iframe checks passed for representative admin dashboard, chat page, widget chat list/overview, admin model edit, and startup override stories.
 
 # Notes
 

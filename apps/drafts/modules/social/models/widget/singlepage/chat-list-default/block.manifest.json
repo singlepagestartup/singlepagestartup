@@ -1,26 +1,26 @@
 {
   "$schema": "../../../../../../block.schema.json",
-  "id": "social.chat.list-default",
-  "title": "Social Chat / List / Default",
-  "description": "Singlepage presentation block for the left chat group list.",
+  "id": "social.widget.chat-list-default",
+  "title": "Social Widget / Chat List / Default",
+  "description": "Singlepage social widget for the left chat group list.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
     "module": "social",
     "entityType": "model",
-    "entity": "chat",
-    "variant": "list-default"
+    "entity": "widget",
+    "variant": "chat-list-default"
   },
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
   },
   "figma": {
-    "componentName": "social.chat",
+    "componentName": "social.widget",
     "pageName": "social",
     "nodeId": null,
     "syncStatus": "not-created",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "chat", "list"]
+  "tags": ["social", "widget", "chat", "list"]
 }

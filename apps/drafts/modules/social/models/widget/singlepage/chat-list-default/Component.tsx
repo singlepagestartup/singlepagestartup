@@ -7,7 +7,7 @@ import {
   Settings,
 } from "lucide-react";
 
-export interface SocialChatListDefaultProps {
+export interface SocialWidgetChatListDefaultProps {
   chats: Array<{
     id: string;
     name: string;
@@ -18,46 +18,47 @@ export interface SocialChatListDefaultProps {
   }>;
 }
 
-export const defaultSocialChatListDefaultProps: SocialChatListDefaultProps = {
-  chats: [
-    {
-      id: "general",
-      name: "General",
-      description: "Company-wide announcements and discussions",
-      unread: 0,
-      active: true,
-      icon: "general",
-    },
-    {
-      id: "engineering",
-      name: "Engineering",
-      description: "Technical discussions, code reviews, and releases",
-      unread: 4,
-      icon: "engineering",
-    },
-    {
-      id: "design",
-      name: "Design",
-      description: "Design reviews, UI/UX research, and visual assets",
-      unread: 0,
-      icon: "design",
-    },
-    {
-      id: "marketing",
-      name: "Marketing",
-      description: "Campaigns, content strategy, and launch planning",
-      unread: 1,
-      icon: "marketing",
-    },
-    {
-      id: "random",
-      name: "Random",
-      description: "Off-topic conversations, music, links, and lunch plans",
-      unread: 2,
-      icon: "random",
-    },
-  ],
-};
+export const defaultSocialWidgetChatListDefaultProps: SocialWidgetChatListDefaultProps =
+  {
+    chats: [
+      {
+        id: "general",
+        name: "General",
+        description: "Company-wide announcements and discussions",
+        unread: 0,
+        active: true,
+        icon: "general",
+      },
+      {
+        id: "engineering",
+        name: "Engineering",
+        description: "Technical discussions, code reviews, and releases",
+        unread: 4,
+        icon: "engineering",
+      },
+      {
+        id: "design",
+        name: "Design",
+        description: "Design reviews, UI/UX research, and visual assets",
+        unread: 0,
+        icon: "design",
+      },
+      {
+        id: "marketing",
+        name: "Marketing",
+        description: "Campaigns, content strategy, and launch planning",
+        unread: 1,
+        icon: "marketing",
+      },
+      {
+        id: "random",
+        name: "Random",
+        description: "Off-topic conversations, music, links, and lunch plans",
+        unread: 2,
+        icon: "random",
+      },
+    ],
+  };
 
 const chatIcons = {
   general: MessageCircle,
@@ -67,18 +68,18 @@ const chatIcons = {
   random: Hash,
 };
 
-export function SocialChatListDefault(
-  props?: Partial<SocialChatListDefaultProps>,
+export function SocialWidgetChatListDefault(
+  props?: Partial<SocialWidgetChatListDefaultProps>,
 ) {
   const { chats } = {
-    ...defaultSocialChatListDefaultProps,
+    ...defaultSocialWidgetChatListDefaultProps,
     ...props,
   };
 
   return (
     <aside
       className="flex h-full min-h-[720px] w-full flex-col border-r border-slate-200 bg-slate-50"
-      data-ds-block="social.chat.list-default"
+      data-ds-block="social.widget.chat-list-default"
       data-ds-layer="singlepage"
     >
       <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">

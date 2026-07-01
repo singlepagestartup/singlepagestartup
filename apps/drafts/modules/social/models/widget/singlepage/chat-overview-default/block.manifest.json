@@ -1,15 +1,15 @@
 {
   "$schema": "../../../../../../block.schema.json",
-  "id": "social.widget.chat-workspace-default",
-  "title": "Social Widget / Chat Workspace / Default",
-  "description": "Social widget that exposes the reusable chat workspace for host page composition.",
+  "id": "social.widget.chat-overview-default",
+  "title": "Social Widget / Chat Overview / Default",
+  "description": "Social widget that composes the runnable chat overview from chat list, thread list, and message timeline blocks.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
     "module": "social",
     "entityType": "model",
     "entity": "widget",
-    "variant": "chat-workspace-default"
+    "variant": "chat-overview-default"
   },
   "files": {
     "component": "Component.tsx",
@@ -22,5 +22,5 @@
     "syncStatus": "not-created",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "widget", "chat"]
+  "tags": ["social", "widget", "chat", "overview"]
 }
