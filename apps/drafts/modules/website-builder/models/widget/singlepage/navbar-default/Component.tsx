@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
-import { LogIn, Shield, ShoppingCart } from "lucide-react";
+import { LogIn, Menu, Shield, ShoppingCart, X } from "lucide-react";
 
 const brandMarkSrc = new URL("./assets/singlepagestartup.svg", import.meta.url)
   .href;
@@ -98,6 +98,7 @@ export interface NavbarDefaultProps {
 }
 
 export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const {
     brand,
     activeHref,
@@ -117,6 +118,18 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
     ...defaultNavbarDefaultProps,
     ...props,
   };
+  const mobileMenuButtonLabel = isMobileMenuOpen
+    ? "Close navigation menu"
+    : "Open navigation menu";
+
+  function closeMobileMenu() {
+    setIsMobileMenuOpen(false);
+  }
+
+  function handleMobileCartClick() {
+    onCartClick?.();
+    closeMobileMenu();
+  }
 
   return (
     <div
@@ -124,7 +137,7 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
       data-ds-block="website-builder.widget.navbar-default"
       data-ds-layer="singlepage"
     >
-      <div className="mx-auto w-full max-w-6xl px-6 flex h-16 items-center justify-between">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-6">
           <a
             className="inline-flex items-center gap-3 text-sm text-slate-900 no-underline"
@@ -163,6 +176,20 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 md:hidden"
+            aria-label={mobileMenuButtonLabel}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="navbar-default-mobile-menu"
+            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
+          </button>
           {cartButton ??
             (onCartClick ? (
               <button
@@ -208,6 +235,92 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
           </a>
         </div>
       </div>
+      {isMobileMenuOpen ? (
+        <div
+          id="navbar-default-mobile-menu"
+          className="border-t border-slate-200 bg-white md:hidden"
+        >
+          <div className="mx-auto w-full max-w-6xl space-y-3 px-6 py-4">
+            <nav className="grid gap-2" aria-label="Mobile primary">
+              {links.map((link) =>
+                link.disabled ? (
+                  <span
+                    key={link.label}
+                    className="cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
+                    aria-disabled="true"
+                  >
+                    {link.label}
+                  </span>
+                ) : (
+                  <a
+                    key={link.label}
+                    className={`rounded-md border px-3 py-2 text-sm no-underline transition ${
+                      link.href === activeHref
+                        ? "border-slate-300 bg-slate-100 text-slate-900"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                    onClick={closeMobileMenu}
+                    {...getStoryLinkProps(link.href, link.storyHref)}
+                  >
+                    {link.label}
+                  </a>
+                ),
+              )}
+            </nav>
+            <div className="grid gap-2 border-t border-slate-100 pt-3">
+              {onCartClick ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                  onClick={handleMobileCartClick}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Cart
+                  </span>
+                  {cartCount ? (
+                    <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] text-white">
+                      {cartCount}
+                    </span>
+                  ) : null}
+                </button>
+              ) : (
+                <a
+                  className="inline-flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                  onClick={closeMobileMenu}
+                  {...getStoryLinkProps(cartHref, cartStoryHref)}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Cart
+                  </span>
+                  {cartCount ? (
+                    <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] text-white">
+                      {cartCount}
+                    </span>
+                  ) : null}
+                </a>
+              )}
+              <a
+                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                onClick={closeMobileMenu}
+                {...getStoryLinkProps(loginHref, loginStoryHref)}
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </a>
+              <a
+                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                onClick={closeMobileMenu}
+                {...getStoryLinkProps(adminHref, adminStoryHref)}
+              >
+                <Shield className="h-4 w-4" />
+                Admin Panel
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
