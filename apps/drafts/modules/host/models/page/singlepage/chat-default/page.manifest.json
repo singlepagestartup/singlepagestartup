@@ -3,7 +3,7 @@
   "title": "Chat / Default",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for the runnable /chat route, composed from social-owned chat blocks.",
+  "description": "Host page recipe for the /social/chats/[social.chats.id]/threads/[social.threads.id] route, composed from social-owned chat blocks.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

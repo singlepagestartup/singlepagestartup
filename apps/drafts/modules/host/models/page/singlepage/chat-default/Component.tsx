@@ -8,8 +8,9 @@ export function ChatDefault() {
     <main
       className="min-h-screen bg-slate-100 text-slate-900 antialiased"
       data-ds-page="host.page.chat-default"
+      data-ds-route="/social/chats/[social.chats.id]/threads/[social.threads.id]"
     >
-      <HostNavbarDefault activeHref="/chat" />
+      <HostNavbarDefault activeHref="/social/chats/[social.chats.id]/threads/[social.threads.id]" />
       <section
         className="grid w-full overflow-hidden border-y border-slate-200 bg-white md:grid-cols-[256px_minmax(0,1fr)]"
         data-ds-imports="social.widget.chat-list-default social.widget.chat-overview-default"
