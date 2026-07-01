@@ -4,7 +4,7 @@ import { AdminPreviewDialog } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-preview-dialog",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/admin-preview-dialog",
   component: AdminPreviewDialog,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "admin preview dialog",
+  name: "default",
 };

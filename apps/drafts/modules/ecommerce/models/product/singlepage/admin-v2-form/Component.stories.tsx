@@ -4,7 +4,7 @@ import { EcommerceProductAdminV2Form } from "./Component";
 
 const meta = {
   id: "modules-ecommerce-models-product-singlepage-admin-v2-form",
-  title: "Modules/Ecommerce/Models/Product/Singlepage",
+  title: "Modules/Ecommerce/Models/Product/Singlepage/admin-v2-form",
   component: EcommerceProductAdminV2Form,
   parameters: {
     layout: "centered",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "admin-v2-form",
+  name: "default",
 };

@@ -4,7 +4,7 @@ import { RbacIdentityLoginDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-rbac-identity-login-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/rbac-identity-login-default",
   component: RbacIdentityLoginDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/rbac/subject/authentication/select-method",
+  name: "default",
 };
 
 export const RunnableLoginRoute: Story = {

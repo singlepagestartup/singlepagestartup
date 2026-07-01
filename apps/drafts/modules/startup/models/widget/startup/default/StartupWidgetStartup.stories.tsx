@@ -7,7 +7,7 @@ import {
 } from "./StartupWidgetStartup";
 
 const meta = {
-  title: "Draft Internals/Startup/Models/Widget/Startup/Default",
+  title: "Draft Internals/Startup/Models/Widget/Startup/default",
   component: StartupWidgetStartup,
   parameters: {
     layout: "fullscreen",
@@ -19,9 +19,12 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Override: Story = {};
+export const Override: Story = {
+  name: "override",
+};
 
 export const CompareWithSinglepage: Story = {
+  name: "compare-with-singlepage",
   render: () => (
     <main className="min-h-screen bg-[#eaf0f7] text-slate-950 tracking-normal">
       <StartupWidgetDefault

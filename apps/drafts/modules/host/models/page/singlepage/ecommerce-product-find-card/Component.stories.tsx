@@ -4,7 +4,7 @@ import { EcommerceProductFindCard } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-ecommerce-product-find-card",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/ecommerce-product-find-card",
   component: EcommerceProductFindCard,
   parameters: {
     layout: "fullscreen",
@@ -16,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/ecommerce",
+  name: "default",
 };
 
 export const RunnableServicesRoute: Story = {

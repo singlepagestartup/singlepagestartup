@@ -4,7 +4,7 @@ import { ChatDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-chat-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/chat-default",
   component: ChatDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/chat",
+  name: "default",
 };

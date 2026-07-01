@@ -4,7 +4,7 @@ import { AdminModelList } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-model-list",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/admin-model-list",
   component: AdminModelList,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/admin/:moduleSlug/:modelSlug",
+  name: "default",
 };

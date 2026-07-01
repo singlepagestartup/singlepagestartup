@@ -4,7 +4,7 @@ import { AdminSettings } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-settings",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/admin-settings",
   component: AdminSettings,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/admin/settings",
+  name: "default",
 };

@@ -4,7 +4,7 @@ import { RbacIdentityRegisterDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-rbac-identity-register-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/rbac-identity-register-default",
   component: RbacIdentityRegisterDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/rbac/subject/authentication/registration",
+  name: "default",
 };
 
 export const RunnableRegisterRoute: Story = {

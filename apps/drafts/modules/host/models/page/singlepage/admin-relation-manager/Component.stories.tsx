@@ -4,7 +4,7 @@ import { AdminRelationManager } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-admin-relation-manager",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/admin-relation-manager",
   component: AdminRelationManager,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "admin relation manager",
+  name: "default",
 };

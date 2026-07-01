@@ -4,7 +4,8 @@ import { RbacIdentityPasswordResetDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-rbac-identity-password-reset-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title:
+    "Modules/Host/Models/Page/Singlepage/rbac-identity-password-reset-default",
   component: RbacIdentityPasswordResetDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,7 +17,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/rbac/subject/authentication/forgot-password",
+  name: "default",
 };
 
 export const RunnableForgotPasswordRoute: Story = {

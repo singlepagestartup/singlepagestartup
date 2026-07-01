@@ -6,7 +6,7 @@ import {
 } from "./StartupWidgetDefault";
 
 const meta = {
-  title: "Draft Internals/Startup/Models/Widget/Singlepage/Default",
+  title: "Draft Internals/Startup/Models/Widget/Singlepage/default",
   component: StartupWidgetDefault,
   parameters: {
     layout: "fullscreen",
@@ -18,4 +18,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  name: "default",
+};

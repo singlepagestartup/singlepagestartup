@@ -4,7 +4,7 @@ import { ProfileDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-profile-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title: "Modules/Host/Models/Page/Singlepage/profile-default",
   component: ProfileDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/profile",
+  name: "default",
 };

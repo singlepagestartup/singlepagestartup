@@ -4,7 +4,8 @@ import { EcommerceOrderCheckoutDetailsDefault } from "./Component";
 
 const meta = {
   id: "modules-host-models-page-singlepage-ecommerce-order-checkout-details-default",
-  title: "Modules/Host/Models/Page/Singlepage",
+  title:
+    "Modules/Host/Models/Page/Singlepage/ecommerce-order-checkout-details-default",
   component: EcommerceOrderCheckoutDetailsDefault,
   parameters: {
     layout: "fullscreen",
@@ -16,7 +17,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/rbac/subjects/[rbac.subjects.id]/subjects-to-ecommerce-module-orders/checkout",
+  name: "default",
 };
 
 export const RunnableCheckoutRoute: Story = {
