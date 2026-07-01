@@ -95,6 +95,9 @@ export function IdentityLoginDefault(
     ...defaultIdentityLoginDefaultProps,
     ...props,
   };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -132,9 +135,11 @@ export function IdentityLoginDefault(
                 <input
                   className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="rbac-login-email"
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder={emailPlaceholder}
-                  readOnly
                   type="email"
+                  value={email}
                 />
               </div>
             </div>
@@ -159,9 +164,11 @@ export function IdentityLoginDefault(
                 <input
                   className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="rbac-login-password"
+                  name="password"
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder={passwordPlaceholder}
-                  readOnly
                   type={showPassword ? "text" : "password"}
+                  value={password}
                 />
                 <button
                   aria-label={showPassword ? "Hide password" : "Show password"}
@@ -180,9 +187,9 @@ export function IdentityLoginDefault(
 
             <label className="flex cursor-pointer items-center gap-2">
               <input
+                checked={rememberMe}
                 className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                defaultChecked
-                readOnly
+                onChange={(event) => setRememberMe(event.target.checked)}
                 type="checkbox"
               />
               <span className="text-xs text-slate-600">{rememberLabel}</span>
