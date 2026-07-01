@@ -1,11 +1,15 @@
 import { type ReactNode, useState } from "react";
 
 import {
+  ChevronDown,
   CircleUserRound,
   LogIn,
+  LogOut,
   Menu,
+  MessageSquare,
   Shield,
   ShoppingCart,
+  User,
   X,
 } from "lucide-react";
 
@@ -17,6 +21,16 @@ interface DraftLink {
   href: string;
   storyHref?: string;
   disabled?: boolean;
+}
+
+export interface NavbarAuthUser {
+  name: string;
+  email: string;
+  role?: string;
+  avatar?: string;
+  profileHref?: string;
+  profileStoryHref?: string;
+  authorStoryHref?: string;
 }
 
 const hostStoryHref = (storyId: string) => `/?path=/story/${storyId}`;
@@ -36,6 +50,12 @@ const hostStoryHrefs = {
   ),
   login: hostStoryHref(
     "modules-host-models-page-singlepage-rbac-subject-authentication-select-method--default",
+  ),
+  chat: hostStoryHref(
+    "modules-host-models-page-singlepage-chat-default--default",
+  ),
+  authorProfile: hostStoryHref(
+    "modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default",
   ),
   profile: hostStoryHref(
     "modules-host-models-page-singlepage-profile-default--default",
@@ -90,10 +110,23 @@ export const defaultNavbarDefaultProps = {
   adminHref: "/admin/settings",
   adminStoryHref: hostStoryHrefs.adminSettings,
   isAuthenticated: false,
+  authUser: {
+    name: "Sarah Kim",
+    email: "sarah@sps.dev",
+    role: "Head of Product",
+    avatar:
+      "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+    profileHref: "/blog/authors/[social.profiles.slug]",
+    profileStoryHref: hostStoryHrefs.authorProfile,
+  } satisfies NavbarAuthUser,
   loginHref: "/rbac/subject/authentication/select-method",
   loginStoryHref: hostStoryHrefs.login,
-  profileHref: "/rbac/subject/settings",
-  profileStoryHref: hostStoryHrefs.profile,
+  profileHref: "/blog/authors/[social.profiles.slug]",
+  profileStoryHref: hostStoryHrefs.authorProfile,
+  accountSettingsHref: "/rbac/subject/settings",
+  accountSettingsStoryHref: hostStoryHrefs.profile,
+  chatHref: "/social/chats/[social.chats.id]/threads/[social.threads.id]",
+  chatStoryHref: hostStoryHrefs.chat,
 };
 
 export interface NavbarDefaultProps {
@@ -109,15 +142,22 @@ export interface NavbarDefaultProps {
   adminStoryHref: string;
   cartButton?: ReactNode;
   isAuthenticated: boolean;
+  authUser: NavbarAuthUser | null;
   loginHref: string;
   loginStoryHref?: string;
+  onLogout?: () => void;
   onCartClick?: () => void;
   profileHref: string;
   profileStoryHref: string;
+  accountSettingsHref: string;
+  accountSettingsStoryHref: string;
+  chatHref: string;
+  chatStoryHref: string;
 }
 
 export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const {
     brand,
     activeHref,
@@ -131,19 +171,32 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
     adminStoryHref,
     cartButton,
     isAuthenticated,
+    authUser,
     loginHref,
     loginStoryHref,
+    onLogout,
     onCartClick,
     profileHref,
     profileStoryHref,
+    accountSettingsHref,
+    accountSettingsStoryHref,
+    chatHref,
+    chatStoryHref,
   } = {
     ...defaultNavbarDefaultProps,
     ...props,
   };
-  const authHref = isAuthenticated ? profileHref : loginHref;
-  const authStoryHref = isAuthenticated ? profileStoryHref : loginStoryHref;
+  const activeAuthUser = authUser ?? defaultNavbarDefaultProps.authUser;
+  const activeProfileHref = activeAuthUser.profileHref ?? profileHref;
+  const activeProfileStoryHref =
+    activeAuthUser.profileStoryHref ??
+    activeAuthUser.authorStoryHref ??
+    profileStoryHref;
+  const authHref = isAuthenticated ? activeProfileHref : loginHref;
+  const authStoryHref = isAuthenticated
+    ? activeProfileStoryHref
+    : loginStoryHref;
   const authLabel = isAuthenticated ? "Profile" : "Sign In";
-  const AuthIcon = isAuthenticated ? CircleUserRound : LogIn;
   const mobileMenuButtonLabel = isMobileMenuOpen
     ? "Close navigation menu"
     : "Open navigation menu";
@@ -152,9 +205,24 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
     setIsMobileMenuOpen(false);
   }
 
+  function closeProfileMenu() {
+    setIsProfileMenuOpen(false);
+  }
+
   function handleMobileCartClick() {
     onCartClick?.();
     closeMobileMenu();
+  }
+
+  function handleLogout() {
+    onLogout?.();
+    closeMobileMenu();
+    closeProfileMenu();
+
+    if (typeof window === "undefined") return;
+
+    const targetWindow = window.top ?? window;
+    targetWindow.location.href = brandStoryHref || brandHref;
   }
 
   return (
@@ -245,14 +313,97 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
                 ) : null}
               </a>
             ))}
-          <a
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
-            aria-label={authLabel}
-            {...getStoryLinkProps(authHref, authStoryHref)}
-          >
-            <AuthIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">{authLabel}</span>
-          </a>
+          {isAuthenticated ? (
+            <div className="relative hidden sm:block">
+              <button
+                aria-expanded={isProfileMenuOpen}
+                aria-haspopup="menu"
+                aria-label="Open profile menu"
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-300 bg-white px-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+                onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                type="button"
+              >
+                {activeAuthUser.avatar ? (
+                  <img
+                    alt=""
+                    className="h-6 w-6 rounded-full object-cover"
+                    src={activeAuthUser.avatar}
+                  />
+                ) : (
+                  <CircleUserRound className="h-4 w-4" />
+                )}
+                <span className="max-w-[7rem] truncate">
+                  {activeAuthUser.name.split(" ")[0]}
+                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+              </button>
+              {isProfileMenuOpen ? (
+                <div
+                  className="absolute right-0 top-full z-[100] mt-2 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
+                  role="menu"
+                >
+                  <div className="border-b border-slate-100 px-3 py-3">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {activeAuthUser.name}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {activeAuthUser.email}
+                    </p>
+                  </div>
+                  <div className="grid gap-1 p-1.5">
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeProfileMenu}
+                      role="menuitem"
+                      {...getStoryLinkProps(authHref, authStoryHref)}
+                    >
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </a>
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeProfileMenu}
+                      role="menuitem"
+                      {...getStoryLinkProps(chatHref, chatStoryHref)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Team Chat
+                    </a>
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeProfileMenu}
+                      role="menuitem"
+                      {...getStoryLinkProps(
+                        accountSettingsHref,
+                        accountSettingsStoryHref,
+                      )}
+                    >
+                      <Shield className="h-4 w-4" />
+                      Account Settings
+                    </a>
+                    <button
+                      className="inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-red-600 transition hover:bg-red-50"
+                      onClick={handleLogout}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <a
+              className="hidden h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 no-underline transition hover:bg-slate-50 sm:inline-flex"
+              aria-label={authLabel}
+              {...getStoryLinkProps(authHref, authStoryHref)}
+            >
+              <LogIn className="h-4 w-4" />
+              <span>{authLabel}</span>
+            </a>
+          )}
           <a
             className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
             {...getStoryLinkProps(adminHref, adminStoryHref)}
@@ -328,14 +479,77 @@ export function NavbarDefault(props?: Partial<NavbarDefaultProps>) {
                   ) : null}
                 </a>
               )}
-              <a
-                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
-                onClick={closeMobileMenu}
-                {...getStoryLinkProps(authHref, authStoryHref)}
-              >
-                <AuthIcon className="h-4 w-4" />
-                {authLabel}
-              </a>
+              {isAuthenticated ? (
+                <div className="rounded-md border border-slate-200 bg-white p-2">
+                  <div className="flex items-center gap-2 border-b border-slate-100 px-1 pb-2">
+                    {activeAuthUser.avatar ? (
+                      <img
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                        src={activeAuthUser.avatar}
+                      />
+                    ) : (
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                        <CircleUserRound className="h-4 w-4" />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">
+                        {activeAuthUser.name}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">
+                        {activeAuthUser.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-2 grid gap-1">
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeMobileMenu}
+                      {...getStoryLinkProps(authHref, authStoryHref)}
+                    >
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </a>
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeMobileMenu}
+                      {...getStoryLinkProps(chatHref, chatStoryHref)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Team Chat
+                    </a>
+                    <a
+                      className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                      onClick={closeMobileMenu}
+                      {...getStoryLinkProps(
+                        accountSettingsHref,
+                        accountSettingsStoryHref,
+                      )}
+                    >
+                      <Shield className="h-4 w-4" />
+                      Account Settings
+                    </a>
+                    <button
+                      className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-red-600 transition hover:bg-red-50"
+                      onClick={handleLogout}
+                      type="button"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <a
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
+                  onClick={closeMobileMenu}
+                  {...getStoryLinkProps(authHref, authStoryHref)}
+                >
+                  <LogIn className="h-4 w-4" />
+                  {authLabel}
+                </a>
+              )}
               <a
                 className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
                 onClick={closeMobileMenu}

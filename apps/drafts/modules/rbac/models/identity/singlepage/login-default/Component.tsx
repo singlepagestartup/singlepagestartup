@@ -1,6 +1,8 @@
 import { Chrome, Eye, EyeOff, Github, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 
+import { writeRbacDraftAuthUser } from "../../../../shared";
+
 export interface IdentityLoginProvider {
   key: string;
   label: string;
@@ -20,6 +22,8 @@ export interface IdentityLoginDefaultProps {
   forgotHref: string;
   forgotStoryHref?: string;
   submitLabel: string;
+  submitHref: string;
+  submitStoryHref?: string;
   providers: IdentityLoginProvider[];
   registerPrompt: string;
   registerLabel: string;
@@ -40,6 +44,7 @@ export const defaultIdentityLoginDefaultProps: IdentityLoginDefaultProps = {
   forgotLabel: "Forgot password?",
   forgotHref: "/rbac/subject/authentication/email-and-password/forgot-password",
   submitLabel: "Sign In",
+  submitHref: "/rbac/subject/settings",
   providers: [
     { key: "google", label: "Google", icon: "google" },
     { key: "github", label: "GitHub", icon: "github" },
@@ -86,6 +91,8 @@ export function IdentityLoginDefault(
     forgotHref,
     forgotStoryHref,
     submitLabel,
+    submitHref,
+    submitStoryHref,
     providers,
     registerPrompt,
     registerLabel,
@@ -99,6 +106,17 @@ export function IdentityLoginDefault(
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+
+  function handleSubmit() {
+    writeRbacDraftAuthUser(email || "sarah@sps.dev");
+
+    if (typeof window === "undefined") return;
+
+    const targetHref = submitStoryHref ?? submitHref;
+    const targetWindow = window.top ?? window;
+
+    targetWindow.location.href = targetHref;
+  }
 
   return (
     <section
@@ -197,6 +215,7 @@ export function IdentityLoginDefault(
 
             <button
               className="flex w-full items-center justify-center rounded-md border border-slate-400 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+              onClick={handleSubmit}
               type="button"
             >
               {submitLabel}

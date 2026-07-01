@@ -50,6 +50,10 @@ export interface RbacAccountUser {
   avatar: string;
 }
 
+export interface RbacDraftAuthUser extends RbacAccountUser {
+  slug: string;
+}
+
 export type IdentityActionTone = "neutral" | "danger";
 
 export interface IdentityAction {
@@ -90,6 +94,94 @@ export const defaultRbacUser: RbacAccountUser = {
   avatar:
     "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
 };
+
+export const RBAC_DRAFT_AUTH_STORAGE_KEY = "sps_auth_user";
+export const RBAC_DRAFT_AUTH_CHANGE_EVENT = "sps-draft-auth-change";
+
+export const defaultRbacDraftAuthUsers: RbacDraftAuthUser[] = [
+  {
+    ...defaultRbacUser,
+    slug: "sarah-kim",
+  },
+  {
+    name: "James Carter",
+    email: "james@sps.dev",
+    role: "CTO",
+    slug: "james-carter",
+    avatar:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+  },
+  {
+    name: "Marcus Webb",
+    email: "marcus@sps.dev",
+    role: "Lead Engineer",
+    slug: "marcus-webb",
+    avatar:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=160",
+  },
+];
+
+export function resolveRbacDraftAuthUser(email: string): RbacDraftAuthUser {
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailPrefix = normalizedEmail.split("@")[0] ?? "";
+  const matchedUser =
+    defaultRbacDraftAuthUsers.find((user) => {
+      const normalizedName = user.name.toLowerCase().replace(/\s+/g, "-");
+
+      return (
+        user.email.toLowerCase() === normalizedEmail ||
+        user.slug === emailPrefix ||
+        normalizedName === emailPrefix
+      );
+    }) ?? defaultRbacDraftAuthUsers[0];
+
+  return {
+    ...matchedUser,
+    email: normalizedEmail || matchedUser.email,
+  };
+}
+
+export function readRbacDraftAuthUser(): RbacDraftAuthUser | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const storedUser = window.localStorage.getItem(RBAC_DRAFT_AUTH_STORAGE_KEY);
+    if (!storedUser) return null;
+
+    const parsedUser = JSON.parse(storedUser) as Partial<RbacDraftAuthUser>;
+    if (!parsedUser || typeof parsedUser.email !== "string") return null;
+
+    return {
+      ...resolveRbacDraftAuthUser(parsedUser.email),
+      ...parsedUser,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function writeRbacDraftAuthUser(email: string): RbacDraftAuthUser {
+  const user = resolveRbacDraftAuthUser(email);
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(
+      RBAC_DRAFT_AUTH_STORAGE_KEY,
+      JSON.stringify(user),
+    );
+    window.dispatchEvent(
+      new CustomEvent(RBAC_DRAFT_AUTH_CHANGE_EVENT, { detail: user }),
+    );
+  }
+
+  return user;
+}
+
+export function clearRbacDraftAuthUser() {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.removeItem(RBAC_DRAFT_AUTH_STORAGE_KEY);
+  window.dispatchEvent(new CustomEvent(RBAC_DRAFT_AUTH_CHANGE_EVENT));
+}
 
 export const defaultRbacIdentities: RbacIdentity[] = [
   {

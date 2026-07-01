@@ -2,6 +2,9 @@ import { IdentityLoginDefault } from "../../../../../rbac/models/identity/single
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { HostNavbarDefault } from "../shared/HostNavbarDefault";
 
+const authorProfileStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
+
 export function RbacSubjectAuthenticationSelectMethod() {
   return (
     <main
@@ -10,7 +13,10 @@ export function RbacSubjectAuthenticationSelectMethod() {
       data-ds-route="/rbac/subject/authentication/select-method"
     >
       <HostNavbarDefault activeHref="/rbac/subject/authentication/select-method" />
-      <IdentityLoginDefault />
+      <IdentityLoginDefault
+        submitHref="/blog/authors/[social.profiles.slug]"
+        submitStoryHref={authorProfileStoryHref}
+      />
       <FooterCompact />
     </main>
   );
