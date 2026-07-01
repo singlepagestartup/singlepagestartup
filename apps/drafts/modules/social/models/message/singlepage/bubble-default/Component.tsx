@@ -6,6 +6,7 @@ export interface SocialMessageBubbleDefaultProps {
   body: string;
   time: string;
   side: "incoming" | "outgoing";
+  display?: "bubble" | "timeline";
   attachments?: Array<{
     name: string;
     size: string;
@@ -32,20 +33,18 @@ export const defaultSocialMessageBubbleDefaultProps: SocialMessageBubbleDefaultP
 export function SocialMessageBubbleDefault(
   props?: Partial<SocialMessageBubbleDefaultProps>,
 ) {
-  const {
-    author,
-    role,
-    body,
-    time,
-    side,
-    attachments = [],
-    reactions = [],
-  } = {
+  const mergedProps = {
     ...defaultSocialMessageBubbleDefaultProps,
     ...props,
   };
+  const { author, role, body, time, side, display = "bubble" } = mergedProps;
+  const attachments =
+    props && !("attachments" in props) ? [] : (mergedProps.attachments ?? []);
+  const reactions =
+    props && !("reactions" in props) ? [] : (mergedProps.reactions ?? []);
 
   const isOutgoing = side === "outgoing";
+  const isTimeline = display === "timeline";
 
   return (
     <article
@@ -64,7 +63,7 @@ export function SocialMessageBubbleDefault(
           .join("")
           .slice(0, 2)}
       </div>
-      <div className={`max-w-2xl ${isOutgoing ? "items-end" : "items-start"}`}>
+      <div className={`max-w-3xl ${isOutgoing ? "items-end" : "items-start"}`}>
         <div
           className={`mb-1 flex items-center gap-2 text-xs ${
             isOutgoing ? "justify-end text-slate-500" : "text-slate-500"
@@ -74,15 +73,21 @@ export function SocialMessageBubbleDefault(
           <span>{role}</span>
           <span>{time}</span>
         </div>
-        <div
-          className={`rounded-2xl border px-4 py-3 text-sm leading-6 shadow-sm ${
-            isOutgoing
-              ? "border-slate-900 bg-slate-900 text-white"
-              : "border-slate-200 bg-white text-slate-700"
-          }`}
-        >
-          <p>{body}</p>
-        </div>
+        {isTimeline && !isOutgoing ? (
+          <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+            {body}
+          </p>
+        ) : (
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm leading-6 shadow-sm ${
+              isOutgoing
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-200 bg-white text-slate-700"
+            }`}
+          >
+            <p className="whitespace-pre-line">{body}</p>
+          </div>
+        )}
         {attachments.length > 0 ? (
           <div className="mt-2 grid gap-2">
             {attachments.map((attachment) => (

@@ -1,4 +1,4 @@
-import { MessageSquare, Pin } from "lucide-react";
+import { MessageSquare, Pin, Search, Settings } from "lucide-react";
 
 export interface SocialThreadListDefaultProps {
   title: string;
@@ -9,36 +9,42 @@ export interface SocialThreadListDefaultProps {
     excerpt: string;
     date: string;
     unread: number;
+    author?: string;
+    active?: boolean;
     pinned?: boolean;
   }>;
 }
 
 export const defaultSocialThreadListDefaultProps: SocialThreadListDefaultProps =
   {
-    title: "Project threads",
-    description: "Pinned and active conversations for the current workspace.",
+    title: "General",
+    description: "5 members · 3 threads",
     threads: [
       {
-        id: "storybook-migration",
-        title: "Storybook migration",
-        excerpt: "Admin pages need host recipes plus module-owned blocks.",
-        date: "Today",
-        unread: 3,
+        id: "q1-goals",
+        title: "Q1 Goals & OKRs",
+        excerpt: "Excellent work this week, everyone...",
+        date: "Feb 20",
+        unread: 0,
+        author: "James",
+        active: true,
         pinned: true,
       },
       {
-        id: "startup-overrides",
-        title: "Startup overrides",
-        excerpt: "Only visual deltas should live in the startup layer.",
-        date: "Yesterday",
+        id: "team-lunch",
+        title: "Team Lunch Friday",
+        excerpt: "Thai it is! Booked a table at Siam...",
+        date: "Feb 21",
         unread: 0,
+        author: "David",
       },
       {
-        id: "figma-review",
-        title: "Figma review gate",
-        excerpt: "No remote sync until Storybook is approved.",
-        date: "Jun 30",
-        unread: 1,
+        id: "office-wifi",
+        title: "Office Wi-Fi Issues",
+        excerpt: "Seems to be fixed now. Thanks...",
+        date: "Feb 19",
+        unread: 0,
+        author: "Marcus",
       },
     ],
   };
@@ -53,21 +59,38 @@ export function SocialThreadListDefault(
 
   return (
     <aside
-      className="flex h-full min-h-[560px] w-full flex-col border-r border-slate-200 bg-slate-50"
+      className="flex h-full min-h-[720px] w-full flex-col border-r border-slate-200 bg-white"
       data-ds-block="social.thread.list-default"
       data-ds-layer="singlepage"
     >
-      <div className="border-b border-slate-200 px-4 py-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-          <MessageSquare className="h-4 w-4" />
-          {title}
+      <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 px-4 py-3">
+        <MessageSquare className="h-4 w-4 text-slate-400" />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-medium text-slate-900">
+            {title}
+          </h2>
+          <p className="text-[11px] text-slate-400">{description}</p>
         </div>
-        <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+        <button
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+          title="Chat settings"
+          type="button"
+        >
+          <Settings className="h-4 w-4" />
+        </button>
       </div>
-      <div className="grid gap-1 p-2">
+      <div className="border-b border-slate-200 px-3 py-2">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-400">
+          <Search className="h-3.5 w-3.5" />
+          <span>Search threads...</span>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {threads.map((thread) => (
           <button
-            className="rounded-xl border border-transparent bg-white px-3 py-3 text-left text-sm transition hover:border-slate-200 hover:shadow-sm first:border-slate-300"
+            className={`w-full border-b border-slate-100 px-4 py-3 text-left text-sm transition hover:bg-slate-50 ${
+              thread.active ? "bg-slate-50" : "bg-white"
+            }`}
             key={thread.id}
             type="button"
           >
@@ -75,13 +98,18 @@ export function SocialThreadListDefault(
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   {thread.pinned ? (
-                    <Pin className="h-3.5 w-3.5 fill-slate-800 text-slate-800" />
+                    <Pin className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
                   ) : null}
                   <span className="block truncate font-medium text-slate-900">
                     {thread.title}
                   </span>
                 </div>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                <p className="mt-1 truncate text-xs leading-5 text-slate-400">
+                  {thread.author ? (
+                    <span className="font-medium text-slate-500">
+                      {thread.author}:{" "}
+                    </span>
+                  ) : null}
                   {thread.excerpt}
                 </p>
               </div>
