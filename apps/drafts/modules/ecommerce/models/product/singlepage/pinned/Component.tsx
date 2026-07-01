@@ -15,6 +15,8 @@ export interface ProductPinnedProps {
   shortDescription: string;
   priceLabel: string;
   category: string;
+  href?: string;
+  target?: "_blank" | "_parent" | "_self" | "_top";
 }
 
 export const defaultProductPinnedProps: ProductPinnedProps = {
@@ -27,14 +29,18 @@ export const defaultProductPinnedProps: ProductPinnedProps = {
 };
 
 export function ProductPinned(props?: Partial<ProductPinnedProps>) {
-  const { slug, title, shortDescription, priceLabel, category } = {
-    ...defaultProductPinnedProps,
-    ...props,
-  };
+  const { slug, title, shortDescription, priceLabel, category, href, target } =
+    {
+      ...defaultProductPinnedProps,
+      ...props,
+    };
+  const productHref = href ?? `/ecommerce/products/${slug}`;
 
   return (
     <a
-      href={`/ecommerce/products/${slug}`}
+      href={productHref}
+      target={target}
+      rel={target === "_blank" ? "noreferrer" : undefined}
       className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
       data-ds-block="ecommerce.product.pinned"
       data-ds-layer="singlepage"

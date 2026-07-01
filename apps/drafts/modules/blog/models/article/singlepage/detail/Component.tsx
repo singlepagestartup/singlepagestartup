@@ -24,6 +24,12 @@ const articleOverviewStoryHref =
 const authorOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
 
+const productOverviewStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-cart-flow-default--default";
+
+const blogIndexStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-blog-find-article-card--default";
+
 const sarahAvatar =
   "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
@@ -314,6 +320,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                       shortDescription={product.shortDescription}
                       priceLabel={product.priceLabel}
                       category={product.category}
+                      href={productOverviewStoryHref}
+                      target="_top"
                     />
                   ))}
                 </div>
@@ -357,7 +365,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
 
             {/* Back to blog */}
             <a
-              href="/blog"
+              href={blogIndexStoryHref}
+              target="_top"
               className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
             >
               <ArrowLeft className="h-4 w-4" />
