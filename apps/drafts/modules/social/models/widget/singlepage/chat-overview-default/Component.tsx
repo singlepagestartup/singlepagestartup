@@ -2,18 +2,16 @@ import { Paperclip, Search, Send, Settings, Smile, Users } from "lucide-react";
 
 import { SocialMessageBubbleDefault } from "../../../message/singlepage/bubble-default/Component";
 import { SocialThreadListDefault } from "../../../thread/singlepage/list-default/Component";
-import { SocialWidgetChatListDefault } from "../chat-list-default/Component";
 
 export function SocialWidgetChatOverviewDefault() {
   return (
     <section
       className="w-full bg-white"
       data-ds-block="social.widget.chat-overview-default"
-      data-ds-imports="social.widget.chat-list-default social.thread.list-default social.message.bubble-default"
+      data-ds-imports="social.thread.list-default social.message.bubble-default"
       data-ds-layer="singlepage"
     >
-      <div className="grid h-[calc(100vh-2rem)] min-h-[760px] w-full overflow-hidden border border-slate-200 bg-white md:grid-cols-[256px_300px_minmax(0,1fr)]">
-        <SocialWidgetChatListDefault />
+      <div className="grid h-[calc(100vh-2rem)] min-h-[760px] w-full overflow-hidden bg-white md:grid-cols-[300px_minmax(0,1fr)]">
         <SocialThreadListDefault />
         <div className="flex min-h-0 flex-col">
           <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-3">

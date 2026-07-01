@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "social.widget.chat-overview-default",
   "title": "Social Widget / Chat Overview / Default",
-  "description": "Social widget that composes the runnable chat overview from chat list, thread list, and message timeline blocks.",
+  "description": "Social widget that composes the runnable chat overview from thread list and message timeline blocks.",
   "layer": "singlepage",
   "state": "draft",
   "source": {

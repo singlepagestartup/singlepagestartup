@@ -36,7 +36,7 @@ completed_date: 2026-06-30T23:22:41Z
 - [x] Completed: 2026-06-30T23:22:41Z
 - [x] Automated verification: `npm run drafts:validate`, `npm run drafts:ds:inventory`, `npm run drafts:ds:validate`, and `npm run drafts:storybook:build` passed.
 
-**Notes**: Added social chat/thread/message/widget Storybook blocks and host page recipes for chat and profile. The runnable chat list and composed chat overview are owned by `social.widget` as `chat-list-default` and `chat-overview-default`; no `social.chat.workspace-default` story remains. Existing runnable public routes for services, service detail, checkout, auth, blog article, and author pages are exposed through host page story aliases in the Storybook index.
+**Notes**: Added social chat/thread/message/widget Storybook blocks and host page recipes for chat and profile. The runnable chat list and chat overview are owned by `social.widget` as separate `chat-list-default` and `chat-overview-default` widgets; `host.page.chat-default` composes them, and no `social.chat.workspace-default` story remains. Existing runnable public routes for services, service detail, checkout, auth, blog article, and author pages are exposed through host page story aliases in the Storybook index.
 
 ### Phase 4: Admin Panel And Admin-V2 Storybook Migration
 
