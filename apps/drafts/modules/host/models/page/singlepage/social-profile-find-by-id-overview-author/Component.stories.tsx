@@ -16,5 +16,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "/blog/author/:authorSlug",
+  name: "/blog/authors/[social.profiles.slug]",
 };

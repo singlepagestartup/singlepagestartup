@@ -296,7 +296,7 @@ export function ProfileAuthorFindByIdOverviewDefault(
                         name={author.name}
                         role={author.role}
                         avatar={author.avatar}
-                        href={`/blog/author/${author.slug}`}
+                        href={`/blog/authors/${author.slug}`}
                         meta={`${author.articleCount} ${author.articleCount === 1 ? "article" : "articles"}`}
                       />
                     ))}

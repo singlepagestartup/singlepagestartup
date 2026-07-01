@@ -236,7 +236,7 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                 name={authorName}
                 role={authorRole}
                 avatar={authorAvatar}
-                href={`/blog/author/${authorSlug}`}
+                href={`/blog/authors/${authorSlug}`}
               />
               <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
                 <span>{date}</span>
@@ -321,7 +321,7 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
               name={authorName}
               role={authorRole}
               avatar={authorAvatar}
-              href={`/blog/author/${authorSlug}`}
+              href={`/blog/authors/${authorSlug}`}
             />
 
             {/* Tags — blog.widget.article-find-by-id-tag-find-default */}

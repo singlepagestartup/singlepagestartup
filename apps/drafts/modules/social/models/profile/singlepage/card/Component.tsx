@@ -16,7 +16,7 @@ export const defaultProfileCardProps = {
   name: "Sarah Kim",
   role: "Head of Product",
   avatar: sarahAvatar,
-  href: "/blog/author/sarah-kim",
+  href: "/blog/authors/sarah-kim",
   label: "Author",
 };
 

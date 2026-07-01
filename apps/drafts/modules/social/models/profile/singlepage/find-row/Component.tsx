@@ -18,7 +18,7 @@ export const defaultProfileFindRowProps = {
   name: "James Carter",
   role: "CTO",
   avatar: jamesAvatar,
-  href: "/blog/author/james-carter",
+  href: "/blog/authors/james-carter",
   meta: "2 articles",
 };
 
