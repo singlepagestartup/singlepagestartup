@@ -18,6 +18,9 @@ import { ProfileFindRow } from "../find-row/Component";
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-find-by-id-article-overview--default";
 
+const blogIndexStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-blog-find-article-card--default";
+
 const authorOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
 
@@ -310,7 +313,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
 
               {/* Back */}
               <a
-                href="/blog"
+                href={blogIndexStoryHref}
+                target="_top"
                 className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 <ArrowLeft className="h-4 w-4" />
