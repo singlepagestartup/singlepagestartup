@@ -7,6 +7,7 @@ export function BlogFindByIdArticleOverview() {
     <main
       className="min-h-screen bg-[#eaf0f7] text-slate-900 antialiased"
       data-ds-page="host.page.blog-find-by-id-article-overview"
+      data-ds-route="/blog/articles/[blog.articles.slug]"
     >
       <HostNavbarDefault />
       <ArticleOverviewDefaultWidget />

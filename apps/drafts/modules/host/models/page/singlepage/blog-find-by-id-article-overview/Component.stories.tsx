@@ -19,6 +19,6 @@ export const Default: Story = {
   name: "default",
 };
 
-export const RunnableBlogArticleRoute: Story = {
-  name: "/blog/:slug",
+export const BlogArticleRoute: Story = {
+  name: "/blog/articles/[blog.articles.slug]",
 };
