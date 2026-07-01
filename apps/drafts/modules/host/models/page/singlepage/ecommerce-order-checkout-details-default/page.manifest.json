@@ -3,7 +3,7 @@
   "title": "Ecommerce Order Checkout Details Default",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for the ecommerce checkout details step.",
+  "description": "Host page recipe for the RBAC-scoped ecommerce checkout details step.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"
