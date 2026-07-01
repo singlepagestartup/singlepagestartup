@@ -54,6 +54,8 @@ export interface ProductOverviewRelatedProduct {
   category: string;
   priceLabel: string;
   image: string;
+  href?: string;
+  target?: "_blank" | "_parent" | "_self" | "_top";
 }
 
 export interface ProductOverviewDefaultProps {
@@ -217,6 +219,8 @@ function ProductOverviewRelatedSection({
               priceLabel={product.priceLabel}
               title={product.title}
               subtitle={product.subtitle}
+              href={product.href}
+              target={product.target}
             />
           ))}
         </div>

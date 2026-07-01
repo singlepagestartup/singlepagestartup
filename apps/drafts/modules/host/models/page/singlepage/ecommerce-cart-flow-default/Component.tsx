@@ -6,7 +6,10 @@ import {
   type CartItem,
   websiteDevelopmentCartItem,
 } from "../../../../../ecommerce/models/cart/shared";
-import { ProductOverviewDefault } from "../../../../../ecommerce/models/product/singlepage/overview-default/Component";
+import {
+  defaultProductOverviewDefaultProps,
+  ProductOverviewDefault,
+} from "../../../../../ecommerce/models/product/singlepage/overview-default/Component";
 import { FooterCompact } from "../../../../../website-builder/models/widget/singlepage/footer-compact/Component";
 import { NavbarDefault } from "../../../../../website-builder/models/widget/singlepage/navbar-default/Component";
 
@@ -41,6 +44,16 @@ function decreaseCartItem(items: CartItem[], item: CartItem) {
     )
     .filter((cartItem) => cartItem.quantity > 0);
 }
+
+const productOverviewStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-cart-flow-default--default";
+
+const productOverviewRelatedProducts =
+  defaultProductOverviewDefaultProps.related.map((product) => ({
+    ...product,
+    href: productOverviewStoryHref,
+    target: "_top" as const,
+  }));
 
 export function EcommerceCartFlowDefault() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -89,6 +102,7 @@ export function EcommerceCartFlowDefault() {
         onCartClick={() => setIsCartOpen(true)}
       />
       <ProductOverviewDefault
+        related={productOverviewRelatedProducts}
         purchase={{
           id: websiteDevelopmentCartItem.id,
           slug: websiteDevelopmentCartItem.slug,
