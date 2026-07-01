@@ -21,6 +21,9 @@ import { TagButtonDefault } from "../../../tag/singlepage/button-default/Compone
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-find-by-id-article-overview--default";
 
+const authorOverviewStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
+
 const sarahAvatar =
   "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwZGV2ZWxvcGVyJTIwaGVhZHNob3R8ZW58MXx8fHwxNzcxNzE1ODgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
@@ -236,7 +239,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
                 name={authorName}
                 role={authorRole}
                 avatar={authorAvatar}
-                href={`/blog/authors/${authorSlug}`}
+                href={authorOverviewStoryHref}
+                target="_top"
               />
               <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
                 <span>{date}</span>
@@ -321,7 +325,8 @@ export function ArticleDetail(props?: Partial<ArticleDetailProps>) {
               name={authorName}
               role={authorRole}
               avatar={authorAvatar}
-              href={`/blog/authors/${authorSlug}`}
+              href={authorOverviewStoryHref}
+              target="_top"
             />
 
             {/* Tags — blog.widget.article-find-by-id-tag-find-default */}
