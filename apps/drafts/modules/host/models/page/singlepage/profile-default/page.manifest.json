@@ -3,7 +3,7 @@
   "title": "Profile / Default",
   "layer": "singlepage",
   "state": "draft",
-  "description": "Host page recipe for the runnable /profile route, composing RBAC subject account and social profile display.",
+  "description": "Host page recipe for the /rbac/subject/settings route, composing RBAC subject account and social profile display.",
   "files": {
     "component": "Component.tsx",
     "story": "Component.stories.tsx"

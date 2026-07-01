@@ -156,7 +156,12 @@ export const defaultRbacProfiles: RbacAccountProfile[] = [
 ];
 
 export const defaultAccountMenuActions: AccountMenuAction[] = [
-  { key: "profile", label: "My Profile", href: "/profile", icon: User },
+  {
+    key: "profile",
+    label: "My Profile",
+    href: "/rbac/subject/settings",
+    icon: User,
+  },
   {
     key: "chat",
     label: "Team Chat",
