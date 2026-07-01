@@ -14,7 +14,16 @@ import { ArrowUpRight } from "lucide-react";
 const jamesAvatar =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
-export const defaultProfileFindRowProps = {
+export interface ProfileFindRowProps {
+  name: string;
+  role: string;
+  avatar: string;
+  href: string;
+  target?: "_blank" | "_parent" | "_self" | "_top";
+  meta?: string;
+}
+
+export const defaultProfileFindRowProps: ProfileFindRowProps = {
   name: "James Carter",
   role: "CTO",
   avatar: jamesAvatar,
@@ -22,10 +31,8 @@ export const defaultProfileFindRowProps = {
   meta: "2 articles",
 };
 
-export type ProfileFindRowProps = typeof defaultProfileFindRowProps;
-
 export function ProfileFindRow(props?: Partial<ProfileFindRowProps>) {
-  const { name, role, avatar, href, meta } = {
+  const { name, role, avatar, href, target, meta } = {
     ...defaultProfileFindRowProps,
     ...props,
   };
@@ -33,6 +40,8 @@ export function ProfileFindRow(props?: Partial<ProfileFindRowProps>) {
   return (
     <a
       href={href}
+      target={target}
+      rel={target === "_blank" ? "noreferrer" : undefined}
       className="group flex items-center gap-3 rounded-lg border border-slate-100 bg-white p-3 transition hover:border-slate-200 hover:bg-slate-50"
       data-ds-block="social.profile.find-row"
       data-ds-layer="singlepage"

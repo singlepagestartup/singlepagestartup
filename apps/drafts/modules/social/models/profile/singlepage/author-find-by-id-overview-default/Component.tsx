@@ -18,6 +18,9 @@ import { ProfileFindRow } from "../find-row/Component";
 const articleOverviewStoryHref =
   "/?path=/story/modules-host-models-page-singlepage-blog-find-by-id-article-overview--default";
 
+const authorOverviewStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-social-profile-find-by-id-overview-author--default";
+
 const jamesAvatar =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 const marcusAvatar =
@@ -296,7 +299,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
                         name={author.name}
                         role={author.role}
                         avatar={author.avatar}
-                        href={`/blog/authors/${author.slug}`}
+                        href={authorOverviewStoryHref}
+                        target="_top"
                         meta={`${author.articleCount} ${author.articleCount === 1 ? "article" : "articles"}`}
                       />
                     ))}
