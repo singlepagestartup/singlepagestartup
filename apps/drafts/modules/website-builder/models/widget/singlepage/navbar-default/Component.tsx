@@ -15,8 +15,8 @@ interface DraftLink {
 const hostStoryHref = (storyId: string) => `/?path=/story/${storyId}`;
 
 const hostStoryHrefs = {
-  accountSettings: hostStoryHref(
-    "modules-host-models-page-singlepage-rbac-subject-account-settings-default--default",
+  adminSettings: hostStoryHref(
+    "modules-host-models-page-singlepage-admin-settings--default",
   ),
   blog: hostStoryHref(
     "modules-host-models-page-singlepage-blog-find-article-card--default",
@@ -74,8 +74,8 @@ export const defaultNavbarDefaultProps = {
     { label: "Blog", href: "/blog", storyHref: hostStoryHrefs.blog },
     { label: "Chat", href: "/chat", disabled: true },
   ] satisfies DraftLink[],
-  adminHref: "/admin/settings/account",
-  adminStoryHref: hostStoryHrefs.accountSettings,
+  adminHref: "/admin/settings",
+  adminStoryHref: hostStoryHrefs.adminSettings,
   loginHref: "/rbac/subject/authentication/select-method",
   loginStoryHref: undefined,
 };

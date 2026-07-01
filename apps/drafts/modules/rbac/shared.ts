@@ -171,7 +171,7 @@ export const defaultAccountMenuActions: AccountMenuAction[] = [
   {
     key: "settings",
     label: "Account Settings",
-    href: "/admin/settings/account",
+    href: "/rbac/subject/settings",
     icon: Shield,
   },
   {
