@@ -67,8 +67,12 @@ export function SocialMessageBubbleDefault(
             isOutgoing ? "justify-end text-slate-500" : "text-slate-500"
           }`}
         >
-          <span className="font-medium text-slate-700">{author}</span>
-          <span>{role}</span>
+          {!isOutgoing ? (
+            <>
+              <span className="font-medium text-slate-700">{author}</span>
+              <span>{role}</span>
+            </>
+          ) : null}
           <span>{time}</span>
         </div>
         {isTimeline && !isOutgoing ? (
