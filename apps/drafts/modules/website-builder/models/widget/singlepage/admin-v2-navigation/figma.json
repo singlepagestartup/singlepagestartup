@@ -1,0 +1,21 @@
+{
+  "componentName": "website-builder.widget",
+  "pageName": "website-builder",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-v2-navigation",
+  "metadata": {
+    "sps.drafts.blockId": "website-builder.widget.admin-v2-navigation",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "website-builder/models/widget/singlepage/admin-v2-navigation",
+    "sps.figma.component": "website-builder.widget",
+    "sps.figma.variant": "admin-v2-navigation",
+    "sps.source.module": "website-builder",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "widget",
+    "sps.source.variant": "admin-v2-navigation",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/admin-v2-navigation/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/admin-v2-navigation/Component.stories.tsx"
+  }
+}

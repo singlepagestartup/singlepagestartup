@@ -13,6 +13,8 @@ export interface ProductCardRelatedProps {
   priceLabel: string;
   title: string;
   subtitle: string;
+  href?: string;
+  target?: "_blank" | "_parent" | "_self" | "_top";
 }
 
 export const defaultProductCardRelatedProps: ProductCardRelatedProps = {
@@ -26,14 +28,17 @@ export const defaultProductCardRelatedProps: ProductCardRelatedProps = {
 };
 
 export function ProductCardRelated(props?: Partial<ProductCardRelatedProps>) {
-  const { slug, image, category, priceLabel, title, subtitle } = {
+  const { slug, image, category, priceLabel, title, subtitle, href, target } = {
     ...defaultProductCardRelatedProps,
     ...props,
   };
+  const productHref = href ?? `/ecommerce/products/${slug}`;
 
   return (
     <a
-      href={`/services/${slug}`}
+      href={productHref}
+      target={target}
+      rel={target === "_blank" ? "noreferrer" : undefined}
       className="group overflow-hidden rounded-xl border border-slate-200 bg-[#eaf0f7] transition hover:border-slate-400"
       data-ds-block="ecommerce.product.card-related"
       data-ds-layer="singlepage"

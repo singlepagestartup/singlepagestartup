@@ -1,0 +1,21 @@
+{
+  "componentName": "blog.article",
+  "pageName": "blog",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-v2-list",
+  "metadata": {
+    "sps.drafts.blockId": "blog.article.admin-v2-list",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "blog/models/article/singlepage/admin-v2-list",
+    "sps.figma.component": "blog.article",
+    "sps.figma.variant": "admin-v2-list",
+    "sps.source.module": "blog",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "article",
+    "sps.source.variant": "admin-v2-list",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/blog/models/article/singlepage/admin-v2-list/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/admin-v2-list/Component.stories.tsx"
+  }
+}

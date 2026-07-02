@@ -40,7 +40,7 @@ const IMG = {
 };
 
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-product-find-by-id-overview-default--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
 
 export const defaultProductFindCardProps = {
   categories: [

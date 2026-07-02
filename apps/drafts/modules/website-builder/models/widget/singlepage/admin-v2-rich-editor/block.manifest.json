@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "website-builder.widget.admin-v2-rich-editor",
+  "title": "Website Builder Widget / Admin V2 Rich Editor",
+  "description": "Static admin-v2 rich editor surface for widget and content editing.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "website-builder",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "admin-v2-rich-editor"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "website-builder.widget",
+    "pageName": "website-builder",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["website-builder", "widget", "admin-v2", "editor"]
+}

@@ -1,0 +1,20 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": null,
+  "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-confirmation/Component.stories.tsx"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.widget.chat-overview-default",
+  "title": "Social Widget / Chat Overview / Default",
+  "description": "Social widget that composes the runnable chat overview from thread list and message timeline blocks.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "widget",
+    "variant": "chat-overview-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.widget",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "widget", "chat", "overview"]
+}

@@ -1,0 +1,21 @@
+{
+  "componentName": "host.page",
+  "pageName": "host",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-relation-manager",
+  "metadata": {
+    "sps.drafts.blockId": "host.page.admin-relation-manager",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "host/models/page/singlepage/admin-relation-manager",
+    "sps.figma.component": "host.page",
+    "sps.figma.variant": "admin-relation-manager",
+    "sps.source.module": "host",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "page",
+    "sps.source.variant": "admin-relation-manager",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/admin-relation-manager/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/admin-relation-manager/Component.stories.tsx"
+  }
+}

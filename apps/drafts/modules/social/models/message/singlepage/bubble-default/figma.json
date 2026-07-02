@@ -1,0 +1,21 @@
+{
+  "componentName": "social.message",
+  "pageName": "social",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "bubble-default",
+  "metadata": {
+    "sps.drafts.blockId": "social.message.bubble-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "social/models/message/singlepage/bubble-default",
+    "sps.figma.component": "social.message",
+    "sps.figma.variant": "bubble-default",
+    "sps.source.module": "social",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "message",
+    "sps.source.variant": "bubble-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/social/models/message/singlepage/bubble-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/social/models/message/singlepage/bubble-default/Component.stories.tsx"
+  }
+}

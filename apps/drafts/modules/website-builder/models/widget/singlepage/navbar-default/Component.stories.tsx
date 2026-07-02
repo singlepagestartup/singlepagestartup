@@ -18,3 +18,10 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "default",
 };
+
+export const Authenticated: Story = {
+  name: "authenticated",
+  args: {
+    isAuthenticated: true,
+  },
+};

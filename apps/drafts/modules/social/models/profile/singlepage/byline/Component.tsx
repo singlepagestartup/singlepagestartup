@@ -15,7 +15,7 @@ const sarahAvatar =
 export const defaultProfileBylineProps = {
   name: "Sarah Kim",
   avatar: sarahAvatar,
-  href: "/blog/author/sarah-kim" as string | null,
+  href: "/blog/authors/sarah-kim" as string | null,
   size: "sm" as "sm" | "xs",
 };
 

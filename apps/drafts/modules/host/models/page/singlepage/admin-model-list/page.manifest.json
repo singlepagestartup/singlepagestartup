@@ -1,0 +1,28 @@
+{
+  "id": "admin.model-list",
+  "title": "Admin / Model List",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the runnable /admin/:moduleSlug/:modelSlug route.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.admin-v2-navigation",
+      "path": "../../../../../website-builder/models/widget/singlepage/admin-v2-navigation"
+    },
+    {
+      "id": "ecommerce.product.admin-v2-list",
+      "path": "../../../../../ecommerce/models/product/singlepage/admin-v2-list"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "admin-model-list",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

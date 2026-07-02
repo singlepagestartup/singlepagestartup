@@ -95,6 +95,10 @@ function addError(
   });
 }
 
+function isStorybookDiscoverableStoryPath(relativeFile: string): boolean {
+  return /\.stories\.(ts|tsx|mdx)$/.test(toPosixPath(relativeFile));
+}
+
 async function validateRootManifest(
   failures: ValidationFailure[],
 ): Promise<void> {
@@ -318,6 +322,17 @@ async function validateBlocks(failures: ValidationFailure[]): Promise<void> {
           continue;
         }
 
+        if (
+          field === "story" &&
+          !isStorybookDiscoverableStoryPath(relativeFile)
+        ) {
+          addError(
+            failures,
+            manifestPath,
+            `"files.story" must point to a Storybook-discoverable *.stories.ts, *.stories.tsx, or *.stories.mdx file: ${relativeFile}`,
+          );
+        }
+
         const absoluteFile = path.join(
           path.dirname(manifestPath),
           relativeFile,
@@ -424,6 +439,17 @@ async function validatePages(failures: ValidationFailure[]): Promise<void> {
         if (typeof relativeFile !== "string" || !relativeFile) {
           addError(failures, manifestPath, `"files.${field}" is required`);
           continue;
+        }
+
+        if (
+          field === "story" &&
+          !isStorybookDiscoverableStoryPath(relativeFile)
+        ) {
+          addError(
+            failures,
+            manifestPath,
+            `"files.story" must point to a Storybook-discoverable *.stories.ts, *.stories.tsx, or *.stories.mdx file: ${relativeFile}`,
+          );
         }
 
         const absoluteFile = path.join(

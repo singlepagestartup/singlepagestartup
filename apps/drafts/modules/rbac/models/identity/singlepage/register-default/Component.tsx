@@ -61,7 +61,7 @@ export const defaultIdentityRegisterDefaultProps: IdentityRegisterDefaultProps =
     ],
     loginPrompt: "Already have an account?",
     loginLabel: "Sign in",
-    loginHref: "/login",
+    loginHref: "/rbac/subject/authentication/select-method",
   };
 
 function IdentityProviderIcon({

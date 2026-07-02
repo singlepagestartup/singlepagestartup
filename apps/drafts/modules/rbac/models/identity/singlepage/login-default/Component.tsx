@@ -1,6 +1,8 @@
 import { Chrome, Eye, EyeOff, Github, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 
+import { writeRbacDraftAuthUser } from "../../../../shared";
+
 export interface IdentityLoginProvider {
   key: string;
   label: string;
@@ -20,6 +22,8 @@ export interface IdentityLoginDefaultProps {
   forgotHref: string;
   forgotStoryHref?: string;
   submitLabel: string;
+  submitHref: string;
+  submitStoryHref?: string;
   providers: IdentityLoginProvider[];
   registerPrompt: string;
   registerLabel: string;
@@ -38,15 +42,16 @@ export const defaultIdentityLoginDefaultProps: IdentityLoginDefaultProps = {
   passwordPlaceholder: "Password",
   rememberLabel: "Remember me for 30 days",
   forgotLabel: "Forgot password?",
-  forgotHref: "/rbac/subject/authentication/forgot-password",
+  forgotHref: "/rbac/subject/authentication/email-and-password/forgot-password",
   submitLabel: "Sign In",
+  submitHref: "/rbac/subject/settings",
   providers: [
     { key: "google", label: "Google", icon: "google" },
     { key: "github", label: "GitHub", icon: "github" },
   ],
   registerPrompt: "Don't have an account?",
   registerLabel: "Sign up for free",
-  registerHref: "/rbac/subject/authentication/registration",
+  registerHref: "/rbac/subject/authentication/email-and-password/registration",
 };
 
 function getStoryLinkProps(href: string, storyHref?: string) {
@@ -86,6 +91,8 @@ export function IdentityLoginDefault(
     forgotHref,
     forgotStoryHref,
     submitLabel,
+    submitHref,
+    submitStoryHref,
     providers,
     registerPrompt,
     registerLabel,
@@ -95,7 +102,21 @@ export function IdentityLoginDefault(
     ...defaultIdentityLoginDefaultProps,
     ...props,
   };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+
+  function handleSubmit() {
+    writeRbacDraftAuthUser(email || "sarah@sps.dev");
+
+    if (typeof window === "undefined") return;
+
+    const targetHref = submitStoryHref ?? submitHref;
+    const targetWindow = window.top ?? window;
+
+    targetWindow.location.href = targetHref;
+  }
 
   return (
     <section
@@ -132,9 +153,11 @@ export function IdentityLoginDefault(
                 <input
                   className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="rbac-login-email"
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder={emailPlaceholder}
-                  readOnly
                   type="email"
+                  value={email}
                 />
               </div>
             </div>
@@ -159,9 +182,11 @@ export function IdentityLoginDefault(
                 <input
                   className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="rbac-login-password"
+                  name="password"
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder={passwordPlaceholder}
-                  readOnly
                   type={showPassword ? "text" : "password"}
+                  value={password}
                 />
                 <button
                   aria-label={showPassword ? "Hide password" : "Show password"}
@@ -180,9 +205,9 @@ export function IdentityLoginDefault(
 
             <label className="flex cursor-pointer items-center gap-2">
               <input
+                checked={rememberMe}
                 className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                defaultChecked
-                readOnly
+                onChange={(event) => setRememberMe(event.target.checked)}
                 type="checkbox"
               />
               <span className="text-xs text-slate-600">{rememberLabel}</span>
@@ -190,6 +215,7 @@ export function IdentityLoginDefault(
 
             <button
               className="flex w-full items-center justify-center rounded-md border border-slate-400 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+              onClick={handleSubmit}
               type="button"
             >
               {submitLabel}

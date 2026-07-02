@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "blog.article.admin-v2-list",
+  "title": "Blog Article / Admin V2 List",
+  "description": "Admin-v2 article list surface extracted from runnable model list behavior.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "blog",
+    "entityType": "model",
+    "entity": "article",
+    "variant": "admin-v2-list"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "blog.article",
+    "pageName": "blog",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["blog", "article", "admin-v2", "list"]
+}

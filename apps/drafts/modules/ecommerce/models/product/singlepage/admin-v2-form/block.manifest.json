@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.product.admin-v2-form",
+  "title": "Ecommerce Product / Admin V2 Form",
+  "description": "Admin-v2 product edit form extracted from runnable model edit and entity drawer behavior.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "model",
+    "entity": "product",
+    "variant": "admin-v2-form"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.product",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["ecommerce", "product", "admin-v2", "form"]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "social-chats-social-chats-id-threads-social-threads-id",
+  "title": "Social Chats Social Chats Id Threads Social Threads Id",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for the /social/chats/[social.chats.id]/threads/[social.threads.id] route, composed from social-owned chat blocks.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "social.widget.chat-list-default",
+      "path": "../../../../../social/models/widget/singlepage/chat-list-default"
+    },
+    {
+      "id": "social.widget.chat-overview-default",
+      "path": "../../../../../social/models/widget/singlepage/chat-overview-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "social-chats-social-chats-id-threads-social-threads-id",
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  }
+}

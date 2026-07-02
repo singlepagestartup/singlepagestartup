@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "rbac.subject.admin-v2-settings",
+  "title": "RBAC Subject / Admin V2 Settings",
+  "description": "Admin-v2 subject settings block for authenticated account and access configuration.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "rbac",
+    "entityType": "model",
+    "entity": "subject",
+    "variant": "admin-v2-settings"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "rbac.subject",
+    "pageName": "rbac",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["rbac", "subject", "admin-v2", "settings"]
+}

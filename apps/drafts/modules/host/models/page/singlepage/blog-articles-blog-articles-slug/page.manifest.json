@@ -1,0 +1,34 @@
+{
+  "id": "blog-articles-blog-articles-slug",
+  "title": "Blog: Find By Id Article Overview",
+  "layer": "singlepage",
+  "state": "draft",
+  "description": "Host page recipe for a blog article find-by-id overview page.",
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "blocks": [
+    {
+      "id": "website-builder.widget.navbar-default",
+      "path": "../../../../../website-builder/models/widget/singlepage/navbar-default"
+    },
+    {
+      "id": "blog.widget.article-overview-default",
+      "path": "../../../../../blog/models/widget/singlepage/article-overview-default"
+    },
+    {
+      "id": "website-builder.widget.footer-compact",
+      "path": "../../../../../website-builder/models/widget/singlepage/footer-compact"
+    }
+  ],
+  "figma": {
+    "pageName": "host",
+    "componentName": "host.page",
+    "variantName": "blog-articles-blog-articles-slug",
+    "syncStatus": "created",
+    "metadataFile": "figma.json",
+    "nodeId": "716:300",
+    "variantNodeId": "847:584"
+  }
+}

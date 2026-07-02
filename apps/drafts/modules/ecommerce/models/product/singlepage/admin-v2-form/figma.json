@@ -1,0 +1,21 @@
+{
+  "componentName": "ecommerce.product",
+  "pageName": "ecommerce",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-v2-form",
+  "metadata": {
+    "sps.drafts.blockId": "ecommerce.product.admin-v2-form",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "ecommerce/models/product/singlepage/admin-v2-form",
+    "sps.figma.component": "ecommerce.product",
+    "sps.figma.variant": "admin-v2-form",
+    "sps.source.module": "ecommerce",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "product",
+    "sps.source.variant": "admin-v2-form",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/admin-v2-form/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/admin-v2-form/Component.stories.tsx"
+  }
+}

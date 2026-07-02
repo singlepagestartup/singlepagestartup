@@ -1,0 +1,21 @@
+{
+  "componentName": "rbac.subject",
+  "pageName": "rbac",
+  "nodeId": null,
+  "variantNodeId": null,
+  "variantName": "admin-v2-settings",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.subject.admin-v2-settings",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/subject/singlepage/admin-v2-settings",
+    "sps.figma.component": "rbac.subject",
+    "sps.figma.variant": "admin-v2-settings",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "subject",
+    "sps.source.variant": "admin-v2-settings",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx"
+  }
+}

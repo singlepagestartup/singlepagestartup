@@ -54,6 +54,8 @@ export interface ProductOverviewRelatedProduct {
   category: string;
   priceLabel: string;
   image: string;
+  href?: string;
+  target?: "_blank" | "_parent" | "_self" | "_top";
 }
 
 export interface ProductOverviewDefaultProps {
@@ -75,7 +77,7 @@ export const defaultProductOverviewDefaultProps: ProductOverviewDefaultProps = {
       "We build fast, beautiful, and conversion-optimized websites tailored to your brand. From single-page marketing sites to full-scale web portals with CMS, ecommerce, and analytics — every project is engineered for performance and maintainability.",
     breadcrumb: [
       { label: "Home", href: "/" },
-      { label: "Services", href: "/services" },
+      { label: "Services", href: "/ecommerce/products" },
     ],
   },
   stats: [
@@ -217,6 +219,8 @@ function ProductOverviewRelatedSection({
               priceLabel={product.priceLabel}
               title={product.title}
               subtitle={product.subtitle}
+              href={product.href}
+              target={product.target}
             />
           ))}
         </div>

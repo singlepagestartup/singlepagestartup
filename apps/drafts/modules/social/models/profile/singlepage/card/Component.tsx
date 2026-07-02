@@ -16,14 +16,15 @@ export const defaultProfileCardProps = {
   name: "Sarah Kim",
   role: "Head of Product",
   avatar: sarahAvatar,
-  href: "/blog/author/sarah-kim",
+  href: "/blog/authors/sarah-kim",
+  target: undefined as "_blank" | "_parent" | "_self" | "_top" | undefined,
   label: "Author",
 };
 
 export type ProfileCardProps = typeof defaultProfileCardProps;
 
 export function ProfileCard(props?: Partial<ProfileCardProps>) {
-  const { name, role, avatar, href, label } = {
+  const { name, role, avatar, href, target, label } = {
     ...defaultProfileCardProps,
     ...props,
   };
@@ -31,6 +32,8 @@ export function ProfileCard(props?: Partial<ProfileCardProps>) {
   return (
     <a
       href={href}
+      target={target}
+      rel={target === "_blank" ? "noreferrer" : undefined}
       className="block rounded-xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm"
       data-ds-block="social.profile.card"
       data-ds-layer="singlepage"

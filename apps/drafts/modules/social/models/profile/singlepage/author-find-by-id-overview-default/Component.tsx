@@ -16,7 +16,13 @@ import {
 import { ProfileFindRow } from "../find-row/Component";
 
 const articleOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-blog-find-by-id-article-overview--default";
+  "/?path=/story/modules-host-models-page-singlepage-blog-articles-blog-articles-slug--default";
+
+const blogIndexStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-blog--default";
+
+const authorOverviewStoryHref =
+  "/?path=/story/modules-host-models-page-singlepage-blog-authors-social-profiles-slug--default";
 
 const jamesAvatar =
   "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1hbiUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc3MTY2ODA0OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
@@ -296,7 +302,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
                         name={author.name}
                         role={author.role}
                         avatar={author.avatar}
-                        href={`/blog/author/${author.slug}`}
+                        href={authorOverviewStoryHref}
+                        target="_top"
                         meta={`${author.articleCount} ${author.articleCount === 1 ? "article" : "articles"}`}
                       />
                     ))}
@@ -306,7 +313,8 @@ export function ProfileAuthorFindByIdOverviewDefault(
 
               {/* Back */}
               <a
-                href="/blog"
+                href={blogIndexStoryHref}
+                target="_top"
                 className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 <ArrowLeft className="h-4 w-4" />

@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "ecommerce.relation.products-to-attributes.admin-v2-manager",
+  "title": "Ecommerce Relation / Products To Attributes / Admin V2 Manager",
+  "description": "Relation-owned admin-v2 manager for linking product attributes.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "ecommerce",
+    "entityType": "relation",
+    "entity": "products-to-attributes",
+    "variant": "admin-v2-manager"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "ecommerce.relation.products-to-attributes",
+    "pageName": "ecommerce",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["ecommerce", "relation", "admin-v2"]
+}

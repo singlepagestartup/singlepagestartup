@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "social.message.bubble-default",
+  "title": "Social Message / Bubble / Default",
+  "description": "Singlepage presentation block for one chat message bubble with attachment and reaction states.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "social",
+    "entityType": "model",
+    "entity": "message",
+    "variant": "bubble-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "figma": {
+    "componentName": "social.message",
+    "pageName": "social",
+    "nodeId": null,
+    "syncStatus": "not-created",
+    "metadataFile": "figma.json"
+  },
+  "tags": ["social", "message", "chat"]
+}

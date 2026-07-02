@@ -9,13 +9,13 @@ import {
 } from "../../shared";
 
 const productOverviewStoryHref =
-  "/?path=/story/modules-host-models-page-singlepage-ecommerce-product-find-by-id-overview-default--default";
+  "/?path=/story/modules-host-models-page-singlepage-ecommerce-products-ecommerce-products-slug--default";
 
 export interface CartDrawerDefaultProps {
   items: CartItem[];
   isOpen: boolean;
   checkoutHref: string;
-  servicesHref: string;
+  productsHref: string;
   onClose?: () => void;
   onClear?: () => void;
   onDecrease?: (item: CartItem) => void;
@@ -27,9 +27,9 @@ export const defaultCartDrawerDefaultProps: CartDrawerDefaultProps = {
   items: defaultCartItems,
   isOpen: true,
   checkoutHref:
-    "/?path=/story/modules-host-models-page-singlepage-ecommerce-order-checkout-details-default--default",
-  servicesHref:
-    "/?path=/story/modules-host-models-page-singlepage-ecommerce-product-find-card--default",
+    "/?path=/story/modules-host-models-page-singlepage-rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout--default",
+  productsHref:
+    "/?path=/story/modules-host-models-page-singlepage-ecommerce-products--default",
 };
 
 export function CartDrawerDefault(props?: Partial<CartDrawerDefaultProps>) {
@@ -37,7 +37,7 @@ export function CartDrawerDefault(props?: Partial<CartDrawerDefaultProps>) {
     items,
     isOpen,
     checkoutHref,
-    servicesHref,
+    productsHref,
     onClose,
     onClear,
     onDecrease,
@@ -88,15 +88,15 @@ export function CartDrawerDefault(props?: Partial<CartDrawerDefaultProps>) {
             <div className="text-center">
               <p className="text-sm text-slate-900">Your cart is empty</p>
               <p className="mt-1 text-xs text-slate-500">
-                Browse services and add something you like.
+                Browse products and add something you like.
               </p>
             </div>
             <a
               className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 no-underline transition hover:bg-slate-50"
-              href={servicesHref}
+              href={productsHref}
               target="_top"
             >
-              Browse Services
+              Browse Products
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
