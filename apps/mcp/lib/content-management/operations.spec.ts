@@ -7,12 +7,13 @@
 
 import { z } from "zod";
 import {
-  applyDeleteContentRecord,
-  createContentRecord,
+  applyDeleteContentModelRecord,
+  createContentModelRecord,
   describeContentEntities,
-  findContentRecords,
-  previewDeleteContentRecord,
-  updateContentRecord,
+  describeContentModel,
+  findContentModelRecords,
+  previewDeleteContentModelRecord,
+  updateContentModelRecord,
   updateLocalizedContentField,
 } from "./operations";
 import { IContentEntityDescriptor } from "./types";
@@ -70,7 +71,7 @@ function createDescriptor(
     ],
     localizedFields: key === "blog.widget" ? ["title"] : [],
     relationFields: [],
-    operations: ["find", "count", "get-by-id", "create", "update", "delete"],
+    operations: ["find", "count", "get", "create", "update", "delete"],
     insertSchema: z
       .object({
         title: z.record(z.any()).optional(),
@@ -93,28 +94,63 @@ describe("MCP content-management generic operations", () => {
    * When Codex asks for content entities
    * Then the response includes fields, localized fields, variants, and operations
    */
-  it("summarizes supported content entity descriptors", () => {
+  it("summarizes supported modules with nested model descriptors", () => {
     const api = createApi();
     const registry = [createDescriptor(api)];
 
-    expect(describeContentEntities({ registry })).toEqual([
+    expect(describeContentEntities({ registry })).toEqual({
+      modules: [
+        expect.objectContaining({
+          id: "blog",
+          models: [
+            expect.objectContaining({
+              id: "widget",
+              operations: [
+                "find",
+                "count",
+                "get",
+                "create",
+                "update",
+                "delete",
+              ],
+            }),
+          ],
+          relations: [],
+        }),
+      ],
+    });
+  });
+
+  /**
+   * BDD Scenario: Model schema exposes descriptor metadata
+   * Given a supported blog widget descriptor
+   * When Codex asks for the model schema
+   * Then the response includes fields, localized fields, variants, and operations
+   */
+  it("describes model schema metadata", async () => {
+    const api = createApi();
+    const registry = [createDescriptor(api)];
+
+    await expect(
+      describeContentModel(
+        {
+          module: "blog",
+          model: "widget",
+        },
+        { registry },
+      ),
+    ).resolves.toEqual(
       expect.objectContaining({
-        key: "blog.widget",
+        module: "blog",
+        model: "widget",
         fields: expect.arrayContaining([
           expect.objectContaining({ name: "title", localized: true }),
         ]),
         localizedFields: ["title"],
         variants: ["default", "list"],
-        operations: [
-          "find",
-          "count",
-          "get-by-id",
-          "create",
-          "update",
-          "delete",
-        ],
+        operations: ["find", "count", "get", "create", "update", "delete"],
       }),
-    ]);
+    );
   });
 
   /**
@@ -128,9 +164,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      findContentRecords(
+      findContentModelRecords(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           filters: {
             and: [
               {
@@ -182,9 +219,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      createContentRecord(
+      createContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           data: {
             title: { en: "Articles" },
             adminTitle: "Articles",
@@ -195,7 +233,8 @@ describe("MCP content-management generic operations", () => {
       ),
     ).resolves.toEqual({
       operation: "create",
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       data: {
         title: { en: "Articles" },
         adminTitle: "Articles",
@@ -215,9 +254,10 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      updateContentRecord(
+      updateContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           data: {
             adminTitle: "Fresh Articles",
@@ -253,27 +293,30 @@ describe("MCP content-management generic operations", () => {
     const registry = [createDescriptor(api)];
 
     await expect(
-      previewDeleteContentRecord(
+      previewDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
         },
         { registry, authHeaders },
       ),
     ).resolves.toEqual({
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       id: "widget-1",
       record: {
         id: "widget-1",
         adminTitle: "Articles",
       },
-      confirmationToken: "blog.widget:widget-1",
+      confirmationToken: "model:blog:widget:widget-1",
     });
 
     await expect(
-      applyDeleteContentRecord(
+      applyDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           confirm: true,
           confirmationToken: "wrong-token",
@@ -281,16 +324,17 @@ describe("MCP content-management generic operations", () => {
         { registry, authHeaders },
       ),
     ).rejects.toThrow(
-      "Validation error. Delete confirmation token does not match entity and id",
+      "Validation error. Delete confirmation token does not match selector and id",
     );
 
     await expect(
-      applyDeleteContentRecord(
+      applyDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
           confirm: true,
-          confirmationToken: "blog.widget:widget-1",
+          confirmationToken: "model:blog:widget:widget-1",
         },
         { registry, authHeaders },
       ),
@@ -349,16 +393,18 @@ describe("MCP content-management generic operations", () => {
     ];
 
     await expect(
-      previewDeleteContentRecord(
+      previewDeleteContentModelRecord(
         {
-          entity: "blog.widget",
+          module: "blog",
+          model: "widget",
           id: "widget-1",
         },
         { registry, authHeaders },
       ),
     ).resolves.toEqual(
       expect.objectContaining({
-        entity: "blog.widget",
+        module: "blog",
+        model: "widget",
         id: "widget-1",
         relationContext: {
           externalWidgetRelations: [
@@ -419,7 +465,8 @@ describe("MCP content-management generic operations", () => {
       ),
     ).resolves.toEqual({
       operation: "localized-field-update",
-      entity: "blog.widget",
+      module: "blog",
+      model: "widget",
       id: "widget-1",
       before: {
         en: "Articles",

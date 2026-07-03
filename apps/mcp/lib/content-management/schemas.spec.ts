@@ -1,27 +1,28 @@
 /**
  * BDD Suite: MCP content-management input schemas
  * Given Codex calls generic content-management tools with structured input
- * When entity selectors, filters, ordering, and destructive confirmations are parsed
- * Then invalid entity keys and unsafe delete calls are rejected before SDK calls
+ * When module/model selectors, filters, ordering, and destructive confirmations are parsed
+ * Then malformed selectors and unsafe delete calls are rejected before SDK calls
  */
 
 import {
-  ContentDeleteApplyInputSchema,
-  ContentEntityDescribeInputSchema,
-  ContentFindInputSchema,
+  ContentModelDeleteApplyInputSchema,
+  ContentModelFindInputSchema,
+  ContentModelSelectorSchema,
 } from "./schemas";
 
 describe("MCP content-management input schemas", () => {
   /**
-   * BDD Scenario: Canonical entity keys are accepted
-   * Given blog.widget is a supported content entity
-   * When Codex describes the entity
+   * BDD Scenario: Model selectors are accepted
+   * Given blog.widget is a supported content model
+   * When Codex describes the model
    * Then schema validation accepts the selector
    */
-  it("accepts supported canonical entity keys", () => {
+  it("accepts explicit module and model selectors", () => {
     expect(
-      ContentEntityDescribeInputSchema.safeParse({
-        entity: "blog.widget",
+      ContentModelSelectorSchema.safeParse({
+        module: "blog",
+        model: "widget",
       }).success,
     ).toBe(true);
   });
@@ -34,8 +35,9 @@ describe("MCP content-management input schemas", () => {
    */
   it("rejects unbounded find limits above the cap", () => {
     expect(
-      ContentFindInputSchema.safeParse({
-        entity: "host.page",
+      ContentModelFindInputSchema.safeParse({
+        module: "host",
+        model: "page",
         limit: 101,
       }).success,
     ).toBe(false);
@@ -48,7 +50,9 @@ describe("MCP content-management input schemas", () => {
    * Then direct auth fields are absent from the tool input shape
    */
   it("does not expose direct auth input for content tools", () => {
-    expect("auth" in ContentFindInputSchema.shape).toBe(false);
+    expect("auth" in ContentModelFindInputSchema.shape).toBe(false);
+    expect("authorization" in ContentModelFindInputSchema.shape).toBe(false);
+    expect("rbacSecretKey" in ContentModelFindInputSchema.shape).toBe(false);
   });
 
   /**
@@ -59,10 +63,11 @@ describe("MCP content-management input schemas", () => {
    */
   it("requires explicit confirmation for delete apply", () => {
     expect(
-      ContentDeleteApplyInputSchema.safeParse({
-        entity: "blog.widget",
+      ContentModelDeleteApplyInputSchema.safeParse({
+        module: "blog",
+        model: "widget",
         id: "widget-1",
-        confirmationToken: "blog.widget:widget-1",
+        confirmationToken: "model:blog:widget:widget-1",
       }).success,
     ).toBe(false);
   });

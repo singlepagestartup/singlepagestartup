@@ -1,35 +1,43 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
-  ContentCountInputSchema,
-  ContentCreateInputSchema,
-  ContentDeleteApplyInputSchema,
-  ContentDeletePreviewInputSchema,
-  ContentEntityDescribeInputSchema,
-  ContentFindInputSchema,
-  ContentGetByIdInputSchema,
-  ContentUpdateInputSchema,
+  ContentModelCountInputSchema,
+  ContentModelCreateInputSchema,
+  ContentModelDeleteApplyInputSchema,
+  ContentModelDeletePreviewInputSchema,
+  ContentModelFindInputSchema,
+  ContentModelGetByIdInputSchema,
+  ContentModelSelectorSchema,
+  ContentModelUpdateInputSchema,
+  ContentRelationCountInputSchema,
+  ContentRelationCreateInputSchema,
+  ContentRelationDeleteApplyInputSchema,
+  ContentRelationDeletePreviewInputSchema,
+  ContentRelationFindInputSchema,
+  ContentRelationGetByIdInputSchema,
+  ContentRelationSelectorSchema,
+  ContentRelationUpdateInputSchema,
   HostGraphLocalizedFieldUpdateInputSchema,
   HostGraphPreviewInputSchema,
-  LocalizedFieldUpdateInputSchema,
 } from "./lib/content-management/schemas";
 import {
-  applyDeleteContentRecord,
-  countContentRecords,
-  createContentRecord,
+  applyDeleteContentModelRecord,
+  applyDeleteContentRelationRecord,
+  countContentModelRecords,
+  countContentRelationRecords,
+  createContentModelRecord,
+  createContentRelationRecord,
   describeContentEntities,
-  describeContentEntity,
-  findContentRecords,
-  getContentRecordById,
-  previewDeleteContentRecord,
-  updateContentRecord,
-  updateLocalizedContentField,
+  describeContentModel,
+  describeContentRelation,
+  findContentModelRecords,
+  findContentRelationRecords,
+  getContentModelRecordById,
+  getContentRelationRecordById,
+  previewDeleteContentModelRecord,
+  previewDeleteContentRelationRecord,
+  updateContentModelRecord,
+  updateContentRelationRecord,
 } from "./lib/content-management/operations";
-import {
-  contentEntityRegistry,
-  listContentEntities,
-  requireContentEntityDescriptor,
-} from "./lib/content-management/registry";
-import { buildLocalizedFieldPatch } from "./lib/content-management/localized-field";
 import {
   errorResponse,
   okEnvelope,
@@ -44,15 +52,29 @@ import {
   getMcpAuthHeaders,
   getMcpSdkOptions,
 } from "./lib/content-management/auth";
+import { requireContentModelDescriptor } from "./lib/content-management/registry";
+import { buildLocalizedFieldPatch } from "./lib/content-management/localized-field";
+
+type ToolHandler = Parameters<McpServer["registerTool"]>[2];
+
+function withAuth(handler: ToolHandler): ToolHandler {
+  return async (args, extra) => {
+    try {
+      return await handler(args, extra);
+    } catch (error) {
+      return unknownErrorResponse(error);
+    }
+  };
+}
 
 export function registerResources(mcp: McpServer) {
   mcp.registerResource(
-    "content-management-entities",
-    "sps://content/entities",
+    "module-list",
+    "sps://modules",
     {
-      title: "SPS content-management entities",
+      title: "SPS modules",
       description:
-        "Discover model and relation entities supported by the MCP content-management tools.",
+        "Discover modules with nested model and relation summaries for compact MCP tools.",
     },
     async (uri) => {
       return {
@@ -60,7 +82,7 @@ export function registerResources(mcp: McpServer) {
           {
             uri: uri.href,
             text: JSON.stringify(
-              okEnvelope("content-entity-list", listContentEntities()),
+              okEnvelope("module-list", describeContentEntities()),
               null,
               2,
             ),
@@ -73,311 +95,376 @@ export function registerResources(mcp: McpServer) {
 
 export function registerTools(mcp: McpServer) {
   mcp.registerTool(
-    "content-entity-list",
+    "module-list",
     {
-      title: "List SPS content entities",
+      title: "List SPS modules",
       description:
-        "List model and relation entities supported by generic content-management MCP tools.",
+        "List modules with nested models and relations available through compact SPS MCP tools.",
       inputSchema: {},
     },
-    async () => {
-      try {
-        return okResponse("content-entity-list", describeContentEntities());
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+    withAuth(async () => okResponse("module-list", describeContentEntities())),
   );
 
   mcp.registerTool(
-    "content-entity-describe",
+    "model-schema",
     {
-      title: "Describe SPS content entity",
+      title: "Describe SPS model schema",
       description:
-        "Return route, fields, localized fields, variants, relations, and operations for one content entity.",
-      inputSchema: ContentEntityDescribeInputSchema.shape,
+        "Return fields, required fields, localized fields, variants, examples, and supported operations for one model.",
+      inputSchema: ContentModelSelectorSchema.shape,
     },
-    async (args) => {
-      try {
-        return okResponse(
-          "content-entity-describe",
-          describeContentEntity(args),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+    withAuth(async (args) =>
+      okResponse("model-schema", await describeContentModel(args)),
+    ),
   );
 
   mcp.registerTool(
-    "content-record-find",
+    "relation-schema",
     {
-      title: "Find SPS content records",
+      title: "Describe SPS relation schema",
       description:
-        "Find model or relation records with filters, order, limit, and offset through the existing SDK/API path.",
-      inputSchema: ContentFindInputSchema.shape,
+        "Return fields, relation fields, variants, examples, and supported operations for one relation.",
+      inputSchema: ContentRelationSelectorSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
-
-        return okResponse(
-          "content-record-find",
-          await findContentRecords(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+    withAuth(async (args) =>
+      okResponse("relation-schema", await describeContentRelation(args)),
+    ),
   );
 
   mcp.registerTool(
-    "content-record-count",
+    "model-record-count",
     {
-      title: "Count SPS content records",
-      description: "Count model or relation records with optional filters.",
-      inputSchema: ContentCountInputSchema.shape,
+      title: "Count SPS model records",
+      description: "Count records for one model with optional filters.",
+      inputSchema: ContentModelCountInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-record-count",
-          await countContentRecords(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "model-record-count",
+        await countContentModelRecords(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-record-get-by-id",
+    "model-record-find",
     {
-      title: "Get SPS content record by id",
-      description: "Get one content entity record by id.",
-      inputSchema: ContentGetByIdInputSchema.shape,
-    },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
-
-        return okResponse(
-          "content-record-get-by-id",
-          await getContentRecordById(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
-  );
-
-  mcp.registerTool(
-    "content-record-create",
-    {
-      title: "Create SPS content record",
+      title: "Find SPS model records",
       description:
-        "Create a model or relation record through the existing SDK/API path. Use dryRun for payload validation without writing.",
-      inputSchema: ContentCreateInputSchema.shape,
+        "Find records for one model with filters, order, limit, and offset.",
+      inputSchema: ContentModelFindInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-record-create",
-          await createContentRecord(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "model-record-find",
+        await findContentModelRecords(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-record-update",
+    "model-record-get",
     {
-      title: "Update SPS content record",
-      description:
-        "Update a model or relation record through the existing SDK/API path. Use dryRun for payload validation without writing.",
-      inputSchema: ContentUpdateInputSchema.shape,
+      title: "Get SPS model record",
+      description: "Get one model record by id.",
+      inputSchema: ContentModelGetByIdInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-record-update",
-          await updateContentRecord(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "model-record-get",
+        await getContentModelRecordById(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-record-delete-preview",
+    "model-record-create",
     {
-      title: "Preview SPS content record delete",
+      title: "Create SPS model record",
       description:
-        "Read a record and return the confirmation token required by content-record-delete-apply.",
-      inputSchema: ContentDeletePreviewInputSchema.shape,
+        "Create one model record. dryRun defaults to true; set dryRun to false to write.",
+      inputSchema: ContentModelCreateInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-record-delete-preview",
-          await previewDeleteContentRecord(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "model-record-create",
+        await createContentModelRecord(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-record-delete-apply",
+    "model-record-update",
     {
-      title: "Apply SPS content record delete",
+      title: "Update SPS model record",
       description:
-        "Delete a record only after content-record-delete-preview returned a matching confirmation token.",
-      inputSchema: ContentDeleteApplyInputSchema.shape,
+        "Update one model record. dryRun defaults to true; set dryRun to false to write.",
+      inputSchema: ContentModelUpdateInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-record-delete-apply",
-          await applyDeleteContentRecord(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "model-record-update",
+        await updateContentModelRecord(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-host-graph-preview",
+    "model-record-delete-preview",
     {
-      title: "Preview host content graph",
+      title: "Preview SPS model delete",
       description:
-        "Resolve a host page URL into page widgets, host widgets, external widget relations, and supported external widget candidates.",
+        "Read a model record and return the confirmation token required by model-record-delete-apply.",
+      inputSchema: ContentModelDeletePreviewInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "model-record-delete-preview",
+        await previewDeleteContentModelRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "model-record-delete-apply",
+    {
+      title: "Apply SPS model delete",
+      description:
+        "Delete a model record only after model-record-delete-preview returned a matching confirmation token.",
+      inputSchema: ContentModelDeleteApplyInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "model-record-delete-apply",
+        await applyDeleteContentModelRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-count",
+    {
+      title: "Count SPS relation records",
+      description: "Count records for one relation with optional filters.",
+      inputSchema: ContentRelationCountInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-count",
+        await countContentRelationRecords(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-find",
+    {
+      title: "Find SPS relation records",
+      description:
+        "Find records for one relation with filters, order, limit, and offset.",
+      inputSchema: ContentRelationFindInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-find",
+        await findContentRelationRecords(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-get",
+    {
+      title: "Get SPS relation record",
+      description: "Get one relation record by id.",
+      inputSchema: ContentRelationGetByIdInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-get",
+        await getContentRelationRecordById(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-create",
+    {
+      title: "Create SPS relation record",
+      description:
+        "Create one relation record. dryRun defaults to true; set dryRun to false to write.",
+      inputSchema: ContentRelationCreateInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-create",
+        await createContentRelationRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-update",
+    {
+      title: "Update SPS relation record",
+      description:
+        "Update one relation record. dryRun defaults to true; set dryRun to false to write.",
+      inputSchema: ContentRelationUpdateInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-update",
+        await updateContentRelationRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-delete-preview",
+    {
+      title: "Preview SPS relation delete",
+      description:
+        "Read a relation record and return the confirmation token required by relation-record-delete-apply.",
+      inputSchema: ContentRelationDeletePreviewInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-delete-preview",
+        await previewDeleteContentRelationRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "relation-record-delete-apply",
+    {
+      title: "Apply SPS relation delete",
+      description:
+        "Delete a relation record only after relation-record-delete-preview returned a matching confirmation token.",
+      inputSchema: ContentRelationDeleteApplyInputSchema.shape,
+    },
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
+
+      return okResponse(
+        "relation-record-delete-apply",
+        await applyDeleteContentRelationRecord(args, { authHeaders }),
+      );
+    }),
+  );
+
+  mcp.registerTool(
+    "page-preview",
+    {
+      title: "Preview SPS page content graph",
+      description:
+        "Resolve a page URL into page widgets, host widgets, external widget relations, and supported content candidates.",
       inputSchema: HostGraphPreviewInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
+    withAuth(async (args, extra) => {
+      const authHeaders = getMcpAuthHeaders(extra);
 
-        return okResponse(
-          "content-host-graph-preview",
-          await resolveHostGraph(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
+      return okResponse(
+        "page-preview",
+        await resolveHostGraph(args, { authHeaders }),
+      );
+    }),
   );
 
   mcp.registerTool(
-    "content-localized-field-update",
+    "page-localized-field-update",
     {
-      title: "Update localized content field",
+      title: "Update localized field through SPS page graph",
       description:
-        "Merge and update one locale key in a localized JSON field while preserving sibling locales.",
-      inputSchema: LocalizedFieldUpdateInputSchema.shape,
-    },
-    async (args, extra) => {
-      try {
-        const authHeaders = getMcpAuthHeaders(extra);
-
-        return okResponse(
-          "content-localized-field-update",
-          await updateLocalizedContentField(args, { authHeaders }),
-        );
-      } catch (error) {
-        return unknownErrorResponse(error);
-      }
-    },
-  );
-
-  mcp.registerTool(
-    "content-host-graph-localized-field-update",
-    {
-      title: "Update localized field through host graph",
-      description:
-        "Resolve a host URL and unambiguous external widget candidate, then dry-run or apply a locale-safe field update.",
+        "Resolve a page URL and unambiguous external widget candidate, then dry-run or apply a locale-safe field update.",
       inputSchema: HostGraphLocalizedFieldUpdateInputSchema.shape,
     },
-    async (args, extra) => {
-      try {
-        const parsed = HostGraphLocalizedFieldUpdateInputSchema.safeParse(args);
+    withAuth(async (args, extra) => {
+      const parsed = HostGraphLocalizedFieldUpdateInputSchema.safeParse(args);
 
-        if (!parsed.success) {
-          return errorResponse("validation", parsed.error.message);
-        }
+      if (!parsed.success) {
+        return errorResponse("validation", parsed.error.message);
+      }
 
-        const authHeaders = getMcpAuthHeaders(extra);
-        const graph = await resolveHostGraph(parsed.data, { authHeaders });
-        const candidate = requireSingleHostGraphCandidate({
-          result: graph,
-          input: parsed.data,
-        });
+      const authHeaders = getMcpAuthHeaders(extra);
+      const graph = await resolveHostGraph(parsed.data, { authHeaders });
+      const candidate = requireSingleHostGraphCandidate({
+        result: graph,
+        input: parsed.data,
+      });
 
-        if (!candidate.externalEntityKey || !candidate.externalWidget?.id) {
-          return errorResponse(
-            "validation",
-            "Resolved host graph candidate does not include a supported external widget",
-            { candidate },
-          );
-        }
-
-        const descriptor = requireContentEntityDescriptor(
-          candidate.externalEntityKey,
-          contentEntityRegistry,
+      if (!candidate.externalSelector || !candidate.externalWidget?.id) {
+        return errorResponse(
+          "validation",
+          "Resolved page candidate does not include a supported external model record",
+          { candidate },
         );
-        const data = buildLocalizedFieldPatch({
-          descriptor,
-          current: candidate.externalWidget,
-          field: parsed.data.field,
-          locale: parsed.data.locale,
-          value: parsed.data.value,
-        });
+      }
 
-        if (parsed.data.dryRun) {
-          return okResponse("content-host-graph-localized-field-update", {
-            operation: "host-graph-localized-field-update",
-            dryRun: true,
-            graph,
-            candidate,
-            before: candidate.externalWidget[parsed.data.field],
-            after: data[parsed.data.field],
-            data,
-          });
-        }
+      const descriptor = await requireContentModelDescriptor(
+        candidate.externalSelector,
+      );
+      const data = buildLocalizedFieldPatch({
+        descriptor,
+        current: candidate.externalWidget,
+        field: parsed.data.field,
+        locale: parsed.data.locale,
+        value: parsed.data.value,
+      });
 
-        const updated = await descriptor.api.update({
-          id: candidate.externalWidget.id,
-          data,
-          options: getMcpSdkOptions(authHeaders),
-        });
-
-        return okResponse("content-host-graph-localized-field-update", {
-          operation: "host-graph-localized-field-update",
-          dryRun: false,
+      if (parsed.data.dryRun) {
+        return okResponse("page-localized-field-update", {
+          operation: "page-localized-field-update",
+          dryRun: true,
           graph,
           candidate,
           before: candidate.externalWidget[parsed.data.field],
-          after: updated?.[parsed.data.field],
-          data: updated,
+          after: data[parsed.data.field],
+          data,
         });
-      } catch (error) {
-        return unknownErrorResponse(error);
       }
-    },
+
+      const updated = await descriptor.api.update({
+        id: candidate.externalWidget.id,
+        data,
+        options: getMcpSdkOptions(authHeaders),
+      });
+
+      return okResponse("page-localized-field-update", {
+        operation: "page-localized-field-update",
+        dryRun: false,
+        graph,
+        candidate,
+        before: candidate.externalWidget[parsed.data.field],
+        after: updated?.[parsed.data.field],
+        data: updated,
+      });
+    }),
   );
 }

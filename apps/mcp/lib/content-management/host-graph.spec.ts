@@ -36,7 +36,7 @@ function createDescriptor(props: {
     fields: [{ name: "id", type: "uuid", required: true }],
     localizedFields: props.key === "blog.widget" ? ["title"] : [],
     relationFields: [],
-    operations: ["find", "count", "get-by-id", "create", "update", "delete"],
+    operations: ["find", "count", "get", "create", "update", "delete"],
     insertSchema: z.object({}).passthrough(),
     selectSchema: z.object({ id: z.string() }).passthrough(),
     api: {
@@ -163,7 +163,10 @@ describe("MCP content-management host graph resolver", () => {
         candidates: [
           expect.objectContaining({
             id: "blog-widget-1",
-            externalEntityKey: "blog.widget",
+            externalSelector: {
+              module: "blog",
+              model: "widget",
+            },
             summary: expect.objectContaining({
               externalWidgetId: "blog-widget-1",
               adminTitle: "Articles",
