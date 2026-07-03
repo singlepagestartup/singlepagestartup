@@ -45,9 +45,17 @@
   "figma": {
     "componentName": "social.profile",
     "pageName": "social",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "author-find-by-id-overview-default",
+    "nodeId": "782:31",
+    "variantNodeId": "980:58",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "profile", "author", "find-by-id", "overview-default"]
+  "tags": [
+    "social",
+    "profile",
+    "author",
+    "find-by-id",
+    "overview-default"
+  ]
 }

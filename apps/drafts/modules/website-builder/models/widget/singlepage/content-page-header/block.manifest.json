@@ -35,8 +35,10 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "content-page-header",
+    "nodeId": "700:24",
+    "variantNodeId": "984:104",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

@@ -1,8 +1,8 @@
 {
   "componentName": "social.widget",
   "pageName": "social",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "855:1498",
+  "variantNodeId": "980:102",
   "variantName": "chat-overview-default",
   "metadata": {
     "sps.drafts.blockId": "social.widget.chat-overview-default",
@@ -16,6 +16,12 @@
     "sps.source.variant": "chat-overview-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/social/models/widget/singlepage/chat-overview-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/social/models/widget/singlepage/chat-overview-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/social/models/widget/singlepage/chat-overview-default/Component.stories.tsx",
+    "sps.figma.nodeId": "855:1498",
+    "sps.figma.variantNodeId": "980:102",
+    "sps.figma.storybookReferenceNodeId": "980:262",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:262",
+  "storybookImageCount": 1
 }

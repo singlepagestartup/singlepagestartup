@@ -1,7 +1,8 @@
 {
   "componentName": "ecommerce.cart",
   "pageName": "ecommerce",
-  "nodeId": null,
+  "nodeId": "982:139",
+  "variantNodeId": "982:127",
   "variantName": "button-default",
   "metadata": {
     "sps.drafts.blockId": "ecommerce.cart.button-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "button-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/cart/singlepage/button-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/cart/singlepage/button-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/cart/singlepage/button-default/Component.stories.tsx",
+    "sps.figma.nodeId": "982:139",
+    "sps.figma.variantNodeId": "982:127",
+    "sps.figma.storybookReferenceNodeId": "982:238",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "982:238",
+  "storybookImageCount": 1
 }

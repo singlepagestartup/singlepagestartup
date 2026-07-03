@@ -45,7 +45,9 @@
   "figma": {
     "componentName": "website-builder.feature",
     "pageName": "website-builder",
+    "variantName": "testimotional",
     "nodeId": "871:5",
+    "variantNodeId": "890:2",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   }

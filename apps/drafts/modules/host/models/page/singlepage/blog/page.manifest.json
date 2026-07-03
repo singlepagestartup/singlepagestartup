@@ -35,12 +35,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "blog",
-    "syncStatus": "created",
-    "metadataFile": "figma.json",
     "nodeId": "716:300",
-    "variantNodeId": "850:875"
+    "variantNodeId": "983:1765",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
   }
 }

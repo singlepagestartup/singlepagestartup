@@ -70,9 +70,15 @@
   "figma": {
     "componentName": "social.profile",
     "pageName": "social",
+    "variantName": "author",
     "nodeId": "782:31",
-    "syncStatus": "created",
+    "variantNodeId": "782:3",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "profile", "author"]
+  "tags": [
+    "social",
+    "profile",
+    "author"
+  ]
 }

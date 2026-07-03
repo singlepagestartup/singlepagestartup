@@ -70,9 +70,15 @@
   "figma": {
     "componentName": "blog.article",
     "pageName": "blog",
+    "variantName": "featured",
     "nodeId": "785:18",
-    "syncStatus": "created",
+    "variantNodeId": "785:2",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "article", "featured"]
+  "tags": [
+    "blog",
+    "article",
+    "featured"
+  ]
 }

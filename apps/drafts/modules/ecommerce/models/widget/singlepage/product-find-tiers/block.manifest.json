@@ -40,8 +40,10 @@
   "figma": {
     "componentName": "ecommerce.widget",
     "pageName": "ecommerce",
+    "variantName": "product-find-tiers",
     "nodeId": "743:3",
-    "syncStatus": "created",
+    "variantNodeId": "715:173",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
   "tags": [

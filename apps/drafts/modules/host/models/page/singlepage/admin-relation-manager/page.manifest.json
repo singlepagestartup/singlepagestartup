@@ -19,10 +19,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "admin-relation-manager",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1741",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

@@ -35,7 +35,9 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-feature-find-grid",
     "nodeId": "700:24",
+    "variantNodeId": "866:2",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   }

@@ -1,8 +1,8 @@
 {
   "componentName": "host.page",
   "pageName": "host",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "716:300",
+  "variantNodeId": "983:1783",
   "variantName": "privacy",
   "metadata": {
     "sps.drafts.blockId": "host.page.privacy",
@@ -16,6 +16,12 @@
     "sps.source.variant": "privacy",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/privacy/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/privacy/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/privacy/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1783",
+    "sps.figma.storybookReferenceNodeId": "983:1932",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1932",
+  "storybookImageCount": 1
 }

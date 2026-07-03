@@ -30,7 +30,9 @@
   "figma": {
     "componentName": "website-builder.feature",
     "pageName": "website-builder",
+    "variantName": "list-item-default",
     "nodeId": "871:5",
+    "variantNodeId": "881:2",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   }

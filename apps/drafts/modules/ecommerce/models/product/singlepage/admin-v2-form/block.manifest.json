@@ -18,9 +18,16 @@
   "figma": {
     "componentName": "ecommerce.product",
     "pageName": "ecommerce",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "admin-v2-form",
+    "nodeId": "795:10",
+    "variantNodeId": "982:171",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["ecommerce", "product", "admin-v2", "form"]
+  "tags": [
+    "ecommerce",
+    "product",
+    "admin-v2",
+    "form"
+  ]
 }

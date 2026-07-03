@@ -2,7 +2,7 @@
   "componentName": "host.page",
   "pageName": "host",
   "nodeId": "716:300",
-  "variantNodeId": "850:875",
+  "variantNodeId": "983:1765",
   "variantName": "blog",
   "metadata": {
     "sps.drafts.blockId": "host.page.blog",
@@ -16,6 +16,12 @@
     "sps.source.variant": "blog",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/blog/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/blog/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/blog/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1765",
+    "sps.figma.storybookReferenceNodeId": "983:1908",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1908",
+  "storybookImageCount": 1
 }

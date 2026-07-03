@@ -50,8 +50,10 @@
   "figma": {
     "componentName": "ecommerce.product",
     "pageName": "ecommerce",
+    "variantName": "overview-purchase",
     "nodeId": "795:10",
-    "syncStatus": "created",
+    "variantNodeId": "802:33",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

@@ -30,9 +30,15 @@
   "figma": {
     "componentName": "website-builder.button",
     "pageName": "website-builder",
-    "nodeId": null,
-    "syncStatus": "pending",
+    "variantName": "link",
+    "nodeId": "895:8",
+    "variantNodeId": "984:50",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["button", "website-builder", "link"]
+  "tags": [
+    "button",
+    "website-builder",
+    "link"
+  ]
 }

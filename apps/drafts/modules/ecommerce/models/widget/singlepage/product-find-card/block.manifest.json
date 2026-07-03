@@ -30,9 +30,16 @@
   "figma": {
     "componentName": "ecommerce.widget",
     "pageName": "ecommerce",
+    "variantName": "product-find-card",
     "nodeId": "743:3",
-    "syncStatus": "created",
+    "variantNodeId": "818:79",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["ecommerce", "widget", "product-find-card", "ecommerce.product.card"]
+  "tags": [
+    "ecommerce",
+    "widget",
+    "product-find-card",
+    "ecommerce.product.card"
+  ]
 }

@@ -30,8 +30,10 @@
   "figma": {
     "componentName": "social.profile",
     "pageName": "social",
+    "variantName": "article-find-by-id-comment-form-default",
     "nodeId": "782:31",
-    "syncStatus": "created",
+    "variantNodeId": "855:1474",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

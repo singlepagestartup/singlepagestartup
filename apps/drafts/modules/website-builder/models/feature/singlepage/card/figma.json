@@ -2,6 +2,7 @@
   "componentName": "website-builder.feature",
   "pageName": "website-builder",
   "nodeId": null,
+  "variantNodeId": null,
   "variantName": "card",
   "metadata": {
     "sps.drafts.blockId": "website-builder.feature.card",

@@ -50,8 +50,10 @@
   "figma": {
     "componentName": "ecommerce.product",
     "pageName": "ecommerce",
+    "variantName": "card-related",
     "nodeId": "795:10",
-    "syncStatus": "created",
+    "variantNodeId": "798:9",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

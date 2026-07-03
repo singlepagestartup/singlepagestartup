@@ -1,6 +1,9 @@
 {
-  "componentName": "Startup / Widget / Default / Startup",
-  "pageName": "Blocks / Startup",
+  "componentName": "startup.widget",
+  "pageName": "startup",
+  "nodeId": "977:63",
+  "variantNodeId": "977:57",
+  "variantName": "startup-default",
   "metadata": {
     "sps.drafts.blockId": "startup.widget.default",
     "sps.drafts.layer": "startup",
@@ -10,7 +13,14 @@
     "sps.source.variant": "default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.tsx",
-    "sps.code.story": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.stories.tsx"
+    "sps.code.story": "apps/drafts/modules/startup/models/widget/startup/default/StartupWidgetStartup.stories.tsx",
+    "sps.drafts.syncKey": "startup/models/widget/startup/default",
+    "sps.figma.component": "startup.widget",
+    "sps.figma.variant": "startup-default",
+    "sps.figma.nodeId": "977:63",
+    "sps.figma.variantNodeId": "977:57",
+    "sps.figma.storybookReferenceNodeId": "977:87",
+    "sps.storybook.imageCount": "2"
   },
   "properties": [
     {
@@ -24,5 +34,11 @@
       "slot": "description"
     }
   ],
-  "tokens": ["color/surface", "color/primary", "color/border"]
+  "tokens": [
+    "color/surface",
+    "color/primary",
+    "color/border"
+  ],
+  "storybookReferenceNodeId": "977:87",
+  "storybookImageCount": 2
 }

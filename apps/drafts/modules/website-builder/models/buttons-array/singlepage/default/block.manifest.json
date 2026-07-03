@@ -35,10 +35,15 @@
   "figma": {
     "componentName": "website-builder.buttons-array",
     "pageName": "website-builder",
+    "variantName": "default",
     "nodeId": "895:16",
     "variantNodeId": "895:9",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },
-  "tags": ["buttons-array", "website-builder", "default"]
+  "tags": [
+    "buttons-array",
+    "website-builder",
+    "default"
+  ]
 }

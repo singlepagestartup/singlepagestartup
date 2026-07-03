@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.identity",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "981:86",
+  "variantNodeId": "981:68",
   "variantName": "password-reset-default",
   "metadata": {
     "sps.drafts.blockId": "rbac.identity.password-reset-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "password-reset-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/identity/singlepage/password-reset-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/password-reset-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/password-reset-default/Component.stories.tsx",
+    "sps.figma.nodeId": "981:86",
+    "sps.figma.variantNodeId": "981:68",
+    "sps.figma.storybookReferenceNodeId": "981:190",
+    "sps.storybook.imageCount": "2"
+  },
+  "storybookReferenceNodeId": "981:190",
+  "storybookImageCount": 2
 }

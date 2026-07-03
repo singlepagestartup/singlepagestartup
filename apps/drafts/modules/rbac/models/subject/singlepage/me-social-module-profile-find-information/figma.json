@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.subject",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "859:27",
+  "variantNodeId": "981:129",
   "variantName": "me-social-module-profile-find-information",
   "metadata": {
     "sps.drafts.blockId": "rbac.subject.me-social-module-profile-find-information",
@@ -15,6 +16,12 @@
     "sps.source.variant": "me-social-module-profile-find-information",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-social-module-profile-find-information/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:129",
+    "sps.figma.storybookReferenceNodeId": "981:310",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:310",
+  "storybookImageCount": 1
 }

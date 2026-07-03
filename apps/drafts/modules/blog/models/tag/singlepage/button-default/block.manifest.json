@@ -30,9 +30,15 @@
   "figma": {
     "componentName": "blog.tag",
     "pageName": "blog",
+    "variantName": "button-default",
     "nodeId": "791:19",
-    "syncStatus": "created",
+    "variantNodeId": "791:17",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "tag", "button-default"]
+  "tags": [
+    "blog",
+    "tag",
+    "button-default"
+  ]
 }

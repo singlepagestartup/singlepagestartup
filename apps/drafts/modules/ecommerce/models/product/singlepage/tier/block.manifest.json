@@ -65,9 +65,15 @@
   "figma": {
     "componentName": "ecommerce.product",
     "pageName": "ecommerce",
+    "variantName": "tier",
     "nodeId": "795:10",
-    "syncStatus": "created",
+    "variantNodeId": "982:213",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["ecommerce", "product", "tier"]
+  "tags": [
+    "ecommerce",
+    "product",
+    "tier"
+  ]
 }

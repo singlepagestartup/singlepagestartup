@@ -27,10 +27,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "social-chats-social-chats-id-threads-social-threads-id",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1831",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

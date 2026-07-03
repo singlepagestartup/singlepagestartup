@@ -16,6 +16,12 @@
     "sps.source.variant": "article-find-by-id-comment-form-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/article-find-by-id-comment-form-default/Component.stories.tsx",
+    "sps.figma.nodeId": "782:31",
+    "sps.figma.variantNodeId": "855:1474",
+    "sps.figma.storybookReferenceNodeId": "980:132",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:132",
+  "storybookImageCount": 1
 }

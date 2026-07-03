@@ -14,10 +14,42 @@ const PAGES_ROOT = path.join(
   "page",
 );
 const SKIP_DIRS = new Set(["node_modules", ".git", ".nx"]);
+const VALID_FIGMA_SYNC_STATUSES = new Set([
+  "not-created",
+  "created",
+  "needs-update",
+  "verified",
+]);
 
 interface ValidationFailure {
   filePath: string;
   errors: string[];
+}
+
+interface DraftFigmaManifest {
+  componentName?: unknown;
+  pageName?: unknown;
+  variantName?: unknown;
+  nodeId?: unknown;
+  variantNodeId?: unknown;
+  syncStatus?: unknown;
+  metadataFile?: unknown;
+}
+
+interface DraftFigmaJson {
+  componentName?: unknown;
+  pageName?: unknown;
+  nodeId?: unknown;
+  variantNodeId?: unknown;
+  variantName?: unknown;
+  metadata?: unknown;
+}
+
+interface DraftFigmaSource {
+  module?: unknown;
+  entityType?: unknown;
+  entity?: unknown;
+  variant?: unknown;
 }
 
 function toPosixPath(value: string): string {
@@ -95,8 +127,169 @@ function addError(
   });
 }
 
+function addMismatch(
+  failures: ValidationFailure[],
+  filePath: string,
+  field: string,
+  expected: unknown,
+  actual: unknown,
+): void {
+  if (expected !== actual) {
+    addError(
+      failures,
+      filePath,
+      `${field} mismatch: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
+  }
+}
+
+function isNullableNodeId(value: unknown): boolean {
+  return value === null || typeof value === "string";
+}
+
 function isStorybookDiscoverableStoryPath(relativeFile: string): boolean {
   return /\.stories\.(ts|tsx|mdx)$/.test(toPosixPath(relativeFile));
+}
+
+async function validateFigmaMetadataPair(
+  failures: ValidationFailure[],
+  options: {
+    manifestPath: string;
+    kind: "block" | "page";
+    id: string | undefined;
+    layer: string | undefined;
+    files: { component?: unknown; story?: unknown };
+    figma: DraftFigmaManifest | undefined;
+    source: DraftFigmaSource;
+  },
+): Promise<void> {
+  const { manifestPath, kind, id, layer, files, figma, source } = options;
+  const manifestDir = path.dirname(manifestPath);
+  const metadataFile = figma?.metadataFile;
+
+  if (typeof metadataFile !== "string" || !metadataFile) {
+    return;
+  }
+
+  for (const field of ["componentName", "pageName", "variantName"] as const) {
+    if (typeof figma?.[field] !== "string" || !figma[field]) {
+      addError(failures, manifestPath, `figma.${field} is required`);
+    }
+  }
+
+  if (!isNullableNodeId(figma?.nodeId)) {
+    addError(failures, manifestPath, "figma.nodeId must be a string or null");
+  }
+
+  if (!isNullableNodeId(figma?.variantNodeId)) {
+    addError(
+      failures,
+      manifestPath,
+      "figma.variantNodeId must be a string or null",
+    );
+  }
+
+  if (
+    typeof figma?.syncStatus !== "string" ||
+    !VALID_FIGMA_SYNC_STATUSES.has(figma.syncStatus)
+  ) {
+    addError(
+      failures,
+      manifestPath,
+      "figma.syncStatus must be not-created, created, needs-update, or verified",
+    );
+  }
+
+  const figmaPath = path.join(manifestDir, metadataFile);
+  let figmaJson: DraftFigmaJson;
+
+  try {
+    figmaJson = (await readJson(figmaPath)) as DraftFigmaJson;
+  } catch (error) {
+    addError(
+      failures,
+      manifestPath,
+      `invalid figma metadata JSON (${error instanceof Error ? error.message : String(error)})`,
+    );
+    return;
+  }
+
+  for (const field of [
+    "componentName",
+    "pageName",
+    "nodeId",
+    "variantNodeId",
+    "variantName",
+  ] as const) {
+    addMismatch(
+      failures,
+      manifestPath,
+      `figma.${field}`,
+      figma?.[field],
+      figmaJson[field],
+    );
+  }
+
+  if (
+    figmaJson.metadata == null ||
+    typeof figmaJson.metadata !== "object" ||
+    Array.isArray(figmaJson.metadata)
+  ) {
+    addError(failures, figmaPath, "metadata must be an object");
+    return;
+  }
+
+  const metadata = figmaJson.metadata as Record<string, unknown>;
+  const syncKey = toPosixPath(path.relative(MODULES_ROOT, manifestDir));
+  const componentPath =
+    typeof files.component === "string"
+      ? toPosixPath(
+          path.relative(ROOT, path.join(manifestDir, files.component)),
+        )
+      : undefined;
+  const storyPath =
+    typeof files.story === "string"
+      ? toPosixPath(path.relative(ROOT, path.join(manifestDir, files.story)))
+      : undefined;
+  const expectedSource =
+    kind === "page"
+      ? {
+          module: "host",
+          entityType: "model",
+          entity: "page",
+          variant: id,
+        }
+      : source;
+  const expectedBlockId = kind === "page" ? `host.page.${id}` : id;
+
+  const expectedMetadata: Record<string, unknown> = {
+    "sps.drafts.blockId": expectedBlockId,
+    "sps.drafts.layer": layer,
+    "sps.drafts.syncKey": syncKey,
+    "sps.figma.component": figma?.componentName,
+    "sps.figma.variant": figma?.variantName,
+    "sps.source.module": expectedSource.module,
+    "sps.source.entityType": expectedSource.entityType,
+    "sps.source.entity": expectedSource.entity,
+    "sps.source.variant": expectedSource.variant,
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": componentPath,
+    "sps.code.story": storyPath,
+  };
+
+  for (const [field, expected] of Object.entries(expectedMetadata)) {
+    if (typeof expected !== "string" || !expected) {
+      continue;
+    }
+
+    addMismatch(
+      failures,
+      figmaPath,
+      `metadata.${field}`,
+      expected,
+      metadata[field],
+    );
+  }
 }
 
 async function validateRootManifest(
@@ -223,9 +416,7 @@ async function validateBlocks(failures: ValidationFailure[]): Promise<void> {
           css?: unknown;
           js?: unknown;
         };
-        figma?: {
-          metadataFile?: unknown;
-        };
+        figma?: DraftFigmaManifest;
       };
 
       if (typeof json.id !== "string" || !json.id) {
@@ -386,6 +577,16 @@ async function validateBlocks(failures: ValidationFailure[]): Promise<void> {
           );
         }
       }
+
+      await validateFigmaMetadataPair(failures, {
+        manifestPath,
+        kind: "block",
+        id: typeof json.id === "string" ? json.id : undefined,
+        layer: typeof json.layer === "string" ? json.layer : undefined,
+        files: json.files ?? {},
+        figma: json.figma,
+        source: json.source ?? {},
+      });
     } catch (error) {
       addError(
         failures,
@@ -417,6 +618,7 @@ async function validatePages(failures: ValidationFailure[]): Promise<void> {
     try {
       const json = (await readJson(manifestPath)) as {
         id?: unknown;
+        layer?: unknown;
         files?: {
           component?: unknown;
           story?: unknown;
@@ -428,6 +630,7 @@ async function validatePages(failures: ValidationFailure[]): Promise<void> {
           id?: unknown;
           path?: unknown;
         }>;
+        figma?: DraftFigmaManifest;
       };
 
       if (typeof json.id !== "string" || !json.id) {
@@ -523,6 +726,38 @@ async function validatePages(failures: ValidationFailure[]): Promise<void> {
           }
         }
       }
+
+      const metadataFile = json.figma?.metadataFile;
+      if (typeof metadataFile !== "string" || !metadataFile) {
+        addError(failures, manifestPath, "figma.metadataFile is required");
+      } else {
+        const absoluteFile = path.join(
+          path.dirname(manifestPath),
+          metadataFile,
+        );
+        if (!(await pathPointsToFile(absoluteFile))) {
+          addError(
+            failures,
+            manifestPath,
+            `"figma.metadataFile" does not exist: ${metadataFile}`,
+          );
+        }
+      }
+
+      await validateFigmaMetadataPair(failures, {
+        manifestPath,
+        kind: "page",
+        id: typeof json.id === "string" ? json.id : undefined,
+        layer: typeof json.layer === "string" ? json.layer : undefined,
+        files: json.files ?? {},
+        figma: json.figma,
+        source: {
+          module: "host",
+          entityType: "model",
+          entity: "page",
+          variant: json.id,
+        },
+      });
     } catch (error) {
       addError(
         failures,

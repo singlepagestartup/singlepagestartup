@@ -35,7 +35,9 @@
   "figma": {
     "componentName": "website-builder.feature",
     "pageName": "website-builder",
+    "variantName": "card",
     "nodeId": null,
+    "variantNodeId": null,
     "syncStatus": "not-created",
     "metadataFile": "figma.json"
   }

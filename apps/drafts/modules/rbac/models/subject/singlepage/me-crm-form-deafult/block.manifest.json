@@ -2,7 +2,7 @@
   "$schema": "../../../../../../block.schema.json",
   "id": "rbac.subject.me-crm-form-deafult",
   "title": "RBAC Subject / me-crm-form-deafult",
-  "description": "Static CRM contact form for the current subject.",
+  "description": "RBAC subject-owned wrapper that composes CRM module form, step, input, and option draft models.",
   "layer": "singlepage",
   "state": "draft",
   "source": {
@@ -17,67 +17,29 @@
   },
   "contentSlots": [
     {
-      "name": "firstNameLabel",
-      "type": "text",
-      "required": false
+      "name": "subject",
+      "type": "list",
+      "required": true
     },
     {
-      "name": "firstNamePlaceholder",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "lastNameLabel",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "lastNamePlaceholder",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "emailLabel",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "emailPlaceholder",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "companyLabel",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "companyPlaceholder",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "messageLabel",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "messagePlaceholder",
-      "type": "text",
-      "required": false
-    },
-    {
-      "name": "submitLabel",
-      "type": "text",
-      "required": false
+      "name": "crmForm",
+      "type": "list",
+      "required": true
     }
   ],
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
+    "variantName": "me-crm-form-deafult",
     "nodeId": "859:27",
-    "syncStatus": "synced",
+    "variantNodeId": "981:99",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "crm", "form"]
+  "tags": [
+    "rbac",
+    "subject",
+    "crm",
+    "form"
+  ]
 }

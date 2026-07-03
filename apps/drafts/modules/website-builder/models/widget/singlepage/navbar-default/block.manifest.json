@@ -35,9 +35,17 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "navbar-default",
     "nodeId": "700:24",
+    "variantNodeId": "715:2",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },
-  "tags": ["home", "landing", "website-builder", "widget", "navbar-default"]
+  "tags": [
+    "home",
+    "landing",
+    "website-builder",
+    "widget",
+    "navbar-default"
+  ]
 }

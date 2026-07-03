@@ -2,7 +2,7 @@
   "componentName": "rbac.subject",
   "pageName": "rbac",
   "nodeId": "859:27",
-  "variantNodeId": "859:3",
+  "variantNodeId": "981:99",
   "variantName": "me-crm-form-deafult",
   "metadata": {
     "sps.drafts.blockId": "rbac.subject.me-crm-form-deafult",
@@ -16,6 +16,12 @@
     "sps.source.variant": "me-crm-form-deafult",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-crm-form-deafult/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:99",
+    "sps.figma.storybookReferenceNodeId": "981:250",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:250",
+  "storybookImageCount": 1
 }

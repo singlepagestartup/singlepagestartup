@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.input.select-option-default",
+  "title": "CRM Input / Select Option Default",
+  "description": "Singlepage CRM select input variant backed by CRM options.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "input",
+    "variant": "select-option-default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "input",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.input",
+    "pageName": "crm",
+    "variantName": "select-option-default",
+    "nodeId": "978:77",
+    "variantNodeId": "978:59",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "input",
+    "select",
+    "option"
+  ]
+}

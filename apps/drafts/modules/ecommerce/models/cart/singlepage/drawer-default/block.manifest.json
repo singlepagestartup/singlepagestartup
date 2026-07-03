@@ -30,8 +30,10 @@
   "figma": {
     "componentName": "ecommerce.cart",
     "pageName": "ecommerce",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "drawer-default",
+    "nodeId": "982:139",
+    "variantNodeId": "982:133",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

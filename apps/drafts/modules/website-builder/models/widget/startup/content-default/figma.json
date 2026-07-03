@@ -1,6 +1,8 @@
 {
   "componentName": "website-builder.widget",
   "pageName": "website-builder",
+  "nodeId": null,
+  "variantNodeId": null,
   "variantName": "content-default",
   "metadata": {
     "sps.drafts.blockId": "website-builder.widget.content-default",

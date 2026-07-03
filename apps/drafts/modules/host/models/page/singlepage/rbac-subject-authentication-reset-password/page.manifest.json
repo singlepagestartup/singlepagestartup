@@ -23,12 +23,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "rbac-subject-authentication-reset-password",
-    "syncStatus": "pending",
-    "metadataFile": "figma.json",
-    "nodeId": null,
-    "variantNodeId": null
+    "nodeId": "716:300",
+    "variantNodeId": "983:1789",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
   }
 }

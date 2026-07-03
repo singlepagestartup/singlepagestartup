@@ -40,9 +40,15 @@
   "figma": {
     "componentName": "blog.widget",
     "pageName": "blog",
+    "variantName": "article-find-default",
     "nodeId": "735:17",
-    "syncStatus": "created",
+    "variantNodeId": "979:143",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "widget", "article-find-default"]
+  "tags": [
+    "blog",
+    "widget",
+    "article-find-default"
+  ]
 }

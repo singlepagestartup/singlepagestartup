@@ -35,8 +35,10 @@
   "figma": {
     "componentName": "website-builder.feature",
     "pageName": "website-builder",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "dropdown",
+    "nodeId": "871:5",
+    "variantNodeId": "984:56",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

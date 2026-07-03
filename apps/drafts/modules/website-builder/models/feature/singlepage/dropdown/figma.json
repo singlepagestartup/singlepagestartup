@@ -1,7 +1,8 @@
 {
   "componentName": "website-builder.feature",
   "pageName": "website-builder",
-  "nodeId": null,
+  "nodeId": "871:5",
+  "variantNodeId": "984:56",
   "variantName": "dropdown",
   "metadata": {
     "sps.drafts.blockId": "website-builder.feature.dropdown",
@@ -15,6 +16,12 @@
     "sps.source.variant": "dropdown",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/website-builder/models/feature/singlepage/dropdown/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/website-builder/models/feature/singlepage/dropdown/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/website-builder/models/feature/singlepage/dropdown/Component.stories.tsx",
+    "sps.figma.nodeId": "871:5",
+    "sps.figma.variantNodeId": "984:56",
+    "sps.figma.storybookReferenceNodeId": "984:145",
+    "sps.storybook.imageCount": "2"
+  },
+  "storybookReferenceNodeId": "984:145",
+  "storybookImageCount": 2
 }

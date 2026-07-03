@@ -17,6 +17,12 @@
     "sps.source.variant": "featured",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/blog/models/article/singlepage/featured/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/featured/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/featured/Component.stories.tsx",
+    "sps.figma.nodeId": "785:18",
+    "sps.figma.variantNodeId": "785:2",
+    "sps.figma.storybookReferenceNodeId": "979:236",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "979:236",
+  "storybookImageCount": 1
 }

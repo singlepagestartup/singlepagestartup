@@ -30,8 +30,10 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-buttons-array-find-default",
     "nodeId": "700:24",
-    "syncStatus": "created",
+    "variantNodeId": "984:74",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
   "tags": [

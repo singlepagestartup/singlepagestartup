@@ -35,9 +35,15 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "me-information",
+    "nodeId": "859:27",
+    "variantNodeId": "981:117",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "me-information"]
+  "tags": [
+    "rbac",
+    "subject",
+    "me-information"
+  ]
 }

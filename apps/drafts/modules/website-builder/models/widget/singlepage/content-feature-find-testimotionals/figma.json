@@ -2,7 +2,7 @@
   "componentName": "website-builder.widget",
   "pageName": "website-builder",
   "nodeId": "700:24",
-  "variantNodeId": "715:187",
+  "variantNodeId": "984:92",
   "variantName": "content-feature-find-testimotionals",
   "metadata": {
     "sps.drafts.blockId": "website-builder.widget.content-feature-find-testimotionals",
@@ -19,7 +19,11 @@
     "sps.source.variant": "content-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-testimotionals/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-testimotionals/Component.stories.tsx"
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-feature-find-testimotionals/Component.stories.tsx",
+    "sps.figma.nodeId": "700:24",
+    "sps.figma.variantNodeId": "984:92",
+    "sps.figma.storybookReferenceNodeId": "984:217",
+    "sps.storybook.imageCount": "1"
   },
   "properties": [
     {
@@ -44,5 +48,7 @@
     "color/surface",
     "color/border",
     "color/primary"
-  ]
+  ],
+  "storybookReferenceNodeId": "984:217",
+  "storybookImageCount": 1
 }

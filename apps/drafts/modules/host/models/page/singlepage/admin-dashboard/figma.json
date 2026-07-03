@@ -1,11 +1,11 @@
 {
   "componentName": "host.page",
   "pageName": "host",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "716:300",
+  "variantNodeId": "983:1705",
   "variantName": "admin-dashboard",
   "metadata": {
-    "sps.drafts.blockId": "host.page.admin-dashboard",
+    "sps.drafts.blockId": "host.page.admin.dashboard",
     "sps.drafts.layer": "singlepage",
     "sps.drafts.syncKey": "host/models/page/singlepage/admin-dashboard",
     "sps.figma.component": "host.page",
@@ -13,9 +13,15 @@
     "sps.source.module": "host",
     "sps.source.entityType": "model",
     "sps.source.entity": "page",
-    "sps.source.variant": "admin-dashboard",
+    "sps.source.variant": "admin.dashboard",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/admin-dashboard/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/admin-dashboard/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/admin-dashboard/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1705",
+    "sps.figma.storybookReferenceNodeId": "983:1848",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1848",
+  "storybookImageCount": 1
 }

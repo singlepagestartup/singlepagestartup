@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.identity",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "981:86",
+  "variantNodeId": "981:74",
   "variantName": "register-default",
   "metadata": {
     "sps.drafts.blockId": "rbac.identity.register-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "register-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/identity/singlepage/register-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/register-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/register-default/Component.stories.tsx",
+    "sps.figma.nodeId": "981:86",
+    "sps.figma.variantNodeId": "981:74",
+    "sps.figma.storybookReferenceNodeId": "981:202",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:202",
+  "storybookImageCount": 1
 }

@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.widget",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "981:142",
+  "variantNodeId": "981:135",
   "variantName": "subject-me-account-settings",
   "metadata": {
     "sps.drafts.blockId": "rbac.widget.subject-me-account-settings",
@@ -16,6 +17,12 @@
     "sps.source.variant": "subject-me-account-settings",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/widget/singlepage/subject-me-account-settings/Component.stories.tsx",
+    "sps.figma.nodeId": "981:142",
+    "sps.figma.variantNodeId": "981:135",
+    "sps.figma.storybookReferenceNodeId": "981:322",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:322",
+  "storybookImageCount": 1
 }

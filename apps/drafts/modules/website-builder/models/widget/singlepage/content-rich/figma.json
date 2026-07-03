@@ -1,7 +1,8 @@
 {
   "componentName": "website-builder.widget",
   "pageName": "website-builder",
-  "nodeId": null,
+  "nodeId": "700:24",
+  "variantNodeId": "984:110",
   "variantName": "content-rich",
   "metadata": {
     "sps.drafts.blockId": "website-builder.widget.content-rich",
@@ -17,6 +18,12 @@
     "sps.source.variant": "content-rich",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-rich/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-rich/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-rich/Component.stories.tsx",
+    "sps.figma.nodeId": "700:24",
+    "sps.figma.variantNodeId": "984:110",
+    "sps.figma.storybookReferenceNodeId": "984:253",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "984:253",
+  "storybookImageCount": 1
 }

@@ -18,9 +18,16 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "admin-v2-settings",
+    "nodeId": "859:27",
+    "variantNodeId": "981:93",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "admin-v2", "settings"]
+  "tags": [
+    "rbac",
+    "subject",
+    "admin-v2",
+    "settings"
+  ]
 }

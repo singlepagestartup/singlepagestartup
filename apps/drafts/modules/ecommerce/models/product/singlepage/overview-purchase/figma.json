@@ -16,6 +16,12 @@
     "sps.source.variant": "overview-purchase",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/overview-purchase/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/overview-purchase/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/overview-purchase/Component.stories.tsx",
+    "sps.figma.nodeId": "795:10",
+    "sps.figma.variantNodeId": "802:33",
+    "sps.figma.storybookReferenceNodeId": "982:464",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "982:464",
+  "storybookImageCount": 1
 }

@@ -45,9 +45,15 @@
   "figma": {
     "componentName": "rbac.widget",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "subject-me-account-settings",
+    "nodeId": "981:142",
+    "variantNodeId": "981:135",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "widget", "subject-me-account-settings"]
+  "tags": [
+    "rbac",
+    "widget",
+    "subject-me-account-settings"
+  ]
 }

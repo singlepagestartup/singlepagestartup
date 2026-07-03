@@ -25,9 +25,15 @@
   "figma": {
     "componentName": "blog.widget",
     "pageName": "blog",
+    "variantName": "article-find-featured",
     "nodeId": "735:17",
-    "syncStatus": "created",
+    "variantNodeId": "979:149",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "widget", "article-find-featured"]
+  "tags": [
+    "blog",
+    "widget",
+    "article-find-featured"
+  ]
 }

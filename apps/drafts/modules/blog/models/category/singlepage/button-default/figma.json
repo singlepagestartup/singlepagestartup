@@ -1,7 +1,8 @@
 {
   "componentName": "blog.category",
   "pageName": "blog",
-  "nodeId": null,
+  "nodeId": "979:130",
+  "variantNodeId": "979:123",
   "variantName": "button-default",
   "metadata": {
     "sps.drafts.blockId": "blog.category.button-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "button-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/blog/models/category/singlepage/button-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/blog/models/category/singlepage/button-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/blog/models/category/singlepage/button-default/Component.stories.tsx",
+    "sps.figma.nodeId": "979:130",
+    "sps.figma.variantNodeId": "979:123",
+    "sps.figma.storybookReferenceNodeId": "979:284",
+    "sps.storybook.imageCount": "2"
+  },
+  "storybookReferenceNodeId": "979:284",
+  "storybookImageCount": 2
 }

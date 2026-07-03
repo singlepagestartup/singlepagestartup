@@ -65,8 +65,10 @@
   "figma": {
     "componentName": "blog.article",
     "pageName": "blog",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "row",
+    "nodeId": "785:18",
+    "variantNodeId": "979:117",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

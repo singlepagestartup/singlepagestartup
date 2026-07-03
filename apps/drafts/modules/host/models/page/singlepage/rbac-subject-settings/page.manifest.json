@@ -23,10 +23,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "rbac-subject-settings",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1801",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

@@ -25,7 +25,9 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-feature-find-default",
     "nodeId": "700:24",
+    "variantNodeId": "715:41",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },

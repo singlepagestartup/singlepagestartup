@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.option.default",
+  "title": "CRM Option / Default",
+  "description": "Singlepage CRM option display used by select inputs.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "option",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "option",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.option",
+    "pageName": "crm",
+    "variantName": "default",
+    "nodeId": "978:85",
+    "variantNodeId": "978:78",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "option",
+    "form"
+  ]
+}

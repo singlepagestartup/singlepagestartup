@@ -1,7 +1,8 @@
 {
   "componentName": "ecommerce.order",
   "pageName": "ecommerce",
-  "nodeId": null,
+  "nodeId": "982:170",
+  "variantNodeId": "982:164",
   "variantName": "summary-default",
   "metadata": {
     "sps.drafts.blockId": "ecommerce.order.summary-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "summary-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/order/singlepage/summary-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/order/singlepage/summary-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/order/singlepage/summary-default/Component.stories.tsx",
+    "sps.figma.nodeId": "982:170",
+    "sps.figma.variantNodeId": "982:164",
+    "sps.figma.storybookReferenceNodeId": "982:310",
+    "sps.storybook.imageCount": "2"
+  },
+  "storybookReferenceNodeId": "982:310",
+  "storybookImageCount": 2
 }

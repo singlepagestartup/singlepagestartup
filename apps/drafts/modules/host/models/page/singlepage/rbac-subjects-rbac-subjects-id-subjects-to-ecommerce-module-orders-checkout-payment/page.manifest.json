@@ -31,10 +31,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout-payment",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1813",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }
