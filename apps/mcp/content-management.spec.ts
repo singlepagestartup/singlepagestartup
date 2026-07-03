@@ -1,8 +1,8 @@
 /**
- * BDD Suite: MCP content-management registration
- * Given the MCP server boots its content-management module
+ * BDD Suite: MCP compact content-management registration
+ * Given the MCP server boots its compact content-management module
  * When resources and tools are registered
- * Then Codex can discover the canonical content entity and mutation tools
+ * Then AI chat clients discover only the compact module/model/relation tools
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -10,12 +10,12 @@ import { registerResources, registerTools } from "./content-management";
 
 describe("MCP content-management registration", () => {
   /**
-   * BDD Scenario: Content-management resource is registered
+   * BDD Scenario: Compact module resource is registered
    * Given the content-management module is loaded
    * When resources are registered on the MCP server
-   * Then the content entities resource is available
+   * Then the module list resource is available
    */
-  it("registers the content entity discovery resource", () => {
+  it("registers the module discovery resource", () => {
     const mcp = {
       registerResource: jest.fn(),
     } as unknown as McpServer;
@@ -23,20 +23,20 @@ describe("MCP content-management registration", () => {
     registerResources(mcp);
 
     expect((mcp.registerResource as jest.Mock).mock.calls[0][0]).toBe(
-      "content-management-entities",
+      "module-list",
     );
     expect((mcp.registerResource as jest.Mock).mock.calls[0][1]).toBe(
-      "sps://content/entities",
+      "sps://modules",
     );
   });
 
   /**
-   * BDD Scenario: Content-management tools are registered
+   * BDD Scenario: Compact tools are registered
    * Given the content-management module is loaded
    * When tools are registered on the MCP server
-   * Then discovery, CRUD, graph preview, and localized update tools are available
+   * Then module, model, relation, and page helper tools are available without legacy generated CRUD names
    */
-  it("registers discovery, CRUD, graph, and localized update tools", async () => {
+  it("registers compact module/model/relation tools only", async () => {
     const mcp = {
       registerTool: jest.fn(),
     } as unknown as McpServer;
@@ -49,23 +49,32 @@ describe("MCP content-management registration", () => {
 
     expect(toolNames).toEqual(
       expect.arrayContaining([
-        "content-entity-list",
-        "content-entity-describe",
-        "content-record-find",
-        "content-record-count",
-        "content-record-get-by-id",
-        "content-record-create",
-        "content-record-update",
-        "content-record-delete-preview",
-        "content-record-delete-apply",
-        "content-host-graph-preview",
-        "content-localized-field-update",
-        "content-host-graph-localized-field-update",
+        "module-list",
+        "model-schema",
+        "relation-schema",
+        "model-record-count",
+        "model-record-find",
+        "model-record-get",
+        "model-record-create",
+        "model-record-update",
+        "model-record-delete-preview",
+        "model-record-delete-apply",
+        "relation-record-count",
+        "relation-record-find",
+        "relation-record-get",
+        "relation-record-create",
+        "relation-record-update",
+        "relation-record-delete-preview",
+        "relation-record-delete-apply",
+        "page-preview",
+        "page-localized-field-update",
       ]),
     );
+    expect(toolNames).not.toContain("blog-module-article-get");
+    expect(toolNames).not.toContain("content-record-find");
 
     const listToolCall = (mcp.registerTool as jest.Mock).mock.calls.find(
-      ([name]) => name === "content-entity-list",
+      ([name]) => name === "module-list",
     );
     const response = await listToolCall[2]({});
     const payload = JSON.parse(response.content[0].text);
@@ -73,13 +82,26 @@ describe("MCP content-management registration", () => {
     expect(payload).toEqual(
       expect.objectContaining({
         ok: true,
-        type: "content-entity-list",
-        data: expect.arrayContaining([
-          expect.objectContaining({
-            key: "blog.widget",
-            localizedFields: ["title", "subtitle", "description"],
-          }),
-        ]),
+        type: "module-list",
+        data: {
+          modules: expect.arrayContaining([
+            expect.objectContaining({
+              id: "blog",
+              models: expect.arrayContaining([
+                expect.objectContaining({ id: "article" }),
+              ]),
+              relations: expect.arrayContaining([
+                expect.objectContaining({ id: "categories-to-articles" }),
+              ]),
+            }),
+            expect.objectContaining({
+              id: "website-builder",
+              models: expect.arrayContaining([
+                expect.objectContaining({ id: "widget" }),
+              ]),
+            }),
+          ]),
+        },
       }),
     );
   });

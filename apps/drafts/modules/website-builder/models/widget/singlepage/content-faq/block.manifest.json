@@ -40,8 +40,10 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "content-faq",
+    "nodeId": "700:24",
+    "variantNodeId": "984:80",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

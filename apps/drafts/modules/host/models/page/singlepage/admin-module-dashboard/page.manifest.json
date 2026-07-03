@@ -23,10 +23,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "admin-module-dashboard",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1729",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

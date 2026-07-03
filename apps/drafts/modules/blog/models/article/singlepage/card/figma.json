@@ -1,7 +1,8 @@
 {
   "componentName": "blog.article",
   "pageName": "blog",
-  "nodeId": null,
+  "nodeId": "785:18",
+  "variantNodeId": "979:87",
   "variantName": "card",
   "metadata": {
     "sps.drafts.blockId": "blog.article.card",
@@ -15,6 +16,12 @@
     "sps.source.variant": "card",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/blog/models/article/singlepage/card/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/card/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/blog/models/article/singlepage/card/Component.stories.tsx",
+    "sps.figma.nodeId": "785:18",
+    "sps.figma.variantNodeId": "979:87",
+    "sps.figma.storybookReferenceNodeId": "979:190",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "979:190",
+  "storybookImageCount": 1
 }

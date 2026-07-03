@@ -18,9 +18,16 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "admin-v2-rich-editor",
+    "nodeId": "700:24",
+    "variantNodeId": "984:68",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["website-builder", "widget", "admin-v2", "editor"]
+  "tags": [
+    "website-builder",
+    "widget",
+    "admin-v2",
+    "editor"
+  ]
 }

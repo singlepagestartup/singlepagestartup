@@ -18,9 +18,16 @@
   "figma": {
     "componentName": "blog.article",
     "pageName": "blog",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "admin-v2-list",
+    "nodeId": "785:18",
+    "variantNodeId": "979:81",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "article", "admin-v2", "list"]
+  "tags": [
+    "blog",
+    "article",
+    "admin-v2",
+    "list"
+  ]
 }

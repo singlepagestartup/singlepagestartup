@@ -1,0 +1,27 @@
+{
+  "componentName": "crm.option",
+  "pageName": "crm",
+  "nodeId": "978:85",
+  "variantNodeId": "978:78",
+  "variantName": "default",
+  "metadata": {
+    "sps.drafts.blockId": "crm.option.default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "crm/models/option/singlepage/default",
+    "sps.figma.component": "crm.option",
+    "sps.figma.variant": "default",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "option",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/crm/models/option/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/crm/models/option/singlepage/default/Component.stories.tsx",
+    "sps.figma.nodeId": "978:85",
+    "sps.figma.variantNodeId": "978:78",
+    "sps.figma.storybookReferenceNodeId": "978:169",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "978:169",
+  "storybookImageCount": 1
+}

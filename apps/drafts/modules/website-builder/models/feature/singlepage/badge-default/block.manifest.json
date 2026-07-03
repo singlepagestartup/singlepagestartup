@@ -25,7 +25,9 @@
   "figma": {
     "componentName": "website-builder.feature",
     "pageName": "website-builder",
+    "variantName": "badge-default",
     "nodeId": "871:5",
+    "variantNodeId": "871:2",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   }

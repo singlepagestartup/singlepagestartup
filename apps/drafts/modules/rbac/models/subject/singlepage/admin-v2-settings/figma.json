@@ -1,8 +1,8 @@
 {
   "componentName": "rbac.subject",
   "pageName": "rbac",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "859:27",
+  "variantNodeId": "981:93",
   "variantName": "admin-v2-settings",
   "metadata": {
     "sps.drafts.blockId": "rbac.subject.admin-v2-settings",
@@ -16,6 +16,12 @@
     "sps.source.variant": "admin-v2-settings",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/admin-v2-settings/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:93",
+    "sps.figma.storybookReferenceNodeId": "981:238",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:238",
+  "storybookImageCount": 1
 }

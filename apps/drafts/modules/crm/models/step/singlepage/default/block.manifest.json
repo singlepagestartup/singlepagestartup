@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../block.schema.json",
+  "id": "crm.step.default",
+  "title": "CRM Step / Default",
+  "description": "Singlepage CRM step variant that owns an ordered set of CRM inputs.",
+  "layer": "singlepage",
+  "state": "draft",
+  "source": {
+    "module": "crm",
+    "entityType": "model",
+    "entity": "step",
+    "variant": "default"
+  },
+  "files": {
+    "component": "Component.tsx",
+    "story": "Component.stories.tsx"
+  },
+  "contentSlots": [
+    {
+      "name": "step",
+      "type": "list",
+      "required": true
+    }
+  ],
+  "figma": {
+    "componentName": "crm.step",
+    "pageName": "crm",
+    "variantName": "default",
+    "nodeId": "978:101",
+    "variantNodeId": "978:94",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
+  },
+  "tags": [
+    "crm",
+    "step",
+    "form"
+  ]
+}

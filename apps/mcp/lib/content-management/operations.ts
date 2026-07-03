@@ -4,6 +4,22 @@ import {
   ContentDeletePreviewInputSchema,
   ContentFindInputSchema,
   ContentGetByIdInputSchema,
+  ContentModelCountInputSchema,
+  ContentModelCreateInputSchema,
+  ContentModelDeleteApplyInputSchema,
+  ContentModelDeletePreviewInputSchema,
+  ContentModelFindInputSchema,
+  ContentModelGetByIdInputSchema,
+  ContentModelSelectorSchema,
+  ContentModelUpdateInputSchema,
+  ContentRelationCountInputSchema,
+  ContentRelationCreateInputSchema,
+  ContentRelationDeleteApplyInputSchema,
+  ContentRelationDeletePreviewInputSchema,
+  ContentRelationFindInputSchema,
+  ContentRelationGetByIdInputSchema,
+  ContentRelationSelectorSchema,
+  ContentRelationUpdateInputSchema,
   ContentUpdateInputSchema,
   IContentCreateInput,
   IContentDeleteApplyInput,
@@ -16,8 +32,10 @@ import {
 import { getMcpSdkOptions } from "./auth";
 import { buildLocalizedFieldPatch } from "./localized-field";
 import {
-  contentEntityRegistry,
+  requireContentModelDescriptor,
+  requireContentRelationDescriptor,
   requireContentEntityDescriptor,
+  summarizeContentModules,
   summarizeContentEntity,
 } from "./registry";
 import {
@@ -32,10 +50,38 @@ export interface IContentOperationOptions {
 }
 
 export function createDeleteConfirmationToken(props: {
-  entity: string;
+  descriptor: IContentEntityDescriptor;
   id: string;
 }) {
-  return `${props.entity}:${props.id}`;
+  return `${props.descriptor.kind}:${props.descriptor.module}:${props.descriptor.name}:${props.id}`;
+}
+
+function modelSelectorToEntity(input: { module: string; model: string }) {
+  return `${input.module}.${input.model}`;
+}
+
+function relationSelectorToEntity(input: { module: string; relation: string }) {
+  return `${input.module}.${input.relation}`;
+}
+
+function publicSelector(descriptor: IContentEntityDescriptor) {
+  return descriptor.kind === "model"
+    ? { module: descriptor.module, model: descriptor.name }
+    : { module: descriptor.module, relation: descriptor.name };
+}
+
+async function assertContentModelSelector(
+  input: { module: string; model: string },
+  options?: IContentOperationOptions,
+) {
+  await requireContentModelDescriptor(input, options?.registry);
+}
+
+async function assertContentRelationSelector(
+  input: { module: string; relation: string },
+  options?: IContentOperationOptions,
+) {
+  await requireContentRelationDescriptor(input, options?.registry);
 }
 
 function buildFindParams(input: IContentFindInput): IContentQueryParams {
@@ -91,12 +137,12 @@ function parseUpdateData(
 }
 
 export function describeContentEntities(options?: IContentOperationOptions) {
-  const registry = options?.registry ?? contentEntityRegistry;
-
-  return registry.map((descriptor) => summarizeContentEntity(descriptor));
+  return {
+    modules: summarizeContentModules(options?.registry),
+  };
 }
 
-export function describeContentEntity(
+export async function describeContentEntity(
   input: unknown,
   options?: IContentOperationOptions,
 ) {
@@ -108,12 +154,42 @@ export function describeContentEntity(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
 
   return summarizeContentEntity(descriptor);
+}
+
+export async function describeContentModel(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelSelectorSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return summarizeContentEntity(
+    await requireContentModelDescriptor(parsed.data, options?.registry),
+  );
+}
+
+export async function describeContentRelation(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationSelectorSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return summarizeContentEntity(
+    await requireContentRelationDescriptor(parsed.data, options?.registry),
+  );
 }
 
 export async function findContentRecords(
@@ -126,7 +202,7 @@ export async function findContentRecords(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
@@ -151,7 +227,7 @@ export async function countContentRecords(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
@@ -173,11 +249,11 @@ export async function getContentRecordById(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
-  requireOperation(descriptor, "get-by-id");
+  requireOperation(descriptor, "get");
 
   const record = await descriptor.api.findById({
     id: parsed.data.id,
@@ -191,6 +267,300 @@ export async function getContentRecordById(
   }
 
   return record;
+}
+
+export async function findContentModelRecords(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelFindInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await findContentRecords(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function countContentModelRecords(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelCountInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await countContentRecords(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function getContentModelRecordById(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelGetByIdInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await getContentRecordById(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function createContentModelRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelCreateInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await createContentRecord(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function updateContentModelRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelUpdateInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await updateContentRecord(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function previewDeleteContentModelRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelDeletePreviewInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await previewDeleteContentRecord(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function applyDeleteContentModelRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentModelDeleteApplyInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentModelSelector(parsed.data, options);
+
+  return await applyDeleteContentRecord(
+    {
+      ...parsed.data,
+      entity: modelSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function findContentRelationRecords(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationFindInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await findContentRecords(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function countContentRelationRecords(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationCountInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await countContentRecords(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function getContentRelationRecordById(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationGetByIdInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await getContentRecordById(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function createContentRelationRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationCreateInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await createContentRecord(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function updateContentRelationRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationUpdateInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await updateContentRecord(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function previewDeleteContentRelationRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationDeletePreviewInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await previewDeleteContentRecord(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
+}
+
+export async function applyDeleteContentRelationRecord(
+  input: unknown,
+  options?: IContentOperationOptions,
+) {
+  const parsed = ContentRelationDeleteApplyInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  await assertContentRelationSelector(parsed.data, options);
+
+  return await applyDeleteContentRecord(
+    {
+      ...parsed.data,
+      entity: relationSelectorToEntity(parsed.data),
+    },
+    options,
+  );
 }
 
 async function findContextRecords(
@@ -400,7 +770,7 @@ export async function createContentRecord(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
@@ -411,7 +781,7 @@ export async function createContentRecord(
   if (parsed.data.dryRun) {
     return {
       operation: "create",
-      entity: descriptor.key,
+      ...publicSelector(descriptor),
       data,
     };
   }
@@ -432,7 +802,7 @@ export async function updateContentRecord(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
@@ -443,7 +813,7 @@ export async function updateContentRecord(
   if (parsed.data.dryRun) {
     return {
       operation: "update",
-      entity: descriptor.key,
+      ...publicSelector(descriptor),
       id: parsed.data.id,
       data,
     };
@@ -467,6 +837,10 @@ export async function previewDeleteContentRecord(
   }
 
   const record = await getContentRecordById(parsed.data, options);
+  const descriptor = await requireContentEntityDescriptor(
+    parsed.data.entity,
+    options?.registry,
+  );
   const relationContext = await buildDeleteRelationContext(
     parsed.data,
     record,
@@ -474,10 +848,13 @@ export async function previewDeleteContentRecord(
   );
 
   return {
-    entity: parsed.data.entity,
+    ...publicSelector(descriptor),
     id: parsed.data.id,
     record,
-    confirmationToken: createDeleteConfirmationToken(parsed.data),
+    confirmationToken: createDeleteConfirmationToken({
+      descriptor,
+      id: parsed.data.id,
+    }),
     ...(relationContext ? { relationContext } : {}),
   };
 }
@@ -492,18 +869,21 @@ export async function applyDeleteContentRecord(
     throw new Error(parsed.error.message);
   }
 
-  const expectedToken = createDeleteConfirmationToken(parsed.data);
-
-  if (parsed.data.confirmationToken !== expectedToken) {
-    throw new Error(
-      "Validation error. Delete confirmation token does not match entity and id",
-    );
-  }
-
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
+  const expectedToken = createDeleteConfirmationToken({
+    descriptor,
+    id: parsed.data.id,
+  });
+
+  if (parsed.data.confirmationToken !== expectedToken) {
+    throw new Error(
+      "Validation error. Delete confirmation token does not match selector and id",
+    );
+  }
+
   requireOperation(descriptor, "delete");
 
   return await descriptor.api.delete({
@@ -522,7 +902,7 @@ export async function updateLocalizedContentField(
     throw new Error(parsed.error.message);
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     parsed.data.entity,
     options?.registry,
   );
@@ -540,7 +920,7 @@ export async function updateLocalizedContentField(
   if (parsed.data.dryRun) {
     return {
       operation: "localized-field-update",
-      entity: descriptor.key,
+      ...publicSelector(descriptor),
       id: parsed.data.id,
       before: current[parsed.data.field],
       after: data[parsed.data.field],
@@ -556,7 +936,7 @@ export async function updateLocalizedContentField(
 
   return {
     operation: "localized-field-update",
-    entity: descriptor.key,
+    ...publicSelector(descriptor),
     id: parsed.data.id,
     before: current[parsed.data.field],
     after: updated?.[parsed.data.field],

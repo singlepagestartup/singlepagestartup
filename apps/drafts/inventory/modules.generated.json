@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-01T07:53:21.019Z",
+  "generatedAt": "2026-07-03T22:09:09.370Z",
   "modulesRoot": "libs/modules",
   "draftsRoot": "apps/drafts",
   "totals": {
     "modules": 16,
     "entities": 156,
     "variants": 1836,
-    "coveredVariants": 17
+    "coveredVariants": 25
   },
   "modules": [
     {
@@ -885,7 +885,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/blog/models/article/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["blog.article.related-default"]
+              "coveredBy": [
+                "blog.article.related-default"
+              ]
             },
             {
               "variant": "find",
@@ -1073,7 +1075,9 @@
               "variant": "article-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/blog/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["blog.widget.article-overview-default"]
+              "coveredBy": [
+                "blog.widget.article-overview-default"
+              ]
             },
             {
               "variant": "article-overview-ecommerce-module-product-list-default",
@@ -1915,7 +1919,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/form/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.form.default"
+              ]
             },
             {
               "variant": "find",
@@ -2007,19 +2013,25 @@
               "variant": "select-option-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.input.select-option-default"
+              ]
             },
             {
               "variant": "text-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.input.text-default"
+              ]
             },
             {
               "variant": "textarea-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/input/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.input.textarea-default"
+              ]
             }
           ]
         },
@@ -2093,7 +2105,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/option/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.option.default"
+              ]
             },
             {
               "variant": "find",
@@ -2173,7 +2187,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/request/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.request.default"
+              ]
             },
             {
               "variant": "find",
@@ -2253,7 +2269,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/step/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.step.default"
+              ]
             },
             {
               "variant": "find",
@@ -2345,7 +2363,9 @@
               "variant": "form-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/crm/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": []
+              "coveredBy": [
+                "crm.widget.form-list-default"
+              ]
             }
           ]
         },
@@ -3232,7 +3252,9 @@
               "variant": "admin-v2-form",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["ecommerce.product.admin-v2-form"]
+              "coveredBy": [
+                "ecommerce.product.admin-v2-form"
+              ]
             },
             {
               "variant": "admin-v2-select-input",
@@ -3262,7 +3284,9 @@
               "variant": "cart-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/ecommerce/models/product/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["ecommerce.product.cart-default"]
+              "coveredBy": [
+                "ecommerce.product.cart-default"
+              ]
             },
             {
               "variant": "currency-toggle-group-default",
@@ -7618,7 +7642,7 @@
               "coveredBy": []
             },
             {
-              "variant": "subject-list-social-module-rbac-subject-settings",
+              "variant": "subject-list-social-module-profile-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/rbac/models/widget/frontend/component/src/lib/singlepage/variants.ts",
               "coveredBy": []
@@ -9044,7 +9068,9 @@
               "variant": "overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/profile/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["social.profile.author-find-by-id-overview-default"]
+              "coveredBy": [
+                "social.profile.author-find-by-id-overview-default"
+              ]
             }
           ]
         },
@@ -9302,13 +9328,17 @@
               "variant": "chat-list-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["social.widget.chat-list-default"]
+              "coveredBy": [
+                "social.widget.chat-list-default"
+              ]
             },
             {
               "variant": "chat-overview-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/social/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["social.widget.chat-overview-default"]
+              "coveredBy": [
+                "social.widget.chat-overview-default"
+              ]
             },
             {
               "variant": "default",
@@ -10561,7 +10591,10 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/startup/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["startup.widget.default", "startup.widget.default"]
+              "coveredBy": [
+                "startup.widget.default",
+                "startup.widget.default"
+              ]
             },
             {
               "variant": "find",
@@ -10941,7 +10974,9 @@
               "variant": "link",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["website-builder.button.link"]
+              "coveredBy": [
+                "website-builder.button.link"
+              ]
             },
             {
               "variant": "outline",
@@ -10953,13 +10988,17 @@
               "variant": "primary",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["website-builder.button.primary"]
+              "coveredBy": [
+                "website-builder.button.primary"
+              ]
             },
             {
               "variant": "secondary",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/button/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["website-builder.button.secondary"]
+              "coveredBy": [
+                "website-builder.button.secondary"
+              ]
             }
           ]
         },
@@ -11033,7 +11072,9 @@
               "variant": "default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/buttons-array/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["website-builder.buttons-array.default"]
+              "coveredBy": [
+                "website-builder.buttons-array.default"
+              ]
             },
             {
               "variant": "find",
@@ -11475,7 +11516,9 @@
               "variant": "navbar-default",
               "scope": "singlepage",
               "variantsFile": "libs/modules/website-builder/models/widget/frontend/component/src/lib/singlepage/variants.ts",
-              "coveredBy": ["website-builder.widget.navbar-default"]
+              "coveredBy": [
+                "website-builder.widget.navbar-default"
+              ]
             }
           ]
         },

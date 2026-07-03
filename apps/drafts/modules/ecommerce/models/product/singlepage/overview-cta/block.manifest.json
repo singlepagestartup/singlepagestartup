@@ -45,8 +45,10 @@
   "figma": {
     "componentName": "ecommerce.product",
     "pageName": "ecommerce",
+    "variantName": "overview-cta",
     "nodeId": "795:10",
-    "syncStatus": "created",
+    "variantNodeId": "795:2",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

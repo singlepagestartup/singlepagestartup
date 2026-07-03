@@ -30,9 +30,16 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "pending",
+    "variantName": "account-menu-default",
+    "nodeId": "859:27",
+    "variantNodeId": "981:87",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "account", "menu"]
+  "tags": [
+    "rbac",
+    "subject",
+    "account",
+    "menu"
+  ]
 }

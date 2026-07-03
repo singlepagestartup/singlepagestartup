@@ -40,9 +40,15 @@
   "figma": {
     "componentName": "blog.category",
     "pageName": "blog",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "button-default",
+    "nodeId": "979:130",
+    "variantNodeId": "979:123",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "category", "button-default"]
+  "tags": [
+    "blog",
+    "category",
+    "button-default"
+  ]
 }

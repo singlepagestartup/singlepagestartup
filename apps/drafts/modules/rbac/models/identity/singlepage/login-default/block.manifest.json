@@ -35,8 +35,10 @@
   "figma": {
     "componentName": "rbac.identity",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "login-default",
+    "nodeId": "981:86",
+    "variantNodeId": "981:62",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

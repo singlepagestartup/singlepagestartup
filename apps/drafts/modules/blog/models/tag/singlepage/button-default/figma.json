@@ -16,6 +16,12 @@
     "sps.source.variant": "button-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/blog/models/tag/singlepage/button-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/blog/models/tag/singlepage/button-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/blog/models/tag/singlepage/button-default/Component.stories.tsx",
+    "sps.figma.nodeId": "791:19",
+    "sps.figma.variantNodeId": "791:17",
+    "sps.figma.storybookReferenceNodeId": "979:292",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "979:292",
+  "storybookImageCount": 1
 }

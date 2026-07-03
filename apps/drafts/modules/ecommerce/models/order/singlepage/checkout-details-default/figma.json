@@ -1,7 +1,8 @@
 {
   "componentName": "ecommerce.order",
   "pageName": "ecommerce",
-  "nodeId": null,
+  "nodeId": "982:170",
+  "variantNodeId": "982:146",
   "variantName": "checkout-details-default",
   "metadata": {
     "sps.drafts.blockId": "ecommerce.order.checkout-details-default",
@@ -15,6 +16,12 @@
     "sps.source.variant": "checkout-details-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/order/singlepage/checkout-details-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/order/singlepage/checkout-details-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/order/singlepage/checkout-details-default/Component.stories.tsx",
+    "sps.figma.nodeId": "982:170",
+    "sps.figma.variantNodeId": "982:146",
+    "sps.figma.storybookReferenceNodeId": "982:274",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "982:274",
+  "storybookImageCount": 1
 }

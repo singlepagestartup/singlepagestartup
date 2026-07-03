@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.subject",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "859:27",
+  "variantNodeId": "981:123",
   "variantName": "me-profile-information",
   "metadata": {
     "sps.drafts.blockId": "rbac.subject.me-profile-information",
@@ -15,6 +16,12 @@
     "sps.source.variant": "me-profile-information",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-profile-information/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-profile-information/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-profile-information/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:123",
+    "sps.figma.storybookReferenceNodeId": "981:298",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:298",
+  "storybookImageCount": 1
 }

@@ -111,6 +111,15 @@ apps/drafts/modules/<module>/relations/<relation>/<singlepage|startup>/<block-id
 - `files.component` and `files.story`.
 - `figma.metadataFile`.
 
+The paired `figma.json` mirrors the Figma shared plugin data for the block.
+`block.manifest.json` and `figma.json` must agree on `componentName`,
+`pageName`, `variantName`, `nodeId`, and `variantNodeId`. `figma.syncStatus`
+uses only `not-created`, `created`, `needs-update`, or `verified`.
+`figma.json.metadata` stores the `sps.drafts.*`, `sps.figma.*`,
+`sps.source.*`, and `sps.code.*` fields written to managed Figma nodes.
+Storybook screenshot references are review nodes placed next to added or
+updated Figma components; they are not managed component implementations.
+
 ## Pages
 
 Pages are not stored in a top-level `pages/` directory. They are host module
@@ -121,8 +130,13 @@ apps/drafts/modules/host/models/page/<singlepage|startup>/<page-variant>/
   <Page>.tsx
   <Page>.stories.tsx
   page.manifest.json
+  figma.json
   styles.css
 ```
+
+Page `figma.json` files follow the same metadata contract as block metadata.
+Host page recipes use `pageName: "host"`, `componentName: "host.page"`, and
+`variantName` equal to the page manifest `id`.
 
 ## Runnable Drafts
 

@@ -18,9 +18,15 @@
   "figma": {
     "componentName": "ecommerce.relation.products-to-attributes",
     "pageName": "ecommerce",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "admin-v2-manager",
+    "nodeId": "982:226",
+    "variantNodeId": "982:219",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["ecommerce", "relation", "admin-v2"]
+  "tags": [
+    "ecommerce",
+    "relation",
+    "admin-v2"
+  ]
 }

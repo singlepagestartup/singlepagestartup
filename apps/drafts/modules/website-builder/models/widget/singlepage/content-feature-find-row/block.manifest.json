@@ -40,9 +40,16 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-feature-find-row",
     "nodeId": "700:24",
-    "syncStatus": "created",
+    "variantNodeId": "984:86",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["content", "website-builder", "widget", "content-feature-find-row"]
+  "tags": [
+    "content",
+    "website-builder",
+    "widget",
+    "content-feature-find-row"
+  ]
 }

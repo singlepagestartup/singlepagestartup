@@ -25,9 +25,18 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "me-social-module-profile-find-information",
+    "nodeId": "859:27",
+    "variantNodeId": "981:129",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "social", "profile", "find", "information"]
+  "tags": [
+    "rbac",
+    "subject",
+    "social",
+    "profile",
+    "find",
+    "information"
+  ]
 }

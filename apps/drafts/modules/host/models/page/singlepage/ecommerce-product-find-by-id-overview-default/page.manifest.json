@@ -23,12 +23,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "ecommerce-product-find-by-id-overview-default",
-    "syncStatus": "created",
-    "metadataFile": "figma.json",
     "nodeId": "716:300",
-    "variantNodeId": "853:1166"
+    "variantNodeId": "853:1166",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
   }
 }

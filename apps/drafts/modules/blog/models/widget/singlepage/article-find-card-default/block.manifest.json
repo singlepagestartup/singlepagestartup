@@ -30,9 +30,15 @@
   "figma": {
     "componentName": "blog.widget",
     "pageName": "blog",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "article-find-card-default",
+    "nodeId": "735:17",
+    "variantNodeId": "979:137",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "widget", "article-find-card-default"]
+  "tags": [
+    "blog",
+    "widget",
+    "article-find-card-default"
+  ]
 }

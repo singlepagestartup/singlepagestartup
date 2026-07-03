@@ -1,8 +1,8 @@
 {
   "componentName": "host.page",
   "pageName": "host",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "716:300",
+  "variantNodeId": "983:1837",
   "variantName": "terms",
   "metadata": {
     "sps.drafts.blockId": "host.page.terms",
@@ -16,6 +16,12 @@
     "sps.source.variant": "terms",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/terms/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/terms/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/terms/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1837",
+    "sps.figma.storybookReferenceNodeId": "983:1986",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1986",
+  "storybookImageCount": 1
 }

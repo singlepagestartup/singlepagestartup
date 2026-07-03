@@ -18,9 +18,16 @@
   "figma": {
     "componentName": "social.widget",
     "pageName": "social",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "chat-overview-default",
+    "nodeId": "855:1498",
+    "variantNodeId": "980:102",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "widget", "chat", "overview"]
+  "tags": [
+    "social",
+    "widget",
+    "chat",
+    "overview"
+  ]
 }

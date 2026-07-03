@@ -35,9 +35,17 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-cta",
     "nodeId": "700:24",
+    "variantNodeId": "715:215",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },
-  "tags": ["content", "landing", "website-builder", "widget", "content-cta"]
+  "tags": [
+    "content",
+    "landing",
+    "website-builder",
+    "widget",
+    "content-cta"
+  ]
 }

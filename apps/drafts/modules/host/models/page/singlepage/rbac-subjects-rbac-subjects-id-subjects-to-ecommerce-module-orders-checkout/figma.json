@@ -1,7 +1,8 @@
 {
   "componentName": "host.page",
   "pageName": "host",
-  "nodeId": null,
+  "nodeId": "716:300",
+  "variantNodeId": "983:1819",
   "variantName": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
   "metadata": {
     "sps.drafts.blockId": "host.page.rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
@@ -15,6 +16,12 @@
     "sps.source.variant": "rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/rbac-subjects-rbac-subjects-id-subjects-to-ecommerce-module-orders-checkout/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1819",
+    "sps.figma.storybookReferenceNodeId": "983:1968",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1968",
+  "storybookImageCount": 1
 }

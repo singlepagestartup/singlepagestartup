@@ -1,7 +1,8 @@
 {
   "componentName": "ecommerce.product",
   "pageName": "ecommerce",
-  "nodeId": null,
+  "nodeId": "795:10",
+  "variantNodeId": "982:183",
   "variantName": "card",
   "metadata": {
     "sps.drafts.blockId": "ecommerce.product.card",
@@ -15,6 +16,12 @@
     "sps.source.variant": "card",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/product/singlepage/card/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/card/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/product/singlepage/card/Component.stories.tsx",
+    "sps.figma.nodeId": "795:10",
+    "sps.figma.variantNodeId": "982:183",
+    "sps.figma.storybookReferenceNodeId": "982:361",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "982:361",
+  "storybookImageCount": 1
 }

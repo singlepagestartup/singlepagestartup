@@ -38,11 +38,16 @@
     }
   ],
   "figma": {
-    "componentName": "Startup / Widget / Default",
-    "pageName": "Blocks / Startup",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "componentName": "startup.widget",
+    "pageName": "startup",
+    "variantName": "singlepage-default",
+    "nodeId": "977:63",
+    "variantNodeId": "977:51",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["startup", "widget"]
+  "tags": [
+    "startup",
+    "widget"
+  ]
 }

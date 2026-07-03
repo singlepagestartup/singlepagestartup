@@ -19,12 +19,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "terms",
-    "syncStatus": "pending",
-    "metadataFile": "figma.json",
-    "nodeId": null,
-    "variantNodeId": null
+    "nodeId": "716:300",
+    "variantNodeId": "983:1837",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
   }
 }

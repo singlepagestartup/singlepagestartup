@@ -1,18 +1,13 @@
 import { z } from "zod";
 
-export type IContentEntityKey =
-  | "host.page"
-  | "host.widget"
-  | "host.pages-to-widgets"
-  | "host.widgets-to-external-widgets"
-  | "blog.widget";
+export type IContentEntityKey = string;
 
 export type IContentEntityKind = "model" | "relation";
 
 export type IContentOperation =
   | "find"
   | "count"
-  | "get-by-id"
+  | "get"
   | "create"
   | "update"
   | "delete";
@@ -83,9 +78,12 @@ export interface IContentFieldDescriptor {
   name: string;
   type: string;
   required?: boolean;
+  writable?: boolean;
   localized?: boolean;
   relation?: {
-    entity: IContentEntityKey;
+    module: string;
+    model?: string;
+    relation?: string;
     field: string;
   };
   description?: string;
@@ -112,20 +110,45 @@ export interface IContentEntityDescriptor<
   api: IContentSdkAdapter<TEntity>;
 }
 
+export interface IContentModelSummary {
+  id: string;
+  label: string;
+  operations: readonly IContentOperation[];
+}
+
+export interface IContentRelationSummary {
+  id: string;
+  label: string;
+  operations: readonly IContentOperation[];
+}
+
+export interface IContentModuleSummary {
+  id: string;
+  label: string;
+  models: IContentModelSummary[];
+  relations: IContentRelationSummary[];
+}
+
 export interface IContentEntitySummary {
-  key: IContentEntityKey;
-  kind: IContentEntityKind;
   module: string;
-  name: string;
+  model?: string;
+  relation?: string;
+  label: string;
   route: string;
-  title: string;
   description: string;
   variants: readonly string[];
   fields: IContentFieldDescriptor[];
+  requiredFields: string[];
+  writableFields: string[];
   localizedFields: string[];
   relationFields: IContentFieldDescriptor[];
   externalModules?: readonly string[];
   operations: readonly IContentOperation[];
+  filterExamples: unknown[];
+  writeExamples: {
+    create?: unknown;
+    update?: unknown;
+  };
 }
 
 export type IContentToolEnvelope =
@@ -145,7 +168,9 @@ export type IContentToolEnvelope =
     };
 
 export interface IDeletePreview {
-  entity: IContentEntityKey;
+  module: string;
+  model?: string;
+  relation?: string;
   id: string;
   record: Record<string, any>;
   confirmationToken: string;
@@ -158,7 +183,10 @@ export interface IHostGraphCandidate {
   pageWidget: Record<string, any>;
   hostWidget?: Record<string, any>;
   externalWidgetRelation?: Record<string, any>;
-  externalEntityKey?: IContentEntityKey;
+  externalSelector?: {
+    module: string;
+    model: string;
+  };
   externalWidget?: Record<string, any>;
   summary: {
     pageUrl?: string;

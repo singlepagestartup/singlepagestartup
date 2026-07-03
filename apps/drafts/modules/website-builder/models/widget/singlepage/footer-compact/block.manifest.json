@@ -30,9 +30,17 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "footer-compact",
     "nodeId": "700:24",
+    "variantNodeId": "715:276",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },
-  "tags": ["home", "landing", "website-builder", "widget", "footer-compact"]
+  "tags": [
+    "home",
+    "landing",
+    "website-builder",
+    "widget",
+    "footer-compact"
+  ]
 }

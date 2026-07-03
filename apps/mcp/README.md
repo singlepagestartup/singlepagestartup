@@ -1,6 +1,17 @@
 # SPS MCP Server
 
-`apps/mcp` exposes SPS module resources, generated CRUD/count tools, documentation tools, and content-management tools to MCP clients. It supports local stdio and remote Streamable HTTP.
+`apps/mcp` exposes one compact SPS content surface to MCP clients. It supports local stdio and remote Streamable HTTP.
+
+The public toolset is intentionally small for AI chat clients:
+
+- `module-list`
+- `model-schema`
+- `relation-schema`
+- `model-record-count`, `model-record-find`, `model-record-get`, `model-record-create`, `model-record-update`, `model-record-delete-preview`, `model-record-delete-apply`
+- `relation-record-count`, `relation-record-find`, `relation-record-get`, `relation-record-create`, `relation-record-update`, `relation-record-delete-preview`, `relation-record-delete-apply`
+- `page-preview`, `page-localized-field-update`
+
+Generated per-model/per-relation CRUD tools are not registered. Select records with explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
 
 ## Local Development
 

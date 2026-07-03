@@ -1,7 +1,8 @@
 {
   "componentName": "host.page",
   "pageName": "host",
-  "nodeId": null,
+  "nodeId": "716:300",
+  "variantNodeId": "983:1771",
   "variantName": "ecommerce-products-ecommerce-products-slug",
   "metadata": {
     "sps.drafts.blockId": "host.page.ecommerce-products-ecommerce-products-slug",
@@ -15,6 +16,12 @@
     "sps.source.variant": "ecommerce-products-ecommerce-products-slug",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/host/models/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/host/models/page/singlepage/ecommerce-products-ecommerce-products-slug/Component.stories.tsx",
+    "sps.figma.nodeId": "716:300",
+    "sps.figma.variantNodeId": "983:1771",
+    "sps.figma.storybookReferenceNodeId": "983:1920",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "983:1920",
+  "storybookImageCount": 1
 }

@@ -18,9 +18,15 @@
   "figma": {
     "componentName": "social.message",
     "pageName": "social",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "bubble-default",
+    "nodeId": "980:57",
+    "variantNodeId": "980:50",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["social", "message", "chat"]
+  "tags": [
+    "social",
+    "message",
+    "chat"
+  ]
 }

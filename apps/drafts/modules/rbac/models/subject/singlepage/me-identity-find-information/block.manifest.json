@@ -30,9 +30,17 @@
   "figma": {
     "componentName": "rbac.subject",
     "pageName": "rbac",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "me-identity-find-information",
+    "nodeId": "859:27",
+    "variantNodeId": "981:111",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["rbac", "subject", "identity", "find", "information"]
+  "tags": [
+    "rbac",
+    "subject",
+    "identity",
+    "find",
+    "information"
+  ]
 }

@@ -50,9 +50,17 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-hero",
     "nodeId": "700:24",
-    "syncStatus": "created",
+    "variantNodeId": "984:98",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["content", "landing", "website-builder", "widget", "content-hero"]
+  "tags": [
+    "content",
+    "landing",
+    "website-builder",
+    "widget",
+    "content-hero"
+  ]
 }

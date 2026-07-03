@@ -2,7 +2,7 @@
   "componentName": "website-builder.widget",
   "pageName": "website-builder",
   "nodeId": "700:24",
-  "variantNodeId": "715:28",
+  "variantNodeId": "984:98",
   "variantName": "content-hero",
   "metadata": {
     "sps.drafts.blockId": "website-builder.widget.content-hero",
@@ -19,7 +19,11 @@
     "sps.source.variant": "content-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/website-builder/models/widget/singlepage/content-hero/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-hero/Component.stories.tsx"
+    "sps.code.story": "apps/drafts/modules/website-builder/models/widget/singlepage/content-hero/Component.stories.tsx",
+    "sps.figma.nodeId": "700:24",
+    "sps.figma.variantNodeId": "984:98",
+    "sps.figma.storybookReferenceNodeId": "984:229",
+    "sps.storybook.imageCount": "1"
   },
   "properties": [
     {
@@ -59,5 +63,7 @@
     "color/surface",
     "color/border",
     "color/primary"
-  ]
+  ],
+  "storybookReferenceNodeId": "984:229",
+  "storybookImageCount": 1
 }

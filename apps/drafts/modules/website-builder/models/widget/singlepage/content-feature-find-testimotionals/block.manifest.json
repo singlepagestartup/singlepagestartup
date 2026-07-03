@@ -35,8 +35,10 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-feature-find-testimotionals",
     "nodeId": "700:24",
-    "syncStatus": "created",
+    "variantNodeId": "984:92",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
   "tags": [

@@ -40,8 +40,10 @@
   "figma": {
     "componentName": "social.profile",
     "pageName": "social",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "byline",
+    "nodeId": "782:31",
+    "variantNodeId": "980:64",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

@@ -1,8 +1,8 @@
 {
   "componentName": "social.thread",
   "pageName": "social",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "980:95",
+  "variantNodeId": "980:88",
   "variantName": "list-default",
   "metadata": {
     "sps.drafts.blockId": "social.thread.list-default",
@@ -16,6 +16,12 @@
     "sps.source.variant": "list-default",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/social/models/thread/singlepage/list-default/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/social/models/thread/singlepage/list-default/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/social/models/thread/singlepage/list-default/Component.stories.tsx",
+    "sps.figma.nodeId": "980:95",
+    "sps.figma.variantNodeId": "980:88",
+    "sps.figma.storybookReferenceNodeId": "980:238",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:238",
+  "storybookImageCount": 1
 }

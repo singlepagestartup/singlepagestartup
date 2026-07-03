@@ -40,7 +40,9 @@
   "figma": {
     "componentName": "website-builder.widget",
     "pageName": "website-builder",
+    "variantName": "content-feature-find-card",
     "nodeId": "700:24",
+    "variantNodeId": "715:58",
     "syncStatus": "created",
     "metadataFile": "figma.json"
   },

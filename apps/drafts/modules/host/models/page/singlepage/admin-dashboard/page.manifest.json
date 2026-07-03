@@ -27,10 +27,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "admin-dashboard",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1705",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

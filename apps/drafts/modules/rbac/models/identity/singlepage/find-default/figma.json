@@ -1,10 +1,27 @@
 {
-  "pageName": "rbac",
   "componentName": "rbac.identity",
-  "variant": "find-default",
-  "module": "rbac",
-  "entity": "identity",
-  "layer": "singlepage",
-  "path": "apps/drafts/modules/rbac/models/identity/singlepage/find-default",
-  "status": "pending"
+  "pageName": "rbac",
+  "nodeId": "981:86",
+  "variantNodeId": "981:56",
+  "variantName": "find-default",
+  "metadata": {
+    "sps.drafts.blockId": "rbac.identity.find-default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "rbac/models/identity/singlepage/find-default",
+    "sps.figma.component": "rbac.identity",
+    "sps.figma.variant": "find-default",
+    "sps.source.module": "rbac",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "identity",
+    "sps.source.variant": "find-default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/rbac/models/identity/singlepage/find-default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/rbac/models/identity/singlepage/find-default/Component.stories.tsx",
+    "sps.figma.nodeId": "981:86",
+    "sps.figma.variantNodeId": "981:56",
+    "sps.figma.storybookReferenceNodeId": "981:166",
+    "sps.storybook.imageCount": "2"
+  },
+  "storybookReferenceNodeId": "981:166",
+  "storybookImageCount": 2
 }

@@ -1,0 +1,27 @@
+{
+  "componentName": "crm.step",
+  "pageName": "crm",
+  "nodeId": "978:101",
+  "variantNodeId": "978:94",
+  "variantName": "default",
+  "metadata": {
+    "sps.drafts.blockId": "crm.step.default",
+    "sps.drafts.layer": "singlepage",
+    "sps.drafts.syncKey": "crm/models/step/singlepage/default",
+    "sps.figma.component": "crm.step",
+    "sps.figma.variant": "default",
+    "sps.source.module": "crm",
+    "sps.source.entityType": "model",
+    "sps.source.entity": "step",
+    "sps.source.variant": "default",
+    "sps.contractVersion": "0.1.0",
+    "sps.code.component": "apps/drafts/modules/crm/models/step/singlepage/default/Component.tsx",
+    "sps.code.story": "apps/drafts/modules/crm/models/step/singlepage/default/Component.stories.tsx",
+    "sps.figma.nodeId": "978:101",
+    "sps.figma.variantNodeId": "978:94",
+    "sps.figma.storybookReferenceNodeId": "978:193",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "978:193",
+  "storybookImageCount": 1
+}

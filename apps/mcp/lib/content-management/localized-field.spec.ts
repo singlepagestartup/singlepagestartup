@@ -24,7 +24,7 @@ const descriptor: IContentEntityDescriptor = {
   fields: [{ name: "title", type: "json", localized: true }],
   localizedFields: ["title"],
   relationFields: [],
-  operations: ["find", "count", "get-by-id", "create", "update", "delete"],
+  operations: ["find", "count", "get", "create", "update", "delete"],
   insertSchema: z.object({ title: z.record(z.any()).optional() }),
   selectSchema: z.object({ id: z.string(), title: z.record(z.any()) }),
   api: {

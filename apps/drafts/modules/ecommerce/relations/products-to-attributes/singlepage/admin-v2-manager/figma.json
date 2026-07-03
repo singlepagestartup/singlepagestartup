@@ -1,8 +1,8 @@
 {
   "componentName": "ecommerce.relation.products-to-attributes",
   "pageName": "ecommerce",
-  "nodeId": null,
-  "variantNodeId": null,
+  "nodeId": "982:226",
+  "variantNodeId": "982:219",
   "variantName": "admin-v2-manager",
   "metadata": {
     "sps.drafts.blockId": "ecommerce.relation.products-to-attributes.admin-v2-manager",
@@ -16,6 +16,12 @@
     "sps.source.variant": "admin-v2-manager",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/ecommerce/relations/products-to-attributes/singlepage/admin-v2-manager/Component.stories.tsx",
+    "sps.figma.nodeId": "982:226",
+    "sps.figma.variantNodeId": "982:219",
+    "sps.figma.storybookReferenceNodeId": "982:571",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "982:571",
+  "storybookImageCount": 1
 }

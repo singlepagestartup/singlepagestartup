@@ -69,7 +69,7 @@ apps/
 ├── api/    # Backend application (Hono + Bun API)
 ├── host/   # Frontend application (Next.js App Router)
 ├── db/     # Docker service for Postgres
-├── mcp/    # MCP server for documentation and content operations through apps/api/
+├── mcp/    # MCP server for compact content operations through apps/api/
 ├── openapi/  # OpenAPI documentation app
 ├── redis/  # Docker service for Redis
 └── telegram/  # Telegram bot app
@@ -107,9 +107,9 @@ tools/
 
 ## MCP Content Management
 
-`apps/mcp` exposes content-management tools for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with the content entity discovery tool/resource to find supported model and relation keys such as `host.page`, `host.widget`, `host.pages-to-widgets`, `host.widgets-to-external-widgets`, and `blog.widget`.
+`apps/mcp` exposes a compact content-management surface for AI agents that need to inspect or change SPS data through the existing SDK/API runtime path. Start with `module-list`; it returns modules with nested `models` and `relations` arrays. Then use explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
 
-For page content edits, use the host graph preview tool before writing. It resolves `host.page` by URL, follows `pages-to-widgets`, follows `widgets-to-external-widgets`, and returns external widget candidates with ids. Mutations should use dry-run first, delete preview before delete apply, and localized field updates for locale-keyed JSON fields.
+For page content edits, use `page-preview` before writing. It resolves a page by URL, follows page/widget relations, and returns external widget candidates with ids. Mutations should use dry-run first. Creates and updates default to `dryRun: true`; set `dryRun: false` only when applying the write. Deletes are two-step: preview first, then apply with the returned `confirmationToken` and `confirm: true`.
 
 For client-specific connection steps, see `apps/mcp/README.md`.
 
@@ -201,10 +201,11 @@ Required environment values are loaded from the app env files created by `./up.s
 
 Resources do not have per-call input fields, so resource reads must receive auth from the MCP transport headers, cookies, MCP auth info, or request metadata. A typical edit flow is:
 
-1. Call `content-entity-list` or read `sps://content/entities`.
-2. Use `content-record-find` for filtered model/relation reads, or `content-host-graph-preview` for URL-based page content.
-3. Use dry-run write tools first, such as `content-record-update` with `dryRun: true` or `content-host-graph-localized-field-update` with `dryRun: true`.
-4. Apply the write only after the preview is unambiguous. For deletes, call `content-record-delete-preview` first and pass its `confirmationToken` to `content-record-delete-apply`.
+1. Call `module-list` or read `sps://modules`.
+2. Call `model-schema` or `relation-schema` for the selected module item.
+3. Use `model-record-find` / `relation-record-find` for filtered reads, or `page-preview` for URL-based page content.
+4. Use dry-run write tools first, such as `model-record-update` with `dryRun: true` or `page-localized-field-update` with `dryRun: true`.
+5. Apply the write only after the preview is unambiguous. For deletes, call `model-record-delete-preview` or `relation-record-delete-preview` first and pass its `confirmationToken` to the matching `*-delete-apply` tool.
 
 ## Core Architecture
 

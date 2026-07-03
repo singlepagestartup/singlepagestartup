@@ -16,7 +16,15 @@
     "sps.source.variant": "product-find-card",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/ecommerce/models/widget/singlepage/product-find-card/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/ecommerce/models/widget/singlepage/product-find-card/Component.stories.tsx"
+    "sps.code.story": "apps/drafts/modules/ecommerce/models/widget/singlepage/product-find-card/Component.stories.tsx",
+    "sps.figma.nodeId": "743:3",
+    "sps.figma.variantNodeId": "818:79",
+    "sps.figma.storybookReferenceNodeId": "982:538",
+    "sps.storybook.imageCount": "1"
   },
-  "imports": ["ecommerce.product.card"]
+  "imports": [
+    "ecommerce.product.card"
+  ],
+  "storybookReferenceNodeId": "982:538",
+  "storybookImageCount": 1
 }

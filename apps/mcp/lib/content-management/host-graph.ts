@@ -4,13 +4,9 @@ import {
   IHostGraphPreviewInput,
 } from "./schemas";
 import { getMcpSdkOptions } from "./auth";
-import {
-  contentEntityRegistry,
-  requireContentEntityDescriptor,
-} from "./registry";
+import { requireContentEntityDescriptor } from "./registry";
 import {
   IContentEntityDescriptor,
-  IContentEntityKey,
   IContentQueryParams,
   IHostGraphCandidate,
   IHostGraphResult,
@@ -124,14 +120,14 @@ async function findById(props: {
 
 async function resolveExternalWidget(props: {
   externalWidgetRelation: Record<string, any>;
-  registry: IContentEntityDescriptor[];
+  registry?: IContentEntityDescriptor[];
   authHeaders: Record<string, string>;
 }) {
   if (props.externalWidgetRelation.externalModule !== "blog") {
     return;
   }
 
-  const descriptor = requireContentEntityDescriptor(
+  const descriptor = await requireContentEntityDescriptor(
     "blog.widget",
     props.registry,
   );
@@ -150,7 +146,10 @@ async function resolveExternalWidget(props: {
   });
 
   return {
-    entityKey: "blog.widget" as const,
+    selector: {
+      module: "blog",
+      model: "widget",
+    },
     widget,
   };
 }
@@ -160,7 +159,7 @@ function summarizeCandidate(props: {
   pageWidget: Record<string, any>;
   hostWidget?: Record<string, any>;
   externalWidgetRelation?: Record<string, any>;
-  externalEntityKey?: IContentEntityKey;
+  externalSelector?: IHostGraphCandidate["externalSelector"];
   externalWidget?: Record<string, any>;
   language: string;
 }): IHostGraphCandidate {
@@ -180,7 +179,7 @@ function summarizeCandidate(props: {
     pageWidget: props.pageWidget,
     hostWidget: props.hostWidget,
     externalWidgetRelation: props.externalWidgetRelation,
-    externalEntityKey: props.externalEntityKey,
+    externalSelector: props.externalSelector,
     externalWidget: props.externalWidget,
     summary: {
       pageUrl: getStringValue(props.page.url),
@@ -282,19 +281,22 @@ export async function resolveHostGraph(
     throw new Error(parsed.error.message);
   }
 
-  const registry = options?.registry ?? contentEntityRegistry;
+  const registry = options?.registry;
   const authHeaders = options?.authHeaders ?? {};
   const url = normalizeUrl(parsed.data.url);
-  const pageDescriptor = requireContentEntityDescriptor("host.page", registry);
-  const pageWidgetsDescriptor = requireContentEntityDescriptor(
+  const pageDescriptor = await requireContentEntityDescriptor(
+    "host.page",
+    registry,
+  );
+  const pageWidgetsDescriptor = await requireContentEntityDescriptor(
     "host.pages-to-widgets",
     registry,
   );
-  const hostWidgetDescriptor = requireContentEntityDescriptor(
+  const hostWidgetDescriptor = await requireContentEntityDescriptor(
     "host.widget",
     registry,
   );
-  const externalWidgetDescriptor = requireContentEntityDescriptor(
+  const externalWidgetDescriptor = await requireContentEntityDescriptor(
     "host.widgets-to-external-widgets",
     registry,
   );
@@ -420,7 +422,7 @@ export async function resolveHostGraph(
           pageWidget,
           hostWidget,
           externalWidgetRelation,
-          externalEntityKey: externalWidget?.entityKey,
+          externalSelector: externalWidget?.selector,
           externalWidget: externalWidget?.widget,
           language: parsed.data.language,
         }),

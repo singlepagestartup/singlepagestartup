@@ -1,7 +1,8 @@
 {
   "componentName": "rbac.subject",
   "pageName": "rbac",
-  "nodeId": null,
+  "nodeId": "859:27",
+  "variantNodeId": "981:111",
   "variantName": "me-identity-find-information",
   "metadata": {
     "sps.drafts.blockId": "rbac.subject.me-identity-find-information",
@@ -16,6 +17,12 @@
     "sps.source.variant": "me-identity-find-information",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/rbac/models/subject/singlepage/me-identity-find-information/Component.stories.tsx",
+    "sps.figma.nodeId": "859:27",
+    "sps.figma.variantNodeId": "981:111",
+    "sps.figma.storybookReferenceNodeId": "981:274",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "981:274",
+  "storybookImageCount": 1
 }

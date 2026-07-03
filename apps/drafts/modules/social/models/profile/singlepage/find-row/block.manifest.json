@@ -45,8 +45,10 @@
   "figma": {
     "componentName": "social.profile",
     "pageName": "social",
-    "nodeId": null,
-    "syncStatus": "not-created",
+    "variantName": "find-row",
+    "nodeId": "782:31",
+    "variantNodeId": "980:82",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }

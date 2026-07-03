@@ -23,12 +23,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "blog-authors-social-profiles-slug",
-    "syncStatus": "created",
-    "metadataFile": "figma.json",
     "nodeId": "716:300",
-    "variantNodeId": "844:293"
+    "variantNodeId": "983:1759",
+    "syncStatus": "verified",
+    "metadataFile": "figma.json"
   }
 }

@@ -128,7 +128,14 @@
         "pageName": {
           "type": "string"
         },
+        "variantName": {
+          "type": "string",
+          "minLength": 1
+        },
         "nodeId": {
+          "type": ["string", "null"]
+        },
+        "variantNodeId": {
           "type": ["string", "null"]
         },
         "syncStatus": {

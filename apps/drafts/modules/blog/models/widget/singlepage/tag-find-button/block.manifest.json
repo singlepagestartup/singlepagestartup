@@ -30,9 +30,15 @@
   "figma": {
     "componentName": "blog.widget",
     "pageName": "blog",
+    "variantName": "tag-find-button",
     "nodeId": "735:17",
-    "syncStatus": "created",
+    "variantNodeId": "979:161",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   },
-  "tags": ["blog", "widget", "tag-find-button"]
+  "tags": [
+    "blog",
+    "widget",
+    "tag-find-button"
+  ]
 }

@@ -16,6 +16,12 @@
     "sps.source.variant": "author",
     "sps.contractVersion": "0.1.0",
     "sps.code.component": "apps/drafts/modules/social/models/profile/singlepage/author/Component.tsx",
-    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/author/Component.stories.tsx"
-  }
+    "sps.code.story": "apps/drafts/modules/social/models/profile/singlepage/author/Component.stories.tsx",
+    "sps.figma.nodeId": "782:31",
+    "sps.figma.variantNodeId": "782:3",
+    "sps.figma.storybookReferenceNodeId": "980:178",
+    "sps.storybook.imageCount": "1"
+  },
+  "storybookReferenceNodeId": "980:178",
+  "storybookImageCount": 1
 }

@@ -19,10 +19,12 @@
     }
   ],
   "figma": {
-    "pageName": "host",
     "componentName": "host.page",
+    "pageName": "host",
     "variantName": "admin-model-list",
-    "syncStatus": "not-created",
+    "nodeId": "716:300",
+    "variantNodeId": "983:1723",
+    "syncStatus": "verified",
     "metadataFile": "figma.json"
   }
 }
