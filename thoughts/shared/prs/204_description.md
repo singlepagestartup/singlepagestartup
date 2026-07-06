@@ -1,5 +1,9 @@
 # PR Description Template
 
+## Closure Update (2026-07-06)
+
+PR #204 has already been merged, but its Codex-generated remote Figma component output is not accepted as the quality source of truth for future Figma work. The Figma component migration will be performed manually in Figma and with Figma Agents, then connected back to Storybook metadata after manual review.
+
 ## Summary
 
 Synchronizes the `apps/drafts/modules` Storybook catalog with the Single Page Startup Figma library so future design-to-code updates can resolve module, component, variant, and screenshot references directly from metadata.

@@ -120,6 +120,12 @@ uses only `not-created`, `created`, `needs-update`, or `verified`.
 Storybook screenshot references are review nodes placed next to added or
 updated Figma components; they are not managed component implementations.
 
+Remote Figma component creation is not a Codex-owned workflow for this catalog.
+Codex may maintain local inventory, documentation, and metadata, but
+high-fidelity Figma components must be created and reviewed manually in Figma
+or with Figma Agents. Connect `figma.json` and manifest node IDs after the
+accepted Figma components exist.
+
 ## Pages
 
 Pages are not stored in a top-level `pages/` directory. They are host module

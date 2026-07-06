@@ -2,6 +2,12 @@
 
 Generated during Phase 1 of `core-30-implement 203` from the current checkout, fresh Storybook build output, and read-only Figma Plugin API inventory.
 
+## Closure Note (2026-07-06)
+
+This ledger is a historical record of the attempted Codex-driven issue #203 sync. It is not an acceptance record for remote Figma component parity.
+
+The Codex-generated Figma component migration did not meet the required quality bar. Future remote Figma component work for this catalog must be performed manually in Figma and with Figma Agents. After the accepted components exist, this ledger and the local `block.manifest.json`, `page.manifest.json`, and `figma.json` metadata can be reconciled against the manually reviewed Figma nodes.
+
 ## Scope Rules
 
 - Work from `apps/drafts/modules` outward; every current `block.manifest.json` and `page.manifest.json` has one row below.

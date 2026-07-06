@@ -3,7 +3,7 @@ issue_number: 201
 issue_title: "Migrate remaining runnable drafts into the Storybook module catalog"
 repository: singlepagestartup
 created_at: 2026-06-29T22:24:46Z
-last_updated: 2026-06-30T23:22:41Z
+last_updated: 2026-07-06T00:00:00Z
 status: active
 current_phase: complete
 ---
@@ -49,6 +49,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Summary: Implementation completed after the user confirmed continuing through all phases without separate phase pauses. Runnable source material is classified in the migration matrix; reusable public, chat/profile, and admin/admin-v2 surfaces are represented by Storybook host page recipes or module-owned blocks; retained runnable scope is documented.
 - Outputs: Progress artifact at `thoughts/shared/handoffs/singlepagestartup/ISSUE-201-progress.md`; migration matrix at `apps/drafts/inventory/runnable-migration.md`; runnable contract at `apps/drafts/runnable/README.md`; updated `apps/drafts/README.md`; new/updated Storybook module entries under `apps/drafts/modules`; regenerated inventory at `apps/drafts/inventory/modules.generated.json`; PR at `https://github.com/singlepagestartup/singlepagestartup/pull/202`.
 - Notes: Storybook migration stayed inside repository code only. No Figma file/plugin/sync work was performed. The only retained standalone runnable entry is `singlepage/examples/basic-html`; imported React/admin source trees remain only as traceability/source material until user Storybook review. Verification passed with `npm run drafts:validate`, `npm run drafts:ds:inventory`, `npm run drafts:ds:validate`, and `npm run drafts:storybook:build`. Browser verification confirmed the running Storybook index and representative preview iframe stories for host admin dashboard, chat page, admin model edit, and startup override.
+
+### Related Figma Issue Audit
+
+- Summary: Issue #201 was returned by GitHub searches for open Storybook/Figma work, but it is not a remote Figma component transfer issue.
+- Notes: Keep #201 open under its original Storybook/runnable migration scope. Remote Figma component migration is closed under issue #203 for Codex and will be handled manually in Figma and with Figma Agents before any later Storybook metadata connection work.
 
 ## Incident Log
 

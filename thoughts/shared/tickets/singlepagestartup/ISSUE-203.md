@@ -1,7 +1,7 @@
 ---
 repository: singlepagestartup
 issue_number: 203
-status: Research Needed
+status: Done
 created: 2026-07-03
 ---
 
@@ -10,13 +10,21 @@ created: 2026-07-03
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/203
-**Status**: Research Needed
+**Status**: Done
 **Created**: 2026-07-03
 **Priority**: medium
 **Size**: large
 **Type**: feature
 
 ---
+
+## Closure Note (2026-07-06)
+
+Codex was not able to complete the Figma component migration at the required quality bar. The attempted automated transfer produced inaccurate component structures and did not provide reviewable parity with the Storybook references.
+
+Remote Figma component migration for this catalog is now closed for Codex. The components will be recreated manually in Figma and with Figma Agents. After those Figma components are created and reviewed, they will be connected back to the components that currently exist in Storybook, using `block.manifest.json`, `page.manifest.json`, and `figma.json` as the repository-side metadata contract.
+
+Issue #203 is marked Done to stop further Codex-driven Figma implementation work. Repository-side metadata can be reconciled again only after the manual/Figma Agents component set is accepted.
 
 ## Problem to Solve
 

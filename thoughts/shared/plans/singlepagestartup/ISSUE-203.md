@@ -3,10 +3,18 @@ date: 2026-07-03T01:34:05+03:00
 issue_number: 203
 repository: singlepagestartup
 topic: "Synchronize Figma components with the Storybook module catalog"
-status: in_review
+status: closed
 ---
 
 # Synchronize Figma Components With The Storybook Module Catalog Implementation Plan
+
+## Closure Update (2026-07-06)
+
+This plan is closed as a Codex execution plan. Codex was not able to complete the remote Figma component migration at the required quality bar: the generated Figma components did not provide reliable visual or structural parity with the Storybook sources.
+
+Remote Figma component migration will be performed manually in Figma and with Figma Agents instead. After those components are created and reviewed manually, a later repository task can connect the accepted Figma components back to the existing Storybook components through `block.manifest.json`, `page.manifest.json`, and `figma.json`.
+
+The research and inventory sections below remain useful as historical context, but they must not be treated as approval to resume Codex-driven Figma file edits.
 
 ## Overview
 

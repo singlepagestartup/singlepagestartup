@@ -3,9 +3,9 @@ issue_number: 203
 issue_title: "Synchronize Figma components with the Storybook module catalog"
 repository: singlepagestartup
 created_at: 2026-07-02T22:02:56Z
-last_updated: 2026-07-03T22:14:37Z
-status: active
-current_phase: complete
+last_updated: 2026-07-06T00:00:00Z
+status: done
+current_phase: closed
 ---
 
 # Process Log: ISSUE-203 - Synchronize Figma components with the Storybook module catalog
@@ -20,8 +20,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Research: completed
 - Plan: completed
 - Implement: completed
-- Current phase: complete
-- Next step: code review / merge.
+- Current phase: closed
+- Next step: none; Codex-driven Figma migration is closed and the issue is marked Done.
 
 ## Phase Notes
 
@@ -49,11 +49,17 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Outputs: Progress artifact at `thoughts/shared/handoffs/singlepagestartup/ISSUE-203-progress.md`; reconciliation ledger at `apps/drafts/inventory/figma-sync.md`; PR description at `thoughts/shared/prs/204_description.md`; validator extension in `tools/drafts/design-system/validate.ts`; synchronized metadata in `apps/drafts/modules/**/{block,page}.manifest.json` and `figma.json`; PR at `https://github.com/singlepagestartup/singlepagestartup/pull/204`.
 - Notes: GitHub comments after the plan sync marker only contained the already-applied plan revision summary for preserving existing `website-builder` Figma components; no additional scope change blocked implementation. Phase 1 found inventory drift against the research snapshot and rebuilt the ledger from fresh counts: 128 manifest rows, 98 create actions, 12 update actions, and 18 preserve actions. User added a Figma write constraint on 2026-07-03: created/updated components and adjacent Storybook screenshot references must be positioned with deterministic spacing so they do not overlap. Phase 2 normalized 128 metadata pairs, removed legacy `pending` / `synced` sync statuses, and passed `npm run drafts:ds:validate`. Phase 3 captured 129 unique Storybook screenshots for 110 create/update rows. Phase 4 uploaded all 129 screenshots to Figma, removed 129 temporary upload nodes, and passed Figma bounding-box overlap QA after moving the issue-203 review boards on `social` and `website-builder` to free canvas space. Final verification passed with `npm run drafts:ds:validate`, `npm run drafts:ds:inventory`, and `npm run drafts:storybook:build`.
 
+### Closure
+
+- Summary: Closed issue #203 because Codex cannot perform the remote Figma component migration at the required quality bar. The Codex-generated Figma result is not accepted as the source of truth for component parity.
+- Outputs: GitHub issue closure comment, GitHub Project status `Done`, and updated local project documents.
+- Notes: Future remote Figma migration will be performed manually in Figma and with Figma Agents. After those components are manually created and reviewed, a later repository task can connect the accepted Figma components back to the existing Storybook components through `block.manifest.json`, `page.manifest.json`, and `figma.json`. Do not resume Codex-driven Figma file edits for this issue.
+
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 6 -->
+<!-- incident-count: 7 -->
 
 ### Incident 1 - GitHub API blocked in sandbox
 
@@ -115,8 +121,19 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: For future Figma screenshot placement, prefer `upload_assets` for raster assets and avoid relying on browser APIs inside `use_figma`; for read-only multi-page inventory, use `PageNode.loadAsync()` rather than `loadAllPagesAsync()`.
 - **References**: `apps/drafts/inventory/figma-sync.md`; `thoughts/shared/handoffs/singlepagestartup/ISSUE-203-progress.md`.
 
+### Incident 7 - Codex-generated Figma components did not meet the review quality bar
+
+- **Phase**: Closure
+- **Occurrences**: 1
+- **Symptom**: User review found that the generated Figma components did not match the Storybook screenshots closely enough, and the screenshots themselves were not sufficient quality for review.
+- **Root Cause**: The available Codex/Figma automation path was not capable of faithfully reconstructing the Storybook HTML components as high-quality editable Figma components with the required auto-layout and frame structure.
+- **Fix**: Closed the Codex implementation path. Remote Figma component migration will be done manually in Figma and with Figma Agents, then connected back to Storybook metadata after the accepted components exist.
+- **Preventive Action**: Do not assign high-fidelity remote Figma component migration to Codex as an execution task in this repository. Use Codex only for repository-side inventory, documentation, metadata reconciliation, and later connection work after manually reviewed Figma components exist.
+- **References**: `thoughts/shared/tickets/singlepagestartup/ISSUE-203.md`; `thoughts/shared/plans/singlepagestartup/ISSUE-203.md`; `apps/drafts/inventory/figma-sync.md`.
+
 ## Reusable Learnings
 
 - For Figma/Storybook sync work, start from the Storybook module catalog and local metadata inventory before creating new Figma nodes, because existing `figma.json` and `block.manifest.json` coverage can differ.
 - The target Figma file already stores SPS shared plugin metadata on many component nodes, but sampled values can use older path conventions; compare remote shared metadata against local `figma.json` before updating nodes.
 - For issue-203-style Figma screenshot placement, keep review frames in auto-layout rows and run bounding-box QA after placement; enlarged screenshot boards can overlap existing top-level component sets unless moved to free canvas space.
+- High-fidelity remote Figma component creation is not a Codex-owned workflow for this catalog. Manual Figma work and Figma Agents own component reconstruction; Codex can reconnect accepted Figma nodes to Storybook metadata afterward.
