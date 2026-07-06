@@ -1,105 +1,62 @@
-/**
- * rbac.subject.me-crm-form-deafult
- *
- * Static CRM contact form for the current subject. It is presentation-only in
- * drafts: inputs are read-only and no submit behavior is wired here.
- */
-function TextField({
-  label,
-  placeholder,
-  type = "text",
-}: {
-  label: string;
-  placeholder: string;
-  type?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">
-        {label}
-      </span>
-      <input
-        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
-        type={type}
-        placeholder={placeholder}
-        readOnly
-      />
-    </label>
-  );
-}
+import type { CrmFormRecord } from "../../../../../crm/shared/demo-crm";
+import { defaultCrmForm } from "../../../../../crm/shared/demo-crm";
+import { CrmWidgetFormListDefault } from "../../../../../crm/models/widget/singlepage/form-list-default/Component";
 
 export const defaultSubjectMeCrmFormDefaultProps = {
-  firstNameLabel: "First Name",
-  firstNamePlaceholder: "John",
-  lastNameLabel: "Last Name",
-  lastNamePlaceholder: "Doe",
-  emailLabel: "Email",
-  emailPlaceholder: "john@example.com",
-  companyLabel: "Company",
-  companyPlaceholder: "Acme Inc.",
-  messageLabel: "Message",
-  messagePlaceholder: "Tell us about your project...",
-  submitLabel: "Send Message",
+  subject: {
+    id: "rbac-subject-current",
+    name: "Current subject",
+    email: "subject@sps.dev",
+  },
+  title: "Subject CRM request",
+  description:
+    "RBAC subject wrapper that composes CRM-owned form, step, input, and option models.",
+  crmForm: defaultCrmForm,
 };
 
-export type SubjectMeCrmFormDefaultProps =
-  typeof defaultSubjectMeCrmFormDefaultProps;
+export interface SubjectMeCrmFormDefaultProps {
+  subject: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  title: string;
+  description: string;
+  crmForm: CrmFormRecord;
+}
 
 export function SubjectMeCrmFormDefault(
   props?: Partial<SubjectMeCrmFormDefaultProps>,
 ) {
-  const {
-    firstNameLabel,
-    firstNamePlaceholder,
-    lastNameLabel,
-    lastNamePlaceholder,
-    emailLabel,
-    emailPlaceholder,
-    companyLabel,
-    companyPlaceholder,
-    messageLabel,
-    messagePlaceholder,
-    submitLabel,
-  } = { ...defaultSubjectMeCrmFormDefaultProps, ...props };
+  const { subject, title, description, crmForm } = {
+    ...defaultSubjectMeCrmFormDefaultProps,
+    ...props,
+  };
 
   return (
-    <form
-      className="rounded-xl border border-slate-200 bg-white p-6"
+    <section
+      className="rounded-xl border border-slate-200 bg-slate-50 p-5"
       data-ds-block="rbac.subject.me-crm-form-deafult"
       data-ds-layer="singlepage"
     >
-      <div className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TextField
-            label={firstNameLabel}
-            placeholder={firstNamePlaceholder}
-          />
-          <TextField label={lastNameLabel} placeholder={lastNamePlaceholder} />
+      <div className="mb-5 rounded-lg border border-slate-200 bg-white p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          RBAC Subject
+        </p>
+        <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              {description}
+            </p>
+          </div>
+          <div className="text-sm text-slate-500">
+            <p className="font-medium text-slate-900">{subject.name}</p>
+            <p>{subject.email}</p>
+          </div>
         </div>
-        <TextField
-          label={emailLabel}
-          placeholder={emailPlaceholder}
-          type="email"
-        />
-        <TextField label={companyLabel} placeholder={companyPlaceholder} />
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-700">
-            {messageLabel}
-          </span>
-          <textarea
-            className="w-full resize-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
-            rows={4}
-            placeholder={messagePlaceholder}
-            readOnly
-          />
-        </label>
-        <button
-          className="w-full rounded-md border border-slate-400 bg-slate-900 px-4 py-2.5 text-sm text-white transition hover:bg-slate-800"
-          type="button"
-        >
-          {submitLabel}
-        </button>
       </div>
-    </form>
+      <CrmWidgetFormListDefault form={crmForm} subjectName={subject.name} />
+    </section>
   );
 }
