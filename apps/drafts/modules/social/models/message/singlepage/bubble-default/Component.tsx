@@ -1,4 +1,47 @@
-import { FileText } from "lucide-react";
+import { FileText, Smile } from "lucide-react";
+import { useState } from "react";
+
+const reactionEmojiByToken: Record<string, string> = {
+  "+1": "👍",
+  check: "✅",
+  cry: "😢",
+  eyes: "👀",
+  fire: "🔥",
+  flash: "⚡",
+  heart: "❤️",
+  laugh: "😂",
+  party: "🎉",
+  rocket: "🚀",
+  "thumbs up": "👍",
+  thumbs: "👍",
+  wow: "😮",
+};
+
+const defaultReactionOptions = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🔥", "👀"];
+
+interface SocialMessageReaction {
+  emoji: string;
+  count?: number;
+  label: string;
+}
+
+function normalizeReaction(reaction: string): SocialMessageReaction {
+  const trimmedReaction = reaction.trim();
+  const [, rawToken = trimmedReaction, rawCount] =
+    trimmedReaction.match(/^(.*?)(?:\s+(\d+))?$/) ?? [];
+  const token = rawToken.trim();
+  const emoji = reactionEmojiByToken[token.toLowerCase()] ?? token;
+
+  return {
+    emoji,
+    count: rawCount ? Number(rawCount) : undefined,
+    label: token,
+  };
+}
+
+function normalizeReactionOptions(options: string[]) {
+  return options.map((option) => normalizeReaction(option).emoji);
+}
 
 export interface SocialMessageBubbleDefaultProps {
   author: string;
@@ -12,6 +55,7 @@ export interface SocialMessageBubbleDefaultProps {
     size: string;
   }>;
   reactions?: string[];
+  reactionOptions?: string[];
 }
 
 export const defaultSocialMessageBubbleDefaultProps: SocialMessageBubbleDefaultProps =
@@ -28,6 +72,7 @@ export const defaultSocialMessageBubbleDefaultProps: SocialMessageBubbleDefaultP
       },
     ],
     reactions: ["eyes", "+1"],
+    reactionOptions: defaultReactionOptions,
   };
 
 export function SocialMessageBubbleDefault(
@@ -42,13 +87,49 @@ export function SocialMessageBubbleDefault(
     props && !("attachments" in props) ? [] : (mergedProps.attachments ?? []);
   const reactions =
     props && !("reactions" in props) ? [] : (mergedProps.reactions ?? []);
+  const reactionOptions = mergedProps.reactionOptions ?? defaultReactionOptions;
+  const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
+  const [messageReactions, setMessageReactions] = useState(() =>
+    reactions.map((reaction) => normalizeReaction(reaction)),
+  );
 
   const isOutgoing = side === "outgoing";
   const isTimeline = display === "timeline";
+  const hasReactions = messageReactions.length > 0;
+  const normalizedReactionOptions = normalizeReactionOptions(reactionOptions);
+
+  function handleReactionSelect(emoji: string) {
+    setMessageReactions((currentReactions) => {
+      const existingReactionIndex = currentReactions.findIndex(
+        (reaction) => reaction.emoji === emoji,
+      );
+
+      if (existingReactionIndex === -1) {
+        return [
+          ...currentReactions,
+          {
+            emoji,
+            count: 1,
+            label: emoji,
+          },
+        ];
+      }
+
+      return currentReactions.map((reaction, index) =>
+        index === existingReactionIndex
+          ? {
+              ...reaction,
+              count: (reaction.count ?? 1) + 1,
+            }
+          : reaction,
+      );
+    });
+    setIsReactionPickerOpen(false);
+  }
 
   return (
     <article
-      className={`flex gap-3 ${isOutgoing ? "flex-row-reverse" : ""}`}
+      className={`group flex gap-3 ${isOutgoing ? "flex-row-reverse" : ""}`}
       data-ds-block="social.message.bubble-default"
       data-ds-layer="singlepage"
     >
@@ -106,15 +187,56 @@ export function SocialMessageBubbleDefault(
             ))}
           </div>
         ) : null}
-        {reactions.length > 0 ? (
-          <div className={`mt-2 flex gap-1 ${isOutgoing ? "justify-end" : ""}`}>
-            {reactions.map((reaction) => (
-              <span
-                className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
-                key={reaction}
+        {hasReactions || isReactionPickerOpen ? (
+          <div
+            className={`relative mt-2 flex items-center gap-1 ${
+              isOutgoing ? "justify-end" : ""
+            }`}
+          >
+            {isReactionPickerOpen ? (
+              <div
+                className={`absolute bottom-9 z-10 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg shadow-lg ${
+                  isOutgoing ? "right-0" : "left-0"
+                }`}
               >
-                {reaction}
-              </span>
+                {normalizedReactionOptions.map((emoji) => (
+                  <button
+                    aria-label={`React with ${emoji}`}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-xl transition hover:bg-slate-100"
+                    key={emoji}
+                    onClick={() => handleReactionSelect(emoji)}
+                    type="button"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <button
+              aria-expanded={isReactionPickerOpen}
+              aria-label="Choose reaction"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+              onClick={() =>
+                setIsReactionPickerOpen(
+                  (currentIsReactionPickerOpen) => !currentIsReactionPickerOpen,
+                )
+              }
+              type="button"
+            >
+              <Smile className="h-4 w-4" />
+            </button>
+            {messageReactions.map((reaction) => (
+              <button
+                aria-label={`${reaction.label} reaction${
+                  reaction.count ? `, ${reaction.count}` : ""
+                }`}
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-xs text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                key={`${reaction.emoji}-${reaction.label}`}
+                type="button"
+              >
+                <span className="text-base leading-none">{reaction.emoji}</span>
+                {reaction.count ? <span>{reaction.count}</span> : null}
+              </button>
             ))}
           </div>
         ) : null}

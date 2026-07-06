@@ -1,5 +1,4 @@
-import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronRight, type LucideIcon } from "lucide-react";
 
 type LegalTable = {
   headers: [string, string];
