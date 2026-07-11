@@ -739,9 +739,9 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    * BDD Scenario
    * Given: the user selected and invoked skills in a Knowledge chat.
    * When: OpenRouter resolves prompt skills for the replying profile.
-   * Then: only linked active skills are returned and unlinked requested ids are rejected.
+   * Then: linked skills are returned and unlinked requested ids are rejected.
    */
-  it("When: prompt skills are resolved Then: only linked active skills are used", async () => {
+  it("When: prompt skills are resolved Then: only linked skills are used", async () => {
     const handler = new Handler({
       socialModule: {
         profilesToSkills: {
@@ -759,12 +759,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
             {
               id: "skill-1",
               slug: "brief-writer",
-              status: "active",
             },
             {
               id: "skill-2",
-              slug: "archived-writer",
-              status: "archived",
+              slug: "fact-checker",
             },
           ]),
         },
@@ -781,7 +779,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       {
         id: "skill-1",
         slug: "brief-writer",
-        status: "active",
+      },
+      {
+        id: "skill-2",
+        slug: "fact-checker",
       },
     ]);
 
@@ -868,7 +869,6 @@ describe("Given: OpenRouter thread context and reply validation", () => {
               title: "Brief Writer",
               slug: "brief-writer",
               description: "Write a concise brief.",
-              status: "active",
             },
           ]),
         },

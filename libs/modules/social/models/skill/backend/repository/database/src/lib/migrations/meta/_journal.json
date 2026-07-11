@@ -15,6 +15,13 @@
       "when": 1781710012675,
       "tag": "0001_modern_agent_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783807791675,
+      "tag": "0002_old_genesis",
+      "breakpoints": true
     }
   ]
 }

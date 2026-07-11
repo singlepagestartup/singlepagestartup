@@ -46,9 +46,7 @@ export class Handler {
       return c.json({
         data: skillIds
           .map((skillId) => skillsById.get(skillId))
-          .filter((skill) => {
-            return Boolean(skill && skill.status !== "archived");
-          }),
+          .filter((skill) => Boolean(skill)),
       });
     } catch (error: unknown) {
       const { status, message, details } = getHttpErrorType(error);

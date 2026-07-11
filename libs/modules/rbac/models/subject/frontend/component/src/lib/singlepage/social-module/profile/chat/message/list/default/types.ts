@@ -29,7 +29,6 @@ export interface KnowledgeDocumentDraft {
 export interface SkillCreateValues {
   description: string;
   slug: string;
-  status: "draft" | "active" | "archived";
   title: string;
 }
 

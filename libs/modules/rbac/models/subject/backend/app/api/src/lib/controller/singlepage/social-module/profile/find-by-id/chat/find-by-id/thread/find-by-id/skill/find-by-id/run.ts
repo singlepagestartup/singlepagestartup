@@ -87,12 +87,6 @@ export class Handler {
         );
       }
 
-      if (skill.status === "archived") {
-        throw new Error(
-          `Validation error. Social skill ${skill.slug} is archived`,
-        );
-      }
-
       const modelSlug = this.resolveModelSlug({
         skill,
         requested: body.modelSlug,

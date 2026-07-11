@@ -12,23 +12,17 @@ import {
   Form,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Textarea,
 } from "@sps/shared-ui-shadcn";
 import { Pencil, Plus } from "lucide-react";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const skillCreateFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
   description: z.string().min(1, "Description is required"),
-  status: z.enum(["draft", "active", "archived"]),
 });
 
 type SkillCreateFormValues = z.infer<typeof skillCreateFormSchema>;
@@ -64,7 +58,6 @@ function getDefaultValues(): SkillCreateFormValues {
     title: "",
     slug: "",
     description: "",
-    status: "active",
   };
 }
 
@@ -79,12 +72,6 @@ function getSkillFormValues(
     title: skill.title || skill.adminTitle || skill.slug,
     slug: skill.slug,
     description: skill.description || "",
-    status:
-      skill.status === "draft" ||
-      skill.status === "active" ||
-      skill.status === "archived"
-        ? skill.status
-        : "active",
   };
 }
 
@@ -111,7 +98,6 @@ export function Component(props: IClientComponentProps) {
       title,
       slug: normalizeSkillSlug(data.slug || title),
       description: data.description,
-      status: data.status,
     };
 
     if (isEditing && props.data) {
@@ -221,27 +207,6 @@ export function Component(props: IClientComponentProps) {
                   {form.formState.errors.description.message}
                 </p>
               ) : null}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Controller
-                name="status"
-                control={form.control}
-                render={({ field }) => {
-                  return (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="draft">draft</SelectItem>
-                        <SelectItem value="active">active</SelectItem>
-                        <SelectItem value="archived">archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
-              />
             </div>
             <div className="flex justify-end">
               <Button

@@ -885,14 +885,14 @@ export class Handler {
     socialModuleProfileId: string;
     skillIds: string[];
   }) {
-    return this.findActiveSkillsForProfile({
+    return this.findSkillsForProfile({
       socialModuleProfileId: props.socialModuleProfileId,
       skillIds: props.skillIds,
       requireRequestedSkillsLinked: true,
     });
   }
 
-  private async findActiveSkillsForProfile(props: {
+  private async findSkillsForProfile(props: {
     socialModuleProfileId: string;
     skillIds?: string[];
     requireRequestedSkillsLinked: boolean;
@@ -966,17 +966,17 @@ export class Handler {
     const skillsById = new Map(
       (skills || []).map((skill: ISocialModuleSkill) => [skill.id, skill]),
     );
-    const activeSkills = skillIds
+    const resolvedSkills = skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is ISocialModuleSkill => {
-        return Boolean(skill && skill.status !== "archived");
+        return Boolean(skill);
       });
 
-    if (!activeSkills.length) {
+    if (!resolvedSkills.length) {
       return [];
     }
 
-    return activeSkills;
+    return resolvedSkills;
   }
 
   private async collectLearnContentItems(props: {

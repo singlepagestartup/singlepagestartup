@@ -39,13 +39,11 @@ export function normalizeSkillPayload(value: Record<string, any>) {
   const title = toRequiredString(data.title, "title");
   const slug = toRequiredString(data.slug, "slug");
   const description = toString(data.description);
-  const status = toSkillStatus(data.status);
 
   return {
     title,
     slug,
     description,
-    status,
   };
 }
 
@@ -108,12 +106,4 @@ function toString(value: unknown) {
   }
 
   return String(value);
-}
-
-function toSkillStatus(value: unknown) {
-  if (value === "draft" || value === "active" || value === "archived") {
-    return value;
-  }
-
-  return "active";
 }

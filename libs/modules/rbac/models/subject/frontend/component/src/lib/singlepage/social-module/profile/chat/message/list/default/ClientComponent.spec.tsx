@@ -621,7 +621,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "Brief Writer",
         slug: "brief-writer",
         description: "Write a concise brief.",
-        status: "active",
       },
     ];
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
@@ -710,7 +709,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "Brief Writer",
         slug: "brief-writer",
         description: "Write a concise brief.",
-        status: "active",
       },
     ];
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
@@ -795,7 +793,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "Knowledge Helper",
         slug: "knowledge-helper",
         description: "Use knowledge context.",
-        status: "active",
       },
     ];
 
@@ -856,7 +853,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "RAG Helper",
         slug: "rag-helper",
         description: "Use RAG context.",
-        status: "active",
       },
     ];
 
@@ -964,7 +960,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "Brief Writer",
         slug: "brief-writer",
         description: "Write a concise brief.",
-        status: "active",
       },
     ];
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
@@ -1079,6 +1074,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "New skill for chat-gpt-1" }),
     );
+    expect(screen.queryByText("Status")).toBeNull();
     fireEvent.change(screen.getByLabelText("Title"), {
       target: {
         value: "Support Tone",
@@ -1109,6 +1105,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         }),
       );
     });
+    expect(
+      mockSocialSkillCreateMutateAsync.mock.calls[0][0].data,
+    ).not.toHaveProperty("status");
   });
 
   /**
@@ -1134,7 +1133,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "Brief Writer",
         slug: "brief-writer",
         description: "Write a concise brief.",
-        status: "active",
       },
     ];
 
@@ -1278,7 +1276,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "YouTube Description",
         slug: "youtube-description",
         description: "Write YouTube descriptions.",
-        status: "active",
       },
     ];
     mockChatComponentState.knowledgeDocuments = [
@@ -1406,7 +1403,6 @@ describe("Given: OpenRouter chat profile sidebar", () => {
         adminTitle: "YouTube Description",
         slug: "youtube-description",
         description: "Write YouTube descriptions.",
-        status: "active",
       },
     ];
 

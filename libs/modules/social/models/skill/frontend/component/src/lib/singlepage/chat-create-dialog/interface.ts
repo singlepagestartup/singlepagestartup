@@ -7,7 +7,6 @@ export const variant = "chat-create-dialog" as const;
 export interface IChatSkillCreateValues {
   description: string;
   slug: string;
-  status: "draft" | "active" | "archived";
   title: string;
 }
 

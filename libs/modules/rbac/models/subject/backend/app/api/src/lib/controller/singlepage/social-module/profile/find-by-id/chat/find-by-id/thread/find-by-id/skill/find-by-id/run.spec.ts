@@ -165,7 +165,6 @@ function createService(
           slug: "youtube-description",
           title: "YouTube Description",
           description: "Return a YouTube description.",
-          status: "active",
         }),
       },
     },

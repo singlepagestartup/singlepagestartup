@@ -61,9 +61,7 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
     );
 
   const profileSkills = useMemo(() => {
-    return ((targetSkillsQuery.data || []) as SocialSkill[]).filter((skill) => {
-      return skill.status !== "archived";
-    });
+    return (targetSkillsQuery.data || []) as SocialSkill[];
   }, [targetSkillsQuery.data]);
 
   const profileSkillIds = useMemo(() => {
@@ -158,7 +156,6 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
         title: values.title,
         slug: values.slug,
         description: values.description,
-        status: values.status,
         orderIndex: context.orderIndex,
       },
     });
@@ -183,7 +180,6 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
         title: values.title,
         slug: values.slug,
         description: values.description,
-        status: values.status,
       },
     });
 

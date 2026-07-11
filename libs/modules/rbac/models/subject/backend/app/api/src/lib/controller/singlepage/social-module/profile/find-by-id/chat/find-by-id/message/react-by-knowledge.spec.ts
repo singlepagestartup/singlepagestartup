@@ -696,7 +696,7 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
 
   /**
    * BDD Scenario
-   * Given: the replying AI profile has an active linked social skill.
+   * Given: the replying AI profile has a linked social skill.
    * When: a normal Knowledge question is answered without an explicit @skill.
    * Then: generation does not apply linked skills as a hidden prompt side effect.
    */
@@ -752,7 +752,6 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
       slug: "brief-writer",
       title: "Brief Writer",
       description: "Write a concise product brief.",
-      status: "active",
       metadata: {},
     };
     const handler = new Handler(
@@ -834,7 +833,6 @@ describe("Given: RBAC profile-scoped Knowledge chat reaction", () => {
       slug: "brief-writer",
       title: "Brief Writer",
       description: "Write a concise product brief.",
-      status: "active",
       metadata: {},
     };
     const handler = new Handler(

@@ -114,9 +114,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
   );
 
   const skills = useMemo(() => {
-    return ((skillsQuery || []) as SocialSkill[]).filter((skill) => {
-      return skill.status !== "archived";
-    });
+    return (skillsQuery || []) as SocialSkill[];
   }, [skillsQuery]);
 
   const profileSkillIds = useMemo(() => {

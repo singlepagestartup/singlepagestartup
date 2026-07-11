@@ -459,6 +459,13 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           };
         },
       ),
+      socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate:
+        jest.fn(() => {
+          return {
+            mutate: jest.fn(),
+            isPending: false,
+          };
+        }),
       socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind: jest.fn(
         (request) => {
           return {
@@ -737,7 +744,6 @@ export function resetChatComponentMocks() {
     title: "Created Skill",
     slug: "created-skill",
     description: "Created skill instructions",
-    status: "active",
   });
   mockProfilesToSkillsCreateMutateAsync.mockResolvedValue({
     id: "profile-skill-created-1",

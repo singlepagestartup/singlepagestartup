@@ -30,7 +30,6 @@ export function Component(props: IComponentPropsExtended) {
         props.data?.adminTitle || randomWordsGenerator({ type: "title" }),
       title: props.data?.title || "",
       description: props.data?.description || "",
-      status: props.data?.status || "draft",
     },
   });
 
@@ -96,19 +95,6 @@ export function Component(props: IComponentPropsExtended) {
           name="description"
           form={form}
           placeholder="Write markdown instructions"
-        />
-        <FormField
-          ui="shadcn"
-          type="select"
-          label="Status"
-          name="status"
-          form={form}
-          placeholder="Select status"
-          options={[
-            ["draft", "draft"],
-            ["active", "active"],
-            ["archived", "archived"],
-          ]}
         />
         <FormField
           ui="shadcn"

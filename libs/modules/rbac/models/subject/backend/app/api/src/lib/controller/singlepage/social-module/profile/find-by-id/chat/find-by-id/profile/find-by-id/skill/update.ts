@@ -37,7 +37,6 @@ export class Handler {
           slug: payload.slug,
           adminTitle: payload.title,
           description: payload.description,
-          status: payload.status,
         },
       });
 

@@ -1999,7 +1999,7 @@ export class Handler {
     const skillsById = new Map<string, ISocialModuleSkill>();
 
     if (props.skillIds.length) {
-      const requestedSkills = await this.findActiveSkillsForProfile({
+      const requestedSkills = await this.findSkillsForProfile({
         socialModuleProfileId: props.socialModuleProfileId,
         skillIds: props.skillIds,
         requireRequestedSkillsLinked: true,
@@ -2012,7 +2012,7 @@ export class Handler {
 
     if (props.skillSlugs.length) {
       const slugSet = new Set(props.skillSlugs);
-      const linkedSkills = await this.findActiveSkillsForProfile({
+      const linkedSkills = await this.findSkillsForProfile({
         socialModuleProfileId: props.socialModuleProfileId,
         requireRequestedSkillsLinked: false,
       });
@@ -2027,7 +2027,7 @@ export class Handler {
     return Array.from(skillsById.values());
   }
 
-  private async findActiveSkillsForProfile(props: {
+  private async findSkillsForProfile(props: {
     socialModuleProfileId: string;
     skillIds?: string[];
     requireRequestedSkillsLinked: boolean;
@@ -2105,7 +2105,7 @@ export class Handler {
     return skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is ISocialModuleSkill => {
-        return Boolean(skill && skill.status !== "archived");
+        return Boolean(skill);
       });
   }
 
