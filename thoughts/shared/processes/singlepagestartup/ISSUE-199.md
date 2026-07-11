@@ -3,7 +3,7 @@ issue_number: 199
 issue_title: "Enable social profiles as MCP-powered AI employees"
 repository: singlepagestartup
 created_at: 2026-06-17T18:33:37Z
-last_updated: 2026-07-12T01:10:54+03:00
+last_updated: 2026-07-12T01:40:39+03:00
 status: active
 current_phase: plan
 ---
@@ -62,7 +62,8 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - The plan fixes employee token issuance in the MCP process through a protected internal exchange endpoint, avoiding a separate in-memory token store inside `apps.api`.
   - Review feedback supersedes per-tool profile allowlists and duplicate orchestrator data checks: profiles allow MCP server identifiers, the server supplies `tools/list`, and existing employee-JWT-backed `rbac.permission` remains authoritative.
   - The first allowed server is the built-in project MCP. Connection parameters and additional servers belong to a future dedicated MCP-server model and relation.
-  - Plan revision completed and synchronized at `2026-07-11T22:10:54Z`; issue should return to `Plan in Review` after the scoped artifact commit and GitHub comment.
+  - Latest review feedback makes `react-by/openrouter` the only reaction flow: required guards and Knowledge behavior migrate from `react-by/knowledge`, all callers switch, parity is verified, and then the legacy handler/route/SDK surface is removed.
+  - Plan revision completed and synchronized at `2026-07-11T22:40:39Z`; issue should return to `Plan in Review` after the scoped artifact commit and GitHub comment.
 
 ### Implement
 
@@ -74,7 +75,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 3 -->
+<!-- incident-count: 4 -->
 
 ### Incident 1 — GitHub CLI connectivity from sandbox
 
@@ -106,7 +107,18 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Separate MCP server connection policy, MCP protocol validation, and RBAC data authorization in future agent plans; never reproduce `rbac.permission` decisions in an LLM orchestrator.
 - **References**: `apps/mcp/http.ts:199-214`, `apps/mcp/lib/auth.ts:84-136`, `thoughts/shared/plans/singlepagestartup/ISSUE-199.md`
 
+### Incident 4 — Legacy Knowledge reaction remained as a parallel flow
+
+- **Phase**: Plan
+- **Occurrences**: 1
+- **Symptom**: The plan proposed copying selected checks from `react-by/knowledge` while continuing to preserve the legacy endpoint and its SDK/agent surfaces.
+- **Root Cause**: The existing Knowledge handler was treated as a compatibility boundary instead of a duplicated reaction implementation whose required behavior should belong to the canonical OpenRouter employee flow.
+- **Fix**: Make `react-by/openrouter` the only reaction endpoint, migrate all required guards and Knowledge behavior into it, switch every caller, prove parity, then delete the legacy handler, route, SDK exports, agent method/tests, UI mocks, documentation, and obsolete permission through an explicit data-management operation.
+- **Preventive Action**: When consolidating overlapping reaction pipelines, define one canonical endpoint and include caller migration plus deletion criteria in the same plan rather than leaving a permanent compatibility route.
+- **References**: `react-by-knowledge.ts`, `react-by-openrouter.ts`, `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`, `thoughts/shared/plans/singlepagestartup/ISSUE-199.md`
+
 ## Reusable Learnings
 
 - For OpenRouter tool execution through MCP, keep external MCP OAuth unchanged and issue the internal short-lived MCP token from the authorized replying profile's employee-subject JWT; never reuse requester permissions, billing identity, or tool arguments to choose the execution principal.
 - Configure which MCP servers a profile may use, not a duplicate per-tool/data permission system; tools come from MCP `tools/list`, and `apps.api` remains the source of truth for employee `rbac.permission`.
+- Keep one canonical AI reaction endpoint. Migrate required behavior and callers before deleting a legacy endpoint so parity and cleanup are verifiable in one change set.

@@ -57,6 +57,8 @@ The required chat experience is:
 - Preserve the mutation safety already defined by MCP tool schemas, such as dry-run and preview/apply; do not duplicate it as a profile policy.
 - Make all skills linked through `profiles-to-skills` available as employee capabilities without requiring `/skill` or `skillIds`. Skill existence plus the profile relation determines availability; explicit selection remains a deterministic override.
 - Automatically retrieve relevant profile-linked Knowledge for ordinary employee tasks without requiring `@knowledge`; never search unlinked documents. Explicit `@knowledge` remains a force/debug override and `/learn` behavior remains compatible.
+- Make `react-by/openrouter` the single reaction endpoint for AI profiles. Move every still-required guard, `/learn`, Knowledge retrieval/generation, skill, thread-context, and reply-metadata behavior from `react-by/knowledge` into it before removing the legacy flow.
+- After parity is proven, delete the `react-by/knowledge` handler, route, client/server SDK actions and exports, agent-service dispatch/call sites, frontend mocks, route documentation, tests that only exercise the legacy endpoint, and the obsolete route permission through the normal RBAC data-management flow.
 - Tool calls and tool results must be recorded in message/action metadata or audit logs, but raw tool-call protocol output must not be displayed as the assistant answer.
 - The model loop must have step, timeout, token, and result-size limits.
 
@@ -91,6 +93,14 @@ The required chat experience is:
   - MCP tool execution fails unrecoverably;
   - budget or timeout exceeded.
 - On stop failure, return a clear assistant-visible error message and store internal details in metadata.
+
+### Consolidate reactions into OpenRouter
+
+- Treat `react-by/knowledge` as a migration source, not as a second supported reaction mode.
+- Port its stricter profile/chat/message guards and any Knowledge behavior not already present in `react-by/openrouter`.
+- Preserve `/learn`, explicit `@knowledge`, automatic profile-linked Knowledge, skills, thread history, and `metadata.knowledge` compatibility through `react-by/openrouter`.
+- Switch automatic agent dispatch and all SDK/UI callers to `react-by/openrouter`, verify behavioral parity, and only then remove the legacy route and implementation.
+- Remove the obsolete RBAC route permission through an explicit permission-management operation; do not hand-edit repository data snapshots.
 
 ### Internal MCP access token for employee subject
 
@@ -184,6 +194,9 @@ The required chat experience is:
   - linked skills are available without explicit selection, while deleted or unlinked skills are unavailable;
   - linked Knowledge can be retrieved without `@knowledge`, while unlinked documents are never searched;
   - browser and automatic agent-triggered paths derive the same employee capabilities.
+  - knowledge-chat replies and `/learn` use only `react-by/openrouter` after migration;
+  - no route, SDK export, agent call site, or frontend mock remains for `react-by/knowledge`;
+  - explicit `@knowledge`, automatic Knowledge retrieval, skills, thread history, and `metadata.knowledge` remain compatible after the legacy endpoint is removed.
 - Browser verification:
   - a user can assign a task to an AI profile that uses a skill, profile Knowledge, and a tool discovered from an allowed MCP server;
   - user sees only final assistant answer;

@@ -14,10 +14,10 @@ Turn a replying AI `social.profile` into an employee that uses OpenRouter for re
 
 ## Current State Analysis
 
-The social chat flow already separates the authenticated requester from the replying profile, builds thread/persona context, can apply explicitly selected skills, and can retrieve profile-linked Knowledge when explicitly requested. It does not yet provide a safe employee identity contract or a model/tool loop:
+The social chat flow already separates the authenticated requester from the replying profile, builds thread/persona context, can apply explicitly selected skills, and can retrieve profile-linked Knowledge when explicitly requested. It currently splits AI reactions across two overlapping endpoints and does not yet provide a safe employee identity contract or a model/tool loop:
 
 - `react-by/openrouter` receives the requester bearer token for route authorization and billing, then separately resolves the replying profile's linked `replyBySubject` and signs `replyByJwt` for profile-authored messages (`react-by-openrouter.ts:826-835`, `1156-1193`).
-- The OpenRouter handler does not yet apply the complete profile/chat/message guards already used by `react-by/knowledge`, and it accepts the requested reply profile id before proving that the profile is an AI participant in the current chat (`react-by-knowledge.ts:81-111`, `206-217`, `258-351`).
+- The OpenRouter handler does not yet apply the complete profile/chat/message guards already used by `react-by/knowledge`, and it accepts the requested reply profile id before proving that the profile is an AI participant in the current chat (`react-by-knowledge.ts:81-111`, `206-217`, `258-351`). The legacy handler also retains its own `/learn`, Knowledge generation, thread-history, skill, reply-creation, route, SDK, and documentation surfaces even though the automatic Knowledge-chat branch already calls OpenRouter (`react-by-knowledge.ts:472-1259`; `agent/.../service/singlepage/index.ts:349-425`, `2036-2091`).
 - Profile persona is always added, but Knowledge search requires `@knowledge`/`useKnowledgeSearch`, skills require `/slug`/`skillIds`, and the persona prompt explicitly says unselected skills are not part of the profile (`react-by-openrouter.ts:934-947`, `1694-1707`, `1990-1997`, `2838-2869`). The separate skill-lifecycle cleanup removes draft semantics; issue #199 consumes linked skill existence rather than introducing another status policy.
 - `social.profile` has no MCP configuration field, while its admin form already owns the profile details plus Knowledge and skills relations (`libs/modules/social/models/profile/backend/repository/database/src/lib/fields/singlepage.ts:4-31`; `.../admin-v2/form/ClientComponent.tsx:33-124`).
 - The OpenRouter wrapper supports only system/user/assistant messages and text/image parsing; it neither sends tool definitions nor returns `tool_calls` (`libs/shared/third-parties/src/lib/open-router/index.ts:29-32`, `231-312`).
@@ -33,7 +33,9 @@ For every social-chat task, the system resolves three non-interchangeable identi
 2. **Employee subject** — the exactly one `rbac.subject` linked to the authorized replying AI profile; its short-lived SPS/MCP credentials authorize every MCP-to-API operation.
 3. **Reply author** — the replying AI `social.profile` shown in the thread.
 
-The backend derives the employee's capabilities from the replying profile, exposes compact profile-bound Knowledge/skill capabilities plus tools from the profile's allowed MCP servers to OpenRouter, executes calls sequentially, feeds results back to the model, and stores only the final profile-authored response as visible chat output. The requester never lends API permissions to the employee, model arguments cannot select an execution subject/profile/document outside the server-bound context, and `X-RBAC-SECRET-KEY` is never used by the tool loop.
+`react-by/openrouter` is the single AI reaction endpoint. The backend derives the employee's capabilities from the replying profile, preserves `/learn`, explicit and automatic Knowledge behavior, skills, persona, thread context, and compatible reply metadata there, exposes compact profile-bound Knowledge/skill capabilities plus tools from the profile's allowed MCP servers to OpenRouter, executes calls sequentially, feeds results back to the model, and stores only the final profile-authored response as visible chat output. The requester never lends API permissions to the employee, model arguments cannot select an execution subject/profile/document outside the server-bound context, and `X-RBAC-SECRET-KEY` is never used by the tool loop.
+
+After all callers have been switched and parity tests pass, `react-by/knowledge` no longer exists as a route, handler, SDK action/export, agent-service method, frontend mock, permission, or documented API. Knowledge chats and automatic agent reactions use `react-by/openrouter` exactly like every other AI employee reply.
 
 Verification must prove that a requester with different permissions can assign a task without `@knowledge` or `/skill`, the employee can activate a linked skill, search only its linked Knowledge, discover and call a tool from the allowed project MCP, and receive either the RBAC-authorized result or an auditable denial from the existing MCP-to-API authorization path before returning a final answer.
 
@@ -41,6 +43,8 @@ Verification must prove that a requester with different permissions can assign a
 
 - The existing `replyBySubject`/`replyByJwt` path is the correct basis for employee identity, but the current many-to-many relation is read with `[0]`; employee resolution must require exactly one relation and fail closed (`react-by-openrouter.ts:1156-1193`).
 - `react-by/knowledge` already contains the required profile/chat/message and AI-variant guard patterns (`react-by-knowledge.ts:81-111`, `206-217`, `258-351`).
+- The automatic agent path already sends Knowledge-chat profiles to `openRouterReplyMessageCreate`, but the unused `knowledgeReplyMessageCreate` method and `ReactByKnowledge` SDK action remain, so cleanup must include agent tests and generated SDK indexes rather than only deleting the controller file (`agent/.../service/singlepage/index.ts:349-425`, `2036-2091`).
+- The legacy route is still imported and registered in the RBAC controller, exported by both client/server SDKs, mocked by the message-list frontend tests, documented in RBAC/Knowledge READMEs, and represented by a route permission; all of these are deletion criteria for the consolidation phase (`controller/singlepage/index.ts:60`, `478-483`, `1021-1027`; `subject/sdk/client/.../index.ts:198-200`; `subject/sdk/server/.../index.ts:231-233`).
 - The employee subject placed inside the MCP access-token record automatically becomes the SPS bearer forwarded to `apps.api` (`apps/mcp/lib/oauth.ts:298-325`; `apps/mcp/http.ts:199-214`).
 - The current MCP token store lives in the MCP process, so internal employee token issuance must happen through a protected MCP HTTP exchange endpoint rather than importing the issuer into `apps/api`.
 - `profiles-to-skills` and `profiles-to-knowledge-module-documents` already provide profile scoping; no new relations are required for Knowledge or skills (`react-by-openrouter.ts:1912-1950`, `2030-2059`).
@@ -56,11 +60,14 @@ Verification must prove that a requester with different permissions can assign a
 - Not changing external MCP OAuth/PKCE semantics.
 - Not adding autonomous background jobs, scheduled work, cross-turn durable plans, or execution after the bounded chat turn ends.
 - Not replacing `/skill`, `skillIds`, `@knowledge`, or `/learn`; these remain deterministic compatibility controls.
+- Not preserving `react-by/knowledge` as an alias, redirect, deprecated route, or parallel compatibility flow after its behavior and callers have migrated.
 - Not changing the requester-based OpenRouter billing principal in this issue.
 
 ## Implementation Approach
 
-Build one bounded employee loop with two capability classes:
+First consolidate reaction behavior into `react-by/openrouter`: port every load-bearing guard and Knowledge function, switch route/SDK/agent/frontend callers, prove parity, and remove the legacy `react-by/knowledge` surface. Do not delete the old handler until the replacement tests cover `/learn`, explicit and automatic Knowledge, skills, thread history, reply authorship, and metadata.
+
+Then build one bounded employee loop with two capability classes:
 
 - **Profile-bound local capabilities**: a compact catalog of skills linked to the replying profile with a server-resolved activation operation, and Knowledge search permanently bound to the profile's linked document ids. Explicit skill/Knowledge controls preactivate or force these capabilities, but are no longer required.
 - **Business/API capabilities**: tools discovered from each MCP server whose stable identifier is allowed by the profile. For this issue the only supported server is the built-in project MCP. Tool execution happens through an employee-authenticated Streamable HTTP session, and existing MCP-to-`apps.api` JWT/RBAC enforcement is the only business/data authorization layer.
@@ -69,15 +76,15 @@ Use a dedicated internal MCP token exchange protected by a new service-to-servic
 
 The initial loop is sequential (`parallel_tool_calls: false`) with defaults of six model/tool iterations, two minutes total runtime, 30 seconds per tool call, 32 KiB per tool result, and at most two identical consecutive call signatures. These defaults must be named/configurable and included in stop metadata.
 
-## Phase 1: Establish the Employee Identity Boundary
+## Phase 1: Consolidate Reactions And Establish the Employee Identity Boundary
 
 ### Overview
 
-Make requester, employee subject, and reply author explicit before any tool catalog, token, or model-requested operation is created.
+Make `react-by/openrouter` the single AI reaction path, preserve all required Knowledge behavior inside it, and make requester, employee subject, and reply author explicit before any tool catalog, token, or model-requested operation is created.
 
 ### Changes Required
 
-#### 1. OpenRouter Request Guards And Employee Resolver
+#### 1. OpenRouter Guards, Knowledge Parity, And Employee Resolver
 
 **Files**:
 
@@ -89,12 +96,43 @@ Make requester, employee subject, and reply author explicit before any tool cata
 **Changes**:
 
 - Port the requester profile/chat/message, message/chat, reply-profile AI variant, and reply-profile/chat checks from `react-by/knowledge` into shared or equivalent OpenRouter guard helpers.
+- Port any legacy-only `/learn` ingestion, profile-document relation, Knowledge generation, thread-history, skill-resolution, reply-creation, and `metadata.knowledge` behavior that is not already equivalent in OpenRouter. Keep the OpenRouter billing/model pipeline as the canonical generation path rather than calling one handler from the other.
+- Preserve Knowledge-chat behavior while removing the legacy requirement that Knowledge answers use a separate endpoint; `/learn`, explicit `@knowledge`, and automatic profile-linked retrieval all execute through `react-by/openrouter`.
 - Treat these as request/identity integrity checks that bind the correct employee subject, not as duplicate authorization of records returned by MCP tools.
 - Resolve the employee subject only after the reply profile passes those checks.
 - Require exactly one `subjects-to-social-module-profiles` relation; reject zero or multiple relations without issuing credentials.
 - Keep the incoming requester authorization only for route ownership and billing settlement.
 - Create an immutable employee identity context containing requester subject id, employee subject id, reply profile id, chat/thread/message ids, and the server-signed employee JWT.
 - Never read employee identity from OpenRouter tool arguments or reuse requester JWT as the employee credential.
+
+#### 2. Switch Callers And Remove `react-by/knowledge`
+
+**Files**:
+
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts`
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts`
+- `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.spec.ts`
+- `libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/index.ts`
+- `libs/modules/rbac/models/subject/sdk/client/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts`
+- `libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/index.ts`
+- `libs/modules/rbac/models/subject/sdk/server/src/lib/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge.ts`
+- `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`
+- `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/knowledge-reply.spec.ts`
+- `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/open-router-reply.spec.ts`
+- `libs/modules/rbac/models/subject/frontend/component/src/lib/singlepage/social-module/profile/chat/message/list/default/test-utils.tsx`
+- `libs/modules/rbac/README.md`
+- `libs/modules/knowledge/README.md`
+
+**Why**: Deleting only the handler would leave a callable SDK contract, a stale route permission, dead agent code, and misleading documentation. The migration must converge on one public/internal reaction contract.
+
+**Changes**:
+
+- Route all Knowledge-chat and automatic agent reactions through `openRouterReplyMessageCreate`; remove `knowledgeReplyMessageCreate`, its direct SDK invocation, and tests that only assert the legacy dispatch.
+- Remove the `react-by/knowledge` controller import, route registration, factory method, handler, and handler-only spec after OpenRouter parity scenarios pass.
+- Remove the dedicated client/server SDK action files, exported functions, prop/result types, and parent SDK interface entries; update frontend mocks and any callers to use the OpenRouter action.
+- Update RBAC and Knowledge documentation to describe `react-by/openrouter` as the only reaction endpoint and document preserved `/learn`/Knowledge behavior there.
+- Remove the obsolete `react-by/knowledge` permission with the existing RBAC permission-management flow. Do not hand-edit the repository data snapshot under the permission repository.
+- Run a repository-wide reference check and require zero live `react-by/knowledge` or `ReactByKnowledge` symbols outside historical thoughts/git artifacts.
 
 ### Success Criteria
 
@@ -103,11 +141,15 @@ Make requester, employee subject, and reply author explicit before any tool cata
 - [ ] BDD tests reject non-AI, foreign-chat, foreign-message, missing-subject, and multiple-subject reply profiles.
 - [ ] BDD tests prove the requester token continues to settle billing while profile-authored writes use the employee/profile identity.
 - [ ] BDD tests prove model/caller data cannot override `employeeSubjectId`.
+- [ ] OpenRouter BDD tests cover `/learn`, explicit `@knowledge`, automatic profile-linked retrieval, linked skills, thread history, reply authorship, and compatible `metadata.knowledge` after migration.
+- [ ] Agent tests prove Knowledge chats and normal AI employee chats invoke only the OpenRouter action.
+- [ ] Repository reference checks find no live `react-by/knowledge`, `ReactByKnowledge`, legacy SDK export, or frontend mutation mock.
 
 #### Manual Verification
 
 - [ ] Existing authorized AI replies still appear from the same replying profile before tools are enabled.
 - [ ] Invalid profile/chat combinations fail before an OpenRouter or MCP call is attempted.
+- [ ] Knowledge chat, `/learn`, and ordinary OpenRouter replies work through the same endpoint; requesting the removed legacy route is no longer supported.
 
 ---
 
@@ -396,6 +438,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 - `apps/mcp/lib/oauth.spec.ts`
 - `apps/mcp/content-management.spec.ts`
 - RBAC employee service and `react-by-openrouter` specs/integration specs
+- agent dispatch specs proving Knowledge chats use OpenRouter only
 - profile admin form specs
 
 **Changes**:
@@ -408,12 +451,15 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
   - `npx nx run @sps/rbac:jest:integration`
 - Run affected type/lint targets for `@sps/shared-third-parties`, `mcp`, `@sps/rbac`, and `@sps/social`, then run `npm run parity` before handoff.
 - Verify the generated profile migration is included and no repository data snapshots were edited.
+- Verify repository-wide references contain no live `react-by/knowledge` route, handler, SDK symbol, agent method, frontend mock, permission, or README contract.
 
 #### 2. Runtime And Operator Documentation
 
 **Files**:
 
 - `apps/mcp/README.md`
+- `libs/modules/rbac/README.md`
+- `libs/modules/knowledge/README.md`
 - `libs/modules/social/models/profile/README.md`
 - relevant API/environment documentation
 
@@ -422,6 +468,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 - Document the internal token-exchange secret, default limits, local MCP URL, project-MCP-only scope, and required service startup order.
 - Document how an operator links one subject, Knowledge documents, skills, and the allowed built-in MCP server to an AI profile.
 - Document requester versus employee permissions, MCP/`apps.api` ownership of `rbac.permission` enforcement, existing mutation confirmation, audit location, and common stop reasons.
+- Document `react-by/openrouter` as the only AI reaction endpoint, including `/learn`, explicit `@knowledge`, and automatic profile-linked Knowledge behavior.
 
 ### Success Criteria
 
@@ -431,6 +478,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 - [ ] Affected TypeScript builds and ESLint targets pass.
 - [ ] `npm run parity` passes.
 - [ ] Drizzle migration generation is reproducible and limited to the profile MCP configuration change.
+- [ ] No live code or documentation references the removed `react-by/knowledge` contract, and the obsolete route permission has been removed through the RBAC data-management path without editing repository snapshots.
 
 #### Manual Verification
 
@@ -448,6 +496,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 
 - OpenRouter serialization/parsing, tool-result replay, malformed arguments, and text-only compatibility.
 - Employee identity resolution and fail-closed profile/chat/message/subject guards.
+- Knowledge parity in OpenRouter for `/learn`, explicit/automatic retrieval, linked skills, thread history, reply metadata, and agent dispatch.
 - Allowed MCP server normalization, supported-server resolution, and live tool-catalog validation.
 - Linked skill catalog/activation and profile-bound Knowledge query scoping.
 - Loop limits, repeated calls, timeouts, result truncation/rejection, trace redaction, and billing summary.
@@ -458,6 +507,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 - Streamable HTTP initialize/list/call/close using the employee bearer token.
 - MCP forwarding to `apps.api` with employee RBAC allow/deny behavior.
 - Full requester/employee/profile identity separation through reply creation and billing settlement.
+- Removal of the legacy route/SDK contract after OpenRouter parity, including a negative route check and zero live symbol references.
 
 ### Manual Testing Steps
 
@@ -468,6 +518,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 5. Repeat with employee permission denied, a tool absent from the MCP catalog, and a mutation requiring MCP-defined confirmation.
 6. Inspect final message identity and metadata; confirm raw tool protocol and secrets are absent.
 7. Disable MCP on the profile and confirm normal text-only chat still works.
+8. Confirm Knowledge chats and `/learn` still work through `react-by/openrouter`, while the removed `react-by/knowledge` route is absent.
 
 ## Performance Considerations
 
@@ -481,6 +532,7 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 ## Migration Notes
 
 - Add only the typed JSONB allowed-MCP-server identifiers field with an empty default; no backfill is required and existing profiles retain text-only behavior.
+- Migrate all reaction callers to OpenRouter before deleting `react-by/knowledge`; remove its obsolete permission through the existing RBAC data-management flow rather than editing repository data snapshots.
 - Run `npx nx run @sps/social:models:profile:repository-generate` after the schema change and review generated SQL/meta artifacts; do not edit them manually.
 - Deploy the new internal exchange secret to both API and MCP runtimes before allowing the project MCP server on any profile.
 - Rollback is configuration-first: remove the project server identifier from profiles to return to existing generation while leaving external OAuth intact.
@@ -494,4 +546,4 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 - Related Knowledge plan: `thoughts/shared/plans/singlepagestartup/ISSUE-192.md`
 - MCP foundation research/handoff: `thoughts/shared/research/singlepagestartup/ISSUE-187.md`, `thoughts/shared/handoffs/singlepagestartup/ISSUE-187-progress.md`
 
-<!-- Last synced at: 2026-07-11T22:10:54Z -->
+<!-- Last synced at: 2026-07-11T22:40:39Z -->
