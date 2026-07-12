@@ -17,6 +17,8 @@ import {
   type IOpenRouterModel,
   type IOpenRouterRequestMessage,
   type IOpenRouterReasoning,
+  type IOpenRouterTool,
+  type IOpenRouterToolChoice,
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
@@ -35,6 +37,12 @@ import {
   type TOpenRouterBillingPurpose,
 } from "../../../../../../../../service/singlepage/open-router-billing";
 import { getLocalizedProfilePlainText } from "../../../../plain-text";
+import {
+  AiEmployeeToolLoop,
+  type IAiEmployeeTool,
+  type IAiEmployeeToolLoopResult,
+} from "../../../../../../../../service/singlepage/ai-employee-tool-loop";
+import type { IProfileMcpCatalogSession } from "../../../../../../../../service/singlepage/profile-mcp-catalog";
 
 type TRequestTask =
   | "qa"
@@ -121,6 +129,7 @@ interface IResolvedOpenRouterKnowledgeContext {
   candidateSources: KnowledgeSearchResult[];
   sources: KnowledgeSearchResult[];
   retrieval: IOpenRouterKnowledgeRetrievalMetadata;
+  availableSkills: ISocialModuleSkill[];
   promptSkills: ISocialModuleSkill[];
   skillMessagePrefix: string;
   systemMessages: IOpenRouterRequestMessage[];
@@ -465,6 +474,9 @@ export class Handler {
         };
     temperature?: number;
     stripNonTextOnRetry?: boolean;
+    tools?: IOpenRouterTool[];
+    toolChoice?: IOpenRouterToolChoice;
+    parallelToolCalls?: boolean;
   }): Promise<IOpenRouterGenerateResult> {
     const result = await props.openRouter.generate({
       model: props.model,
@@ -474,6 +486,9 @@ export class Handler {
       responseFormat: props.responseFormat,
       temperature: props.temperature,
       stripNonTextOnRetry: props.stripNonTextOnRetry,
+      tools: props.tools,
+      toolChoice: props.toolChoice,
+      parallelToolCalls: props.parallelToolCalls,
     });
 
     props.billingLedger.push({
@@ -534,7 +549,7 @@ export class Handler {
 
   protected async buildOpenRouterReplyMessageData(props: {
     expectedOutputModality: TOutputModality;
-    generationResult: IOpenRouterGenerationSuccess;
+    generationResult: Pick<IOpenRouterGenerationSuccess, "text" | "images">;
     selectModelForRequest: string;
     billingSettlement: {
       summary: ReturnType<typeof summarizeOpenRouterBilling>;
@@ -581,9 +596,16 @@ export class Handler {
     }
 
     replyMessageData.description = `${generatedMessageDescription}\n\n__${props.selectModelForRequest}__`;
+    const openRouterMetadata =
+      props.metadata?.["openRouter"] &&
+      typeof props.metadata["openRouter"] === "object" &&
+      !Array.isArray(props.metadata["openRouter"])
+        ? (props.metadata["openRouter"] as Record<string, unknown>)
+        : {};
     replyMessageData.metadata = {
       ...props.metadata,
       openRouter: {
+        ...openRouterMetadata,
         billing: {
           ...props.billingSettlement.summary,
           settlement: props.billingSettlement.settlement?.settlement || null,
@@ -825,6 +847,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
+    let employeeMcpCatalogSession: IProfileMcpCatalogSession | null = null;
     let selectedModelIdForBilling: string | null = null;
     let billingSettled = false;
     const requestRoute = c.req.path.toLowerCase();
@@ -863,27 +886,6 @@ export class Handler {
         throw new Error("Validation error. No socialModuleMessageId provided");
       }
 
-      const socialModuleSendMessageProfilesToMessages =
-        await this.service.socialModule.profilesToMessages.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "messageId",
-                  method: "eq",
-                  value: socialModuleMessageId,
-                },
-              ],
-            },
-          },
-        });
-
-      if (!socialModuleSendMessageProfilesToMessages?.length) {
-        throw new Error(
-          "Validation error. No socialModuleSendMessageProfile found",
-        );
-      }
-
       const body = await c.req.parseBody();
 
       if (typeof body["data"] !== "string") {
@@ -904,10 +906,32 @@ export class Handler {
       }
       const reactionQuery = this.parseReactionQuery(c);
 
-      const socialModuleProfile =
-        await this.service.socialModule.profile.findById({
-          id: socialModuleProfileId,
-        });
+      await this.assertProfileCanAccessChat({
+        subjectId: id,
+        socialModuleProfileId,
+        socialModuleChatId,
+      });
+      await this.assertProfileCanAccessMessage({
+        socialModuleProfileId,
+        socialModuleMessageId,
+      });
+      await this.assertMessageBelongsToChat({
+        socialModuleChatId,
+        socialModuleMessageId,
+      });
+
+      const [socialModuleProfile, socialModuleChat, socialModuleMessage] =
+        await Promise.all([
+          this.service.socialModule.profile.findById({
+            id: socialModuleProfileId,
+          }),
+          this.service.socialModule.chat.findById({
+            id: socialModuleChatId,
+          }),
+          this.service.socialModule.message.findById({
+            id: socialModuleMessageId,
+          }),
+        ]);
 
       if (!socialModuleProfile) {
         throw new Error(
@@ -915,16 +939,25 @@ export class Handler {
         );
       }
 
-      const socialModuleMessage =
-        await this.service.socialModule.message.findById({
-          id: socialModuleMessageId,
-        });
+      if (!socialModuleChat) {
+        throw new Error(
+          "Not found error. Requested social-module chat not found",
+        );
+      }
 
       if (!socialModuleMessage?.description) {
         throw new Error(
           "Not found. Social module message description not found",
         );
       }
+
+      const replyBySocialModuleProfile =
+        await this.loadReplyBySocialModuleProfile(data);
+      this.assertReplyProfile(replyBySocialModuleProfile);
+      await this.assertReplyProfileConnectedToChat({
+        socialModuleProfileId: replyBySocialModuleProfile.id,
+        socialModuleChatId,
+      });
 
       const socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
         socialModuleChatId,
@@ -945,15 +978,6 @@ export class Handler {
         hasMentionedSkill,
         requestedSkillIds,
       });
-
-      const replyBySocialModuleProfile =
-        await this.loadReplyBySocialModuleProfile(data);
-
-      if (!replyBySocialModuleProfile) {
-        throw new Error(
-          "Validation error. 'data.shouldReplySocialModuleProfile' not passed.",
-        );
-      }
 
       if (this.hasLearnCommand(socialModuleMessage.description)) {
         this.assertLearnCommandHasKnowledgeMention(
@@ -1153,34 +1177,9 @@ export class Handler {
         }
       }
 
-      const subjectsToSocialModuleProfiles =
-        await this.service.subjectsToSocialModuleProfiles.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "socialModuleProfileId",
-                  method: "eq",
-                  value: replyBySocialModuleProfile.id,
-                },
-              ],
-            },
-          },
-        });
-
-      if (!subjectsToSocialModuleProfiles?.length) {
-        throw new Error(
-          "Validation error. 'subjectsToSocialModuleProfiles' not found.",
-        );
-      }
-
-      const replyBySubject = await this.service.findById({
-        id: subjectsToSocialModuleProfiles[0].subjectId,
-      });
-
-      if (!replyBySubject) {
-        throw new Error("Not found error. 'replyBySubject' not foud");
-      }
+      const replyBySubject = await this.resolveEmployeeSubject(
+        replyBySocialModuleProfile.id,
+      );
 
       const replyByJwt = await jwt.sign(
         {
@@ -1394,41 +1393,108 @@ export class Handler {
       const openRouterReasoning = this.toOpenRouterReasoning(
         reactionQuery.reasoning,
       );
+      const profileCapabilityTools = this.buildProfileCapabilityTools({
+        availableSkills: openRouterKnowledgeContext.availableSkills,
+        knowledgeDocumentIds: openRouterKnowledgeContext.knowledgeDocumentIds,
+      });
+      const allowedMcpServerIds = Array.isArray(
+        replyBySocialModuleProfile.allowedMcpServerIds,
+      )
+        ? replyBySocialModuleProfile.allowedMcpServerIds
+        : [];
+
+      if (expectedOutputModality === "text" && allowedMcpServerIds.length) {
+        employeeMcpCatalogSession = await this.service.openProfileMcpCatalog({
+          configuredServerIds: allowedMcpServerIds,
+          employeeSpsJwt: replyByJwt,
+        });
+      }
+
+      const employeeTools = [
+        ...profileCapabilityTools,
+        ...this.buildMcpCapabilityTools(employeeMcpCatalogSession),
+      ];
+      const onModelAttempt = async (modelCandidateId: string) => {
+        await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
+          id: replyBySubject.id,
+          socialModuleProfileId: replyBySocialModuleProfile.id,
+          socialModuleChatId: socialModuleChatId,
+          socialModuleMessageId: statusMessage.id,
+          data: {
+            description:
+              this.statusMessages.openRouterGeneratingResponse.ru.replace(
+                "[selectModelForRequest]",
+                modelCandidateId,
+              ),
+          },
+          options: {
+            headers: {
+              Authorization: "Bearer " + replyByJwt,
+            },
+          },
+        });
+      };
 
       let selectModelForRequest: string | null = null;
-      let generationResult: IOpenRouterGenerationSuccess | undefined;
-      const finalGenerationResult = await this.generateFinalOpenRouterReply({
-        billingLedger,
-        openRouter,
-        modelSelection,
-        expectedOutputModality,
-        generationContext,
-        reasoning: openRouterReasoning,
-        onModelAttempt: async (modelCandidateId) => {
-          await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-            id: replyBySubject.id,
-            socialModuleProfileId: replyBySocialModuleProfile.id,
-            socialModuleChatId: socialModuleChatId,
-            socialModuleMessageId: statusMessage.id,
-            data: {
-              description:
-                this.statusMessages.openRouterGeneratingResponse.ru.replace(
-                  "[selectModelForRequest]",
-                  modelCandidateId,
-                ),
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + replyByJwt,
-              },
-            },
-          });
-        },
-      });
+      let generationResult:
+        | Pick<IOpenRouterGenerationSuccess, "text" | "images">
+        | undefined;
+      let employeeToolLoopResult: IAiEmployeeToolLoopResult | null = null;
+      let finalGenerationResult: IFinalGenerationResult = {
+        selectedModelId: null,
+        fallbackReasons: [],
+      };
 
-      selectModelForRequest = finalGenerationResult.selectedModelId;
-      selectedModelIdForBilling = finalGenerationResult.selectedModelId;
-      generationResult = finalGenerationResult.generationResult;
+      if (expectedOutputModality === "text" && employeeTools.length) {
+        let generationCallCount = 0;
+        employeeToolLoopResult = await new AiEmployeeToolLoop().run({
+          context: generationContext,
+          modelCandidateIds: modelSelection.orderedCandidateIds,
+          tools: employeeTools,
+          generate: async (toolGeneration) => {
+            generationCallCount += 1;
+            await onModelAttempt(toolGeneration.model);
+
+            return this.generateWithBillingLedger({
+              billingLedger,
+              purpose:
+                generationCallCount === 1 ? "generation" : "tool_iteration",
+              openRouter,
+              model: toolGeneration.model,
+              context: toolGeneration.context,
+              max_tokens: OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS,
+              reasoning: openRouterReasoning,
+              stripNonTextOnRetry: false,
+              tools: toolGeneration.tools,
+              toolChoice: "auto",
+              parallelToolCalls: false,
+            });
+          },
+        });
+        selectModelForRequest =
+          employeeToolLoopResult.selectedModelId ||
+          modelSelection.selectedModelId ||
+          modelSelection.orderedCandidateIds[0] ||
+          null;
+        selectedModelIdForBilling = selectModelForRequest;
+        generationResult = {
+          text: employeeToolLoopResult.finalText,
+        };
+      } else {
+        finalGenerationResult = await this.generateFinalOpenRouterReply({
+          billingLedger,
+          openRouter,
+          modelSelection,
+          expectedOutputModality,
+          generationContext,
+          reasoning: openRouterReasoning,
+          onModelAttempt,
+        });
+
+        selectModelForRequest = finalGenerationResult.selectedModelId;
+        selectedModelIdForBilling = finalGenerationResult.selectedModelId;
+        generationResult = finalGenerationResult.generationResult;
+      }
 
       if (!selectModelForRequest || !generationResult) {
         selectedModelIdForBilling =
@@ -1484,6 +1550,22 @@ export class Handler {
         selectModelForRequest,
         billingSettlement,
         metadata: {
+          employee: {
+            requesterSubjectId: id,
+            employeeSubjectId: replyBySubject.id,
+            replyProfileId: replyBySocialModuleProfile.id,
+          },
+          mcp: {
+            clientId: employeeMcpCatalogSession
+              ? "internal-rbac-openrouter"
+              : null,
+            allowedServerIds: allowedMcpServerIds,
+            connectedServerIds:
+              employeeMcpCatalogSession?.catalog.connected.map(
+                (server) => server.id,
+              ) || [],
+            staleServerIds: employeeMcpCatalogSession?.catalog.stale || [],
+          },
           knowledge: {
             action: this.hasLearnCommand(socialModuleMessage.description)
               ? "learn"
@@ -1498,6 +1580,21 @@ export class Handler {
             requestedKnowledgeSearch:
               openRouterKnowledgeContext.requestedKnowledgeSearch,
             requestedSkillIds: openRouterKnowledgeContext.requestedSkillIds,
+            availableSkillIds: openRouterKnowledgeContext.availableSkills.map(
+              (skill) => skill.id,
+            ),
+            activatedSkillIds: Array.from(
+              new Set([
+                ...openRouterKnowledgeContext.promptSkills.map(
+                  (skill) => skill.id,
+                ),
+                ...(employeeToolLoopResult?.trace.calls || [])
+                  .map((call) => call.metadata?.["skillId"])
+                  .filter(
+                    (skillId): skillId is string => typeof skillId === "string",
+                  ),
+              ]),
+            ),
             skills: openRouterKnowledgeContext.promptSkills.map((skill) => {
               return {
                 skillId: skill.id,
@@ -1511,6 +1608,16 @@ export class Handler {
               reasoning: reactionQuery.reasoning,
               selectedModelId: selectModelForRequest,
               selectedBy: modelSelection.selectedBy,
+            },
+          },
+          openRouter: {
+            toolLoop: employeeToolLoopResult?.trace || {
+              enabled: false,
+              stepCount: 1,
+              exposedToolNames: [],
+              calls: [],
+              stopReason: "final_text",
+              durationMs: null,
             },
           },
         },
@@ -1573,6 +1680,8 @@ export class Handler {
 
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
+    } finally {
+      await employeeMcpCatalogSession?.close().catch(() => undefined);
     }
   }
 
@@ -1608,6 +1717,219 @@ export class Handler {
     return this.service.socialModule.profile.findById({
       id: replyProfileId,
     });
+  }
+
+  private assertReplyProfile(
+    replyProfile: ISocialModuleProfile | undefined,
+  ): asserts replyProfile is ISocialModuleProfile {
+    if (!replyProfile) {
+      throw new Error("Not found error. Reply social-module profile not found");
+    }
+
+    if (replyProfile.variant !== "artificial-intelligence") {
+      throw new Error(
+        'Validation error. OpenRouter reactions require reply profile variant="artificial-intelligence".',
+      );
+    }
+  }
+
+  private async assertProfileCanAccessChat(props: {
+    subjectId: string;
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }) {
+    const relations = await this.service.socialModule.profilesToChats.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.socialModuleProfileId,
+            },
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.socialModuleChatId,
+            },
+          ],
+        },
+        limit: 1,
+      },
+    });
+
+    if (relations?.length || (await this.isSubjectAdmin(props.subjectId))) {
+      return;
+    }
+
+    throw new Error(
+      "Authorization error. Requested social-module chat does not belong to profile",
+    );
+  }
+
+  private async assertProfileCanAccessMessage(props: {
+    socialModuleProfileId: string;
+    socialModuleMessageId: string;
+  }) {
+    const relations = await this.service.socialModule.profilesToMessages.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.socialModuleProfileId,
+            },
+            {
+              column: "messageId",
+              method: "eq",
+              value: props.socialModuleMessageId,
+            },
+          ],
+        },
+        limit: 1,
+      },
+    });
+
+    if (!relations?.length) {
+      throw new Error(
+        "Authorization error. Requested social-module message does not belong to profile",
+      );
+    }
+  }
+
+  private async assertMessageBelongsToChat(props: {
+    socialModuleChatId: string;
+    socialModuleMessageId: string;
+  }) {
+    const relations = await this.service.socialModule.chatsToMessages.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.socialModuleChatId,
+            },
+            {
+              column: "messageId",
+              method: "eq",
+              value: props.socialModuleMessageId,
+            },
+          ],
+        },
+        limit: 1,
+      },
+    });
+
+    if (!relations?.length) {
+      throw new Error(
+        "Validation error. Requested social-module message does not belong to chat",
+      );
+    }
+  }
+
+  private async assertReplyProfileConnectedToChat(props: {
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }) {
+    const relations = await this.service.socialModule.profilesToChats.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.socialModuleProfileId,
+            },
+            {
+              column: "chatId",
+              method: "eq",
+              value: props.socialModuleChatId,
+            },
+          ],
+        },
+        limit: 1,
+      },
+    });
+
+    if (!relations?.length) {
+      throw new Error(
+        "Authorization error. Reply social-module profile is not connected to chat",
+      );
+    }
+  }
+
+  private async isSubjectAdmin(subjectId: string): Promise<boolean> {
+    const subjectsToRoles = await this.service.subjectsToRoles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "subjectId",
+              method: "eq",
+              value: subjectId,
+            },
+          ],
+        },
+      },
+    });
+    const roleIds =
+      subjectsToRoles
+        ?.map((relation) => relation.roleId)
+        .filter((roleId): roleId is string => Boolean(roleId)) || [];
+
+    if (!roleIds.length) {
+      return false;
+    }
+
+    const roles = await this.service.role.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "id",
+              method: "inArray",
+              value: roleIds,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(roles?.find((role) => role.slug === "admin"));
+  }
+
+  private async resolveEmployeeSubject(socialModuleProfileId: string) {
+    const relations = await this.service.subjectsToSocialModuleProfiles.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "socialModuleProfileId",
+              method: "eq",
+              value: socialModuleProfileId,
+            },
+          ],
+        },
+      },
+    });
+
+    if (relations?.length !== 1 || !relations[0]?.subjectId) {
+      throw new Error(
+        "Validation error. Reply profile must have exactly one employee subject.",
+      );
+    }
+
+    const employeeSubject = await this.service.findById({
+      id: relations[0].subjectId,
+    });
+
+    if (!employeeSubject) {
+      throw new Error("Not found error. Employee subject not found");
+    }
+
+    return employeeSubject;
   }
 
   private toOpenRouterUserQuery(props: {
@@ -1669,6 +1991,10 @@ export class Handler {
     const mentionedSkillSlugs = this.getMentionedSkillSlugs(
       props.socialModuleMessage.description || "",
     );
+    const availableSkills = await this.findSkillsForProfile({
+      socialModuleProfileId: props.replyProfile.id,
+      requireRequestedSkillsLinked: false,
+    });
     const promptSkills = await this.findPromptSkillsForProfile({
       socialModuleProfileId: props.replyProfile.id,
       skillIds: props.requestedSkillIds,
@@ -1694,7 +2020,9 @@ export class Handler {
     const knowledgeDocumentIds = await this.findKnowledgeDocumentIdsForProfile(
       props.replyProfile.id,
     );
-    const useKnowledgeSearch = props.requestedKnowledgeSearch;
+    const useKnowledgeSearch =
+      props.requestedKnowledgeSearch ||
+      Boolean(query && knowledgeDocumentIds.length);
     const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
     const candidateSources =
       useKnowledgeSearch && query
@@ -1747,6 +2075,7 @@ export class Handler {
         rerankFallbackReason: knowledgeRerankResult.fallbackReason,
         rerankReason: knowledgeRerankResult.reason,
       },
+      availableSkills,
       promptSkills,
       skillMessagePrefix: this.toSkillMessagePrefix(promptSkills),
       systemMessages,
@@ -2132,6 +2461,158 @@ export class Handler {
       "",
       "User message:",
     ].join("\n");
+  }
+
+  private buildProfileCapabilityTools(props: {
+    availableSkills: ISocialModuleSkill[];
+    knowledgeDocumentIds: string[];
+  }): IAiEmployeeTool[] {
+    const tools: IAiEmployeeTool[] = [];
+
+    if (props.availableSkills.length) {
+      const skillsBySlug = new Map(
+        props.availableSkills.map((skill) => [skill.slug.toLowerCase(), skill]),
+      );
+      const definition: IOpenRouterTool = {
+        type: "function",
+        function: {
+          name: "profile_skill_activate",
+          description:
+            "Activate one skill linked to this employee profile and return its instructions.",
+          parameters: {
+            type: "object",
+            properties: {
+              slug: {
+                type: "string",
+                enum: Array.from(skillsBySlug.keys()),
+              },
+            },
+            required: ["slug"],
+            additionalProperties: false,
+          },
+        },
+      };
+
+      tools.push({
+        source: "skill",
+        definition,
+        validateArguments: (args) => {
+          const slug = typeof args["slug"] === "string" ? args["slug"] : "";
+
+          if (!skillsBySlug.has(slug.toLowerCase())) {
+            throw new Error("Skill is not linked to the employee profile");
+          }
+        },
+        audit: (args) => {
+          const skill = skillsBySlug.get(String(args["slug"]).toLowerCase());
+
+          return skill
+            ? {
+                skillId: skill.id,
+                slug: skill.slug,
+              }
+            : {};
+        },
+        execute: async (args) => {
+          const slug = String(args["slug"]).toLowerCase();
+          const skill = skillsBySlug.get(slug);
+
+          if (!skill) {
+            throw new Error("Skill is not linked to the employee profile");
+          }
+
+          return {
+            slug: skill.slug,
+            title: skill.title,
+            instructions: skill.description,
+          };
+        },
+      });
+    }
+
+    if (props.knowledgeDocumentIds.length) {
+      tools.push({
+        source: "knowledge",
+        definition: {
+          type: "function",
+          function: {
+            name: "profile_knowledge_search",
+            description:
+              "Search only Knowledge documents linked to this employee profile.",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  minLength: 1,
+                },
+              },
+              required: ["query"],
+              additionalProperties: false,
+            },
+          },
+        },
+        validateArguments: (args) => {
+          if (typeof args["query"] !== "string" || !args["query"].trim()) {
+            throw new Error("Knowledge query is required");
+          }
+        },
+        execute: async (args) => {
+          const sources = await this.knowledgeService.search({
+            query: String(args["query"]).trim(),
+            documentIds: props.knowledgeDocumentIds,
+            topK: KNOWLEDGE_RERANK_TOP_K,
+            neighborWindow: KNOWLEDGE_NEIGHBOR_WINDOW,
+          });
+
+          return sources.map((source) => ({
+            id: source.id,
+            sourceId: source.sourceId,
+            sourceTitle: source.sourceTitle,
+            text: source.text,
+            similarity: source.similarity,
+          }));
+        },
+      });
+    }
+
+    return tools;
+  }
+
+  private buildMcpCapabilityTools(
+    catalogSession: IProfileMcpCatalogSession | null,
+  ): IAiEmployeeTool[] {
+    if (!catalogSession) {
+      return [];
+    }
+
+    return catalogSession.catalog.connected.flatMap((server) => {
+      return server.tools.map((tool) => {
+        const exposedName = `mcp__${server.id}__${tool.name}`;
+
+        return {
+          source: "mcp" as const,
+          definition: {
+            type: "function" as const,
+            function: {
+              name: exposedName,
+              description:
+                tool.description ||
+                tool.title ||
+                `Call ${tool.name} through the ${server.id} MCP server.`,
+              parameters: tool.inputSchema,
+            },
+          },
+          execute: async (args: Record<string, unknown>) => {
+            return catalogSession.callTool({
+              serverId: server.id,
+              name: tool.name,
+              arguments: args,
+            });
+          },
+        } satisfies IAiEmployeeTool;
+      });
+    });
   }
 
   private attachSkillMessagePrefixToContext(props: {
@@ -2865,7 +3346,7 @@ export class Handler {
             )
           : "",
         "Use the profile description as persona, expertise, and communication boundary.",
-        "Do not treat selected social skills as part of the profile unless they are attached to the current user message.",
+        "Linked social skills are available capabilities. Activate only skills relevant to the assigned task and follow their instructions precisely.",
       ]
         .filter(Boolean)
         .join("\n"),

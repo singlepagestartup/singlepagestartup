@@ -32,6 +32,30 @@ interface IFindThreadMessageIdsInChatHandler {
   }): Promise<string[]>;
 }
 
+interface IOpenRouterIdentityGuardHandler {
+  assertReplyProfile(replyProfile?: { id: string; variant: string }): void;
+  assertProfileCanAccessChat(props: {
+    subjectId: string;
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }): Promise<void>;
+  assertProfileCanAccessMessage(props: {
+    socialModuleProfileId: string;
+    socialModuleMessageId: string;
+  }): Promise<void>;
+  assertMessageBelongsToChat(props: {
+    socialModuleChatId: string;
+    socialModuleMessageId: string;
+  }): Promise<void>;
+  assertReplyProfileConnectedToChat(props: {
+    socialModuleProfileId: string;
+    socialModuleChatId: string;
+  }): Promise<void>;
+  resolveEmployeeSubject(socialModuleProfileId: string): Promise<{
+    id: string;
+  }>;
+}
+
 interface IOpenRouterReplyValidationHandler {
   buildNoValidModelResponseMessage(fallbackReasons: string[]): string;
   generateFinalOpenRouterReply(props: {
@@ -160,6 +184,35 @@ interface IOpenRouterKnowledgeControlsHandler {
     skillIds: string[];
     skillSlugs: string[];
   }): Promise<{ id: string; slug: string; status?: string }[]>;
+  buildProfileCapabilityTools(props: {
+    availableSkills: Array<{
+      id: string;
+      slug: string;
+      title: string;
+      description: string;
+    }>;
+    knowledgeDocumentIds: string[];
+  }): Array<{
+    source: "skill" | "knowledge" | "mcp";
+    definition: {
+      function: {
+        name: string;
+        parameters: Record<string, unknown>;
+      };
+    };
+    validateArguments?: (args: Record<string, unknown>) => void;
+    execute: (args: Record<string, unknown>) => Promise<unknown>;
+  }>;
+  buildMcpCapabilityTools(catalogSession: unknown): Array<{
+    source: "skill" | "knowledge" | "mcp";
+    definition: {
+      function: {
+        name: string;
+        parameters: Record<string, unknown>;
+      };
+    };
+    execute: (args: Record<string, unknown>) => Promise<unknown>;
+  }>;
   getMentionedSkillSlugs(value: string): string[];
   isOpenRouterLearnContextMessage(value: string): boolean;
   attachSkillMessagePrefixToContext(props: {
@@ -283,6 +336,145 @@ function createKnowledgeSearchResult(
 describe("Given: OpenRouter thread context and reply validation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a caller supplies a human reply profile.
+   * When: OpenRouter validates the reply identity.
+   * Then: the request is rejected before generation or tool execution.
+   */
+  it("When: reply profile is not AI Then: identity validation fails closed", () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterIdentityGuardHandler;
+
+    expect(() => {
+      handler.assertReplyProfile({
+        id: "reply-profile",
+        variant: "default",
+      });
+    }).toThrow(
+      'OpenRouter reactions require reply profile variant="artificial-intelligence"',
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the requester profile is not linked to the requested chat or message.
+   * When: OpenRouter validates route ownership.
+   * Then: both foreign-resource combinations are rejected.
+   */
+  it("When: requester resources are foreign Then: route ownership validation rejects them", async () => {
+    const handler = new Handler({
+      socialModule: {
+        profilesToChats: {
+          find: jest.fn(async () => []),
+        },
+        profilesToMessages: {
+          find: jest.fn(async () => []),
+        },
+      },
+      subjectsToRoles: {
+        find: jest.fn(async () => []),
+      },
+    } as any) as unknown as IOpenRouterIdentityGuardHandler;
+
+    await expect(
+      handler.assertProfileCanAccessChat({
+        subjectId: "requester-subject",
+        socialModuleProfileId: "requester-profile",
+        socialModuleChatId: "foreign-chat",
+      }),
+    ).rejects.toThrow("chat does not belong to profile");
+    await expect(
+      handler.assertProfileCanAccessMessage({
+        socialModuleProfileId: "requester-profile",
+        socialModuleMessageId: "foreign-message",
+      }),
+    ).rejects.toThrow("message does not belong to profile");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the trigger message or reply profile belongs to another chat.
+   * When: OpenRouter validates chat integrity.
+   * Then: neither foreign relationship can reach generation.
+   */
+  it("When: chat relationships are foreign Then: chat integrity validation rejects them", async () => {
+    const handler = new Handler({
+      socialModule: {
+        chatsToMessages: {
+          find: jest.fn(async () => []),
+        },
+        profilesToChats: {
+          find: jest.fn(async () => []),
+        },
+      },
+    } as any) as unknown as IOpenRouterIdentityGuardHandler;
+
+    await expect(
+      handler.assertMessageBelongsToChat({
+        socialModuleChatId: "chat",
+        socialModuleMessageId: "foreign-message",
+      }),
+    ).rejects.toThrow("message does not belong to chat");
+    await expect(
+      handler.assertReplyProfileConnectedToChat({
+        socialModuleProfileId: "foreign-reply-profile",
+        socialModuleChatId: "chat",
+      }),
+    ).rejects.toThrow("Reply social-module profile is not connected to chat");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an AI profile is linked to zero or multiple RBAC subjects.
+   * When: the employee principal is resolved.
+   * Then: credential issuance fails closed unless exactly one subject exists.
+   */
+  it("When: employee subject cardinality is not one Then: principal resolution fails closed", async () => {
+    const relationsFind = jest
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { subjectId: "employee-a" },
+        { subjectId: "employee-b" },
+      ]);
+    const handler = new Handler({
+      subjectsToSocialModuleProfiles: {
+        find: relationsFind,
+      },
+      findById: jest.fn(),
+    } as any) as unknown as IOpenRouterIdentityGuardHandler;
+
+    await expect(
+      handler.resolveEmployeeSubject("reply-profile"),
+    ).rejects.toThrow("exactly one employee subject");
+    await expect(
+      handler.resolveEmployeeSubject("reply-profile"),
+    ).rejects.toThrow("exactly one employee subject");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an AI profile has exactly one linked employee subject.
+   * When: the employee principal is resolved.
+   * Then: the server-bound subject is returned without caller override input.
+   */
+  it("When: one employee subject is linked Then: principal resolution uses that relation", async () => {
+    const findById = jest.fn(async () => ({ id: "employee-subject" }));
+    const handler = new Handler({
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn(async () => [{ subjectId: "employee-subject" }]),
+      },
+      findById,
+    } as any) as unknown as IOpenRouterIdentityGuardHandler;
+
+    await expect(
+      handler.resolveEmployeeSubject("reply-profile"),
+    ).resolves.toEqual({ id: "employee-subject" });
+    expect(findById).toHaveBeenCalledWith({ id: "employee-subject" });
   });
 
   /**
@@ -1078,10 +1270,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
   /**
    * BDD Scenario
    * Given: a replying profile has scoped Knowledge documents.
-   * When: OpenRouter resolves generation context with and without @knowledge.
-   * Then: RAG search runs only when Knowledge was explicitly requested.
+   * When: OpenRouter resolves an ordinary task and an explicit @knowledge task.
+   * Then: both retrieve automatically while remaining bound to the linked document ids.
    */
-  it("When: Knowledge is requested Then: only profile document ids are searched", async () => {
+  it("When: linked Knowledge exists Then: ordinary and explicit tasks search only profile documents", async () => {
     const search = jest.fn(async () => [
       createKnowledgeSearchResult({
         id: "chunk-1",
@@ -1137,11 +1329,20 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         threadContext: [],
       }),
     ).resolves.toMatchObject({
-      useKnowledgeSearch: false,
-      searchDocumentIds: [],
-      sources: [],
+      useKnowledgeSearch: true,
+      searchDocumentIds: ["document-1"],
+      sources: [
+        {
+          text: "Policy fragment",
+        },
+      ],
     });
-    expect(search).not.toHaveBeenCalled();
+    expect(search).toHaveBeenLastCalledWith({
+      query: "Question",
+      topK: 30,
+      neighborWindow: 1,
+      documentIds: ["document-1"],
+    });
 
     const context = await handler.resolveOpenRouterKnowledgeContext({
       billingLedger: [],
@@ -1202,6 +1403,122 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       },
     });
     expect(context.systemMessages[0].content).toContain("Policy fragment");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an employee profile has one linked skill and one linked Knowledge document.
+   * When: its local capability catalog is built and invoked by the model.
+   * Then: only the linked skill slug and server-bound document ids can be used.
+   */
+  it("When: profile capabilities execute Then: skill and Knowledge scope stay server-bound", async () => {
+    const search = jest.fn(async () => [
+      createKnowledgeSearchResult({
+        id: "chunk-1",
+        text: "Scoped policy",
+      }),
+    ]);
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler & {
+      knowledgeService: { search: typeof search };
+    };
+    handler.knowledgeService = { search };
+    const tools = handler.buildProfileCapabilityTools({
+      availableSkills: [
+        {
+          id: "skill-1",
+          slug: "brief-writer",
+          title: "Brief writer",
+          description: "Write a concise brief.",
+        },
+      ],
+      knowledgeDocumentIds: ["document-1"],
+    });
+    const skillTool = tools.find(
+      (tool) => tool.definition.function.name === "profile_skill_activate",
+    );
+    const knowledgeTool = tools.find(
+      (tool) => tool.definition.function.name === "profile_knowledge_search",
+    );
+
+    expect(() =>
+      skillTool?.validateArguments?.({ slug: "unlinked-skill" }),
+    ).toThrow("not linked");
+    await expect(
+      skillTool?.execute({ slug: "brief-writer" }),
+    ).resolves.toMatchObject({
+      slug: "brief-writer",
+      instructions: "Write a concise brief.",
+    });
+    await expect(knowledgeTool?.execute({ query: "policy" })).resolves.toEqual([
+      expect.objectContaining({
+        id: "chunk-1",
+        text: "Scoped policy",
+      }),
+    ]);
+    expect(search).toHaveBeenCalledWith({
+      query: "policy",
+      documentIds: ["document-1"],
+      topK: 12,
+      neighborWindow: 1,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the allowed project MCP session exposes one live tool.
+   * When: OpenRouter capabilities are assembled and the exposed tool executes.
+   * Then: the namespaced model call is routed back to the exact server and live tool name.
+   */
+  it("When: live MCP capabilities execute Then: dispatch remains catalog-bound", async () => {
+    const callTool = jest.fn(async () => ({
+      isError: false,
+      text: "Record found",
+    }));
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterKnowledgeControlsHandler;
+    const tools = handler.buildMcpCapabilityTools({
+      catalog: {
+        supported: [],
+        stale: [],
+        connected: [
+          {
+            id: "project",
+            title: "Project MCP",
+            description: "Project tools",
+            tools: [
+              {
+                name: "find_record",
+                description: "Find a record",
+                inputSchema: {
+                  type: "object",
+                  properties: { id: { type: "string" } },
+                  required: ["id"],
+                  additionalProperties: false,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      callTool,
+      close: jest.fn(),
+    });
+
+    expect(tools.map((tool) => tool.definition.function.name)).toEqual([
+      "mcp__project__find_record",
+    ]);
+    await expect(tools[0]?.execute({ id: "record-1" })).resolves.toEqual({
+      isError: false,
+      text: "Record found",
+    });
+    expect(callTool).toHaveBeenCalledWith({
+      serverId: "project",
+      name: "find_record",
+      arguments: { id: "record-1" },
+    });
   });
 
   /**

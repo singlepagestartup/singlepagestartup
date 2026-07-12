@@ -1,4 +1,9 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  randomUUID,
+  timingSafeEqual,
+} from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import Redis from "ioredis";
 import jwt, { type JwtPayload } from "jsonwebtoken";
@@ -7,6 +12,10 @@ const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
 const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const DEFAULT_SCOPE = "mcp:content";
+const INTERNAL_EMPLOYEE_CLIENT_ID = "internal-rbac-openrouter";
+const INTERNAL_EMPLOYEE_ACCESS_TOKEN_TTL_SECONDS = 5 * 60;
+export const INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH =
+  "/internal/employee-token-exchange";
 const PROTECTED_RESOURCE_METADATA_PATH =
   "/.well-known/oauth-protected-resource";
 const AUTHORIZATION_SERVER_METADATA_PATH =
@@ -59,6 +68,31 @@ export type IMcpVerifiedToken = {
   subject: string;
   spsJwt: string;
 };
+
+export type IInternalEmployeeTokenExchangeResponse = {
+  access_token: string;
+  token_type: "Bearer";
+  expires_in: number;
+  scope: string;
+};
+
+type IAccessTokenIssueProps = {
+  clientId: string;
+  subject: string;
+  scope: string;
+  spsJwt: string;
+  ttlSeconds: number;
+};
+
+class InternalTokenExchangeError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}
 
 interface IOAuthStore {
   getClient(clientId: string): Promise<IOAuthClient | undefined>;
@@ -285,6 +319,99 @@ export async function handleOAuthRequest(
       error_description: getErrorMessage(error),
     });
   }
+}
+
+export function isInternalEmployeeTokenExchangeRoute(pathname: string) {
+  return pathname === INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH;
+}
+
+export async function handleInternalEmployeeTokenExchange(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  if (req.method !== "POST") {
+    return sendJson(res, 405, { error: "method_not_allowed" });
+  }
+
+  try {
+    const body = await readJsonBody(req);
+
+    if (!isRecord(body)) {
+      throw new InternalTokenExchangeError(
+        400,
+        "invalid_request",
+        "Request body must be a JSON object",
+      );
+    }
+
+    const response = await exchangeEmployeeSpsJwtForMcpToken({
+      providedSecret: getHeader(req, "x-mcp-internal-token-exchange-secret"),
+      body,
+    });
+
+    return sendJson(res, 200, response);
+  } catch (error) {
+    if (error instanceof InternalTokenExchangeError) {
+      return sendJson(res, error.status, {
+        error: error.code,
+        error_description: error.message,
+      });
+    }
+
+    if (error instanceof SyntaxError) {
+      return sendJson(res, 400, {
+        error: "invalid_request",
+        error_description: "Request body must be valid JSON",
+      });
+    }
+
+    return sendJson(res, 500, { error: "server_error" });
+  }
+}
+
+export async function exchangeEmployeeSpsJwtForMcpToken(props: {
+  providedSecret?: string;
+  body: Record<string, unknown>;
+}): Promise<IInternalEmployeeTokenExchangeResponse> {
+  assertInternalTokenExchangeSecret(props.providedSecret);
+  assertNoSubjectOverride(props.body);
+
+  const subjectToken = props.body["subject_token"];
+
+  if (typeof subjectToken !== "string" || !subjectToken) {
+    throw new InternalTokenExchangeError(
+      400,
+      "invalid_request",
+      "subject_token is required",
+    );
+  }
+
+  let subject: string;
+
+  try {
+    subject = getVerifiedEmployeeSubject(subjectToken);
+  } catch {
+    throw new InternalTokenExchangeError(
+      401,
+      "invalid_subject_token",
+      "subject_token is invalid or expired",
+    );
+  }
+
+  const issued = await issueAccessToken({
+    clientId: INTERNAL_EMPLOYEE_CLIENT_ID,
+    subject,
+    scope: DEFAULT_SCOPE,
+    spsJwt: subjectToken,
+    ttlSeconds: INTERNAL_EMPLOYEE_ACCESS_TOKEN_TTL_SECONDS,
+  });
+
+  return {
+    access_token: issued.accessToken,
+    token_type: "Bearer",
+    expires_in: issued.expiresIn,
+    scope: DEFAULT_SCOPE,
+  };
 }
 
 export function isOAuthRoute(pathname: string) {
@@ -589,35 +716,12 @@ async function issueTokenResponse(
 ) {
   const accessTokenTtl = getAccessTokenTtlSeconds();
   const refreshTokenTtl = getRefreshTokenTtlSeconds();
-  const expiresAt = nowSeconds() + accessTokenTtl;
-  const jti = randomUUID();
-  const accessToken = jwt.sign(
-    {
-      sub: props.subject,
-      aud: getMcpPublicUrl(),
-      iss: getMcpPublicBaseUrl(),
-      scope: props.scope,
-      client_id: props.clientId,
-      jti,
-    },
-    getMcpJwtSecret(),
-    {
-      expiresIn: accessTokenTtl,
-    },
-  );
+  const issued = await issueAccessToken({
+    ...props,
+    ttlSeconds: accessTokenTtl,
+  });
   const refreshToken = randomSecret();
 
-  await getOAuthStore().saveAccessToken(
-    {
-      jti,
-      clientId: props.clientId,
-      subject: props.subject,
-      scope: props.scope,
-      spsJwt: props.spsJwt,
-      expiresAt,
-    },
-    accessTokenTtl,
-  );
   await getOAuthStore().saveRefreshToken(
     {
       token: refreshToken,
@@ -631,12 +735,48 @@ async function issueTokenResponse(
   );
 
   return sendJson(res, 200, {
-    access_token: accessToken,
+    access_token: issued.accessToken,
     token_type: "Bearer",
-    expires_in: accessTokenTtl,
+    expires_in: issued.expiresIn,
     refresh_token: refreshToken,
     scope: props.scope,
   });
+}
+
+async function issueAccessToken(props: IAccessTokenIssueProps) {
+  const expiresAt = nowSeconds() + props.ttlSeconds;
+  const jti = randomUUID();
+  const accessToken = jwt.sign(
+    {
+      sub: props.subject,
+      aud: getMcpPublicUrl(),
+      iss: getMcpPublicBaseUrl(),
+      scope: props.scope,
+      client_id: props.clientId,
+      jti,
+    },
+    getMcpJwtSecret(),
+    {
+      expiresIn: props.ttlSeconds,
+    },
+  );
+
+  await getOAuthStore().saveAccessToken(
+    {
+      jti,
+      clientId: props.clientId,
+      subject: props.subject,
+      scope: props.scope,
+      spsJwt: props.spsJwt,
+      expiresAt,
+    },
+    props.ttlSeconds,
+  );
+
+  return {
+    accessToken,
+    expiresIn: props.ttlSeconds,
+  };
 }
 
 async function validateAuthorizeParams(params: Record<string, string>) {
@@ -855,6 +995,77 @@ function getSubjectFromSpsJwt(spsJwt: string) {
   return "sps-user";
 }
 
+function getVerifiedEmployeeSubject(spsJwt: string) {
+  const secret = process.env["RBAC_JWT_SECRET"];
+
+  if (!secret) {
+    throw new Error("RBAC_JWT_SECRET is required");
+  }
+
+  const payload = jwt.verify(spsJwt, secret);
+
+  if (
+    !isJwtPayload(payload) ||
+    !isRecord(payload["subject"]) ||
+    typeof payload["subject"]["id"] !== "string" ||
+    !payload["subject"]["id"]
+  ) {
+    throw new Error("SPS JWT does not include subject.id");
+  }
+
+  return payload["subject"]["id"];
+}
+
+function assertInternalTokenExchangeSecret(providedSecret?: string) {
+  const expectedSecret = process.env["MCP_INTERNAL_TOKEN_EXCHANGE_SECRET"];
+
+  if (!expectedSecret) {
+    throw new InternalTokenExchangeError(
+      500,
+      "server_error",
+      "MCP_INTERNAL_TOKEN_EXCHANGE_SECRET is not configured",
+    );
+  }
+
+  if (!providedSecret || !secretsAreEqual(providedSecret, expectedSecret)) {
+    throw new InternalTokenExchangeError(
+      401,
+      "invalid_client",
+      "Internal token exchange authentication failed",
+    );
+  }
+}
+
+function assertNoSubjectOverride(body: Record<string, unknown>) {
+  const overrideKeys = [
+    "subject",
+    "subjectId",
+    "subject_id",
+    "employeeSubjectId",
+    "employee_subject_id",
+  ];
+  const overrideKey = overrideKeys.find((key) =>
+    Object.prototype.hasOwnProperty.call(body, key),
+  );
+
+  if (overrideKey) {
+    throw new InternalTokenExchangeError(
+      400,
+      "invalid_request",
+      `${overrideKey} is not accepted; subject is derived from subject_token`,
+    );
+  }
+}
+
+function secretsAreEqual(providedSecret: string, expectedSecret: string) {
+  const provided = Buffer.from(providedSecret);
+  const expected = Buffer.from(expectedSecret);
+
+  return (
+    provided.length === expected.length && timingSafeEqual(provided, expected)
+  );
+}
+
 function clientSecretIsValid(client: IOAuthClient, clientSecret?: string) {
   if (!client.clientSecret) {
     return true;
@@ -938,6 +1149,12 @@ async function readJsonBody(req: IncomingMessage) {
   }
 
   return JSON.parse(raw) as Record<string, unknown>;
+}
+
+function getHeader(req: IncomingMessage, name: string) {
+  const value = req.headers[name.toLowerCase()];
+
+  return Array.isArray(value) ? value[0] : value;
 }
 
 async function readFormBody(req: IncomingMessage) {

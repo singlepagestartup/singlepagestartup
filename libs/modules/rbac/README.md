@@ -26,17 +26,17 @@ The RBAC module defines authentication subjects, identities, roles, permissions,
 - Controllers should compose exported middleware instances, not define middleware bodies inline.
 - Do not put social chat/thread/profile ownership logic, billing rules, or other domain rules into the global authorization service.
 
-### Social Knowledge reactions:
+### Social AI reactions:
 
-RBAC owns the authenticated subject endpoint that lets a `social.profile` react to a chat message through Knowledge/RAG:
+RBAC owns the authenticated subject endpoint that lets an AI `social.profile` react to a chat message through OpenRouter, profile-scoped Knowledge, and linked skills:
 
 ```text
-POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge
+POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter
 ```
 
-The endpoint validates subject/profile/chat/message access, requires `social.chat.variant="knowledge"`, requires the replying profile to have `variant="artificial-intelligence"`, and requires that replying profile to be connected to the chat.
+The endpoint validates subject/profile/chat/message access, requires the replying profile to have `variant="artificial-intelligence"`, requires that profile to be connected to the chat, and fails closed unless the profile has exactly one linked employee `rbac.subject`.
 
-The Social chat frontend calls this endpoint automatically after creating a message in a Knowledge chat. If the message starts with `/learn`, the endpoint strips the command, calls `KnowledgeService.learnContent(...)` for the message text plus supported `.txt`, `.md`, or `.markdown` attachments, and creates the Social `profiles-to-knowledge-module-documents` relation for the replying AI profile if needed. For normal messages, RBAC loads linked document ids through Social, calls `KnowledgeService.generate({ query, documentIds, persona })`, and saves the AI answer as a social message in the same thread.
+The Social agent flow calls this endpoint automatically after creating a message. If the message starts with `@knowledge /learn`, the endpoint strips the controls, calls `KnowledgeService.learnContent(...)` for the message text plus supported `.txt`, `.md`, or `.markdown` attachments, and creates the Social `profiles-to-knowledge-module-documents` relation for the replying AI profile if needed. Normal replies keep Knowledge retrieval scoped to that relation and save the final AI answer as a social message in the same thread. A separate Knowledge-only reaction endpoint is not exposed.
 
 RBAC also owns profile-scoped document operations for the Social chat sidebar:
 

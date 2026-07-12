@@ -346,10 +346,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         }
       }
     } else if (
-      this.shouldUseKnowledgeReplyProfile({
-        socialModuleChat: props.socialModuleChat,
-        shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
-      })
+      props.shouldReplySocialModuleProfile.variant === "artificial-intelligence"
     ) {
       if ("socialModuleMessage" in props) {
         const telegramBotCommandMessage = this.telegramBotCommands.find(
@@ -375,65 +372,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           messageFromSocialModuleProfile: props.messageFromSocialModuleProfile,
         });
       }
-    } else if (props.shouldReplySocialModuleProfile.slug === "open-router") {
-      if ("socialModuleMessage" in props) {
-        const telegramBotCommandMessage = this.telegramBotCommands.find(
-          (command) => {
-            return props.socialModuleMessage.description?.startsWith(command);
-          },
-        );
-
-        if (telegramBotCommandMessage) {
-          return;
-        }
-
-        if (!props.socialModuleMessage.description?.trim()) {
-          return;
-        }
-
-        const messageFromRbacModuleSubject =
-          await this.getMessageFromRbacModuleSubject({
-            jwtToken,
-            rbacModuleSubject,
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-            socialModuleChat: props.socialModuleChat,
-            socialModuleMessage: props.socialModuleMessage,
-            messageFromSocialModuleProfile:
-              props.messageFromSocialModuleProfile,
-          });
-
-        console.log(
-          "🚀 ~ agentSocialModuleProfileHandler ~ telegramBotCommandMessage:",
-          messageFromRbacModuleSubject,
-          telegramBotCommandMessage,
-          props.socialModuleMessage.description,
-        );
-
-        await this.openRouterReplyMessageCreate({
-          jwtToken,
-          rbacModuleSubject,
-          shouldReplySocialModuleProfile: props.shouldReplySocialModuleProfile,
-          socialModuleChat: props.socialModuleChat,
-          socialModuleMessage: props.socialModuleMessage,
-          messageFromSocialModuleProfile: props.messageFromSocialModuleProfile,
-        });
-      }
     }
-  }
-
-  protected shouldUseKnowledgeReplyProfile(props: {
-    socialModuleChat: ISocialModuleChat;
-    shouldReplySocialModuleProfile: ISocialModuleProfile;
-  }) {
-    return (
-      props.socialModuleChat.variant === "knowledge" &&
-      props.shouldReplySocialModuleProfile.variant ===
-        "artificial-intelligence" &&
-      Boolean(
-        props.shouldReplySocialModuleProfile.slug?.startsWith("chat-gpt-"),
-      )
-    );
   }
 
   async telegramBotCommandReplyMessageCreate(props: {
@@ -2030,124 +1969,6 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       }
 
       throw error;
-    }
-  }
-
-  async knowledgeReplyMessageCreate(props: {
-    jwtToken: string;
-    rbacModuleSubject: IRbacModuleSubject;
-    shouldReplySocialModuleProfile: ISocialModuleProfile;
-    socialModuleChat: ISocialModuleChat;
-    socialModuleMessage: ISocialModuleMessage;
-    messageFromSocialModuleProfile: ISocialModuleProfile | null;
-  }) {
-    let socialModuleThreadId: string | undefined;
-
-    try {
-      const secretKey = RBAC_SECRET_KEY;
-
-      if (!secretKey) {
-        throw new Error("Configuration error. RBAC_SECRET_KEY is missing.");
-      }
-
-      if (!props.socialModuleMessage.description?.trim()) {
-        return;
-      }
-
-      socialModuleThreadId = await this.resolveThreadIdForMessageInChat({
-        socialModuleChatId: props.socialModuleChat.id,
-        socialModuleMessageId: props.socialModuleMessage.id,
-        secretKey,
-      });
-
-      if (!socialModuleThreadId) {
-        throw new Error(
-          "Validation error. Failed to resolve social module thread",
-        );
-      }
-
-      if (!props.messageFromSocialModuleProfile?.id) {
-        throw new Error(
-          "Not found error. 'messageFromSocialModuleProfile.id' not found",
-        );
-      }
-
-      if (!RBAC_JWT_SECRET) {
-        throw new Error("Configuration error. 'RBAC_JWT_SECRET' not setted.");
-      }
-
-      const messageFromRbacModuleSubject =
-        await this.getMessageFromRbacModuleSubject(props);
-      const messageFromRbacModuleSubjectJwt = await jwt.sign(
-        {
-          exp:
-            Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
-          iat: Math.floor(Date.now() / 1000),
-          subject: messageFromRbacModuleSubject,
-        },
-        RBAC_JWT_SECRET,
-      );
-
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge(
-        {
-          id: messageFromRbacModuleSubject.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          socialModuleMessageId: props.socialModuleMessage.id,
-          socialModuleProfileId: props.messageFromSocialModuleProfile.id,
-          data: {
-            shouldReplySocialModuleProfile:
-              props.shouldReplySocialModuleProfile,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + messageFromRbacModuleSubjectJwt,
-            },
-          },
-        },
-      );
-    } catch (error) {
-      logger.error(error);
-
-      if (socialModuleThreadId) {
-        return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-          {
-            id: props.rbacModuleSubject.id,
-            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-            socialModuleChatId: props.socialModuleChat.id,
-            socialModuleThreadId,
-            data: {
-              description:
-                "Knowledge/RAG response failed.\n`" +
-                (error as Error).message +
-                "`",
-            },
-            options: {
-              headers: {
-                Authorization: "Bearer " + props.jwtToken,
-              },
-            },
-          },
-        );
-      }
-
-      return rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate(
-        {
-          id: props.rbacModuleSubject.id,
-          socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
-          socialModuleChatId: props.socialModuleChat.id,
-          data: {
-            description:
-              "Knowledge/RAG response failed.\n`" +
-              (error as Error).message +
-              "`",
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + props.jwtToken,
-            },
-          },
-        },
-      );
     }
   }
 

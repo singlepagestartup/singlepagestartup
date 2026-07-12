@@ -87,6 +87,10 @@ add_env "RBAC_JWT_SECRET" $RBAC_JWT_SECRET
 RBAC_SECRET_KEY=$(generate_random_string)
 add_env "RBAC_SECRET_KEY" $RBAC_SECRET_KEY
 
+MCP_INTERNAL_TOKEN_EXCHANGE_SECRET=$(generate_random_string)
+add_env "MCP_INTERNAL_TOKEN_EXCHANGE_SECRET" $MCP_INTERNAL_TOKEN_EXCHANGE_SECRET
+add_env "MCP_PROJECT_URL" "http://127.0.0.1:3001/mcp"
+
 add_env "FILE_STORAGE_PROVIDER" "local"
 
 add_env "LLM_SERVICE_URL" "http://localhost:8765"

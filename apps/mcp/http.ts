@@ -18,7 +18,9 @@ import {
   getMcpPublicUrl,
   getProtectedResourceMetadata,
   getWwwAuthenticateHeader,
+  handleInternalEmployeeTokenExchange,
   handleOAuthRequest,
+  isInternalEmployeeTokenExchangeRoute,
   isOAuthRoute,
   verifyMcpAccessToken,
 } from "./lib/oauth.js";
@@ -45,6 +47,10 @@ const server = createServer(async (req, res) => {
 
     if (url.pathname === "/authentication/oauth") {
       return sendHtml(res, 200, getOAuthAuthenticationPage());
+    }
+
+    if (isInternalEmployeeTokenExchangeRoute(url.pathname)) {
+      return handleInternalEmployeeTokenExchange(req, res);
     }
 
     if (isOAuthRoute(url.pathname)) {

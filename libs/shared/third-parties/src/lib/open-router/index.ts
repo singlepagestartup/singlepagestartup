@@ -6,6 +6,9 @@ import type {
   IOpenRouterGenerationError,
   IOpenRouterGenerationSuccess,
   IOpenRouterModel,
+  IOpenRouterTool,
+  IOpenRouterToolCall,
+  IOpenRouterToolChoice,
   IOpenRouterUsage,
 } from "./interface";
 
@@ -27,8 +30,10 @@ export type IOpenRouterMessageContent =
   | { type: "file_url"; file_url: { url: string } };
 
 export type IOpenRouterRequestMessage = {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system" | "tool";
   content: string | IOpenRouterMessageContent[];
+  tool_calls?: IOpenRouterToolCall[];
+  tool_call_id?: string;
 };
 
 export type IOpenRouterResponseFormat =
@@ -232,6 +237,9 @@ export class Service {
     model: string;
     messages: IOpenRouterRequestMessage[];
     max_tokens?: number;
+    tools?: IOpenRouterTool[];
+    tool_choice?: IOpenRouterToolChoice;
+    parallel_tool_calls?: boolean;
     reasoning?: IOpenRouterReasoning;
     response_format?: IOpenRouterResponseFormat;
     temperature?: number;
@@ -248,6 +256,11 @@ export class Service {
           messages: props.messages,
           stream: false,
           max_tokens: props.max_tokens,
+          ...(props.tools && { tools: props.tools }),
+          ...(props.tool_choice && { tool_choice: props.tool_choice }),
+          ...(typeof props.parallel_tool_calls === "boolean" && {
+            parallel_tool_calls: props.parallel_tool_calls,
+          }),
           ...(props.reasoning && { reasoning: props.reasoning }),
           ...(props.response_format && {
             response_format: props.response_format,
@@ -271,9 +284,28 @@ export class Service {
   private parseMessage(message: any): {
     text: string;
     images?: IOpenRouterGeneratedImage[];
+    toolCalls?: IOpenRouterToolCall[];
   } {
     let text = "";
     let images: { url?: string; b64_json?: string }[] | undefined;
+    const toolCalls = Array.isArray(message.tool_calls)
+      ? message.tool_calls
+          .filter(
+            (toolCall: any) =>
+              toolCall?.type === "function" &&
+              typeof toolCall.id === "string" &&
+              typeof toolCall.function?.name === "string" &&
+              typeof toolCall.function?.arguments === "string",
+          )
+          .map((toolCall: any) => ({
+            id: toolCall.id,
+            type: "function" as const,
+            function: {
+              name: toolCall.function.name,
+              arguments: toolCall.function.arguments,
+            },
+          }))
+      : undefined;
 
     if (message.images && Array.isArray(message.images)) {
       images = message.images.map((img: any) => {
@@ -308,7 +340,11 @@ export class Service {
       text = message.content || "";
     }
 
-    return { text, images };
+    return {
+      text,
+      images,
+      ...(toolCalls?.length && { toolCalls }),
+    };
   }
 
   private toFiniteNumber(value: unknown): number | null {
@@ -549,6 +585,9 @@ export class Service {
     model: string;
     fallbackModels?: string[];
     max_tokens?: number;
+    tools?: IOpenRouterTool[];
+    toolChoice?: IOpenRouterToolChoice;
+    parallelToolCalls?: boolean;
     reasoning?: IOpenRouterReasoning;
     responseFormat?: IOpenRouterResponseFormat;
     temperature?: number;
@@ -558,12 +597,20 @@ export class Service {
       (message) => typeof message.content !== "string",
     );
     const shouldStripNonTextOnRetry = props.stripNonTextOnRetry ?? true;
+    const hasToolProtocolMessages = props.context.some(
+      (message) =>
+        message.role === "tool" ||
+        (message.role === "assistant" && Boolean(message.tool_calls?.length)),
+    );
 
     const normalizedMessages = await this.normalizeMessages(props.context);
     const data = await this.requestCompletion({
       model: props.model,
       messages: normalizedMessages,
       max_tokens: props.max_tokens,
+      tools: props.tools,
+      tool_choice: props.toolChoice,
+      parallel_tool_calls: props.parallelToolCalls,
       reasoning: props.reasoning,
       response_format: props.responseFormat,
       temperature: props.temperature,
@@ -574,7 +621,11 @@ export class Service {
         "❌ OpenRouter Error:",
         JSON.stringify(data.error, null, 2),
       );
-      if (hasNonTextContent && shouldStripNonTextOnRetry) {
+      if (
+        hasNonTextContent &&
+        shouldStripNonTextOnRetry &&
+        !hasToolProtocolMessages
+      ) {
         console.error(
           "↩️ OpenRouter Retry: stripping non-text content and retrying once.",
         );
@@ -587,6 +638,9 @@ export class Service {
           model: props.model,
           messages: strippedMessages,
           max_tokens: props.max_tokens,
+          tools: props.tools,
+          tool_choice: props.toolChoice,
+          parallel_tool_calls: props.parallelToolCalls,
           reasoning: props.reasoning,
           response_format: props.responseFormat,
           temperature: props.temperature,

@@ -144,20 +144,20 @@ The indexer treats `knowledge/document.description` as the source of truth. File
 
 ## Social Chat Learning
 
-`social.chat.variant="knowledge"` enables profile-scoped RAG replies through the RBAC subject endpoint `POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge`.
+Profile-scoped RAG and learning are available through the single RBAC AI reaction endpoint `POST /api/rbac/subjects/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/openrouter`. There is no parallel Knowledge-only reaction contract.
 
-In the Host chat UI, sending a message in a Knowledge chat creates the `social.message` first and then automatically calls the RBAC Knowledge reaction endpoint for the connected AI assistant profile. Users do not need to call the endpoint manually from the browser.
+In the Host chat UI, sending a message creates the `social.message` first and the agent flow calls the OpenRouter reaction endpoint for the connected AI assistant profile. Users do not call the endpoint manually from the browser.
 
 Learning is explicit:
 
-- `/learn Some text to remember` stores the text after `/learn`.
-- `/learn` with supported `.txt`, `.md`, or `.markdown` attachments stores those attachments.
+- `@knowledge /learn Some text to remember` stores the text after the controls.
+- `@knowledge /learn` with supported `.txt`, `.md`, or `.markdown` attachments stores those attachments.
 - Attachments without `/learn` are sent as normal chat attachments and are not indexed as Knowledge.
-- `default` and `telegram` chats do not run Knowledge learning.
+- Learning is handled by the OpenRouter reaction path and remains explicit in every chat variant.
 
 Each learned item is stored by RBAC as a deterministic Knowledge document using the replying AI profile id, source message id, optional file id, and content hash. RBAC calls `KnowledgeService.learnContent({ slug, title, content, metadata })`, then links the returned document to the AI profile through the Social-owned `profiles-to-knowledge-module-documents` relation. Each learned document is immediately indexed, which creates sources, chunks, pgvector embeddings, and source/chunk relations through the existing indexer.
 
-Normal non-`/learn` messages in a Knowledge chat are orchestrated by RBAC: it loads document ids linked to the replying AI profile, then calls `KnowledgeService.generate({ query, documentIds, persona })`. An empty `documentIds` array means no documents are searched, so one AI profile cannot fall back to global Knowledge or another profile's documents.
+Normal non-`/learn` messages are orchestrated by the OpenRouter reaction path. It loads document ids linked to the replying AI profile and searches only that bounded set. An empty `documentIds` array means no documents are searched, so one AI profile cannot fall back to global Knowledge or another profile's documents. `@knowledge` remains a deterministic force/debug control while the employee flow may retrieve relevant linked Knowledge automatically.
 
 The Knowledge document sidebar in the Social chat UI shows documents linked to the answering AI profile through RBAC-scoped endpoints. Users can edit document `title` and markdown `description` from the sidebar. Saving edits does not reindex automatically; users must click `Reindex`, which calls the RBAC-scoped reindex route after validating the profile-document relation.
 

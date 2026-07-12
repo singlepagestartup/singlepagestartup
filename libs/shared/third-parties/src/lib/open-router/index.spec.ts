@@ -1,9 +1,9 @@
 /**
- * BDD Suite: OpenRouter billing fallback for provider-reported costs.
+ * BDD Suite: OpenRouter completion, tool-calling, and billing contracts.
  *
- * Given: some OpenRouter models do not expose usable pricing metadata in the cached model list.
- * When: the provider still returns usage cost details for a successful generation.
- * Then: billing falls back to the provider-reported total so settlement does not undercharge the request.
+ * Given: callers can request text, multimodal, or function-tool completions.
+ * When: the shared wrapper serializes requests and parses provider responses.
+ * Then: protocol fields and billing survive without changing existing no-tool behavior.
  */
 
 jest.mock(
@@ -20,7 +20,7 @@ jest.mock(
 
 import { Service } from "./index";
 
-describe("OpenRouter billing fallback for provider-reported costs", () => {
+describe("OpenRouter completion, tool-calling, and billing contracts", () => {
   const originalFetch = global.fetch;
 
   afterEach(() => {
@@ -160,6 +160,376 @@ describe("OpenRouter billing fallback for provider-reported costs", () => {
     expect(requestBody.reasoning).toEqual({
       effort: "high",
       exclude: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a caller exposes one function tool and requires sequential tool calls.
+   * When: generation sends the chat completion request.
+   * Then: tools, tool_choice, and parallel_tool_calls are serialized exactly in OpenAI-compatible form.
+   */
+  it("serializes function tool request options", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        choices: [
+          {
+            message: {
+              content: "",
+              tool_calls: [
+                {
+                  id: "call_1",
+                  type: "function",
+                  function: {
+                    name: "find_project",
+                    arguments: '{"id":"project-1"}',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [{ role: "user", content: "Find the project" }],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "find_project",
+            description: "Find a project by id",
+            parameters: {
+              type: "object",
+              properties: { id: { type: "string" } },
+              required: ["id"],
+            },
+          },
+        },
+      ],
+      toolChoice: {
+        type: "function",
+        function: { name: "find_project" },
+      },
+      parallelToolCalls: false,
+    });
+
+    const requestBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+
+    expect(requestBody).toMatchObject({
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "find_project",
+            description: "Find a project by id",
+            parameters: {
+              type: "object",
+              properties: { id: { type: "string" } },
+              required: ["id"],
+            },
+          },
+        },
+      ],
+      tool_choice: {
+        type: "function",
+        function: { name: "find_project" },
+      },
+      parallel_tool_calls: false,
+    });
+    expect(result).toMatchObject({
+      text: "",
+      toolCalls: [
+        {
+          id: "call_1",
+          type: "function",
+          function: {
+            name: "find_project",
+            arguments: '{"id":"project-1"}',
+          },
+        },
+      ],
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: OpenRouter returns multiple function calls, including malformed argument JSON, with usage metadata and no assistant text.
+   * When: generation parses the completion.
+   * Then: every valid call keeps its id, name, raw argument string, and request billing without parsing or executing arguments.
+   */
+  it("preserves multiple tool calls and billing on empty assistant text", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        usage: {
+          prompt_tokens: 20,
+          completion_tokens: 8,
+          total_tokens: 28,
+          cost: 0.004,
+        },
+        choices: [
+          {
+            message: {
+              content: "",
+              tool_calls: [
+                {
+                  id: "call_1",
+                  type: "function",
+                  function: {
+                    name: "find_project",
+                    arguments: '{"id":"project-1"}',
+                  },
+                },
+                {
+                  id: "call_2",
+                  type: "function",
+                  function: {
+                    name: "search_knowledge",
+                    arguments: '{"query":',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [{ role: "user", content: "Find and explain the project" }],
+    });
+
+    expect(result).toMatchObject({
+      text: "",
+      toolCalls: [
+        {
+          id: "call_1",
+          type: "function",
+          function: {
+            name: "find_project",
+            arguments: '{"id":"project-1"}',
+          },
+        },
+        {
+          id: "call_2",
+          type: "function",
+          function: {
+            name: "search_knowledge",
+            arguments: '{"query":',
+          },
+        },
+      ],
+      billing: {
+        usage: {
+          prompt_tokens: 20,
+          completion_tokens: 8,
+          total_tokens: 28,
+          cost: 0.004,
+        },
+        totalUsd: 0.004,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a prior assistant tool call and its tool result are part of the conversation.
+   * When: the caller requests the final completion.
+   * Then: tool_calls and tool_call_id are replayed without protocol loss and final assistant text remains a normal success.
+   */
+  it("serializes a tool result conversation before final assistant text", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        choices: [{ message: { content: "Project Alpha is active." } }],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        { role: "user", content: "Find project Alpha" },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              id: "call_1",
+              type: "function",
+              function: {
+                name: "find_project",
+                arguments: '{"id":"alpha"}',
+              },
+            },
+          ],
+        },
+        {
+          role: "tool",
+          tool_call_id: "call_1",
+          content: '{"id":"alpha","status":"active"}',
+        },
+      ],
+    });
+
+    const requestBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+    expect(requestBody.messages).toEqual([
+      { role: "user", content: "Find project Alpha" },
+      {
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          {
+            id: "call_1",
+            type: "function",
+            function: {
+              name: "find_project",
+              arguments: '{"id":"alpha"}',
+            },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_call_id: "call_1",
+        content: '{"id":"alpha","status":"active"}',
+      },
+    ]);
+    expect(result).toMatchObject({ text: "Project Alpha is active." });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a caller makes a text-only completion without tool options.
+   * When: generation serializes the request and parses the response.
+   * Then: no tool fields are added and the existing text result stays unchanged.
+   */
+  it("keeps no-tool text requests compatible", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.2",
+        choices: [{ message: { content: "Hello" } }],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [{ role: "user", content: "Hello" }],
+    });
+
+    const requestBody = JSON.parse(
+      (global.fetch as jest.Mock).mock.calls[0][1].body,
+    );
+    expect(requestBody).not.toHaveProperty("tools");
+    expect(requestBody).not.toHaveProperty("tool_choice");
+    expect(requestBody).not.toHaveProperty("parallel_tool_calls");
+    expect(result).toMatchObject({ text: "Hello" });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a no-tool image response uses the existing OpenRouter image envelope.
+   * When: generation parses the response.
+   * Then: image extraction remains unchanged and no tool calls are added.
+   */
+  it("keeps no-tool image responses compatible", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "black-forest-labs/flux.2-pro",
+        choices: [
+          {
+            message: {
+              content: "Generated image",
+              images: [{ image_url: { url: "https://example.com/cat.png" } }],
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "black-forest-labs/flux.2-pro",
+      context: [{ role: "user", content: "Draw a cat" }],
+    });
+
+    expect(result).toMatchObject({
+      text: "Generated image",
+      images: [{ url: "https://example.com/cat.png" }],
+    });
+    expect(result).not.toHaveProperty("toolCalls");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a multimodal follow-up already contains an assistant tool call and its result.
+   * When: OpenRouter rejects the request.
+   * Then: the non-text fallback does not replay the tool protocol conversation a second time.
+   */
+  it("does not retry a conversation that already contains tool calls", async () => {
+    const service = new Service();
+
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({ error: { message: "context length exceeded" } }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      context: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Use this screenshot" },
+            {
+              type: "image_url",
+              image_url: { url: "https://example.com/project.png" },
+            },
+          ],
+        },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              id: "call_1",
+              type: "function",
+              function: { name: "find_project", arguments: "{}" },
+            },
+          ],
+        },
+        {
+          role: "tool",
+          tool_call_id: "call_1",
+          content: '{"status":"active"}',
+        },
+      ],
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      error: { message: "context length exceeded" },
     });
   });
 

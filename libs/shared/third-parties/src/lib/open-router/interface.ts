@@ -58,9 +58,42 @@ export interface IOpenRouterGeneratedImage {
   b64_json?: string;
 }
 
+export interface IOpenRouterToolFunction {
+  name: string;
+  description?: string;
+  parameters: Record<string, unknown>;
+  strict?: boolean;
+}
+
+export interface IOpenRouterTool {
+  type: "function";
+  function: IOpenRouterToolFunction;
+}
+
+export interface IOpenRouterToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export type IOpenRouterToolChoice =
+  | "none"
+  | "auto"
+  | "required"
+  | {
+      type: "function";
+      function: {
+        name: string;
+      };
+    };
+
 export interface IOpenRouterGenerationSuccess {
   text: string;
   images?: IOpenRouterGeneratedImage[];
+  toolCalls?: IOpenRouterToolCall[];
   billing: IOpenRouterBilling;
 }
 

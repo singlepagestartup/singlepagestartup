@@ -1,5 +1,11 @@
 import { randomWordsGenerator } from "@sps/shared-utils";
+import { sql } from "drizzle-orm";
 import * as pgCore from "drizzle-orm/pg-core";
+
+export const supportedMcpServerIdentifiers = ["project"] as const;
+
+export type TSupportedMcpServerIdentifier =
+  (typeof supportedMcpServerIdentifiers)[number];
 
 export const fields = {
   id: pgCore.uuid("id").primaryKey().defaultRandom(),
@@ -19,6 +25,11 @@ export const fields = {
     .jsonb("description")
     .$type<{ [key: string]: string | undefined }>()
     .default({}),
+  allowedMcpServerIds: pgCore
+    .jsonb("allowed_mcp_server_ids")
+    .$type<TSupportedMcpServerIdentifier[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()
