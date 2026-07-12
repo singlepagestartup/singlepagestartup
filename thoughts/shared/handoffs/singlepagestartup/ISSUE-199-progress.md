@@ -3,7 +3,8 @@ issue_number: 199
 issue_title: "Enable social profiles as MCP-powered AI employees"
 start_date: 2026-07-11T23:09:33Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-199.md
-status: implementation_complete
+status: complete
+completed_date: 2026-07-12T00:19:12Z
 ---
 
 # Implementation Progress: ISSUE-199 - Enable social profiles as MCP-powered AI employees
@@ -70,18 +71,21 @@ status: implementation_complete
 
 ### Incident 1 — Nx plugin worker could not construct the project graph
 
+- **Occurrences**: 2
 - **Symptom**: Parallel and then sequential Nx test invocations waited indefinitely or failed with `Failed to start plugin worker`.
 - **Fix**: Ran the exact project Jest configs, TypeScript configs, and focused ESLint paths directly on repository-required Node 24.
 - **Result**: All affected project checks produced concrete passing results without changing code to accommodate the Nx infrastructure failure.
 
 ### Incident 2 — Approved plan referenced a missing parity command
 
+- **Occurrences**: 1
 - **Symptom**: `npm run parity` returned `Missing script: "parity"`.
 - **Fix**: Recorded the plan/repository mismatch and replaced it with explicit full affected suites, type checks, lint, format, migration reproducibility, shell syntax, diff checks, and zero-reference checks.
 - **Result**: The parity checkbox remains explicitly unchecked in the plan instead of reporting a nonexistent command as passing.
 
 ### Incident 3 — The visible admin uses the legacy profile form variant
 
+- **Occurrences**: 1
 - **Symptom**: Browser verification showed no MCP field although the new admin-v2 field and tests passed.
 - **Root cause**: The running Admin overlay renders `admin-form`, while the initial implementation only wired `admin-v2-form`.
 - **Fix**: Reused the same MCP field in both form variants and re-ran Social type/lint checks.
@@ -89,6 +93,7 @@ status: implementation_complete
 
 ### Incident 4 — Unrelated pre-existing Social suite imports `server-only` from a client test
 
+- **Occurrences**: 1
 - **Symptom**: The full Social Jest config reports one failing `chat-profile-sidebar/Component.spec.tsx` suite before tests run.
 - **Root cause**: Its dependency chain imports `server-only` from a Client Component test; no issue-199 file appears in the stack.
 - **Fix**: Kept the failure unchanged and ran the affected Social MCP suites directly (5/5 passing), plus full Social TypeScript and focused ESLint.
@@ -105,8 +110,8 @@ status: implementation_complete
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/206
+- [x] PR number: 206
 
 ### Final Status
 
@@ -116,4 +121,4 @@ status: implementation_complete
 
 ---
 
-**Last updated**: 2026-07-12T00:12:49Z
+**Last updated**: 2026-07-12T00:19:12Z
