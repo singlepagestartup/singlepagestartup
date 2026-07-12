@@ -3,7 +3,7 @@ issue_number: 199
 issue_title: "Enable social profiles as MCP-powered AI employees"
 repository: singlepagestartup
 created_at: 2026-06-17T18:33:37Z
-last_updated: 2026-07-12T00:19:12Z
+last_updated: 2026-07-12T00:21:15Z
 status: active
 current_phase: complete
 ---
@@ -72,6 +72,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   - Branch: `codex/issue-199-mcp-ai-employee`
   - Progress: `thoughts/shared/handoffs/singlepagestartup/ISSUE-199-progress.md`
   - Pull request: https://github.com/singlepagestartup/singlepagestartup/pull/206
+  - GitHub Project status: `Code Review`
 - Notes:
   - Status gate passed at `Ready for Dev`; issue moved to `In Dev`.
   - No new scope-changing GitHub comments appeared after the plan sync marker.

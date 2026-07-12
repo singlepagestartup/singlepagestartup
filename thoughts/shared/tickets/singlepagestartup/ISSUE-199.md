@@ -1,7 +1,7 @@
 ---
 repository: singlepagestartup
 issue_number: 199
-status: In Dev
+status: Code Review
 created: 2026-06-17
 priority: high
 size: large
@@ -13,7 +13,7 @@ type: feature
 ## Metadata
 
 **URL**: https://github.com/singlepagestartup/singlepagestartup/issues/199
-**Status**: In Dev
+**Status**: Code Review
 **Created**: 2026-06-17
 **Priority**: high
 **Size**: large
