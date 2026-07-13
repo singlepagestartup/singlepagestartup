@@ -11,7 +11,45 @@ The public toolset is intentionally small for AI chat clients:
 - `relation-record-count`, `relation-record-find`, `relation-record-get`, `relation-record-create`, `relation-record-update`, `relation-record-delete-preview`, `relation-record-delete-apply`
 - `page-preview`, `page-localized-field-update`
 
-Generated per-model/per-relation CRUD tools are not registered. Select records with explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
+Generated per-model/per-relation CRUD tools are not part of `apps/mcp`. Select records with explicit selectors such as `{ "module": "blog", "model": "article" }` or `{ "module": "blog", "relation": "categories-to-articles" }`.
+
+## File Uploads
+
+Use the same compact `model-record-create` tool for files. For `file-storage.file`, MCP supports two upload forms:
+
+Public URL:
+
+```json
+{
+  "module": "file-storage",
+  "model": "file",
+  "dryRun": false,
+  "data": {
+    "url": "https://example.com/cover.webp",
+    "adminTitle": "Cover image",
+    "alt": "Cover image description"
+  }
+}
+```
+
+Generated/local client file as base64:
+
+```json
+{
+  "module": "file-storage",
+  "model": "file",
+  "dryRun": false,
+  "data": {
+    "fileName": "cover.webp",
+    "mimeType": "image/webp",
+    "contentBase64": "<base64-without-data-url-prefix>",
+    "adminTitle": "Cover image",
+    "alt": "Cover image description"
+  }
+}
+```
+
+Do not pass ChatGPT/Claude sandbox paths such as `/mnt/data/cover.webp`; the SPS server cannot read files from the model provider's container. Encode the generated file as base64 or provide a publicly reachable URL.
 
 ## Local Development
 
@@ -125,7 +163,7 @@ claude mcp add --transport http "${REPO_NAME}-local" http://127.0.0.1:3001/mcp
 
 `claude mcp add` only registers the server. Start Claude Code, run `/mcp`, select the server, and authenticate there. Claude should open the OAuth login page; if it does not, open the URL it prints manually.
 
-This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local project MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
+This repository's project `.mcp.json` intentionally keeps `<repo-name>` as the local SinglePageStartup MCP. Use `<repo-name>-production` for the deployed connector to avoid name and precedence conflicts.
 
 To apply Claude Code configuration from the helper, pass a real production URL:
 
@@ -184,7 +222,7 @@ Configure the same dedicated `MCP_INTERNAL_TOKEN_EXCHANGE_SECRET` in `apps.api`
 and `apps.mcp`. Do not reuse `RBAC_SECRET_KEY`, do not send
 `X-RBAC-SECRET-KEY`, and do not expose this internal endpoint to browser clients.
 External authorization-code, PKCE, refresh-token, revoke, and connector flows
-remain unchanged. Configure `MCP_PROJECT_URL` in `apps.api` with the Streamable
+remain unchanged. Configure `MCP_SINGLEPAGESTARTUP_URL` in `apps.api` with the Streamable
 HTTP resource URL (`http://127.0.0.1:3001/mcp` locally or
 `http://mcp:3001/mcp` on the default deployment network).
 
@@ -199,7 +237,7 @@ MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME=
 MCP_ALLOW_RBAC_SECRET_FALLBACK=false
 MCP_ALLOWED_ORIGINS=
 MCP_INTERNAL_TOKEN_EXCHANGE_SECRET=
-MCP_PROJECT_URL=http://mcp:3001/mcp
+MCP_SINGLEPAGESTARTUP_URL=http://mcp:3001/mcp
 MCP_OAUTH_JWT_SECRET=
 MCP_OAUTH_AUTH_CODE_TTL_SECONDS=300
 MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600

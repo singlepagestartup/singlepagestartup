@@ -39,6 +39,10 @@ import {
   summarizeContentEntity,
 } from "./registry";
 import {
+  createFileStorageFileRecord,
+  isFileStorageFileDescriptor,
+} from "./file-storage";
+import {
   IContentEntityDescriptor,
   IContentQueryParams,
   IDeletePreview,
@@ -775,6 +779,18 @@ export async function createContentRecord(
     options?.registry,
   );
   requireOperation(descriptor, "create");
+
+  if (isFileStorageFileDescriptor(descriptor)) {
+    const fileStorageRecord = await createFileStorageFileRecord({
+      descriptor,
+      input: parsed.data,
+      options: getMcpSdkOptions(options?.authHeaders ?? {}),
+    });
+
+    if (fileStorageRecord) {
+      return fileStorageRecord;
+    }
+  }
 
   const data = parseCreateData(descriptor, parsed.data.data);
 

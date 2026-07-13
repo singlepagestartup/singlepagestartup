@@ -339,6 +339,38 @@ function buildWriteExamples(fields: IContentFieldDescriptor[]) {
   };
 }
 
+function buildFileStorageFileWriteExamples(fields: IContentFieldDescriptor[]) {
+  return {
+    ...buildWriteExamples(fields),
+    createFromUrl: {
+      dryRun: true,
+      data: {
+        url: "https://example.com/image.webp",
+        adminTitle: "Image title",
+        alt: "Image alt text",
+      },
+    },
+    uploadBase64: {
+      dryRun: true,
+      data: {
+        fileName: "image.webp",
+        mimeType: "image/webp",
+        contentBase64: "<base64-without-data-url-prefix>",
+        adminTitle: "Image title",
+        alt: "Image alt text",
+      },
+    },
+  };
+}
+
+function buildEntityWriteExamples(descriptor: IContentEntityDescriptor) {
+  if (descriptor.key === "file-storage.file") {
+    return buildFileStorageFileWriteExamples(descriptor.fields);
+  }
+
+  return buildWriteExamples(descriptor.fields);
+}
+
 function buildFilterExamples(fields: IContentFieldDescriptor[]) {
   const idField = fields.find((field) => field.name === "id") ?? fields[0];
 
@@ -502,7 +534,7 @@ export function summarizeContentEntity(
       : {}),
     operations: descriptor.operations,
     filterExamples: buildFilterExamples(descriptor.fields),
-    writeExamples: buildWriteExamples(descriptor.fields),
+    writeExamples: buildEntityWriteExamples(descriptor),
   };
 }
 
