@@ -57,6 +57,10 @@ export interface IContentSdkAdapter<
     data: Record<string, unknown>;
     options?: IContentSdkOptions;
   }) => Promise<TEntity | undefined>;
+  createFromUrl?: (props: {
+    data: Record<string, unknown>;
+    options?: IContentSdkOptions;
+  }) => Promise<TEntity | undefined>;
   update: (props: {
     id: string;
     data: Record<string, unknown>;
@@ -148,6 +152,8 @@ export interface IContentEntitySummary {
   writeExamples: {
     create?: unknown;
     update?: unknown;
+    createFromUrl?: unknown;
+    uploadBase64?: unknown;
   };
 }
 
