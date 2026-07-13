@@ -220,3 +220,14 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 - **MCP client session overhead per loop**: `/mcp` requires an `initialize` handshake per session (`http.ts:88-103`); whether the backend tool executor holds one session per reply or per tool call affects the loop implementation but has no existing in-repo precedent (no in-repo MCP _client_ exists today).
 - **`MCP_ALLOW_RBAC_SECRET_FALLBACK` and the no-context env fallback** (`auth-context.ts:27-29`) both exist; the issue forbids root-secret usage for model-requested tools, which is compatible with the Bearer path but the deployment configuration of these flags matters for enforcement.
 - **Where sender-side billing for tool-loop model calls lands**: purposes are typed and settled against the _caller_ of the react-by route (the sender-side subject via the agent service trigger); adding tool-loop purposes extends `TOpenRouterBillingPurpose`, but MCP tool execution itself is not billed through this ledger today (the issue says it "should be auditable separately").
+
+## Known Pitfalls (from implementation)
+
+### Nx plugin worker can block affected verification before targets run
+
+- **Phase**: Implement
+- **Occurrences**: 2
+- **Symptom**: Concurrent Nx targets waited on graph construction and failed with `Failed to start plugin worker`; a sequential retry also stalled before running tests.
+- **Root Cause**: Nx project-graph/plugin-worker infrastructure failed independently of the affected Jest/TypeScript configurations.
+- **Fix**: Run each project Jest config, TypeScript config, and focused ESLint path directly on Node 24, the repository-required runtime.
+- **Preventive Action**: When Nx fails before target execution, record the infrastructure failure and run the underlying declared config directly rather than treating it as a code test failure.

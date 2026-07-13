@@ -454,4 +454,72 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       },
     });
   });
+
+  /**
+   * BDD Scenario
+   * Given: an automatic AI profile is selected in either a normal or Knowledge chat.
+   * When: the agent dispatches the new message.
+   * Then: both variants use the single OpenRouter reaction flow.
+   */
+  it.each([
+    ["default", "employee-profile"],
+    ["knowledge", "chat-gpt-knowledge-profile"],
+  ])(
+    "routes %s chat AI profiles through OpenRouter only",
+    async (chatVariant, profileSlug) => {
+      const service = Object.create(Service.prototype) as Service;
+      const openRouterReplyMessageCreate = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      (service as any).telegramBotCommands = [];
+      (service as any).openRouterReplyMessageCreate =
+        openRouterReplyMessageCreate;
+      (service as any).rbacModule = {
+        subjectsToSocialModuleProfiles: {
+          find: jest.fn().mockResolvedValue([
+            {
+              subjectId: "employee-subject",
+            },
+          ]),
+        },
+        subject: {
+          findById: jest.fn().mockResolvedValue({
+            id: "employee-subject",
+          }),
+        },
+      };
+
+      await service.agentSocialModuleProfileHandler({
+        shouldReplySocialModuleProfile: {
+          id: "employee-profile",
+          slug: profileSlug,
+          variant: "artificial-intelligence",
+        } as any,
+        socialModuleChat: {
+          id: "chat-1",
+          variant: chatVariant,
+        } as any,
+        socialModuleMessage: {
+          id: "message-1",
+          description: "Complete the assigned task",
+        } as any,
+        messageFromSocialModuleProfile: {
+          id: "requester-profile",
+        } as any,
+      });
+
+      expect(openRouterReplyMessageCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jwtToken: "signed-jwt",
+          rbacModuleSubject: expect.objectContaining({
+            id: "employee-subject",
+          }),
+          shouldReplySocialModuleProfile: expect.objectContaining({
+            id: "employee-profile",
+          }),
+        }),
+      );
+    },
+  );
 });

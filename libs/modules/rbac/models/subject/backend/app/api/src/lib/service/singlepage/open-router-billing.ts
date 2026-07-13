@@ -10,7 +10,8 @@ export type TOpenRouterBillingPurpose =
   | "knowledge_rerank"
   | "model_selection"
   | "model_selection_repair"
-  | "generation";
+  | "generation"
+  | "tool_iteration";
 
 export interface IOpenRouterBillingLedgerEntry {
   purpose: TOpenRouterBillingPurpose;

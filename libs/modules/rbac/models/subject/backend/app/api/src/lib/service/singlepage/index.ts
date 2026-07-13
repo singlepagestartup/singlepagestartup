@@ -89,6 +89,10 @@ import {
   IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps,
 } from "./telegram/checkout-free-subscription";
 import { ChatLifecycleService } from "./social-module/chat-lifecycle";
+import {
+  ProfileMcpCatalogService,
+  type IProfileMcpCatalogSession,
+} from "./profile-mcp-catalog";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 
@@ -111,6 +115,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
+  profileMcpCatalogService: ProfileMcpCatalogService;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -159,10 +164,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
+    this.profileMcpCatalogService = new ProfileMcpCatalogService();
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
     return this.isAuthorizedService.execute(props);
+  }
+
+  async openProfileMcpCatalog(props: {
+    configuredServerIds: readonly string[];
+    employeeSpsJwt: string;
+  }): Promise<IProfileMcpCatalogSession> {
+    return this.profileMcpCatalogService.open(props);
   }
 
   async logout(): Promise<any> {

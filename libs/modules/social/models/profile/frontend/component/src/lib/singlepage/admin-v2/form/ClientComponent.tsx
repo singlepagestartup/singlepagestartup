@@ -5,7 +5,11 @@ import { api } from "@sps/social/models/profile/sdk/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { variants, insertSchema } from "@sps/social/models/profile/sdk/model";
+import {
+  variants,
+  insertSchema,
+  resolveMcpServerConfiguration,
+} from "@sps/social/models/profile/sdk/model";
 import { FormField } from "@sps/ui-adapter";
 import { Component as ParentAdminForm } from "@sps/shared-frontend-components/singlepage/admin-v2/form/Component";
 import { Component as AgregatedInput } from "@sps/shared-frontend-components/singlepage/admin-v2/agregated-input/Component";
@@ -20,6 +24,7 @@ import {
   TabsTrigger,
 } from "@sps/shared-ui-shadcn";
 import { useEffect, useMemo, useState } from "react";
+import { AllowedMcpServersField } from "./AllowedMcpServersField";
 
 export function Component(props: IComponentPropsExtended) {
   const updateEntity = api.update();
@@ -36,6 +41,9 @@ export function Component(props: IComponentPropsExtended) {
       title: props.data?.title ?? {},
       subtitle: props.data?.subtitle ?? {},
       description: normalizeLocalizedPlainTextFields(props.data?.description),
+      allowedMcpServerIds: resolveMcpServerConfiguration(
+        props.data?.allowedMcpServerIds ?? [],
+      ).supported.map((descriptor) => descriptor.id),
       variant: props.data?.variant || "default",
       className: props.data?.className || "",
       slug: props.data?.slug || randomWordsGenerator({ type: "slug" }),
@@ -264,6 +272,10 @@ export function Component(props: IComponentPropsExtended) {
               form={form}
               placeholder="Type title"
               options={variants.map((variant) => [variant, variant])}
+            />
+            <AllowedMcpServersField
+              control={form.control}
+              storedIdentifiers={props.data?.allowedMcpServerIds}
             />
           </div>
         </TabsContent>

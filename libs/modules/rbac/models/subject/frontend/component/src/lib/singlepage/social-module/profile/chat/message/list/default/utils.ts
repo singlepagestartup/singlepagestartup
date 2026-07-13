@@ -43,6 +43,7 @@ export function getFallbackSocialModuleProfile(
     title: {},
     subtitle: {},
     description: {},
+    allowedMcpServerIds: [],
     adminTitle: label,
     slug: label,
   };

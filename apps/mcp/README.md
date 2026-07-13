@@ -154,6 +154,40 @@ https://mcp.<domain>/.well-known/oauth-authorization-server/mcp
 
 The `/mcp` suffix variants are intentionally supported for clients that resolve OAuth metadata for the exact protected resource URL.
 
+## Internal Employee Token Exchange
+
+`apps.api` exchanges a server-signed employee SPS JWT inside the MCP process so
+the resulting MCP bearer maps back to the same employee identity in the existing
+access-token store:
+
+```text
+POST /internal/employee-token-exchange
+X-MCP-Internal-Token-Exchange-Secret: <MCP_INTERNAL_TOKEN_EXCHANGE_SECRET>
+Content-Type: application/json
+
+{"subject_token":"<employee SPS JWT>"}
+```
+
+The endpoint verifies `subject_token` with `RBAC_JWT_SECRET` and derives the
+employee only from `subject.id` in the verified payload. Requests containing a
+separate `subject`, `subjectId`, `subject_id`, `employeeSubjectId`, or
+`employee_subject_id` are rejected.
+
+A successful exchange returns an access-only bearer with:
+
+- client id `internal-rbac-openrouter`;
+- scope `mcp:content`;
+- a fixed five-minute lifetime;
+- no refresh token.
+
+Configure the same dedicated `MCP_INTERNAL_TOKEN_EXCHANGE_SECRET` in `apps.api`
+and `apps.mcp`. Do not reuse `RBAC_SECRET_KEY`, do not send
+`X-RBAC-SECRET-KEY`, and do not expose this internal endpoint to browser clients.
+External authorization-code, PKCE, refresh-token, revoke, and connector flows
+remain unchanged. Configure `MCP_PROJECT_URL` in `apps.api` with the Streamable
+HTTP resource URL (`http://127.0.0.1:3001/mcp` locally or
+`http://mcp:3001/mcp` on the default deployment network).
+
 ## Deployment
 
 Configure `tools/deployer/.env`:
@@ -164,6 +198,8 @@ MCP_SERVICE_SUBDOMAIN=mcp
 MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME=
 MCP_ALLOW_RBAC_SECRET_FALLBACK=false
 MCP_ALLOWED_ORIGINS=
+MCP_INTERNAL_TOKEN_EXCHANGE_SECRET=
+MCP_PROJECT_URL=http://mcp:3001/mcp
 MCP_OAUTH_JWT_SECRET=
 MCP_OAUTH_AUTH_CODE_TTL_SECONDS=300
 MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS=3600

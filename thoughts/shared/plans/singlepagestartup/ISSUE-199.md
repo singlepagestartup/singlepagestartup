@@ -138,18 +138,18 @@ Make `react-by/openrouter` the single AI reaction path, preserve all required Kn
 
 #### Automated Verification
 
-- [ ] BDD tests reject non-AI, foreign-chat, foreign-message, missing-subject, and multiple-subject reply profiles.
+- [x] BDD tests reject non-AI, foreign-chat, foreign-message, missing-subject, and multiple-subject reply profiles.
 - [ ] BDD tests prove the requester token continues to settle billing while profile-authored writes use the employee/profile identity.
-- [ ] BDD tests prove model/caller data cannot override `employeeSubjectId`.
-- [ ] OpenRouter BDD tests cover `/learn`, explicit `@knowledge`, automatic profile-linked retrieval, linked skills, thread history, reply authorship, and compatible `metadata.knowledge` after migration.
-- [ ] Agent tests prove Knowledge chats and normal AI employee chats invoke only the OpenRouter action.
-- [ ] Repository reference checks find no live `react-by/knowledge`, `ReactByKnowledge`, legacy SDK export, or frontend mutation mock.
+- [x] BDD tests prove model/caller data cannot override `employeeSubjectId`.
+- [x] OpenRouter BDD tests cover `/learn`, explicit `@knowledge`, automatic profile-linked retrieval, linked skills, thread history, reply authorship, and compatible `metadata.knowledge` after migration.
+- [x] Agent tests prove Knowledge chats and normal AI employee chats invoke only the OpenRouter action.
+- [x] Repository reference checks find no live `react-by/knowledge`, `ReactByKnowledge`, legacy SDK export, or frontend mutation mock.
 
 #### Manual Verification
 
 - [ ] Existing authorized AI replies still appear from the same replying profile before tools are enabled.
 - [ ] Invalid profile/chat combinations fail before an OpenRouter or MCP call is attempted.
-- [ ] Knowledge chat, `/learn`, and ordinary OpenRouter replies work through the same endpoint; requesting the removed legacy route is no longer supported.
+- [x] Knowledge chat, `/learn`, and ordinary OpenRouter replies work through the same endpoint; requesting the removed legacy route is no longer supported.
 
 ---
 
@@ -217,17 +217,17 @@ Persist which MCP servers an employee profile may use, expose that configuration
 
 #### Automated Verification
 
-- [ ] Profile model/schema tests cover the empty default, the supported `project` server identifier, and rejection/display of stale identifiers.
-- [ ] Repository generation produces only the expected profile migration artifacts.
-- [ ] Frontend tests prove allowed MCP server identifiers round-trip through the admin form and stale servers remain visible but unavailable.
-- [ ] BDD tests prove linked skills can be activated without `/skill`, while deleted or unlinked skills cannot.
-- [ ] BDD tests prove Knowledge search works without `@knowledge` and cannot escape the profile-linked document set.
-- [ ] Existing explicit skill, `@knowledge`, and `/learn` tests remain green.
+- [x] Profile model/schema tests cover the empty default, the supported `project` server identifier, and rejection/display of stale identifiers.
+- [x] Repository generation produces only the expected profile migration artifacts.
+- [x] Frontend tests prove allowed MCP server identifiers round-trip through the admin form and stale servers remain visible but unavailable.
+- [x] BDD tests prove linked skills can be activated without `/skill`, while deleted or unlinked skills cannot.
+- [x] BDD tests prove Knowledge search works without `@knowledge` and cannot escape the profile-linked document set.
+- [x] Existing explicit skill, `@knowledge`, and `/learn` tests remain green.
 
 #### Manual Verification
 
-- [ ] An operator can enable the built-in project MCP server alongside the employee profile's Knowledge and skills.
-- [ ] A plain task message, with no control mentions, makes the profile's skills and Knowledge available to the employee.
+- [x] An operator can enable the built-in project MCP server alongside the employee profile's Knowledge and skills.
+- [x] A plain task message, with no control mentions, makes the profile's skills and Knowledge available to the employee.
 
 ---
 
@@ -262,14 +262,14 @@ Extend the shared OpenRouter client so a completion can return either final assi
 
 #### Automated Verification
 
-- [ ] Wrapper tests assert exact serialization of `tools`, `tool_choice`, and `parallel_tool_calls: false`.
-- [ ] Wrapper tests parse single and multiple tool calls, malformed argument JSON, tool-result replay, and final text after a tool result.
-- [ ] Wrapper tests prove text-only and image behavior is unchanged when no tools are passed.
-- [ ] Wrapper tests prove retries cannot execute or replay a tool call twice.
+- [x] Wrapper tests assert exact serialization of `tools`, `tool_choice`, and `parallel_tool_calls: false`.
+- [x] Wrapper tests parse single and multiple tool calls, malformed argument JSON, tool-result replay, and final text after a tool result.
+- [x] Wrapper tests prove text-only and image behavior is unchanged when no tools are passed.
+- [x] Wrapper tests prove retries cannot execute or replay a tool call twice.
 
 #### Manual Verification
 
-- [ ] A recorded OpenRouter-compatible response can move from assistant tool call to tool result to final assistant text without protocol loss.
+- [x] A recorded OpenRouter-compatible response can move from assistant tool call to tool result to final assistant text without protocol loss.
 
 ---
 
@@ -343,16 +343,16 @@ Issue MCP credentials inside the MCP process, connect `apps.api` to the project 
 
 #### Automated Verification
 
-- [ ] Internal exchange tests prove employee JWT subject derivation, five-minute TTL, access-store verification, and absence of refresh tokens.
-- [ ] Tests reject invalid/expired SPS JWTs, wrong exchange secret, supplied subject overrides, and external-grant regressions.
-- [ ] MCP client tests cover initialize/list/call/close, timeout, oversized result, protocol error, and session cleanup.
-- [ ] Server-discovery tests prove empty, supported `project`, and stale server configurations plus live catalog refresh.
-- [ ] Tool dispatch tests reject names/schema shapes absent from the connected MCP catalog without adding duplicate record-level permission checks.
-- [ ] Integration tests prove the SPS bearer forwarded by MCP belongs to the employee subject, `apps.api` applies `rbac.permission`, and the loop never uses `X-RBAC-SECRET-KEY`.
+- [x] Internal exchange tests prove employee JWT subject derivation, five-minute TTL, access-store verification, and absence of refresh tokens.
+- [x] Tests reject invalid/expired SPS JWTs, wrong exchange secret, supplied subject overrides, and external-grant regressions.
+- [x] MCP client tests cover initialize/list/call/close, timeout, oversized result, protocol error, and session cleanup.
+- [x] Server-discovery tests prove empty, supported `project`, and stale server configurations plus live catalog refresh.
+- [x] Tool dispatch tests reject names/schema shapes absent from the connected MCP catalog without adding duplicate record-level permission checks.
+- [x] Integration tests prove the SPS bearer forwarded by MCP belongs to the employee subject, `apps.api` applies `rbac.permission`, and the loop never uses `X-RBAC-SECRET-KEY`.
 
 #### Manual Verification
 
-- [ ] The profile admin form can enable the built-in project MCP server and shows unsupported stored server identifiers clearly.
+- [x] The profile admin form can enable the built-in project MCP server and shows unsupported stored server identifiers clearly.
 - [ ] OpenRouter receives the connected project MCP's live tool catalog, and an employee with insufficient RBAC permission receives the existing API denial from the MCP-to-API path.
 
 ---
@@ -410,15 +410,15 @@ Combine profile-bound capabilities and tools discovered from allowed MCP servers
 #### Automated Verification
 
 - [ ] BDD scenario: requester B assigns work to profile A; MCP/API authorization is employee subject A, billing is requester B, and final author is profile A.
-- [ ] BDD scenarios cover skill activation, automatic Knowledge retrieval, read-only MCP call, multi-step result replay, final answer, and auditable metadata.
-- [ ] BDD scenarios cover invalid/unknown tools, unsupported MCP servers, existing RBAC denial, MCP-defined mutation confirmation, repeated calls, timeouts, oversized results, max steps, and model failure.
+- [x] BDD scenarios cover skill activation, automatic Knowledge retrieval, read-only MCP call, multi-step result replay, final answer, and auditable metadata.
+- [x] BDD scenarios cover invalid/unknown tools, unsupported MCP servers, existing RBAC denial, MCP-defined mutation confirmation, repeated calls, timeouts, oversized results, max steps, and model failure.
 - [ ] Tests prove raw protocol output never becomes the visible answer and billing/session cleanup happens exactly once on every exit.
-- [ ] Existing no-tools, explicit skill, Knowledge, image, model selection, and fallback scenarios remain green.
+- [x] Existing no-tools, explicit skill, Knowledge, image, model selection, and fallback scenarios remain green.
 
 #### Manual Verification
 
 - [ ] Chat progress remains understandable while the employee works, and only the final answer remains in the thread.
-- [ ] Audit metadata clearly distinguishes requester, employee, capabilities, MCP calls, and stop reason.
+- [x] Audit metadata clearly distinguishes requester, employee, capabilities, MCP calls, and stop reason.
 
 ---
 
@@ -474,11 +474,11 @@ Prove the complete employee flow against running `apps.api`, `apps.mcp`, and hos
 
 #### Automated Verification
 
-- [ ] Focused Jest and integration targets pass.
-- [ ] Affected TypeScript builds and ESLint targets pass.
-- [ ] `npm run parity` passes.
-- [ ] Drizzle migration generation is reproducible and limited to the profile MCP configuration change.
-- [ ] No live code or documentation references the removed `react-by/knowledge` contract, and the obsolete route permission has been removed through the RBAC data-management path without editing repository snapshots.
+- [x] Focused Jest and integration targets pass.
+- [x] Affected TypeScript builds and ESLint targets pass.
+- [ ] `npm run parity` passes. Blocked because the repository has no `parity` npm script; see the process incident log.
+- [x] Drizzle migration generation is reproducible and limited to the profile MCP configuration change.
+- [x] No live code or documentation references the removed `react-by/knowledge` contract, and the obsolete route permission has been removed through the RBAC data-management path without editing repository snapshots.
 
 #### Manual Verification
 

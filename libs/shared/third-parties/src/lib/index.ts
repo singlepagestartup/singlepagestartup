@@ -15,5 +15,9 @@ export type {
   IOpenRouterGenerationSuccess,
   IOpenRouterGeneratedImage,
   IOpenRouterModel,
+  IOpenRouterTool,
+  IOpenRouterToolCall,
+  IOpenRouterToolChoice,
+  IOpenRouterToolFunction,
   IOpenRouterUsage,
 } from "./open-router/interface";

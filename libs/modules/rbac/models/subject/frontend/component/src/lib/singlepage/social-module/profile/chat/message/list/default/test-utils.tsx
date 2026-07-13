@@ -4,7 +4,6 @@ import { Component } from "./ClientComponent";
 export const mockMessageCreateMutate = jest.fn();
 export const mockMessageDeleteMutate = jest.fn();
 export const mockMessageUpdateMutate = jest.fn();
-export const mockMessageReactByKnowledgeMutate = jest.fn();
 export const mockMessageReactByOpenrouterMutate = jest.fn();
 export const mockOpenRouterModelFavoriteUpdateMutate = jest.fn();
 export const mockProfileUpdateMutate = jest.fn();
@@ -376,14 +375,6 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           isSuccess: false,
         };
       }),
-      socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByKnowledge:
-        jest.fn(() => {
-          return {
-            mutate: mockMessageReactByKnowledgeMutate,
-            isPending: false,
-            isSuccess: false,
-          };
-        }),
       socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter:
         jest.fn(() => {
           return {
@@ -679,7 +670,6 @@ export function resetChatComponentMocks() {
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();
-  mockMessageReactByKnowledgeMutate.mockReset();
   mockMessageReactByOpenrouterMutate.mockReset();
   mockOpenRouterModelFavoriteUpdateMutate.mockReset();
   mockProfileUpdateMutate.mockReset();

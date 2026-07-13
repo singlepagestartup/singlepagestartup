@@ -7,11 +7,16 @@
  */
 import {
   createPkceChallenge,
+  exchangeEmployeeSpsJwtForMcpToken,
   getAuthorizationServerMetadata,
   getProtectedResourceMetadata,
   getWwwAuthenticateHeader,
+  INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH,
+  isInternalEmployeeTokenExchangeRoute,
   isOAuthRoute,
+  verifyMcpAccessToken,
 } from "./oauth";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 
 describe("MCP OAuth helpers", () => {
   const originalEnv = process.env;
@@ -21,6 +26,11 @@ describe("MCP OAuth helpers", () => {
       ...originalEnv,
       MCP_PUBLIC_BASE_URL: "https://mcp.example.com",
       MCP_PUBLIC_URL: "https://mcp.example.com/mcp",
+      MCP_INTERNAL_TOKEN_EXCHANGE_SECRET: "internal-exchange-secret",
+      MCP_OAUTH_JWT_SECRET: "mcp-oauth-secret",
+      MCP_OAUTH_STORE: "memory",
+      RBAC_JWT_SECRET: "rbac-jwt-secret",
+      KV_PROVIDER: "memory",
     };
   });
 
@@ -59,6 +69,7 @@ describe("MCP OAuth helpers", () => {
       token_endpoint: "https://mcp.example.com/oauth/token",
       registration_endpoint: "https://mcp.example.com/oauth/register",
       revocation_endpoint: "https://mcp.example.com/oauth/revoke",
+      grant_types_supported: ["authorization_code", "refresh_token"],
       code_challenge_methods_supported: ["S256"],
     });
   });
@@ -109,4 +120,170 @@ describe("MCP OAuth helpers", () => {
       createPkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"),
     ).toBe("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
   });
+
+  /**
+   * BDD Scenario: Internal employee token exchange route
+   *
+   * Given the MCP HTTP server receives a route path
+   * When the internal employee exchange route is matched
+   * Then only the dedicated internal endpoint is accepted
+   */
+  it("matches only the dedicated internal employee exchange endpoint", () => {
+    expect(
+      isInternalEmployeeTokenExchangeRoute(
+        INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH,
+      ),
+    ).toBe(true);
+    expect(isInternalEmployeeTokenExchangeRoute("/oauth/token")).toBe(false);
+    expect(isOAuthRoute(INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH)).toBe(false);
+  });
+
+  /**
+   * BDD Scenario: Employee JWT exchange
+   *
+   * Given a valid SPS JWT for an employee subject and the internal service secret
+   * When the JWT is exchanged for an MCP token
+   * Then the access-only token lasts five minutes and resolves to that employee
+   */
+  it("issues a five-minute access-only MCP token for the verified employee", async () => {
+    const subjectToken = createEmployeeSpsJwt("employee-subject-1");
+    const before = Math.floor(Date.now() / 1000);
+    const response = await exchangeEmployeeSpsJwtForMcpToken({
+      providedSecret: "internal-exchange-secret",
+      body: {
+        subject_token: subjectToken,
+      },
+    });
+    const verified = await verifyMcpAccessToken(response.access_token);
+    const accessPayload = jwt.verify(
+      response.access_token,
+      "mcp-oauth-secret",
+    ) as JwtPayload;
+
+    expect(response).toMatchObject({
+      token_type: "Bearer",
+      expires_in: 300,
+      scope: "mcp:content",
+    });
+    expect(response).not.toHaveProperty("refresh_token");
+    expect(verified).toMatchObject({
+      clientId: "internal-rbac-openrouter",
+      scopes: ["mcp:content"],
+      subject: "employee-subject-1",
+      spsJwt: subjectToken,
+    });
+    expect(verified.expiresAt).toBeGreaterThanOrEqual(before + 300);
+    expect(verified.expiresAt).toBeLessThanOrEqual(before + 301);
+    expect(accessPayload).toMatchObject({
+      sub: "employee-subject-1",
+      client_id: "internal-rbac-openrouter",
+      scope: "mcp:content",
+    });
+  });
+
+  /**
+   * BDD Scenario: Wrong internal exchange secret
+   *
+   * Given a valid employee SPS JWT but an incorrect service secret
+   * When internal exchange is attempted
+   * Then no MCP credential is issued
+   */
+  it("rejects an incorrect internal token exchange secret", async () => {
+    await expect(
+      exchangeEmployeeSpsJwtForMcpToken({
+        providedSecret: "wrong-secret",
+        body: {
+          subject_token: createEmployeeSpsJwt("employee-subject-2"),
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 401,
+      code: "invalid_client",
+    });
+  });
+
+  /**
+   * BDD Scenario: Subject override is supplied
+   *
+   * Given a valid JWT for one employee and a separate subject id in the request
+   * When internal exchange is attempted
+   * Then the request is rejected instead of trusting caller-controlled identity
+   */
+  it("rejects separately supplied employee subject identifiers", async () => {
+    await expect(
+      exchangeEmployeeSpsJwtForMcpToken({
+        providedSecret: "internal-exchange-secret",
+        body: {
+          subject_token: createEmployeeSpsJwt("employee-subject-3"),
+          subjectId: "attacker-controlled-subject",
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 400,
+      code: "invalid_request",
+    });
+  });
+
+  /**
+   * BDD Scenario: Invalid or expired employee credential
+   *
+   * Given a malformed or expired SPS JWT
+   * When internal exchange verifies the subject token
+   * Then the request is rejected without deriving a fallback subject
+   */
+  it.each([
+    ["invalid", "not-a-jwt"],
+    ["expired", createEmployeeSpsJwt("employee-subject-4", -1)],
+  ])("rejects an %s employee SPS JWT", async (_label, subjectToken) => {
+    await expect(
+      exchangeEmployeeSpsJwtForMcpToken({
+        providedSecret: "internal-exchange-secret",
+        body: {
+          subject_token: subjectToken,
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 401,
+      code: "invalid_subject_token",
+    });
+  });
+
+  /**
+   * BDD Scenario: Employee JWT has no subject
+   *
+   * Given a correctly signed SPS JWT without subject.id
+   * When internal exchange verifies the token
+   * Then it rejects the credential rather than using a generic fallback subject
+   */
+  it("rejects a signed employee JWT without subject.id", async () => {
+    const subjectToken = jwt.sign(
+      { subject: {} },
+      process.env["RBAC_JWT_SECRET"] as string,
+      { expiresIn: 60 },
+    );
+
+    await expect(
+      exchangeEmployeeSpsJwtForMcpToken({
+        providedSecret: "internal-exchange-secret",
+        body: {
+          subject_token: subjectToken,
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 401,
+      code: "invalid_subject_token",
+    });
+  });
 });
+
+function createEmployeeSpsJwt(subjectId: string, expiresIn = 60) {
+  return jwt.sign(
+    {
+      subject: {
+        id: subjectId,
+      },
+    },
+    process.env["RBAC_JWT_SECRET"] as string,
+    { expiresIn },
+  );
+}

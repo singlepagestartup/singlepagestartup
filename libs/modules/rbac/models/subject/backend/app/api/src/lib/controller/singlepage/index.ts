@@ -57,7 +57,6 @@ import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageCreate } from 
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageUpdate } from "./social-module/profile/find-by-id/chat/find-by-id/message/update";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageDelete } from "./social-module/profile/find-by-id/chat/find-by-id/message/delete";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByOpenrouter } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter";
-import { Handler as SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge } from "./social-module/profile/find-by-id/chat/find-by-id/message/react-by-knowledge";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdOpenrouterModelFind } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/models";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdOpenrouterModelFavorites } from "./social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites";
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFind } from "./social-module/profile/find-by-id/knowledge/document/find";
@@ -65,6 +64,7 @@ import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentCreate } from ".
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdUpdate } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/update";
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdReindex } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/reindex";
 import { Handler as SocialModuleProfileFindByIdKnowledgeDocumentFindByIdDelete } from "./social-module/profile/find-by-id/knowledge/document/find-by-id/delete";
+import { Handler as SocialModuleProfileFindByIdMcpServerFind } from "./social-module/profile/find-by-id/mcp/server/find";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdThreadFindByIdSkillFindByIdRun } from "./social-module/profile/find-by-id/chat/find-by-id/thread/find-by-id/skill/find-by-id/run";
 import { Handler as SocialModuleProfileFindByIdChatCreate } from "./social-module/profile/find-by-id/chat/create";
 import { Handler as SocialModuleProfileFindByIdChatFindByIdDelete } from "./social-module/profile/find-by-id/chat/find-by-id/delete";
@@ -476,13 +476,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
         middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
-        method: "POST",
-        path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/messages/:socialModuleMessageId/react-by/knowledge",
-        handler:
-          this.socialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge,
-        middlewares: [new RequestProfileSubjectIdOwner().init()],
-      },
-      {
         method: "GET",
         path: "/:id/social-module/profiles/:socialModuleProfileId/chats/:socialModuleChatId/openrouter/models",
         handler:
@@ -610,6 +603,12 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
           new RequestSubjectIdOwner().init(),
           new RequestSubjectCanManageChatAgentProfile(this.service).init(),
         ],
+      },
+      {
+        method: "GET",
+        path: "/:id/social-module/profiles/:socialModuleProfileId/mcp/servers",
+        handler: this.socialModuleProfileFindByIdMcpServerFind,
+        middlewares: [new RequestProfileSubjectIdOwner().init()],
       },
       {
         method: "GET",
@@ -1018,15 +1017,6 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     ).execute(c, next);
   }
 
-  async socialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge(
-    c: Context,
-    next: any,
-  ): Promise<Response> {
-    return new SocialModuleProfileFindByIdChatFindByIdMessageReactByKnowledge(
-      this.service,
-    ).execute(c, next);
-  }
-
   async socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind(
     c: Context,
     next: any,
@@ -1142,6 +1132,16 @@ export class Controller extends RESTController<(typeof Table)["$inferSelect"]> {
     return new SocialModuleProfileFindByIdKnowledgeDocumentFind(
       this.service,
     ).execute(c, next);
+  }
+
+  async socialModuleProfileFindByIdMcpServerFind(
+    c: Context,
+    next: unknown,
+  ): Promise<Response> {
+    return new SocialModuleProfileFindByIdMcpServerFind(this.service).execute(
+      c,
+      next,
+    );
   }
 
   async socialModuleProfileFindByIdKnowledgeDocumentCreate(
