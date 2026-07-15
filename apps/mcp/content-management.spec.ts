@@ -79,6 +79,13 @@ describe("MCP content-management registration", () => {
     const response = await listToolCall[2]({});
     const payload = JSON.parse(response.content[0].text);
 
+    expect(
+      Buffer.byteLength(
+        JSON.stringify({ isError: false, text: response.content[0].text }),
+        "utf8",
+      ),
+    ).toBeLessThanOrEqual(32 * 1024);
+
     expect(payload).toEqual(
       expect.objectContaining({
         ok: true,

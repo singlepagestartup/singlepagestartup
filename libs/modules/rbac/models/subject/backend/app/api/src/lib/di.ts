@@ -34,7 +34,7 @@ export interface ISocialModule {
   profile: IReadService;
   skill: ICreateUpdateService;
   chat: IReadService;
-  thread: IReadService;
+  thread: IUpdateService;
   message: IReadService;
   action: IReadService;
   attribute: IReadService;
@@ -111,6 +111,10 @@ export const SubjectDI = {
   IBroadcastModule: Symbol.for("rbac.subject.broadcast.module"),
   IIdentityService: Symbol.for("rbac.subject.identity.service"),
   IRoleService: Symbol.for("rbac.subject.role.service"),
+  IPermissionService: Symbol.for("rbac.subject.permission.service"),
+  IRolesToPermissionsService: Symbol.for(
+    "rbac.subject.roles-to-permissions.service",
+  ),
   IRolesToEcommerceModuleProductsService: Symbol.for(
     "rbac.subject.roles-to-ecommerce-module-products.service",
   ),

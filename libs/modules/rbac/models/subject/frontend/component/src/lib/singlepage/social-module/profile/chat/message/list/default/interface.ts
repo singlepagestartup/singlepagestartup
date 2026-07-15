@@ -2,6 +2,7 @@ export { type IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
+import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { ISpsComponentBase } from "@sps/ui-adapter";
 import { type IResult } from "@sps/rbac/models/subject/sdk/server";
 
@@ -15,6 +16,7 @@ export interface IComponentProps extends ISpsComponentBase {
   artificialIntelligenceOpponentProfile?: ISocialModuleProfile | null;
   knowledgeAssistantProfile?: ISocialModuleProfile | null;
   socialModuleChat: ISocialModuleChat;
+  socialModuleThread: ISocialModuleThread;
   socialModuleThreadId: string;
   variant: typeof variant;
   className?: string;

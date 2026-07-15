@@ -16,11 +16,11 @@ import {
   mockKnowledgeDocumentUpdateMutate,
   mockKnowledgeReindexDocumentMutateAsync,
   mockMessageCreateMutate,
-  mockMessageReactByOpenrouterMutate,
   mockOpenRouterModelFavoriteUpdateMutate,
+  mockProfileSkillFind,
+  mockThreadUpdateMutate,
   mockSocialSkillCreateMutateAsync,
   mockSocialSkillUpdateMutateAsync,
-  mockToastError,
   renderComponent,
   resetChatComponentMocks,
 } from "./test-utils";
@@ -31,6 +31,24 @@ const aiOpponentProfile = {
   variant: "artificial-intelligence",
   adminTitle: "Chat GPT 1",
 };
+
+function aiReactionRequest(
+  overrides: Partial<{
+    modelId: string;
+    reasoning: string;
+    skillIds: string[];
+    useKnowledgeSearch: boolean;
+  }> = {},
+) {
+  return {
+    version: 1,
+    modelId: "auto",
+    reasoning: "auto",
+    skillIds: [],
+    useKnowledgeSearch: false,
+    ...overrides,
+  };
+}
 
 describe("Given: OpenRouter chat profile sidebar", () => {
   beforeEach(() => {
@@ -153,6 +171,25 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
+   * Given: a new default thread renders before an AI opponent is available.
+   * When: the chat composer initializes profile skills.
+   * Then: it does not call the AI-only skills endpoint for the requester's ordinary profile.
+   */
+  it("When: no AI opponent is resolved Then: the profile skills request stays disabled", () => {
+    renderComponent("default");
+
+    expect(mockProfileSkillFind).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetSocialModuleProfileId: "missing-profile",
+        reactQueryOptions: {
+          enabled: false,
+        },
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
    * Given: the active chat has variant default and an AI opponent.
    * When: the user types a slash prefix in the composer.
    * Then: Knowledge commands are available because OpenRouter handles all AI chats.
@@ -257,8 +294,69 @@ describe("Given: OpenRouter chat profile sidebar", () => {
           data: {
             description: "Please store this",
             files: [file],
+            metadata: {
+              rbacAiReactionRequest: aiReactionRequest(),
+            },
           },
         },
+        expect.any(Object),
+      );
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: two different files have the same name and are selected in separate picker operations.
+   * When: the user adds the second file after the first one.
+   * Then: the composer retains and submits both files as separate attachments.
+   */
+  it("When: adding same-named files separately Then: both attachments are retained", async () => {
+    const { container } = renderComponent("knowledge");
+    const textarea = screen.getByPlaceholderText("Write a message...");
+    const submitButton = screen.getByLabelText("Send message");
+    const fileInput = container.querySelector("input[type=file]");
+    const firstFile = new File(["First transcript"], "content.txt", {
+      type: "text/plain",
+      lastModified: 1,
+    });
+    const secondFile = new File(["Second, longer transcript"], "content.txt", {
+      type: "text/plain",
+      lastModified: 2,
+    });
+
+    expect(fileInput).toBeTruthy();
+
+    fireEvent.change(fileInput as HTMLInputElement, {
+      target: {
+        files: [firstFile],
+      },
+    });
+    fireEvent.change(fileInput as HTMLInputElement, {
+      target: {
+        files: [secondFile],
+      },
+    });
+
+    expect(screen.getAllByText("content.txt")).toHaveLength(2);
+
+    fireEvent.change(textarea, {
+      target: {
+        value: "Compare both transcripts",
+      },
+    });
+
+    await waitFor(() => {
+      expect((submitButton as HTMLButtonElement).disabled).toBe(false);
+    });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            files: [firstFile, secondFile],
+          }),
+        }),
         expect.any(Object),
       );
     });
@@ -350,6 +448,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
             data: {
               description: "Please store this without attachments",
               files: undefined,
+              metadata: {
+                rbacAiReactionRequest: aiReactionRequest(),
+              },
             },
           },
           expect.any(Object),
@@ -376,16 +477,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: a Knowledge chat message starts with @knowledge /learn.
    * When: the message is created from the composer.
-   * Then: the OpenRouter reaction endpoint is called for the AI assistant profile so indexing runs.
+   * Then: Knowledge intent and the AI profile are persisted in that one message request.
    */
-  it("When: creating a @knowledge /learn message Then: it triggers Knowledge learning for the AI profile", async () => {
-    mockMessageCreateMutate.mockImplementation((_payload, options) => {
-      options?.onSuccess?.({
-        id: "message-1",
-        description: "@knowledge /learn Stored context",
-      });
-    });
-
+  it("When: creating a @knowledge /learn message Then: it persists Knowledge learning intent", async () => {
     renderComponent("knowledge");
 
     const textarea = screen.getByPlaceholderText("Write a message...");
@@ -397,23 +491,20 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            useKnowledgeSearch: true,
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: {
+              knowledgeMention: {
+                slug: "knowledge",
+                useKnowledgeSearch: true,
+              },
+              rbacAiReactionRequest: aiReactionRequest({
+                useKnowledgeSearch: true,
+              }),
             },
-          },
-        },
+          }),
+        }),
         expect.any(Object),
       );
     });
@@ -421,23 +512,11 @@ describe("Given: OpenRouter chat profile sidebar", () => {
 
   /**
    * BDD Scenario
-   * Given: a Knowledge chat message is created successfully.
-   * When: the OpenRouter reaction fails on the server.
-   * Then: the composer shows the server error instead of failing silently.
+   * Given: a Knowledge chat message is submitted from the composer.
+   * When: the frontend records the request.
+   * Then: it performs only create-message and leaves AI orchestration to the backend.
    */
-  it("When: OpenRouter reaction fails Then: it shows the server error", async () => {
-    mockMessageCreateMutate.mockImplementation((_payload, options) => {
-      options?.onSuccess?.({
-        id: "message-1",
-        description: "What should we answer?",
-      });
-    });
-    mockMessageReactByOpenrouterMutate.mockImplementation(
-      (_payload, options) => {
-        options?.onError?.(new Error("OpenRouter generation failed."));
-      },
-    );
-
+  it("When: an AI message is submitted Then: the frontend performs only create-message", async () => {
     renderComponent("knowledge");
 
     const textarea = screen.getByPlaceholderText("Write a message...");
@@ -449,8 +528,16 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith(
-        "OpenRouter generation failed.",
+      expect(mockMessageCreateMutate).toHaveBeenCalledTimes(1);
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: {
+              rbacAiReactionRequest: aiReactionRequest(),
+            },
+          }),
+        }),
+        expect.any(Object),
       );
     });
   });
@@ -459,9 +546,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: a Knowledge chat composer has OpenRouter model and Thinking controls.
    * When: the user selects a concrete model and high Thinking before sending.
-   * Then: the OpenRouter reaction receives those values as query params.
+   * Then: those values are persisted with the message for backend execution.
    */
-  it("When: selecting model and Thinking Then: submit passes OpenRouter query params", async () => {
+  it("When: selecting model and Thinking Then: submit persists the selected parameters", async () => {
     (window as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent =
       MouseEvent;
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
@@ -478,6 +565,21 @@ describe("Given: OpenRouter chat profile sidebar", () => {
       ctrlKey: false,
     });
     fireEvent.click(await screen.findByText("GPT-5.2"));
+
+    await waitFor(() => {
+      expect(mockThreadUpdateMutate).toHaveBeenCalledWith(
+        {
+          id: "subject-1",
+          socialModuleChatId: "chat-1",
+          socialModuleThreadId: "thread-1",
+          data: {
+            openRouterModelId: "openai/gpt-5.2",
+          },
+        },
+        expect.any(Object),
+      );
+    });
+
     fireEvent.pointerDown(screen.getByLabelText("Select OpenRouter thinking"), {
       button: 0,
       ctrlKey: false,
@@ -493,16 +595,48 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: {
-            model: "openai/gpt-5.2",
-            reasoning: "high",
-          },
+          data: expect.objectContaining({
+            metadata: {
+              rbacAiReactionRequest: aiReactionRequest({
+                modelId: "openai/gpt-5.2",
+                reasoning: "high",
+              }),
+            },
+          }),
         }),
         expect.any(Object),
       );
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the active thread persisted a concrete OpenRouter model.
+   * When: the chat composer mounts after a page reload.
+   * Then: that model is restored instead of resetting to Auto.
+   */
+  it("When: composer reloads Then: thread model preference is restored", async () => {
+    renderComponent("default", {
+      artificialIntelligenceOpponentProfile: aiOpponentProfile,
+      socialModuleThread: {
+        id: "thread-1",
+        metadata: {
+          rbacAiThreadPreferences: {
+            version: 1,
+            modelId: "openai/gpt-5.2",
+          },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByLabelText("Select OpenRouter model").textContent,
+      ).toContain("GPT-5.2");
+    });
+    expect(mockThreadUpdateMutate).not.toHaveBeenCalled();
   });
 
   /**
@@ -548,12 +682,15 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: {
-            model: "openai/gpt-basic",
-            reasoning: "auto",
-          },
+          data: expect.objectContaining({
+            metadata: {
+              rbacAiReactionRequest: aiReactionRequest({
+                modelId: "openai/gpt-basic",
+              }),
+            },
+          }),
         }),
         expect.any(Object),
       );
@@ -604,7 +741,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the Knowledge assistant profile has a linked skill.
    * When: the user invokes that skill with / and submits a Knowledge chat message.
-   * Then: the selected skill id is passed to the OpenRouter reaction endpoint.
+   * Then: the selected skill id is persisted in the message reaction envelope.
    */
   it("When: invoking a linked skill Then: Knowledge generation receives selected skill ids", async () => {
     mockChatComponentState.profileSkillRelations = [
@@ -661,28 +798,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
                   slug: "brief-writer",
                 },
               ],
+              rbacAiReactionRequest: aiReactionRequest({
+                skillIds: ["skill-1"],
+              }),
             },
           }),
         }),
-        expect.any(Object),
-      );
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
-            },
-            skillIds: ["skill-1"],
-          },
-        },
         expect.any(Object),
       );
     });
@@ -745,28 +866,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     await waitFor(() => {
       expect(mockMessageCreateMutate).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.not.objectContaining({
-            metadata: expect.anything(),
+          data: expect.objectContaining({
+            metadata: {
+              rbacAiReactionRequest: aiReactionRequest(),
+            },
           }),
         }),
-        expect.any(Object),
-      );
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
-            },
-          },
-        },
         expect.any(Object),
       );
     });
@@ -873,7 +978,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the active chat has variant knowledge.
    * When: the user mentions @knowledge and submits a message.
-   * Then: the OpenRouter reaction endpoint receives an explicit RAG search flag.
+   * Then: the message reaction envelope stores an explicit RAG search flag.
    */
   it("When: mentioning @knowledge Then: Knowledge generation receives the RAG flag", async () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
@@ -912,28 +1017,12 @@ describe("Given: OpenRouter chat profile sidebar", () => {
                 slug: "knowledge",
                 useKnowledgeSearch: true,
               },
+              rbacAiReactionRequest: aiReactionRequest({
+                useKnowledgeSearch: true,
+              }),
             },
           }),
         }),
-        expect.any(Object),
-      );
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
-            },
-            useKnowledgeSearch: true,
-          },
-        },
         expect.any(Object),
       );
     });
@@ -943,7 +1032,7 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: the Knowledge assistant profile has a linked skill.
    * When: the user mentions @knowledge and invokes a linked skill.
-   * Then: the OpenRouter reaction endpoint combines RAG search with selected skill instructions.
+   * Then: the message reaction envelope combines RAG search with selected skill instructions.
    */
   it("When: mentioning @knowledge and invoking a linked skill Then: RAG and selected skills are combined", async () => {
     mockChatComponentState.profileSkillRelations = [
@@ -999,24 +1088,27 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: {
+              socialSkillMentions: [
+                {
+                  skillId: "skill-1",
+                  slug: "brief-writer",
+                },
+              ],
+              knowledgeMention: {
+                slug: "knowledge",
+                useKnowledgeSearch: true,
+              },
+              rbacAiReactionRequest: aiReactionRequest({
+                skillIds: ["skill-1"],
+                useKnowledgeSearch: true,
+              }),
             },
-            skillIds: ["skill-1"],
-            useKnowledgeSearch: true,
-          },
-        },
+          }),
+        }),
         expect.any(Object),
       );
     });
@@ -1158,9 +1250,9 @@ describe("Given: OpenRouter chat profile sidebar", () => {
    * BDD Scenario
    * Given: a default chat without an AI opponent starts with /learn.
    * When: the message is created from the composer.
-   * Then: OpenRouter reaction is not called because there is no AI profile to answer.
+   * Then: the ordinary message has no RBAC AI reaction envelope.
    */
-  it("When: creating /learn in a non-AI default chat Then: it does not trigger OpenRouter", async () => {
+  it("When: creating /learn in a non-AI default chat Then: it stores no AI reaction intent", async () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-1",
@@ -1178,18 +1270,24 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageCreateMutate).toHaveBeenCalled();
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({
+            metadata: expect.anything(),
+          }),
+        }),
+        expect.any(Object),
+      );
     });
-    expect(mockMessageReactByOpenrouterMutate).not.toHaveBeenCalled();
   });
 
   /**
    * BDD Scenario
    * Given: a default chat has an AI opponent with OpenRouter support.
    * When: a message starts with @knowledge /learn.
-   * Then: OpenRouter reaction is called for that AI profile.
+   * Then: the selected AI profile and Knowledge intent are stored with the message.
    */
-  it("When: creating @knowledge /learn in an AI default chat Then: it triggers OpenRouter learning", async () => {
+  it("When: creating @knowledge /learn in an AI default chat Then: it persists OpenRouter learning intent", async () => {
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-1",
@@ -1209,23 +1307,20 @@ describe("Given: OpenRouter chat profile sidebar", () => {
     fireEvent.click(screen.getByLabelText("Send message"));
 
     await waitFor(() => {
-      expect(mockMessageReactByOpenrouterMutate).toHaveBeenCalledWith(
-        {
-          id: "subject-1",
-          socialModuleProfileId: "profile-1",
-          socialModuleChatId: "chat-1",
-          socialModuleMessageId: "message-1",
-          params: {
-            model: "auto",
-            reasoning: "auto",
-          },
-          data: {
-            shouldReplySocialModuleProfile: {
-              id: "assistant-profile-1",
+      expect(mockMessageCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: {
+              knowledgeMention: {
+                slug: "knowledge",
+                useKnowledgeSearch: true,
+              },
+              rbacAiReactionRequest: aiReactionRequest({
+                useKnowledgeSearch: true,
+              }),
             },
-            useKnowledgeSearch: true,
-          },
-        },
+          }),
+        }),
         expect.any(Object),
       );
     });

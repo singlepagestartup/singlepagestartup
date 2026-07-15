@@ -1,9 +1,0 @@
-{
-  "id": "795b71d0-7a55-4fb4-9567-3cadc13c78d8",
-  "createdAt": "2026-06-03T00:00:00.000Z",
-  "updatedAt": "2026-06-03T00:00:00.000Z",
-  "variant": "default",
-  "type": "HTTP",
-  "method": "GET",
-  "path": "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents"
-}

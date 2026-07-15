@@ -128,6 +128,7 @@ function createContext(
       },
       formData: jest.fn().mockResolvedValue(formData),
     },
+    header: jest.fn(),
     json: jest.fn((payload: unknown) => {
       events.push("response");
 
@@ -149,6 +150,12 @@ function createService() {
             profileId: "profile-1",
           },
         ]),
+      },
+      profile: {
+        findById: jest.fn().mockResolvedValue({
+          id: "assistant-profile",
+          variant: "artificial-intelligence",
+        }),
       },
       messagesToFileStorageModuleFiles: {
         find: jest.fn().mockResolvedValue([]),
@@ -216,6 +223,57 @@ describe("Given: rbac social message create author relation", () => {
       events.indexOf("profiles-to-messages"),
     );
     expect(handler.notifyOtherSubjectsInChat).toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the web composer persists its complete AI reaction intent with the message.
+   * When: message creation normalizes that intent.
+   * Then: the action logger remains enabled and receives one durable backend-dispatch trigger.
+   */
+  it("When: AI reaction intent is persisted Then: action dispatch is not suppressed", async () => {
+    const events: string[] = [];
+    const handler = new Handler(createService());
+    handler.notifyOtherSubjectsInChat = jest.fn().mockResolvedValue(undefined);
+    const context = createContext(events, {
+      description: "Use MCP",
+      metadata: {
+        rbacAiReactionRequest: {
+          version: 1,
+          modelId: " auto ",
+          reasoning: "auto",
+          skillIds: ["skill-1", "skill-1"],
+          useKnowledgeSearch: false,
+        },
+      },
+    });
+
+    await handler.execute(context, jest.fn());
+
+    expect(mockSocialModuleMessageCreate).toHaveBeenCalledWith({
+      data: {
+        description: "Use MCP",
+        metadata: {
+          rbacAiReactionRequest: {
+            version: 1,
+            modelId: "auto",
+            reasoning: "auto",
+            skillIds: ["skill-1"],
+            useKnowledgeSearch: false,
+          },
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(context.header).not.toHaveBeenCalledWith(
+      "X-SPS-SKIP-ACTION-LOGGER",
+      "1",
+    );
+    expect(events).toEqual(["response"]);
   });
 
   /**

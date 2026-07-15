@@ -6,12 +6,15 @@ import {
   OpenRouterReasoningValue,
 } from "../types";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import { parseRbacAiThreadPreferences } from "@sps/rbac/models/subject/sdk/model";
+import type { IModel as SocialModuleThread } from "@sps/social/models/thread/sdk/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface UseOpenRouterModelControlsProps {
   enabled: boolean;
   socialModuleChatId: string;
   socialModuleProfileId: string;
+  socialModuleThread: SocialModuleThread;
   socialModuleThreadId: string;
   subjectId: string;
 }
@@ -106,15 +109,17 @@ export function useOpenRouterModelControls(
   const [selectedReasoning, setSelectedReasoning] =
     useState<OpenRouterReasoningValue>("auto");
   const [favoriteModelIds, setFavoriteModelIds] = useState<string[]>([]);
+  const persistedModelId =
+    parseRbacAiThreadPreferences(props.socialModuleThread.metadata)?.modelId ||
+    "auto";
 
-  // The chat shell stays mounted across chats/threads, so a stale model
-  // selection would otherwise leak into a new chat whose assistant may not
-  // expose it (issue #195). Reset to defaults whenever the chat or thread
-  // changes; the next chat re-selects intentionally.
+  // The shell stays mounted across threads. Restore the model owned by the
+  // active thread instead of leaking another thread's choice or resetting a
+  // persisted explicit selection after a page reload.
   useEffect(() => {
-    setSelectedModelId("auto");
+    setSelectedModelId(persistedModelId);
     setSelectedReasoning("auto");
-  }, [props.socialModuleChatId, props.socialModuleThreadId]);
+  }, [persistedModelId, props.socialModuleChatId, props.socialModuleThreadId]);
 
   useEffect(() => {
     setFavoriteModelIds(readLocalFavoriteModelIds(props.subjectId));
@@ -144,6 +149,11 @@ export function useOpenRouterModelControls(
       socialModuleProfileId: props.socialModuleProfileId,
       socialModuleChatId: props.socialModuleChatId,
     });
+  const threadUpdateMutation = api.socialModuleChatFindByIdThreadUpdate({
+    id: props.subjectId,
+    socialModuleChatId: props.socialModuleChatId,
+    socialModuleThreadId: props.socialModuleThreadId,
+  });
   const modelGroups = useMemo<OpenRouterChatModelGroup[]>(() => {
     return (modelsQuery.data?.groups || []) as OpenRouterChatModelGroup[];
   }, [modelsQuery.data?.groups]);
@@ -221,6 +231,41 @@ export function useOpenRouterModelControls(
     },
     [favoriteModelIdSet, favoriteModelIds, persistFavoriteModelIds],
   );
+  const persistSelectedModelId = useCallback(
+    (modelId: string) => {
+      const normalizedModelId = modelId.trim() || "auto";
+
+      setSelectedModelId(normalizedModelId);
+
+      if (!props.enabled) {
+        return;
+      }
+
+      threadUpdateMutation.mutate(
+        {
+          id: props.subjectId,
+          socialModuleChatId: props.socialModuleChatId,
+          socialModuleThreadId: props.socialModuleThreadId,
+          data: {
+            openRouterModelId: normalizedModelId,
+          },
+        },
+        {
+          onError() {
+            setSelectedModelId(persistedModelId);
+          },
+        },
+      );
+    },
+    [
+      persistedModelId,
+      props.enabled,
+      props.socialModuleChatId,
+      props.socialModuleThreadId,
+      props.subjectId,
+      threadUpdateMutation,
+    ],
+  );
 
   useEffect(() => {
     const kvFavoriteModelIds = normalizeFavoriteModelIds(
@@ -257,7 +302,7 @@ export function useOpenRouterModelControls(
     selectedModelLabel,
     selectedReasoning: effectiveSelectedReasoning,
     selectedReasoningLabel,
-    setSelectedModelId,
+    setSelectedModelId: persistSelectedModelId,
     setSelectedReasoning,
     toggleFavoriteModelId,
   };

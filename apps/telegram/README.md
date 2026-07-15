@@ -71,25 +71,49 @@ service runtime path.
 Allowed responsibilities in `apps/telegram`:
 
 - Initialize the grammY bot and expose webhook/polling transport.
+- On bot startup, read the effective command catalog from the Agent API through
+  the Agent server SDK and publish it with Telegram `setMyCommands`. The request
+  uses the internal RBAC service key; `apps/telegram` never imports or
+  instantiates the Agent backend service.
 - Parse Telegram messages, files, payments, callback data, and topic metadata.
+- Normalize only Telegram transport addressing before ingestion. A leading
+  `@<bot-username>` is removed and any `/command@<bot-username>` becomes
+  `/command`; the adapter does not interpret the command itself. Replies to the
+  bot are also considered addressed in groups.
+- Debounce a `/learn` request for 1.5 seconds and join its immediately following
+  Telegram chunks only when chat, topic, and sender are identical. Telegram
+  does not assign `media_group_id` to split text, so this command-scoped buffer
+  creates one `social.message`, keeps ordered Telegram message ids in metadata,
+  and prevents continuation chunks from triggering separate AI turns.
 - Download Telegram voice/audio files, convert them to MP3, and ingest them as
   social message attachments.
 - Bootstrap Telegram users, profiles, chats, and thread mapping through the
   RBAC subject Telegram bootstrap API.
 - Ingest incoming Telegram messages/actions into SPS as `social.message` or
-  `social.action`, including thread-aware message ingestion.
+  `social.action`, including thread-aware message ingestion. The transport does
+  not choose an AI reply profile; Agent dispatches every automatic profile
+  connected to the chat.
 - Call RBAC/billing APIs only for transport-bound flows such as bootstrap,
   membership sync, checkout/payment webhook forwarding, and incoming message
   ingestion.
 
 This app must not own domain command logic, chat/thread business rules, billing
-rules, or agent behavior. If a Telegram update represents a user command, the
-adapter should ingest it as data and let the owning module decide what it means.
+rules, or agent behavior. Telegram normalization only removes transport
+addressing. The Agent command registry decides whether a command belongs to the
+`telegram-bot` profile or an `artificial-intelligence` profile. The
+same startup-overridden registry supplies the Telegram command menu, so command
+execution and discovery cannot drift into separate BotFather configuration. The
+RBAC/OpenRouter reaction pipeline owns `/learn`, profile-document relations,
+explicit `@knowledge` retrieval, and replies exactly as it does for web-chat
+messages.
 
 ## Module Boundaries
 
 - `rbac.subject` owns authentication, subject/profile/chat bootstrap, and
-  subject-scoped API access.
+  subject-scoped API access. On the first Telegram interaction it provisions
+  one owner-specific `rbac.subject.variant="agent"` and one empty
+  `social.profile.variant="artificial-intelligence"`; later interactions reuse
+  those records.
 - `social` owns chats, profiles, messages, actions, threads, and relations.
 - `agent` owns bot command interpretation and agent-side replies.
 - `billing` owns payment intent state and provider verification.

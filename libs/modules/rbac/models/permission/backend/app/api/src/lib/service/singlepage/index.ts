@@ -9,7 +9,7 @@ import { match } from "path-to-regexp";
 import { PermissionDI } from "../../di";
 import { type IModel as IPermissionsToBillingModuleCurrencies } from "@sps/rbac/relations/permissions-to-billing-module-currencies/sdk/model";
 
-const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 300 });
+const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 const matcherCache = new Map<string, ReturnType<typeof match>>();
 
 export type IResolveByRouteProps = {
@@ -41,19 +41,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       permissionsToBillingModuleCurrenciesService;
   }
 
-  protected async getPermissions() {
-    const cacheKey = "permissions:all";
+  invalidateRouteResolutionCache() {
+    cache.clear();
+    matcherCache.clear();
+  }
+
+  protected async getTemplatePermissions(props: {
+    method: string;
+    type: string;
+  }) {
+    const cacheKey = `permissions:templates:${props.type}:${props.method.toUpperCase()}`;
     let permissions = cache.get<(typeof Table)["$inferSelect"][]>(cacheKey);
 
     if (!permissions) {
-      permissions = await this.find();
+      permissions = await this.find({
+        params: {
+          filters: {
+            and: [
+              { column: "type", method: "eq", value: props.type },
+              {
+                column: "method",
+                method: "eq",
+                value: props.method.toUpperCase(),
+              },
+              { column: "path", method: "like", value: "[" },
+            ],
+          },
+        },
+      });
       cache.set(cacheKey, permissions);
     }
 
     return permissions;
   }
 
-  protected findPermissionByRoute(props: {
+  protected findTemplatePermissionByRoute(props: {
     permissions: (typeof Table)["$inferSelect"][];
     route: string;
     method: string;
@@ -61,19 +83,16 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }) {
     const { permissions, route, method, type } = props;
 
-    const filteredPermissions = permissions.filter((permission) => {
-      return (
-        permission.method.toUpperCase() === method.toUpperCase() &&
-        permission.type === type
-      );
-    });
-
-    for (const permission of filteredPermissions) {
-      if (permission.path === "*") {
-        return permission;
+    for (const permission of permissions) {
+      if (!permission.path) {
+        continue;
       }
 
-      if (!permission.path) {
+      if (
+        permission.method.toUpperCase() !== method.toUpperCase() ||
+        permission.type !== type ||
+        !permission.path.includes("[")
+      ) {
         continue;
       }
 
@@ -100,6 +119,31 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     }
 
     return undefined;
+  }
+
+  protected async findExactPermission(props: {
+    path: string;
+    method: string;
+    type: string;
+  }) {
+    const permissions = await this.find({
+      params: {
+        filters: {
+          and: [
+            { column: "type", method: "eq", value: props.type },
+            {
+              column: "method",
+              method: "eq",
+              value: props.method.toUpperCase(),
+            },
+            { column: "path", method: "eq", value: props.path },
+          ],
+        },
+        limit: 2,
+      },
+    });
+
+    return permissions[0];
   }
 
   protected async getPermissionBillingRequirements(permissionId: string) {
@@ -133,18 +177,37 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   async resolveByRoute(
     props: IResolveByRouteProps,
   ): Promise<IResolveByRouteResult> {
-    const permissions = await this.getPermissions();
-
-    const permission = this.findPermissionByRoute({
-      permissions,
-      route: props.permission.route,
+    const exactPermission = await this.findExactPermission({
+      path: props.permission.route,
       method: props.permission.method,
       type: props.permission.type,
     });
-
-    const rootPermission = this.findPermissionByRoute({
-      permissions,
-      route: "*",
+    const templatePermissions = exactPermission
+      ? []
+      : await this.getTemplatePermissions({
+          method: props.permission.method,
+          type: props.permission.type,
+        });
+    const templatePermission = exactPermission
+      ? undefined
+      : this.findTemplatePermissionByRoute({
+          permissions: templatePermissions,
+          route: props.permission.route,
+          method: props.permission.method,
+          type: props.permission.type,
+        });
+    const methodWildcardPermission =
+      exactPermission || templatePermission
+        ? undefined
+        : await this.findExactPermission({
+            path: "*",
+            method: props.permission.method,
+            type: props.permission.type,
+          });
+    const permission =
+      exactPermission || templatePermission || methodWildcardPermission;
+    const rootPermission = await this.findExactPermission({
+      path: "*",
       method: "*",
       type: props.permission.type,
     });

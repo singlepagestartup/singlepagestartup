@@ -8,7 +8,10 @@ import {
 import { api as rbacSubjectApi } from "@sps/rbac/models/subject/sdk/client";
 import { route as rbacSubjectRoute } from "@sps/rbac/models/subject/sdk/model";
 import { queryClient } from "@sps/shared-frontend-client-api";
-import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import type {
+  IModel as ISocialModuleProfile,
+  TSupportedMcpServerIdentifier,
+} from "@sps/social/models/profile/sdk/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +26,7 @@ export type ProfileSidebarProfileUpdateValues = {
   title?: Record<string, string | undefined>;
   subtitle?: Record<string, string | undefined>;
   description?: Record<string, string | undefined>;
+  allowedMcpServerIds?: TSupportedMcpServerIdentifier[];
   avatarFile?: File | null;
 };
 
@@ -125,6 +129,7 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
 
   const {
     data: knowledgeDocumentsQuery,
+    isError: hasKnowledgeDocumentsError,
     isLoading: isKnowledgeDocumentsLoading,
     refetch: refetchKnowledgeDocuments,
   } = rbacSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind(
@@ -553,6 +558,8 @@ export function useProfileSidebar(props: UseProfileSidebarProps) {
     canManageSelectedProfile,
     closeKnowledgeDocument,
     closeProfile,
+    hasKnowledgeDocumentsError:
+      canManageSelectedProfile && hasKnowledgeDocumentsError,
     isKnowledgeDocumentsLoading:
       canManageSelectedProfile && isKnowledgeDocumentsLoading,
     isKnowledgeDocumentDirty,

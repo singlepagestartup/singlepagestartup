@@ -13,6 +13,9 @@ Subjects represent authenticated users or actors, and connect identities, roles,
 ## Authorization Layering
 
 - `backend/app/api/src/lib/service/singlepage/is-authorized.ts` must stay thin: it resolves `rbac.permission` and role access only.
+- Permission and relation lookups are injected through Subject DI and use the
+  startup-exported backend services. Child projects can override those
+  services or the main Subject Service method without a loopback API request.
 - Do not add domain ownership, membership, chat, thread, profile, billing, or module-specific checks to `is-authorized.ts`.
 - For concrete subject routes, add the route to `rbac.permissions` first, then enforce resource ownership with route-level middleware from `backend/app/middlewares/src/lib/*`.
 - Subject-owned routes must keep `RequestSubjectIdOwner` or `RequestProfileSubjectIdOwner` as the first ownership guard.
@@ -78,9 +81,40 @@ Thread management through `rbac.subject` requires `rbac.permission` records for 
 - `variant`: display variant.
 - `slug`: URL-friendly unique identifier.
 
+## Telegram Personal AI Agent
+
+Telegram bootstrap maintains two different RBAC subjects for one user:
+
+1. The authenticated owner subject linked to `rbac.identity(provider="telegram")`.
+2. A dedicated `rbac.subject.variant="agent"` whose deterministic slug is
+   `telegram-personal-ai-agent-<owner-subject-id>`.
+
+The agent subject owns exactly one
+`social.profile.variant="artificial-intelligence"` with the same deterministic
+slug. The initial profile has empty title-independent instructions and no
+Knowledge document relations; it allows the `singlepagestartup` MCP server and
+can be enriched later through the normal profile Knowledge and Skill APIs.
+
+Telegram messages do not select a reply profile. Agent dispatches every
+`social.profile.variant="artificial-intelligence"` or system `agent` profile
+connected to the chat; AI handlers skip Telegram commands while the
+`telegram-bot` profile processes them.
+
+During bootstrap, the personal AI profile and system `telegram-bot` profile are
+connected when missing. Existing manually connected AI profiles remain chat
+participants, and only duplicate relations for the same profile are removed.
+
+The same idempotent bootstrap ensures a profile-specific Knowledge owner role
+for the authenticated owner subject. The role uses only existing RBAC models
+and relations (`role`, `permission`, `roles-to-permissions`, and
+`subjects-to-roles`). Permission paths contain the exact target AI profile UUID;
+only explicitly bracketed requester profile, chat, and Knowledge document ids
+are dynamic masks.
+
 ## Variants
 
 - `default`: renders linked identity email and a profile link.
+- `agent`: non-human execution subject linked to an AI or system social profile.
 - `overview-default`: subject overview with identities and social profile summary.
 - `authentication-init-default`: initializes authentication context.
 - `authentication-select-method-default`: select authentication method UI.

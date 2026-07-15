@@ -13,6 +13,8 @@ const mockSocialModuleThreadCreate = jest.fn();
 const mockSocialModuleThreadUpdate = jest.fn();
 const mockSocialModuleThreadDelete = jest.fn();
 const mockOpenRouterGenerate = jest.fn();
+const mockSocialModuleProfilesToChatsCreate = jest.fn();
+const mockSocialModuleProfilesToChatsDelete = jest.fn();
 const originalFetch = global.fetch;
 
 jest.mock("@sps/shared-utils", () => ({
@@ -47,6 +49,15 @@ jest.mock("@sps/social/models/thread/sdk/server", () => ({
     create: (...args: unknown[]) => mockSocialModuleThreadCreate(...args),
     update: (...args: unknown[]) => mockSocialModuleThreadUpdate(...args),
     delete: (...args: unknown[]) => mockSocialModuleThreadDelete(...args),
+  },
+}));
+
+jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) =>
+      mockSocialModuleProfilesToChatsCreate(...args),
+    delete: (...args: unknown[]) =>
+      mockSocialModuleProfilesToChatsDelete(...args),
   },
 }));
 
@@ -530,7 +541,7 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
         },
       });
       expect(mockOpenRouterGenerate).toHaveBeenCalledWith({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.1-flash-lite",
         temperature: 0.2,
         max_tokens: 20,
         responseFormat: {
@@ -571,6 +582,110 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
       expect(result).toMatchObject({
         id: "thread-1",
         title: "Где кенгуру 🦘",
+      });
+    });
+
+    /**
+     * BDD Scenario
+     * Given: OpenRouter returns a loose title field instead of the requested JSON object.
+     * When: SPS generates a title for a Telegram topic.
+     * Then: the technical title field label is removed from the visible topic title.
+     */
+    it("Then: removes a loose title field label from generated title", async () => {
+      mockOpenRouterGenerate.mockResolvedValueOnce({
+        text: "title : Келлеры 💬",
+        billing: null,
+      });
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {} as any,
+      });
+
+      const title = await (service as any).generateTelegramThreadTitle({
+        messageText: "Келлеры",
+      });
+
+      expect(title).toBe("Келлеры 💬");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: a Telegram topic already persisted a loose title field label.
+     * When: the next message in that topic is bootstrapped.
+     * Then: SPS repairs both its stored thread title and the Telegram topic title.
+     */
+    it("Then: repairs an already persisted loose title field label", async () => {
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "chat-thread-1",
+                chatId: "chat-1",
+                threadId: "thread-1",
+              },
+            ]),
+          },
+          thread: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "thread-1",
+                variant: "telegram",
+                title: "title : Келлеры 💬",
+                sourceSystemId: "42",
+              },
+            ]),
+          },
+        } as any,
+      });
+
+      const result = await (service as any).resolveThreadForTelegramMessage({
+        socialModuleChat: {
+          id: "chat-1",
+          variant: "telegram",
+          sourceSystemId: "550809313",
+        },
+        chatId: "chat-1",
+        messageThreadId: "42",
+        messageText: "Следующее сообщение",
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      });
+
+      expect(mockOpenRouterGenerate).not.toHaveBeenCalled();
+      expect(mockSocialModuleThreadUpdate).toHaveBeenCalledWith({
+        id: "thread-1",
+        data: {
+          title: "Келлеры 💬",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.telegram.org/bottest-telegram-token/editForumTopic",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({
+            chat_id: "550809313",
+            message_thread_id: 42,
+            name: "Келлеры 💬",
+          }),
+        }),
+      );
+      expect(result).toMatchObject({
+        id: "thread-1",
+        title: "Келлеры 💬",
       });
     });
 
@@ -687,6 +802,145 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
         id: "thread-1",
         title: "История интернета сейчас 💬",
       });
+    });
+  });
+});
+
+describe("Given: Telegram automatic chat participants", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram chat contains manually connected AI profiles and a duplicate relation.
+   * When: automatic participants are synchronized for the user's personal AI profile.
+   * Then: every connected AI remains while only the duplicate relation is removed.
+   */
+  it("When: participants are synchronized Then: connected AI profiles are preserved", async () => {
+    const personalAiProfile = {
+      id: "personal-ai-profile",
+      slug: "telegram-personal-ai-agent-owner-1",
+      variant: "artificial-intelligence",
+    };
+    const profilesToChats = {
+      find: jest.fn().mockResolvedValue([
+        {
+          id: "sender-relation",
+          profileId: "sender-profile",
+          chatId: "chat-1",
+        },
+        {
+          id: "global-ai-relation",
+          profileId: "global-ai-profile",
+          chatId: "chat-1",
+        },
+        {
+          id: "other-personal-relation",
+          profileId: "other-personal-ai-profile",
+          chatId: "chat-1",
+        },
+        {
+          id: "personal-relation-old",
+          profileId: "personal-ai-profile",
+          chatId: "chat-1",
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          id: "personal-relation-new",
+          profileId: "personal-ai-profile",
+          chatId: "chat-1",
+          createdAt: "2026-01-02T00:00:00.000Z",
+        },
+      ]),
+    };
+    const profile = {
+      find: jest.fn().mockImplementation((props: any) => {
+        const filters = props?.params?.filters?.and || [];
+        const slugFilter = filters.find(
+          (filter: any) => filter.column === "slug",
+        );
+
+        if (slugFilter?.value === "telegram-bot") {
+          return Promise.resolve([
+            {
+              id: "telegram-bot-profile",
+              slug: "telegram-bot",
+              variant: "agent",
+            },
+          ]);
+        }
+
+        return Promise.resolve([
+          {
+            id: "sender-profile",
+            slug: "telegram-user",
+            variant: "telegram",
+          },
+          {
+            id: "global-ai-profile",
+            slug: "open-router",
+            variant: "artificial-intelligence",
+          },
+          {
+            id: "other-personal-ai-profile",
+            slug: "telegram-personal-ai-agent-owner-2",
+            variant: "artificial-intelligence",
+          },
+          personalAiProfile,
+        ]);
+      }),
+    };
+    const service = new Service({
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      socialModule: {
+        profile,
+        profilesToChats,
+      } as any,
+    });
+
+    await (service as any).synchronizeTelegramAutomaticProfilesForChat({
+      socialModuleChatId: "chat-1",
+      personalAiSocialModuleProfile: personalAiProfile,
+      headers: {
+        "X-RBAC-SECRET-KEY": "test-rbac-secret",
+      },
+    });
+
+    expect(mockSocialModuleProfilesToChatsDelete).toHaveBeenCalledTimes(1);
+    expect(mockSocialModuleProfilesToChatsDelete).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "global-ai-relation",
+      }),
+    );
+    expect(mockSocialModuleProfilesToChatsDelete).toHaveBeenCalledWith({
+      id: "personal-relation-new",
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      },
+    });
+    expect(mockSocialModuleProfilesToChatsCreate).toHaveBeenCalledTimes(1);
+    expect(mockSocialModuleProfilesToChatsCreate).toHaveBeenCalledWith({
+      data: {
+        profileId: "telegram-bot-profile",
+        chatId: "chat-1",
+        variant: "telegram-system-agent",
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      },
     });
   });
 });

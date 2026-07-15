@@ -150,7 +150,7 @@ export function shouldShowKnowledgeMentionOption(description?: string | null) {
 }
 
 export function hasKnowledgeMention(value?: string | null) {
-  return /(^|\s)@knowledge(?=\s|$)/i.test(value || "");
+  return /(^|\s)(?:@knowledge|\/knowledge)(?=\s|$)/i.test(value || "");
 }
 
 export function getMentionedSkillSlugs(value?: string | null) {
@@ -162,7 +162,7 @@ export function getMentionedSkillSlugs(value?: string | null) {
         return match[2].toLowerCase();
       })
       .filter((slug) => {
-        return !["learn", "new"].includes(slug);
+        return !["knowledge", "learn", "new"].includes(slug);
       }),
   );
 }

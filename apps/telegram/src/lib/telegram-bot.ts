@@ -22,6 +22,7 @@ import {
 } from "@grammyjs/conversations";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
@@ -79,10 +80,80 @@ function sanitizeFileTitle(value: string) {
   return safe || "telegram-audio";
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+interface INormalizeTelegramTransportControlsProps {
+  botUsername: string;
+  description: string;
+}
+
+interface IIsTelegramMessageAddressedToBotProps {
+  botUsername: string;
+  description?: string;
+  isReplyToBot?: boolean;
+}
+
+export function normalizeTelegramTransportControls(
+  props: INormalizeTelegramTransportControlsProps,
+): string {
+  const botUsername = props.botUsername.trim().replace(/^@/, "");
+  const escapedBotUsername = escapeRegExp(botUsername);
+  let description = props.description.trim();
+
+  if (escapedBotUsername) {
+    description = description
+      .replace(new RegExp(`^@${escapedBotUsername}(?=\\s|$)\\s*`, "i"), "")
+      .replace(
+        new RegExp(`^(\\/[a-z0-9_]+)@${escapedBotUsername}(?=\\s|$)`, "i"),
+        "$1",
+      )
+      .trim();
+  }
+
+  return description;
+}
+
+export function isTelegramLearnCommand(description: string): boolean {
+  return /^(?:@knowledge\s+)?\/learn(?=\s|$)/i.test(description.trim());
+}
+
+export function isTelegramMessageAddressedToBot(
+  props: IIsTelegramMessageAddressedToBotProps,
+): boolean {
+  if (props.isReplyToBot) {
+    return true;
+  }
+
+  const botUsername = props.botUsername.trim().replace(/^@/, "");
+
+  if (!botUsername || !props.description) {
+    return false;
+  }
+
+  const escapedBotUsername = escapeRegExp(botUsername);
+
+  return (
+    new RegExp(`^@${escapedBotUsername}(?=\\s|$)`, "i").test(
+      props.description,
+    ) ||
+    new RegExp(`^/[a-z0-9_]+@${escapedBotUsername}(?=\\s|$)`, "i").test(
+      props.description,
+    )
+  );
+}
+
+const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
+
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
   private mediaGroupBuffer = new Map<
+    string,
+    { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
+  >();
+  private learnCommandBuffer = new Map<
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
   >();
@@ -178,12 +249,73 @@ export class TelegarmBot {
     );
   }
 
-  private runInBackground(props: { label: string; task: () => Promise<void> }) {
-    void props.task().catch((error) => {
+  private runInBackground(props: {
+    label: string;
+    task: () => Promise<void>;
+    onError?: (error: unknown) => Promise<void>;
+  }) {
+    const backgroundTask = props.task().catch(async (error) => {
       console.error(
         `🚀 ~ TelegarmBot ~ ${props.label} ~ background error:`,
-        error?.message || error,
+        error instanceof Error ? error.message : error,
       );
+
+      if (!props.onError) {
+        return;
+      }
+
+      try {
+        await props.onError(error);
+      } catch (notificationError) {
+        console.error(
+          `🚀 ~ TelegarmBot ~ ${props.label} ~ user notification error:`,
+          notificationError instanceof Error
+            ? notificationError.message
+            : notificationError,
+        );
+      }
+    });
+
+    void backgroundTask;
+
+    return backgroundTask;
+  }
+
+  private getIncomingMessageErrorText(props: { ctx: GrammyContext }) {
+    const languageCode = props.ctx.from?.language_code?.toLowerCase() || "";
+
+    if (languageCode.startsWith("ru")) {
+      return "Не удалось обработать сообщение. Попробуйте отправить его ещё раз.";
+    }
+
+    return "We couldn't process your message. Please try sending it again.";
+  }
+
+  private async notifyIncomingMessageError(props: { ctx: GrammyContext }) {
+    const text = this.getIncomingMessageErrorText({ ctx: props.ctx });
+    const messageThreadId = (props.ctx.message as any)?.message_thread_id;
+
+    if (messageThreadId === undefined || messageThreadId === null) {
+      await props.ctx.reply(text);
+      return;
+    }
+
+    await props.ctx.reply(text, {
+      message_thread_id: messageThreadId,
+    });
+  }
+
+  private runIncomingMessageInBackground(props: {
+    ctx: GrammyContext;
+    label: string;
+    task: () => Promise<void>;
+  }) {
+    return this.runInBackground({
+      label: props.label,
+      task: props.task,
+      onError: async () => {
+        await this.notifyIncomingMessageError({ ctx: props.ctx });
+      },
     });
   }
 
@@ -409,7 +541,8 @@ export class TelegarmBot {
       });
 
       if (telegramForumTopicCreated) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:forum_topic_created",
           task: async () => {
             await this.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate(
@@ -438,7 +571,8 @@ export class TelegarmBot {
       const telegramVoice = extractTelegramVoiceMessageData(ctx.message);
 
       if (telegramVoice) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:voice",
           task: async () => {
             await this.handleIncomingVoiceMessage({
@@ -454,7 +588,8 @@ export class TelegarmBot {
       const telegramAudio = extractTelegramAudioMessageData(ctx.message);
 
       if (telegramAudio) {
-        this.runInBackground({
+        this.runIncomingMessageInBackground({
+          ctx,
           label: "message:audio",
           task: async () => {
             await this.handleIncomingVoiceMessage({
@@ -479,13 +614,14 @@ export class TelegarmBot {
         }
 
         const timer = setTimeout(() => {
-          this.flushMediaGroup({
-            mediaGroupId,
-          }).catch((error) => {
-            console.error(
-              "🚀 ~ flushMediaGroup ~ error:",
-              error?.message || error,
-            );
+          this.runIncomingMessageInBackground({
+            ctx,
+            label: "message:media-group",
+            task: async () => {
+              await this.flushMediaGroup({
+                mediaGroupId,
+              });
+            },
           });
         }, 600);
 
@@ -493,9 +629,18 @@ export class TelegarmBot {
         return;
       }
 
-      this.runInBackground({
+      this.runIncomingMessageInBackground({
+        ctx,
         label: "message",
         task: async () => {
+          if (
+            this.bufferTelegramLearnCommandMessage({
+              ctx,
+            })
+          ) {
+            return;
+          }
+
           await this.handleIncomingMessage({
             ctx,
             data: await this.buildTelegramMessageData({ ctx }),
@@ -513,6 +658,21 @@ export class TelegarmBot {
         "Configuration error. TELEGRAM_SERVICE_BOT_TOKEN is not set",
       );
     }
+
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY is not set");
+    }
+
+    const commands = await agentModuleAgentApi.telegramCommands({
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+          "Cache-Control": "no-store",
+        },
+      },
+    });
+
+    await this.instance.api.setMyCommands(commands);
 
     const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
 
@@ -545,7 +705,9 @@ export class TelegarmBot {
     };
   }): Promise<{
     rbacModuleSubject: IRbacSubject;
+    personalAiRbacModuleSubject: IRbacSubject;
     socialModuleProfile: ISocialModuleProfile;
+    personalAiSocialModuleProfile: ISocialModuleProfile;
     socialModuleChat: ISocialModuleChat;
     socialModuleThread: ISocialModuleThread;
   }> {
@@ -603,7 +765,9 @@ export class TelegarmBot {
 
     return {
       rbacModuleSubject: bootstrap.rbacModuleSubject,
+      personalAiRbacModuleSubject: bootstrap.personalAiRbacModuleSubject,
       socialModuleProfile: bootstrap.socialModuleProfile,
+      personalAiSocialModuleProfile: bootstrap.personalAiSocialModuleProfile,
       socialModuleChat: bootstrap.socialModuleChat,
       socialModuleThread: bootstrap.socialModuleThread,
     };
@@ -753,23 +917,30 @@ export class TelegarmBot {
       .map((item) => item.message)
       .filter(Boolean);
 
-    const description =
-      messageList.find((message) => message?.caption || message?.text)
-        ?.caption ||
-      messageList.find((message) => message?.text)?.text ||
-      "";
+    const description = messageList
+      .map((message) => message?.text || message?.caption || "")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join("\n");
 
     const sourceSystemId =
       messageList.find((message) => message?.media_group_id)?.media_group_id ||
       messageList[0]?.message_id?.toString() ||
       "";
+    const metadata = {
+      telegram: {
+        sourceMessageIds: messageList
+          .map((message) => message?.message_id)
+          .filter((messageId) => messageId !== undefined),
+      },
+    };
 
     const attachments = messageList.flatMap((message) =>
       this.extractTelegramAttachments(message),
     );
 
     if (!attachments.length) {
-      return { description, sourceSystemId };
+      return { description, sourceSystemId, metadata };
     }
 
     const files = await this.buildTelegramFiles({
@@ -781,6 +952,7 @@ export class TelegarmBot {
       description,
       sourceSystemId,
       files,
+      metadata,
     };
   }
 
@@ -1015,10 +1187,126 @@ export class TelegarmBot {
     }
 
     const messageText = props.ctx.message?.text || props.ctx.message?.caption;
+    const replyToUsername = (props.ctx.message as any)?.reply_to_message?.from
+      ?.username;
 
-    return Boolean(
-      messageText?.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`),
-    );
+    return isTelegramMessageAddressedToBot({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: messageText,
+      isReplyToBot:
+        typeof replyToUsername === "string" &&
+        replyToUsername.toLowerCase() ===
+          TELEGRAM_SERVICE_BOT_USERNAME.replace(/^@/, "").toLowerCase(),
+    });
+  }
+
+  private getTelegramLearnCommandBufferKey(props: { ctx: GrammyContext }) {
+    const chatId = props.ctx.chat?.id;
+    const senderId = props.ctx.from?.id;
+
+    if (chatId === undefined || senderId === undefined) {
+      return;
+    }
+
+    const messageThreadId = this.getTelegramMessageThreadId({
+      ctx: props.ctx,
+    });
+
+    return [
+      String(chatId),
+      messageThreadId || "default",
+      String(senderId),
+    ].join(":");
+  }
+
+  private scheduleTelegramLearnCommandBufferFlush(props: {
+    key: string;
+    messages: GrammyContext[];
+  }) {
+    const timer = setTimeout(() => {
+      const ctx = props.messages[0];
+
+      if (!ctx) {
+        return;
+      }
+
+      this.runIncomingMessageInBackground({
+        ctx,
+        label: "message:learn:flush",
+        task: async () => {
+          await this.flushTelegramLearnCommandBuffer({ key: props.key });
+        },
+      });
+    }, TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS);
+
+    this.learnCommandBuffer.set(props.key, {
+      messages: props.messages,
+      timer,
+    });
+  }
+
+  private bufferTelegramLearnCommandMessage(props: { ctx: GrammyContext }) {
+    if (!TELEGRAM_SERVICE_BOT_USERNAME) {
+      throw new Error(
+        "Configuration error. 'TELEGRAM_SERVICE_BOT_USERNAME' is not set",
+      );
+    }
+
+    const key = this.getTelegramLearnCommandBufferKey({ ctx: props.ctx });
+
+    if (!key) {
+      return false;
+    }
+
+    const description = normalizeTelegramTransportControls({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: props.ctx.message?.text || props.ctx.message?.caption || "",
+    });
+    const isLearnCommand = isTelegramLearnCommand(description);
+    const existing = this.learnCommandBuffer.get(key);
+
+    if (!existing && !isLearnCommand) {
+      return false;
+    }
+
+    if (existing?.timer) {
+      clearTimeout(existing.timer);
+    }
+
+    if (existing && isLearnCommand) {
+      this.learnCommandBuffer.delete(key);
+      const bufferedContext = existing.messages[0] || props.ctx;
+
+      this.runIncomingMessageInBackground({
+        ctx: bufferedContext,
+        label: "message:learn:flush-before-next-command",
+        task: async () => {
+          await this.persistTelegramLearnCommandMessages({
+            messages: existing.messages,
+          });
+        },
+      });
+      this.scheduleTelegramLearnCommandBufferFlush({
+        key,
+        messages: [props.ctx],
+      });
+      return true;
+    }
+
+    if (existing && /^\/[a-z0-9_]+(?=\s|$)/i.test(description)) {
+      this.scheduleTelegramLearnCommandBufferFlush({
+        key,
+        messages: existing.messages,
+      });
+      return false;
+    }
+
+    this.scheduleTelegramLearnCommandBufferFlush({
+      key,
+      messages: [...(existing?.messages || []), props.ctx],
+    });
+
+    return true;
   }
 
   private async downloadTelegramVoiceFile(props: {
@@ -1151,7 +1439,10 @@ export class TelegarmBot {
         socialModuleThreadId: socialModuleThread.id,
         socialModuleProfileId: socialModuleProfile.id,
         data: {
-          description: messageText || "",
+          description: normalizeTelegramTransportControls({
+            botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+            description: messageText || "",
+          }),
           files: [file],
           metadata: {
             telegram: {
@@ -1180,6 +1471,7 @@ export class TelegarmBot {
       description: string;
       sourceSystemId: string;
       files?: File[];
+      metadata?: Record<string, unknown>;
     };
   }) {
     if (!RBAC_SECRET_KEY) {
@@ -1213,15 +1505,15 @@ export class TelegarmBot {
 
     const jwtToken = await this.signSubjectJwt({ rbacModuleSubject });
 
-    const sanitizedDescription = props.data.description.replaceAll(
-      `@${TELEGRAM_SERVICE_BOT_USERNAME} `,
-      "",
-    );
+    const sanitizedDescription = normalizeTelegramTransportControls({
+      botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
+      description: props.data.description,
+    });
 
     const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
-    const isMentioned =
-      props.ctx.message?.text &&
-      props.ctx.message.text.startsWith(`@${TELEGRAM_SERVICE_BOT_USERNAME}`);
+    const isMentioned = this.shouldHandleIncomingMessageInChat({
+      ctx: props.ctx,
+    });
 
     if (!isGroup) {
       return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
@@ -1230,7 +1522,10 @@ export class TelegarmBot {
           socialModuleChatId: socialModuleChat.id,
           socialModuleThreadId: socialModuleThread.id,
           socialModuleProfileId: socialModuleProfile.id,
-          data: { ...props.data, description: sanitizedDescription },
+          data: {
+            ...props.data,
+            description: sanitizedDescription,
+          },
           options: {
             headers: {
               Authorization: "Bearer " + jwtToken,
@@ -1247,7 +1542,10 @@ export class TelegarmBot {
           socialModuleChatId: socialModuleChat.id,
           socialModuleThreadId: socialModuleThread.id,
           socialModuleProfileId: socialModuleProfile.id,
-          data: { ...props.data, description: sanitizedDescription },
+          data: {
+            ...props.data,
+            description: sanitizedDescription,
+          },
           options: {
             headers: {
               Authorization: "Bearer " + jwtToken,
@@ -1277,6 +1575,41 @@ export class TelegarmBot {
     const data = await this.buildTelegramMessageDataFromMessages({
       ctx,
       messages: entry.messages,
+    });
+
+    await this.handleIncomingMessage({
+      ctx,
+      data,
+    });
+  }
+
+  private async flushTelegramLearnCommandBuffer(props: { key: string }) {
+    const entry = this.learnCommandBuffer.get(props.key);
+
+    if (!entry) {
+      return;
+    }
+
+    clearTimeout(entry.timer);
+    this.learnCommandBuffer.delete(props.key);
+
+    await this.persistTelegramLearnCommandMessages({
+      messages: entry.messages,
+    });
+  }
+
+  private async persistTelegramLearnCommandMessages(props: {
+    messages: GrammyContext[];
+  }) {
+    const ctx = props.messages[0];
+
+    if (!ctx) {
+      return;
+    }
+
+    const data = await this.buildTelegramMessageDataFromMessages({
+      ctx,
+      messages: props.messages,
     });
 
     await this.handleIncomingMessage({

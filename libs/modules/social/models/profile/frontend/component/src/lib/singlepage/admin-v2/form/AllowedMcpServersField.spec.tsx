@@ -6,7 +6,7 @@
  * BDD Suite: allowed MCP servers in the social profile admin form.
  *
  * Given: an operator edits a social profile's MCP server configuration.
- * When: project MCP is toggled or stale stored data is loaded.
+ * When: SinglePageStartup MCP is toggled or stale stored data is loaded.
  * Then: supported selections round-trip and stale identifiers stay visible.
  */
 
@@ -74,25 +74,25 @@ describe("GIVEN: the social profile MCP server admin control", () => {
   });
 
   /**
-   * BDD Scenario: project MCP can be enabled from an empty default.
+   * BDD Scenario: SinglePageStartup MCP can be enabled from an empty default.
    *
    * Given: a profile has no allowed MCP servers.
-   * When: the operator enables Project MCP and submits the form.
-   * Then: the project identifier is included in submitted profile data.
+   * When: the operator enables SinglePageStartup MCP and submits the form.
+   * Then: the SinglePageStartup identifier is included in submitted profile data.
    */
-  test("When: project MCP is enabled Then: its identifier round-trips through form submission", async () => {
+  test("When: SinglePageStartup MCP is enabled Then: its identifier round-trips through form submission", async () => {
     const onSubmit = jest.fn();
 
     act(() => {
       root.render(<Harness configuredIdentifiers={[]} onSubmit={onSubmit} />);
     });
 
-    const projectCheckbox = container.querySelector(
-      "#allowed-mcp-server-project",
+    const singlePageStartupCheckbox = container.querySelector(
+      "#allowed-mcp-server-singlepagestartup",
     );
 
     await act(async () => {
-      projectCheckbox?.dispatchEvent(
+      singlePageStartupCheckbox?.dispatchEvent(
         new MouseEvent("click", { bubbles: true }),
       );
       container
@@ -102,7 +102,7 @@ describe("GIVEN: the social profile MCP server admin control", () => {
     });
 
     expect(onSubmit.mock.calls[0]?.[0]).toEqual({
-      allowedMcpServerIds: ["project"],
+      allowedMcpServerIds: ["singlepagestartup"],
     });
   });
 

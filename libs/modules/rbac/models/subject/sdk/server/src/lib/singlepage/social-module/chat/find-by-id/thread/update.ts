@@ -20,7 +20,8 @@ export interface IProps {
   };
   options?: Partial<NextRequestOptions>;
   data: Partial<ISocialModuleThread> & {
-    title: string;
+    title?: string;
+    openRouterModelId?: string;
   };
 }
 

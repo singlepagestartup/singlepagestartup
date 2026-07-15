@@ -10,9 +10,27 @@
 import {
   composeRouteRules,
   createLayeredRouteMatcher,
+  normalizeRoutePath,
   RouteMatcher,
   IRouteRule,
 } from "./index";
+
+describe("normalizeRoutePath", () => {
+  /**
+   * BDD Scenario: Public and internal origins resolve to one action route.
+   * Given: the same API mutation arrives through a tunnel URL or as a pathname.
+   * When: the route is normalized for matching and persistence.
+   * Then: both inputs produce the same canonical pathname without query data.
+   */
+  it("normalizes absolute and relative request routes to one pathname", () => {
+    const path = "/api/rbac/subjects/subject-1/chats/chat-1/messages";
+
+    expect(
+      normalizeRoutePath(`http://sps-api.ru.tuna.am${path}?source=host`),
+    ).toBe(path);
+    expect(normalizeRoutePath(`${path}?source=host#message`)).toBe(path);
+  });
+});
 
 describe("RouteMatcher", () => {
   /**

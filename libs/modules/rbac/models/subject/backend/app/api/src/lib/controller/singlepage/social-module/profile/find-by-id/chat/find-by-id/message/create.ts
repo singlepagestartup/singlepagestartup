@@ -17,6 +17,10 @@ import {
   AudioTranscriptionService,
   shouldSkipOrdinaryNotificationForAudioTranscription,
 } from "./audio-transcription";
+import {
+  normalizeRbacAiReactionRequestMetadata,
+  parseRbacAiReactionRequestMetadata,
+} from "@sps/rbac/models/subject/sdk/model";
 export class Handler {
   service: Service;
   audioTranscriptionService = new AudioTranscriptionService();
@@ -85,6 +89,16 @@ export class Handler {
       } catch (error) {
         throw new Error(
           "Validation error. Invalid JSON in body['data']. Got: " + dataField,
+        );
+      }
+
+      const aiReactionRequest = parseRbacAiReactionRequestMetadata(
+        parsedBody.data?.metadata,
+      );
+
+      if (aiReactionRequest && parsedBody.data) {
+        parsedBody.data.metadata = normalizeRbacAiReactionRequestMetadata(
+          parsedBody.data.metadata,
         );
       }
 

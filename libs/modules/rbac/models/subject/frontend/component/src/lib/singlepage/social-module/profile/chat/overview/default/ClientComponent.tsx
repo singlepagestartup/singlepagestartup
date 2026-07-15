@@ -12,13 +12,15 @@ import {
   normalizeLocalizedTextFields,
 } from "../../title";
 import { api, queryClient } from "@sps/rbac/models/subject/sdk/client";
-import { route } from "@sps/rbac/models/subject/sdk/model";
+import {
+  route,
+  type IModel as IRbacSubject,
+} from "@sps/rbac/models/subject/sdk/model";
 import { FormField } from "@sps/ui-adapter";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/client";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/client";
 import { route as socialModuleProfilesToChatsRoute } from "@sps/social/relations/profiles-to-chats/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
-import type { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { internationalization } from "@sps/shared-configuration";
 import { Form } from "@sps/shared-ui-shadcn";
 import {
@@ -342,14 +344,6 @@ export function Component(props: IComponentPropsExtended) {
       return requestedThread.id;
     }
 
-    const defaultThread = socialModuleThreads.find((socialModuleThread) => {
-      return socialModuleThread.variant === "default";
-    });
-
-    if (defaultThread?.id) {
-      return defaultThread.id;
-    }
-
     return socialModuleThreads[0]?.id;
   }, [props.socialModuleThreadId, socialModuleThreads]);
   const chatListQueryKey = useMemo(() => {
@@ -424,20 +418,13 @@ export function Component(props: IComponentPropsExtended) {
 
   const threadItems = useMemo(() => {
     return (socialModuleThreads || []).map((socialModuleThread, index) => {
-      const title =
-        socialModuleThread.title?.trim() ||
-        (socialModuleThread.variant === "default"
-          ? "Default thread"
-          : `Thread ${index + 1}`);
+      const title = socialModuleThread.title?.trim() || `Thread ${index + 1}`;
 
       return {
         data: socialModuleThread,
         title,
         createdAt: new Date(socialModuleThread.createdAt).toLocaleDateString(),
-        preview:
-          socialModuleThread.variant === "default"
-            ? "Primary conversation thread"
-            : "Conversation thread",
+        preview: "Conversation thread",
         shortId: socialModuleThread.id.slice(0, 8),
       };
     });
@@ -446,6 +433,10 @@ export function Component(props: IComponentPropsExtended) {
     activeThreadIndex >= 0
       ? threadItems[activeThreadIndex]?.title || "Select a thread"
       : "Select a thread";
+  const activeSocialModuleThread =
+    activeThreadIndex >= 0
+      ? socialModuleThreads?.[activeThreadIndex] || null
+      : null;
   const filteredThreadItems = useMemo(() => {
     const normalizedSearch = threadSearch.trim().toLowerCase();
 
@@ -894,10 +885,7 @@ export function Component(props: IComponentPropsExtended) {
           toast.success("Thread deleted successfully");
 
           if (activeSocialModuleThreadId === deletedThreadId) {
-            const nextThread =
-              remainingThreadItems.find((threadItem) => {
-                return threadItem.data.variant === "default";
-              }) || remainingThreadItems[0];
+            const nextThread = remainingThreadItems[0];
 
             if (nextThread?.data.id) {
               router.push(
@@ -1839,7 +1827,7 @@ export function Component(props: IComponentPropsExtended) {
                     : "Create or select a thread to open the message timeline."}
                 </p>
               </div>
-            ) : (
+            ) : activeSocialModuleThread ? (
               <SocialModuleProfileChatMessageListDefault
                 isServer={false}
                 data={props.data}
@@ -1850,9 +1838,14 @@ export function Component(props: IComponentPropsExtended) {
                   artificialIntelligenceOpponentProfile
                 }
                 knowledgeAssistantProfile={knowledgeAssistantProfile}
+                socialModuleThread={activeSocialModuleThread}
                 socialModuleThreadId={activeSocialModuleThreadId}
                 variant="social-module-profile-chat-message-list-default"
               />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-white px-6 text-center text-sm text-slate-500">
+                Loading thread settings
+              </div>
             )}
           </div>
         </section>

@@ -19,7 +19,13 @@ describe("profile MCP catalog server SDK action", () => {
   it("requests the profile MCP server catalog", async () => {
     const originalFetch = global.fetch;
     const catalog = {
-      supported: [{ id: "project", title: "Project MCP", description: "" }],
+      supported: [
+        {
+          id: "singlepagestartup",
+          title: "SinglePageStartup MCP",
+          description: "",
+        },
+      ],
       connected: [],
       stale: [],
     };

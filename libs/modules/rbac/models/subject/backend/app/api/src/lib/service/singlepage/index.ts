@@ -47,12 +47,12 @@ import {
 import {
   Service as ChatSubjectsWithSocialModuleProfiles,
   IExecuteProps as IChatSubjectsWithSocialModuleProfilesProps,
-} from "./social-module/chat-subjects-with-social-module-profiles";
+} from "./social-module/chat/subjects-with-profiles";
 import {
   Service as BillRoute,
   IExecuteProps as IBillRouteProps,
   ISettleProps as IBillRouteSettleProps,
-} from "./bill-route";
+} from "./billing/route";
 import {
   Service as EcommerceOrderProceed,
   IExecuteProps as IEcommerceOrderProceedProps,
@@ -69,6 +69,8 @@ import {
 } from "../../di";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
+import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
 import { Service as SubjectsToIdentitiesService } from "@sps/rbac/relations/subjects-to-identities/backend/app/api/src/lib/service";
 import { Service as SubjectsToSocialModuleProfilesService } from "@sps/rbac/relations/subjects-to-social-module-profiles/backend/app/api/src/lib/service";
 import { Service as SubjectsToRolesService } from "@sps/rbac/relations/subjects-to-roles/backend/app/api/src/lib/service";
@@ -80,6 +82,11 @@ import {
   IResult as ITelegramBootstrapResult,
 } from "./telegram/bootstrap";
 import {
+  Service as TelegramPersonalAiAgent,
+  IExecuteProps as ITelegramPersonalAiAgentExecuteProps,
+  IResult as ITelegramPersonalAiAgentResult,
+} from "./telegram/personal-ai-agent";
+import {
   Service as TelegramSyncMembership,
   IExecuteProps as ITelegramSyncMembershipExecuteProps,
   IResult as ITelegramSyncMembershipResult,
@@ -88,13 +95,34 @@ import {
   Service as TelegramCheckoutFreeSubscription,
   IExecuteProps as ITelegramCheckoutFreeSubscriptionExecuteProps,
 } from "./telegram/checkout-free-subscription";
-import { ChatLifecycleService } from "./social-module/chat-lifecycle";
+import { ChatLifecycleService } from "./social-module/chat/lifecycle";
 import {
   ProfileMcpCatalogService,
+  type IProfileMcpCatalogOpenProps,
   type IProfileMcpCatalogSession,
-} from "./profile-mcp-catalog";
+} from "./social-module/profile/mcp/catalog";
+import {
+  AiExecutionActionReporter,
+  type IAiExecutionActionReporter,
+  type IAiExecutionActionReporterProps,
+} from "./social-module/profile/ai/execution-action";
+import {
+  SocialProfileAiToolLoop,
+  type ISocialProfileAiToolLoopProps,
+  type ISocialProfileAiToolLoopResult,
+} from "./social-module/profile/ai/tool-loop";
+import {
+  summarizeOpenRouterBilling,
+  type IOpenRouterBillingSummary,
+  type IOpenRouterBillingSummaryProps,
+} from "./billing/open-router";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
+import { setRbacAiThreadModelPreference } from "@sps/rbac/models/subject/sdk/model";
+import {
+  SocialProfileKnowledgeAccessService,
+  type IEnsureSocialProfileKnowledgeAccessProps,
+} from "./social-module/profile/knowledge/access";
 
 @injectable()
 export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
@@ -110,12 +138,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   ecommerceOrderProceedService: EcommerceOrderProceed;
   identity: IdentityService;
   role: RoleService;
+  permission: PermissionService;
+  rolesToPermissions: RolesToPermissionsService;
   rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   subjectsToRoles: SubjectsToRolesService;
   subjectsToEcommerceModuleOrders: SubjectsToEcommerceModuleOrdersService;
-  profileMcpCatalogService: ProfileMcpCatalogService;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -129,6 +158,9 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(SubjectDI.IBroadcastModule) broadcastModule: IBroadcastModule,
     @inject(SubjectDI.IIdentityService) identity: IdentityService,
     @inject(SubjectDI.IRoleService) role: RoleService,
+    @inject(SubjectDI.IPermissionService) permission: PermissionService,
+    @inject(SubjectDI.IRolesToPermissionsService)
+    rolesToPermissions: RolesToPermissionsService,
     @inject(SubjectDI.IRolesToEcommerceModuleProductsService)
     rolesToEcommerceModuleProducts: RolesToEcommerceModuleProductsService,
     @inject(SubjectDI.IIsAuthorizedService)
@@ -156,6 +188,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.broadcastModule = broadcastModule;
     this.identity = identity;
     this.role = role;
+    this.permission = permission;
+    this.rolesToPermissions = rolesToPermissions;
     this.rolesToEcommerceModuleProducts = rolesToEcommerceModuleProducts;
     this.isAuthorizedService = isAuthorizedService;
     this.billRouteService = billRouteService;
@@ -164,18 +198,68 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.subjectsToSocialModuleProfiles = subjectsToSocialModuleProfiles;
     this.subjectsToRoles = subjectsToRoles;
     this.subjectsToEcommerceModuleOrders = subjectsToEcommerceModuleOrders;
-    this.profileMcpCatalogService = new ProfileMcpCatalogService();
   }
 
   async isAuthorized(props: IIsAuthorizedExecuteProps): Promise<any> {
     return this.isAuthorizedService.execute(props);
   }
 
-  async openProfileMcpCatalog(props: {
-    configuredServerIds: readonly string[];
-    employeeSpsJwt: string;
-  }): Promise<IProfileMcpCatalogSession> {
-    return this.profileMcpCatalogService.open(props);
+  async socialModuleProfileMcpCatalogOpen(
+    props: IProfileMcpCatalogOpenProps,
+  ): Promise<IProfileMcpCatalogSession> {
+    return this.getSocialModuleProfileMcpCatalogService().open(props);
+  }
+
+  async socialModuleProfileAiToolLoopRun(
+    props: ISocialProfileAiToolLoopProps,
+  ): Promise<ISocialProfileAiToolLoopResult> {
+    return this.getSocialModuleProfileAiToolLoopService().run(props);
+  }
+
+  socialModuleProfileAiExecutionActionReporterCreate(
+    props: IAiExecutionActionReporterProps,
+  ): IAiExecutionActionReporter {
+    return this.createSocialModuleProfileAiExecutionActionReporter(props);
+  }
+
+  billingOpenRouterSummarize(
+    props: IOpenRouterBillingSummaryProps,
+  ): IOpenRouterBillingSummary {
+    return summarizeOpenRouterBilling(props);
+  }
+
+  async socialModuleChatThreadOpenRouterModelUpdate(props: {
+    subjectId: string;
+    socialModuleChatId: string;
+    socialModuleThreadId: string;
+    modelId: string;
+  }): Promise<ISocialModuleThread> {
+    await this.socialModuleChatLifecycleAssertSubjectOwnsChat({
+      subjectId: props.subjectId,
+      socialModuleChatId: props.socialModuleChatId,
+    });
+    await this.socialModuleChatLifecycleAssertThreadBelongsToChat({
+      socialModuleChatId: props.socialModuleChatId,
+      socialModuleThreadId: props.socialModuleThreadId,
+    });
+
+    const thread = await this.socialModule.thread.findById({
+      id: props.socialModuleThreadId,
+    });
+
+    if (!thread) {
+      throw new Error("Not found error. Social module thread not found");
+    }
+
+    return this.socialModule.thread.update({
+      id: thread.id,
+      data: {
+        metadata: setRbacAiThreadModelPreference({
+          metadata: thread.metadata,
+          modelId: props.modelId,
+        }),
+      },
+    });
   }
 
   async logout(): Promise<any> {
@@ -305,7 +389,38 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       socialModule: this.socialModule,
       subjectsToIdentities: this.subjectsToIdentities,
       subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
+      resolvePersonalAiAgent: (personalAiAgentProps) =>
+        this.telegramPersonalAiAgentEnsure(personalAiAgentProps),
     }).execute(props);
+  }
+
+  async telegramPersonalAiAgentEnsure(
+    props: ITelegramPersonalAiAgentExecuteProps,
+  ): Promise<ITelegramPersonalAiAgentResult> {
+    return new TelegramPersonalAiAgent({
+      findSubjects: (findProps) => this.find(findProps),
+      socialModule: this.socialModule,
+      subjectsToSocialModuleProfiles: this.subjectsToSocialModuleProfiles,
+      ensureKnowledgeAccess: (accessProps) =>
+        this.socialModuleProfileKnowledgeAccessEnsure(accessProps),
+    }).execute(props);
+  }
+
+  async socialModuleProfileKnowledgeAccessEnsure(
+    props: IEnsureSocialProfileKnowledgeAccessProps,
+  ) {
+    const result = await new SocialProfileKnowledgeAccessService({
+      permission: this.permission,
+      role: this.role,
+      rolesToPermissions: this.rolesToPermissions,
+      subjectsToRoles: this.subjectsToRoles,
+    }).ensure(props);
+
+    this.isAuthorizedService.invalidateSubjectRoleCache(
+      props.ownerRbacSubjectId,
+    );
+
+    return result;
   }
 
   async telegramSyncMembership(
@@ -331,4 +446,30 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   protected getChatLifecycleService() {
     return new ChatLifecycleService(this);
   }
+
+  protected getSocialModuleProfileMcpCatalogService() {
+    return new ProfileMcpCatalogService();
+  }
+
+  protected getSocialModuleProfileAiToolLoopService() {
+    return new SocialProfileAiToolLoop();
+  }
+
+  protected createSocialModuleProfileAiExecutionActionReporter(
+    props: IAiExecutionActionReporterProps,
+  ) {
+    return new AiExecutionActionReporter(props);
+  }
 }
+
+export type {
+  IAiExecutionActionReporter,
+  IAiExecutionActionReporterProps,
+  IOpenRouterBillingLedgerEntry,
+  IOpenRouterBillingSummary,
+  IProfileMcpCatalogSession,
+  ISocialProfileAiTool,
+  ISocialProfileAiToolLoopProps,
+  ISocialProfileAiToolLoopResult,
+  TOpenRouterBillingPurpose,
+} from "./public-contract";

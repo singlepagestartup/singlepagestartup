@@ -2,6 +2,7 @@ import {
   AUDIO_TRANSCRIPTION_ACTION_TYPE,
   AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY,
   AUDIO_TRANSCRIPTION_METADATA_KEY,
+  normalizeRoutePath,
   RBAC_SECRET_KEY,
 } from "@sps/shared-utils";
 import { Context } from "hono";
@@ -19,7 +20,9 @@ export class Handler {
   }
 
   protected matchRoute(route: string | undefined, templates: string[]) {
-    if (!route) {
+    const normalizedRoute = normalizeRoutePath(route);
+
+    if (!normalizedRoute) {
       return null;
     }
 
@@ -32,7 +35,7 @@ export class Handler {
         decode: decodeURIComponent,
         end: true,
       });
-      const result = matcher(route);
+      const result = matcher(normalizedRoute);
 
       if (result) {
         return result;
@@ -100,7 +103,9 @@ export class Handler {
       end: true,
     });
 
-    const result = matcher(props.data.rbacModuleAction.payload?.route);
+    const result = matcher(
+      normalizeRoutePath(props.data.rbacModuleAction.payload?.route),
+    );
 
     if (!result) {
       return c.json({
@@ -390,8 +395,15 @@ export class Handler {
       });
     }
 
+    const matchedSocialModuleThreadId = result.params.social_thread_id;
+    const socialModuleThreadId =
+      typeof matchedSocialModuleThreadId === "string"
+        ? matchedSocialModuleThreadId
+        : undefined;
+
     const handled = await this.dispatchAutomaticReplyForMessage({
       socialModuleMessage,
+      socialModuleThreadId,
     });
 
     return c.json({
@@ -425,6 +437,7 @@ export class Handler {
   protected async dispatchAutomaticReplyForMessage(props: {
     socialModuleChat?: any;
     socialModuleMessage: any;
+    socialModuleThreadId?: string;
   }) {
     if (this.isAudioTranscriptionPendingOrFailed(props.socialModuleMessage)) {
       return false;
@@ -545,8 +558,9 @@ export class Handler {
     }
 
     const shouldReplySocialModuleProfiles = socialModuleProfiles.filter(
-      (profile) =>
-        ["artificial-intelligence", "agent"].includes(profile.variant),
+      (profile) => {
+        return ["artificial-intelligence", "agent"].includes(profile.variant);
+      },
     );
 
     if (!shouldReplySocialModuleProfiles.length) {
@@ -566,6 +580,7 @@ export class Handler {
         shouldReplySocialModuleProfile,
         socialModuleChat,
         socialModuleMessage: props.socialModuleMessage,
+        socialModuleThreadId: props.socialModuleThreadId,
         messageFromSocialModuleProfile,
       });
       handled = true;

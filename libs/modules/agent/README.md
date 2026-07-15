@@ -65,6 +65,16 @@ The agent service executes these commands through the RBAC subject SDK using the
 sender subject permissions, and replies through the existing Telegram bot reply
 flow so responses stay in the same `social.thread`.
 
+All Telegram commands are declared by the Agent command registry. Each entry
+has a Telegram menu description and targets either the `telegram-bot` profile or a
+`social.profile.variant="artificial-intelligence"`; `/learn` targets the AI
+profile and therefore reaches the shared RBAC/OpenRouter learning flow without
+transport-specific rewriting. The startup Agent service merges protected
+startup definitions after the SinglePage definitions, so a child project can
+rename, replace, disable, or add commands without changing `apps/telegram` or
+the SinglePage service. The Telegram app reads the effective catalog through
+the Agent server SDK and publishes it with `setMyCommands` when the bot starts.
+
 `social.thread` is the source of truth for Telegram topics. Native Telegram UI
 rename/delete/close events are ignored for SPS data; command flows and SPS UI
 flows are responsible for create/update/delete.

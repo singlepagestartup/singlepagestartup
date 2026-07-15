@@ -2,7 +2,7 @@ import { randomWordsGenerator } from "@sps/shared-utils";
 import { sql } from "drizzle-orm";
 import * as pgCore from "drizzle-orm/pg-core";
 
-export const supportedMcpServerIdentifiers = ["project"] as const;
+export const supportedMcpServerIdentifiers = ["singlepagestartup"] as const;
 
 export type TSupportedMcpServerIdentifier =
   (typeof supportedMcpServerIdentifiers)[number];

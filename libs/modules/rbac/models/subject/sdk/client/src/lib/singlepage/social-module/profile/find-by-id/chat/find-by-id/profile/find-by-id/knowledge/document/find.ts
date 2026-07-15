@@ -12,7 +12,11 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
+import {
+  defaultCompiledTopicRules,
+  resolveTopicsForPath,
+  STALE_TIME,
+} from "@sps/shared-utils";
 
 export type IProps =
   IParentProps["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFindProps"] & {
@@ -35,7 +39,7 @@ export function action(props: IProps) {
   return useQuery<IResult>({
     queryKey: [queryKey],
     meta: {
-      topics: deriveTopicsFromPath(queryKey),
+      topics: resolveTopicsForPath(queryKey, defaultCompiledTopicRules),
       ...(userMeta ?? {}),
     },
     queryFn: async () => {

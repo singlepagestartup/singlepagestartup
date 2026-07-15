@@ -37,7 +37,6 @@ import {
 import { toast } from "sonner";
 
 interface ComposerProps {
-  assistantProfileId?: string;
   canSelectOpenRouterReasoning: boolean;
   canUseKnowledge: boolean;
   clearSelectedSkills: () => void;
@@ -52,7 +51,6 @@ interface ComposerProps {
    * composer boundary (issue #195).
    */
   markShouldScrollToBottom: () => void;
-  onKnowledgeReactionSuccess: () => void;
   onOpenRouterModelFavoriteToggle: (modelId: string) => void;
   onOpenRouterModelChange: (value: string) => void;
   onOpenRouterReasoningChange: (value: OpenRouterReasoningValue) => void;
@@ -79,10 +77,11 @@ interface ComposerProps {
 }
 
 /**
- * Composer boundary (issue #195): owns the message form AND the create /
- * AI-reaction mutations. Keystrokes, submit pending-state flips, and the
- * create-success cache append all stay inside this component — the chat shell
- * and the timeline section never rerender because of composer activity.
+ * Composer boundary (issue #195): owns the message form and the single create
+ * mutation. AI reaction intent is persisted with that message and all
+ * orchestration stays on the backend. Keystrokes, submit pending-state flips,
+ * and the create-success cache append stay inside this component — the chat
+ * shell and timeline never rerender because of composer activity.
  */
 export function Composer(props: ComposerProps) {
   const composer = useChatComposer({
@@ -90,12 +89,11 @@ export function Composer(props: ComposerProps) {
     socialModuleProfileId: props.socialModuleProfileId,
     socialModuleChatId: props.socialModuleChatId,
     socialModuleThreadId: props.socialModuleThreadId,
-    assistantProfileId: props.assistantProfileId,
     clearSelectedSkills: props.clearSelectedSkills,
     markShouldScrollToBottom: props.markShouldScrollToBottom,
-    onKnowledgeReactionSuccess: props.onKnowledgeReactionSuccess,
     openRouterModelId: props.openRouterModelId,
     openRouterReasoning: props.openRouterReasoning,
+    persistAiReactionRequest: props.isArtificialIntelligenceOpponent,
     profileSkills: props.profileSkills,
     selectedSkillIds: props.selectedSkillIds,
     threadMessagesCache: props.threadMessagesCache,
@@ -275,6 +273,7 @@ export function Composer(props: ComposerProps) {
     const currentDescription = composer.form.getValues("description") || "";
     const nextDescription = currentDescription
       .replace(/(^|\s)@knowledge(?=\s|$)\s*/i, "$1")
+      .replace(/(^|\s)\/knowledge(?=\s|$)\s*/i, "$1")
       .replace(/\s{2,}/g, " ")
       .trimStart();
 
@@ -620,14 +619,21 @@ export function Composer(props: ComposerProps) {
           multiple
           className="hidden"
           onChange={(event) => {
-            const files = event.target.files
+            const newlySelectedFiles = event.target.files
               ? Array.from(event.target.files)
-              : undefined;
+              : [];
+            const currentFiles = composer.form.getValues("files");
+            const files =
+              Array.isArray(currentFiles) && isFileArray(currentFiles)
+                ? [...currentFiles, ...newlySelectedFiles]
+                : newlySelectedFiles;
 
-            composer.form.setValue("files", files, {
+            composer.form.setValue("files", files.length ? files : undefined, {
               shouldDirty: true,
               shouldValidate: true,
             });
+
+            event.currentTarget.value = "";
           }}
         />
         {props.isArtificialIntelligenceOpponent ? (

@@ -13,8 +13,10 @@ export function Component(props: IComponentPropsExtended) {
       selectedKnowledgeDocument={props.selectedKnowledgeDocument}
       isSkillsLoading={props.isSkillsLoading}
       isKnowledgeDocumentsLoading={props.isKnowledgeDocumentsLoading}
+      hasKnowledgeDocumentsError={props.hasKnowledgeDocumentsError}
       onKnowledgeDocumentCreate={props.onKnowledgeDocumentCreate}
       onKnowledgeDocumentSelect={props.onKnowledgeDocumentSelect}
+      onMcpServersEdit={props.onMcpServersEdit}
       onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}

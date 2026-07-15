@@ -32,6 +32,15 @@ interface IFindThreadMessageIdsInChatHandler {
   }): Promise<string[]>;
 }
 
+interface IOpenRouterModelRouterConfigHandler {
+  getEnabledCandidatesByClass(
+    modelClass: "CLASSIFIER" | "CHAT" | "CODER" | "VISION" | "IMAGE",
+  ): Array<{
+    id: string;
+    priority: number;
+  }>;
+}
+
 interface IOpenRouterIdentityGuardHandler {
   assertReplyProfile(replyProfile?: { id: string; variant: string }): void;
   assertProfileCanAccessChat(props: {
@@ -51,13 +60,36 @@ interface IOpenRouterIdentityGuardHandler {
     socialModuleProfileId: string;
     socialModuleChatId: string;
   }): Promise<void>;
-  resolveEmployeeSubject(socialModuleProfileId: string): Promise<{
+  resolveRbacSubjectForSocialProfile(socialModuleProfileId: string): Promise<{
     id: string;
   }>;
 }
 
+interface IOpenRouterPersistedRequestHandler {
+  resolveAiReactionRequest(props: {
+    data: {
+      [key: string]: unknown;
+      shouldReplySocialModuleProfile?: {
+        id?: string;
+      };
+    };
+    socialModuleMessage: {
+      metadata?: Record<string, unknown> | null;
+    };
+  }): {
+    version: 1;
+    modelId: string;
+    reasoning: string;
+    skillIds: string[];
+    useKnowledgeSearch: boolean;
+  };
+}
+
 interface IOpenRouterReplyValidationHandler {
-  buildNoValidModelResponseMessage(fallbackReasons: string[]): string;
+  buildNoValidModelResponseMessage(
+    fallbackReasons: string[],
+    language?: string,
+  ): string;
   generateFinalOpenRouterReply(props: {
     billingLedger: any[];
     openRouter: {
@@ -142,7 +174,46 @@ interface IOpenRouterReplyValidationHandler {
   }): boolean;
 }
 
+interface IOpenRouterAttachmentContextHandler {
+  detectInputModalitiesFromContext(
+    context: Array<{
+      role: "user" | "assistant" | "system";
+      content:
+        | string
+        | Array<
+            | { type: "text"; text: string }
+            | { type: "image_url"; image_url: { url: string } }
+            | { type: "file_url"; file_url: { url: string } }
+          >;
+    }>,
+  ): string[];
+  resolveOpenRouterMessageContext(props: {
+    fileStorageFiles: Array<{
+      extension?: string | null;
+      file: string;
+      mimeType?: string | null;
+    }>;
+    messageDescription: string;
+  }): Promise<{
+    content:
+      | string
+      | Array<
+          | { type: "text"; text: string }
+          | { type: "image_url"; image_url: { url: string } }
+          | { type: "file_url"; file_url: { url: string } }
+        >
+      | null;
+    routingText: string;
+  }>;
+}
+
 interface IOpenRouterKnowledgeControlsHandler {
+  toOpenRouterUserQuery(props: {
+    rawQuery: string;
+    requestedKnowledgeSearch: boolean;
+    hasMentionedSkill: boolean;
+    requestedSkillIds: string[];
+  }): string;
   toOpenRouterReasoning(
     value: "auto" | "none" | "low" | "medium" | "high" | "xhigh",
   ):
@@ -205,6 +276,10 @@ interface IOpenRouterKnowledgeControlsHandler {
   }>;
   buildMcpCapabilityTools(catalogSession: unknown): Array<{
     source: "skill" | "knowledge" | "mcp";
+    display?: {
+      label: string;
+      serverId?: string;
+    };
     definition: {
       function: {
         name: string;
@@ -277,6 +352,10 @@ interface IOpenRouterKnowledgeControlsHandler {
     sanitizedQuery: string;
     requestedKnowledgeSearch: boolean;
     requestedSkillIds: string[];
+    reasoning?: {
+      effort: "none" | "low" | "medium" | "high" | "xhigh";
+      exclude?: boolean;
+    };
     selectedModelId: string | null;
     threadContext: {
       role: "user" | "assistant" | "system";
@@ -334,6 +413,171 @@ function createKnowledgeSearchResult(
 }
 
 describe("Given: OpenRouter thread context and reply validation", () => {
+  /**
+   * BDD Scenario
+   * Given: OpenRouter exposes the July 2026 generation model families.
+   * When: automatic-routing candidates are loaded.
+   * Then: current GPT, MiniMax, Claude, Gemini, and Kimi models replace stale and unavailable candidates.
+   */
+  it("When: autorouting candidates are loaded Then: only the current configured model families are used", () => {
+    const handler = Object.create(
+      Handler.prototype,
+    ) as IOpenRouterModelRouterConfigHandler;
+    const classes = ["CLASSIFIER", "CHAT", "CODER", "VISION", "IMAGE"] as const;
+    const idsByClass = Object.fromEntries(
+      classes.map((modelClass) => [
+        modelClass,
+        handler
+          .getEnabledCandidatesByClass(modelClass)
+          .map((candidate) => candidate.id),
+      ]),
+    );
+    const allIds = Object.values(idsByClass).flat();
+
+    expect(idsByClass.CLASSIFIER[0]).toBe("openai/gpt-5.6-luna");
+    expect(idsByClass.CHAT).toEqual(
+      expect.arrayContaining([
+        "openai/gpt-5.6-terra",
+        "minimax/minimax-m3",
+        "minimax/minimax-m2.7",
+        "anthropic/claude-sonnet-5",
+        "google/gemini-3.5-flash",
+      ]),
+    );
+    expect(idsByClass.CODER).toEqual(
+      expect.arrayContaining([
+        "openai/gpt-5.6-sol",
+        "minimax/minimax-m2.7",
+        "moonshotai/kimi-k2.7-code",
+        "google/gemini-3.5-flash",
+      ]),
+    );
+    expect(idsByClass.VISION).toContain("google/gemini-3.5-flash");
+    expect(idsByClass.IMAGE.slice(0, 2)).toEqual([
+      "google/gemini-3.1-flash-image",
+      "google/gemini-3.1-flash-lite-image",
+    ]);
+    expect(allIds).not.toEqual(
+      expect.arrayContaining([
+        "openai/gpt-5.2",
+        "openai/gpt-5.2-codex",
+        "black-forest-labs/flux.2-pro",
+        "sourceful/riverflow-v2-standard-preview",
+        "bytedance-seed/seedream-4.5",
+      ]),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a message persists the complete AI reaction request.
+   * When: the OpenRouter handler resolves execution parameters.
+   * Then: model, reasoning, skills, and Knowledge come from the message.
+   */
+  it("When: persisted reaction intent exists Then: it is the canonical execution request", () => {
+    const handler = Object.create(
+      Handler.prototype,
+    ) as IOpenRouterPersistedRequestHandler;
+
+    expect(
+      handler.resolveAiReactionRequest({
+        data: {
+          shouldReplySocialModuleProfile: {
+            id: "assistant-profile",
+          },
+          modelId: "caller/model-override",
+          reasoning: "none",
+          skillIds: ["caller-skill"],
+          useKnowledgeSearch: false,
+        },
+        socialModuleMessage: {
+          metadata: {
+            rbacAiReactionRequest: {
+              version: 1,
+              modelId: "openai/gpt-5.2",
+              reasoning: "high",
+              skillIds: ["skill-1"],
+              useKnowledgeSearch: true,
+            },
+          },
+        },
+      }),
+    ).toEqual({
+      version: 1,
+      modelId: "openai/gpt-5.2",
+      reasoning: "high",
+      skillIds: ["skill-1"],
+      useKnowledgeSearch: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Agent selected one of multiple AI profiles connected to the chat.
+   * When: the OpenRouter handler resolves the request.
+   * Then: persisted execution settings apply without restricting that profile.
+   */
+  it("When: Agent selects a reply profile Then: message settings do not override it", () => {
+    const handler = Object.create(
+      Handler.prototype,
+    ) as IOpenRouterPersistedRequestHandler;
+
+    expect(
+      handler.resolveAiReactionRequest({
+        data: {
+          shouldReplySocialModuleProfile: {
+            id: "different-assistant",
+          },
+        },
+        socialModuleMessage: {
+          metadata: {
+            rbacAiReactionRequest: {
+              version: 1,
+              modelId: "auto",
+              reasoning: "auto",
+              skillIds: [],
+              useKnowledgeSearch: false,
+            },
+          },
+        },
+      }),
+    ).toEqual({
+      version: 1,
+      modelId: "auto",
+      reasoning: "auto",
+      skillIds: [],
+      useKnowledgeSearch: false,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram or legacy message has no reaction envelope.
+   * When: Agent supplies its backend-selected profile.
+   * Then: only safe automatic defaults are synthesized.
+   */
+  it("When: persisted intent is absent Then: backend-selected legacy defaults are used", () => {
+    const handler = Object.create(
+      Handler.prototype,
+    ) as IOpenRouterPersistedRequestHandler;
+
+    expect(
+      handler.resolveAiReactionRequest({
+        data: {
+          shouldReplySocialModuleProfile: {
+            id: "assistant-profile",
+          },
+        },
+        socialModuleMessage: {},
+      }),
+    ).toEqual({
+      version: 1,
+      modelId: "auto",
+      reasoning: "auto",
+      skillIds: [],
+      useKnowledgeSearch: false,
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -430,16 +674,16 @@ describe("Given: OpenRouter thread context and reply validation", () => {
   /**
    * BDD Scenario
    * Given: an AI profile is linked to zero or multiple RBAC subjects.
-   * When: the employee principal is resolved.
+   * When: the social.profile rbac.subject is resolved.
    * Then: credential issuance fails closed unless exactly one subject exists.
    */
-  it("When: employee subject cardinality is not one Then: principal resolution fails closed", async () => {
+  it("When: rbac.subject cardinality is not one Then: principal resolution fails closed", async () => {
     const relationsFind = jest
       .fn()
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([
-        { subjectId: "employee-a" },
-        { subjectId: "employee-b" },
+        { subjectId: "social.profile-a" },
+        { subjectId: "social.profile-b" },
       ]);
     const handler = new Handler({
       subjectsToSocialModuleProfiles: {
@@ -449,32 +693,32 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
 
     await expect(
-      handler.resolveEmployeeSubject("reply-profile"),
-    ).rejects.toThrow("exactly one employee subject");
+      handler.resolveRbacSubjectForSocialProfile("reply-profile"),
+    ).rejects.toThrow("exactly one linked rbac.subject");
     await expect(
-      handler.resolveEmployeeSubject("reply-profile"),
-    ).rejects.toThrow("exactly one employee subject");
+      handler.resolveRbacSubjectForSocialProfile("reply-profile"),
+    ).rejects.toThrow("exactly one linked rbac.subject");
   });
 
   /**
    * BDD Scenario
-   * Given: an AI profile has exactly one linked employee subject.
-   * When: the employee principal is resolved.
+   * Given: an AI profile has exactly one linked rbac.subject.
+   * When: the social.profile rbac.subject is resolved.
    * Then: the server-bound subject is returned without caller override input.
    */
-  it("When: one employee subject is linked Then: principal resolution uses that relation", async () => {
-    const findById = jest.fn(async () => ({ id: "employee-subject" }));
+  it("When: one rbac.subject is linked Then: principal resolution uses that relation", async () => {
+    const findById = jest.fn(async () => ({ id: "rbac-subject" }));
     const handler = new Handler({
       subjectsToSocialModuleProfiles: {
-        find: jest.fn(async () => [{ subjectId: "employee-subject" }]),
+        find: jest.fn(async () => [{ subjectId: "rbac-subject" }]),
       },
       findById,
     } as any) as unknown as IOpenRouterIdentityGuardHandler;
 
     await expect(
-      handler.resolveEmployeeSubject("reply-profile"),
-    ).resolves.toEqual({ id: "employee-subject" });
-    expect(findById).toHaveBeenCalledWith({ id: "employee-subject" });
+      handler.resolveRbacSubjectForSocialProfile("reply-profile"),
+    ).resolves.toEqual({ id: "rbac-subject" });
+    expect(findById).toHaveBeenCalledWith({ id: "rbac-subject" });
   });
 
   /**
@@ -623,7 +867,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       expect.objectContaining({
         model: "openai/gpt-5.2",
         max_tokens: 8192,
-        stripNonTextOnRetry: true,
+        stripNonTextOnRetry: false,
       }),
     );
     expect(openRouter.generate).toHaveBeenNthCalledWith(
@@ -631,7 +875,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       expect.objectContaining({
         model: "anthropic/claude-haiku-4.5",
         max_tokens: 8192,
-        stripNonTextOnRetry: true,
+        stripNonTextOnRetry: false,
       }),
     );
     expect(onModelAttempt).toHaveBeenCalledTimes(2);
@@ -646,9 +890,9 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    * BDD Scenario
    * Given: the selected final model and its single fallback both return empty text.
    * When: final generation is resolved for a text reply.
-   * Then: no assistant reply source is returned and the terminal error message contains both failure reasons.
+   * Then: technical reasons stay internal and the terminal error is actionable for the user.
    */
-  it("When: primary and fallback text are invalid Then: terminal failure keeps both reasons", async () => {
+  it("When: primary and fallback text are invalid Then: terminal failure is human-readable", async () => {
     const handler = new Handler(
       {} as any,
     ) as unknown as IOpenRouterReplyValidationHandler;
@@ -690,7 +934,12 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(
       handler.buildNoValidModelResponseMessage(result.fallbackReasons),
     ).toBe(
-      "No valid model response received. model=openai/gpt-5.2: expected text output, but model returned empty text | model=anthropic/claude-haiku-4.5: expected text output, but model returned empty text",
+      "A valid response could not be received from the model. Please try again or select another model.",
+    );
+    expect(
+      handler.buildNoValidModelResponseMessage(result.fallbackReasons, "ru"),
+    ).toBe(
+      "Не удалось получить корректный ответ от модели. Попробуйте повторить запрос или выбрать другую модель.",
     );
     expect(openRouter.generate).toHaveBeenCalledTimes(2);
   });
@@ -722,6 +971,38 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         },
       }),
     ).rejects.toThrow("Generated message is empty");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a model returns LaTeX that neither Telegram nor the web Markdown renderer supports.
+   * When: the handler builds the canonical assistant message.
+   * Then: it stores portable text math before appending the model footer.
+   */
+  it("When: final text reply contains LaTeX Then: portable math is stored", async () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterReplyValidationHandler;
+
+    await expect(
+      handler.buildOpenRouterReplyMessageData({
+        expectedOutputModality: "text",
+        generationResult: {
+          text: String.raw`\[\text{Окупаемость} = \frac{\text{вложения}}{\text{чистый доход}}\]`,
+          billing: {},
+        },
+        selectModelForRequest: "openai/gpt-5.6",
+        billingSettlement: {
+          summary: {
+            exactTokens: 1,
+          },
+          settlement: null,
+        },
+      }),
+    ).resolves.toMatchObject({
+      description:
+        "Окупаемость = (вложения) / (чистый доход)\n\n__openai/gpt-5.6__",
+    });
   });
 
   /**
@@ -859,6 +1140,92 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
+   * Given: a message contains two related text files and an image.
+   * When: OpenRouter context and automatic-routing text are built.
+   * Then: both original text files and the image stay attached while extracted text is used only for routing.
+   */
+  it("When: several files are attached Then: originals drive generation and text previews drive routing", async () => {
+    const handler = new Handler(
+      {} as any,
+    ) as unknown as IOpenRouterAttachmentContextHandler;
+    jest
+      .spyOn(handler as any, "readFileStorageModuleFile")
+      .mockResolvedValueOnce("Часть 1: кота на фотографии зовут Барсик.")
+      .mockResolvedValueOnce("Часть 2: любимая игрушка Барсика — зелёный мяч.");
+
+    const resolved = await handler.resolveOpenRouterMessageContext({
+      messageDescription:
+        "Ответь, как зовут кота и какая у него любимая игрушка.",
+      fileStorageFiles: [
+        {
+          extension: "txt",
+          file: "/file-storage/static/cat-part-1.txt",
+          mimeType: "text/plain",
+        },
+        {
+          extension: "txt",
+          file: "/file-storage/static/cat-part-2.txt",
+          mimeType: "text/plain",
+        },
+        {
+          extension: "jpeg",
+          file: "/file-storage/static/cat.jpeg",
+          mimeType: "image/jpeg",
+        },
+      ],
+    });
+
+    expect(resolved.content).toEqual([
+      {
+        type: "text",
+        text: [
+          "Ответь, как зовут кота и какая у него любимая игрушка.",
+          "Attached file: cat-part-1.txt",
+          "Attached file: cat-part-2.txt",
+          "Attached image: cat.jpeg",
+        ].join("\n\n"),
+      },
+      {
+        type: "file_url",
+        file_url: {
+          url: "http://localhost:4000/public/file-storage/static/cat-part-1.txt",
+        },
+      },
+      {
+        type: "file_url",
+        file_url: {
+          url: "http://localhost:4000/public/file-storage/static/cat-part-2.txt",
+        },
+      },
+      {
+        type: "image_url",
+        image_url: {
+          url: "http://localhost:4000/public/file-storage/static/cat.jpeg",
+        },
+      },
+    ]);
+    expect(resolved.routingText).toContain("кота на фотографии зовут Барсик");
+    expect(resolved.routingText).toContain(
+      "любимая игрушка Барсика — зелёный мяч",
+    );
+    expect(JSON.stringify(resolved.content)).not.toContain(
+      "любимая игрушка Барсика",
+    );
+    expect(
+      handler.detectInputModalitiesFromContext([
+        {
+          role: "user",
+          content: resolved.content as Exclude<
+            typeof resolved.content,
+            string | null
+          >,
+        },
+      ]),
+    ).toEqual(["text", "image", "file"]);
+  });
+
+  /**
+   * BDD Scenario
    * Given: the chat UI sends a manual Thinking value.
    * When: OpenRouter reasoning params are built.
    * Then: auto is omitted and explicit efforts hide reasoning content by default.
@@ -869,6 +1236,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     ) as unknown as IOpenRouterKnowledgeControlsHandler;
 
     expect(handler.toOpenRouterReasoning("auto")).toBeUndefined();
+    expect(handler.toOpenRouterReasoning("low")).toEqual({
+      effort: "low",
+      exclude: true,
+    });
     expect(handler.toOpenRouterReasoning("high")).toEqual({
       effort: "high",
       exclude: true,
@@ -1000,9 +1371,17 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
     expect(
       handler.getMentionedSkillSlugs(
-        "@knowledge /learn Store this /brief-writer /new",
+        "/knowledge /learn Store this /brief-writer /new",
       ),
     ).toEqual(["brief-writer"]);
+    expect(
+      handler.toOpenRouterUserQuery({
+        rawQuery: "/knowledge What is in the profile knowledge?",
+        requestedKnowledgeSearch: true,
+        hasMentionedSkill: false,
+        requestedSkillIds: [],
+      }),
+    ).toBe("What is in the profile knowledge?");
   });
 
   /**
@@ -1178,7 +1557,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    * BDD Scenario
    * Given: the replying profile has localized title and description.
    * When: OpenRouter builds generation context.
-   * Then: profile persona is included as system context before conversation history.
+   * Then: profile persona is included before conversation history without transport-specific response restrictions.
    */
   it("When: generation context is built Then: profile persona is a system message", () => {
     const handler = new Handler(
@@ -1211,16 +1590,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       profileSystemMessage,
     });
 
-    expect(generationContext[2]).toMatchObject({
-      role: "system",
-      content: expect.stringContaining(
-        "Редактирует пользовательский текст без переписывания смысла.",
-      ),
-    });
-    expect(generationContext[generationContext.length - 1]).toEqual({
-      role: "user",
-      content: "Поправь текст",
-    });
+    expect(generationContext).toEqual([
+      {
+        role: "system",
+        content:
+          "Answer in ru language. Use portable Markdown only. Do not use LaTeX delimiters or commands. Write formulas with plain text and Unicode mathematical symbols so the same answer is readable in web chat and Telegram.",
+      },
+      profileSystemMessage,
+      {
+        role: "user",
+        content: "Поправь текст",
+      },
+    ]);
   });
 
   /**
@@ -1271,9 +1652,9 @@ describe("Given: OpenRouter thread context and reply validation", () => {
    * BDD Scenario
    * Given: a replying profile has scoped Knowledge documents.
    * When: OpenRouter resolves an ordinary task and an explicit @knowledge task.
-   * Then: both retrieve automatically while remaining bound to the linked document ids.
+   * Then: only the explicit task retrieves profile-scoped Knowledge.
    */
-  it("When: linked Knowledge exists Then: ordinary and explicit tasks search only profile documents", async () => {
+  it("When: linked Knowledge exists Then: only explicit @knowledge searches profile documents", async () => {
     const search = jest.fn(async () => [
       createKnowledgeSearchResult({
         id: "chunk-1",
@@ -1329,20 +1710,14 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         threadContext: [],
       }),
     ).resolves.toMatchObject({
-      useKnowledgeSearch: true,
-      searchDocumentIds: ["document-1"],
-      sources: [
-        {
-          text: "Policy fragment",
-        },
-      ],
+      useKnowledgeSearch: false,
+      searchDocumentIds: [],
+      candidateSources: [],
+      sources: [],
+      systemMessages: [],
     });
-    expect(search).toHaveBeenLastCalledWith({
-      query: "Question",
-      topK: 30,
-      neighborWindow: 1,
-      documentIds: ["document-1"],
-    });
+    expect(search).not.toHaveBeenCalled();
+    expect(openRouter.generate).not.toHaveBeenCalled();
 
     const context = await handler.resolveOpenRouterKnowledgeContext({
       billingLedger: [],
@@ -1360,6 +1735,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       sanitizedQuery: "Question",
       requestedKnowledgeSearch: true,
       requestedSkillIds: [],
+      reasoning: {
+        effort: "low",
+        exclude: true,
+      },
       selectedModelId: "openai/gpt-5.5",
       threadContext: [
         {
@@ -1378,6 +1757,10 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     expect(openRouter.generate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: "openai/gpt-5.5",
+        reasoning: {
+          effort: "low",
+          exclude: true,
+        },
       }),
     );
     expect(context).toMatchObject({
@@ -1407,7 +1790,79 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: an employee profile has one linked skill and one linked Knowledge document.
+   * Given: explicit @knowledge retrieval returns irrelevant candidate chunks.
+   * When: the structured reranker validly selects no chunk ids.
+   * Then: no fallback chunks are injected into the final generation context.
+   */
+  it("When: Knowledge rerank selects no chunks Then: the RAG context stays empty", async () => {
+    const search = jest.fn(async () => [
+      createKnowledgeSearchResult({
+        id: "chunk-irrelevant",
+        text: "Unrelated fragment",
+      }),
+    ]);
+    const openRouter = {
+      generate: jest.fn(async () => ({
+        text: JSON.stringify({
+          selected_chunk_ids: [],
+          reason: "The candidate does not answer the question.",
+        }),
+        billing: null,
+      })),
+    };
+    const handler = new Handler({
+      socialModule: {
+        profilesToSkills: {
+          find: jest.fn(async () => []),
+        },
+        profilesToKnowledgeModuleDocuments: {
+          find: jest.fn(async () => [
+            {
+              knowledgeModuleDocumentId: "document-1",
+            },
+          ]),
+        },
+      },
+    } as any) as unknown as IOpenRouterKnowledgeControlsHandler;
+
+    (
+      handler as unknown as { knowledgeService: { search: typeof search } }
+    ).knowledgeService = {
+      search,
+    };
+
+    const context = await handler.resolveOpenRouterKnowledgeContext({
+      billingLedger: [],
+      data: {
+        useKnowledgeSearch: true,
+      },
+      openRouter,
+      replyProfile: {
+        id: "profile-1",
+      },
+      socialModuleMessage: {
+        id: "message-1",
+        description: "@knowledge Question",
+      },
+      sanitizedQuery: "Question",
+      requestedKnowledgeSearch: true,
+      requestedSkillIds: [],
+      selectedModelId: "openai/gpt-5.5",
+      threadContext: [],
+    });
+
+    expect(context.sources).toEqual([]);
+    expect(context.retrieval).toMatchObject({
+      candidateCount: 1,
+      rerankedSourceIds: [],
+      rerankFallbackReason: null,
+      rerankReason: "The candidate does not answer the question.",
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an social.profile has one linked skill and one linked Knowledge document.
    * When: its local capability catalog is built and invoked by the model.
    * Then: only the linked skill slug and server-bound document ids can be used.
    */
@@ -1467,7 +1922,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
 
   /**
    * BDD Scenario
-   * Given: the allowed project MCP session exposes one live tool.
+   * Given: the allowed SinglePageStartup MCP session exposes one live tool.
    * When: OpenRouter capabilities are assembled and the exposed tool executes.
    * Then: the namespaced model call is routed back to the exact server and live tool name.
    */
@@ -1485,8 +1940,8 @@ describe("Given: OpenRouter thread context and reply validation", () => {
         stale: [],
         connected: [
           {
-            id: "project",
-            title: "Project MCP",
+            id: "singlepagestartup",
+            title: "SinglePageStartup MCP",
             description: "Project tools",
             tools: [
               {
@@ -1508,14 +1963,18 @@ describe("Given: OpenRouter thread context and reply validation", () => {
     });
 
     expect(tools.map((tool) => tool.definition.function.name)).toEqual([
-      "mcp__project__find_record",
+      "mcp__singlepagestartup__find_record",
     ]);
+    expect(tools[0]?.display).toEqual({
+      label: "find_record",
+      serverId: "singlepagestartup",
+    });
     await expect(tools[0]?.execute({ id: "record-1" })).resolves.toEqual({
       isError: false,
       text: "Record found",
     });
     expect(callTool).toHaveBeenCalledWith({
-      serverId: "project",
+      serverId: "singlepagestartup",
       name: "find_record",
       arguments: { id: "record-1" },
     });
@@ -1594,7 +2053,7 @@ describe("Given: OpenRouter thread context and reply validation", () => {
       candidateCount: 2,
       rerankedSourceIds: ["chunk-1", "chunk-2"],
       rerankFallbackReason:
-        "knowledge rerank returned no valid selected_chunk_ids",
+        "knowledge rerank returned invalid selected_chunk_ids",
     });
   });
 });

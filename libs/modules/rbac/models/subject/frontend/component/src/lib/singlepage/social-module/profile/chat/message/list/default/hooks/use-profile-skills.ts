@@ -14,6 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface UseProfileSkillsProps {
+  enabled: boolean;
   subjectId: string;
   requesterSocialModuleProfileId: string;
   socialModuleChatId: string;
@@ -36,7 +37,10 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
           },
         },
         reactQueryOptions: {
-          enabled: Boolean(props.socialModuleProfileId),
+          enabled:
+            props.enabled &&
+            Boolean(props.socialModuleProfileId) &&
+            props.socialModuleProfileId !== "missing-profile",
         },
       },
     );
@@ -85,8 +89,10 @@ export function useProfileSkills(props: UseProfileSkillsProps) {
     void queryClient.invalidateQueries({
       queryKey: skillListQueryKey,
     });
-    void targetSkillsQuery.refetch();
-  }, [skillListQueryKey, targetSkillsQuery]);
+    if (props.enabled) {
+      void targetSkillsQuery.refetch();
+    }
+  }, [props.enabled, skillListQueryKey, targetSkillsQuery]);
 
   const selectedSkills = useMemo(() => {
     const skillsById = new Map(profileSkills.map((skill) => [skill.id, skill]));

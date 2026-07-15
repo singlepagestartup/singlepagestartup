@@ -10,6 +10,11 @@ export const fields = {
   title: pgCore.text("title"),
   description: pgCore.text("description"),
   sourceSystemId: pgCore.text("source_system_id"),
+  metadata: pgCore
+    .jsonb("metadata")
+    .$type<{ [key: string]: any }>()
+    .notNull()
+    .default({}),
   adminTitle: pgCore
     .text("admin_title")
     .notNull()

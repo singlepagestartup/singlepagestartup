@@ -165,6 +165,122 @@ describe("OpenRouter completion, tool-calling, and billing contracts", () => {
 
   /**
    * BDD Scenario
+   * Given: a user message contains two local text files and one local image.
+   * When: generation normalizes the multimodal request for OpenRouter.
+   * Then: the exact bytes of both files and the image are present in the outbound payload as data URLs.
+   */
+  it("inlines every local attachment without replacing text files by extracted text", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      const attachmentByUrl: Record<
+        string,
+        { bytes: string; mimeType: string }
+      > = {
+        "http://localhost:4000/part-1.txt": {
+          bytes: "Кота зовут Барсик.",
+          mimeType: "text/plain;charset=utf-8",
+        },
+        "http://localhost:4000/part-2.txt": {
+          bytes: "Любимая игрушка — зелёный мяч.",
+          mimeType: "text/plain; charset=utf-8",
+        },
+        "http://localhost:4000/cat.jpeg": {
+          bytes: "exact-jpeg-bytes",
+          mimeType: "image/jpeg",
+        },
+      };
+      const attachment = attachmentByUrl[url];
+
+      if (attachment) {
+        return {
+          ok: true,
+          arrayBuffer: async () => Buffer.from(attachment.bytes),
+          headers: {
+            get: (name: string) => {
+              return name.toLowerCase() === "content-type"
+                ? attachment.mimeType
+                : null;
+            },
+          },
+        } as any;
+      }
+
+      return {
+        json: async () => ({
+          model: "openai/gpt-5.2",
+          choices: [{ message: { content: "Барсик любит зелёный мяч." } }],
+        }),
+      } as any;
+    }) as jest.Mock;
+
+    const result = await service.generate({
+      model: "openai/gpt-5.2",
+      stripNonTextOnRetry: false,
+      context: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Сопоставь все вложения." },
+            {
+              type: "file_url",
+              file_url: { url: "http://localhost:4000/part-1.txt" },
+            },
+            {
+              type: "file_url",
+              file_url: { url: "http://localhost:4000/part-2.txt" },
+            },
+            {
+              type: "image_url",
+              image_url: { url: "http://localhost:4000/cat.jpeg" },
+            },
+          ],
+        },
+      ],
+    });
+    const completionCall = (global.fetch as jest.Mock).mock.calls.find(
+      ([url]) => String(url).endsWith("/chat/completions"),
+    );
+    const requestBody = JSON.parse(completionCall?.[1]?.body);
+
+    expect(result).toMatchObject({ text: "Барсик любит зелёный мяч." });
+    expect(requestBody.messages[0].content).toEqual([
+      { type: "text", text: "Сопоставь все вложения." },
+      {
+        type: "file",
+        file: {
+          file_data: `data:text/plain;base64,${Buffer.from(
+            "Кота зовут Барсик.",
+          ).toString("base64")}`,
+          mime_type: "text/plain",
+          filename: "part-1.txt",
+        },
+      },
+      {
+        type: "file",
+        file: {
+          file_data: `data:text/plain;base64,${Buffer.from(
+            "Любимая игрушка — зелёный мяч.",
+          ).toString("base64")}`,
+          mime_type: "text/plain",
+          filename: "part-2.txt",
+        },
+      },
+      {
+        type: "image_url",
+        image_url: {
+          url: `data:image/jpeg;base64,${Buffer.from(
+            "exact-jpeg-bytes",
+          ).toString("base64")}`,
+        },
+      },
+    ]);
+  });
+
+  /**
+   * BDD Scenario
    * Given: a caller exposes one function tool and requires sequential tool calls.
    * When: generation sends the chat completion request.
    * Then: tools, tool_choice, and parallel_tool_calls are serialized exactly in OpenAI-compatible form.
@@ -444,6 +560,85 @@ describe("OpenRouter completion, tool-calling, and billing contracts", () => {
     expect(requestBody).not.toHaveProperty("tool_choice");
     expect(requestBody).not.toHaveProperty("parallel_tool_calls");
     expect(result).toMatchObject({ text: "Hello" });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an OpenRouter provider returns a supported nested text value.
+   * When: generation parses the structured response content.
+   * Then: the nested value becomes readable text without object coercion.
+   */
+  it("unwraps supported nested response text", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.5",
+        choices: [
+          {
+            message: {
+              content: [
+                {
+                  type: "text",
+                  text: { value: "Readable answer", annotations: [] },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.5",
+      context: [{ role: "user", content: "Hello" }],
+    });
+
+    expect(result).toMatchObject({ text: "Readable answer" });
+    expect(JSON.stringify(result)).not.toContain("[object Object]");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an OpenRouter provider returns an unknown object as response text.
+   * When: generation parses the structured response content.
+   * Then: it returns a typed provider error instead of a JavaScript coercion artifact.
+   */
+  it("rejects unsupported response text objects", async () => {
+    const service = new Service();
+
+    jest.spyOn(service, "getModels").mockResolvedValue([]);
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({
+        model: "openai/gpt-5.5",
+        choices: [
+          {
+            message: {
+              content: [
+                {
+                  type: "text",
+                  text: { unexpected: "answer" },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await service.generate({
+      model: "openai/gpt-5.5",
+      context: [{ role: "user", content: "Hello" }],
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: "unsupported_response_content",
+        message: "The model returned a response in an unsupported format.",
+      },
+    });
+    expect(JSON.stringify(result)).not.toContain("[object Object]");
   });
 
   /**

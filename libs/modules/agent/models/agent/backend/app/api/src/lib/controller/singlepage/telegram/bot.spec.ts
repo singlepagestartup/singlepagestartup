@@ -11,6 +11,19 @@ jest.mock("@sps/shared-utils", () => {
     AUDIO_TRANSCRIPTION_ACTION_TYPE: "audio_transcription_completed",
     AUDIO_TRANSCRIPTION_LEGACY_METADATA_KEY: "telegramVoiceTranscription",
     AUDIO_TRANSCRIPTION_METADATA_KEY: "audioTranscription",
+    normalizeRoutePath: (value?: string | null) => {
+      const route = value?.trim() || "";
+
+      if (!route) {
+        return "";
+      }
+
+      if (route.startsWith("/")) {
+        return route.split(/[?#]/, 1)[0];
+      }
+
+      return new URL(route).pathname;
+    },
     RBAC_SECRET_KEY: "rbac-secret",
   };
 });
@@ -62,6 +75,7 @@ function createService() {
         findById: jest.fn().mockResolvedValue({
           id: "chat-1",
           sourceSystemId: "telegram-chat-1",
+          variant: "telegram",
         }),
       },
       profilesToChats: {
@@ -215,6 +229,7 @@ describe("Given: agent social message action routing", () => {
       socialModuleMessage: expect.objectContaining({
         id: "message-1",
       }),
+      socialModuleThreadId: "thread-1",
       messageFromSocialModuleProfile: expect.objectContaining({
         id: "sender-profile",
       }),
@@ -222,6 +237,160 @@ describe("Given: agent social message action routing", () => {
     expect(context.json).toHaveBeenCalledWith({
       data: true,
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a legacy action persisted the public tunnel origin with the route.
+   * When: the agent processes that absolute thread-aware message URL.
+   * Then: it normalizes the route and dispatches the connected AI profile.
+   */
+  it("When: an absolute tunnel route is logged Then: automatic dispatch still runs", async () => {
+    const service = createService();
+    const handler = new Handler(service);
+    const context = createContext();
+
+    await handler.onMessage(context, {
+      data: createAction(
+        "http://sps-api.ru.tuna.am/api/rbac/subjects/subject-1/social-module/profiles/sender-profile/chats/chat-1/threads/thread-1/messages?source=host",
+      ),
+    });
+
+    expect(service.agentSocialModuleProfileHandler).toHaveBeenCalledWith({
+      shouldReplySocialModuleProfile: expect.objectContaining({
+        id: "open-router-profile",
+      }),
+      socialModuleChat: expect.objectContaining({
+        id: "chat-1",
+      }),
+      socialModuleMessage: expect.objectContaining({
+        id: "message-1",
+      }),
+      socialModuleThreadId: "thread-1",
+      messageFromSocialModuleProfile: expect.objectContaining({
+        id: "sender-profile",
+      }),
+    });
+    expect(context.json).toHaveBeenCalledWith({
+      data: true,
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a chat contains two AI profiles and a message with AI execution settings.
+   * When: backend automatic dispatch handles the message-create action.
+   * Then: every connected AI profile is invoked.
+   */
+  it("When: multiple AI profiles participate Then: every AI profile handles the message", async () => {
+    const service = createService();
+    service.socialModule.message.findById.mockResolvedValue({
+      id: "message-1",
+      description: "Use MCP",
+      metadata: {
+        rbacAiReactionRequest: {
+          version: 1,
+          modelId: "auto",
+          reasoning: "auto",
+          skillIds: [],
+          useKnowledgeSearch: false,
+        },
+      },
+    });
+    service.socialModule.profilesToChats.find.mockResolvedValue([
+      { chatId: "chat-1", profileId: "sender-profile" },
+      { chatId: "chat-1", profileId: "open-router-profile" },
+      { chatId: "chat-1", profileId: "open-router-profile-2" },
+    ]);
+    service.socialModule.profile.find.mockResolvedValue([
+      { id: "sender-profile", variant: "default" },
+      {
+        id: "open-router-profile",
+        variant: "artificial-intelligence",
+      },
+      {
+        id: "open-router-profile-2",
+        variant: "artificial-intelligence",
+      },
+    ]);
+    const handler = new Handler(service);
+    const context = createContext();
+
+    await handler.onMessage(context, {
+      data: createAction(
+        "/api/rbac/subjects/subject-1/social-module/profiles/sender-profile/chats/chat-1/threads/thread-1/messages",
+      ),
+    });
+
+    expect(service.agentSocialModuleProfileHandler).toHaveBeenCalledTimes(2);
+    expect(
+      service.agentSocialModuleProfileHandler.mock.calls.map(
+        ([call]) => call.shouldReplySocialModuleProfile.id,
+      ),
+    ).toEqual(["open-router-profile", "open-router-profile-2"]);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a Telegram message has two AI profiles and the system telegram-bot in the chat.
+   * When: backend automatic dispatch handles the message-create action.
+   * Then: it dispatches every automatic participant; AI handlers independently skip bot commands.
+   */
+  it("When: Telegram has multiple automatic participants Then: all are dispatched", async () => {
+    const service = createService();
+    service.socialModule.message.findById.mockResolvedValue({
+      id: "message-1",
+      description: "/start",
+      metadata: {
+        rbacAiReactionRequest: {
+          version: 1,
+          modelId: "auto",
+          reasoning: "auto",
+          skillIds: [],
+          useKnowledgeSearch: false,
+        },
+      },
+    });
+    service.socialModule.profilesToChats.find.mockResolvedValue([
+      { chatId: "chat-1", profileId: "sender-profile" },
+      { chatId: "chat-1", profileId: "legacy-ai-profile" },
+      { chatId: "chat-1", profileId: "personal-ai-profile" },
+      { chatId: "chat-1", profileId: "telegram-bot-profile" },
+    ]);
+    service.socialModule.profile.find.mockResolvedValue([
+      { id: "sender-profile", variant: "default" },
+      {
+        id: "legacy-ai-profile",
+        variant: "artificial-intelligence",
+      },
+      {
+        id: "personal-ai-profile",
+        variant: "artificial-intelligence",
+      },
+      {
+        id: "telegram-bot-profile",
+        slug: "telegram-bot",
+        variant: "agent",
+      },
+    ]);
+    const handler = new Handler(service);
+
+    await handler.onMessage(createContext(), {
+      data: createAction(
+        "/api/rbac/subjects/subject-1/social-module/profiles/sender-profile/chats/chat-1/threads/thread-1/messages",
+      ),
+    });
+
+    expect(service.agentSocialModuleProfileHandler).toHaveBeenCalledTimes(3);
+    expect(
+      service.agentSocialModuleProfileHandler.mock.calls.map(
+        ([call]) => call.shouldReplySocialModuleProfile.id,
+      ),
+    ).toEqual([
+      "legacy-ai-profile",
+      "personal-ai-profile",
+      "telegram-bot-profile",
+    ]);
   });
 
   /**

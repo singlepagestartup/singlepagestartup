@@ -11,8 +11,8 @@ import { api as socialModuleProfilesToMessagesApi } from "@sps/social/relations/
 import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import { getLocalizedProfilePlainText } from "@sps/social/models/profile/sdk/model";
 import { createHash } from "node:crypto";
-import { getLocalizedProfilePlainText } from "../../../../../../../plain-text";
 
 interface IRequestBody {
   transcript?: string;
