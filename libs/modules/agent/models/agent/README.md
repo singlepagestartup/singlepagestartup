@@ -44,3 +44,25 @@ the command thread.
 `apps/telegram` must not call RBAC thread find/create/update/delete for these
 commands. It remains responsible for Telegram auth/bootstrap and incoming
 message/action ingestion only.
+
+## Telegram Command Registry
+
+The SinglePage Agent service exposes protected Telegram command definitions with
+a Telegram menu description and an explicit target: `telegram-bot` or
+`artificial-intelligence`. System commands provide Agent handlers; `/learn` is
+routed to an AI profile and is executed by the shared RBAC/OpenRouter learning
+flow.
+
+The startup service merges `getStartupTelegramCommandDefinitions()` after the
+SinglePage definitions. Matching command names are merged field by field, so a
+startup can change only a description without copying the framework handler;
+new names extend the registry, and `enabled: false` removes a definition.
+Telegram transport accepts generic `/command@bot` syntax, so startup commands
+require no changes in `apps/telegram`.
+
+`GET /api/agent/agents/telegram/commands` serializes the effective registry to
+Telegram-compatible command names and descriptions. On transport startup,
+`apps/telegram` reads that endpoint through the Agent server SDK with the
+internal RBAC service key and calls `setMyCommands` before setting the webhook.
+This keeps Agent as the command source of truth while preserving the application
+boundary and startup DI override.

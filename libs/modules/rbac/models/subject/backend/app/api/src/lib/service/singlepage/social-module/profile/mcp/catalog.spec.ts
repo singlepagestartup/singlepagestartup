@@ -2,15 +2,15 @@
  * BDD Suite: profile-scoped MCP server catalog.
  *
  * Given: a social profile stores allowed MCP server identifiers.
- * When: RBAC resolves and opens its employee MCP catalog.
+ * When: RBAC resolves and opens its rbac.subject MCP catalog.
  * Then: only supported configured servers connect and stale identifiers remain visible.
  */
 
-import { ProfileMcpCatalogService } from "./profile-mcp-catalog";
+import { ProfileMcpCatalogService } from "./catalog";
 
 function createSession() {
   return {
-    serverId: "project" as const,
+    serverId: "singlepagestartup" as const,
     listTools: jest.fn().mockResolvedValue([
       {
         name: "module-list",
@@ -34,52 +34,56 @@ describe("profile-scoped MCP server catalog", () => {
    * Then: descriptors remain discoverable but no server or tool session is connected.
    */
   it("does not connect when the profile has no allowed server", async () => {
-    const projectMcpClient = { openSession: jest.fn() };
-    const service = new ProfileMcpCatalogService(projectMcpClient as any);
+    const singlePageStartupMcpClient = { openSession: jest.fn() };
+    const service = new ProfileMcpCatalogService(
+      singlePageStartupMcpClient as any,
+    );
     const catalogSession = await service.open({
       configuredServerIds: [],
-      employeeSpsJwt: "employee-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     expect(catalogSession.catalog.supported).toEqual([
-      expect.objectContaining({ id: "project" }),
+      expect.objectContaining({ id: "singlepagestartup" }),
     ]);
     expect(catalogSession.catalog.connected).toEqual([]);
-    expect(projectMcpClient.openSession).not.toHaveBeenCalled();
+    expect(singlePageStartupMcpClient.openSession).not.toHaveBeenCalled();
     await catalogSession.close();
   });
 
   /**
    * BDD Scenario: supported and stale server identifiers.
    *
-   * Given: a profile allows project MCP and retains an obsolete identifier.
+   * Given: a profile allows SinglePageStartup MCP and retains an obsolete identifier.
    * When: the catalog is resolved.
-   * Then: project tools are live while the obsolete identifier is reported without connection.
+   * Then: SinglePageStartup tools are live while the obsolete identifier is reported without connection.
    */
-  it("connects project MCP and reports stale identifiers", async () => {
+  it("connects SinglePageStartup MCP and reports stale identifiers", async () => {
     const session = createSession();
-    const projectMcpClient = {
+    const singlePageStartupMcpClient = {
       openSession: jest.fn().mockResolvedValue(session),
     };
-    const service = new ProfileMcpCatalogService(projectMcpClient as any);
+    const service = new ProfileMcpCatalogService(
+      singlePageStartupMcpClient as any,
+    );
     const catalogSession = await service.open({
-      configuredServerIds: ["project", "retired-server"],
-      employeeSpsJwt: "employee-jwt",
+      configuredServerIds: ["singlepagestartup", "retired-server"],
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
-    expect(projectMcpClient.openSession).toHaveBeenCalledWith({
-      employeeSpsJwt: "employee-jwt",
+    expect(singlePageStartupMcpClient.openSession).toHaveBeenCalledWith({
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
     expect(catalogSession.catalog.connected).toEqual([
       expect.objectContaining({
-        id: "project",
+        id: "singlepagestartup",
         tools: [expect.objectContaining({ name: "module-list" })],
       }),
     ]);
     expect(catalogSession.catalog.stale).toEqual(["retired-server"]);
 
     await catalogSession.callTool({
-      serverId: "project",
+      serverId: "singlepagestartup",
       name: "module-list",
       arguments: {},
     });
@@ -94,7 +98,7 @@ describe("profile-scoped MCP server catalog", () => {
   /**
    * BDD Scenario: configured-server boundary.
    *
-   * Given: only project MCP is connected for a profile.
+   * Given: only SinglePageStartup MCP is connected for a profile.
    * When: a call names a different MCP server.
    * Then: dispatch is rejected before any MCP tool call.
    */
@@ -104,8 +108,8 @@ describe("profile-scoped MCP server catalog", () => {
       openSession: jest.fn().mockResolvedValue(session),
     } as any);
     const catalogSession = await service.open({
-      configuredServerIds: ["project"],
-      employeeSpsJwt: "employee-jwt",
+      configuredServerIds: ["singlepagestartup"],
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     await expect(
@@ -135,8 +139,8 @@ describe("profile-scoped MCP server catalog", () => {
 
     await expect(
       service.open({
-        configuredServerIds: ["project"],
-        employeeSpsJwt: "employee-jwt",
+        configuredServerIds: ["singlepagestartup"],
+        rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
       }),
     ).rejects.toThrow("catalog unavailable");
     expect(session.close).toHaveBeenCalledTimes(1);

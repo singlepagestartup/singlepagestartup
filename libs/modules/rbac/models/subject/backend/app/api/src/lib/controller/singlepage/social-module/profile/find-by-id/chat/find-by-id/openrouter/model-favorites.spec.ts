@@ -8,6 +8,22 @@
 
 const mockKvGet = jest.fn();
 const mockKvSet = jest.fn();
+const mockDefaultKvGet = jest.fn();
+const mockDefaultKvSet = jest.fn();
+const mockKvProviderConstructor = jest.fn();
+
+jest.mock("@sps/providers-kv", () => {
+  return {
+    Provider: function Provider(props: unknown) {
+      mockKvProviderConstructor(props);
+
+      return {
+        get: mockDefaultKvGet,
+        set: mockDefaultKvSet,
+      };
+    },
+  };
+});
 
 import { Context } from "hono";
 import { Handler } from "./model-favorites";
@@ -69,6 +85,36 @@ function createKvProvider() {
 describe("Given: OpenRouter model favorites", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDefaultKvGet.mockResolvedValue(null);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the API process uses apps/api as its current working directory.
+   * When: model favorites use the default KV provider factory.
+   * Then: the provider resolves through the workspace package alias without constructing a cwd-relative source path.
+   */
+  it("When: the API cwd is apps/api Then: the workspace KV provider loads", async () => {
+    const cwd = jest
+      .spyOn(process, "cwd")
+      .mockReturnValue("/workspace/apps/api");
+    const handler = new Handler(createService() as any);
+
+    try {
+      const response = (await handler.execute(
+        createContext({
+          method: "GET",
+        }),
+        undefined,
+      )) as any;
+
+      expect(mockKvProviderConstructor).toHaveBeenCalledWith({
+        type: expect.any(String),
+      });
+      expect(response.data.favoriteModelIds).toEqual([]);
+    } finally {
+      cwd.mockRestore();
+    }
   });
 
   /**

@@ -44,6 +44,12 @@ export interface IOpenRouterBillingSummary {
   }>;
 }
 
+export interface IOpenRouterBillingSummaryProps {
+  calls: IOpenRouterBillingLedgerEntry[];
+  selectedModelId: string | null;
+  prechargeTokens?: number;
+}
+
 export function isOpenRouterBillingRoute(route: string): boolean {
   return route.toLowerCase().endsWith(OPEN_ROUTER_BILLING_ROUTE_SUFFIX);
 }
@@ -72,11 +78,9 @@ export function calculateSettlementDeltaTokens(props: {
   return props.exactTokens - props.prechargeTokens;
 }
 
-export function summarizeOpenRouterBilling(props: {
-  calls: IOpenRouterBillingLedgerEntry[];
-  selectedModelId: string | null;
-  prechargeTokens?: number;
-}): IOpenRouterBillingSummary {
+export function summarizeOpenRouterBilling(
+  props: IOpenRouterBillingSummaryProps,
+): IOpenRouterBillingSummary {
   const prechargeTokens = props.prechargeTokens ?? OPEN_ROUTER_PRECHARGE_TOKENS;
   const totalUsd = props.calls.reduce((sum, call) => {
     return sum + (call.billing?.totalUsd || 0);

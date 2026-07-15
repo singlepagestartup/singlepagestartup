@@ -6,8 +6,8 @@
  * Given: chat message mutations succeed or fail against the mocked SDK.
  * When: create/update/delete success and error paths run.
  * Then: the thread messages cache is patched in place (append/patch/remove)
- *       instead of full invalidation; the AI flow and error paths still
- *       refetch (issue #195).
+ *       instead of full invalidation; server-created AI data arrives through
+ *       WebSocket invalidation rather than a frontend reaction refetch.
  */
 
 jest.mock("./components/MessageTimeline", () => {
@@ -26,7 +26,6 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   mockMessageCreateMutate,
   mockMessageDeleteMutate,
-  mockMessageReactByOpenrouterMutate,
   mockMessageUpdateMutate,
   mockSharedApiQueryClient,
   renderComponent,
@@ -119,31 +118,28 @@ describe("Given: chat targeted cache patching", () => {
   /**
    * BDD Scenario
    * Given: a Knowledge chat with an AI assistant.
-   * When: the OpenRouter reaction succeeds after message creation.
-   * Then: the thread messages query is fully refetched, because the AI reply
-   *       is server-created data the client cannot predict.
+   * When: the one create-message mutation succeeds.
+   * Then: the user message is appended and no frontend reaction refetch runs;
+   *       WebSocket invalidation owns server-created actions and replies.
    */
-  it("When: AI reaction succeeds Then: the thread is refetched", async () => {
+  it("When: AI message create succeeds Then: no frontend reaction refetch runs", async () => {
+    seedThreadMessages([]);
     mockMessageCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.({
         id: "message-created-1",
         description: "Question",
       });
     });
-    mockMessageReactByOpenrouterMutate.mockImplementation(
-      (_payload, options) => {
-        options?.onSuccess?.({ id: "reaction-1" });
-      },
-    );
 
     renderComponent("knowledge");
     await sendMessage("Question");
 
     await waitFor(() => {
-      expect(mockSharedApiQueryClient.invalidateQueries).toHaveBeenCalledWith({
-        queryKey: [threadMessagesUrl],
-      });
+      expect(getCachedThreadMessages()).toEqual([
+        { id: "message-created-1", description: "Question" },
+      ]);
     });
+    expect(mockSharedApiQueryClient.invalidateQueries).not.toHaveBeenCalled();
   });
 
   /**

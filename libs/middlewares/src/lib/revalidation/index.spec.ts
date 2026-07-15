@@ -115,14 +115,14 @@ describe("revalidation topic resolution", () => {
 
 describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
   /**
-   * BDD Scenario: The AI-reaction RPC endpoint broadcasts message + action
-   * topics, not a useless verb topic.
+   * BDD Scenario: The AI-reaction RPC endpoint broadcasts message, action, and
+   * Knowledge topics, not a useless verb topic.
    * Given: the `react-by/openrouter` POST path (creates the AI response
    *        message and a chat action; the canonical deriver would emit
    *        `social.openrouter`).
    * When:  broadcast topics are resolved.
-   * Then:  the message and action reader topics are emitted (scoped by the
-   *        chat id present in the path) and the useless verb topic is not.
+   * Then:  the message, action, and learned-document reader topics are emitted
+   *        and the useless verb topic is not.
    */
   it("broadcasts message and action topics for the AI-reaction endpoint", () => {
     const middleware = new Middleware();
@@ -136,6 +136,8 @@ describe("action / RPC endpoint topic rules (issue #195 F3)", () => {
         `social.chats.${CID}.messages`,
         "social.actions",
         `social.chats.${CID}.actions`,
+        "social.profiles-to-knowledge-module-documents",
+        "knowledge.documents",
       ]),
     );
     expect(topics).not.toContain("social.openrouter");

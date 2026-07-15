@@ -87,7 +87,6 @@ export class Middleware {
         await this.assertRequestingProfileAccess({
           subjectId: id,
           socialModuleProfileId,
-          socialModuleChatId,
         });
 
         await this.assertTargetAgentProfileAccess({
@@ -120,10 +119,9 @@ export class Middleware {
   private async assertRequestingProfileAccess(props: {
     subjectId: string;
     socialModuleProfileId: string;
-    socialModuleChatId: string;
   }) {
-    const [subjectProfileRelations, chatProfileRelations] = await Promise.all([
-      this.service.subjectsToSocialModuleProfiles.find({
+    const subjectProfileRelations =
+      await this.service.subjectsToSocialModuleProfiles.find({
         params: {
           filters: {
             and: [
@@ -141,37 +139,11 @@ export class Middleware {
           },
           limit: 1,
         },
-      }),
-      this.service.socialModule.profilesToChats.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: props.socialModuleProfileId,
-              },
-              {
-                column: "chatId",
-                method: "eq",
-                value: props.socialModuleChatId,
-              },
-            ],
-          },
-          limit: 1,
-        },
-      }),
-    ]);
+      });
 
     if (!subjectProfileRelations?.length) {
       throw new Error(
         "Authorization error. Requesting social-module profile does not belong to subject",
-      );
-    }
-
-    if (!chatProfileRelations?.length) {
-      throw new Error(
-        "Authorization error. Requesting social-module profile is not connected to chat",
       );
     }
   }

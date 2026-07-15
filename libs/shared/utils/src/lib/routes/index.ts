@@ -32,6 +32,29 @@ export interface IRouteRule {
   deny?: boolean;
 }
 
+/**
+ * Returns the canonical pathname used by SPS route matchers and persisted
+ * action payloads. Accepts both a request pathname and a legacy absolute URL so
+ * callers remain independent of internal, public, and reverse-proxy origins.
+ */
+export function normalizeRoutePath(value?: string | null): string {
+  const route = value?.trim() || "";
+
+  if (!route) {
+    return "";
+  }
+
+  if (route.startsWith("/")) {
+    return route.split(/[?#]/, 1)[0];
+  }
+
+  try {
+    return new URL(route).pathname;
+  } catch {
+    return route.split(/[?#]/, 1)[0];
+  }
+}
+
 interface ICompiledRouteRule {
   regexPath: RegExp;
   methods: Set<string> | null;

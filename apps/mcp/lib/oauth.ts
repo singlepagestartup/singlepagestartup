@@ -12,10 +12,10 @@ const DEFAULT_AUTH_CODE_TTL_SECONDS = 5 * 60;
 const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const DEFAULT_SCOPE = "mcp:content";
-const INTERNAL_EMPLOYEE_CLIENT_ID = "internal-rbac-openrouter";
-const INTERNAL_EMPLOYEE_ACCESS_TOKEN_TTL_SECONDS = 5 * 60;
-export const INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH =
-  "/internal/employee-token-exchange";
+export const INTERNAL_RBAC_SUBJECT_CLIENT_ID = "internal-rbac-subject";
+const INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS = 5 * 60;
+export const INTERNAL_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH =
+  "/internal/rbac-subject-token-exchange";
 const PROTECTED_RESOURCE_METADATA_PATH =
   "/.well-known/oauth-protected-resource";
 const AUTHORIZATION_SERVER_METADATA_PATH =
@@ -37,26 +37,26 @@ type IOAuthCode = {
   codeChallengeMethod: "S256";
   resource?: string;
   scope: string;
-  subject: string;
-  spsJwt: string;
+  rbacSubjectId: string;
+  rbacSubjectAuthenticationJwt: string;
   createdAt: number;
 };
 
 type IAccessTokenRecord = {
   jti: string;
   clientId: string;
-  subject: string;
+  rbacSubjectId: string;
   scope: string;
-  spsJwt: string;
+  rbacSubjectAuthenticationJwt: string;
   expiresAt: number;
 };
 
 type IRefreshTokenRecord = {
   token: string;
   clientId: string;
-  subject: string;
+  rbacSubjectId: string;
   scope: string;
-  spsJwt: string;
+  rbacSubjectAuthenticationJwt: string;
   createdAt: number;
 };
 
@@ -65,11 +65,11 @@ export type IMcpVerifiedToken = {
   clientId: string;
   scopes: string[];
   expiresAt: number;
-  subject: string;
-  spsJwt: string;
+  rbacSubjectId: string;
+  rbacSubjectAuthenticationJwt: string;
 };
 
-export type IInternalEmployeeTokenExchangeResponse = {
+export type IInternalRbacSubjectTokenExchangeResponse = {
   access_token: string;
   token_type: "Bearer";
   expires_in: number;
@@ -78,9 +78,9 @@ export type IInternalEmployeeTokenExchangeResponse = {
 
 type IAccessTokenIssueProps = {
   clientId: string;
-  subject: string;
+  rbacSubjectId: string;
   scope: string;
-  spsJwt: string;
+  rbacSubjectAuthenticationJwt: string;
   ttlSeconds: number;
 };
 
@@ -241,15 +241,15 @@ let store: IOAuthStore | undefined;
 
 export function getMcpPublicBaseUrl() {
   return (
-    process.env["MCP_PUBLIC_BASE_URL"] ||
-    process.env["MCP_PUBLIC_URL"]?.replace(/\/mcp\/?$/, "") ||
+    process.env["MCP_SERVICE_PUBLIC_BASE_URL"] ||
+    process.env["MCP_SERVICE_PUBLIC_URL"]?.replace(/\/mcp\/?$/, "") ||
     "http://127.0.0.1:3001"
   ).replace(/\/$/, "");
 }
 
 export function getMcpPublicUrl() {
   return (
-    process.env["MCP_PUBLIC_URL"] || `${getMcpPublicBaseUrl()}/mcp`
+    process.env["MCP_SERVICE_PUBLIC_URL"] || `${getMcpPublicBaseUrl()}/mcp`
   ).replace(/\/$/, "");
 }
 
@@ -321,11 +321,11 @@ export async function handleOAuthRequest(
   }
 }
 
-export function isInternalEmployeeTokenExchangeRoute(pathname: string) {
-  return pathname === INTERNAL_EMPLOYEE_TOKEN_EXCHANGE_PATH;
+export function isInternalRbacSubjectTokenExchangeRoute(pathname: string) {
+  return pathname === INTERNAL_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH;
 }
 
-export async function handleInternalEmployeeTokenExchange(
+export async function handleInternalRbacSubjectTokenExchange(
   req: IncomingMessage,
   res: ServerResponse,
 ) {
@@ -344,7 +344,7 @@ export async function handleInternalEmployeeTokenExchange(
       );
     }
 
-    const response = await exchangeEmployeeSpsJwtForMcpToken({
+    const response = await exchangeRbacSubjectAuthenticationJwtForMcpToken({
       providedSecret: getHeader(req, "x-mcp-internal-token-exchange-secret"),
       body,
     });
@@ -369,16 +369,19 @@ export async function handleInternalEmployeeTokenExchange(
   }
 }
 
-export async function exchangeEmployeeSpsJwtForMcpToken(props: {
+export async function exchangeRbacSubjectAuthenticationJwtForMcpToken(props: {
   providedSecret?: string;
   body: Record<string, unknown>;
-}): Promise<IInternalEmployeeTokenExchangeResponse> {
+}): Promise<IInternalRbacSubjectTokenExchangeResponse> {
   assertInternalTokenExchangeSecret(props.providedSecret);
   assertNoSubjectOverride(props.body);
 
-  const subjectToken = props.body["subject_token"];
+  const rbacSubjectAuthenticationJwt = props.body["subject_token"];
 
-  if (typeof subjectToken !== "string" || !subjectToken) {
+  if (
+    typeof rbacSubjectAuthenticationJwt !== "string" ||
+    !rbacSubjectAuthenticationJwt
+  ) {
     throw new InternalTokenExchangeError(
       400,
       "invalid_request",
@@ -386,10 +389,12 @@ export async function exchangeEmployeeSpsJwtForMcpToken(props: {
     );
   }
 
-  let subject: string;
+  let rbacSubjectId: string;
 
   try {
-    subject = getVerifiedEmployeeSubject(subjectToken);
+    rbacSubjectId = getVerifiedRbacSubjectIdFromAuthenticationJwt(
+      rbacSubjectAuthenticationJwt,
+    );
   } catch {
     throw new InternalTokenExchangeError(
       401,
@@ -399,11 +404,11 @@ export async function exchangeEmployeeSpsJwtForMcpToken(props: {
   }
 
   const issued = await issueAccessToken({
-    clientId: INTERNAL_EMPLOYEE_CLIENT_ID,
-    subject,
+    clientId: INTERNAL_RBAC_SUBJECT_CLIENT_ID,
+    rbacSubjectId,
     scope: DEFAULT_SCOPE,
-    spsJwt: subjectToken,
-    ttlSeconds: INTERNAL_EMPLOYEE_ACCESS_TOKEN_TTL_SECONDS,
+    rbacSubjectAuthenticationJwt,
+    ttlSeconds: INTERNAL_RBAC_SUBJECT_ACCESS_TOKEN_TTL_SECONDS,
   });
 
   return {
@@ -447,8 +452,8 @@ export async function verifyMcpAccessToken(
     clientId: record.clientId,
     scopes: record.scope.split(" ").filter(Boolean),
     expiresAt: record.expiresAt,
-    subject: record.subject,
-    spsJwt: record.spsJwt,
+    rbacSubjectId: record.rbacSubjectId,
+    rbacSubjectAuthenticationJwt: record.rbacSubjectAuthenticationJwt,
   };
 }
 
@@ -557,11 +562,13 @@ async function handleAuthorize(
 
   try {
     const request = await validateAuthorizeParams(params);
-    const credentials = await authenticateWithSps(
+    const credentials = await authenticateRbacSubject(
       String(params["email"] || ""),
       String(params["password"] || ""),
     );
-    const subject = getSubjectFromSpsJwt(credentials.jwt);
+    const rbacSubjectId = getRbacSubjectIdFromAuthenticationJwt(
+      credentials.rbacSubjectAuthenticationJwt,
+    );
     const code = randomSecret();
 
     await getOAuthStore().saveCode(
@@ -573,8 +580,8 @@ async function handleAuthorize(
         codeChallengeMethod: "S256",
         resource: request.resource,
         scope: request.scope,
-        subject,
-        spsJwt: credentials.jwt,
+        rbacSubjectId,
+        rbacSubjectAuthenticationJwt: credentials.rbacSubjectAuthenticationJwt,
         createdAt: nowSeconds(),
       },
       getAuthCodeTtlSeconds(),
@@ -670,9 +677,9 @@ async function exchangeAuthorizationCode(
 
   return issueTokenResponse(res, {
     clientId,
-    subject: storedCode.subject,
+    rbacSubjectId: storedCode.rbacSubjectId,
     scope: storedCode.scope,
-    spsJwt: storedCode.spsJwt,
+    rbacSubjectAuthenticationJwt: storedCode.rbacSubjectAuthenticationJwt,
   });
 }
 
@@ -699,9 +706,9 @@ async function exchangeRefreshToken(
 
   return issueTokenResponse(res, {
     clientId: record.clientId,
-    subject: record.subject,
+    rbacSubjectId: record.rbacSubjectId,
     scope: record.scope,
-    spsJwt: record.spsJwt,
+    rbacSubjectAuthenticationJwt: record.rbacSubjectAuthenticationJwt,
   });
 }
 
@@ -709,9 +716,9 @@ async function issueTokenResponse(
   res: ServerResponse,
   props: {
     clientId: string;
-    subject: string;
+    rbacSubjectId: string;
     scope: string;
-    spsJwt: string;
+    rbacSubjectAuthenticationJwt: string;
   },
 ) {
   const accessTokenTtl = getAccessTokenTtlSeconds();
@@ -726,9 +733,9 @@ async function issueTokenResponse(
     {
       token: refreshToken,
       clientId: props.clientId,
-      subject: props.subject,
+      rbacSubjectId: props.rbacSubjectId,
       scope: props.scope,
-      spsJwt: props.spsJwt,
+      rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
       createdAt: nowSeconds(),
     },
     refreshTokenTtl,
@@ -748,7 +755,7 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
   const jti = randomUUID();
   const accessToken = jwt.sign(
     {
-      sub: props.subject,
+      sub: props.rbacSubjectId,
       aud: getMcpPublicUrl(),
       iss: getMcpPublicBaseUrl(),
       scope: props.scope,
@@ -765,9 +772,9 @@ async function issueAccessToken(props: IAccessTokenIssueProps) {
     {
       jti,
       clientId: props.clientId,
-      subject: props.subject,
+      rbacSubjectId: props.rbacSubjectId,
       scope: props.scope,
-      spsJwt: props.spsJwt,
+      rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
       expiresAt,
     },
     props.ttlSeconds,
@@ -817,7 +824,7 @@ async function validateAuthorizeParams(params: Record<string, string>) {
   };
 }
 
-async function authenticateWithSps(email: string, password: string) {
+async function authenticateRbacSubject(email: string, password: string) {
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
@@ -853,21 +860,24 @@ async function authenticateWithSps(email: string, password: string) {
   if (!response.ok) {
     throw new Error(
       getPayloadError(payload) ||
-        `SPS authentication failed with status ${response.status}`,
+        `RBAC subject authentication failed with status ${response.status}`,
     );
   }
 
   const data = isRecord(payload["data"])
     ? payload["data"]
     : (payload as Record<string, unknown>);
-  const spsJwt = typeof data["jwt"] === "string" ? data["jwt"] : undefined;
+  const rbacSubjectAuthenticationJwt =
+    typeof data["jwt"] === "string" ? data["jwt"] : undefined;
 
-  if (!spsJwt) {
-    throw new Error("SPS authentication response does not include jwt");
+  if (!rbacSubjectAuthenticationJwt) {
+    throw new Error(
+      "RBAC subject authentication response does not include jwt",
+    );
   }
 
   return {
-    jwt: spsJwt,
+    rbacSubjectAuthenticationJwt,
   };
 }
 
@@ -925,7 +935,7 @@ function getOAuthStore() {
   }
 
   if (
-    process.env["MCP_OAUTH_STORE"] === "redis" ||
+    process.env["MCP_SERVICE_OAUTH_STORE"] === "redis" ||
     process.env["KV_PROVIDER"] === "redis"
   ) {
     store = new RedisOAuthStore(
@@ -945,10 +955,13 @@ function getOAuthStore() {
 
 function getMcpJwtSecret() {
   const secret =
-    process.env["MCP_OAUTH_JWT_SECRET"] || process.env["RBAC_JWT_SECRET"];
+    process.env["MCP_SERVICE_OAUTH_JWT_SECRET"] ||
+    process.env["RBAC_JWT_SECRET"];
 
   if (!secret) {
-    throw new Error("MCP_OAUTH_JWT_SECRET or RBAC_JWT_SECRET is required");
+    throw new Error(
+      "MCP_SERVICE_OAUTH_JWT_SECRET or RBAC_JWT_SECRET is required",
+    );
   }
 
   return secret;
@@ -964,17 +977,19 @@ function verifyJwt(accessToken: string) {
   return payload;
 }
 
-function getSubjectFromSpsJwt(spsJwt: string) {
+function getRbacSubjectIdFromAuthenticationJwt(
+  rbacSubjectAuthenticationJwt: string,
+) {
   const secret = process.env["RBAC_JWT_SECRET"];
 
   if (!secret) {
-    return "sps-user";
+    return "rbac-subject";
   }
 
-  const payload = jwt.verify(spsJwt, secret);
+  const payload = jwt.verify(rbacSubjectAuthenticationJwt, secret);
 
   if (!isJwtPayload(payload)) {
-    return "sps-user";
+    return "rbac-subject";
   }
 
   if (typeof payload.sub === "string") {
@@ -992,17 +1007,19 @@ function getSubjectFromSpsJwt(spsJwt: string) {
     return payload["id"];
   }
 
-  return "sps-user";
+  return "rbac-subject";
 }
 
-function getVerifiedEmployeeSubject(spsJwt: string) {
+function getVerifiedRbacSubjectIdFromAuthenticationJwt(
+  rbacSubjectAuthenticationJwt: string,
+) {
   const secret = process.env["RBAC_JWT_SECRET"];
 
   if (!secret) {
     throw new Error("RBAC_JWT_SECRET is required");
   }
 
-  const payload = jwt.verify(spsJwt, secret);
+  const payload = jwt.verify(rbacSubjectAuthenticationJwt, secret);
 
   if (
     !isJwtPayload(payload) ||
@@ -1010,20 +1027,23 @@ function getVerifiedEmployeeSubject(spsJwt: string) {
     typeof payload["subject"]["id"] !== "string" ||
     !payload["subject"]["id"]
   ) {
-    throw new Error("SPS JWT does not include subject.id");
+    throw new Error(
+      "RBAC subject authentication JWT does not include subject.id",
+    );
   }
 
   return payload["subject"]["id"];
 }
 
 function assertInternalTokenExchangeSecret(providedSecret?: string) {
-  const expectedSecret = process.env["MCP_INTERNAL_TOKEN_EXCHANGE_SECRET"];
+  const expectedSecret =
+    process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"];
 
   if (!expectedSecret) {
     throw new InternalTokenExchangeError(
       500,
       "server_error",
-      "MCP_INTERNAL_TOKEN_EXCHANGE_SECRET is not configured",
+      "MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET is not configured",
     );
   }
 
@@ -1041,8 +1061,8 @@ function assertNoSubjectOverride(body: Record<string, unknown>) {
     "subject",
     "subjectId",
     "subject_id",
-    "employeeSubjectId",
-    "employee_subject_id",
+    "rbacSubjectId",
+    "rbac_subject_id",
   ];
   const overrideKey = overrideKeys.find((key) =>
     Object.prototype.hasOwnProperty.call(body, key),
@@ -1116,21 +1136,21 @@ function key(type: string, id: string) {
 
 function getAuthCodeTtlSeconds() {
   return getEnvNumber(
-    "MCP_OAUTH_AUTH_CODE_TTL_SECONDS",
+    "MCP_SERVICE_OAUTH_AUTH_CODE_TTL_SECONDS",
     DEFAULT_AUTH_CODE_TTL_SECONDS,
   );
 }
 
 function getAccessTokenTtlSeconds() {
   return getEnvNumber(
-    "MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS",
+    "MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS",
     DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
   );
 }
 
 function getRefreshTokenTtlSeconds() {
   return getEnvNumber(
-    "MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS",
+    "MCP_SERVICE_OAUTH_REFRESH_TOKEN_TTL_SECONDS",
     DEFAULT_REFRESH_TOKEN_TTL_SECONDS,
   );
 }

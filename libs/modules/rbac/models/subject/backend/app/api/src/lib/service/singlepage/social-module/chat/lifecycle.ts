@@ -3,11 +3,14 @@ import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
-import { IModel as ISocialModuleThread } from "@sps/social/models/thread/sdk/model";
+import {
+  IModel as ISocialModuleThread,
+  selectPrimaryLinkedThread,
+} from "@sps/social/models/thread/sdk/model";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/profiles-to-chats/sdk/server";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
-import { Service } from "../index";
+import { Service } from "../../index";
 
 export class ChatLifecycleService {
   protected service: Service;
@@ -258,19 +261,14 @@ export class ChatLifecycleService {
         },
       });
 
-      const defaultSocialModuleThreads =
-        socialModuleThreads?.filter((socialModuleThread) => {
-          return socialModuleThread.variant === "default";
-        }) || [];
+      const primarySocialModuleThread =
+        selectPrimaryLinkedThread<ISocialModuleThread>({
+          socialModuleChatsToThreads: socialModuleChatsToThreads || [],
+          socialModuleThreads: socialModuleThreads || [],
+        });
 
-      if (defaultSocialModuleThreads.length > 1) {
-        throw new Error(
-          "Validation error. Requested social-module chat has multiple default threads",
-        );
-      }
-
-      if (defaultSocialModuleThreads.length === 1) {
-        return defaultSocialModuleThreads[0];
+      if (primarySocialModuleThread) {
+        return primarySocialModuleThread;
       }
     }
 

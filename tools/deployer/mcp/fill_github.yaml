@@ -52,7 +52,7 @@
             secret_scope: actions,
           }
         - {
-            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'MCP_URL' }}",
+            secret_name: "{{ ENVIRONMENT_TYPE_PREFIX ~ 'MCP_SERVICE_PUBLIC_URL' }}",
             secret_content: "https://{{ service_url }}/mcp",
             secret_scope: actions,
           }

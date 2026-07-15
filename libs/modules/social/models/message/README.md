@@ -16,6 +16,9 @@ Messages store social chat content and interaction data.
 - `description`: message body text.
 - `sourceSystemId`: external source id.
 - `interaction`: interaction payload (JSON).
+- `metadata`: opaque JSON extension point for module-owned request, processing,
+  and audit contracts. Social persists this field but does not interpret RBAC,
+  OpenRouter, Knowledge, or agent-specific keys.
 
 ## Variants
 

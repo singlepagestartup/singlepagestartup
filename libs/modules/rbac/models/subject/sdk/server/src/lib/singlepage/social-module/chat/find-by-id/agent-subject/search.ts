@@ -1,10 +1,9 @@
-import { serverHost, route } from "@sps/rbac/models/subject/sdk/model";
+import { IModel, serverHost, route } from "@sps/rbac/models/subject/sdk/model";
 import {
   NextRequestOptions,
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import { IModel } from "@sps/rbac/models/subject/sdk/model";
 import QueryString from "qs";
 
 export interface IProps {

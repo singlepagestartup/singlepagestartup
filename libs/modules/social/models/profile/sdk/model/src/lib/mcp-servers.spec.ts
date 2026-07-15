@@ -3,7 +3,7 @@
  *
  * Given: profiles opt into MCP servers by stable identifier.
  * When: schema defaults and configured identifiers are resolved.
- * Then: MCP access defaults to empty and only the project server is supported.
+ * Then: MCP access defaults to empty and only the SinglePageStartup server is supported.
  */
 
 import { insertSchema } from "./index";
@@ -25,17 +25,17 @@ describe("GIVEN: social profile MCP server configuration", () => {
   });
 
   /**
-   * BDD Scenario: the built-in project server is recognized.
+   * BDD Scenario: the built-in SinglePageStartup server is recognized.
    *
-   * Given: a profile stores the project server identifier.
+   * Given: a profile stores the SinglePageStartup server identifier.
    * When: the configuration is resolved.
-   * Then: project is supported and no stale identifiers are reported.
+   * Then: SinglePageStartup is supported and no stale identifiers are reported.
    */
-  test("When: project is configured Then: it resolves as the supported server", () => {
-    expect(resolveMcpServerConfiguration(["project"])).toEqual({
+  test("When: SinglePageStartup is configured Then: it resolves as the supported server", () => {
+    expect(resolveMcpServerConfiguration(["singlepagestartup"])).toEqual({
       supported: [
         expect.objectContaining({
-          id: "project",
+          id: "singlepagestartup",
         }),
       ],
       stale: [],
@@ -46,17 +46,21 @@ describe("GIVEN: social profile MCP server configuration", () => {
    * BDD Scenario: an unavailable stored identifier is preserved but inactive.
    *
    * Given: a profile contains an identifier unknown to this deployment.
-   * When: project MCP is enabled.
+   * When: SinglePageStartup MCP is enabled.
    * Then: the stale value is rejected from the active configuration.
    */
-  test("When: project is enabled beside a stale value Then: stale data is excluded from the active configuration", () => {
-    const configured = setMcpServerEnabled(["retired-server"], "project", true);
+  test("When: SinglePageStartup is enabled beside a stale value Then: stale data is excluded from the active configuration", () => {
+    const configured = setMcpServerEnabled(
+      ["retired-server"],
+      "singlepagestartup",
+      true,
+    );
 
-    expect(configured).toEqual(["project"]);
+    expect(configured).toEqual(["singlepagestartup"]);
     expect(resolveMcpServerConfiguration(configured)).toEqual({
       supported: [
         expect.objectContaining({
-          id: "project",
+          id: "singlepagestartup",
         }),
       ],
       stale: [],

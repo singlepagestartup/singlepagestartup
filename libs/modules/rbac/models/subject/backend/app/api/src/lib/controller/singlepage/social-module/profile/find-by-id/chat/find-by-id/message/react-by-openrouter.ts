@@ -2,12 +2,27 @@ import {
   NEXT_PUBLIC_API_SERVICE_URL,
   RBAC_JWT_SECRET,
   RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
+  RBAC_SECRET_KEY,
+  normalizeAiResponseText,
   telegramBotServiceMessages,
 } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Service } from "../../../../../../../../service";
+import {
+  Service,
+  type IOpenRouterBillingLedgerEntry,
+  type IOpenRouterBillingSummary,
+  type IProfileMcpCatalogSession,
+  type ISocialProfileAiTool,
+  type ISocialProfileAiToolLoopResult,
+  type TOpenRouterBillingPurpose,
+} from "@sps/rbac/models/subject/backend/app/api/src/lib/service";
 import { api } from "@sps/rbac/models/subject/sdk/server";
+import {
+  type IRbacAiReactionRequest,
+  type TRbacAiReactionReasoning,
+  parseRbacAiReactionRequestMetadata,
+} from "@sps/rbac/models/subject/sdk/model";
 import { blobifyFiles, getHttpErrorType } from "@sps/backend-utils";
 import {
   OpenRouter,
@@ -22,7 +37,10 @@ import {
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
 import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
-import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import {
+  getLocalizedProfilePlainText,
+  IModel as ISocialModuleProfile,
+} from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 import { KnowledgeService } from "@sps/knowledge/backend/app/api/src/lib/service";
 import { KnowledgeSearchResult } from "@sps/knowledge/backend/app/api/src/lib/types";
@@ -30,19 +48,6 @@ import * as jwt from "hono/jwt";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, extname, join, normalize } from "node:path";
-import {
-  OPEN_ROUTER_PRECHARGE_TOKENS,
-  summarizeOpenRouterBilling,
-  type IOpenRouterBillingLedgerEntry,
-  type TOpenRouterBillingPurpose,
-} from "../../../../../../../../service/singlepage/open-router-billing";
-import { getLocalizedProfilePlainText } from "../../../../plain-text";
-import {
-  AiEmployeeToolLoop,
-  type IAiEmployeeTool,
-  type IAiEmployeeToolLoopResult,
-} from "../../../../../../../../service/singlepage/ai-employee-tool-loop";
-import type { IProfileMcpCatalogSession } from "../../../../../../../../service/singlepage/profile-mcp-catalog";
 
 type TRequestTask =
   | "qa"
@@ -102,13 +107,6 @@ interface IRequestData {
   shouldReplySocialModuleProfile?: Partial<ISocialModuleProfile> & {
     id?: string;
   };
-  skillIds?: string[];
-  useKnowledgeSearch?: boolean;
-}
-
-interface IOpenRouterReactionQuery {
-  model: "auto" | string;
-  reasoning: "auto" | "none" | "low" | "medium" | "high" | "xhigh";
 }
 
 interface ILearnContentItem {
@@ -135,6 +133,11 @@ interface IResolvedOpenRouterKnowledgeContext {
   systemMessages: IOpenRouterRequestMessage[];
 }
 
+interface IResolvedOpenRouterMessageContext {
+  content: IOpenRouterRequestMessage["content"] | null;
+  routingText: string;
+}
+
 interface IOpenRouterKnowledgeRetrievalMetadata {
   initialTopK: number;
   neighborWindow: number;
@@ -146,91 +149,161 @@ interface IOpenRouterKnowledgeRetrievalMetadata {
 }
 
 const MODEL_ROUTER_CONFIG = {
-  version: "2026-02-13",
+  version: "2026-07-15",
   classes: {
     CLASSIFIER: [
       {
-        id: "openai/gpt-5.2",
+        id: "openai/gpt-5.6-luna",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["classification", "routing"],
+        strengths: ["classification", "routing", "structured_outputs"],
       },
       {
-        id: "anthropic/claude-sonnet-4.6",
+        id: "minimax/minimax-m3",
         enabled: true,
         priority: 90,
+        input_modalities: ["text", "image"],
+        output_modalities: ["text"],
+        strengths: ["classification", "routing", "cost_efficiency"],
+      },
+      {
+        id: "google/gemini-3.1-flash-lite",
+        enabled: true,
+        priority: 80,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["classification", "routing"],
+        strengths: [
+          "classification",
+          "routing",
+          "multimodal",
+          "cost_efficiency",
+        ],
       },
     ],
     CHAT: [
       {
-        id: "openai/gpt-5.2",
+        id: "openai/gpt-5.6-terra",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["general_chat", "reasoning", "concise_answers"],
+        strengths: ["general_chat", "reasoning", "professional_work"],
       },
       {
-        id: "anthropic/claude-haiku-4.5",
+        id: "minimax/minimax-m3",
+        enabled: true,
+        priority: 95,
+        input_modalities: ["text", "image"],
+        output_modalities: ["text"],
+        strengths: [
+          "general_chat",
+          "reasoning",
+          "agentic_workflows",
+          "cost_efficiency",
+        ],
+      },
+      {
+        id: "anthropic/claude-sonnet-5",
         enabled: true,
         priority: 90,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["general_chat", "instruction_following"],
+        strengths: ["deep_reasoning", "long_form", "professional_work"],
       },
       {
-        id: "anthropic/claude-sonnet-4.6",
+        id: "google/gemini-3.5-flash",
+        enabled: true,
+        priority: 88,
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["text"],
+        strengths: [
+          "general_chat",
+          "agentic_workflows",
+          "reasoning",
+          "multimodal",
+        ],
+      },
+      {
+        id: "google/gemini-3.1-flash-lite",
+        enabled: true,
+        priority: 85,
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["text"],
+        strengths: ["speed", "general_chat", "multimodal", "cost_efficiency"],
+      },
+      {
+        id: "openai/gpt-5.6-luna",
         enabled: true,
         priority: 80,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["deep_reasoning", "long_form"],
+        strengths: ["speed", "high_volume", "concise_answers"],
       },
       {
-        id: "google/gemini-2.5-flash",
+        id: "minimax/minimax-m2.7",
         enabled: true,
-        priority: 70,
-        input_modalities: ["text", "image", "file"],
+        priority: 75,
+        input_modalities: ["text"],
         output_modalities: ["text"],
-        strengths: ["speed", "general_chat"],
+        strengths: [
+          "professional_work",
+          "office_tasks",
+          "coding",
+          "cost_efficiency",
+        ],
       },
     ],
     CODER: [
       {
-        id: "openai/gpt-5.2-codex",
+        id: "openai/gpt-5.6-sol",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["coding", "debugging", "refactoring"],
+        strengths: ["coding", "debugging", "architecture", "deep_reasoning"],
         best_for: ["code_generation", "bug_fixing", "architecture_help"],
       },
       {
-        id: "qwen/qwen3-coder-plus",
+        id: "minimax/minimax-m2.7",
         enabled: true,
-        priority: 90,
-        input_modalities: ["text", "image", "file"],
+        priority: 95,
+        input_modalities: ["text"],
         output_modalities: ["text"],
-        strengths: ["coding", "debugging", "tooling"],
-        best_for: ["code_generation", "code_review", "optimization"],
+        strengths: ["coding", "debugging", "refactoring", "tooling"],
+        best_for: ["real_world_engineering", "code_generation", "code_review"],
       },
       {
-        id: "anthropic/claude-sonnet-4.6",
+        id: "moonshotai/kimi-k2.7-code",
         enabled: true,
-        priority: 80,
+        priority: 90,
+        input_modalities: ["text", "image"],
+        output_modalities: ["text"],
+        strengths: ["coding", "agentic_workflows", "large_codebases"],
+        best_for: ["project_delivery", "code_generation", "debugging"],
+      },
+      {
+        id: "google/gemini-3.5-flash",
+        enabled: true,
+        priority: 88,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["reasoning", "code_explanations"],
+        strengths: ["coding", "agentic_workflows", "multimodal"],
+        best_for: ["code_generation", "debugging", "project_delivery"],
+      },
+      {
+        id: "anthropic/claude-sonnet-5",
+        enabled: true,
+        priority: 85,
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["text"],
+        strengths: ["reasoning", "code_explanations", "architecture"],
       },
     ],
     VISION: [
       {
-        id: "openai/gpt-5.2",
+        id: "openai/gpt-5.6-terra",
         enabled: true,
         priority: 100,
         input_modalities: ["text", "image", "file"],
@@ -238,77 +311,86 @@ const MODEL_ROUTER_CONFIG = {
         strengths: ["image_understanding", "ocr", "analysis"],
       },
       {
-        id: "anthropic/claude-sonnet-4.6",
+        id: "minimax/minimax-m3",
+        enabled: true,
+        priority: 95,
+        input_modalities: ["text", "image"],
+        output_modalities: ["text"],
+        strengths: ["image_understanding", "reasoning", "cost_efficiency"],
+      },
+      {
+        id: "google/gemini-3.5-flash",
+        enabled: true,
+        priority: 92,
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["text"],
+        strengths: ["vision", "reasoning", "ocr", "multimodal"],
+      },
+      {
+        id: "google/gemini-3.1-flash-lite",
         enabled: true,
         priority: 90,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["image_understanding", "deep_reasoning"],
+        strengths: ["vision", "speed", "ocr", "cost_efficiency"],
       },
       {
-        id: "google/gemini-2.5-flash",
+        id: "anthropic/claude-sonnet-5",
         enabled: true,
-        priority: 80,
+        priority: 85,
         input_modalities: ["text", "image", "file"],
         output_modalities: ["text"],
-        strengths: ["vision", "speed", "ocr"],
+        strengths: ["image_understanding", "deep_reasoning", "long_context"],
       },
     ],
     IMAGE: [
       {
-        id: "sourceful/riverflow-v2-standard-preview",
+        id: "google/gemini-3.1-flash-image",
         enabled: true,
         priority: 100,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
-        strengths: ["branding", "text_on_image", "poster_design"],
-        best_for: ["branding", "logo_style", "marketing_visuals_with_text"],
+        input_modalities: ["text", "image"],
+        output_modalities: ["image", "text"],
+        strengths: [
+          "quality_cost_balance",
+          "text_on_image",
+          "image_editing",
+          "low_latency",
+        ],
+        best_for: ["general_image_generation", "marketing_visuals", "editing"],
       },
       {
-        id: "black-forest-labs/flux.2-pro",
+        id: "google/gemini-3.1-flash-lite-image",
         enabled: true,
         priority: 95,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
-        strengths: ["photoreal", "portrait", "product_photo"],
-        best_for: [
-          "photography_style",
-          "realistic_product_shots",
-          "image_editing",
-        ],
+        input_modalities: ["text", "image"],
+        output_modalities: ["image", "text"],
+        strengths: ["cost_efficiency", "ultra_low_latency", "image_editing"],
+        best_for: ["high_volume", "drafts", "rapid_iterations"],
       },
       {
-        id: "openai/gpt-5-image",
+        id: "openai/gpt-5.4-image-2",
         enabled: true,
         priority: 90,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
-        strengths: ["creative_generation", "art_direction"],
-        best_for: ["creative_concepts", "ad_creatives"],
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["image", "text"],
+        strengths: ["creative_generation", "art_direction", "image_editing"],
+        best_for: ["high_fidelity", "creative_concepts", "ad_creatives"],
       },
       {
-        id: "google/gemini-2.5-flash-image",
-        enabled: true,
-        priority: 85,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
-        strengths: ["creative_generation", "fast_iterations"],
-        best_for: ["creative_concepts", "rapid_prototyping"],
-      },
-      {
-        id: "bytedance-seed/seedream-4.5",
+        id: "google/gemini-3-pro-image",
         enabled: true,
         priority: 80,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
-        strengths: ["creative_generation", "stylized_visuals"],
+        input_modalities: ["text", "image"],
+        output_modalities: ["image", "text"],
+        strengths: ["complex_composition", "reasoning", "text_on_image"],
+        best_for: ["complex_briefs", "professional_visuals"],
       },
       {
         id: "openai/gpt-5-image-mini",
         enabled: true,
         priority: 70,
-        input_modalities: ["text"],
-        output_modalities: ["image"],
+        input_modalities: ["text", "image", "file"],
+        output_modalities: ["image", "text"],
         strengths: ["creative_generation", "cost_efficiency"],
       },
     ],
@@ -341,6 +423,7 @@ const ALLOWED_OUTPUT_MODALITIES: TOutputModality[] = [
 const ALLOWED_INPUT_MODALITIES: TInputModality[] = ["text", "image", "file"];
 const THREAD_CONTEXT_PAGE_SIZE = 100;
 const OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS = 8192;
+const OPEN_ROUTER_ROUTING_TEXT_MAX_CHARS = 12_000;
 const KNOWLEDGE_INITIAL_TOP_K = 30;
 const KNOWLEDGE_NEIGHBOR_WINDOW = 1;
 const KNOWLEDGE_RERANK_TOP_K = 12;
@@ -524,10 +607,9 @@ export class Handler {
     method: string;
     authorization?: string;
   }) {
-    const summary = summarizeOpenRouterBilling({
+    const summary = this.service.billingOpenRouterSummarize({
       calls: props.billingLedger,
       selectedModelId: props.selectedModelId,
-      prechargeTokens: OPEN_ROUTER_PRECHARGE_TOKENS,
     });
     const settlement = await this.service.billRouteSettle({
       permission: {
@@ -552,12 +634,14 @@ export class Handler {
     generationResult: Pick<IOpenRouterGenerationSuccess, "text" | "images">;
     selectModelForRequest: string;
     billingSettlement: {
-      summary: ReturnType<typeof summarizeOpenRouterBilling>;
+      summary: IOpenRouterBillingSummary;
       settlement: any;
     };
     metadata?: Record<string, unknown>;
   }) {
-    const generatedMessageText = props.generationResult.text?.trim() || "";
+    const generatedMessageText = normalizeAiResponseText(
+      props.generationResult.text,
+    );
     let generatedMessageDescription = "";
     const replyMessageData: any = {};
 
@@ -616,17 +700,13 @@ export class Handler {
     return replyMessageData;
   }
 
-  protected buildNoValidModelResponseMessage(fallbackReasons: string[]) {
-    const normalizedFallbackReasons = fallbackReasons.filter(Boolean);
-
-    if (!normalizedFallbackReasons.length) {
-      return "No valid model response received.";
-    }
-
-    return (
-      "No valid model response received. " +
-      normalizedFallbackReasons.join(" | ")
-    );
+  protected buildNoValidModelResponseMessage(
+    _fallbackReasons: string[],
+    language = "en",
+  ) {
+    return language.toLowerCase().startsWith("ru")
+      ? "Не удалось получить корректный ответ от модели. Попробуйте повторить запрос или выбрать другую модель."
+      : "A valid response could not be received from the model. Please try again or select another model.";
   }
 
   protected getGenerationFailureReason(props: {
@@ -687,7 +767,7 @@ export class Handler {
       context: props.generationContext,
       max_tokens: maxTokens,
       reasoning: props.reasoning,
-      stripNonTextOnRetry: true,
+      stripNonTextOnRetry: false,
     });
 
     const primaryFailureReason = this.getGenerationFailureReason({
@@ -726,7 +806,7 @@ export class Handler {
       context: props.generationContext,
       max_tokens: maxTokens,
       reasoning: props.reasoning,
-      stripNonTextOnRetry: true,
+      stripNonTextOnRetry: false,
     });
 
     const fallbackFailureReason = this.getGenerationFailureReason({
@@ -847,7 +927,7 @@ export class Handler {
 
   async execute(c: Context, next: any): Promise<Response> {
     const billingLedger: IOpenRouterBillingLedgerEntry[] = [];
-    let employeeMcpCatalogSession: IProfileMcpCatalogSession | null = null;
+    let socialProfileMcpCatalogSession: IProfileMcpCatalogSession | null = null;
     let selectedModelIdForBilling: string | null = null;
     let billingSettled = false;
     const requestRoute = c.req.path.toLowerCase();
@@ -904,8 +984,6 @@ export class Handler {
             body["data"],
         );
       }
-      const reactionQuery = this.parseReactionQuery(c);
-
       await this.assertProfileCanAccessChat({
         subjectId: id,
         socialModuleProfileId,
@@ -951,8 +1029,21 @@ export class Handler {
         );
       }
 
+      const aiReactionRequest = this.resolveAiReactionRequest({
+        data,
+        socialModuleMessage,
+      });
+      const replySocialProfileId =
+        data.shouldReplySocialModuleProfile?.id?.trim();
+
+      if (!replySocialProfileId) {
+        throw new Error(
+          "Not found error. Reply social-module profile not found",
+        );
+      }
+
       const replyBySocialModuleProfile =
-        await this.loadReplyBySocialModuleProfile(data);
+        await this.loadReplyBySocialModuleProfile(replySocialProfileId);
       this.assertReplyProfile(replyBySocialModuleProfile);
       await this.assertReplyProfileConnectedToChat({
         socialModuleProfileId: replyBySocialModuleProfile.id,
@@ -965,10 +1056,10 @@ export class Handler {
       });
 
       const context: IOpenRouterRequestMessage[] = [];
-      const requestedSkillIds = this.normalizeSkillIds(data.skillIds);
-      const requestedKnowledgeSearch =
-        data.useKnowledgeSearch === true ||
-        this.hasKnowledgeMention(socialModuleMessage.description);
+      const requestedSkillIds = aiReactionRequest.skillIds;
+      const requestedKnowledgeSearch = this.hasKnowledgeControl(
+        socialModuleMessage.description,
+      );
       const hasMentionedSkill = Boolean(
         this.getMentionedSkillSlugs(socialModuleMessage.description).length,
       );
@@ -978,12 +1069,7 @@ export class Handler {
         hasMentionedSkill,
         requestedSkillIds,
       });
-
-      if (this.hasLearnCommand(socialModuleMessage.description)) {
-        this.assertLearnCommandHasKnowledgeMention(
-          socialModuleMessage.description,
-        );
-      }
+      let routingRequestText = sanitizedTriggerDescription;
 
       const chatThreadMessageIds = await this.findThreadMessageIdsInChat({
         socialModuleChatId,
@@ -1077,10 +1163,6 @@ export class Handler {
                 continue;
               }
 
-              if (!messageDescription) {
-                continue;
-              }
-
               const isAssistantMessage = socialModuleProfilesToMessages.find(
                 (socialModuleProfileToMessage) =>
                   socialModuleProfileToMessage.messageId ===
@@ -1104,13 +1186,21 @@ export class Handler {
                           },
                         ],
                       },
+                      orderBy: {
+                        and: [
+                          {
+                            column: "orderIndex",
+                            method: "asc",
+                          },
+                        ],
+                      },
                     },
                   },
                 );
 
               if (socialModuleMessagesToFileStorageModuleFiles?.length) {
-                fileStorageFiles =
-                  await this.service.fileStorageModule.file.find({
+                const foundFileStorageFiles =
+                  (await this.service.fileStorageModule.file.find({
                     params: {
                       filters: {
                         and: [
@@ -1125,76 +1215,62 @@ export class Handler {
                         ],
                       },
                     },
-                  });
+                  })) || [];
+                const filesById = new Map(
+                  foundFileStorageFiles.map((file) => [file.id, file]),
+                );
+
+                fileStorageFiles = socialModuleMessagesToFileStorageModuleFiles
+                  .map((relation) => {
+                    return filesById.get(
+                      relation.fileStorageModuleFileId || "",
+                    );
+                  })
+                  .filter((file): file is IFileStorageModuleFile =>
+                    Boolean(file),
+                  );
               }
-              const contextFileParts: IOpenRouterMessageContent[] = (
-                fileStorageFiles || []
-              ).flatMap((fileStorageFile): IOpenRouterMessageContent[] => {
-                if (this.isAudioFileStorageFile(fileStorageFile)) {
-                  return [];
-                }
+              const resolvedMessageContext =
+                await this.resolveOpenRouterMessageContext({
+                  fileStorageFiles: fileStorageFiles || [],
+                  messageDescription,
+                });
 
-                if (fileStorageFile.mimeType?.includes("image")) {
-                  return [
-                    {
-                      type: "image_url",
-                      image_url: {
-                        url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                      },
-                    },
-                  ];
-                }
+              if (!resolvedMessageContext.content) {
+                continue;
+              }
 
-                return [
-                  {
-                    type: "file_url",
-                    file_url: {
-                      url: `${NEXT_PUBLIC_API_SERVICE_URL}/public${fileStorageFile.file}`,
-                    },
-                  },
-                ];
+              context.push({
+                role: isAssistantMessage ? "assistant" : "user",
+                content: resolvedMessageContext.content,
               });
 
-              if (contextFileParts.length) {
-                context.push({
-                  role: isAssistantMessage ? "assistant" : "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: messageDescription,
-                    },
-                    ...contextFileParts,
-                  ],
-                });
-              } else {
-                context.push({
-                  role: isAssistantMessage ? "assistant" : "user",
-                  content: messageDescription,
-                });
+              if (socialModuleMessage.id === socialModuleMessageId) {
+                routingRequestText = resolvedMessageContext.routingText;
               }
             }
           }
         }
       }
 
-      const replyBySubject = await this.resolveEmployeeSubject(
+      const replyByRbacSubject = await this.resolveRbacSubjectForSocialProfile(
         replyBySocialModuleProfile.id,
       );
 
-      const replyByJwt = await jwt.sign(
+      const replyByRbacSubjectAuthenticationJwt = await jwt.sign(
         {
           exp:
             Math.floor(Date.now() / 1000) + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
           iat: Math.floor(Date.now() / 1000),
-          subject: replyBySubject,
+          subject: replyByRbacSubject,
         },
         RBAC_JWT_SECRET,
       );
 
       if (this.hasLearnCommand(socialModuleMessage.description)) {
         const learnedMessage = await this.learnFromMessage({
-          jwtToken: replyByJwt,
-          replyBySubjectId: replyBySubject.id,
+          rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
+          replyByRbacSubjectId: replyByRbacSubject.id,
           replyProfile: replyBySocialModuleProfile,
           socialModuleChatId,
           socialModuleThreadId,
@@ -1216,7 +1292,7 @@ export class Handler {
       const statusMessage =
         await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
-            id: replyBySubject.id,
+            id: replyByRbacSubject.id,
             socialModuleProfileId: replyBySocialModuleProfile.id,
             socialModuleChatId: socialModuleChatId,
             socialModuleThreadId,
@@ -1225,14 +1301,14 @@ export class Handler {
             },
             options: {
               headers: {
-                Authorization: "Bearer " + replyByJwt,
+                Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
               },
             },
           },
         );
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-        id: replyBySubject.id,
+        id: replyByRbacSubject.id,
         socialModuleProfileId: replyBySocialModuleProfile.id,
         socialModuleChatId: socialModuleChatId,
         socialModuleMessageId: statusMessage.id,
@@ -1241,7 +1317,7 @@ export class Handler {
         },
         options: {
           headers: {
-            Authorization: "Bearer " + replyByJwt,
+            Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
           },
         },
       });
@@ -1256,17 +1332,17 @@ export class Handler {
       let modelCandidates: IModelCandidate[] = [];
       let modelSelection: IModelSelectionResult;
 
-      if (reactionQuery.model !== "auto") {
+      if (aiReactionRequest.modelId !== "auto") {
         const manualModel = this.resolveManualOpenRouterModel({
           models: openRouterModels,
-          modelId: reactionQuery.model,
+          modelId: aiReactionRequest.modelId,
           requiredInputModalitiesList,
         });
 
         expectedOutputModality =
           this.resolveManualExpectedOutputModality(manualModel);
         requestClassification = this.buildManualRequestClassification({
-          requestText: sanitizedTriggerDescription,
+          requestText: routingRequestText,
           requiredInputModalitiesList,
           expectedOutputModality,
         });
@@ -1277,7 +1353,7 @@ export class Handler {
         };
       } else {
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-          id: replyBySubject.id,
+          id: replyByRbacSubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
           socialModuleMessageId: statusMessage.id,
@@ -1286,7 +1362,7 @@ export class Handler {
           },
           options: {
             headers: {
-              Authorization: "Bearer " + replyByJwt,
+              Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
             },
           },
         });
@@ -1294,7 +1370,7 @@ export class Handler {
         const rawRequestClassification = await this.classifyRequest({
           billingLedger,
           openRouter,
-          requestText: sanitizedTriggerDescription,
+          requestText: routingRequestText,
           requiredInputModalitiesList,
         });
 
@@ -1309,7 +1385,7 @@ export class Handler {
         });
 
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-          id: replyBySubject.id,
+          id: replyByRbacSubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
           socialModuleMessageId: statusMessage.id,
@@ -1318,7 +1394,7 @@ export class Handler {
           },
           options: {
             headers: {
-              Authorization: "Bearer " + replyByJwt,
+              Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
             },
           },
         });
@@ -1346,7 +1422,7 @@ export class Handler {
         modelSelection = await this.selectModelCandidatesForRequest({
           billingLedger,
           openRouter,
-          requestText: sanitizedTriggerDescription,
+          requestText: routingRequestText,
           requestClassification,
           selectedModelClass,
           modelCandidates,
@@ -1360,16 +1436,19 @@ export class Handler {
         selection: modelSelection,
       });
 
+      const openRouterReasoning = this.toOpenRouterReasoning(
+        aiReactionRequest.reasoning,
+      );
       const openRouterKnowledgeContext =
         await this.resolveOpenRouterKnowledgeContext({
           billingLedger,
-          data,
           openRouter,
           replyProfile: replyBySocialModuleProfile,
           socialModuleMessage,
-          sanitizedQuery: sanitizedTriggerDescription,
+          sanitizedQuery: routingRequestText,
           requestedKnowledgeSearch,
           requestedSkillIds,
+          reasoning: openRouterReasoning,
           selectedModelId:
             modelSelection.selectedModelId ||
             modelSelection.orderedCandidateIds[0] ||
@@ -1390,9 +1469,6 @@ export class Handler {
         }),
         prependedSystemMessages: openRouterKnowledgeContext.systemMessages,
       });
-      const openRouterReasoning = this.toOpenRouterReasoning(
-        reactionQuery.reasoning,
-      );
       const profileCapabilityTools = this.buildProfileCapabilityTools({
         availableSkills: openRouterKnowledgeContext.availableSkills,
         knowledgeDocumentIds: openRouterKnowledgeContext.knowledgeDocumentIds,
@@ -1404,19 +1480,20 @@ export class Handler {
         : [];
 
       if (expectedOutputModality === "text" && allowedMcpServerIds.length) {
-        employeeMcpCatalogSession = await this.service.openProfileMcpCatalog({
-          configuredServerIds: allowedMcpServerIds,
-          employeeSpsJwt: replyByJwt,
-        });
+        socialProfileMcpCatalogSession =
+          await this.service.socialModuleProfileMcpCatalogOpen({
+            configuredServerIds: allowedMcpServerIds,
+            rbacSubjectAuthenticationJwt: replyByRbacSubjectAuthenticationJwt,
+          });
       }
 
-      const employeeTools = [
+      const socialProfileTools = [
         ...profileCapabilityTools,
-        ...this.buildMcpCapabilityTools(employeeMcpCatalogSession),
+        ...this.buildMcpCapabilityTools(socialProfileMcpCatalogSession),
       ];
       const onModelAttempt = async (modelCandidateId: string) => {
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-          id: replyBySubject.id,
+          id: replyByRbacSubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
           socialModuleMessageId: statusMessage.id,
@@ -1429,7 +1506,7 @@ export class Handler {
           },
           options: {
             headers: {
-              Authorization: "Bearer " + replyByJwt,
+              Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
             },
           },
         });
@@ -1439,46 +1516,61 @@ export class Handler {
       let generationResult:
         | Pick<IOpenRouterGenerationSuccess, "text" | "images">
         | undefined;
-      let employeeToolLoopResult: IAiEmployeeToolLoopResult | null = null;
+      let socialProfileToolLoopResult: ISocialProfileAiToolLoopResult | null =
+        null;
       let finalGenerationResult: IFinalGenerationResult = {
         selectedModelId: null,
         fallbackReasons: [],
       };
 
-      if (expectedOutputModality === "text" && employeeTools.length) {
+      if (expectedOutputModality === "text" && socialProfileTools.length) {
         let generationCallCount = 0;
-        employeeToolLoopResult = await new AiEmployeeToolLoop().run({
-          context: generationContext,
-          modelCandidateIds: modelSelection.orderedCandidateIds,
-          tools: employeeTools,
-          generate: async (toolGeneration) => {
-            generationCallCount += 1;
-            await onModelAttempt(toolGeneration.model);
+        const executionActionReporter = RBAC_SECRET_KEY
+          ? this.service.socialModuleProfileAiExecutionActionReporterCreate({
+              chatId: socialModuleChatId,
+              threadId: socialModuleThreadId,
+              triggerMessageId: socialModuleMessage.id,
+              replySocialProfileId: replyBySocialModuleProfile.id,
+              secretKey: RBAC_SECRET_KEY,
+            })
+          : null;
+        socialProfileToolLoopResult =
+          await this.service.socialModuleProfileAiToolLoopRun({
+            context: generationContext,
+            language: requestClassification.language,
+            modelCandidateIds: modelSelection.orderedCandidateIds,
+            tools: socialProfileTools,
+            onEvent: executionActionReporter
+              ? (event) => executionActionReporter.handle(event)
+              : undefined,
+            generate: async (toolGeneration) => {
+              generationCallCount += 1;
+              await onModelAttempt(toolGeneration.model);
 
-            return this.generateWithBillingLedger({
-              billingLedger,
-              purpose:
-                generationCallCount === 1 ? "generation" : "tool_iteration",
-              openRouter,
-              model: toolGeneration.model,
-              context: toolGeneration.context,
-              max_tokens: OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS,
-              reasoning: openRouterReasoning,
-              stripNonTextOnRetry: false,
-              tools: toolGeneration.tools,
-              toolChoice: "auto",
-              parallelToolCalls: false,
-            });
-          },
-        });
+              return this.generateWithBillingLedger({
+                billingLedger,
+                purpose:
+                  generationCallCount === 1 ? "generation" : "tool_iteration",
+                openRouter,
+                model: toolGeneration.model,
+                context: toolGeneration.context,
+                max_tokens: OPEN_ROUTER_FINAL_TEXT_MAX_TOKENS,
+                reasoning: openRouterReasoning,
+                stripNonTextOnRetry: false,
+                tools: toolGeneration.tools,
+                toolChoice: "auto",
+                parallelToolCalls: false,
+              });
+            },
+          });
         selectModelForRequest =
-          employeeToolLoopResult.selectedModelId ||
+          socialProfileToolLoopResult.selectedModelId ||
           modelSelection.selectedModelId ||
           modelSelection.orderedCandidateIds[0] ||
           null;
         selectedModelIdForBilling = selectModelForRequest;
         generationResult = {
-          text: employeeToolLoopResult.finalText,
+          text: socialProfileToolLoopResult.finalText,
         };
       } else {
         finalGenerationResult = await this.generateFinalOpenRouterReply({
@@ -1510,22 +1602,19 @@ export class Handler {
         billingSettled = true;
         const fallbackMessage = this.buildNoValidModelResponseMessage(
           finalGenerationResult.fallbackReasons,
+          requestClassification.language,
         );
         await api.socialModuleProfileFindByIdChatFindByIdMessageUpdate({
-          id: replyBySubject.id,
+          id: replyByRbacSubject.id,
           socialModuleProfileId: replyBySocialModuleProfile.id,
           socialModuleChatId: socialModuleChatId,
           socialModuleMessageId: statusMessage.id,
           data: {
-            description:
-              this.statusMessages.openRouterError.ru +
-              "\n`" +
-              fallbackMessage +
-              "`",
+            description: fallbackMessage,
           },
           options: {
             headers: {
-              Authorization: "Bearer " + replyByJwt,
+              Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
             },
           },
         });
@@ -1550,21 +1639,21 @@ export class Handler {
         selectModelForRequest,
         billingSettlement,
         metadata: {
-          employee: {
-            requesterSubjectId: id,
-            employeeSubjectId: replyBySubject.id,
-            replyProfileId: replyBySocialModuleProfile.id,
+          identities: {
+            requesterRbacSubjectId: id,
+            replyRbacSubjectId: replyByRbacSubject.id,
+            replySocialProfileId: replyBySocialModuleProfile.id,
           },
           mcp: {
-            clientId: employeeMcpCatalogSession
-              ? "internal-rbac-openrouter"
+            clientId: socialProfileMcpCatalogSession
+              ? "internal-rbac-subject"
               : null,
             allowedServerIds: allowedMcpServerIds,
             connectedServerIds:
-              employeeMcpCatalogSession?.catalog.connected.map(
+              socialProfileMcpCatalogSession?.catalog.connected.map(
                 (server) => server.id,
               ) || [],
-            staleServerIds: employeeMcpCatalogSession?.catalog.stale || [],
+            staleServerIds: socialProfileMcpCatalogSession?.catalog.stale || [],
           },
           knowledge: {
             action: this.hasLearnCommand(socialModuleMessage.description)
@@ -1588,7 +1677,7 @@ export class Handler {
                 ...openRouterKnowledgeContext.promptSkills.map(
                   (skill) => skill.id,
                 ),
-                ...(employeeToolLoopResult?.trace.calls || [])
+                ...(socialProfileToolLoopResult?.trace.calls || [])
                   .map((call) => call.metadata?.["skillId"])
                   .filter(
                     (skillId): skillId is string => typeof skillId === "string",
@@ -1604,14 +1693,14 @@ export class Handler {
               };
             }),
             openRouter: {
-              model: reactionQuery.model,
-              reasoning: reactionQuery.reasoning,
+              model: aiReactionRequest.modelId,
+              reasoning: aiReactionRequest.reasoning,
               selectedModelId: selectModelForRequest,
               selectedBy: modelSelection.selectedBy,
             },
           },
           openRouter: {
-            toolLoop: employeeToolLoopResult?.trace || {
+            toolLoop: socialProfileToolLoopResult?.trace || {
               enabled: false,
               stepCount: 1,
               exposedToolNames: [],
@@ -1624,13 +1713,13 @@ export class Handler {
       });
 
       await api.socialModuleProfileFindByIdChatFindByIdMessageDelete({
-        id: replyBySubject.id,
+        id: replyByRbacSubject.id,
         socialModuleProfileId: replyBySocialModuleProfile.id,
         socialModuleChatId: socialModuleChatId,
         socialModuleMessageId: statusMessage.id,
         options: {
           headers: {
-            Authorization: "Bearer " + replyByJwt,
+            Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
           },
         },
       });
@@ -1638,14 +1727,14 @@ export class Handler {
       const repliedSocialModuleMessage =
         await api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
           {
-            id: replyBySubject.id,
+            id: replyByRbacSubject.id,
             socialModuleProfileId: replyBySocialModuleProfile.id,
             socialModuleChatId: socialModuleChatId,
             socialModuleThreadId,
             data: replyMessageData,
             options: {
               headers: {
-                Authorization: "Bearer " + replyByJwt,
+                Authorization: "Bearer " + replyByRbacSubjectAuthenticationJwt,
               },
             },
           },
@@ -1681,42 +1770,37 @@ export class Handler {
       const { status, message, details } = getHttpErrorType(error);
       throw new HTTPException(status, { message, cause: details });
     } finally {
-      await employeeMcpCatalogSession?.close().catch(() => undefined);
+      await socialProfileMcpCatalogSession?.close().catch(() => undefined);
     }
-  }
-
-  private parseReactionQuery(c: Context): IOpenRouterReactionQuery {
-    const model = this.toLearnText(c.req.query("model")).trim() || "auto";
-    const reasoning = this.toLearnText(c.req.query("reasoning")).trim();
-    const allowedReasoning: IOpenRouterReactionQuery["reasoning"][] = [
-      "auto",
-      "none",
-      "low",
-      "medium",
-      "high",
-      "xhigh",
-    ];
-
-    return {
-      model,
-      reasoning: allowedReasoning.includes(reasoning as any)
-        ? (reasoning as IOpenRouterReactionQuery["reasoning"])
-        : "auto",
-    };
   }
 
   private async loadReplyBySocialModuleProfile(
-    data: IRequestData,
+    replySocialProfileId: string,
   ): Promise<ISocialModuleProfile | undefined> {
-    const replyProfileId = data.shouldReplySocialModuleProfile?.id;
+    return this.service.socialModule.profile.findById({
+      id: replySocialProfileId,
+    });
+  }
 
-    if (!replyProfileId) {
-      return undefined;
+  private resolveAiReactionRequest(props: {
+    data: IRequestData;
+    socialModuleMessage: ISocialModuleMessage;
+  }): IRbacAiReactionRequest {
+    const persistedRequest = parseRbacAiReactionRequestMetadata(
+      props.socialModuleMessage.metadata,
+    );
+
+    if (persistedRequest) {
+      return persistedRequest;
     }
 
-    return this.service.socialModule.profile.findById({
-      id: replyProfileId,
-    });
+    return {
+      version: 1,
+      modelId: "auto",
+      reasoning: "auto",
+      skillIds: [],
+      useKnowledgeSearch: false,
+    };
   }
 
   private assertReplyProfile(
@@ -1900,7 +1984,9 @@ export class Handler {
     return Boolean(roles?.find((role) => role.slug === "admin"));
   }
 
-  private async resolveEmployeeSubject(socialModuleProfileId: string) {
+  private async resolveRbacSubjectForSocialProfile(
+    socialModuleProfileId: string,
+  ) {
     const relations = await this.service.subjectsToSocialModuleProfiles.find({
       params: {
         filters: {
@@ -1917,19 +2003,19 @@ export class Handler {
 
     if (relations?.length !== 1 || !relations[0]?.subjectId) {
       throw new Error(
-        "Validation error. Reply profile must have exactly one employee subject.",
+        "Validation error. Reply social.profile must have exactly one linked rbac.subject.",
       );
     }
 
-    const employeeSubject = await this.service.findById({
+    const rbacSubject = await this.service.findById({
       id: relations[0].subjectId,
     });
 
-    if (!employeeSubject) {
-      throw new Error("Not found error. Employee subject not found");
+    if (!rbacSubject) {
+      throw new Error("Not found error. rbac.subject not found");
     }
 
-    return employeeSubject;
+    return rbacSubject;
   }
 
   private toOpenRouterUserQuery(props: {
@@ -1938,28 +2024,32 @@ export class Handler {
     hasMentionedSkill: boolean;
     requestedSkillIds: string[];
   }) {
+    const rawQuery = this.stripKnowledgeControls(props.rawQuery);
+
     return props.requestedKnowledgeSearch ||
       props.hasMentionedSkill ||
       props.requestedSkillIds.length
-      ? this.stripSkillMentions(props.rawQuery)
-      : this.toLearnText(props.rawQuery).trim();
+      ? this.stripSkillMentions(rawQuery)
+      : this.toLearnText(rawQuery).trim();
   }
 
-  private hasKnowledgeMention(value: string) {
-    return /(^|\s)@knowledge(?=\s|$)/i.test(value);
+  private hasKnowledgeControl(value: string) {
+    return /(^|\s)(?:@knowledge|\/knowledge)(?=\s|$)/i.test(value);
+  }
+
+  private stripKnowledgeControls(value: string) {
+    return value
+      .replace(/(^|\s)@knowledge(?=\s|$)/gi, "$1")
+      .replace(/(^|\s)\/knowledge(?=\s|$)/gi, "$1")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   private hasLearnCommand(value: string) {
-    return Boolean(this.stripSkillMentions(value).match(/^\/learn\b/i));
-  }
-
-  private assertLearnCommandHasKnowledgeMention(value: string) {
-    if (this.hasKnowledgeMention(value)) {
-      return;
-    }
-
-    throw new Error(
-      "Validation error. /learn requires @knowledge mention. Use @knowledge /learn ...",
+    return Boolean(
+      this.stripSkillMentions(this.stripKnowledgeControls(value)).match(
+        /^\/learn\b/i,
+      ),
     );
   }
 
@@ -1978,13 +2068,13 @@ export class Handler {
 
   private async resolveOpenRouterKnowledgeContext(props: {
     billingLedger: IOpenRouterBillingLedgerEntry[];
-    data: IRequestData;
     openRouter: OpenRouter;
     replyProfile: ISocialModuleProfile;
     socialModuleMessage: ISocialModuleMessage;
     sanitizedQuery: string;
     requestedKnowledgeSearch: boolean;
     requestedSkillIds: string[];
+    reasoning?: IOpenRouterReasoning;
     selectedModelId: string | null;
     threadContext: IOpenRouterRequestMessage[];
   }): Promise<IResolvedOpenRouterKnowledgeContext> {
@@ -2017,12 +2107,10 @@ export class Handler {
       );
     }
 
-    const knowledgeDocumentIds = await this.findKnowledgeDocumentIdsForProfile(
-      props.replyProfile.id,
-    );
-    const useKnowledgeSearch =
-      props.requestedKnowledgeSearch ||
-      Boolean(query && knowledgeDocumentIds.length);
+    const useKnowledgeSearch = props.requestedKnowledgeSearch;
+    const knowledgeDocumentIds = useKnowledgeSearch
+      ? await this.findKnowledgeDocumentIdsForProfile(props.replyProfile.id)
+      : [];
     const searchDocumentIds = useKnowledgeSearch ? knowledgeDocumentIds : [];
     const candidateSources =
       useKnowledgeSearch && query
@@ -2039,6 +2127,7 @@ export class Handler {
       openRouter: props.openRouter,
       query,
       rerankTopK: KNOWLEDGE_RERANK_TOP_K,
+      reasoning: props.reasoning,
       selectedModelId: props.selectedModelId,
       threadContext: props.threadContext,
     });
@@ -2088,6 +2177,7 @@ export class Handler {
     openRouter: OpenRouter;
     query: string;
     rerankTopK: number;
+    reasoning?: IOpenRouterReasoning;
     selectedModelId: string | null;
     threadContext: IOpenRouterRequestMessage[];
   }): Promise<{
@@ -2119,6 +2209,7 @@ export class Handler {
       openRouter: props.openRouter,
       model: props.selectedModelId,
       max_tokens: 800,
+      reasoning: props.reasoning,
       responseFormat: KNOWLEDGE_RERANK_RESPONSE_FORMAT,
       temperature: 0,
       context: this.buildKnowledgeRerankContext({
@@ -2138,12 +2229,31 @@ export class Handler {
     }
 
     const parsed = this.tryParseJsonObject(rerankResponse.text);
-    const selectedChunkIds = Array.isArray(parsed?.selected_chunk_ids)
-      ? parsed.selected_chunk_ids
-          .filter((value): value is string => typeof value === "string")
-          .map((value) => value.trim())
-          .filter(Boolean)
-      : [];
+    const rawSelectedChunkIds = parsed?.selected_chunk_ids;
+
+    if (!Array.isArray(rawSelectedChunkIds)) {
+      return {
+        sources: fallbackSources,
+        reason: null,
+        fallbackReason: "knowledge rerank returned invalid selected_chunk_ids",
+      };
+    }
+
+    const rerankReason =
+      typeof parsed?.reason === "string" ? parsed.reason : null;
+
+    if (!rawSelectedChunkIds.length) {
+      return {
+        sources: [],
+        reason: rerankReason,
+        fallbackReason: null,
+      };
+    }
+
+    const selectedChunkIds = rawSelectedChunkIds
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim())
+      .filter(Boolean);
     const sourcesById = new Map(
       props.candidateSources.map((source) => [source.id, source]),
     );
@@ -2162,7 +2272,7 @@ export class Handler {
 
     return {
       sources: selectedSources,
-      reason: typeof parsed?.reason === "string" ? parsed.reason : null,
+      reason: rerankReason,
       fallbackReason: null,
     };
   }
@@ -2466,8 +2576,8 @@ export class Handler {
   private buildProfileCapabilityTools(props: {
     availableSkills: ISocialModuleSkill[];
     knowledgeDocumentIds: string[];
-  }): IAiEmployeeTool[] {
-    const tools: IAiEmployeeTool[] = [];
+  }): ISocialProfileAiTool[] {
+    const tools: ISocialProfileAiTool[] = [];
 
     if (props.availableSkills.length) {
       const skillsBySlug = new Map(
@@ -2478,7 +2588,7 @@ export class Handler {
         function: {
           name: "profile_skill_activate",
           description:
-            "Activate one skill linked to this employee profile and return its instructions.",
+            "Activate one skill linked to this social.profile and return its instructions.",
           parameters: {
             type: "object",
             properties: {
@@ -2495,12 +2605,15 @@ export class Handler {
 
       tools.push({
         source: "skill",
+        display: {
+          label: "Activate profile skill",
+        },
         definition,
         validateArguments: (args) => {
           const slug = typeof args["slug"] === "string" ? args["slug"] : "";
 
           if (!skillsBySlug.has(slug.toLowerCase())) {
-            throw new Error("Skill is not linked to the employee profile");
+            throw new Error("Skill is not linked to the social.profile");
           }
         },
         audit: (args) => {
@@ -2518,7 +2631,7 @@ export class Handler {
           const skill = skillsBySlug.get(slug);
 
           if (!skill) {
-            throw new Error("Skill is not linked to the employee profile");
+            throw new Error("Skill is not linked to the social.profile");
           }
 
           return {
@@ -2533,12 +2646,15 @@ export class Handler {
     if (props.knowledgeDocumentIds.length) {
       tools.push({
         source: "knowledge",
+        display: {
+          label: "Search profile Knowledge",
+        },
         definition: {
           type: "function",
           function: {
             name: "profile_knowledge_search",
             description:
-              "Search only Knowledge documents linked to this employee profile.",
+              "Search only Knowledge documents linked to this social.profile.",
             parameters: {
               type: "object",
               properties: {
@@ -2581,7 +2697,7 @@ export class Handler {
 
   private buildMcpCapabilityTools(
     catalogSession: IProfileMcpCatalogSession | null,
-  ): IAiEmployeeTool[] {
+  ): ISocialProfileAiTool[] {
     if (!catalogSession) {
       return [];
     }
@@ -2592,6 +2708,10 @@ export class Handler {
 
         return {
           source: "mcp" as const,
+          display: {
+            label: tool.title || tool.name,
+            serverId: server.id,
+          },
           definition: {
             type: "function" as const,
             function: {
@@ -2610,7 +2730,7 @@ export class Handler {
               arguments: args,
             });
           },
-        } satisfies IAiEmployeeTool;
+        } satisfies ISocialProfileAiTool;
       });
     });
   }
@@ -2725,8 +2845,8 @@ export class Handler {
   }
 
   private async learnFromMessage(props: {
-    jwtToken: string;
-    replyBySubjectId: string;
+    rbacSubjectAuthenticationJwt: string;
+    replyByRbacSubjectId: string;
     replyProfile: ISocialModuleProfile;
     socialModuleChatId: string;
     socialModuleThreadId: string;
@@ -2798,7 +2918,7 @@ export class Handler {
 
     return api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
       {
-        id: props.replyBySubjectId,
+        id: props.replyByRbacSubjectId,
         socialModuleProfileId: props.replyProfile.id,
         socialModuleChatId: props.socialModuleChatId,
         socialModuleThreadId: props.socialModuleThreadId,
@@ -2826,7 +2946,7 @@ export class Handler {
         },
         options: {
           headers: {
-            Authorization: "Bearer " + props.jwtToken,
+            Authorization: "Bearer " + props.rbacSubjectAuthenticationJwt,
           },
         },
       },
@@ -3015,7 +3135,7 @@ export class Handler {
   }
 
   private toOpenRouterReasoning(
-    reasoning: IOpenRouterReactionQuery["reasoning"],
+    reasoning: TRbacAiReactionReasoning,
   ): IOpenRouterReasoning | undefined {
     if (reasoning === "auto") {
       return undefined;
@@ -3050,7 +3170,7 @@ export class Handler {
   }
 
   private stripLearnPrefix(value: string) {
-    return this.stripSkillMentions(value)
+    return this.stripSkillMentions(this.stripKnowledgeControls(value))
       .replace(/^\/learn\b/i, "")
       .trim();
   }
@@ -3068,7 +3188,7 @@ export class Handler {
   }
 
   private isReservedSlashCommandSlug(value: string) {
-    return ["learn", "new"].includes(value.toLowerCase());
+    return ["knowledge", "learn", "new"].includes(value.toLowerCase());
   }
 
   private normalizeSkillIds(value?: string[]) {
@@ -3095,6 +3215,33 @@ export class Handler {
     ).toLowerCase();
 
     return ["txt", "md", "markdown"].includes(extension);
+  }
+
+  protected isTextFileStorageFile(file: IFileStorageModuleFile) {
+    const filePath = this.toLearnText(file.file);
+    const extension = (
+      this.toLearnText(file.extension) ||
+      extname(filePath.split("?")[0]).replace(".", "")
+    ).toLowerCase();
+    const mimeType = this.toLearnText(file.mimeType).toLowerCase();
+
+    return (
+      mimeType.startsWith("text/") ||
+      [
+        "csv",
+        "json",
+        "jsonl",
+        "log",
+        "markdown",
+        "md",
+        "srt",
+        "txt",
+        "vtt",
+        "xml",
+        "yaml",
+        "yml",
+      ].includes(extension)
+    );
   }
 
   private async readFileStorageModuleFile(file: IFileStorageModuleFile) {
@@ -3137,7 +3284,7 @@ export class Handler {
     }
 
     throw new Error(
-      `Knowledge attachment could not be read from file-storage: ${
+      `Text attachment could not be read from file-storage: ${
         lastError instanceof Error ? lastError.message : String(lastError)
       }`,
     );
@@ -3282,6 +3429,85 @@ export class Handler {
     return socialModuleDefaultThread.id;
   }
 
+  protected async resolveOpenRouterMessageContext(props: {
+    fileStorageFiles: IFileStorageModuleFile[];
+    messageDescription: string;
+  }): Promise<IResolvedOpenRouterMessageContext> {
+    const messageText = props.messageDescription.trim();
+    const contentTextParts = [messageText].filter(Boolean);
+    const routingTextParts = [messageText].filter(Boolean);
+    const mediaParts: IOpenRouterMessageContent[] = [];
+
+    for (const fileStorageFile of props.fileStorageFiles) {
+      if (this.isAudioFileStorageFile(fileStorageFile)) {
+        continue;
+      }
+
+      const source = this.toLearnText(fileStorageFile.file);
+      const fileName = basename(source.split("?")[0]) || "attachment";
+      const fileUrl = /^https?:\/\//i.test(source)
+        ? source
+        : `${NEXT_PUBLIC_API_SERVICE_URL}/public${source}`;
+
+      if (this.isTextFileStorageFile(fileStorageFile)) {
+        const attachmentText = (
+          await this.readFileStorageModuleFile(fileStorageFile)
+        ).trim();
+
+        if (attachmentText) {
+          routingTextParts.push(
+            [`Text attachment (${fileName}):`, attachmentText].join("\n"),
+          );
+        }
+      }
+
+      if (fileStorageFile.mimeType?.includes("image")) {
+        contentTextParts.push(`Attached image: ${fileName}`);
+        routingTextParts.push(`Attached image: ${fileName}`);
+        mediaParts.push({
+          type: "image_url",
+          image_url: {
+            url: fileUrl,
+          },
+        });
+        continue;
+      }
+
+      contentTextParts.push(`Attached file: ${fileName}`);
+      if (!this.isTextFileStorageFile(fileStorageFile)) {
+        routingTextParts.push(`Attached file: ${fileName}`);
+      }
+      mediaParts.push({
+        type: "file_url",
+        file_url: {
+          url: fileUrl,
+        },
+      });
+    }
+
+    const contentText = contentTextParts.join("\n\n").trim();
+    const routingText = routingTextParts.join("\n\n").trim();
+    const content: IOpenRouterRequestMessage["content"] | null =
+      mediaParts.length > 0
+        ? [
+            ...(contentText
+              ? [
+                  {
+                    type: "text" as const,
+                    text: contentText,
+                  },
+                ]
+              : []),
+            ...mediaParts,
+          ]
+        : contentText || null;
+
+    return {
+      content,
+      routingText: routingText.slice(0, OPEN_ROUTER_ROUTING_TEXT_MAX_CHARS),
+    };
+  }
+
   protected detectInputModalitiesFromContext(
     context: IOpenRouterRequestMessage[],
   ): TInputModality[] {
@@ -3397,19 +3623,15 @@ export class Handler {
     return [
       {
         role: "system",
-        content: `Answer in ${props.language} language.`,
-      },
-      {
-        role: "system",
-        content: "Return a text response only.",
+        content: [
+          `Answer in ${props.language} language.`,
+          "Use portable Markdown only.",
+          "Do not use LaTeX delimiters or commands.",
+          "Write formulas with plain text and Unicode mathematical symbols so the same answer is readable in web chat and Telegram.",
+        ].join(" "),
       },
       ...(props.profileSystemMessage ? [props.profileSystemMessage] : []),
       ...(props.prependedSystemMessages || []),
-      {
-        role: "user",
-        content:
-          "Ensure the response fits within 4000 characters for Telegram.",
-      },
       ...props.context,
     ];
   }

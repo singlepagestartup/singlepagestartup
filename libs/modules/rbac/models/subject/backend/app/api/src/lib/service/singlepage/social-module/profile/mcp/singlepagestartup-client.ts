@@ -2,10 +2,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import Ajv from "ajv";
 
-export const PROJECT_MCP_SERVER_ID = "project" as const;
-export const PROJECT_MCP_TOOL_TIMEOUT_MS = 30_000;
-export const PROJECT_MCP_RESULT_LIMIT_BYTES = 32 * 1024;
-export const PROJECT_MCP_EXCHANGE_PATH = "/internal/employee-token-exchange";
+export const SINGLEPAGESTARTUP_MCP_SERVER_ID = "singlepagestartup" as const;
+export const SINGLEPAGESTARTUP_MCP_TOOL_TIMEOUT_MS = 30_000;
+export const SINGLEPAGESTARTUP_MCP_RESULT_LIMIT_BYTES = 32 * 1024;
+export const SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH =
+  "/internal/rbac-subject-token-exchange";
 
 export interface IMcpToolDefinition {
   name: string;
@@ -46,8 +47,8 @@ interface IMcpWireClient {
   close(): Promise<void>;
 }
 
-export interface IProjectMcpSession {
-  readonly serverId: typeof PROJECT_MCP_SERVER_ID;
+export interface ISinglePageStartupMcpSession {
+  readonly serverId: typeof SINGLEPAGESTARTUP_MCP_SERVER_ID;
   listTools(): Promise<IMcpToolDefinition[]>;
   callTool(props: {
     name: string;
@@ -56,7 +57,7 @@ export interface IProjectMcpSession {
   close(): Promise<void>;
 }
 
-export interface IProjectMcpClientDependencies {
+export interface ISinglePageStartupMcpClientDependencies {
   fetch?: typeof fetch;
   mcpUrl?: string;
   exchangeSecret?: string;
@@ -68,69 +69,78 @@ export interface IProjectMcpClientDependencies {
   resultLimitBytes?: number;
 }
 
-interface IEmployeeTokenExchangeResponse {
+interface IRbacSubjectTokenExchangeResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
   scope: string;
 }
 
-export class ProjectMcpClientService {
+export class SinglePageStartupMcpClientService {
   private readonly fetchImplementation: typeof fetch;
   private readonly mcpUrl: string;
   private readonly exchangeSecret: string;
   private readonly createWireClient: NonNullable<
-    IProjectMcpClientDependencies["createWireClient"]
+    ISinglePageStartupMcpClientDependencies["createWireClient"]
   >;
   private readonly toolTimeoutMs: number;
   private readonly resultLimitBytes: number;
 
-  constructor(dependencies: IProjectMcpClientDependencies = {}) {
+  constructor(dependencies: ISinglePageStartupMcpClientDependencies = {}) {
     this.fetchImplementation = dependencies.fetch ?? fetch;
     this.mcpUrl =
       dependencies.mcpUrl ??
-      process.env["MCP_PROJECT_URL"] ??
+      process.env["MCP_SERVICE_URL"] ??
       "http://127.0.0.1:3001/mcp";
     this.exchangeSecret =
       dependencies.exchangeSecret ??
-      process.env["MCP_INTERNAL_TOKEN_EXCHANGE_SECRET"] ??
+      process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"] ??
       "";
     this.createWireClient =
       dependencies.createWireClient ?? createSdkWireClient;
     this.toolTimeoutMs =
-      dependencies.toolTimeoutMs ?? PROJECT_MCP_TOOL_TIMEOUT_MS;
+      dependencies.toolTimeoutMs ?? SINGLEPAGESTARTUP_MCP_TOOL_TIMEOUT_MS;
     this.resultLimitBytes =
-      dependencies.resultLimitBytes ?? PROJECT_MCP_RESULT_LIMIT_BYTES;
+      dependencies.resultLimitBytes ?? SINGLEPAGESTARTUP_MCP_RESULT_LIMIT_BYTES;
   }
 
   async openSession(props: {
-    employeeSpsJwt: string;
-  }): Promise<IProjectMcpSession> {
-    if (!props.employeeSpsJwt) {
-      throw new Error("Authorization error. Employee SPS JWT is required");
+    rbacSubjectAuthenticationJwt: string;
+  }): Promise<ISinglePageStartupMcpSession> {
+    if (!props.rbacSubjectAuthenticationJwt) {
+      throw new Error(
+        "Authorization error. RBAC subject authentication JWT is required",
+      );
     }
 
     if (!this.exchangeSecret) {
       throw new Error(
-        "Configuration error. MCP_INTERNAL_TOKEN_EXCHANGE_SECRET is required",
+        "Configuration error. MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET is required",
       );
     }
 
-    const accessToken = await this.exchangeEmployeeToken(props.employeeSpsJwt);
+    const accessToken = await this.exchangeRbacSubjectAuthenticationJwt(
+      props.rbacSubjectAuthenticationJwt,
+    );
     const wireClient = await this.createWireClient({
       mcpUrl: this.mcpUrl,
       accessToken,
     });
 
-    return new ProjectMcpSession({
+    return new SinglePageStartupMcpSession({
       wireClient,
       toolTimeoutMs: this.toolTimeoutMs,
       resultLimitBytes: this.resultLimitBytes,
     });
   }
 
-  private async exchangeEmployeeToken(employeeSpsJwt: string) {
-    const exchangeUrl = new URL(PROJECT_MCP_EXCHANGE_PATH, this.mcpUrl);
+  private async exchangeRbacSubjectAuthenticationJwt(
+    rbacSubjectAuthenticationJwt: string,
+  ) {
+    const exchangeUrl = new URL(
+      SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH,
+      this.mcpUrl,
+    );
     const response = await this.fetchImplementation(exchangeUrl, {
       method: "POST",
       headers: {
@@ -138,34 +148,36 @@ export class ProjectMcpClientService {
         "x-mcp-internal-token-exchange-secret": this.exchangeSecret,
       },
       body: JSON.stringify({
-        subject_token: employeeSpsJwt,
+        subject_token: rbacSubjectAuthenticationJwt,
       }),
     });
 
     if (!response.ok) {
       const details = await response.text();
       throw new Error(
-        `MCP employee token exchange failed (${response.status}): ${details}`,
+        `MCP rbac.subject token exchange failed (${response.status}): ${details}`,
       );
     }
 
     const payload =
-      (await response.json()) as Partial<IEmployeeTokenExchangeResponse>;
+      (await response.json()) as Partial<IRbacSubjectTokenExchangeResponse>;
 
     if (
       typeof payload.access_token !== "string" ||
       !payload.access_token ||
       payload.token_type !== "Bearer"
     ) {
-      throw new Error("MCP employee token exchange returned an invalid token");
+      throw new Error(
+        "MCP rbac.subject token exchange returned an invalid token",
+      );
     }
 
     return payload.access_token;
   }
 }
 
-class ProjectMcpSession implements IProjectMcpSession {
-  readonly serverId = PROJECT_MCP_SERVER_ID;
+class SinglePageStartupMcpSession implements ISinglePageStartupMcpSession {
+  readonly serverId = SINGLEPAGESTARTUP_MCP_SERVER_ID;
   private readonly wireClient: IMcpWireClient;
   private readonly toolTimeoutMs: number;
   private readonly resultLimitBytes: number;
@@ -216,7 +228,7 @@ class ProjectMcpSession implements IProjectMcpSession {
 
     if (!tool) {
       throw new Error(
-        `Validation error. Tool ${props.name} is not present in the live project MCP catalog`,
+        `Validation error. Tool ${props.name} is not present in the live SinglePageStartup MCP catalog`,
       );
     }
 
@@ -311,7 +323,7 @@ async function createSdkWireClient(props: {
   accessToken: string;
 }): Promise<IMcpWireClient> {
   const client = new Client({
-    name: "sps-rbac-ai-employee",
+    name: "singlepagestartup-rbac-subject",
     version: "1.0.0",
   });
   const transport = new StreamableHTTPClientTransport(new URL(props.mcpUrl), {

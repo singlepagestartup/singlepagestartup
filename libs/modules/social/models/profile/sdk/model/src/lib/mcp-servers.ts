@@ -18,9 +18,10 @@ export interface IResolvedMcpServerConfiguration {
 
 export const supportedMcpServerDescriptors: IMcpServerDescriptor[] = [
   {
-    id: "project",
-    title: "Project MCP",
-    description: "Built-in MCP server for this SPS project.",
+    id: "singlepagestartup",
+    title: "SinglePageStartup MCP",
+    description:
+      "Local MCP server connected to this SinglePageStartup instance.",
   },
 ];
 

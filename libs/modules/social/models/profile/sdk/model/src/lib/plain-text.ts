@@ -56,7 +56,7 @@ export function profileTextToPlainText(value: unknown): string {
 
       return parsedText || trimmedValue;
     } catch {
-      return value.trim();
+      return trimmedValue;
     }
   }
 
@@ -75,7 +75,10 @@ export function profileTextToPlainText(value: unknown): string {
   return "";
 }
 
-export function getLocalizedProfilePlainText(value: unknown, language: string) {
+export function getLocalizedProfilePlainText(
+  value: unknown,
+  language: string,
+): string {
   if (typeof value === "string") {
     return profileTextToPlainText(value).trim();
   }
@@ -119,7 +122,7 @@ export function getLocalizedProfilePlainText(value: unknown, language: string) {
   return "";
 }
 
-function getProfileLanguageKeys(language: string) {
+function getProfileLanguageKeys(language: string): string[] {
   const normalizedLanguage = language.trim().toLowerCase();
 
   if (["ru", "rus", "russian", "русский"].includes(normalizedLanguage)) {

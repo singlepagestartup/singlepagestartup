@@ -5,12 +5,14 @@ import type { KnowledgeDocument, SocialSkill } from "../types";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 
 interface ProfileSidebarPanelProps {
+  hasKnowledgeDocumentsError: boolean;
   isKnowledgeDocumentsLoading: boolean;
   isSkillsLoading: boolean;
   knowledgeDocuments: KnowledgeDocument[];
   language: string;
   onKnowledgeDocumentCreate?: (profile: ISocialModuleProfile) => void;
   onKnowledgeDocumentSelect: (document: KnowledgeDocument) => void;
+  onMcpServersEdit?: (profile: ISocialModuleProfile) => void;
   onProfileEdit?: (profile: ISocialModuleProfile) => void;
   onSkillCreate?: (profile: ISocialModuleProfile) => void;
   onSkillEdit?: (skill: SocialSkill) => void;
@@ -36,8 +38,10 @@ export function ProfileSidebarPanel(props: ProfileSidebarPanelProps) {
       selectedKnowledgeDocument={props.selectedKnowledgeDocument}
       isSkillsLoading={props.isSkillsLoading}
       isKnowledgeDocumentsLoading={props.isKnowledgeDocumentsLoading}
+      hasKnowledgeDocumentsError={props.hasKnowledgeDocumentsError}
       onKnowledgeDocumentSelect={props.onKnowledgeDocumentSelect}
       onKnowledgeDocumentCreate={props.onKnowledgeDocumentCreate}
+      onMcpServersEdit={props.onMcpServersEdit}
       onProfileEdit={props.onProfileEdit}
       onSkillCreate={props.onSkillCreate}
       onSkillEdit={props.onSkillEdit}

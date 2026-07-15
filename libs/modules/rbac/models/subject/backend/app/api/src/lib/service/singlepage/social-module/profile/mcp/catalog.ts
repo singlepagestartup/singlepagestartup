@@ -4,12 +4,12 @@ import {
   type IMcpServerDescriptor,
 } from "@sps/social/models/profile/sdk/model";
 import {
-  PROJECT_MCP_SERVER_ID,
+  SINGLEPAGESTARTUP_MCP_SERVER_ID,
   type IMcpToolDefinition,
   type INormalizedMcpToolResult,
-  type IProjectMcpSession,
-  ProjectMcpClientService,
-} from "./project-mcp-client";
+  type ISinglePageStartupMcpSession,
+  SinglePageStartupMcpClientService,
+} from "./singlepagestartup-client";
 
 export interface IProfileMcpServerCatalogItem extends IMcpServerDescriptor {
   tools: IMcpToolDefinition[];
@@ -31,29 +31,35 @@ export interface IProfileMcpCatalogSession {
   close(): Promise<void>;
 }
 
-export class ProfileMcpCatalogService {
-  private readonly projectMcpClient: ProjectMcpClientService;
+export interface IProfileMcpCatalogOpenProps {
+  configuredServerIds: readonly string[];
+  rbacSubjectAuthenticationJwt: string;
+}
 
-  constructor(projectMcpClient = new ProjectMcpClientService()) {
-    this.projectMcpClient = projectMcpClient;
+export class ProfileMcpCatalogService {
+  private readonly singlePageStartupMcpClient: SinglePageStartupMcpClientService;
+
+  constructor(
+    singlePageStartupMcpClient = new SinglePageStartupMcpClientService(),
+  ) {
+    this.singlePageStartupMcpClient = singlePageStartupMcpClient;
   }
 
-  async open(props: {
-    configuredServerIds: readonly string[];
-    employeeSpsJwt: string;
-  }): Promise<IProfileMcpCatalogSession> {
+  async open(
+    props: IProfileMcpCatalogOpenProps,
+  ): Promise<IProfileMcpCatalogSession> {
     const resolved = resolveMcpServerConfiguration(props.configuredServerIds);
-    const sessions = new Map<string, IProjectMcpSession>();
+    const sessions = new Map<string, ISinglePageStartupMcpSession>();
     const connected: IProfileMcpServerCatalogItem[] = [];
 
     try {
       for (const descriptor of resolved.supported) {
-        if (descriptor.id !== PROJECT_MCP_SERVER_ID) {
+        if (descriptor.id !== SINGLEPAGESTARTUP_MCP_SERVER_ID) {
           continue;
         }
 
-        const session = await this.projectMcpClient.openSession({
-          employeeSpsJwt: props.employeeSpsJwt,
+        const session = await this.singlePageStartupMcpClient.openSession({
+          rbacSubjectAuthenticationJwt: props.rbacSubjectAuthenticationJwt,
         });
         sessions.set(descriptor.id, session);
         const tools = await session.listTools();
@@ -82,12 +88,12 @@ export class ProfileMcpCatalogService {
 
 class ProfileMcpCatalogSession implements IProfileMcpCatalogSession {
   readonly catalog: IProfileMcpCatalog;
-  private readonly sessions: Map<string, IProjectMcpSession>;
+  private readonly sessions: Map<string, ISinglePageStartupMcpSession>;
   private closed = false;
 
   constructor(props: {
     catalog: IProfileMcpCatalog;
-    sessions: Map<string, IProjectMcpSession>;
+    sessions: Map<string, ISinglePageStartupMcpSession>;
   }) {
     this.catalog = props.catalog;
     this.sessions = props.sessions;

@@ -4,8 +4,9 @@ import { Component } from "./ClientComponent";
 export const mockMessageCreateMutate = jest.fn();
 export const mockMessageDeleteMutate = jest.fn();
 export const mockMessageUpdateMutate = jest.fn();
-export const mockMessageReactByOpenrouterMutate = jest.fn();
 export const mockOpenRouterModelFavoriteUpdateMutate = jest.fn();
+export const mockThreadUpdateMutate = jest.fn();
+export const mockProfileSkillFind = jest.fn();
 export const mockProfileUpdateMutate = jest.fn();
 export const mockKnowledgeDocumentUpdateMutate = jest.fn();
 export const mockKnowledgeDocumentCreateMutate = jest.fn();
@@ -375,14 +376,6 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
           isSuccess: false,
         };
       }),
-      socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter:
-        jest.fn(() => {
-          return {
-            mutate: mockMessageReactByOpenrouterMutate,
-            isPending: false,
-            isSuccess: false,
-          };
-        }),
       socialModuleProfileFindByIdChatFindByIdOpenrouterModelFind: jest.fn(
         () => {
           return {
@@ -442,6 +435,13 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
             isSuccess: false,
           };
         }),
+      socialModuleChatFindByIdThreadUpdate: jest.fn(() => {
+        return {
+          mutate: mockThreadUpdateMutate,
+          isPending: false,
+          isSuccess: false,
+        };
+      }),
       socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate: jest.fn(
         () => {
           return {
@@ -459,6 +459,8 @@ jest.mock("@sps/rbac/models/subject/sdk/client", () => {
         }),
       socialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFind: jest.fn(
         (request) => {
+          mockProfileSkillFind(request);
+
           return {
             data: getTargetProfileSkills(request),
             isLoading: false,
@@ -603,6 +605,7 @@ interface RenderComponentOptions {
   artificialIntelligenceOpponentProfile?: any | null;
   knowledgeAssistantProfile?: any | null;
   socialModuleMessagesAndActionsQuery?: any[];
+  socialModuleThread?: any;
 }
 
 export function renderComponent(
@@ -657,6 +660,13 @@ export function renderComponent(
           variant: chatVariant,
         } as any
       }
+      socialModuleThread={
+        options.socialModuleThread ||
+        ({
+          id: "thread-1",
+          metadata: {},
+        } as any)
+      }
       socialModuleThreadId="thread-1"
     />,
   );
@@ -670,8 +680,9 @@ export function resetChatComponentMocks() {
   mockMessageCreateMutate.mockReset();
   mockMessageDeleteMutate.mockReset();
   mockMessageUpdateMutate.mockReset();
-  mockMessageReactByOpenrouterMutate.mockReset();
   mockOpenRouterModelFavoriteUpdateMutate.mockReset();
+  mockThreadUpdateMutate.mockReset();
+  mockProfileSkillFind.mockReset();
   mockProfileUpdateMutate.mockReset();
   mockKnowledgeDocumentUpdateMutate.mockReset();
   mockKnowledgeDocumentCreateMutate.mockReset();

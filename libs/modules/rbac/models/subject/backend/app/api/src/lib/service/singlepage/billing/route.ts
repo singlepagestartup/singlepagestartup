@@ -9,8 +9,8 @@ import { type IModel as ISubjectsToBillingModuleCurrencies } from "@sps/rbac/rel
 import * as jwt from "hono/jwt";
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service/singlepage";
 import { inject, injectable } from "inversify";
-import { SubjectDI } from "../../di";
-import { isOpenRouterBillingRoute } from "./open-router-billing";
+import { SubjectDI } from "../../../di";
+import { isOpenRouterBillingRoute } from "./open-router";
 
 const cache = createMemoryCache({ ttlMs: 30_000, maxSize: 10_000 });
 

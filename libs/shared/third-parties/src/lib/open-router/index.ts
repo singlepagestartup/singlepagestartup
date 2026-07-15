@@ -60,6 +60,7 @@ export type IOpenRouterReasoning =
     };
 
 const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
+const OBJECT_COERCION_TEXT_PATTERN = /^\[object [^\]]+\]$/;
 let cachedModels:
   | {
       expiresAt: number;
@@ -108,8 +109,12 @@ export class Service {
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const mimeType =
+    const rawMimeType =
       response.headers.get("content-type") || props.fallbackMimeType;
+    const mimeType =
+      rawMimeType.split(";")[0]?.trim().toLowerCase() ||
+      props.fallbackMimeType.split(";")[0]?.trim().toLowerCase() ||
+      "application/octet-stream";
     const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
     const filename = (() => {
       try {
@@ -122,6 +127,30 @@ export class Service {
     })();
 
     return { dataUrl, mimeType, filename };
+  }
+
+  private shouldInlineMediaUrl(url: string) {
+    if (url.startsWith("data:")) {
+      return false;
+    }
+
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+
+      return (
+        hostname === "localhost" ||
+        hostname === "0.0.0.0" ||
+        hostname === "::1" ||
+        hostname === "host.docker.internal" ||
+        hostname.endsWith(".local") ||
+        hostname.startsWith("127.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("192.168.") ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+      );
+    } catch {
+      return false;
+    }
   }
 
   private async normalizeMessages(
@@ -141,6 +170,24 @@ export class Service {
 
             if (part.type === "image_url") {
               const url = part.image_url.url;
+
+              if (this.shouldInlineMediaUrl(url)) {
+                const { dataUrl } = await this.fetchAsDataUrl({
+                  url,
+                  fallbackMimeType: "image/*",
+                });
+
+                return {
+                  type: "image_url" as const,
+                  image_url: {
+                    url: dataUrl,
+                    ...(part.image_url.detail && {
+                      detail: part.image_url.detail,
+                    }),
+                  },
+                };
+              }
+
               return {
                 type: "image_url" as const,
                 image_url: {
@@ -324,9 +371,11 @@ export class Service {
 
     if (Array.isArray(message.content)) {
       const textParts = message.content
-        .filter((part: any) => part?.type === "text")
-        .map((part: any) => part.text || "");
-      text = textParts.join("");
+        .filter(
+          (part: any) => part?.type === "text" || part?.type === "output_text",
+        )
+        .map((part: any) => this.parseResponseTextPart(part));
+      text = this.assertValidResponseText(textParts.join(""));
 
       const contentImages = message.content
         .filter((part: any) => part?.type === "image_url")
@@ -336,8 +385,10 @@ export class Service {
       if (contentImages.length) {
         images = (images || []).concat(contentImages);
       }
+    } else if (typeof message.content === "string" || message.content == null) {
+      text = this.assertValidResponseText(message.content || "");
     } else {
-      text = message.content || "";
+      throw new Error("OpenRouter returned unsupported response content");
     }
 
     return {
@@ -345,6 +396,31 @@ export class Service {
       images,
       ...(toolCalls?.length && { toolCalls }),
     };
+  }
+
+  private parseResponseTextPart(part: any): string {
+    if (typeof part?.text === "string") {
+      return part.text;
+    }
+
+    if (
+      part?.text &&
+      typeof part.text === "object" &&
+      !Array.isArray(part.text) &&
+      typeof part.text.value === "string"
+    ) {
+      return part.text.value;
+    }
+
+    throw new Error("OpenRouter returned unsupported response text content");
+  }
+
+  private assertValidResponseText(text: string): string {
+    if (OBJECT_COERCION_TEXT_PATTERN.test(text.trim())) {
+      throw new Error("OpenRouter returned object-coercion text");
+    }
+
+    return text;
   }
 
   private toFiniteNumber(value: unknown): number | null {
@@ -545,9 +621,28 @@ export class Service {
     data: any;
     requestModelId: string;
     messages: IOpenRouterRequestMessage[];
-  }): Promise<IOpenRouterGenerationSuccess> {
+  }): Promise<IOpenRouterGenerateResult> {
     const message = props.data?.choices?.[0]?.message;
-    const parsedMessage = this.parseMessage(message || {});
+    let parsedMessage: ReturnType<Service["parseMessage"]>;
+
+    try {
+      parsedMessage = this.parseMessage(message || {});
+    } catch {
+      const billing = await this.buildBilling({
+        data: props.data,
+        requestModelId: props.requestModelId,
+        messages: props.messages,
+      });
+
+      return {
+        error: {
+          code: "unsupported_response_content",
+          message: "The model returned a response in an unsupported format.",
+        },
+        billing,
+      };
+    }
+
     const billing = await this.buildBilling({
       data: props.data,
       requestModelId: props.requestModelId,

@@ -21,14 +21,14 @@ Profiles store localized user-facing information for social features.
 
 ## MCP Servers
 
-The only supported identifier is `project`, which resolves to this deployment's
-built-in `apps.mcp` service through environment configuration. Unknown stored
-identifiers are shown as unavailable in the admin form and are never treated as
-active servers.
+The only supported identifier is `singlepagestartup`, which resolves to the
+local SinglePageStartup `apps.mcp` service through environment configuration.
+Unknown stored identifiers are shown as unavailable in the admin form and are
+never treated as active servers.
 
-The JSONB identifier list is an initial project-MCP configuration mechanism. A
-future dedicated MCP-server model and profile relation will own connection
-parameters for additional servers.
+The JSONB identifier list is an initial SinglePageStartup-MCP configuration
+mechanism. A future dedicated MCP-server model and profile relation will own
+connection parameters for additional servers.
 
 ## Variants
 

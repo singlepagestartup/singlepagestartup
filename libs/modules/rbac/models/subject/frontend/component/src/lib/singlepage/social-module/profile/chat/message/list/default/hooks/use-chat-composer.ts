@@ -6,17 +6,17 @@ import { hasKnowledgeMention } from "../utils";
 import { ThreadMessagesCache } from "./use-thread-messages-refetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@sps/rbac/models/subject/sdk/client";
+import { RBAC_AI_REACTION_REQUEST_METADATA_KEY } from "@sps/rbac/models/subject/sdk/model";
 import { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface UseChatComposerProps {
-  assistantProfileId?: string;
   clearSelectedSkills: () => void;
   markShouldScrollToBottom: () => void;
-  onKnowledgeReactionSuccess: () => void;
   openRouterModelId: string;
   openRouterReasoning: OpenRouterReasoningValue;
+  persistAiReactionRequest: boolean;
   profileSkills: SocialSkill[];
   selectedSkillIds: string[];
   socialModuleChatId: string;
@@ -60,16 +60,6 @@ export function useChatComposer(props: UseChatComposerProps) {
       socialModuleChatId: props.socialModuleChatId,
       socialModuleThreadId: props.socialModuleThreadId,
     });
-  const reactByOpenrouter =
-    api.socialModuleProfileFindByIdChatFindByIdMessageFindByIdReactByOpenrouter(
-      {
-        id: props.subjectId,
-        socialModuleProfileId: props.socialModuleProfileId,
-        socialModuleChatId: props.socialModuleChatId,
-        socialModuleMessageId: "pending",
-      },
-    );
-
   const focusComposerTextArea = useCallback(() => {
     window.requestAnimationFrame(() => {
       const textarea = textareaRef.current;
@@ -113,6 +103,17 @@ export function useChatComposer(props: UseChatComposerProps) {
             },
           }
         : {}),
+      ...(props.persistAiReactionRequest
+        ? {
+            [RBAC_AI_REACTION_REQUEST_METADATA_KEY]: {
+              version: 1,
+              modelId: props.openRouterModelId || "auto",
+              reasoning: props.openRouterReasoning || "auto",
+              skillIds: appliedSkillIds,
+              useKnowledgeSearch: isKnowledgeSearchSelected,
+            },
+          }
+        : {}),
     };
     const hasMessageMetadata = Object.keys(messageMetadata).length > 0;
 
@@ -144,52 +145,6 @@ export function useChatComposer(props: UseChatComposerProps) {
             props.threadMessagesCache.refetch();
           }
           resetComposer();
-
-          if (!props.assistantProfileId || !createdMessage?.id) {
-            return;
-          }
-
-          reactByOpenrouter.mutate(
-            {
-              id: props.subjectId,
-              socialModuleProfileId: props.socialModuleProfileId,
-              socialModuleChatId: props.socialModuleChatId,
-              socialModuleMessageId: createdMessage.id,
-              params: {
-                model: props.openRouterModelId || "auto",
-                reasoning: props.openRouterReasoning || "auto",
-              },
-              data: {
-                shouldReplySocialModuleProfile: {
-                  id: props.assistantProfileId,
-                },
-                ...(appliedSkillIds.length
-                  ? {
-                      skillIds: appliedSkillIds,
-                    }
-                  : {}),
-                ...(isKnowledgeSearchSelected
-                  ? {
-                      useKnowledgeSearch: true,
-                    }
-                  : {}),
-              },
-            },
-            {
-              onSuccess() {
-                // The AI reply is created server-side - the client cannot
-                // predict it, so a full refetch is the correct sync here.
-                props.threadMessagesCache.refetch();
-                props.onKnowledgeReactionSuccess();
-              },
-              onError(error: unknown) {
-                props.threadMessagesCache.refetch();
-                toast.error(
-                  getErrorMessage(error, "OpenRouter response failed"),
-                );
-              },
-            },
-          );
         },
         onError(error: unknown) {
           toast.error(getErrorMessage(error, "Message creation failed"));
@@ -216,7 +171,6 @@ export function useChatComposer(props: UseChatComposerProps) {
     focusComposerTextArea,
     form,
     onSubmit,
-    reactByOpenrouter,
     resetComposer,
     textareaRef,
   };

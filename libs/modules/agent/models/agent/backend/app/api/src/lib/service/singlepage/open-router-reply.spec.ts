@@ -210,8 +210,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-1",
       data: {
-        description:
-          "Ошибка OpenRouter\n`Internal server error: unknown certificate verification error`",
+        description: "Ошибка OpenRouter",
       },
       options: {
         headers: {
@@ -265,8 +264,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-1",
       data: {
-        description:
-          "Ошибка OpenRouter\n`No valid model response received. model=openai/gpt-5.2: generation error`",
+        description: "Ошибка OpenRouter",
       },
       options: {
         headers: {
@@ -320,6 +318,22 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       }),
     ).resolves.toBe(terminalMessage);
 
+    expect(mockedReactByOpenRouter).toHaveBeenCalledWith({
+      id: "subject-openrouter",
+      socialModuleChatId: "chat-1",
+      socialModuleMessageId: "message-1",
+      socialModuleProfileId: "sender-profile",
+      data: {
+        shouldReplySocialModuleProfile: {
+          id: "assistant-profile",
+        },
+      },
+      options: {
+        headers: {
+          Authorization: "Bearer signed-jwt",
+        },
+      },
+    });
     expect(mockedThreadMessageCreate).not.toHaveBeenCalled();
     expect(mockedMessageCreate).not.toHaveBeenCalled();
   });
@@ -445,7 +459,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleChatId: "chat-1",
       socialModuleThreadId: "thread-1",
       data: {
-        description: "Ошибка OpenRouter\n`Generated message is empty`",
+        description: "Ошибка OpenRouter",
       },
       options: {
         headers: {
@@ -462,7 +476,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
    * Then: both variants use the single OpenRouter reaction flow.
    */
   it.each([
-    ["default", "employee-profile"],
+    ["default", "social-profile"],
     ["knowledge", "chat-gpt-knowledge-profile"],
   ])(
     "routes %s chat AI profiles through OpenRouter only",
@@ -472,27 +486,26 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         .fn()
         .mockResolvedValue(undefined);
 
-      (service as any).telegramBotCommands = [];
       (service as any).openRouterReplyMessageCreate =
         openRouterReplyMessageCreate;
       (service as any).rbacModule = {
         subjectsToSocialModuleProfiles: {
           find: jest.fn().mockResolvedValue([
             {
-              subjectId: "employee-subject",
+              subjectId: "rbac-subject",
             },
           ]),
         },
         subject: {
           findById: jest.fn().mockResolvedValue({
-            id: "employee-subject",
+            id: "rbac-subject",
           }),
         },
       };
 
       await service.agentSocialModuleProfileHandler({
         shouldReplySocialModuleProfile: {
-          id: "employee-profile",
+          id: "social-profile",
           slug: profileSlug,
           variant: "artificial-intelligence",
         } as any,
@@ -513,13 +526,79 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         expect.objectContaining({
           jwtToken: "signed-jwt",
           rbacModuleSubject: expect.objectContaining({
-            id: "employee-subject",
+            id: "rbac-subject",
           }),
           shouldReplySocialModuleProfile: expect.objectContaining({
-            id: "employee-profile",
+            id: "social-profile",
           }),
         }),
       );
     },
   );
+
+  /**
+   * BDD Scenario
+   * Given: Telegram ingests a direct /learn command without transport rewriting.
+   * When: Agent dispatches connected automatic profiles.
+   * Then: the AI profile receives the command and the telegram-bot profile skips it.
+   */
+  it("routes direct /learn only to an artificial-intelligence profile", async () => {
+    const service = Object.create(Service.prototype) as Service;
+    const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
+    const telegramBotCommandReplyMessageCreate = jest
+      .fn()
+      .mockResolvedValue(undefined);
+
+    (service as any).openRouterReplyMessageCreate =
+      openRouterReplyMessageCreate;
+    (service as any).telegramBotCommandReplyMessageCreate =
+      telegramBotCommandReplyMessageCreate;
+    (service as any).rbacModule = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "rbac-subject",
+          },
+        ]),
+      },
+      subject: {
+        findById: jest.fn().mockResolvedValue({
+          id: "rbac-subject",
+        }),
+      },
+    };
+
+    const commonProps = {
+      socialModuleChat: {
+        id: "chat-1",
+      } as any,
+      socialModuleMessage: {
+        id: "message-1",
+        description: "/learn Store this fact",
+      } as any,
+      messageFromSocialModuleProfile: {
+        id: "requester-profile",
+      } as any,
+    };
+
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      shouldReplySocialModuleProfile: {
+        id: "ai-profile",
+        slug: "personal-ai",
+        variant: "artificial-intelligence",
+      } as any,
+    });
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      shouldReplySocialModuleProfile: {
+        id: "telegram-bot-profile",
+        slug: "telegram-bot",
+        variant: "default",
+      } as any,
+    });
+
+    expect(openRouterReplyMessageCreate).toHaveBeenCalledTimes(1);
+    expect(telegramBotCommandReplyMessageCreate).not.toHaveBeenCalled();
+  });
 });

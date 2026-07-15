@@ -1,23 +1,27 @@
 /**
- * BDD Suite: bounded AI employee tool loop.
+ * BDD Suite: bounded social.profile AI tool loop.
  *
  * Given: OpenRouter can request profile-bound or MCP-backed tools.
- * When: the employee loop validates, executes, and replays those calls.
+ * When: the social.profile tool loop validates, executes, and replays those calls.
  * Then: only catalog tools run, limits stop unsafe loops, and final output stays user-safe.
  */
 
 import {
-  AiEmployeeToolLoop,
-  type IAiEmployeeTool,
-} from "./ai-employee-tool-loop";
+  SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS,
+  SocialProfileAiToolLoop,
+  type ISocialProfileAiTool,
+  type TSocialProfileAiToolLoopEvent,
+} from "./tool-loop";
 
-function createTool(props?: Partial<IAiEmployeeTool>): IAiEmployeeTool {
+function createTool(
+  props?: Partial<ISocialProfileAiTool>,
+): ISocialProfileAiTool {
   return {
     source: "mcp",
     definition: {
       type: "function",
       function: {
-        name: "mcp__project__find",
+        name: "mcp__singlepagestartup__find",
         description: "Find a record",
         parameters: {
           type: "object",
@@ -33,12 +37,25 @@ function createTool(props?: Partial<IAiEmployeeTool>): IAiEmployeeTool {
   };
 }
 
-describe("Given: a bounded AI employee tool loop", () => {
+describe("Given: a bounded social.profile AI tool loop", () => {
+  /**
+   * BDD Scenario
+   * Given: an social.profile task needs a longer sequence of tool-assisted reasoning.
+   * When: the loop starts without request-specific limit overrides.
+   * Then: it allows up to 50 model iterations within five minutes.
+   */
+  it("When: defaults are used Then: longer tool-assisted tasks remain bounded", () => {
+    expect(SOCIAL_PROFILE_AI_TOOL_LOOP_DEFAULTS).toMatchObject({
+      maxIterations: 50,
+      totalTimeoutMs: 300_000,
+    });
+  });
+
   /**
    * BDD Scenario
    * Given: OpenRouter requests one available MCP tool before answering.
    * When: the loop executes and replays the result.
-   * Then: the final text and redacted trace identify the employee work without exposing raw arguments.
+   * Then: the final text and redacted trace identify the social.profile tool execution without exposing raw arguments.
    */
   it("When: an available tool is requested Then: its result is replayed before final text", async () => {
     const tool = createTool();
@@ -51,7 +68,7 @@ describe("Given: a bounded AI employee tool loop", () => {
             id: "call-1",
             type: "function",
             function: {
-              name: "mcp__project__find",
+              name: "mcp__singlepagestartup__find",
               arguments: '{"id":"record-1"}',
             },
           },
@@ -63,7 +80,7 @@ describe("Given: a bounded AI employee tool loop", () => {
         billing: {} as any,
       });
 
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Find record 1" }],
       modelCandidateIds: ["openai/gpt-5.5"],
       tools: [tool],
@@ -86,11 +103,11 @@ describe("Given: a bounded AI employee tool loop", () => {
       trace: {
         stepCount: 2,
         stopReason: "final_text",
-        exposedToolNames: ["mcp__project__find"],
+        exposedToolNames: ["mcp__singlepagestartup__find"],
         calls: [
           {
             callId: "call-1",
-            name: "mcp__project__find",
+            name: "mcp__singlepagestartup__find",
             source: "mcp",
             status: "success",
           },
@@ -109,12 +126,12 @@ describe("Given: a bounded AI employee tool loop", () => {
    */
   it.each([
     ["unknown_tool", "{}"],
-    ["mcp__project__find", '{"id":'],
+    ["mcp__singlepagestartup__find", '{"id":'],
   ])(
     "When: invalid call %s is produced Then: execution fails closed",
     async (name, args) => {
       const tool = createTool();
-      const result = await new AiEmployeeToolLoop().run({
+      const result = await new SocialProfileAiToolLoop().run({
         context: [{ role: "user", content: "Find a record" }],
         modelCandidateIds: ["openai/gpt-5.5"],
         tools: [tool],
@@ -147,7 +164,7 @@ describe("Given: a bounded AI employee tool loop", () => {
   it("When: one call repeats too often Then: repeated execution is stopped", async () => {
     const tool = createTool();
     let callIndex = 0;
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Repeat" }],
       modelCandidateIds: ["openai/gpt-5.5"],
       tools: [tool],
@@ -158,7 +175,7 @@ describe("Given: a bounded AI employee tool loop", () => {
             id: `call-${++callIndex}`,
             type: "function" as const,
             function: {
-              name: "mcp__project__find",
+              name: "mcp__singlepagestartup__find",
               arguments: '{"id":"same-record"}',
             },
           },
@@ -199,10 +216,10 @@ describe("Given: a bounded AI employee tool loop", () => {
   ])(
     "When: a tool reaches %s Then: its result is bounded",
     async (expectedReason, tool, limits) => {
-      const result = await new AiEmployeeToolLoop().run({
+      const result = await new SocialProfileAiToolLoop().run({
         context: [{ role: "user", content: "Run tool" }],
         modelCandidateIds: ["openai/gpt-5.5"],
-        tools: [tool as IAiEmployeeTool],
+        tools: [tool as ISocialProfileAiTool],
         generate: jest.fn(async () => ({
           text: "",
           toolCalls: [
@@ -210,7 +227,7 @@ describe("Given: a bounded AI employee tool loop", () => {
               id: "call-1",
               type: "function" as const,
               function: {
-                name: "mcp__project__find",
+                name: "mcp__singlepagestartup__find",
                 arguments: '{"id":"record"}',
               },
             },
@@ -240,7 +257,7 @@ describe("Given: a bounded AI employee tool loop", () => {
       })
       .mockResolvedValueOnce({ text: "Fallback answer", billing: {} as any });
 
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Answer" }],
       modelCandidateIds: ["primary", "fallback"],
       tools: [],
@@ -279,7 +296,7 @@ describe("Given: a bounded AI employee tool loop", () => {
             id: "call-1",
             type: "function",
             function: {
-              name: "mcp__project__find",
+              name: "mcp__singlepagestartup__find",
               arguments: '{"id":"record-1"}',
             },
           },
@@ -291,7 +308,7 @@ describe("Given: a bounded AI employee tool loop", () => {
         billing: null,
       });
 
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Find record 1" }],
       modelCandidateIds: ["primary", "fallback"],
       tools: [tool],
@@ -319,8 +336,9 @@ describe("Given: a bounded AI employee tool loop", () => {
       billing: null,
     }));
 
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Find record" }],
+      language: "ru",
       modelCandidateIds: ["primary", "fallback"],
       tools: [tool],
       generate,
@@ -329,6 +347,9 @@ describe("Given: a bounded AI employee tool loop", () => {
     expect(generate).toHaveBeenCalledTimes(2);
     expect(tool.execute).not.toHaveBeenCalled();
     expect(result.trace.stopReason).toBe("model_error");
+    expect(result.finalText).toBe(
+      "Не удалось получить корректный ответ от модели. Попробуйте повторить запрос или выбрать другую модель.",
+    );
   });
 
   /**
@@ -340,7 +361,7 @@ describe("Given: a bounded AI employee tool loop", () => {
   it("When: tool work exceeds max iterations Then: the loop stops deterministically", async () => {
     const tool = createTool();
     let callIndex = 0;
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Keep searching" }],
       modelCandidateIds: ["primary"],
       tools: [tool],
@@ -354,7 +375,7 @@ describe("Given: a bounded AI employee tool loop", () => {
               id: `call-${callIndex}`,
               type: "function" as const,
               function: {
-                name: "mcp__project__find",
+                name: "mcp__singlepagestartup__find",
                 arguments: JSON.stringify({ id: `record-${callIndex}` }),
               },
             },
@@ -379,7 +400,7 @@ describe("Given: a bounded AI employee tool loop", () => {
    * Then: the loop returns a bounded timeout result.
    */
   it("When: model generation exceeds the total deadline Then: total timeout wins", async () => {
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Wait forever" }],
       modelCandidateIds: ["primary"],
       tools: [],
@@ -393,7 +414,7 @@ describe("Given: a bounded AI employee tool loop", () => {
   /**
    * BDD Scenario
    * Given: a catalog tool throws a private implementation error.
-   * When: the employee loop handles the failure.
+   * When: the social.profile tool loop handles the failure.
    * Then: only a generic safe error is returned to the chat.
    */
   it("When: a tool throws Then: private details are not surfaced", async () => {
@@ -402,7 +423,7 @@ describe("Given: a bounded AI employee tool loop", () => {
         throw new Error("database password must stay private");
       }),
     });
-    const result = await new AiEmployeeToolLoop().run({
+    const result = await new SocialProfileAiToolLoop().run({
       context: [{ role: "user", content: "Run tool" }],
       modelCandidateIds: ["primary"],
       tools: [tool],
@@ -413,7 +434,7 @@ describe("Given: a bounded AI employee tool loop", () => {
             id: "call-1",
             type: "function" as const,
             function: {
-              name: "mcp__project__find",
+              name: "mcp__singlepagestartup__find",
               arguments: '{"id":"record"}',
             },
           },
@@ -423,6 +444,158 @@ describe("Given: a bounded AI employee tool loop", () => {
     });
 
     expect(result.trace.stopReason).toBe("tool_error");
+    expect(result.finalText).toBe(
+      "The task could not be completed because a tool failed. Please try again.",
+    );
     expect(result.finalText).not.toContain("password");
+    expect(result.finalText.toLowerCase()).not.toContain("social.profile");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a known MCP tool completes before the model returns final text.
+   * When: the loop reports lifecycle events.
+   * Then: safe requested, started, succeeded, and terminal events arrive in order.
+   */
+  it("When: a tool succeeds Then: safe lifecycle events are ordered", async () => {
+    const events: TSocialProfileAiToolLoopEvent[] = [];
+    const tool = createTool({
+      display: {
+        label: "Find a record",
+        serverId: "singlepagestartup",
+      },
+    });
+    const generate = jest
+      .fn()
+      .mockResolvedValueOnce({
+        text: "",
+        toolCalls: [
+          {
+            id: "call-1",
+            type: "function",
+            function: {
+              name: "mcp__singlepagestartup__find",
+              arguments: '{"id":"private-record-id"}',
+            },
+          },
+        ],
+        billing: {} as any,
+      })
+      .mockResolvedValueOnce({ text: "Done", billing: {} as any });
+
+    await new SocialProfileAiToolLoop().run({
+      context: [{ role: "user", content: "Find" }],
+      modelCandidateIds: ["primary"],
+      tools: [tool],
+      generate,
+      onEvent: (event) => {
+        events.push(event);
+      },
+    });
+
+    expect(events.map((event) => event.type)).toEqual([
+      "tool_requested",
+      "tool_started",
+      "tool_succeeded",
+      "run_completed",
+    ]);
+    expect(events[0]).toMatchObject({
+      callId: "call-1",
+      source: "mcp",
+      label: "Find a record",
+      serverId: "singlepagestartup",
+      selectedModelId: "primary",
+    });
+    expect(JSON.stringify(events)).not.toContain("private-record-id");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a known tool throws a private implementation error.
+   * When: the loop reports the failure.
+   * Then: it emits only a normalized error code followed by the terminal event.
+   */
+  it("When: a tool fails Then: lifecycle events stay presentation-safe", async () => {
+    const events: TSocialProfileAiToolLoopEvent[] = [];
+    const tool = createTool({
+      execute: jest.fn(async () => {
+        throw new Error("Bearer private-token");
+      }),
+    });
+
+    await new SocialProfileAiToolLoop().run({
+      context: [{ role: "user", content: "Find" }],
+      modelCandidateIds: ["primary"],
+      tools: [tool],
+      generate: jest.fn(async () => ({
+        text: "",
+        toolCalls: [
+          {
+            id: "call-1",
+            type: "function" as const,
+            function: {
+              name: "mcp__singlepagestartup__find",
+              arguments: '{"id":"record"}',
+            },
+          },
+        ],
+        billing: {} as any,
+      })),
+      onEvent: (event) => {
+        events.push(event);
+      },
+    });
+
+    expect(events.map((event) => event.type)).toEqual([
+      "tool_requested",
+      "tool_started",
+      "tool_failed",
+      "run_completed",
+    ]);
+    expect(events[2]).toMatchObject({ reason: "tool_error" });
+    expect(JSON.stringify(events)).not.toContain("private-token");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: progress persistence is temporarily unavailable.
+   * When: an event callback rejects.
+   * Then: the social.profile tool and final answer still complete.
+   */
+  it("When: event callback rejects Then: social.profile tool execution remains successful", async () => {
+    const tool = createTool();
+    const generate = jest
+      .fn()
+      .mockResolvedValueOnce({
+        text: "",
+        toolCalls: [
+          {
+            id: "call-1",
+            type: "function",
+            function: {
+              name: "mcp__singlepagestartup__find",
+              arguments: '{"id":"record"}',
+            },
+          },
+        ],
+        billing: {} as any,
+      })
+      .mockResolvedValueOnce({ text: "Completed", billing: {} as any });
+
+    const result = await new SocialProfileAiToolLoop().run({
+      context: [{ role: "user", content: "Find" }],
+      modelCandidateIds: ["primary"],
+      tools: [tool],
+      generate,
+      onEvent: async () => {
+        throw new Error("action service unavailable");
+      },
+    });
+
+    expect(tool.execute).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      finalText: "Completed",
+      trace: { stopReason: "final_text" },
+    });
   });
 });

@@ -21,15 +21,15 @@ last_updated_by: flakecode
 
 ## Research Question
 
-Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send OpenRouter-compatible tool definitions, execute model tool calls through the existing MCP server as the sender `rbac.subject` (via an internal short-lived MCP access token backed by the sender's SPS JWT, not `X-RBAC-SECRET-KEY`), feed tool results back to the model, and keep the final assistant message authored by the replying AI `social.profile`. This research documents every existing surface the feature touches: the OpenRouter wrapper, the `react-by/openrouter` reply pipeline, the MCP server tool surface and its OAuth/auth-forwarding stack, RBAC subject JWT mechanics, the `@knowledge` pipeline, and message/action metadata storage.
+Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send OpenRouter-compatible tool definitions, execute model tool calls through the existing MCP server as the `rbac.subject` linked to the replying profile (via an internal short-lived MCP access token backed by that subject's authentication JWT, not `X-RBAC-SECRET-KEY`), feed tool results back to the model, and keep the final assistant message authored by the replying AI `social.profile`. This research documents every existing surface the feature touches: the OpenRouter wrapper, the `react-by/openrouter` reply pipeline, the MCP server tool surface and its OAuth/auth-forwarding stack, RBAC subject JWT mechanics, the `@knowledge` pipeline, and message/action metadata storage.
 
 ## Summary
 
 - The OpenRouter wrapper (`libs/shared/third-parties/src/lib/open-router/index.ts`) has **no tool-calling surface**: the request body never includes `tools`/`tool_choice`/`parallel_tool_calls`, the message role union is `"user" | "assistant" | "system"` (no `"tool"` role, no `tool_call_id`), and the response parser reads only `message.content`/`message.images`, ignoring `tool_calls`. The model catalog metadata already lists `"tools"` and `"parallel_tool_calls"` in `supported_parameters`, but this is descriptive only.
 - The `react-by/openrouter` controller (`react-by-openrouter.ts`, 3839 lines) is a single-shot generate pipeline: assemble context (profile system message, thread history, skills as message-prefix, optional Knowledge RAG + rerank) → select model (manual or classifier-driven auto) → one `generate()` call with one fallback-candidate retry → create the assistant message. Every OpenRouter call is recorded in an in-memory `billingLedger` with typed purposes and settled exactly once against the caller's balance.
-- Two identities already coexist in the flow: the route-level caller (sender-side subject) and a **server-minted `replyByJwt`** — the controller resolves the AI profile's backing `rbac.subject` and signs a short-lived SPS JWT for it (`react-by-openrouter.ts:1177-1193`), then authors all status/reply messages as the AI profile. This is the existing in-repo precedent for the "sign a short-lived SPS JWT for a resolved subject" operation the issue requires for the _sender_.
+- Two identities already coexist in the flow: the route-level caller (sender-side subject) and a **server-minted `replyByRbacSubjectAuthenticationJwt`** — the controller resolves the AI profile's backing `rbac.subject` and signs a short-lived `rbac.subject` authentication JWT for it (`react-by-openrouter.ts:1177-1193`), then authors all status/reply messages as the AI profile. This is the existing in-repo precedent for the "sign a short-lived `rbac.subject` authentication JWT for a resolved subject" operation the issue requires for the _sender_.
 - The MCP server's live tool surface is **19 generic hand-written tools** in `apps/mcp/content-management.ts` (discovery/schema, model CRUD, relation CRUD, host page graph) with zod input schemas, `dryRun: true` defaults on writes, and preview/apply with `confirmationToken` for deletes. Legacy per-module generated registrars under `apps/mcp/<module>/` are orphaned (not imported). There is no per-session/per-scope tool subsetting: every authenticated caller sees all 19 tools.
-- MCP `/mcp` auth already resolves a Bearer MCP access token back to the stored **sender SPS JWT** and forwards it on every outgoing API `fetch` (AsyncLocalStorage context + patched `globalThis.fetch`), so MCP tools execute RBAC-enforced as that subject. What does not exist yet is an **internal token issuer**: `apps/mcp/lib/oauth.ts` only mints access tokens inside the HTTP OAuth grant handlers (`issueTokenResponse`, always paired with a refresh token); there is no `issueMcpAccessTokenForSpsJwt`-style function callable from backend code.
+- MCP `/mcp` auth already resolves a Bearer MCP access token back to the stored **`rbac.subject` authentication JWT** and forwards it on every outgoing API `fetch` (AsyncLocalStorage context + patched `globalThis.fetch`), so MCP tools execute with that subject's RBAC permissions. What does not exist yet is an **internal token issuer**: `apps/mcp/lib/oauth.ts` only mints access tokens inside the HTTP OAuth grant handlers (`issueTokenResponse`, always paired with a refresh token); there is no `issueMcpAccessTokenForRbacSubjectAuthenticationJwt`-style function callable from backend code.
 - `social.message` rows have open JSONB `metadata` and `interaction` columns; the OpenRouter reply already persists `metadata.knowledge.*` and `metadata.openRouter.billing`. `social.action` has a JSONB `payload` with chat/thread/profile join tables but is client-driven — neither reply handler writes actions today.
 
 ## Detailed Findings
@@ -56,8 +56,8 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 
 - Route params read at `react-by-openrouter.ts:842-864`: `:id` = calling RBAC subject; `:socialModuleProfileId` = sender profile; plus chat and trigger message ids.
 - Reply AI profile: `data.shouldReplySocialModuleProfile.id` → `loadReplyBySocialModuleProfile` (`react-by-openrouter.ts:949-950`, `1599-1611`).
-- Reply AI's backing subject: `subjectsToSocialModuleProfiles.find({ socialModuleProfileId })` → `this.service.findById({ id: subjectId })` → `replyBySubject` (`react-by-openrouter.ts:1156-1183`).
-- **Server-minted JWT precedent**: `replyByJwt = await jwt.sign({ exp: now + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS, iat, subject: replyBySubject }, RBAC_JWT_SECRET)` (`react-by-openrouter.ts:1185-1193`), used as `Authorization: Bearer` on all status/reply message writes (e.g. `1218-1233`, `1408-1426`, `1519-1545`).
+- Reply AI's backing subject: `subjectsToSocialModuleProfiles.find({ socialModuleProfileId })` → `this.service.findById({ id: subjectId })` → `replyByRbacSubject` (`react-by-openrouter.ts:1156-1183`).
+- **Server-minted JWT precedent**: `replyByRbacSubjectAuthenticationJwt = await jwt.sign({ exp: now + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS, iat, subject: replyByRbacSubject }, RBAC_JWT_SECRET)` (`react-by-openrouter.ts:1185-1193`), used as `Authorization: Bearer` on all status/reply message writes (e.g. `1218-1233`, `1408-1426`, `1519-1545`).
 
 **Context assembly.**
 
@@ -83,7 +83,7 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 **Assistant message creation (identity separation).**
 
 - Status message lifecycle: created at start, updated per model attempt, deleted before the final reply (`react-by-openrouter.ts:1217-1248`, `1407-1426`, `1519-1529`).
-- Reply persisted via `api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({ id: replyBySubject.id, socialModuleProfileId: replyBySocialModuleProfile.id, ..., options: { headers: { Authorization: Bearer replyByJwt } } })` (`1531-1545`).
+- Reply persisted via `api.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate({ id: replyByRbacSubject.id, socialModuleProfileId: replyBySocialModuleProfile.id, ..., options: { headers: { Authorization: Bearer replyByRbacSubjectAuthenticationJwt } } })` (`1531-1545`).
 - `create.ts` creates the `social.message` row and links chat/thread/profile — sender profile of the reply is the **AI profile** (`.../message/create.ts:132-278`, profile link at `268-278`).
 - `buildOpenRouterReplyMessageData` (`535-595`): text replies get a `__model-id__` footer (`583`); metadata merges `{ knowledge: {...}, openRouter: { billing: {...} } }` (`584-592`, knowledge block at `1486-1516`).
 
@@ -91,10 +91,10 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 
 ### 3. Billing ledger and purposes
 
-- `TOpenRouterBillingPurpose = "classification" | "classification_repair" | "knowledge_rerank" | "model_selection" | "model_selection_repair" | "generation"` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/open-router-billing.ts:7-13`).
-- Ledger entries `{ purpose, modelId, status, billing, fallbackReason?, error? }` accumulate in-memory (`react-by-openrouter.ts:446-490`); `summarizeOpenRouterBilling` converts total USD to internal tokens (`OPEN_ROUTER_INTERNAL_TOKEN_USD = 0.001`; `open-router-billing.ts:4, 50-64, 74-112`).
-- Settlement: `billRouteSettle` (`react-by-openrouter.ts:505-533`, delegate at `service/singlepage/index.ts:278`) → `bill-route.ts` `Service.settle()` reconciles the 1-token precharge against exact cost on the caller's `subjectsToBillingModuleCurrencies` balance (`bill-route.ts:269-290, 336-392`). Settlement runs exactly once (success, no-valid-response, or catch) guarded by `billingSettled` (`react-by-openrouter.ts:829, 1433-1444, 1472-1479, 1554-1572`).
-- `isOpenRouterBillingRoute` relaxes the precharge balance gate specifically for `/react-by/openrouter` (`open-router-billing.ts:46-48`, used at `bill-route.ts:232-234`).
+- `TOpenRouterBillingPurpose = "classification" | "classification_repair" | "knowledge_rerank" | "model_selection" | "model_selection_repair" | "generation"` (`libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/billing/open-router.ts:7-13`).
+- Ledger entries `{ purpose, modelId, status, billing, fallbackReason?, error? }` accumulate in-memory (`react-by-openrouter.ts:446-490`); `summarizeOpenRouterBilling` converts total USD to internal tokens (`OPEN_ROUTER_INTERNAL_TOKEN_USD = 0.001`; `billing/open-router.ts:4, 50-64, 74-112`).
+- Settlement: `billRouteSettle` (`react-by-openrouter.ts:505-533`, delegate at `service/singlepage/index.ts:278`) → `billing/route.ts` `Service.settle()` reconciles the 1-token precharge against exact cost on the caller's `subjectsToBillingModuleCurrencies` balance (`billing/route.ts:269-290, 336-392`). Settlement runs exactly once (success, no-valid-response, or catch) guarded by `billingSettled` (`react-by-openrouter.ts:829, 1433-1444, 1472-1479, 1554-1572`).
+- `isOpenRouterBillingRoute` relaxes the precharge balance gate specifically for `/react-by/openrouter` (`billing/open-router.ts:46-48`, used at `billing/route.ts:232-234`).
 
 ### 4. MCP server tool surface
 
@@ -114,11 +114,11 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 
 ### 5. MCP auth: OAuth store, `/mcp` gate, auth forwarding
 
-- OAuth store records: `IAccessTokenRecord { jti, clientId, subject, scope, spsJwt, expiresAt }` plus code/refresh/client records; Memory or Redis store selected by `MCP_OAUTH_STORE`/`KV_PROVIDER` (`apps/mcp/lib/oauth.ts:36-52, 83-204, 782-804`).
-- Token issuing happens only inside `issueTokenResponse` (`oauth.ts:581-640`): signs a JWT `{ sub, aud: getMcpPublicUrl(), iss, scope, client_id, jti }` with `getMcpJwtSecret()` (`MCP_OAUTH_JWT_SECRET || RBAC_JWT_SECRET`, `oauth.ts:806-815`), saves the access record **and always a refresh token**, and writes the HTTP token response. Callers: authorization-code and refresh-token grants only (`oauth.ts:511-579`). **No standalone internal issuer exists** (no `issueMcpAccessTokenForSpsJwt`).
-- The browser OAuth flow authenticates against the SPS API email/password endpoint and stores the resulting `spsJwt` in the code/token records (`authenticateWithSps`, `oauth.ts:680-732`; `getSubjectFromSpsJwt` verifies with `RBAC_JWT_SECRET` and extracts `sub`/`subject.id`/`id`, `oauth.ts:827-856`).
-- Verification: `verifyMcpAccessToken` checks signature, `aud === getMcpPublicUrl()`, `jti` presence, live store record, and returns `{ clientId, scopes, expiresAt, subject, spsJwt }` (`oauth.ts:298-326`).
-- `/mcp` request gate (`apps/mcp/http.ts:177-244`): `MCP_AUTH_REQUIRED=false` → anonymous; Bearer token → `verifyMcpAccessToken` → `requestAuth.authorization = "Bearer " + verified.spsJwt`; optional `MCP_ALLOW_RBAC_SECRET_FALLBACK=true` accepts `X-RBAC-SECRET-KEY` matching `RBAC_SECRET_KEY` (`:223-235`).
+- OAuth store records: `IAccessTokenRecord { jti, clientId, subject, scope, rbacSubjectAuthenticationJwt, expiresAt }` plus code/refresh/client records; Memory or Redis store selected by `MCP_SERVICE_OAUTH_STORE`/`KV_PROVIDER` (`apps/mcp/lib/oauth.ts:36-52, 83-204, 782-804`).
+- Token issuing happens only inside `issueTokenResponse` (`oauth.ts:581-640`): signs a JWT `{ sub, aud: getMcpPublicUrl(), iss, scope, client_id, jti }` with `getMcpJwtSecret()` (`MCP_SERVICE_OAUTH_JWT_SECRET || RBAC_JWT_SECRET`, `oauth.ts:806-815`), saves the access record **and always a refresh token**, and writes the HTTP token response. Callers: authorization-code and refresh-token grants only (`oauth.ts:511-579`). **No standalone internal issuer exists** (no `issueMcpAccessTokenForRbacSubjectAuthenticationJwt`).
+- The browser OAuth flow authenticates against the SPS API email/password endpoint and stores the resulting `rbacSubjectAuthenticationJwt` in the code/token records (`authenticateRbacSubject`, `oauth.ts:680-732`; `getRbacSubjectIdFromAuthenticationJwt` verifies with `RBAC_JWT_SECRET` and extracts `sub`/`subject.id`/`id`, `oauth.ts:827-856`).
+- Verification: `verifyMcpAccessToken` checks signature, `aud === getMcpPublicUrl()`, `jti` presence, live store record, and returns `{ clientId, scopes, expiresAt, subject, rbacSubjectAuthenticationJwt }` (`oauth.ts:298-326`).
+- `/mcp` request gate (`apps/mcp/http.ts:177-244`): `MCP_SERVICE_AUTH_REQUIRED=false` → anonymous; Bearer token → `verifyMcpAccessToken` → `requestAuth.authorization = "Bearer " + verified.rbacSubjectAuthenticationJwt`; optional `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true` accepts `X-RBAC-SECRET-KEY` matching `RBAC_SECRET_KEY` (`:223-235`).
 - Forwarding: `runWithMcpRequestAuthContext` wraps `transport.handleRequest` (`http.ts:118-127`); `installMcpFetchAuthForwarding` patches `globalThis.fetch` to inject `authorization`/`x-rbac-secret-key` from the AsyncLocalStorage context — and, when **no** context is active, falls back to `process.env["RBAC_SECRET_KEY"]` (`apps/mcp/lib/auth-context.ts:15-76`). `getMcpAuthHeaders` prefers context `rbacSecretKey` over `authorization`, then falls back to raw request headers/cookies/`authInfo`/`_meta` (`apps/mcp/lib/auth.ts:84-136`).
 
 ### 6. RBAC subject JWT and root secret
@@ -126,9 +126,9 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 - Secrets: `RBAC_SECRET_KEY` and `RBAC_JWT_SECRET` (`libs/shared/utils/src/lib/envs/rbac.ts:7, 19`); token lifetimes `RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS` default 3600s, refresh default 86400s (`rbac.ts:10-18`).
 - Signing sites (all `hono/jwt`, HS256): email/password authentication signs access JWT embedding the **full subject row** + refresh JWT embedding `{ subject: { id } }` (`.../service/singlepage/authentication/email-and-password.ts:185-207`); refresh (`refresh.ts:35, 57-79`), ethereum (`ethereum-virtual-machine.ts:248-270`), oauth exchange (`oauth/exchange.ts:123-144`) follow the same shapes. Every site resolves the subject row first (usually via `X-RBAC-SECRET-KEY`-headed `findById`), then signs.
 - Verification sites: `authentication/me` returns `decoded.subject` verbatim (`me.ts:34`); `is-authorized` service trusts only `decoded.subject.id`, caches per token 30s (`is-authorized.ts:118-134`); `bill-route.ts:83` same pattern.
-- Authorization path for `Bearer <spsJwt>`: global `IsAuthorizedMiddleware` (`libs/middlewares/src/lib/is-authorized/index.ts:39-112`) → RBAC subject SDK `authenticationIsAuthorized` → controller → `is-authorized` service → JWT verify → subject roles (`subjectsToRoles`) ∩ permission roles, with root-permission fallback (`is-authorized.ts:204-243`).
+- Authorization path for `Bearer <rbacSubjectAuthenticationJwt>`: global `IsAuthorizedMiddleware` (`libs/middlewares/src/lib/is-authorized/index.ts:39-112`) → RBAC subject SDK `authenticationIsAuthorized` → controller → `is-authorized` service → JWT verify → subject roles (`subjectsToRoles`) ∩ permission roles, with root-permission fallback (`is-authorized.ts:204-243`).
 - `X-RBAC-SECRET-KEY` bypass: exact string match short-circuits the middleware **before any permission resolution** (`is-authorized/index.ts:59-61`), likewise billing (`bill-route` middleware/controller); it is also the credential for privileged backend-to-backend SDK calls throughout authentication flows.
-- **Existing server-side short-lived JWT mint for a resolved subject**: the `replyByJwt` in `react-by-openrouter.ts:1177-1193` (see §2) — structurally identical to what the issue describes for the sender subject, differing only in which subject is resolved.
+- **Existing server-side short-lived JWT mint for a resolved subject**: the `replyByRbacSubjectAuthenticationJwt` in `react-by-openrouter.ts:1177-1193` (see §2) — structurally identical to what the issue describes for the sender subject, differing only in which subject is resolved.
 
 ### 7. `@knowledge` pipeline (must be preserved)
 
@@ -160,16 +160,16 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 - `libs/shared/third-parties/src/lib/open-router/interface.ts:117-140` — `supported_parameters` incl. `"tools"`, `"parallel_tool_calls"`
 - `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/index.ts:472-483` — react-by routes (openrouter, knowledge)
 - `.../message/react-by-openrouter.ts:826-1572` — handler pipeline (identities, context, generation, settle, reply)
-- `.../message/react-by-openrouter.ts:1177-1193` — server-side `replyByJwt` mint (precedent for sender JWT mint)
+- `.../message/react-by-openrouter.ts:1177-1193` — server-side `replyByRbacSubjectAuthenticationJwt` mint (precedent for sender JWT mint)
 - `.../message/react-by-openrouter.ts:446-533` — `generateWithBillingLedger` + `settleOpenRouterBilling`
 - `.../message/react-by-openrouter.ts:2875-2934` — `buildGenerationContext`
 - `.../message/create.ts:132-278` — assistant message row + chat/thread/profile links
-- `.../service/singlepage/open-router-billing.ts:7-13, 46-112` — purposes, route gate, summary math
-- `.../service/singlepage/bill-route.ts:232-234, 269-392` — precharge/settle mechanics
+- `.../service/singlepage/billing/open-router.ts:7-13, 46-112` — purposes, route gate, summary math
+- `.../service/singlepage/billing/route.ts:232-234, 269-392` — precharge/settle mechanics
 - `.../service/singlepage/is-authorized.ts:118-134, 204-243` — JWT verify + role/permission match
 - `libs/middlewares/src/lib/is-authorized/index.ts:43-61, 86-95` — Bearer extraction + secret-key bypass
 - `libs/shared/utils/src/lib/envs/rbac.ts:7-19` — `RBAC_SECRET_KEY`, lifetimes, `RBAC_JWT_SECRET`
-- `.../service/singlepage/authentication/email-and-password.ts:185-207` — canonical SPS JWT payload shapes
+- `.../service/singlepage/authentication/email-and-password.ts:185-207` — canonical `rbac.subject` authentication JWT payload shapes
 - `apps/mcp/actions.ts:7-17` — `createMcpServer()` (content-management only)
 - `apps/mcp/content-management.ts:97-469` — the 19 live tools
 - `apps/mcp/content-management.spec.ts:33-74` — pinned tool list
@@ -177,7 +177,7 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 - `apps/mcp/lib/content-management/operations.ts:52-57, 102-111, 763-893` — confirmation token, operation gate, dryRun/preview-apply
 - `apps/mcp/lib/content-management/response.ts:3-64` — result envelope
 - `apps/mcp/http.ts:118-127, 151-175, 177-244` — auth context wrap, session creation, request auth gate
-- `apps/mcp/lib/oauth.ts:36-43, 298-326, 511-640, 680-732, 806-856` — token records, verify, grants + `issueTokenResponse`, SPS authentication, secrets/subject extraction
+- `apps/mcp/lib/oauth.ts:36-43, 298-326, 511-640, 680-732, 806-856` — token records, verification, grants + `issueTokenResponse`, `rbac.subject` authentication, and subject extraction
 - `apps/mcp/lib/auth-context.ts:15-76` — fetch patching + env-secret fallback when no context
 - `apps/mcp/lib/auth.ts:84-136` — `getMcpAuthHeaders` resolution order
 - `libs/shared/frontend/server/api/src/lib/factory/index.ts:37-131` — SDK verb factory
@@ -191,9 +191,9 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 ## Architecture Documentation
 
 - **Layering**: backend follows repository → service → controller → app, mounted only via `apps/api/app.ts`; the reply flow lives in the RBAC subject module's controller layer and calls sibling modules via server SDKs with explicit auth headers.
-- **Dual-identity convention already in place**: route caller (sender side) vs. server-minted `replyByJwt` for the AI profile's subject; all reply-side writes carry the minted JWT. Issue #199's identity split (tools = sender subject, final message = AI profile) maps onto this existing structure — the missing piece is minting for the _sender_ and exchanging it for an MCP access token.
+- **Dual-identity convention already in place**: route caller (sender side) vs. server-minted `replyByRbacSubjectAuthenticationJwt` for the AI profile's subject; all reply-side writes carry the minted JWT. Issue #199's identity split (tools = sender subject, final message = AI profile) maps onto this existing structure — the missing piece is minting for the _sender_ and exchanging it for an MCP access token.
 - **MCP as an API proxy**: MCP tools never touch the DB; they call the SPS API over HTTP with forwarded caller auth, so RBAC enforcement happens in the API's `IsAuthorizedMiddleware`/`is-authorized` service exactly as for any client.
-- **Token chain (external flow today)**: browser OAuth+PKCE → SPS email/password authentication → `spsJwt` stored in OAuth records → MCP access token (JWT, aud = MCP public URL, jti-backed store record) → `/mcp` Bearer → per-request AsyncLocalStorage → forwarded `Authorization: Bearer <spsJwt>` on outgoing API fetches.
+- **Token chain (external flow today)**: browser OAuth+PKCE → SPS email/password authentication → `rbacSubjectAuthenticationJwt` stored in OAuth records → MCP access token (JWT, aud = MCP public URL, jti-backed store record) → `/mcp` Bearer → per-request AsyncLocalStorage → forwarded `Authorization: Bearer <rbacSubjectAuthenticationJwt>` on outgoing API fetches.
 - **Billing convention**: every OpenRouter call is a ledger entry with a typed purpose; a new purpose value is the existing extension point for tool-loop model calls (`TOpenRouterBillingPurpose`).
 - **Metadata convention**: assistant messages carry `metadata.knowledge.*` and `metadata.openRouter.billing`; JSONB is unconstrained, so tool-loop metadata has a natural home under `metadata.openRouter.*` without schema migrations.
 
@@ -203,7 +203,7 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 - `thoughts/shared/research/singlepagestartup/ISSUE-187.md` — MCP content-management foundation; its "Authorization And Headers" section documents `IsAuthorizedMiddleware` and secret-key handling.
 - `thoughts/shared/handoffs/singlepagestartup/ISSUE-187-progress.md` — "Forwarded MCP Auth" follow-up removed root-secret usage from MCP-to-API calls in favor of caller-auth forwarding; "Streamable HTTP Transport" added `apps/mcp/http.ts`.
 - `thoughts/shared/tickets/singlepagestartup/ISSUE-199.md` and `processes/singlepagestartup/ISSUE-199.md` — ticket and process log for this issue.
-- No prior thoughts document covers an internal MCP token issuer (`issueMcpAccessTokenForSpsJwt` appears nowhere in `thoughts/`).
+- No prior thoughts document covers an internal MCP token issuer (`issueMcpAccessTokenForRbacSubjectAuthenticationJwt` appears nowhere in `thoughts/`).
 
 ## Related Research
 
@@ -215,10 +215,10 @@ Issue #199 requires an authenticated tool loop in `react-by/openrouter`: send Op
 ## Open Questions
 
 - **Which tool surface to expose to the model**: the 19 generic content-management tools are schema-heavy (selector + filters). The issue requires an allowlist "scoped to chat/agent use cases, read-only first" — whether that allowlist selects a subset of the 19 generic tools, or defines new chat-scoped tool definitions that map onto MCP calls, is a plan-phase decision. Today MCP has no per-session tool subsetting.
-- **Sender subject JWT payload shape**: existing mints embed either the full subject row or `{ subject: { id } }`; `is-authorized` only needs `subject.id`. The internal mint for the sender must pick one (the `replyByJwt` precedent embeds the full row).
-- **MCP store TTL vs. loop duration**: MCP access-token TTL default is 3600s; the tool loop needs a much shorter TTL ("short-lived") — `MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS` is global today, so a per-issuance TTL parameter would be new surface in `issueTokenResponse`-adjacent code.
+- **Sender subject JWT payload shape**: existing mints embed either the full subject row or `{ subject: { id } }`; `is-authorized` only needs `subject.id`. The internal mint for the sender must pick one (the `replyByRbacSubjectAuthenticationJwt` precedent embeds the full row).
+- **MCP store TTL vs. loop duration**: MCP access-token TTL default is 3600s; the tool loop needs a much shorter TTL ("short-lived") — `MCP_SERVICE_OAUTH_ACCESS_TOKEN_TTL_SECONDS` is global today, so a per-issuance TTL parameter would be new surface in `issueTokenResponse`-adjacent code.
 - **MCP client session overhead per loop**: `/mcp` requires an `initialize` handshake per session (`http.ts:88-103`); whether the backend tool executor holds one session per reply or per tool call affects the loop implementation but has no existing in-repo precedent (no in-repo MCP _client_ exists today).
-- **`MCP_ALLOW_RBAC_SECRET_FALLBACK` and the no-context env fallback** (`auth-context.ts:27-29`) both exist; the issue forbids root-secret usage for model-requested tools, which is compatible with the Bearer path but the deployment configuration of these flags matters for enforcement.
+- **`MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK` and the no-context env fallback** (`auth-context.ts:27-29`) both exist; the issue forbids root-secret usage for model-requested tools, which is compatible with the Bearer path but the deployment configuration of these flags matters for enforcement.
 - **Where sender-side billing for tool-loop model calls lands**: purposes are typed and settled against the _caller_ of the react-by route (the sender-side subject via the agent service trigger); adding tool-loop purposes extends `TOpenRouterBillingPurpose`, but MCP tool execution itself is not billed through this ledger today (the issue says it "should be auditable separately").
 
 ## Known Pitfalls (from implementation)

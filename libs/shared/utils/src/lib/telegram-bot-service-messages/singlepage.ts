@@ -33,8 +33,8 @@ export const util = {
     en: "Generating response using [selectModelForRequest]. Please wait.",
   },
   openRouterError: {
-    ru: "🪦 Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
-    en: "An error occurred while processing your request. Please try again later.",
+    ru: "Не удалось обработать запрос. Попробуйте повторить его. Если ошибка повторится, выберите другую модель.",
+    en: "The request could not be processed. Please try again. If the error persists, select another model.",
   },
   openRouterRequiredTelegamChannelSubscriptionError: {
     ru: `🧾 Перед началом приёма\n\nЧтобы пользоваться ботом, тебе нужно быть пациентом *Doctor GPT*.\n\nПодпишись на канал [*${telegramRequiredChannelName}*](${telegramRequiredChannelLink})`,

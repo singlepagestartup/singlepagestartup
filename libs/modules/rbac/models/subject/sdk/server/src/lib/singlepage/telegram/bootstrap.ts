@@ -34,7 +34,9 @@ export interface IProps {
 
 export interface IResult {
   rbacModuleSubject: IRbacSubject;
+  personalAiRbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
+  personalAiSocialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
   socialModuleThread: ISocialModuleThread;
   registration: boolean;

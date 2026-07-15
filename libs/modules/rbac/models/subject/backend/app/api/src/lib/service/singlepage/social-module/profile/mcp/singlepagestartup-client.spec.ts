@@ -1,15 +1,15 @@
 /**
- * BDD Suite: employee-authenticated project MCP client.
+ * BDD Suite: rbac.subject-authenticated SinglePageStartup MCP client.
  *
- * Given: an employee SPS JWT and the internal project MCP endpoint.
+ * Given: an RBAC subject authentication JWT and the internal SinglePageStartup MCP endpoint.
  * When: RBAC opens a Streamable HTTP session and executes live-catalog tools.
  * Then: credentials, schemas, bounds, and session ownership are enforced locally.
  */
 
 import {
-  PROJECT_MCP_EXCHANGE_PATH,
-  ProjectMcpClientService,
-} from "./project-mcp-client";
+  SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH,
+  SinglePageStartupMcpClientService,
+} from "./singlepagestartup-client";
 
 function createTool(overrides: Record<string, unknown> = {}) {
   return {
@@ -57,7 +57,7 @@ function createHarness(
     close: jest.fn().mockResolvedValue(undefined),
   };
   const createWireClient = jest.fn().mockResolvedValue(wireClient);
-  const service = new ProjectMcpClientService({
+  const service = new SinglePageStartupMcpClientService({
     fetch: fetchImplementation,
     mcpUrl: "https://mcp.example.com/mcp",
     exchangeSecret: "internal-secret",
@@ -69,18 +69,92 @@ function createHarness(
   return { service, fetchImplementation, createWireClient, wireClient };
 }
 
-describe("employee-authenticated project MCP client", () => {
+describe("rbac.subject-authenticated SinglePageStartup MCP client", () => {
   /**
-   * BDD Scenario: employee token exchange and one reusable session.
+   * BDD Scenario: canonical MCP service environment contract.
    *
-   * Given: a server-signed employee SPS JWT.
-   * When: the project MCP session is opened and used twice.
+   * Given: apps.api receives the service URL and exchange secret through MCP_SERVICE variables.
+   * When: the MCP client is created without dependency overrides.
+   * Then: it exchanges the rbac.subject token against that service URL with that secret.
+   */
+  it("reads the canonical MCP service environment variables", async () => {
+    const originalUrl = process.env["MCP_SERVICE_URL"];
+    const originalSecret =
+      process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"];
+    const fetchImplementation = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          access_token: "environment-mcp-access-token",
+          token_type: "Bearer",
+          expires_in: 300,
+          scope: "mcp:content",
+        }),
+        { status: 200 },
+      ),
+    );
+    const wireClient = {
+      listTools: jest.fn().mockResolvedValue({ tools: [] }),
+      callTool: jest.fn(),
+      close: jest.fn().mockResolvedValue(undefined),
+    };
+    const createWireClient = jest.fn().mockResolvedValue(wireClient);
+
+    process.env["MCP_SERVICE_URL"] = "https://internal-mcp.example/mcp";
+    process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"] =
+      "environment-exchange-secret";
+
+    try {
+      const service = new SinglePageStartupMcpClientService({
+        fetch: fetchImplementation,
+        createWireClient,
+      });
+      const session = await service.openSession({
+        rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
+      });
+
+      expect(fetchImplementation).toHaveBeenCalledWith(
+        new URL(
+          `https://internal-mcp.example${SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH}`,
+        ),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "x-mcp-internal-token-exchange-secret":
+              "environment-exchange-secret",
+          }),
+        }),
+      );
+      expect(createWireClient).toHaveBeenCalledWith({
+        mcpUrl: "https://internal-mcp.example/mcp",
+        accessToken: "environment-mcp-access-token",
+      });
+
+      await session.close();
+    } finally {
+      if (originalUrl === undefined) {
+        delete process.env["MCP_SERVICE_URL"];
+      } else {
+        process.env["MCP_SERVICE_URL"] = originalUrl;
+      }
+      if (originalSecret === undefined) {
+        delete process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"];
+      } else {
+        process.env["MCP_SERVICE_INTERNAL_TOKEN_EXCHANGE_SECRET"] =
+          originalSecret;
+      }
+    }
+  });
+
+  /**
+   * BDD Scenario: rbac.subject token exchange and one reusable session.
+   *
+   * Given: a server-signed RBAC subject authentication JWT.
+   * When: the SinglePageStartup MCP session is opened and used twice.
    * Then: the dedicated exchange secret and returned bearer are used without RBAC bypass headers.
    */
-  it("exchanges the employee JWT and reuses one MCP session", async () => {
+  it("exchanges the rbac.subject authentication JWT and reuses one MCP session", async () => {
     const harness = createHarness();
     const session = await harness.service.openSession({
-      employeeSpsJwt: "employee-sps-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     await session.listTools();
@@ -91,14 +165,18 @@ describe("employee-authenticated project MCP client", () => {
     await session.close();
 
     expect(harness.fetchImplementation).toHaveBeenCalledWith(
-      new URL(`https://mcp.example.com${PROJECT_MCP_EXCHANGE_PATH}`),
+      new URL(
+        `https://mcp.example.com${SINGLEPAGESTARTUP_MCP_RBAC_SUBJECT_TOKEN_EXCHANGE_PATH}`,
+      ),
       expect.objectContaining({
         method: "POST",
         headers: {
           "content-type": "application/json",
           "x-mcp-internal-token-exchange-secret": "internal-secret",
         },
-        body: JSON.stringify({ subject_token: "employee-sps-jwt" }),
+        body: JSON.stringify({
+          subject_token: "rbac-subject-authentication-jwt",
+        }),
       }),
     );
     const exchangeHeaders = harness.fetchImplementation.mock.calls[0][1]
@@ -133,13 +211,13 @@ describe("employee-authenticated project MCP client", () => {
   it("rejects names and arguments outside the live MCP catalog", async () => {
     const harness = createHarness();
     const session = await harness.service.openSession({
-      employeeSpsJwt: "employee-sps-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     await session.listTools();
     await expect(
       session.callTool({ name: "model-delete", arguments: {} }),
-    ).rejects.toThrow("not present in the live project MCP catalog");
+    ).rejects.toThrow("not present in the live SinglePageStartup MCP catalog");
     await expect(
       session.callTool({ name: "model-find", arguments: {} }),
     ).rejects.toThrow("Arguments do not match model-find");
@@ -162,7 +240,7 @@ describe("employee-authenticated project MCP client", () => {
       }),
     });
     const session = await harness.service.openSession({
-      employeeSpsJwt: "employee-sps-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     await expect(
@@ -188,7 +266,7 @@ describe("employee-authenticated project MCP client", () => {
       callTool: jest.fn().mockImplementation(() => new Promise(() => {})),
     });
     const session = await harness.service.openSession({
-      employeeSpsJwt: "employee-sps-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
     const call = session.callTool({
       name: "model-find",
@@ -216,7 +294,7 @@ describe("employee-authenticated project MCP client", () => {
       callTool: jest.fn().mockRejectedValue(new Error("JSON-RPC failure")),
     });
     const session = await harness.service.openSession({
-      employeeSpsJwt: "employee-sps-jwt",
+      rbacSubjectAuthenticationJwt: "rbac-subject-authentication-jwt",
     });
 
     await expect(

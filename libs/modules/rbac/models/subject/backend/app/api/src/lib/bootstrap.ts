@@ -27,7 +27,7 @@ import { Service as IsAuthorizedService } from "./service/singlepage/is-authoriz
 import { Service as SubjectsToBillingModuleCurrenciesService } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/service";
 import { Repository as SubjectsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/repository";
 import { Configuration as SubjectsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/subjects-to-billing-module-currencies/backend/app/api/src/lib/configuration";
-import { Service as BillRouteService } from "./service/singlepage/bill-route";
+import { Service as BillRouteService } from "./service/singlepage/billing/route";
 import { Service as EcommerceOrderProceedService } from "./service/singlepage/ecommerce/order/proceed";
 import { Service as IdentityService } from "@sps/rbac/models/identity/backend/app/api/src/lib/service";
 import { Repository as IdentityRepository } from "@sps/rbac/models/identity/backend/app/api/src/lib/repository";
@@ -35,6 +35,15 @@ import { Configuration as IdentityConfiguration } from "@sps/rbac/models/identit
 import { Service as RoleService } from "@sps/rbac/models/role/backend/app/api/src/lib/service";
 import { Repository as RoleRepository } from "@sps/rbac/models/role/backend/app/api/src/lib/repository";
 import { Configuration as RoleConfiguration } from "@sps/rbac/models/role/backend/app/api/src/lib/configuration";
+import { Service as PermissionService } from "@sps/rbac/models/permission/backend/app/api/src/lib/service";
+import { Repository as PermissionRepository } from "@sps/rbac/models/permission/backend/app/api/src/lib/repository";
+import { Configuration as PermissionConfiguration } from "@sps/rbac/models/permission/backend/app/api/src/lib/configuration";
+import { Service as PermissionsToBillingModuleCurrenciesService } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/service";
+import { Repository as PermissionsToBillingModuleCurrenciesRepository } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/repository";
+import { Configuration as PermissionsToBillingModuleCurrenciesConfiguration } from "@sps/rbac/relations/permissions-to-billing-module-currencies/backend/app/api/src/lib/configuration";
+import { Service as RolesToPermissionsService } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/service";
+import { Repository as RolesToPermissionsRepository } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/repository";
+import { Configuration as RolesToPermissionsConfiguration } from "@sps/rbac/relations/roles-to-permissions/backend/app/api/src/lib/configuration";
 import { Service as RolesToEcommerceModuleProductsService } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/service";
 import { Repository as RolesToEcommerceModuleProductsRepository } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/repository";
 import { Configuration as RolesToEcommerceModuleProductsConfiguration } from "@sps/rbac/relations/roles-to-ecommerce-module-products/backend/app/api/src/lib/configuration";
@@ -531,6 +540,29 @@ const bindings = new ContainerModule((bind: interfaces.Bind) => {
   bind<RoleService>(SubjectDI.IRoleService)
     .toDynamicValue(
       () => new RoleService(new RoleRepository(new RoleConfiguration())),
+    )
+    .inSingletonScope();
+  bind<PermissionService>(SubjectDI.IPermissionService)
+    .toDynamicValue(
+      () =>
+        new PermissionService(
+          new PermissionRepository(new PermissionConfiguration()),
+          new PermissionsToBillingModuleCurrenciesService(
+            new PermissionsToBillingModuleCurrenciesRepository(
+              new PermissionsToBillingModuleCurrenciesConfiguration(),
+            ),
+          ),
+        ),
+    )
+    .inSingletonScope();
+  bind<RolesToPermissionsService>(SubjectDI.IRolesToPermissionsService)
+    .toDynamicValue(
+      () =>
+        new RolesToPermissionsService(
+          new RolesToPermissionsRepository(
+            new RolesToPermissionsConfiguration(),
+          ),
+        ),
     )
     .inSingletonScope();
   bind<RolesToEcommerceModuleProductsService>(

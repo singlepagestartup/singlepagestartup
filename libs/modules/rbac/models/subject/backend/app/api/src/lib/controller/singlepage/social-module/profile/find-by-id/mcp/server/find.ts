@@ -38,7 +38,7 @@ export class Handler {
         throw new Error("Configuration error. RBAC_JWT_SECRET not set");
       }
 
-      const employeeRelations =
+      const rbacSubjectRelations =
         await this.service.subjectsToSocialModuleProfiles.find({
           params: {
             filters: {
@@ -53,40 +53,44 @@ export class Handler {
           },
         });
 
-      if (employeeRelations?.length !== 1 || !employeeRelations[0]?.subjectId) {
+      if (
+        rbacSubjectRelations?.length !== 1 ||
+        !rbacSubjectRelations[0]?.subjectId
+      ) {
         throw new Error(
-          "Validation error. Profile must have exactly one employee subject.",
+          "Validation error. social.profile must have exactly one linked rbac.subject.",
         );
       }
 
-      const employeeSubject = await this.service.findById({
-        id: employeeRelations[0].subjectId,
+      const rbacSubject = await this.service.findById({
+        id: rbacSubjectRelations[0].subjectId,
       });
 
-      if (!employeeSubject) {
-        throw new Error("Not found error. Employee subject not found");
+      if (!rbacSubject) {
+        throw new Error("Not found error. Linked rbac.subject not found");
       }
 
       const issuedAt = Math.floor(Date.now() / 1000);
-      const employeeSpsJwt = await jwt.sign(
+      const rbacSubjectAuthenticationJwt = await jwt.sign(
         {
           exp: issuedAt + RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS,
           iat: issuedAt,
-          subject: employeeSubject,
+          subject: rbacSubject,
         },
         RBAC_JWT_SECRET,
       );
-      const catalogSession = await this.service.openProfileMcpCatalog({
-        configuredServerIds: Array.isArray(
-          socialModuleProfile.allowedMcpServerIds,
-        )
-          ? socialModuleProfile.allowedMcpServerIds.filter(
-              (identifier): identifier is string =>
-                typeof identifier === "string",
-            )
-          : [],
-        employeeSpsJwt,
-      });
+      const catalogSession =
+        await this.service.socialModuleProfileMcpCatalogOpen({
+          configuredServerIds: Array.isArray(
+            socialModuleProfile.allowedMcpServerIds,
+          )
+            ? socialModuleProfile.allowedMcpServerIds.filter(
+                (identifier): identifier is string =>
+                  typeof identifier === "string",
+              )
+            : [],
+          rbacSubjectAuthenticationJwt,
+        });
 
       try {
         return c.json({ data: catalogSession.catalog });

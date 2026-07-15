@@ -24,7 +24,7 @@ For issue-152, HTTP cache remains enabled in scenarios; temporary exclusion is a
 
 ## Remote MCP Connector
 
-`apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's SPS JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
+`apps/mcp` can run as a remote Streamable HTTP MCP server at `https://mcp.<domain>/mcp`. Deploy it with `tools/deployer/mcp.sh`; production connectors authenticate through OAuth/Bearer and then forward the caller's `rbac.subject` authentication JWT to `apps/api`. Static `X-RBAC-SECRET-KEY` auth is disabled by default for remote deployments and should only be enabled for local/private debugging.
 
 For Codex Desktop/CLI, register the remote MCP explicitly:
 
@@ -184,7 +184,7 @@ For MCP Inspector, use `Streamable HTTP` with the same URL and put auth under `C
 
 For a remote server, run the MCP HTTP process on the application server behind HTTPS and make the API service URL reachable from that process. Production connector auth is OAuth/Bearer by default.
 
-Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_ALLOW_RBAC_SECRET_FALLBACK=true`.
+Do not store JWTs or `RBAC_SECRET_KEY` in repository files. Static `X-RBAC-SECRET-KEY` is a local/private debugging fallback only when `MCP_SERVICE_ALLOW_RBAC_SECRET_FALLBACK=true`.
 
 The legacy Inspector command starts the MCP server through stdio:
 

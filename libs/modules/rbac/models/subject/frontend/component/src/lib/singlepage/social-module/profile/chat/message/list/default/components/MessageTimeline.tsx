@@ -1,12 +1,15 @@
 "use client";
 
 import { ActionProfileLoader } from "./ActionProfileLoader";
+import { AiExecutionActionRow } from "./AiExecutionActionRow";
+import { areActionRowPropsEqual } from "./action-row-memo";
 import { MessageProfileLoader } from "./MessageProfileLoader";
 import { Component as SocialModuleActionChatActionRow } from "@sps/social/models/action/frontend/component/src/lib/singlepage/chat-action-row";
 import { Component as SocialModuleProfile } from "@sps/social/models/profile/frontend/component";
 import type { ISocialModuleMessagesAndActionsQuery } from "../interface";
 import type { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
 import type { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
+import { AI_EXECUTION_ACTION_VARIANT } from "@sps/rbac/models/subject/sdk/model";
 import { memo, type RefObject } from "react";
 
 type TimelineItem = ISocialModuleMessagesAndActionsQuery[number];
@@ -72,6 +75,16 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
   return (
     <ActionProfileLoader actionId={props.action.id} language={props.language}>
       {(profile) => {
+        if (props.action.variant === AI_EXECUTION_ACTION_VARIANT) {
+          return (
+            <AiExecutionActionRow
+              action={props.action}
+              language={props.language}
+              profile={profile}
+            />
+          );
+        }
+
         return (
           <SocialModuleActionChatActionRow
             isServer={false}
@@ -84,7 +97,7 @@ const MemoizedActionRow = memo(function MemoizedActionRow(
       }}
     </ActionProfileLoader>
   );
-});
+}, areActionRowPropsEqual);
 
 export function MessageTimeline(props: MessageTimelineProps) {
   if (!props.items?.length) {
@@ -103,7 +116,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
       ref={props.messagesContentRef}
       className="mx-auto flex w-full max-w-4xl flex-col gap-1"
     >
-      {props.items.map((socialModuleMessageOrAction, index) => {
+      {props.items.map((socialModuleMessageOrAction) => {
         if (socialModuleMessageOrAction.type === "message") {
           const message = socialModuleMessageOrAction.data;
 
@@ -124,7 +137,7 @@ export function MessageTimeline(props: MessageTimelineProps) {
 
         return (
           <MemoizedActionRow
-            key={action.id || index}
+            key={action.id}
             action={action}
             language={props.language}
           />

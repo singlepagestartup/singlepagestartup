@@ -38,7 +38,9 @@ export interface IExecuteProps {
 
 export interface IResult {
   rbacModuleSubject: IRbacSubject;
+  personalAiRbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
+  personalAiSocialModuleProfile: ISocialModuleProfile;
   socialModuleChat: ISocialModuleChat;
   socialModuleThread: ISocialModuleThread;
   registration: boolean;
@@ -47,6 +49,13 @@ export interface IResult {
 }
 
 type IFindById = (props: { id: string }) => Promise<IRbacSubject | null>;
+type IResolvePersonalAiAgent = (props: {
+  ownerRbacSubject: IRbacSubject;
+  socialModuleChatId: string;
+}) => Promise<{
+  rbacModuleSubject: IRbacSubject;
+  socialModuleProfile: ISocialModuleProfile;
+}>;
 
 export interface IConstructorProps {
   findById: IFindById;
@@ -54,6 +63,7 @@ export interface IConstructorProps {
   socialModule: ISocialModule;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
+  resolvePersonalAiAgent?: IResolvePersonalAiAgent;
 }
 
 export class Service {
@@ -62,6 +72,7 @@ export class Service {
   socialModule: ISocialModule;
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
+  resolvePersonalAiAgent: IResolvePersonalAiAgent;
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -69,6 +80,13 @@ export class Service {
     this.socialModule = props.socialModule;
     this.subjectsToIdentities = props.subjectsToIdentities;
     this.subjectsToSocialModuleProfiles = props.subjectsToSocialModuleProfiles;
+    this.resolvePersonalAiAgent =
+      props.resolvePersonalAiAgent ||
+      (async () => {
+        throw new Error(
+          "Configuration error. Telegram personal AI agent resolver is not configured.",
+        );
+      });
   }
 
   protected getSdkHeaders() {
@@ -134,6 +152,10 @@ export class Service {
     return `${words.join(" ") || "New thread"} 💬`.slice(0, 128).trim();
   }
 
+  protected stripGeneratedThreadTitleFieldLabel(value: string) {
+    return value.replace(/^['"]?title['"]?\s*:\s*/i, "").trim();
+  }
+
   protected parseGeneratedThreadTitle(value: string) {
     const cleanValue = value
       .trim()
@@ -151,7 +173,7 @@ export class Service {
       //
     }
 
-    return cleanValue;
+    return this.stripGeneratedThreadTitleFieldLabel(cleanValue);
   }
 
   protected sanitizeGeneratedThreadTitle(props: {
@@ -193,7 +215,7 @@ export class Service {
     try {
       const openRouter = new OpenRouter();
       const result = await openRouter.generate({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.1-flash-lite",
         temperature: 0.2,
         max_tokens: 20,
         responseFormat: {
@@ -272,19 +294,29 @@ export class Service {
     messageText?: string;
     headers: Record<string, string>;
   }) {
+    const currentTitle = props.socialModuleThread.title?.trim() || "";
+    const repairedTitle =
+      this.stripGeneratedThreadTitleFieldLabel(currentTitle);
+    const shouldRepairTitle = Boolean(
+      repairedTitle && repairedTitle !== currentTitle,
+    );
+
     if (
-      !this.shouldGenerateThreadTitleFromMessage(props.messageText) ||
-      !this.isFallbackTelegramThreadTitle({
-        title: props.socialModuleThread.title,
-        messageThreadId: props.messageThreadId,
-      })
+      !shouldRepairTitle &&
+      (!this.shouldGenerateThreadTitleFromMessage(props.messageText) ||
+        !this.isFallbackTelegramThreadTitle({
+          title: props.socialModuleThread.title,
+          messageThreadId: props.messageThreadId,
+        }))
     ) {
       return props.socialModuleThread;
     }
 
-    const title = await this.generateTelegramThreadTitle({
-      messageText: props.messageText as string,
-    });
+    const title = shouldRepairTitle
+      ? repairedTitle.slice(0, 128).trim()
+      : await this.generateTelegramThreadTitle({
+          messageText: props.messageText as string,
+        });
 
     if (!title || title === props.socialModuleThread.title) {
       return props.socialModuleThread;
@@ -1166,6 +1198,208 @@ export class Service {
     return selectedIdentity;
   }
 
+  protected async synchronizeTelegramAutomaticProfilesForChat(props: {
+    socialModuleChatId: string;
+    personalAiSocialModuleProfile: ISocialModuleProfile;
+    headers: Record<string, string>;
+  }) {
+    const existingRelations =
+      (await this.socialModule.profilesToChats.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "chatId",
+                method: "eq",
+                value: props.socialModuleChatId,
+              },
+            ],
+          },
+        },
+      })) || [];
+    const existingProfileIds = Array.from(
+      new Set(
+        existingRelations
+          .map((relation) => relation.profileId)
+          .filter((profileId): profileId is string => Boolean(profileId)),
+      ),
+    );
+    const [connectedProfiles, telegramBotProfiles] = await Promise.all([
+      existingProfileIds.length
+        ? this.socialModule.profile.find({
+            params: {
+              filters: {
+                and: [
+                  {
+                    column: "id",
+                    method: "inArray",
+                    value: existingProfileIds,
+                  },
+                ],
+              },
+            },
+          })
+        : Promise.resolve([]),
+      this.socialModule.profile.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "slug",
+                method: "eq",
+                value: "telegram-bot",
+              },
+              {
+                column: "variant",
+                method: "eq",
+                value: "agent",
+              },
+            ],
+          },
+          limit: 2,
+        },
+      }),
+    ]);
+    const sortedTelegramBotProfiles = [
+      ...((telegramBotProfiles || []) as ISocialModuleProfile[]),
+    ].sort((a, b) => {
+      const timestampDifference =
+        this.getCreatedAtTimestamp(a.createdAt) -
+        this.getCreatedAtTimestamp(b.createdAt);
+
+      if (timestampDifference !== 0) {
+        return timestampDifference;
+      }
+
+      return String(a.id).localeCompare(String(b.id));
+    });
+    const telegramBotProfile = sortedTelegramBotProfiles[0];
+
+    if (sortedTelegramBotProfiles.length > 1) {
+      console.warn(
+        "telegram/bootstrap: multiple telegram-bot profiles found, using the first-created profile",
+        {
+          keptProfileId: telegramBotProfile.id,
+          ignoredProfileIds: sortedTelegramBotProfiles
+            .slice(1)
+            .map((profile) => profile.id),
+        },
+      );
+    }
+
+    if (!telegramBotProfile) {
+      console.warn(
+        "telegram/bootstrap: telegram-bot system social.profile was not found",
+        {
+          socialModuleChatId: props.socialModuleChatId,
+        },
+      );
+    }
+
+    const profilesById = new Map<string, ISocialModuleProfile>(
+      ((connectedProfiles || []) as ISocialModuleProfile[]).map((profile) => [
+        profile.id,
+        profile,
+      ]),
+    );
+    profilesById.set(
+      props.personalAiSocialModuleProfile.id,
+      props.personalAiSocialModuleProfile,
+    );
+
+    if (telegramBotProfile) {
+      profilesById.set(telegramBotProfile.id, telegramBotProfile);
+    }
+
+    const keptRelationsByProfileId = new Map<string, any[]>();
+    const removedRelationIds: string[] = [];
+
+    for (const relation of existingRelations) {
+      const profile = profilesById.get(relation.profileId);
+
+      if (!profile) {
+        continue;
+      }
+
+      const isAutomaticProfile = ["agent", "artificial-intelligence"].includes(
+        profile.variant,
+      );
+
+      if (!isAutomaticProfile) {
+        continue;
+      }
+
+      const profileRelations = keptRelationsByProfileId.get(profile.id) || [];
+      profileRelations.push(relation);
+      keptRelationsByProfileId.set(profile.id, profileRelations);
+    }
+
+    for (const [profileId, relations] of keptRelationsByProfileId.entries()) {
+      const sortedRelations = [...relations].sort((a, b) => {
+        const timestampDifference =
+          this.getCreatedAtTimestamp(a.createdAt) -
+          this.getCreatedAtTimestamp(b.createdAt);
+
+        if (timestampDifference !== 0) {
+          return timestampDifference;
+        }
+
+        return String(a.id || "").localeCompare(String(b.id || ""));
+      });
+
+      for (const duplicateRelation of sortedRelations.slice(1)) {
+        if (!duplicateRelation.id) {
+          continue;
+        }
+
+        await socialModuleProfilesToChatsApi.delete({
+          id: duplicateRelation.id,
+          options: {
+            headers: props.headers,
+          },
+        });
+        removedRelationIds.push(duplicateRelation.id);
+      }
+
+      keptRelationsByProfileId.set(profileId, sortedRelations.slice(0, 1));
+    }
+
+    const requiredProfiles = [
+      props.personalAiSocialModuleProfile,
+      ...(telegramBotProfile ? [telegramBotProfile] : []),
+    ];
+
+    for (const requiredProfile of requiredProfiles) {
+      if (keptRelationsByProfileId.get(requiredProfile.id)?.length) {
+        continue;
+      }
+
+      await socialModuleProfilesToChatsApi.create({
+        data: {
+          profileId: requiredProfile.id,
+          chatId: props.socialModuleChatId,
+          variant:
+            requiredProfile.id === props.personalAiSocialModuleProfile.id
+              ? "telegram-personal-ai-agent"
+              : "telegram-system-agent",
+        },
+        options: {
+          headers: props.headers,
+        },
+      });
+    }
+
+    if (removedRelationIds.length) {
+      console.warn(
+        "telegram/bootstrap: removed duplicate automatic profile links",
+        {
+          socialModuleChatId: props.socialModuleChatId,
+          removedRelationIds,
+        },
+      );
+    }
+  }
+
   async execute(props: IExecuteProps): Promise<IResult> {
     if (!props.fromId) {
       throw new Error("Validation error. 'fromId' is required");
@@ -1618,55 +1852,16 @@ export class Service {
       );
     }
 
-    const telegramBotAgentSocialModuleProfiles =
-      await this.socialModule.profile.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "variant",
-                method: "inArray",
-                value: ["agent", "artificial-intelligence"],
-              },
-            ],
-          },
-        },
-      });
+    const personalAiAgent = await this.resolvePersonalAiAgent({
+      ownerRbacSubject: subject,
+      socialModuleChatId: chat.id,
+    });
 
-    if (telegramBotAgentSocialModuleProfiles?.length) {
-      const existingProfileToChats =
-        await this.socialModule.profilesToChats.find({
-          params: {
-            filters: {
-              and: [
-                {
-                  column: "chatId",
-                  method: "eq",
-                  value: chat.id,
-                },
-              ],
-            },
-          },
-        });
-
-      if (existingProfileToChats?.length) {
-        for (const agentProfile of telegramBotAgentSocialModuleProfiles) {
-          const exists = existingProfileToChats.find(
-            (profileToChat) => profileToChat.profileId === agentProfile.id,
-          );
-
-          if (!exists) {
-            await socialModuleProfilesToChatsApi.create({
-              data: {
-                profileId: agentProfile.id,
-                chatId: chat.id,
-              },
-              options: { headers },
-            });
-          }
-        }
-      }
-    }
+    await this.synchronizeTelegramAutomaticProfilesForChat({
+      socialModuleChatId: chat.id,
+      personalAiSocialModuleProfile: personalAiAgent.socialModuleProfile,
+      headers,
+    });
 
     const thread = await this.resolveThreadForTelegramMessage({
       socialModuleChat: chat,
@@ -1678,7 +1873,9 @@ export class Service {
 
     return {
       rbacModuleSubject: subject,
+      personalAiRbacModuleSubject: personalAiAgent.rbacModuleSubject,
       socialModuleProfile: profile,
+      personalAiSocialModuleProfile: personalAiAgent.socialModuleProfile,
       socialModuleChat: chat,
       socialModuleThread: thread,
       registration,

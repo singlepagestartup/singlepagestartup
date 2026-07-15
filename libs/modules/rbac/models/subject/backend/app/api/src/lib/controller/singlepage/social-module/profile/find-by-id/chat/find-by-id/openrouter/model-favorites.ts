@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getHttpErrorType } from "@sps/backend-utils";
+import { Provider as KvProvider } from "@sps/providers-kv";
 import { KV_PROVIDER } from "@sps/shared-utils";
 import { Service } from "../../../../../../../../service";
 
@@ -12,33 +13,12 @@ interface IOpenRouterModelFavoritesValue {
   favoriteModelIds: string[];
 }
 
-interface IKvProvider {
-  get(props: {
-    prefix: string;
-    key: string;
-  }): Promise<string | null | undefined>;
-  set(props: {
-    prefix: string;
-    key: string;
-    value: string;
-    options?: {
-      ttl?: number;
-    };
-  }): Promise<unknown>;
-}
+type IKvProvider = Pick<KvProvider, "get" | "set">;
 
 type TKvProviderFactory = () => Promise<IKvProvider>;
 
 async function createKvProvider(): Promise<IKvProvider> {
-  const kvProviderModuleUrl = new URL(
-    "libs/providers/kv/src/index.ts",
-    `file://${process.cwd()}/`,
-  ).href;
-  const { Provider } = (await import(kvProviderModuleUrl)) as {
-    Provider: new (props: { type: string }) => IKvProvider;
-  };
-
-  return new Provider({
+  return new KvProvider({
     type: KV_PROVIDER,
   });
 }

@@ -2,11 +2,11 @@
 
 import { Composer } from "./components/Composer";
 import { KnowledgeDocumentDialog } from "./components/KnowledgeDocumentDialog";
+import { McpServersDialog } from "./components/McpServersDialog";
 import { MessageTimelineSection } from "./components/MessageTimelineSection";
 import { ProfileEditDialog } from "./components/ProfileEditDialog";
 import { ProfileSidebarPanel } from "./components/ProfileSidebarPanel";
 import { ProfileSidebarSheet } from "./components/ProfileSidebarSheet";
-import { useChatActionsRefetch } from "./hooks/use-chat-actions-refetch";
 import { useKnowledgeDocuments } from "./hooks/use-knowledge-documents";
 import { useOpenRouterModelControls } from "./hooks/use-openrouter-model-controls";
 import { useProfileSidebar } from "./hooks/use-profile-sidebar";
@@ -35,6 +35,7 @@ interface SkillDialogTarget {
  */
 export function Component(props: IComponentPropsExtended) {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
+  const [isMcpServersDialogOpen, setIsMcpServersDialogOpen] = useState(false);
   const [isProfileEditDialogOpen, setIsProfileEditDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SocialSkill | null>(null);
   const [skillDialogTarget, setSkillDialogTarget] =
@@ -74,15 +75,10 @@ export function Component(props: IComponentPropsExtended) {
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
   });
-  const refetchChatActions = useChatActionsRefetch({
-    subjectId: props.data.id,
-    socialModuleProfileId: props.socialModuleProfile.id,
-    socialModuleChatId: props.socialModuleChat.id,
-  });
   const composerSkillsProfileId =
-    knowledgeDocuments.knowledgeAssistantProfileId ||
-    props.socialModuleProfile.id;
+    knowledgeDocuments.knowledgeAssistantProfileId || "missing-profile";
   const profileSkills = useProfileSkills({
+    enabled: isArtificialIntelligenceAssistant,
     subjectId: props.data.id,
     requesterSocialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
@@ -96,23 +92,10 @@ export function Component(props: IComponentPropsExtended) {
     subjectId: props.data.id,
     socialModuleProfileId: props.socialModuleProfile.id,
     socialModuleChatId: props.socialModuleChat.id,
+    socialModuleThread: props.socialModuleThread,
     socialModuleThreadId: props.socialModuleThreadId,
     enabled: isArtificialIntelligenceAssistant,
   });
-
-  const onKnowledgeReactionSuccess = useCallback(() => {
-    knowledgeDocuments.refetchKnowledgeDocumentQueries();
-    profileSidebar.refetchKnowledgeDocumentQueries();
-    // Immediate feedback (issue #195): the AI reaction creates chat ACTION
-    // rows whose RPC-derived topics do not match the actions query, so refresh
-    // it here so the rows appear without a reload. WS invalidation stays as the
-    // background fallback.
-    refetchChatActions();
-  }, [
-    knowledgeDocuments.refetchKnowledgeDocumentQueries,
-    profileSidebar.refetchKnowledgeDocumentQueries,
-    refetchChatActions,
-  ]);
 
   function openSidebarSkillCreateDialog(profile: SocialProfile) {
     setEditingSkill(null);
@@ -132,6 +115,11 @@ export function Component(props: IComponentPropsExtended) {
   function openProfileEditDialog() {
     profileSidebar.setIsMobileSheetOpen(false);
     setIsProfileEditDialogOpen(true);
+  }
+
+  function openMcpServersDialog() {
+    profileSidebar.setIsMobileSheetOpen(false);
+    setIsMcpServersDialogOpen(true);
   }
 
   function openKnowledgeDocumentEditDialog(document: KnowledgeDocument) {
@@ -178,6 +166,7 @@ export function Component(props: IComponentPropsExtended) {
         }}
       >
         <ProfileSidebarPanel
+          hasKnowledgeDocumentsError={profileSidebar.hasKnowledgeDocumentsError}
           isKnowledgeDocumentsLoading={
             profileSidebar.isKnowledgeDocumentsLoading
           }
@@ -190,6 +179,11 @@ export function Component(props: IComponentPropsExtended) {
               : undefined
           }
           onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+          onMcpServersEdit={
+            profileSidebar.canManageSelectedProfile
+              ? openMcpServersDialog
+              : undefined
+          }
           onProfileEdit={
             profileSidebar.canManageSelectedProfile
               ? openProfileEditDialog
@@ -274,6 +268,19 @@ export function Component(props: IComponentPropsExtended) {
             onReindex={profileSidebar.onKnowledgeDocumentReindex}
             onSave={profileSidebar.onKnowledgeDocumentSave}
           />
+          <McpServersDialog
+            isOpen={isMcpServersDialogOpen}
+            isSaving={profileSidebar.isSavingProfile}
+            onOpenChange={setIsMcpServersDialogOpen}
+            onSave={(allowedMcpServerIds) => {
+              void profileSidebar
+                .onProfileSave({ allowedMcpServerIds })
+                .then(() => {
+                  setIsMcpServersDialogOpen(false);
+                });
+            }}
+            profile={profileSidebar.selectedProfile}
+          />
           <ProfileEditDialog
             isOpen={isProfileEditDialogOpen}
             isSaving={profileSidebar.isSavingProfile}
@@ -286,7 +293,6 @@ export function Component(props: IComponentPropsExtended) {
             profile={profileSidebar.selectedProfile}
           />
           <Composer
-            assistantProfileId={knowledgeDocuments.knowledgeAssistantProfileId}
             canSelectOpenRouterReasoning={
               openRouterModelControls.canSelectReasoning
             }
@@ -300,7 +306,6 @@ export function Component(props: IComponentPropsExtended) {
             isSkillOptionsLoading={profileSkills.isLoadingSkills}
             language={props.language}
             markShouldScrollToBottom={markShouldScrollToBottom}
-            onKnowledgeReactionSuccess={onKnowledgeReactionSuccess}
             onOpenRouterModelChange={openRouterModelControls.setSelectedModelId}
             onOpenRouterReasoningChange={
               openRouterModelControls.setSelectedReasoning
@@ -340,6 +345,9 @@ export function Component(props: IComponentPropsExtended) {
         !profileSidebar.isMobileSheetOpen ? (
           <aside className="hidden min-h-0 w-96 shrink-0 border-l border-slate-200 2xl:block">
             <ProfileSidebarPanel
+              hasKnowledgeDocumentsError={
+                profileSidebar.hasKnowledgeDocumentsError
+              }
               isKnowledgeDocumentsLoading={
                 profileSidebar.isKnowledgeDocumentsLoading
               }
@@ -352,6 +360,11 @@ export function Component(props: IComponentPropsExtended) {
                   : undefined
               }
               onKnowledgeDocumentSelect={openKnowledgeDocumentEditDialog}
+              onMcpServersEdit={
+                profileSidebar.canManageSelectedProfile
+                  ? openMcpServersDialog
+                  : undefined
+              }
               onProfileEdit={
                 profileSidebar.canManageSelectedProfile
                   ? openProfileEditDialog

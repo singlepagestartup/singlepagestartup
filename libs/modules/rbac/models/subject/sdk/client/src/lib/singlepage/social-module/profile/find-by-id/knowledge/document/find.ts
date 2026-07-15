@@ -11,7 +11,11 @@ import {
 } from "@sps/rbac/models/subject/sdk/server";
 import { saturateHeaders } from "@sps/shared-frontend-client-utils";
 import { queryClient, subscription } from "@sps/shared-frontend-client-api";
-import { deriveTopicsFromPath, STALE_TIME } from "@sps/shared-utils";
+import {
+  defaultCompiledTopicRules,
+  resolveTopicsForPath,
+  STALE_TIME,
+} from "@sps/shared-utils";
 import { useEffect } from "react";
 import QueryString from "qs";
 
@@ -42,12 +46,11 @@ export function action(props: IProps) {
 
   return useQuery<IResult>({
     queryKey: [queryKey],
-    // Canonical realtime subscription (issue #195): derived from the read
-    // path so a knowledge document create/update/delete (topic
-    // `social.documents`) invalidates this list without a reload. The `?query`
-    // suffix is stripped by deriveTopicsFromPath.
+    // This RBAC endpoint is a composite read over a Social relation and
+    // Knowledge documents. Resolve the framework rule instead of deriving the
+    // misleading literal `social.documents` topic from its URL suffix.
     meta: {
-      topics: deriveTopicsFromPath(queryKey),
+      topics: resolveTopicsForPath(queryKey, defaultCompiledTopicRules),
       ...(userMeta ?? {}),
     },
     queryFn: async () => {

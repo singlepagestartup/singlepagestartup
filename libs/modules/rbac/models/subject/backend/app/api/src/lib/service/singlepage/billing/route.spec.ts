@@ -30,7 +30,7 @@ jest.mock("hono/jwt", () => {
   };
 });
 
-import { Service } from "./bill-route";
+import { Service } from "./route";
 import { api as permissionApi } from "@sps/rbac/models/permission/sdk/server";
 import * as jwt from "hono/jwt";
 

@@ -7,7 +7,7 @@
  *
  * Given: the chat profile sidebar receives profile management callbacks.
  * When: the owning model wrapper renders the client sidebar variant.
- * Then: profile edit controls are forwarded alongside skills and knowledge controls.
+ * Then: profile and MCP edit controls are forwarded alongside skills and knowledge controls.
  */
 
 import { act } from "react";
@@ -25,6 +25,13 @@ jest.mock(
   "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item",
   () => ({
     Component: () => <div data-testid="skill-sidebar-item" />,
+  }),
+);
+
+jest.mock(
+  "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar",
+  () => ({
+    Component: () => <div data-testid="profile-avatar" />,
   }),
 );
 
@@ -97,6 +104,58 @@ describe("GIVEN: social profile chat sidebar actions", () => {
   });
 
   /**
+   * BDD Scenario: renders and edits the profile MCP section.
+   *
+   * Given: an AI profile allows the local SinglePageStartup MCP server.
+   * When: the sidebar renders and the operator opens MCP editing.
+   * Then: the server is listed by its stable identifier and the callback receives the profile.
+   */
+  test("renders the SinglePageStartup MCP server and forwards its edit action", () => {
+    const onMcpServersEdit = jest.fn();
+
+    act(() => {
+      root.render(
+        <Component
+          isServer={false}
+          variant="chat-profile-sidebar"
+          language="en"
+          data={
+            {
+              id: "profile-1",
+              slug: "chat-gpt-1",
+              variant: "artificial-intelligence",
+              adminTitle: "Chat GPT 1",
+              allowedMcpServerIds: ["singlepagestartup"],
+            } as any
+          }
+          onMcpServersEdit={onMcpServersEdit}
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain("MCP");
+    expect(container.textContent).toContain("SinglePageStartup MCP");
+    expect(container.textContent).toContain("singlepagestartup");
+
+    const editButton = container.querySelector(
+      'button[aria-label="Edit MCP servers for chat-gpt-1"]',
+    );
+
+    expect(editButton).not.toBeNull();
+
+    act(() => {
+      editButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onMcpServersEdit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "profile-1",
+        allowedMcpServerIds: ["singlepagestartup"],
+      }),
+    );
+  });
+
+  /**
    * BDD Scenario: renders legacy TipTap descriptions as text.
    *
    * Given: an existing profile description was stored as a TipTap JSON string.
@@ -142,5 +201,39 @@ describe("GIVEN: social profile chat sidebar actions", () => {
       "Uses personal real estate knowledge.",
     );
     expect(container.textContent).not.toContain('"type":"doc"');
+  });
+
+  /**
+   * BDD Scenario: distinguishes a Knowledge request failure from an empty list.
+   *
+   * Given: the Knowledge query failed before returning profile documents.
+   * When: the chat profile sidebar renders the Knowledge section.
+   * Then: the user sees an actionable access error instead of a misleading zero count.
+   */
+  test("renders a Knowledge access error instead of an empty document count", () => {
+    act(() => {
+      root.render(
+        <Component
+          isServer={false}
+          variant="chat-profile-sidebar"
+          language="en"
+          data={
+            {
+              id: "profile-1",
+              slug: "chat-gpt-1",
+              variant: "artificial-intelligence",
+              adminTitle: "Chat GPT 1",
+            } as any
+          }
+          knowledgeDocuments={[]}
+          hasKnowledgeDocumentsError
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain(
+      "Knowledge could not be loaded. Check access permissions and try again.",
+    );
+    expect(container.textContent).not.toContain("No knowledge documents.");
   });
 });

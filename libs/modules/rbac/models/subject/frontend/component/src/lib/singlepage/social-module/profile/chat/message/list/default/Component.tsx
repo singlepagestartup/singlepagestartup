@@ -15,6 +15,7 @@ export function Component(props: IComponentPropsExtended) {
       }
       knowledgeAssistantProfile={props.knowledgeAssistantProfile}
       socialModuleChat={props.socialModuleChat}
+      socialModuleThread={props.socialModuleThread}
       socialModuleThreadId={props.socialModuleThreadId}
     />
   );

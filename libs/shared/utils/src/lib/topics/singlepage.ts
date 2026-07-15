@@ -32,7 +32,8 @@ export const topicRules: ITopicRule[] = [
   },
   {
     // AI-reaction RPC endpoint (issue #195 F3): a POST that creates the AI
-    // response MESSAGE in the chat thread AND a chat ACTION. The canonical
+    // response MESSAGE in the chat thread, a chat ACTION, AND settles the
+    // requester's billing balance. The canonical
     // deriver would treat the trailing verbs as collections and emit
     // `social.openrouter` (+ scoped variants) — topics no reader subscribes
     // to — so the new message/action never reach the open chat. Only `cid`/
@@ -50,6 +51,32 @@ export const topicRules: ITopicRule[] = [
       "social.chats.[social.chats.id].messages",
       "social.actions",
       "social.chats.[social.chats.id].actions",
+      "social.profiles-to-knowledge-module-documents",
+      "knowledge.documents",
+      "rbac.subjects-to-billing-module-currencies",
+    ],
+    stop: true,
+  },
+  {
+    // Profile Knowledge is a composite RBAC read over both the Social-owned
+    // profile-document relation and Knowledge documents. Canonical derivation
+    // sees only the trailing `documents` segment and therefore cannot identify
+    // either collection that actually changes.
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/chats/[social.chats.id]/profiles/[social.target-profiles.id]/knowledge/documents",
+    topics: [
+      "social.profiles-to-knowledge-module-documents",
+      "knowledge.documents",
+    ],
+    stop: true,
+  },
+  {
+    // Profile-scoped variant of the same composite Knowledge document read.
+    routeTemplate:
+      "/api/rbac/subjects/[rbac.subjects.id]/social-module/profiles/[social.profiles.id]/knowledge/documents",
+    topics: [
+      "social.profiles-to-knowledge-module-documents",
+      "knowledge.documents",
     ],
     stop: true,
   },

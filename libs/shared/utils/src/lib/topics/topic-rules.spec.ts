@@ -94,10 +94,11 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
   });
 
   /**
-   * BDD Scenario: The AI-reaction RPC endpoint resolves to BOTH the message and
-   * the action topics, so the assistant reply and the action row reconcile.
+   * BDD Scenario: The AI-reaction RPC endpoint resolves to the message, action,
+   * Knowledge, and billing topics, so the assistant reply, action row, learned
+   * profile document, and requester balance reconcile.
    */
-  it("maps the AI-reaction endpoint onto message AND action topics", () => {
+  it("maps the AI-reaction endpoint onto message, action, Knowledge, and billing topics", () => {
     const topics = resolveTopicsForPath(
       "/api/rbac/subjects/sub-1/social-module/profiles/p-1/chats/c-1/messages/m-1/react-by/openrouter",
       defaultCompiledTopicRules,
@@ -106,6 +107,29 @@ describe("defaultCompiledTopicRules — framework action endpoints", () => {
     expect(topics).toContain("social.messages");
     expect(topics).toContain("social.actions");
     expect(topics).toContain("social.chats.c-1.actions");
+    expect(topics).toContain("social.profiles-to-knowledge-module-documents");
+    expect(topics).toContain("knowledge.documents");
+    expect(topics).toContain("rbac.subjects-to-billing-module-currencies");
     expect(topics).not.toContain("social.openrouter");
+  });
+
+  /**
+   * BDD Scenario: Profile Knowledge reads resolve to the collections they join.
+   * Given: the chat-sidebar and profile-scoped Knowledge document endpoints.
+   * When: their realtime topics are resolved through the framework rules.
+   * Then: both subscribe to Social relation and Knowledge document changes.
+   */
+  it("maps profile Knowledge reads onto relation and document topics", () => {
+    const paths = [
+      "/api/rbac/subjects/sub-1/social-module/profiles/requester-1/chats/chat-1/profiles/assistant-1/knowledge/documents",
+      "/api/rbac/subjects/sub-1/social-module/profiles/assistant-1/knowledge/documents",
+    ];
+
+    for (const path of paths) {
+      expect(resolveTopicsForPath(path, defaultCompiledTopicRules)).toEqual([
+        "social.profiles-to-knowledge-module-documents",
+        "knowledge.documents",
+      ]);
+    }
   });
 });

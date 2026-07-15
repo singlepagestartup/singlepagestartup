@@ -7,7 +7,16 @@ import { ScrollArea } from "@sps/shared-ui-shadcn";
 import { Component as KnowledgeModuleDocumentChatSidebarItem } from "@sps/knowledge/models/document/frontend/component/src/lib/singlepage/chat-sidebar-item";
 import { Component as SocialModuleProfileChatProfileAvatar } from "@sps/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar";
 import { Component as SocialModuleSkillChatSidebarItem } from "@sps/social/models/skill/frontend/component/src/lib/singlepage/chat-sidebar-item";
-import { BookOpen, Package, Pencil, Plus, UserRound, X } from "lucide-react";
+import { resolveMcpServerConfiguration } from "@sps/social/models/profile/sdk/model";
+import {
+  BookOpen,
+  Package,
+  Pencil,
+  Plus,
+  ServerCog,
+  UserRound,
+  X,
+} from "lucide-react";
 
 function getLocalizedText(
   value: Record<string, unknown> | null | undefined,
@@ -39,6 +48,9 @@ export function Component(props: IClientComponentProps) {
   );
   const skills = props.skills || [];
   const knowledgeDocuments = props.knowledgeDocuments || [];
+  const mcpServers = resolveMcpServerConfiguration(
+    props.data.allowedMcpServerIds || [],
+  ).supported;
 
   return (
     <section
@@ -139,6 +151,72 @@ export function Component(props: IClientComponentProps) {
           <section className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
+                <ServerCog className="h-4 w-4 text-slate-400" />
+                <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
+                  MCP
+                </h3>
+                <span className="text-xs text-slate-400">
+                  {mcpServers.length}
+                </span>
+              </div>
+              {props.onMcpServersEdit ? (
+                <button
+                  type="button"
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  aria-label={`Edit MCP servers for ${props.data.slug}`}
+                  title="Edit MCP servers"
+                  onClick={() => {
+                    props.onMcpServersEdit?.(props.data);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
+            {mcpServers.length ? (
+              <div className="space-y-1">
+                {mcpServers.map((server) => {
+                  return (
+                    <button
+                      key={server.id}
+                      type="button"
+                      data-module="social"
+                      data-model="mcp-server"
+                      data-id={server.id}
+                      data-variant="chat-sidebar-item"
+                      className="flex w-full max-w-full min-w-0 items-start gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-default disabled:hover:border-slate-200 disabled:hover:bg-white"
+                      disabled={!props.onMcpServersEdit}
+                      onClick={() => {
+                        props.onMcpServersEdit?.(props.data);
+                      }}
+                    >
+                      <ServerCog className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                      <span className="w-0 min-w-0 flex-1 overflow-hidden">
+                        <span
+                          className="block max-w-full truncate text-xs font-medium text-slate-700"
+                          title={server.title}
+                        >
+                          {server.title}
+                        </span>
+                        <span
+                          className="mt-0.5 block max-w-full truncate text-[11px] text-slate-400"
+                          title={server.id}
+                        >
+                          {server.id}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">No MCP servers.</p>
+            )}
+          </section>
+
+          <section className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <Package className="h-4 w-4 text-slate-400" />
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
                   Skills
@@ -192,7 +270,8 @@ export function Component(props: IClientComponentProps) {
                 <h3 className="text-xs font-semibold uppercase tracking-normal text-slate-500">
                   Knowledge
                 </h3>
-                {!props.isKnowledgeDocumentsLoading ? (
+                {!props.isKnowledgeDocumentsLoading &&
+                !props.hasKnowledgeDocumentsError ? (
                   <span className="text-xs text-slate-400">
                     {knowledgeDocuments.length}
                   </span>
@@ -214,6 +293,11 @@ export function Component(props: IClientComponentProps) {
             </div>
             {props.isKnowledgeDocumentsLoading ? (
               <p className="text-sm text-slate-400">Loading knowledge...</p>
+            ) : props.hasKnowledgeDocumentsError ? (
+              <p className="text-sm text-amber-600">
+                Knowledge could not be loaded. Check access permissions and try
+                again.
+              </p>
             ) : knowledgeDocuments.length ? (
               <div className="space-y-1">
                 {knowledgeDocuments.map((document) => {

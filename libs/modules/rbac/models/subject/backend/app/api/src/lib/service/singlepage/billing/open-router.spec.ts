@@ -10,7 +10,7 @@ import {
   calculateOpenRouterExactTokens,
   calculateSettlementDeltaTokens,
   summarizeOpenRouterBilling,
-} from "./open-router-billing";
+} from "./open-router";
 
 describe("OpenRouter billing summary helpers", () => {
   /**

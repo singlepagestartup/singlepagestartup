@@ -30,7 +30,11 @@ jest.mock("@sps/social/models/thread/sdk/server", () => ({
 
 import { Handler } from "./update";
 
-function createContext() {
+function createContext(
+  data: Record<string, unknown> = {
+    title: "Renamed support",
+  },
+) {
   return {
     req: {
       param: (name: string) => {
@@ -41,9 +45,7 @@ function createContext() {
         }[name];
       },
       parseBody: jest.fn().mockResolvedValue({
-        data: JSON.stringify({
-          title: "Renamed support",
-        }),
+        data: JSON.stringify(data),
       }),
     },
     json: jest.fn((payload: unknown) => payload),
@@ -58,6 +60,16 @@ function createService() {
     socialModuleChatLifecycleAssertThreadBelongsToChat: jest
       .fn()
       .mockResolvedValue(undefined),
+    socialModuleChatThreadOpenRouterModelUpdate: jest.fn().mockResolvedValue({
+      id: "thread-1",
+      title: "Support",
+      metadata: {
+        rbacAiThreadPreferences: {
+          version: 1,
+          modelId: "minimax/minimax-m2.5",
+        },
+      },
+    }),
     socialModule: {
       chat: {
         findById: jest.fn().mockResolvedValue({
@@ -131,5 +143,32 @@ describe("Given: Telegram-backed SPS thread rename", () => {
         },
       },
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a subject selects a concrete OpenRouter model in a thread.
+   * When: the thread is patched without a title change.
+   * Then: the request delegates to the startup-overridable Subject service method.
+   */
+  it("When: selecting thread model Then: delegates persistence to Subject service", async () => {
+    const service = createService();
+    const handler = new Handler(service);
+    const context = createContext({
+      openRouterModelId: "minimax/minimax-m2.5",
+    });
+
+    await handler.execute(context, jest.fn());
+
+    expect(
+      service.socialModuleChatThreadOpenRouterModelUpdate,
+    ).toHaveBeenCalledWith({
+      subjectId: "subject-1",
+      socialModuleChatId: "chat-1",
+      socialModuleThreadId: "thread-1",
+      modelId: "minimax/minimax-m2.5",
+    });
+    expect(mockSocialModuleThreadUpdate).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });

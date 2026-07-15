@@ -1,10 +1,9 @@
 import { createMiddleware } from "hono/factory";
 import { Provider as StoreProvider } from "@sps/providers-kv";
 import {
-  API_SERVICE_URL,
   IRouteRule,
   KV_PROVIDER,
-  NEXT_PUBLIC_API_SERVICE_URL,
+  normalizeRoutePath,
   RBAC_JWT_SECRET,
   RBAC_SECRET_KEY,
   RouteMatcher,
@@ -45,7 +44,7 @@ export class Middleware {
   init(): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       const reqPath = c.req.path.toLowerCase();
-      const path = c.req.url.split("?")?.[0];
+      const path = normalizeRoutePath(c.req.path);
       const token = authorization(c);
 
       const method = c.req.method;
@@ -112,9 +111,7 @@ export class Middleware {
                     const rbacAction = await rbacActionApi.create({
                       data: {
                         payload: {
-                          route: path
-                            .replaceAll(API_SERVICE_URL, "")
-                            .replaceAll(NEXT_PUBLIC_API_SERVICE_URL, ""),
+                          route: path,
                           method,
                           type: "HTTP",
                           requestData: parsedRequestData,

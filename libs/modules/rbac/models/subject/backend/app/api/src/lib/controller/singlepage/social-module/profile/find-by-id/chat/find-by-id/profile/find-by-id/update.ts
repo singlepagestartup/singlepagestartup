@@ -1,5 +1,9 @@
 import { getHttpErrorType } from "@sps/backend-utils";
 import { api as socialModuleProfileApi } from "@sps/social/models/profile/sdk/server";
+import {
+  isSupportedMcpServerIdentifier,
+  type TSupportedMcpServerIdentifier,
+} from "@sps/social/models/profile/sdk/model";
 import { RBAC_SECRET_KEY } from "@sps/shared-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -41,6 +45,7 @@ export class Handler {
 
       const updateData: {
         adminTitle?: string;
+        allowedMcpServerIds?: TSupportedMcpServerIdentifier[];
         title?: LocalizedText;
         subtitle?: LocalizedText;
         description?: LocalizedText;
@@ -48,6 +53,12 @@ export class Handler {
 
       if ("adminTitle" in data) {
         updateData.adminTitle = this.toOptionalString(data.adminTitle);
+      }
+
+      if ("allowedMcpServerIds" in data) {
+        updateData.allowedMcpServerIds = this.toAllowedMcpServerIds(
+          data.allowedMcpServerIds,
+        );
       }
 
       if ("title" in data) {
@@ -141,5 +152,28 @@ export class Handler {
         return [key, item];
       }),
     );
+  }
+
+  private toAllowedMcpServerIds(
+    value: unknown,
+  ): TSupportedMcpServerIdentifier[] {
+    if (!Array.isArray(value)) {
+      throw new Error("Validation error. allowedMcpServerIds must be an array");
+    }
+
+    const identifiers = value.map((identifier) => {
+      if (
+        typeof identifier !== "string" ||
+        !isSupportedMcpServerIdentifier(identifier)
+      ) {
+        throw new Error(
+          `Validation error. Unsupported MCP server identifier: ${String(identifier)}`,
+        );
+      }
+
+      return identifier;
+    });
+
+    return [...new Set(identifiers)];
   }
 }
