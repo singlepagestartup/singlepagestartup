@@ -351,12 +351,6 @@ export class Database<T extends PgTableWithColumns<any>>
   }
 
   async seed(props?: { seeds: ISeedResult[] }): Promise<ISeedResult> {
-    console.log(
-      "Seeding. Module:",
-      this.configuration.repository.seed.module,
-      "Name:",
-      this.configuration.repository.seed.name,
-    );
     const result: ISeedResult = {
       module: this.configuration.repository.seed.module,
       name: this.configuration.repository.seed.name,
@@ -367,6 +361,13 @@ export class Database<T extends PgTableWithColumns<any>>
     if (!this.configuration.repository.seed.active) {
       return result;
     }
+
+    console.log(
+      "Seeding. Module:",
+      this.configuration.repository.seed.module,
+      "Name:",
+      this.configuration.repository.seed.name,
+    );
 
     const directory = this.configuration.repository.dump.directory;
 

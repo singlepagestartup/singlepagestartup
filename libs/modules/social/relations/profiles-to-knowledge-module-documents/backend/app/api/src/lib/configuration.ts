@@ -23,12 +23,12 @@ export class Configuration
         insertSchema,
         selectSchema,
         dump: {
-          active: true,
+          active: false,
           type: "json",
           directory: dataDirectory,
         },
         seed: {
-          active: true,
+          active: false,
           module: "social",
           name: "profiles-to-knowledge-module-documents",
           type: "relation",

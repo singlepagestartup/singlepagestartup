@@ -24,7 +24,7 @@ export class Configuration extends ParentConfiguration {
         seed: {
           active: false,
           module: "social",
-          name: "chat",
+          name: "thread",
           type: "model",
           filters: [
             {
