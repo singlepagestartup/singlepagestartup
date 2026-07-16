@@ -454,6 +454,20 @@ normalized to `replySocialProfileId` after restart.
 - **Verification**: Focused RBAC Telegram bootstrap Jest passes 8/8 and asserts
   the new model id.
 
+### Incident 24 — Production Telegram startup now uses runtime `.env` and self-recovers
+
+- **Symptom**: Docker startup attempted to read a nonexistent Telegram
+  `.env.production`, and one API/Telegram connection refusal permanently
+  skipped `setMyCommands` and webhook installation for that process.
+- **Fix**: Server deployment bootstrap now writes API, Telegram, and MCP `.env`
+  files directly from the injected process environment with mode `600`; only
+  the Next.js host retains its optional build-time `.env.production` merge.
+  Telegram serves first, retries startup synchronization with bounded backoff,
+  and redacts bot credentials from errors.
+- **Verification**: Isolated Telegram env bootstrap passes; Telegram BDD tests
+  pass 14/14; Telegram TypeScript, scoped ESLint, and Bun build pass. Broad API
+  TypeScript remains blocked by pre-existing unrelated errors.
+
 ## Summary
 
 ### Changes Made

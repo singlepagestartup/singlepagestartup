@@ -58,6 +58,11 @@ Main app-level variables are documented in `.env.example`:
 Subscription channel variables are also defined there when the bot must enforce
 channel membership.
 
+In Docker/Swarm deployments, `env_file` injects the service environment and
+the root `create_env.sh telegram deployment` command writes that process
+environment to `apps/telegram/.env`. The Telegram runtime reads this `.env`
+file directly; it does not require an `apps/telegram/.env.production` file.
+
 Voice-note and audio-file transcription is owned by the API/RBAC social message
 flow. Telegram downloads Telegram audio, converts it to MP3, and forwards that
 file as a social message attachment; OpenAI credentials are configured on the
@@ -75,6 +80,10 @@ Allowed responsibilities in `apps/telegram`:
   the Agent server SDK and publish it with Telegram `setMyCommands`. The request
   uses the internal RBAC service key; `apps/telegram` never imports or
   instantiates the Agent backend service.
+- Serve the webhook endpoint before startup synchronization and retry command
+  publication/webhook installation with bounded exponential backoff when the
+  internal API or Telegram API is temporarily unavailable. Operational errors
+  must redact bot credentials.
 - Parse Telegram messages, files, payments, callback data, and topic metadata.
 - Normalize only Telegram transport addressing before ingestion. A leading
   `@<bot-username>` is removed and any `/command@<bot-username>` becomes

@@ -929,6 +929,45 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts`,
   `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.spec.ts`
 
+### Incident 41 — Production Telegram startup depended on a nonexistent env file and did not recover
+
+- **Phase**: Code Review
+- **Occurrences**: repeated production Telegram service restarts
+- **Symptom**: startup printed
+  `apps/telegram/.env.production: No such file or directory`; a temporary
+  internal API or Telegram API connection refusal then prevented command and
+  webhook synchronization until another manual restart. The raw grammY error
+  also printed the credential-bearing bot URL.
+- **Root Cause**: Docker/Swarm already injected deployment values through
+  `env_file`, but the root bootstrap first attempted to copy an unbuilt backend
+  `.env.production` before appending `printenv` to `.env`. Startup
+  synchronization was a single detached attempt whose catch handler mislabeled
+  every failure as webhook installation and logged the complete transport
+  error.
+- **Fix**: Materialize API, Telegram, and MCP runtime `.env` files directly from
+  the Docker process environment with owner-only permissions. Keep the optional
+  `.env.production` merge only for Next.js host build-time public variables.
+  Make API and Telegram load `.env` explicitly. Start the Telegram HTTP server
+  before synchronization, retry Agent command publication and webhook
+  installation with bounded exponential backoff, and log only a redacted error
+  summary.
+- **Result**: An isolated deployment bootstrap creates
+  `apps/telegram/.env` from process variables with mode `600` and no production
+  file. Telegram BDD tests pass 14/14; Telegram TypeScript, scoped ESLint, and
+  Bun build pass. The broad API TypeScript check still reports its existing
+  unrelated repository errors.
+- **Preventive Action**: Runtime service configuration must have one source of
+  truth: deployment environment injection materialized to the app's `.env`.
+  External dependency synchronization must tolerate deployment races and must
+  never log credential-bearing provider URLs.
+- **References**:
+  `create_env.sh`,
+  `apps/api/env.ts`,
+  `apps/telegram/env.ts`,
+  `apps/telegram/server.ts`,
+  `apps/telegram/src/lib/startup.ts`,
+  `apps/telegram/src/lib/startup.spec.ts`
+
 ## Reusable Learnings
 
 - For OpenRouter tool execution through MCP, keep external MCP OAuth unchanged and issue the internal short-lived MCP token from the authentication JWT of the `rbac.subject` linked to the replying profile; never reuse requester permissions, billing identity, or tool arguments to choose the execution principal.
