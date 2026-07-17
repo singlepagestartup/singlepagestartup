@@ -8,6 +8,7 @@ export const RBAC_SECRET_KEY = process.env["RBAC_SECRET_KEY"];
 export const RBAC_SESSION_LIFETIME_IN_SECONDS =
   Number(process.env["RBAC_SESSION_LIFETIME_IN_SECONDS"]) || Number("3600"); // 1 hour
 export const RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS =
+  Number(process.env["RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS"]) ||
   Number(process.env["NEXT_PUBLIC_RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS"]) ||
   Number("3600"); // 1 hour
 export const RBAC_ANONYMOUS_JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS =
