@@ -20,7 +20,7 @@ services:
       - traefik_overlay
     deploy:
       update_config:
-        order: start-first
+        order: stop-first
       placement:
         constraints:
           - node.role == manager
@@ -30,7 +30,7 @@ services:
         - traefik.http.routers.portainer.entrypoints=websecure
         - traefik.http.routers.portainer.tls=true
         - traefik.http.routers.portainer.rule=Host(`{{ SERVICE_URL }}`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:

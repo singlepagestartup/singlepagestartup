@@ -3,104 +3,80 @@
   hosts: all
   become: yes
   tasks:
-    - name: Get ansible ansible_system_vendor
-      set_fact:
-        ansible_system_vendor: "{{ hostvars[inventory_hostname]['ansible_system_vendor'] }}"
+    - name: Verify supported Ubuntu host
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_architecture in ["x86_64", "aarch64"]
+        fail_msg: >-
+          Docker deployment supports Ubuntu on x86_64 or aarch64 hosts.
+          Detected {{ ansible_distribution }} {{ ansible_architecture }}.
 
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
+    - name: Resolve Docker repository architecture
+      ansible.builtin.set_fact:
+        docker_apt_architecture: >-
+          {{ "amd64" if ansible_architecture == "x86_64" else "arm64" }}
 
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Install prerequisites
-      apt:
-        name: "{{ item }}"
-        state: present
-        force_apt_get: yes
-      register: result
-      until: result is not failed
-      retries: 5
-      delay: 5
-      loop:
-        - ca-certificates
-        - curl
-        - gnupg-agent
-        - software-properties-common
-
-    - name: Add Docker apt-key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-
-    - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Install Docker
-      apt:
-        name: "{{ item }}"
-        state: present
-        force_apt_get: yes
-      register: result
-      until: result is not failed
-      retries: 5
-      delay: 5
-      loop:
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-
-    # - name: Add user permission
-    #   shell: usermod -aG docker ansible
-
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Wait for apt lock
-      shell: while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done;
-
-    - name: Install Python venv package
-      apt:
-        name: "{{ item }}"
+    - name: Install Docker repository prerequisites
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - python3-pip
+          - python3-venv
         state: present
         update_cache: yes
-      register: result
-      until: result is not failed
-      retries: 5
-      delay: 5
-      loop:
-        - python3-venv
-        - python3-pip
+        lock_timeout: 120
 
-    - name: Create a Python virtual environment
-      command: python3 -m venv /opt/venv
+    - name: Create apt keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
 
-    - debug:
-        var: ansible_system_vendor
+    - name: Install Docker repository signing key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+        force: yes
 
-    - name: If DigitalOcean
-      block:
-        - name: Install Docker pip packages for DigitalOcean
-          pip:
-            name: "{{ item }}"
-            state: present
-            virtualenv: /opt/venv
-          loop:
-            - virtualenv
-            - docker
-            - docker-compose
-      when: ansible_system_vendor == "DigitalOcean"
+    - name: Configure Docker repository for installed Ubuntu release
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ docker_apt_architecture }} signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/ubuntu
+          {{ ansible_distribution_release }} stable
+        filename: docker
+        state: present
+        update_cache: yes
 
-    - name: If not DigitalOcean
-      block:
-        - name: Install Docker Compose
-          apt:
-            name: docker-compose-plugin
-            state: present
-      when: ansible_system_vendor != "DigitalOcean"
+    - name: Install Docker Engine and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose-plugin
+        state: present
+        lock_timeout: 120
+
+    - name: Enable and start Docker
+      ansible.builtin.service:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Allow deployment user to use Docker without sudo
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups:
+          - docker
+        append: yes
+
+    - name: Create Python virtual environment for deployment modules
+      ansible.builtin.command: python3 -m venv /opt/venv
+      args:
+        creates: /opt/venv/bin/python

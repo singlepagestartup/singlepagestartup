@@ -1,18 +1,15 @@
 ungrouped:
   vars:
-    ansible_ssh_common_args: "-o UserKnownHostsFile=/dev/null"
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
   hosts:
-    # Password authentification to server
-    XX.XXX.XXX.XXX:
-      ansible_user: <username>
-      ansible_password: <password>
-    # SSH key authentification to server
-    # Generate SSH key with command
-    # ssh-keygen -t rsa -b 4096 -f ./id_rsa
-    # Add the public key to the remote server
-    # cat ./id_rsa.pub
-    # You need to restrict the access to the private key file
-    # chmod 400 ./id_rsa
-    XX.XXX.XXX.XXX:
-      ansible_ssh_user: root
-      ansible_ssh_private_key_file: ./id_rsa
+    # AWS Lightsail Ubuntu with SSH key authentication.
+    "XX.XXX.XXX.XXX":
+      ansible_user: ubuntu
+      ansible_port: 22
+      ansible_ssh_private_key_file: /absolute/path/to/LightsailDefaultKey.pem
+
+    # Password authentication remains available for other providers.
+    "server.example.com":
+      ansible_user: root
+      ansible_port: 22
+      ansible_password: "password"

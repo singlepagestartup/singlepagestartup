@@ -35,7 +35,9 @@ jobs:
           secrets=(\
             "PROJECT_NAME ${{ secrets.PREVIEW_PROJECT_NAME }}"\
             "ANSIBLE_HOST ${{ secrets.PREVIEW_ANSIBLE_HOST }}"\
+            "ANSIBLE_PORT ${{ secrets.PREVIEW_ANSIBLE_PORT }}"\
             "ANSIBLE_USER ${{ secrets.PREVIEW_ANSIBLE_USER }}"\
+            "ANSIBLE_PRIVATE_KEY_BASE64 ${{ secrets.PREVIEW_ANSIBLE_PRIVATE_KEY_BASE64 }}"\
             "ANSIBLE_PASSWORD ${{ secrets.PREVIEW_ANSIBLE_PASSWORD }}"\
             "DOMAIN ${{ secrets.PREVIEW_DOMAIN }}"\
             "CERTBOT_SERVICE_NAME ${{ secrets.PREVIEW_CERTBOT_SERVICE_NAME }}"\
@@ -143,7 +145,9 @@ jobs:
           secrets=(\
             "PROJECT_NAME ${{ secrets.PROJECT_NAME }}"\
             "ANSIBLE_HOST ${{ secrets.ANSIBLE_HOST }}"\
+            "ANSIBLE_PORT ${{ secrets.ANSIBLE_PORT }}"\
             "ANSIBLE_USER ${{ secrets.ANSIBLE_USER }}"\
+            "ANSIBLE_PRIVATE_KEY_BASE64 ${{ secrets.ANSIBLE_PRIVATE_KEY_BASE64 }}"\
             "ANSIBLE_PASSWORD ${{ secrets.ANSIBLE_PASSWORD }}"\
             "DOMAIN ${{ secrets.DOMAIN }}"\
             "CERTBOT_SERVICE_NAME ${{ secrets.CERTBOT_SERVICE_NAME }}"\

@@ -38,7 +38,6 @@ then
         ./portainer/create_portainer_user.yaml \
         -e "PORTAINER_USERNAME=$PORTAINER_USERNAME \
             PORTAINER_PASSWORD=$PORTAINER_PASSWORD \
-            SERVICE_URL=$SERVICE_URL \
             ENVIRONMENT_TYPE=$ENVIRONMENT_TYPE" && \
     ansible-playbook \
         ./portainer/add_docker_hub_registry.yaml \

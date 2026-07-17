@@ -165,7 +165,7 @@ normalized to `replySocialProfileId` after restart.
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 14 -->
+<!-- incident-count: 26 -->
 
 ### Incident 1 — Nx plugin worker could not construct the project graph
 
@@ -468,6 +468,41 @@ normalized to `replySocialProfileId` after restart.
   pass 14/14; Telegram TypeScript, scoped ESLint, and Bun build pass. Broad API
   TypeScript remains blocked by pre-existing unrelated errors.
 
+### Incident 25 — AWS Lightsail deployment now uses the Ubuntu SSH-key contract
+
+- **Symptom**: Generated inventories only supported passwords even though
+  Lightsail Ubuntu instances use the `ubuntu` account and a downloaded `.pem`
+  key; Docker installation was hard-coded to Ubuntu Focal on `amd64`.
+- **Fix**: Added local key-file and CI base64-key inventory generation,
+  configurable SSH port, automatic GitHub secret encoding, and a password
+  fallback. Docker now uses the detected Ubuntu release and Docker apt
+  architecture, while NodeSource installs its own prerequisites without
+  deleting apt locks. Added a Lightsail deployment guide and corrected API URL
+  construction during server provisioning.
+- **Verification**: All three inventory authentication modes produce valid
+  YAML; Ansible resolves the Lightsail key inventory and accepts the Docker
+  playbook syntax. A live Lightsail SSH check authenticates as `ubuntu`, and
+  Ansible returns `ping: pong` after inventory generation restricts the key to
+  mode `0600`. Shell syntax, workflow/playbook YAML, formatting, and diff checks
+  pass.
+
+### Incident 26 — Lightsail certificate routing now uses a compatible Swarm provider
+
+- **Symptom**: Let's Encrypt reached the new Lightsail IP but received 404 for
+  the HTTP-01 challenge; Traefik repeatedly logged that its Docker API client
+  version 1.24 was below the daemon minimum 1.40.
+- **Fix**: upgraded Traefik from v2.3 to v3.7, replaced the removed Docker
+  `swarmMode` option with the dedicated Swarm provider, migrated network labels,
+  made the shared overlay explicitly external, and added a public webroot probe
+  before Certbot. Certbot no longer installs its nginx plugin or leaves a host
+  nginx competing for port 80. Docker provisioning now adds `ubuntu` (or the
+  configured Ansible user) to the Docker group.
+- **Verification**: changed Ansible playbooks pass syntax checks; rendered
+  Traefik and Certbot templates pass `docker compose config`; `git diff
+--check` passes. Live completion is pending restoration of the Lightsail SSH
+  service, which currently accepts TCP but times out before sending its SSH
+  banner.
+
 ## Summary
 
 ### Changes Made
@@ -525,6 +560,8 @@ normalized to `replySocialProfileId` after restart.
 - Made Action Logger and Agent routing origin-independent: new actions persist
   canonical API pathnames and legacy absolute tunnel URLs are normalized before
   message/action dispatch.
+- Made the deployer's Traefik, Certbot, shared overlay, Docker-user access, and
+  ACME preflight compatible with current Docker Swarm on AWS Lightsail.
 
 ### Pull Request
 
@@ -540,4 +577,4 @@ normalized to `replySocialProfileId` after restart.
 
 ---
 
-**Last updated**: 2026-07-16T01:01:35+03:00
+**Last updated**: 2026-07-16T23:22:00+03:00

@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   traefik:
-    image: traefik:v2.3
+    image: traefik:v3.7
     ports:
       - 80:80
       - 443:443
@@ -12,7 +12,10 @@ services:
     command:
       - --log.level=DEBUG
       - --api
-      - --providers.docker.swarmmode
+      - --providers.swarm=true
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.exposedbydefault=false
+      - --providers.swarm.network=traefik_overlay
       - --providers.file.directory=/etc/traefik/dynamic_conf
       - --providers.file.watch=true
       - --entrypoints.web.address=:80
@@ -29,9 +32,10 @@ services:
         constraints:
           - node.role == manager
       labels:
+        - traefik.enable=true
         # Redirect to HTTPS (excluding ACME challenge)
         - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-        - traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`) && !PathPrefix(`/.well-known/acme-challenge/`)
+        - traefik.http.routers.redirs.rule=HostRegexp(`.+`) && !PathPrefix(`/.well-known/acme-challenge/`)
         - traefik.http.routers.redirs.entrypoints=web
         - traefik.http.routers.redirs.middlewares=redirect-to-https
         # Dashboard
@@ -41,10 +45,9 @@ services:
         - traefik.http.routers.traefik.rule=Host(`{{ SERVICE_URL }}`)
         - traefik.http.middlewares.admin.basicauth.users={{ TRAEFIK_BASIC_AUTH }}
         - traefik.http.services.traefik.loadbalancer.server.port=8080
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:
     name: traefik_overlay
-    external: {% if USE_CLOUDFLARE_SSL %}true{% else %}false{% endif %}
-    {% if not USE_CLOUDFLARE_SSL %}attachable: true{% endif %}
+    external: true

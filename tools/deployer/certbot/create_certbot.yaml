@@ -17,5 +17,14 @@
         mode: "0755"
         recurse: yes
 
+    - name: Create shared Traefik overlay network
+      ansible.builtin.shell: >-
+        docker network create --driver overlay --attachable traefik_overlay
+      register: network_result
+      changed_when: network_result.rc == 0
+      failed_when:
+        - network_result.rc != 0
+        - "'already exists' not in network_result.stderr"
+
     - name: Run certbot service
       shell: docker stack deploy --compose-file=/home/code/docker-compose.certbot.yaml certbot

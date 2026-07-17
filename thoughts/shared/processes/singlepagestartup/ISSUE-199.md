@@ -85,7 +85,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 22 -->
+<!-- incident-count: 43 -->
 
 ### Incident 1 — GitHub CLI connectivity from sandbox
 
@@ -968,6 +968,84 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
   `apps/telegram/src/lib/startup.ts`,
   `apps/telegram/src/lib/startup.spec.ts`
 
+### Incident 42 — Deployer examples advertised SSH keys but runtime inventory used passwords only
+
+- **Phase**: Code Review
+- **Occurrences**: every generated inventory, including AWS Lightsail Ubuntu
+  targets and GitHub Actions deployments
+- **Symptom**: `inventory.yaml.example` showed an SSH-key connection, but
+  `create_inventory.sh` always emitted `ansible_password`; CI had no private-key
+  secret path. Fresh Lightsail instances therefore could not be deployed with
+  their default `ubuntu` user and downloaded `.pem` key. Docker provisioning
+  also pinned the obsolete Ubuntu Focal `amd64` repository regardless of the
+  target release.
+- **Root Cause**: key authentication existed only in a hand-written example and
+  never became part of the generated inventory or GitHub secret contract. The
+  Docker playbook encoded assumptions from the original server instead of
+  using gathered Ubuntu release and architecture facts.
+- **Fix**: Add `ANSIBLE_PORT`, `ANSIBLE_PRIVATE_KEY_FILE`, and
+  `ANSIBLE_PRIVATE_KEY_BASE64` to the deployer contract. Generate a quoted
+  key-backed inventory locally, decode the base64 key with mode `0600` in CI,
+  restrict local keys to the same mode, and preserve password authentication
+  as a fallback. Publish the new secrets through `github_deployer.sh`.
+  Configure Docker's signed apt repository from
+  the target Ubuntu codename and architecture, and configure NodeSource without
+  assuming `curl` is preinstalled or deleting apt lock files. Enable Docker and
+  document the Lightsail firewall, static-IP, key, and x86_64 image
+  requirements. Also fix `server.sh` to build the API URL from the actual API
+  subdomain and domain.
+- **Result**: File-key, base64-key, and password inventories parse successfully;
+  the decoded key matches its fixture and has mode `0600`. Ansible resolves the
+  generated Lightsail inventory with `ansible_user=ubuntu`, and the Docker
+  playbook passes syntax validation. Shell syntax, YAML parsing, formatting,
+  and diff checks pass.
+- **Preventive Action**: Provider support must be verified through the generated
+  inventory and provisioning playbooks, not inferred from example files. Keep
+  target OS release, architecture, SSH user, port, and authentication material
+  explicit in the deployer contract.
+- **References**:
+  `tools/deployer/create_inventory.sh`,
+  `tools/deployer/server/install_nodejs.yaml`,
+  `tools/deployer/server/install_docker.yaml`,
+  `tools/deployer/github_deployer.sh`,
+  `.github/workflows/ansible.yml`,
+  `tools/deployer/README.md`
+
+### Incident 43 — Obsolete Traefik could not route Certbot challenges on Lightsail
+
+- **Phase**: Code Review
+- **Occurrences**: first AWS Lightsail deployment with the current Docker
+  Engine
+- **Symptom**: Certbot's HTTP-01 request for
+  `/.well-known/acme-challenge/*` reached the Lightsail address but received a
+  Traefik 404. Traefik logged `client version 1.24 is too old` and never loaded
+  the Certbot service labels. The deployment also installed the unused Certbot
+  nginx plugin, which started a host nginx service, and the provisioned
+  `ubuntu` user could not access `/var/run/docker.sock` without sudo.
+- **Root Cause**: the deployer pinned `traefik:v2.3` and the removed v2
+  `providers.docker.swarmmode` configuration against a modern Docker API. Its
+  compose templates still used Docker-provider network labels, and network
+  ownership was split implicitly between stacks. Docker provisioning enabled
+  the daemon but never added the deployment user to its group.
+- **Fix**: upgrade to Traefik v3.7 and its dedicated Swarm provider, use
+  `traefik.swarm.network`, explicitly create one external attachable overlay,
+  remove the unused nginx Certbot plugin, stop a conflicting host nginx, and
+  probe the public challenge URL before invoking Certbot. Add the Ansible SSH
+  user to the Docker group and document the required reconnect.
+- **Result**: Traefik and Certbot templates render as valid Compose files for
+  the shared external network; affected playbooks pass Ansible syntax checks,
+  and the ACME flow now fails early with the exact unreachable URL instead of
+  a generic Let's Encrypt authentication error.
+- **Preventive Action**: pin reverse proxies to a currently supported release,
+  follow the provider contract for the active orchestrator, and validate a
+  real public challenge file before requesting a certificate.
+- **References**:
+  `tools/deployer/traefik/docker-compose.traefik.yaml.j2`,
+  `tools/deployer/certbot/create_ssl_certificate.yaml`,
+  `tools/deployer/certbot/install_certbot.yaml`,
+  `tools/deployer/server/install_docker.yaml`,
+  `tools/deployer/README.md`
+
 ## Reusable Learnings
 
 - For OpenRouter tool execution through MCP, keep external MCP OAuth unchanged and issue the internal short-lived MCP token from the authentication JWT of the `rbac.subject` linked to the replying profile; never reuse requester permissions, billing identity, or tool arguments to choose the execution principal.
@@ -1005,3 +1083,11 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Match small structured helper calls to current low-latency models rather than
   reusing the main agent model; complex agentic benchmarks are not evidence of
   better three-word JSON title generation.
+- Treat deployment examples as documentation only; every supported SSH
+  authentication mode must be represented in the generated inventory and CI
+  secret contract, and OS package repositories must derive from gathered host
+  facts instead of a previous provider's release.
+- Treat the reverse proxy and orchestrator as one compatibility boundary:
+  use Traefik's Swarm provider for Swarm labels, keep one explicit shared
+  overlay network, and prove the public ACME path before Certbot contacts the
+  certificate authority.

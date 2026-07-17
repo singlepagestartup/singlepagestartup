@@ -6,7 +6,13 @@ get_env() {
     local ENV_PATH="${3:-.env}"
 
     local CALLER_DIR="$(dirname "$CALLER_SCRIPT")"
-    local ENV_FILE="$(realpath "$CALLER_DIR/$ENV_PATH")"
+    local ENV_FILE
+
+    if [[ "$ENV_PATH" = /* ]]; then
+        ENV_FILE="$(realpath "$ENV_PATH")"
+    else
+        ENV_FILE="$(realpath "$CALLER_DIR/$ENV_PATH")"
+    fi
 
     if [ ! -f "$ENV_FILE" ]; then
         echo "Error: Environment file '$ENV_FILE' not found at '$ENV_FILE'!" >&2

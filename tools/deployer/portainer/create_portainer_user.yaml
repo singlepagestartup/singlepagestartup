@@ -5,20 +5,93 @@
   vars:
     portainer_username: "{{ PORTAINER_USERNAME }}"
     portainer_password: "{{ PORTAINER_PASSWORD }}"
-    service_url: "{{ SERVICE_URL }}"
   tasks:
-    - name: Create Portainer user request
-      retries: 10
-      delay: 15
-      register: result
-      until: result.status == 200 or result.status == 409
+    - name: Wait for local Portainer API
+      retries: 30
+      delay: 2
+      register: portainer_status
+      until: portainer_status.status == 200
       uri:
-        url: "https://{{ service_url }}/api/users/admin/init"
-        status_code: 200,409
+        url: "http://127.0.0.1:9000/api/system/status"
+        status_code: 200
+        method: GET
+
+    - name: Check whether Portainer administrator exists
+      uri:
+        url: "http://127.0.0.1:9000/api/users/admin/check"
+        status_code: 204,303,404
+        method: GET
+        follow_redirects: none
+      register: portainer_admin_check
+
+    - name: Restart uninitialized Portainer service
+      command: >-
+        docker service update --update-order stop-first --force --detach=false
+        portainer_portainer
+      when: portainer_admin_check.status != 204
+
+    - name: Wait for restarted Portainer API
+      retries: 30
+      delay: 2
+      register: restarted_portainer_status
+      until: restarted_portainer_status.status == 200
+      uri:
+        url: "http://127.0.0.1:9000/api/system/status"
+        status_code: 200
+        method: GET
+      when: portainer_admin_check.status != 204
+
+    - name: Read Portainer setup token from service logs
+      shell: |
+        set -o pipefail
+        container_id="$(
+          docker ps \
+            --filter label=com.docker.swarm.service.name=portainer_portainer \
+            --format '{% raw %}{{.ID}}{% endraw %}' \
+          | head -n 1
+        )"
+        test -n "$container_id"
+        docker logs "$container_id" 2>&1 \
+          | sed -E 's/\x1B\[[0-9;]*[mK]//g' \
+          | sed -n 's/.*setup_token=\([^[:space:]]*\).*/\1/p' \
+          | tail -n 1
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: portainer_setup_token
+      no_log: true
+      when: portainer_admin_check.status != 204
+
+    - name: Validate Portainer setup token
+      assert:
+        that:
+          - portainer_setup_token.stdout | length > 0
+        fail_msg: Portainer setup token was not found in service logs
+      no_log: true
+      when: portainer_admin_check.status != 204
+
+    - name: Create Portainer user request
+      register: result
+      uri:
+        url: "http://127.0.0.1:9000/api/users/admin/init"
+        status_code: 200,303,400,403,409,422
         method: POST
+        return_content: true
         body:
           Username: "{{ portainer_username }}"
           Password: "{{ portainer_password }}"
         body_format: json
         headers:
           Content-Type: "application/json"
+          X-Setup-Token: "{{ portainer_setup_token.stdout }}"
+      no_log: true
+      when: portainer_admin_check.status != 204
+
+    - name: Validate Portainer administrator initialization
+      assert:
+        that:
+          - result.status == 200 or result.status == 409
+        fail_msg: >-
+          Portainer administrator initialization failed (HTTP {{ result.status }}):
+          {{ result.json.message | default('Unknown Portainer API error') }}
+      when: portainer_admin_check.status != 204

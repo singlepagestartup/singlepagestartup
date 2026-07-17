@@ -1,7 +1,8 @@
 ungrouped:
   vars:
-    ansible_ssh_common_args: "-o UserKnownHostsFile=/dev/null"
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
   hosts:
     ANSIBLE_HOST:
-      ansible_user: root
-      ansible_password: "ANSIBLE_PASSWORD"
+      ansible_user: ubuntu
+      ansible_port: 22
+      ansible_ssh_private_key_file: /absolute/path/to/LightsailDefaultKey.pem

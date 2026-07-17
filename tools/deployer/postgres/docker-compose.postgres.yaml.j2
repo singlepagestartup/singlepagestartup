@@ -22,7 +22,7 @@ services:
         - traefik.tcp.services.postgres.loadbalancer.server.port=5432
         - traefik.tcp.routers.postgres.entrypoints=tcp
         - traefik.tcp.routers.postgres.rule=HostSNI(`*`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:

@@ -22,7 +22,7 @@ services:
         - traefik.tcp.services.redis.loadbalancer.server.port=6379
         - traefik.tcp.routers.redis.entrypoints=tcp
         - traefik.tcp.routers.redis.rule=HostSNI(`*`)
-        - traefik.docker.network=traefik_overlay
+        - traefik.swarm.network=traefik_overlay
 
 networks:
   traefik_overlay:
