@@ -236,6 +236,36 @@ describe("Given: unscoped RBAC ecommerce order proceed execution", () => {
       `order-${ECOMMERCE_ORDER_PROCEED_BATCH_LIMIT + 2}`,
     );
   });
+
+  /**
+   * BDD Scenario: concurrent lifecycle execution skips an order already in progress.
+   *
+   * Given: another request is already processing the selected order in the singleton service.
+   * When: ecommerce order proceed selects the same order again.
+   * Then: no order relations or lifecycle side effects are executed by the second request.
+   */
+  it("Then: skips an order whose lifecycle processing is already in progress", async () => {
+    const { service, subjectsToEcommerceModuleOrdersFind } = createService({
+      candidateOrders: [{ id: "order-1", status: "delivered" }],
+      relationFindResults: [
+        [
+          {
+            id: "relation-1",
+            subjectId: "subject-1",
+            ecommerceModuleOrderId: "order-1",
+          },
+        ],
+      ],
+    });
+
+    (service as any).processingOrderIds.add("order-1");
+
+    await service.execute({});
+
+    expect(subjectsToEcommerceModuleOrdersFind).toHaveBeenCalledTimes(1);
+    expect(mockEcommerceOrderUpdate).not.toHaveBeenCalled();
+    expect(mockSubjectProductCheckout).not.toHaveBeenCalled();
+  });
 });
 
 describe("Given: scoped RBAC ecommerce order proceed execution", () => {

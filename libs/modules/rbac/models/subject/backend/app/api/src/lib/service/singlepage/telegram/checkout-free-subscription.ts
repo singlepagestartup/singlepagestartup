@@ -3,12 +3,7 @@ import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server
 import { type IBillingModule, type IEcommerceModule } from "../../../di";
 import { Service as SubjectsToEcommerceModuleOrdersService } from "@sps/rbac/relations/subjects-to-ecommerce-module-orders/backend/app/api/src/lib/service";
 
-const inactiveSubscriptionOrderStatuses = new Set([
-  "requested_cancelation",
-  "canceling",
-  "completed",
-  "canceled",
-]);
+const terminalSubscriptionOrderStatuses = new Set(["completed", "canceled"]);
 
 export interface IExecuteProps {
   id: string;
@@ -55,7 +50,7 @@ export class Service {
 
       if (
         ecommerceModuleOrder.status &&
-        inactiveSubscriptionOrderStatuses.has(ecommerceModuleOrder.status)
+        terminalSubscriptionOrderStatuses.has(ecommerceModuleOrder.status)
       ) {
         continue;
       }
@@ -71,6 +66,44 @@ export class Service {
     }
 
     return false;
+  }
+
+  protected async hasPreviousProductOrder(props: {
+    subjectToOrders?: { ecommerceModuleOrderId?: string | null }[];
+    productId: string;
+  }) {
+    const orderIds = Array.from(
+      new Set(
+        props.subjectToOrders
+          ?.map((item) => item.ecommerceModuleOrderId)
+          .filter((orderId): orderId is string => Boolean(orderId)) ?? [],
+      ),
+    );
+
+    if (!orderIds.length) {
+      return false;
+    }
+
+    const ordersToProducts = await this.ecommerceModule.ordersToProducts.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "orderId",
+              method: "inArray",
+              value: orderIds,
+            },
+            {
+              column: "productId",
+              method: "eq",
+              value: props.productId,
+            },
+          ],
+        },
+      },
+    });
+
+    return Boolean(ordersToProducts?.length);
   }
 
   async execute(props: IExecuteProps) {
@@ -267,6 +300,17 @@ export class Service {
     });
 
     if (!freeSubscriptionProduct) {
+      return null;
+    }
+
+    const hasPreviousFreeSubscriptionOrder = await this.hasPreviousProductOrder(
+      {
+        subjectToOrders: subjectToOrders ?? [],
+        productId: freeSubscriptionProduct.id,
+      },
+    );
+
+    if (hasPreviousFreeSubscriptionOrder) {
       return null;
     }
 

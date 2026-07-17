@@ -88,6 +88,9 @@ function createFreeSubscriptionContext(props?: {
         },
       ]),
     },
+    ordersToProducts: {
+      find: jest.fn().mockResolvedValue([]),
+    },
     attribute: {
       find: jest.fn().mockResolvedValue([
         {
@@ -224,81 +227,61 @@ describe("Given: telegram user with attached subject triggers the bot", () => {
     });
   });
 
-  describe("When: subject has only one-off and terminal orders", () => {
+  describe("When: subject has a completed free subscription order", () => {
     /**
-     * BDD Scenario: non-active subscription history does not block free checkout.
+     * BDD Scenario: message bootstrap does not recreate an expired free subscription.
      *
-     * Given: the subject has an active one-off order and a completed subscription order.
+     * Given: the subject has a completed order for the free subscription product.
      * When: telegram free subscription checkout is requested.
-     * Then: checkout still starts for the zero-price subscription product.
+     * Then: checkout is skipped because lifecycle renewal owns the next interval.
      */
-    it("Then: free subscription checkout starts with telegram-star provider", async () => {
-      const checkoutResult = {
-        billingModule: {
-          invoices: [],
-        },
-      };
-      mockEcommerceModuleProductCheckout.mockResolvedValueOnce(checkoutResult);
-
-      const orderFindById = jest.fn(async ({ id }) => {
-        if (id === "order-one-off") {
-          return {
-            id: "order-one-off",
-            status: "paying",
-          };
-        }
-
-        if (id === "order-completed-subscription") {
-          return {
-            id: "order-completed-subscription",
-            status: "completed",
-          };
-        }
-
-        return null;
-      });
-      const orderFindByIdCheckoutAttributes = jest.fn().mockResolvedValue({
-        type: "one-time",
-      });
-
-      const { service } = createFreeSubscriptionContext({
+    it("Then: free subscription checkout is not started by the message", async () => {
+      const { ecommerceModule, service } = createFreeSubscriptionContext({
         subjectToOrders: [
           {
             id: "stemo-1",
             subjectId: "subject-1",
-            ecommerceModuleOrderId: "order-one-off",
-          },
-          {
-            id: "stemo-2",
-            subjectId: "subject-1",
             ecommerceModuleOrderId: "order-completed-subscription",
           },
         ],
-        orderFindById,
-        orderFindByIdCheckoutAttributes,
+        orderFindById: jest.fn().mockResolvedValue({
+          id: "order-completed-subscription",
+          status: "completed",
+        }),
       });
+      ecommerceModule.ordersToProducts.find.mockResolvedValueOnce([
+        {
+          id: "otp-1",
+          orderId: "order-completed-subscription",
+          productId: "product-free",
+        },
+      ]);
 
       const result = await service.execute({
         id: "subject-1",
         chatId: "telegram-chat-1",
       });
 
-      expect(result).toEqual(checkoutResult);
-      expect(orderFindByIdCheckoutAttributes).toHaveBeenCalledTimes(1);
-      expect(orderFindByIdCheckoutAttributes).toHaveBeenCalledWith({
-        id: "order-one-off",
+      expect(result).toBeNull();
+      expect(ecommerceModule.ordersToProducts.find).toHaveBeenCalledWith({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "orderId",
+                method: "inArray",
+                value: ["order-completed-subscription"],
+              },
+              {
+                column: "productId",
+                method: "eq",
+                value: "product-free",
+              },
+            ],
+          },
+        },
       });
-      expect(mockEcommerceModuleProductCheckout).toHaveBeenCalledTimes(1);
-      expect(mockEcommerceModuleProductCheckout).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: "subject-1",
-          productId: "product-free",
-          data: expect.objectContaining({
-            provider: "telegram-star",
-            account: "telegram-chat-1",
-          }),
-        }),
-      );
+      expect(mockEcommerceModuleProductCheckout).not.toHaveBeenCalled();
     });
   });
 });
