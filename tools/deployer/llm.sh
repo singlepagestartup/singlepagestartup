@@ -50,6 +50,8 @@ fi
 
 if [ "$1" != "down" ]
 then
+    ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
+    ./pull_docker_image.sh "ollama/ollama:latest" "$ENVIRONMENT_TYPE" && \
     ansible-playbook \
         ./llm/create_llm.yaml \
         -e "SERVICE_NAME=$SERVICE_NAME \

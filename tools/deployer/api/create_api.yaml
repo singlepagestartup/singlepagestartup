@@ -60,7 +60,7 @@
         dest: /home/code/docker-compose.api.yaml
 
     - name: Run api service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.api.yaml api
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.api.yaml api
 
     - name: Get api service id
       shell:

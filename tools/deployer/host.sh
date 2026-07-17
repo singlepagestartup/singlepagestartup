@@ -68,6 +68,7 @@ fi
 if [ "$1" != "down" ]
 then
     ./domain.sh present $SERVICE_URL $SERVICE_A && \
+    ./pull_docker_image.sh "$DOCKER_HUB_URL/$DOCKER_HUB_SERVICE_REPOSITORY" "$ENVIRONMENT_TYPE" && \
     ansible-playbook \
         ./host/create_host.yaml \
         -e "SERVICE_NAME=$SERVICE_NAME \

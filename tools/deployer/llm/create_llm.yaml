@@ -48,7 +48,7 @@
         dest: /home/code/docker-compose.llm.yaml
 
     - name: Run llm service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.llm.yaml {{ service_name }}
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.llm.yaml {{ service_name }}
 
     - name: Get llm service id
       shell:

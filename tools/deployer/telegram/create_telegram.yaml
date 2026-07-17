@@ -43,7 +43,7 @@
         dest: /home/code/docker-compose.telegram.yaml
 
     - name: Run telegram service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.telegram.yaml telegram
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.telegram.yaml telegram
 
     - name: Get api service id
       shell:

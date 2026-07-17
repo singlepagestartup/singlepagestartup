@@ -14,11 +14,20 @@ jobs:
       TAG: ${{ github.sha }}
       PRERELEASE: false
 
+  prepare-docker-images:
+    uses: ./.github/workflows/prepare-docker-images.yml
+    secrets: inherit
+    needs:
+      - docker-image
+    with:
+      TAG: ${{ github.sha }}
+      PRERELEASE: false
+
   update-host:
     uses: ./.github/workflows/host.yml
     secrets: inherit
     needs:
-      - docker-image
+      - prepare-docker-images
     with:
       TAG: ${{ github.sha }}
       PRERELEASE: false

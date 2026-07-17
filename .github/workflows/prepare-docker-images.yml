@@ -1,0 +1,191 @@
+name: Prepare Docker images
+
+on:
+  workflow_dispatch:
+    inputs:
+      TAG:
+        description: Docker image tag to pull
+        required: true
+        type: string
+      PRERELEASE:
+        description: Use preview deployment settings
+        required: true
+        type: boolean
+  workflow_call:
+    inputs:
+      TAG:
+        required: true
+        type: string
+      PRERELEASE:
+        required: true
+        type: boolean
+
+jobs:
+  prepare-docker-images:
+    name: Pull images on deployment server
+    runs-on: ubuntu-latest
+    concurrency:
+      group: prepare-docker-images-${{ inputs.PRERELEASE && 'preview' || 'production' }}
+      cancel-in-progress: false
+    steps:
+      - name: Set preview deployment configuration
+        if: ${{ inputs.PRERELEASE == true }}
+        run: |
+          {
+            echo "DOMAIN=${{ secrets.PREVIEW_DOMAIN }}"
+            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PREVIEW_PORTAINER_SERVICE_SUBDOMAIN }}"
+            echo "PORTAINER_USERNAME=${{ secrets.PREVIEW_PORTAINER_USERNAME }}"
+            echo "PORTAINER_PASSWORD=${{ secrets.PREVIEW_PORTAINER_PASSWORD }}"
+            echo "DOCKER_HUB_URL=${{ secrets.PREVIEW_DOCKER_HUB_URL }}"
+            echo "DOCKER_HUB_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_USERNAME }}"
+            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.PREVIEW_DOCKER_HUB_LOGIN_USERNAME }}"
+            echo "HOST_REPOSITORY=${{ secrets.PREVIEW_HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "API_REPOSITORY=${{ secrets.PREVIEW_API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "LLM_REPOSITORY=${{ secrets.PREVIEW_LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "MCP_REPOSITORY=${{ secrets.PREVIEW_MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "TELEGRAM_REPOSITORY=${{ secrets.PREVIEW_TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+          } >> "$GITHUB_ENV"
+
+      - name: Set production deployment configuration
+        if: ${{ inputs.PRERELEASE == false }}
+        run: |
+          {
+            echo "DOMAIN=${{ secrets.DOMAIN }}"
+            echo "PORTAINER_SERVICE_SUBDOMAIN=${{ secrets.PORTAINER_SERVICE_SUBDOMAIN }}"
+            echo "PORTAINER_USERNAME=${{ secrets.PORTAINER_USERNAME }}"
+            echo "PORTAINER_PASSWORD=${{ secrets.PORTAINER_PASSWORD }}"
+            echo "DOCKER_HUB_URL=${{ secrets.DOCKER_HUB_URL }}"
+            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}"
+            echo "DOCKER_HUB_LOGIN_USERNAME=${{ secrets.DOCKER_HUB_LOGIN_USERNAME }}"
+            echo "HOST_REPOSITORY=${{ secrets.HOST_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "API_REPOSITORY=${{ secrets.API_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "LLM_REPOSITORY=${{ secrets.LLM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "MCP_REPOSITORY=${{ secrets.MCP_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+            echo "TELEGRAM_REPOSITORY=${{ secrets.TELEGRAM_SERVICE_DOCKER_HUB_REPOSITORY_NAME }}"
+          } >> "$GITHUB_ENV"
+
+      - name: Pull release images through Portainer
+        env:
+          IMAGE_TAG: ${{ inputs.TAG }}
+        run: |
+          set -euo pipefail
+
+          required_values=(
+            DOMAIN
+            PORTAINER_SERVICE_SUBDOMAIN
+            PORTAINER_USERNAME
+            PORTAINER_PASSWORD
+            DOCKER_HUB_URL
+          )
+
+          for name in "${required_values[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "Required deployment value $name is empty"
+              exit 1
+            fi
+          done
+
+          docker_hub_login_username="${DOCKER_HUB_LOGIN_USERNAME:-$DOCKER_HUB_USERNAME}"
+          if [ -z "$docker_hub_login_username" ]; then
+            echo "Docker Hub login username is empty"
+            exit 1
+          fi
+
+          portainer_url="https://${PORTAINER_SERVICE_SUBDOMAIN}.${DOMAIN}"
+          auth_payload="$(jq -n \
+            --arg username "$PORTAINER_USERNAME" \
+            --arg password "$PORTAINER_PASSWORD" \
+            '{username: $username, password: $password}')"
+          portainer_jwt="$(curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data "$auth_payload" \
+            "$portainer_url/api/auth" | jq -r '.jwt // empty')"
+
+          if [ -z "$portainer_jwt" ]; then
+            echo "Portainer authentication did not return a JWT"
+            exit 1
+          fi
+
+          registries="$(curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header "Authorization: Bearer $portainer_jwt" \
+            "$portainer_url/api/registries")"
+          registry_id="$(jq -r \
+            --arg name "dockerhub-$docker_hub_login_username" \
+            --arg url "$DOCKER_HUB_URL" \
+            '[.[] | select(.Name == $name or .URL == $url)][0].Id // empty' \
+            <<< "$registries")"
+
+          if [ -z "$registry_id" ]; then
+            echo "Configured Docker Hub registry was not found in Portainer"
+            exit 1
+          fi
+
+          registry_auth="$(printf '{"registryId":%s}' "$registry_id" | base64 | tr -d '\n')"
+          repositories=(
+            "$HOST_REPOSITORY"
+            "$API_REPOSITORY"
+            "$LLM_REPOSITORY"
+            "$MCP_REPOSITORY"
+            "$TELEGRAM_REPOSITORY"
+          )
+          unique_repositories=()
+
+          for repository in "${repositories[@]}"; do
+            if [ -z "$repository" ]; then
+              continue
+            fi
+
+            duplicate=false
+            for existing_repository in "${unique_repositories[@]}"; do
+              if [ "$existing_repository" = "$repository" ]; then
+                duplicate=true
+                break
+              fi
+            done
+
+            if [ "$duplicate" = "false" ]; then
+              unique_repositories+=("$repository")
+            fi
+          done
+
+          if [ "${#unique_repositories[@]}" -eq 0 ]; then
+            echo "No Docker repositories are configured for deployment"
+            exit 1
+          fi
+
+          for repository in "${unique_repositories[@]}"; do
+            image_repository="${DOCKER_HUB_URL}/${repository}"
+            response_file="$(mktemp)"
+            echo "Pulling ${image_repository}:${IMAGE_TAG} before updating services"
+
+            curl \
+              --fail-with-body \
+              --silent \
+              --show-error \
+              --request POST \
+              --get \
+              --header "Authorization: Bearer $portainer_jwt" \
+              --header "X-Registry-Auth: $registry_auth" \
+              --data-urlencode "fromImage=$image_repository" \
+              --data-urlencode "tag=$IMAGE_TAG" \
+              "$portainer_url/api/endpoints/1/docker/images/create" \
+              > "$response_file"
+
+            if jq -s -e \
+              'any(.[]; (.error? != null) or (.errorDetail?.message? != null))' \
+              "$response_file" > /dev/null; then
+              jq -r '.error // .errorDetail.message // empty' "$response_file" >&2
+              rm -f "$response_file"
+              exit 1
+            fi
+
+            jq -r 'select(.status? != null) | .status' "$response_file" | tail -n 1
+            rm -f "$response_file"
+          done

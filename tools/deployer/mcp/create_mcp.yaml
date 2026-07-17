@@ -43,7 +43,7 @@
         dest: /home/code/docker-compose.mcp.yaml
 
     - name: Run mcp service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.mcp.yaml {{ service_name }}
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.mcp.yaml {{ service_name }}
 
     - name: Get mcp service id
       shell:

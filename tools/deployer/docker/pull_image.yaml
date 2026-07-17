@@ -1,0 +1,47 @@
+---
+- name: Pull Docker image before service deployment
+  hosts: all
+  become: yes
+  vars:
+    docker_image: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_IMAGE') }}"
+    docker_hub_url: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_URL') }}"
+    docker_hub_login_username: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_LOGIN_USERNAME') }}"
+    docker_hub_password: "{{ lookup('ansible.builtin.env', 'SPS_DOCKER_HUB_PASSWORD') }}"
+  tasks:
+    - name: Validate Docker image configuration
+      ansible.builtin.assert:
+        that:
+          - docker_image | length > 0
+        fail_msg: SPS_DOCKER_IMAGE must be configured before deployment.
+
+    - name: Authenticate Docker daemon with registry
+      ansible.builtin.command:
+        argv:
+          - docker
+          - login
+          - "{{ docker_hub_url }}"
+          - --username
+          - "{{ docker_hub_login_username }}"
+          - --password-stdin
+        stdin: "{{ docker_hub_password }}"
+      no_log: true
+      when:
+        - docker_hub_url | length > 0
+        - docker_hub_login_username | length > 0
+        - docker_hub_password | length > 0
+
+    - name: Pull Docker image under deployment lock
+      ansible.builtin.command:
+        argv:
+          - flock
+          - --wait
+          - "1800"
+          - /var/lock/sps-docker-image-pull.lock
+          - docker
+          - image
+          - pull
+          - "{{ docker_image }}"
+      register: docker_image_pull
+      retries: 3
+      delay: 10
+      until: docker_image_pull.rc == 0

@@ -54,7 +54,7 @@
         dest: /home/code/docker-compose.host.yaml
 
     - name: Run host service
-      shell: docker stack deploy --compose-file=/home/code/docker-compose.host.yaml host
+      shell: docker stack deploy --with-registry-auth --compose-file=/home/code/docker-compose.host.yaml host
 
     - name: Get host service id
       shell:
