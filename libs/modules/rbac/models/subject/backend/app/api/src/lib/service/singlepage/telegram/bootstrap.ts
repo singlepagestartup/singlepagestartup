@@ -11,6 +11,8 @@ import { api as socialModuleProfilesToChatsApi } from "@sps/social/relations/pro
 import { api as socialModuleChatApi } from "@sps/social/models/chat/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
+import { api as socialModuleChatsToMessagesApi } from "@sps/social/relations/chats-to-messages/sdk/server";
+import { api as socialModuleChatsToActionsApi } from "@sps/social/relations/chats-to-actions/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { api as socialModuleThreadsToActionsApi } from "@sps/social/relations/threads-to-actions/sdk/server";
 import { IModel as ISocialModuleAttributeKey } from "@sps/social/models/attribute-key/sdk/model";
@@ -56,6 +58,18 @@ type IResolvePersonalAiAgent = (props: {
   rbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
 }>;
+
+interface IChatRelation {
+  id?: string;
+  chatId?: string;
+  variant?: string;
+  orderIndex?: number;
+  className?: string | null;
+  profileId?: string;
+  threadId?: string;
+  messageId?: string;
+  actionId?: string;
+}
 
 export interface IConstructorProps {
   findById: IFindById;
@@ -417,6 +431,219 @@ export class Service {
 
       return String(a.id).localeCompare(String(b.id));
     });
+  }
+
+  protected sortChatsByCreatedAt(chats: ISocialModuleChat[]) {
+    return [...chats].sort((a, b) => {
+      const timestampDiff =
+        this.getCreatedAtTimestamp(a.createdAt) -
+        this.getCreatedAtTimestamp(b.createdAt);
+
+      if (timestampDiff !== 0) {
+        return timestampDiff;
+      }
+
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+
+  protected async mergeDuplicateTelegramChats(props: {
+    chats: ISocialModuleChat[];
+    headers: Record<string, string>;
+  }): Promise<ISocialModuleChat> {
+    const [primaryChat, ...duplicateChats] = this.sortChatsByCreatedAt(
+      props.chats,
+    );
+    const duplicateChatIds = duplicateChats.map((chat) => chat.id);
+
+    if (!duplicateChatIds.length) {
+      return primaryChat;
+    }
+
+    const chatIds = [primaryChat.id, ...duplicateChatIds];
+    const relationGroups: Array<{
+      service: { find: (props: unknown) => Promise<IChatRelation[]> };
+      create: (props: unknown) => Promise<unknown>;
+      targetKey: "profileId" | "threadId" | "messageId" | "actionId";
+    }> = [
+      {
+        service: this.socialModule.profilesToChats,
+        create: (createProps) =>
+          socialModuleProfilesToChatsApi.create(createProps as never),
+        targetKey: "profileId",
+      },
+      {
+        service: this.socialModule.chatsToThreads,
+        create: (createProps) =>
+          socialModuleChatsToThreadsApi.create(createProps as never),
+        targetKey: "threadId",
+      },
+      {
+        service: this.socialModule.chatsToMessages,
+        create: (createProps) =>
+          socialModuleChatsToMessagesApi.create(createProps as never),
+        targetKey: "messageId",
+      },
+      {
+        service: this.socialModule.chatsToActions,
+        create: (createProps) =>
+          socialModuleChatsToActionsApi.create(createProps as never),
+        targetKey: "actionId",
+      },
+    ];
+
+    for (const relationGroup of relationGroups) {
+      const relations =
+        (await relationGroup.service.find({
+          params: {
+            filters: {
+              and: [
+                {
+                  column: "chatId",
+                  method: "inArray",
+                  value: chatIds,
+                },
+              ],
+            },
+          },
+        })) || [];
+      const primaryTargetIds = new Set(
+        relations
+          .filter((relation) => relation.chatId === primaryChat.id)
+          .map((relation) => relation[relationGroup.targetKey])
+          .filter((targetId): targetId is string => Boolean(targetId)),
+      );
+
+      for (const relation of relations) {
+        const targetId = relation[relationGroup.targetKey];
+
+        if (
+          relation.chatId === primaryChat.id ||
+          !targetId ||
+          primaryTargetIds.has(targetId)
+        ) {
+          continue;
+        }
+
+        await relationGroup.create({
+          data: {
+            chatId: primaryChat.id,
+            [relationGroup.targetKey]: targetId,
+            variant: relation.variant || "default",
+            orderIndex: relation.orderIndex ?? 0,
+            className: relation.className || undefined,
+          },
+          options: {
+            headers: props.headers,
+          },
+        });
+        primaryTargetIds.add(targetId);
+      }
+    }
+
+    for (const duplicateChat of duplicateChats) {
+      await socialModuleChatApi.delete({
+        id: duplicateChat.id,
+        options: {
+          headers: props.headers,
+        },
+      });
+    }
+
+    console.warn("telegram/bootstrap: merged duplicate Telegram chats", {
+      sourceSystemId: primaryChat.sourceSystemId,
+      primaryChatId: primaryChat.id,
+      duplicateChatIds,
+    });
+
+    return primaryChat;
+  }
+
+  protected async findTelegramChats(chatId: string) {
+    return ((await this.socialModule.chat.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "variant",
+              method: "eq",
+              value: "telegram",
+            },
+            {
+              column: "sourceSystemId",
+              method: "eq",
+              value: chatId,
+            },
+          ],
+        },
+      },
+    })) || []) as ISocialModuleChat[];
+  }
+
+  protected async resolveTelegramChat(props: {
+    chatId: string;
+    profileId: string;
+    headers: Record<string, string>;
+  }): Promise<ISocialModuleChat> {
+    let chats = await this.findTelegramChats(props.chatId);
+
+    if (!chats.length) {
+      try {
+        const createdChat = await socialModuleChatApi.create({
+          data: {
+            variant: "telegram",
+            sourceSystemId: props.chatId,
+            slug: `telegram-chat-${props.chatId}`,
+          },
+          options: { headers: props.headers },
+        });
+        chats = [createdChat];
+      } catch (error) {
+        chats = await this.findTelegramChats(props.chatId);
+
+        if (!chats.length) {
+          throw error;
+        }
+      }
+    }
+
+    const chat =
+      chats.length > 1
+        ? await this.mergeDuplicateTelegramChats({
+            chats,
+            headers: props.headers,
+          })
+        : chats[0];
+    const profileLinks = await this.socialModule.profilesToChats.find({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "profileId",
+              method: "eq",
+              value: props.profileId,
+            },
+            {
+              column: "chatId",
+              method: "eq",
+              value: chat.id,
+            },
+          ],
+        },
+      },
+    });
+
+    if (!profileLinks?.length) {
+      await socialModuleProfilesToChatsApi.create({
+        data: {
+          profileId: props.profileId,
+          chatId: chat.id,
+        },
+        options: { headers: props.headers },
+      });
+    }
+
+    return chat;
   }
 
   protected async reconnectDuplicateThreadActionsToPrimary(props: {
@@ -1798,88 +2025,11 @@ export class Service {
       }
     }
 
-    const socialModuleProfilesToChats =
-      await this.socialModule.profilesToChats.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "profileId",
-                method: "eq",
-                value: profile.id,
-              },
-            ],
-          },
-        },
-      });
-
-    if (!socialModuleProfilesToChats?.length) {
-      chat = await socialModuleChatApi.create({
-        data: {
-          variant: "telegram",
-          sourceSystemId: props.chatId,
-        },
-        options: { headers },
-      });
-
-      await socialModuleProfilesToChatsApi.create({
-        data: {
-          profileId: profile.id,
-          chatId: chat.id,
-        },
-        options: { headers },
-      });
-    } else {
-      const socialModuleChats = await this.socialModule.chat.find({
-        params: {
-          filters: {
-            and: [
-              {
-                column: "id",
-                method: "inArray",
-                value: socialModuleProfilesToChats.map((item) => item.chatId),
-              },
-              {
-                column: "variant",
-                method: "eq",
-                value: "telegram",
-              },
-              {
-                column: "sourceSystemId",
-                method: "eq",
-                value: props.chatId,
-              },
-            ],
-          },
-        },
-      });
-
-      if (socialModuleChats?.length) {
-        if (socialModuleChats.length > 1) {
-          throw new Error(
-            "Internal error. Multiple social module chats found for the same profile",
-          );
-        }
-
-        chat = socialModuleChats[0];
-      } else {
-        chat = await socialModuleChatApi.create({
-          data: {
-            variant: "telegram",
-            sourceSystemId: props.chatId,
-          },
-          options: { headers },
-        });
-
-        await socialModuleProfilesToChatsApi.create({
-          data: {
-            profileId: profile.id,
-            chatId: chat.id,
-          },
-          options: { headers },
-        });
-      }
-    }
+    chat = await this.resolveTelegramChat({
+      chatId: props.chatId,
+      profileId: profile.id,
+      headers,
+    });
 
     if (!chat) {
       throw new Error(

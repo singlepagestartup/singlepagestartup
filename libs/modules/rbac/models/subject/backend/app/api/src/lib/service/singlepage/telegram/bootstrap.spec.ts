@@ -1,14 +1,19 @@
 /**
- * BDD Suite: telegram bootstrap default thread cleanup.
+ * BDD Suite: Telegram bootstrap duplicate chat and thread cleanup.
  *
- * Given: a Telegram chat has duplicate SPS default or topic threads.
- * When: bootstrap resolves the thread for an incoming Telegram update.
- * Then: messages and actions are reconnected to the first-created thread and duplicates are removed.
+ * Given: concurrent Telegram updates produced duplicate SPS chats or threads.
+ * When: bootstrap resolves the chat and thread for a subsequent update.
+ * Then: relations are reconnected to the first-created records and duplicates are removed.
  */
 
 const mockSocialModuleChatsToThreadsDelete = jest.fn();
+const mockSocialModuleChatsToThreadsCreate = jest.fn();
+const mockSocialModuleChatsToMessagesCreate = jest.fn();
+const mockSocialModuleChatsToActionsCreate = jest.fn();
 const mockSocialModuleThreadsToMessagesCreate = jest.fn();
 const mockSocialModuleThreadsToActionsCreate = jest.fn();
+const mockSocialModuleChatCreate = jest.fn();
+const mockSocialModuleChatDelete = jest.fn();
 const mockSocialModuleThreadCreate = jest.fn();
 const mockSocialModuleThreadUpdate = jest.fn();
 const mockSocialModuleThreadDelete = jest.fn();
@@ -24,9 +29,24 @@ jest.mock("@sps/shared-utils", () => ({
 
 jest.mock("@sps/social/relations/chats-to-threads/sdk/server", () => ({
   api: {
-    create: jest.fn(),
+    create: (...args: unknown[]) =>
+      mockSocialModuleChatsToThreadsCreate(...args),
     delete: (...args: unknown[]) =>
       mockSocialModuleChatsToThreadsDelete(...args),
+  },
+}));
+
+jest.mock("@sps/social/relations/chats-to-messages/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) =>
+      mockSocialModuleChatsToMessagesCreate(...args),
+  },
+}));
+
+jest.mock("@sps/social/relations/chats-to-actions/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) =>
+      mockSocialModuleChatsToActionsCreate(...args),
   },
 }));
 
@@ -52,6 +72,13 @@ jest.mock("@sps/social/models/thread/sdk/server", () => ({
   },
 }));
 
+jest.mock("@sps/social/models/chat/sdk/server", () => ({
+  api: {
+    create: (...args: unknown[]) => mockSocialModuleChatCreate(...args),
+    delete: (...args: unknown[]) => mockSocialModuleChatDelete(...args),
+  },
+}));
+
 jest.mock("@sps/social/relations/profiles-to-chats/sdk/server", () => ({
   api: {
     create: (...args: unknown[]) =>
@@ -69,7 +96,7 @@ jest.mock("@sps/shared-third-parties", () => ({
 
 import { Service } from "./bootstrap";
 
-describe("Given: Telegram bootstrap finds duplicate default threads", () => {
+describe("Given: Telegram bootstrap finds duplicate chats or threads", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSocialModuleThreadCreate.mockResolvedValue({
@@ -292,6 +319,247 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
           },
         },
       });
+    });
+  });
+
+  describe("When: duplicate Telegram chats are resolved", () => {
+    /**
+     * BDD Scenario
+     * Given: concurrent bootstrap calls created two Telegram chats for the same external chat id.
+     * When: bootstrap resolves that Telegram chat again.
+     * Then: it preserves all relations on the first-created chat and removes the duplicate chat.
+     */
+    it("Then: merges chat relations into the first-created Telegram chat", async () => {
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {
+          profilesToChats: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "profile-link-primary",
+                chatId: "chat-old",
+                profileId: "profile-1",
+              },
+              {
+                id: "profile-link-duplicate-existing",
+                chatId: "chat-new",
+                profileId: "profile-1",
+              },
+              {
+                id: "profile-link-duplicate-new",
+                chatId: "chat-new",
+                profileId: "profile-2",
+                variant: "telegram-personal-ai-agent",
+                orderIndex: 4,
+                className: "personal-agent",
+              },
+            ]),
+          },
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "thread-link-primary",
+                chatId: "chat-old",
+                threadId: "thread-1",
+              },
+              {
+                id: "thread-link-duplicate",
+                chatId: "chat-new",
+                threadId: "thread-2",
+              },
+            ]),
+          },
+          chatsToMessages: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "message-link-primary",
+                chatId: "chat-old",
+                messageId: "message-1",
+              },
+              {
+                id: "message-link-duplicate",
+                chatId: "chat-new",
+                messageId: "message-2",
+              },
+            ]),
+          },
+          chatsToActions: {
+            find: jest.fn().mockResolvedValue([
+              {
+                id: "action-link-primary",
+                chatId: "chat-old",
+                actionId: "action-1",
+              },
+              {
+                id: "action-link-duplicate",
+                chatId: "chat-new",
+                actionId: "action-2",
+              },
+            ]),
+          },
+        } as any,
+      });
+
+      const result = await (service as any).mergeDuplicateTelegramChats({
+        chats: [
+          {
+            id: "chat-new",
+            variant: "telegram",
+            sourceSystemId: "153077581",
+            createdAt: "2026-01-02T00:00:00.000Z",
+          },
+          {
+            id: "chat-old",
+            variant: "telegram",
+            sourceSystemId: "153077581",
+            createdAt: "2026-01-01T00:00:00.000Z",
+          },
+        ],
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      });
+
+      expect(result.id).toBe("chat-old");
+      expect(mockSocialModuleProfilesToChatsCreate).toHaveBeenCalledTimes(1);
+      expect(mockSocialModuleProfilesToChatsCreate).toHaveBeenCalledWith({
+        data: {
+          chatId: "chat-old",
+          profileId: "profile-2",
+          variant: "telegram-personal-ai-agent",
+          orderIndex: 4,
+          className: "personal-agent",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(mockSocialModuleChatsToThreadsCreate).toHaveBeenCalledWith({
+        data: {
+          chatId: "chat-old",
+          threadId: "thread-2",
+          variant: "default",
+          orderIndex: 0,
+          className: undefined,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(mockSocialModuleChatsToMessagesCreate).toHaveBeenCalledWith({
+        data: {
+          chatId: "chat-old",
+          messageId: "message-2",
+          variant: "default",
+          orderIndex: 0,
+          className: undefined,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(mockSocialModuleChatsToActionsCreate).toHaveBeenCalledWith({
+        data: {
+          chatId: "chat-old",
+          actionId: "action-2",
+          variant: "default",
+          orderIndex: 0,
+          className: undefined,
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(mockSocialModuleChatDelete).toHaveBeenCalledWith({
+        id: "chat-new",
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+    });
+
+    /**
+     * BDD Scenario
+     * Given: two bootstrap calls race while the Telegram chat does not exist yet.
+     * When: one create loses the deterministic-slug race.
+     * Then: it re-reads and uses the chat created by the winning request.
+     */
+    it("Then: recovers from a concurrent deterministic Telegram chat creation", async () => {
+      const existingChat = {
+        id: "chat-winner",
+        variant: "telegram",
+        sourceSystemId: "153077581",
+        slug: "telegram-chat-153077581",
+      };
+      const chatFind = jest
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([existingChat]);
+      const profileLinksFind = jest.fn().mockResolvedValue([]);
+      mockSocialModuleChatCreate.mockRejectedValueOnce(
+        new Error("slug already exists"),
+      );
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {
+          chat: {
+            find: chatFind,
+          },
+          profilesToChats: {
+            find: profileLinksFind,
+          },
+        } as any,
+      });
+
+      const result = await (service as any).resolveTelegramChat({
+        chatId: "153077581",
+        profileId: "profile-1",
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      });
+
+      expect(mockSocialModuleChatCreate).toHaveBeenCalledWith({
+        data: {
+          variant: "telegram",
+          sourceSystemId: "153077581",
+          slug: "telegram-chat-153077581",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(chatFind).toHaveBeenCalledTimes(2);
+      expect(mockSocialModuleProfilesToChatsCreate).toHaveBeenCalledWith({
+        data: {
+          profileId: "profile-1",
+          chatId: "chat-winner",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(result).toEqual(existingChat);
     });
   });
 
