@@ -541,11 +541,26 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
         },
       });
       expect(mockOpenRouterGenerate).toHaveBeenCalledWith({
-        model: "google/gemini-3.1-flash-lite",
-        temperature: 0.2,
-        max_tokens: 20,
+        model: "openai/gpt-5.6-terra",
+        max_tokens: 100,
         responseFormat: {
-          type: "json_object",
+          type: "json_schema",
+          json_schema: {
+            name: "telegram_thread_title",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                title: {
+                  type: "string",
+                  minLength: 1,
+                  maxLength: 100,
+                },
+              },
+              required: ["title"],
+              additionalProperties: false,
+            },
+          },
         },
         context: [
           expect.objectContaining({
@@ -609,6 +624,34 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
       });
 
       expect(title).toBe("Келлеры 💬");
+    });
+
+    /**
+     * BDD Scenario
+     * Given: OpenRouter puts a redundant title label inside the structured title value.
+     * When: SPS generates a title for a Telegram topic.
+     * Then: the persisted title contains only the meaningful title and emoji.
+     */
+    it("Then: removes a field label from a structured title value", async () => {
+      mockOpenRouterGenerate.mockResolvedValueOnce({
+        text: JSON.stringify({
+          title: "title : Возможности ассистента 🤖",
+        }),
+        billing: null,
+      });
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {} as any,
+      });
+
+      const title = await (service as any).generateTelegramThreadTitle({
+        messageText: "Расскажи что ты умеешь?",
+      });
+
+      expect(title).toBe("Возможности ассистента 🤖");
     });
 
     /**

@@ -162,18 +162,19 @@ export class Service {
       .replace(/^```(?:json)?/i, "")
       .replace(/```$/i, "")
       .trim();
+    let parsedTitle = cleanValue;
 
     try {
       const parsed = JSON.parse(cleanValue);
 
       if (parsed && typeof parsed.title === "string") {
-        return parsed.title;
+        parsedTitle = parsed.title;
       }
     } catch {
       //
     }
 
-    return this.stripGeneratedThreadTitleFieldLabel(cleanValue);
+    return this.stripGeneratedThreadTitleFieldLabel(parsedTitle);
   }
 
   protected sanitizeGeneratedThreadTitle(props: {
@@ -215,20 +216,39 @@ export class Service {
     try {
       const openRouter = new OpenRouter();
       const result = await openRouter.generate({
-        model: "google/gemini-3.1-flash-lite",
-        temperature: 0.2,
-        max_tokens: 20,
+        model: "openai/gpt-5.6-terra",
+        max_tokens: 100,
         responseFormat: {
-          type: "json_object",
+          type: "json_schema",
+          json_schema: {
+            name: "telegram_thread_title",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                title: {
+                  type: "string",
+                  minLength: 1,
+                  maxLength: 100,
+                },
+              },
+              required: ["title"],
+              additionalProperties: false,
+            },
+          },
         },
         context: [
           {
             role: "system",
             content: [
-              "Generate a concise Telegram thread title from the user message.",
-              "Max 3 words. Include one relevant emoji.",
-              "Match message language. Return only JSON:",
-              JSON.stringify({ title: "..." }),
+              "Create a concise Telegram thread title that describes the user's topic or intent.",
+              "Use 1 to 3 meaningful, complete words in the user's language, followed by one relevant emoji.",
+              "Do not copy conversational prefixes or include labels such as title.",
+              `Example: ${JSON.stringify({
+                message: "Расскажи что ты умеешь?",
+                title: "Возможности ассистента 🤖",
+              })}.`,
+              "Return only the requested structured object.",
             ].join(" "),
           },
           {
