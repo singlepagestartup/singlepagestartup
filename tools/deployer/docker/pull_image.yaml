@@ -31,17 +31,42 @@
         - docker_hub_password | length > 0
 
     - name: Pull Docker image under deployment lock
-      ansible.builtin.command:
-        argv:
-          - flock
-          - --wait
-          - "1800"
-          - /var/lock/sps-docker-image-pull.lock
-          - docker
-          - image
-          - pull
-          - "{{ docker_image }}"
-      register: docker_image_pull
-      retries: 3
-      delay: 10
-      until: docker_image_pull.rc == 0
+      ansible.builtin.shell: |
+        set -uo pipefail
+
+        exec 9>/var/lock/sps-docker-image-pull.lock
+        flock --wait 1800 9
+
+        docker container prune --force || true
+        docker image prune --force || true
+
+        for attempt in 1 2 3; do
+          echo "Pulling ${SPS_DOCKER_IMAGE} (attempt ${attempt}/3)"
+
+          if pull_output="$(docker image pull "${SPS_DOCKER_IMAGE}" 2>&1)"; then
+            printf '%s\n' "$pull_output"
+            exit 0
+          fi
+
+          printf '%s\n' "$pull_output" >&2
+
+          if grep -qi "no space left on device" <<< "$pull_output"; then
+            docker container prune --force || true
+
+            if [ "$attempt" -eq 1 ]; then
+              docker image prune --all --force --filter until=24h || true
+            else
+              docker image prune --all --force || true
+            fi
+          fi
+
+          if [ "$attempt" -lt 3 ]; then
+            sleep $((attempt * 15))
+          fi
+        done
+
+        exit 1
+      args:
+        executable: /bin/bash
+      environment:
+        SPS_DOCKER_IMAGE: "{{ docker_image }}"

@@ -107,3 +107,18 @@ encodes `ANSIBLE_PRIVATE_KEY_FILE` automatically if
 
 Never commit a Lightsail private key, the generated `inventory.yaml`, or a real
 `.env` file. They are ignored by the repository.
+
+## Docker image rollout
+
+Release workflows still update each service through its Portainer webhook. A
+shared preparation job first pulls every unique release image through the
+Portainer Docker API and waits for extraction to finish. This prevents API,
+Host, LLM, MCP, and Telegram Swarm tasks from concurrently extracting the same
+large image before their webhooks run.
+
+The preparation job removes stopped containers and dangling images before the
+pull. A failed pull is retried up to three times. When Docker reports
+`no space left on device`, cleanup escalates from unused images older than one
+day to all images not referenced by a container. Running containers, their
+images, networks, and volumes are not removed. The same lock, cleanup, and
+retry behavior is used by direct Ansible service deployments.

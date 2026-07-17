@@ -36,10 +36,11 @@ RUN if [ -n "$NEXT_PUBLIC_HOST_SERVICE_URL" ]; then echo "NEXT_PUBLIC_HOST_SERVI
 RUN if [ -n "$YANDEX_METRIKA_ID" ]; then echo "YANDEX_METRIKA_ID=$YANDEX_METRIKA_ID" >> /usr/src/app/apps/host/.env.production; fi
 RUN if [ -n "$NEXT_PUBLIC_YANDEX_METRIKA_ID" ]; then echo "NEXT_PUBLIC_YANDEX_METRIKA_ID=$NEXT_PUBLIC_YANDEX_METRIKA_ID" >> /usr/src/app/apps/host/.env.production; fi
 
-RUN npm ci
+RUN npm ci && npm cache clean --force
 RUN python3 -m venv /usr/src/app/apps/llm/.venv && \
     /usr/src/app/apps/llm/.venv/bin/pip install --no-cache-dir -r /usr/src/app/apps/llm/requirements.txt
-RUN npm run host:build
+RUN npm run host:build && \
+    rm -rf /usr/src/app/.nx /usr/src/app/apps/host/.next/cache
 
 EXPOSE 3000
 EXPOSE 4000

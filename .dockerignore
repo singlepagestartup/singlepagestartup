@@ -12,6 +12,14 @@ tmp
 .github
 
 ############################
+# AI development artifacts
+############################
+.claude
+.codex
+.cursor
+thoughts
+
+############################
 # Node
 ############################
 node_modules
