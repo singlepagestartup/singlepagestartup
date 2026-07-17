@@ -55,18 +55,14 @@ services:
       - ollama
     volumes:
       - ollama-models:/root/.ollama
+      - ./ollama-init.sh:/usr/local/bin/ollama-init.sh:ro
     environment:
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_EMBED_MODEL=${OLLAMA_EMBED_MODEL:-nomic-embed-text}
       - OLLAMA_MODEL_IDS=${OLLAMA_MODEL_IDS:-${OLLAMA_MODELS:-nomic-embed-text}}
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        until ollama list >/dev/null 2>&1; do
-          sleep 2
-        done
-        printf '%s\n' "${OLLAMA_MODEL_IDS:-nomic-embed-text}" | tr ',' '\n' | xargs -n 1 ollama pull
-    restart: "no"
+    entrypoint: ["/bin/sh"]
+    command: ["/usr/local/bin/ollama-init.sh"]
+    restart: unless-stopped
     networks:
       - db_network
 

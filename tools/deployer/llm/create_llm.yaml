@@ -13,6 +13,12 @@
         path: /home/code/ollama_data
         state: directory
 
+    - name: Copy Ollama model reconciler
+      copy:
+        src: ../../../apps/llm/ollama-init.sh
+        dest: /home/code/ollama-init.sh
+        mode: "0755"
+
     - name: Copy set-portainer-webhook.js
       copy:
         src: ../portainer/set-portainer-webhook.js
