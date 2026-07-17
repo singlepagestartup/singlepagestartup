@@ -602,6 +602,98 @@ describe("Given: Telegram bootstrap finds duplicate default threads", () => {
 
     /**
      * BDD Scenario
+     * Given: the first Telegram topic message uses the Knowledge search command with a request.
+     * When: bootstrap generates a contextual topic title.
+     * Then: it sends only the request text to the title model and applies the generated title.
+     */
+    it("Then: generates a title from the /knowledge request payload", async () => {
+      mockOpenRouterGenerate.mockResolvedValueOnce({
+        text: JSON.stringify({ title: "Келлеры в ЖК 🏢" }),
+        billing: null,
+      });
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {
+          chatsToThreads: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        } as any,
+      });
+
+      const result = await (service as any).resolveThreadForTelegramMessage({
+        socialModuleChat: {
+          id: "chat-1",
+          variant: "telegram",
+          sourceSystemId: "550809313",
+        },
+        chatId: "chat-1",
+        messageThreadId: "42",
+        messageText: "/knowledge Келлеры в жилом комплексе",
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      });
+
+      expect(mockOpenRouterGenerate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          context: [
+            expect.objectContaining({
+              role: "system",
+            }),
+            {
+              role: "user",
+              content: "Келлеры в жилом комплексе",
+            },
+          ],
+        }),
+      );
+      expect(mockSocialModuleThreadUpdate).toHaveBeenCalledWith({
+        id: "thread-1",
+        data: {
+          title: "Келлеры в ЖК 🏢",
+        },
+        options: {
+          headers: {
+            "X-RBAC-SECRET-KEY": "test-rbac-secret",
+          },
+        },
+      });
+      expect(result).toMatchObject({
+        id: "thread-1",
+        title: "Келлеры в ЖК 🏢",
+      });
+    });
+
+    /**
+     * BDD Scenario
+     * Given: Telegram addresses the legacy learn command to a specific bot username.
+     * When: bootstrap derives text for topic title generation.
+     * Then: it removes the command and keeps the learn payload.
+     */
+    it("Then: derives a title source from an addressed /learn command", () => {
+      const service = new Service({
+        findById: jest.fn(),
+        identity: {} as any,
+        subjectsToIdentities: {} as any,
+        subjectsToSocialModuleProfiles: {} as any,
+        socialModule: {} as any,
+      });
+
+      expect(
+        (service as any).getTelegramThreadTitleSourceFromMessage(
+          "/learn@singlepagestartup_bot Новый материал о келлерах",
+        ),
+      ).toBe("Новый материал о келлерах");
+      expect(
+        (service as any).getTelegramThreadTitleSourceFromMessage("/start"),
+      ).toBeUndefined();
+    });
+
+    /**
+     * BDD Scenario
      * Given: OpenRouter returns a loose title field instead of the requested JSON object.
      * When: SPS generates a title for a Telegram topic.
      * Then: the technical title field label is removed from the visible topic title.

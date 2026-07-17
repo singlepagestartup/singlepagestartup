@@ -131,14 +131,26 @@ export class Service {
     );
   }
 
-  protected shouldGenerateThreadTitleFromMessage(messageText?: string) {
+  protected getTelegramThreadTitleSourceFromMessage(messageText?: string) {
     const text = messageText?.trim();
 
     if (!text) {
-      return false;
+      return;
     }
 
-    return !text.startsWith("/");
+    const knowledgeCommand = text.match(
+      /^\/(?:knowledge|learn)(?:@[a-z0-9_]+)?(?:\s+([\s\S]+))?$/i,
+    );
+
+    if (knowledgeCommand) {
+      return knowledgeCommand[1]?.trim() || undefined;
+    }
+
+    if (text.startsWith("/")) {
+      return;
+    }
+
+    return text;
   }
 
   protected getFallbackThreadTitleFromMessage(messageText: string) {
@@ -320,10 +332,13 @@ export class Service {
     const shouldRepairTitle = Boolean(
       repairedTitle && repairedTitle !== currentTitle,
     );
+    const titleSourceText = this.getTelegramThreadTitleSourceFromMessage(
+      props.messageText,
+    );
 
     if (
       !shouldRepairTitle &&
-      (!this.shouldGenerateThreadTitleFromMessage(props.messageText) ||
+      (!titleSourceText ||
         !this.isFallbackTelegramThreadTitle({
           title: props.socialModuleThread.title,
           messageThreadId: props.messageThreadId,
@@ -335,7 +350,7 @@ export class Service {
     const title = shouldRepairTitle
       ? repairedTitle.slice(0, 128).trim()
       : await this.generateTelegramThreadTitle({
-          messageText: props.messageText as string,
+          messageText: titleSourceText as string,
         });
 
     if (!title || title === props.socialModuleThread.title) {

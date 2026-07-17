@@ -47,7 +47,7 @@ describe("Given: the Agent Telegram command catalog", () => {
    * BDD Scenario
    * Given: startup overrides are resolved by the Agent service in apps/api.
    * When: the Telegram transport starts.
-   * Then: it publishes that catalog before installing the webhook.
+   * Then: it publishes that catalog to every global chat scope before installing the webhook.
    */
   it("When: the bot starts Then: it synchronizes Agent commands with Telegram", async () => {
     const commands = [
@@ -77,7 +77,22 @@ describe("Given: the Agent Telegram command catalog", () => {
         },
       },
     });
-    expect(setMyCommands).toHaveBeenCalledWith(commands);
+    expect(setMyCommands).toHaveBeenNthCalledWith(1, commands);
+    expect(setMyCommands).toHaveBeenNthCalledWith(2, commands, {
+      scope: {
+        type: "all_private_chats",
+      },
+    });
+    expect(setMyCommands).toHaveBeenNthCalledWith(3, commands, {
+      scope: {
+        type: "all_group_chats",
+      },
+    });
+    expect(setMyCommands).toHaveBeenNthCalledWith(4, commands, {
+      scope: {
+        type: "all_chat_administrators",
+      },
+    });
     expect(setWebhook).toHaveBeenCalledWith(
       "https://telegram.example.com/api/telegram",
       {

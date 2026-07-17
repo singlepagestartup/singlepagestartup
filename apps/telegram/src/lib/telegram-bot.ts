@@ -672,7 +672,24 @@ export class TelegarmBot {
       },
     });
 
-    await this.instance.api.setMyCommands(commands);
+    await Promise.all([
+      this.instance.api.setMyCommands(commands),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_private_chats",
+        },
+      }),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_group_chats",
+        },
+      }),
+      this.instance.api.setMyCommands(commands, {
+        scope: {
+          type: "all_chat_administrators",
+        },
+      }),
+    ]);
 
     const endpoint = NEXT_PUBLIC_TELEGRAM_SERVICE_URL + "/api/telegram";
 
