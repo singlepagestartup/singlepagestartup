@@ -1,16 +1,3 @@
-import {
-  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
-  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
-} from "../envs";
-
-const telegramRequiredChannelName =
-  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
-const telegramRequiredChannelLink =
-  TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
-  (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
-    ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
-    : "https://t.me");
-
 export const util = {
   openRouterStarted: {
     ru: "💭 Начинаю обрабатывать ваш запрос. Пожалуйста, подождите.",
@@ -37,8 +24,8 @@ export const util = {
     en: "The request could not be processed. Please try again. If the error persists, select another model.",
   },
   openRouterRequiredTelegamChannelSubscriptionError: {
-    ru: `🧾 Перед началом приёма\n\nЧтобы пользоваться ботом, тебе нужно быть пациентом *Doctor GPT*.\n\nПодпишись на канал [*${telegramRequiredChannelName}*](${telegramRequiredChannelLink})`,
-    en: `You need to subscribe to our Telegram channel  - [${telegramRequiredChannelName}](${telegramRequiredChannelLink}) to use this feature.`,
+    ru: "Чтобы продолжить работу с ботом, подпишитесь на Telegram-канал проекта SinglePageStartup.",
+    en: "To continue using the bot, subscribe to the SinglePageStartup Telegram channel.",
   },
   ecommerceModuleSelectSubscriptionProductsOffer: {
     ru: "💊 Пожалуйста, выберите одну из наших подписок, чтобы продолжить.",

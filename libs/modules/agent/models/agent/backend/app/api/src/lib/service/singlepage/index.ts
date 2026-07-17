@@ -44,6 +44,10 @@ import {
   type IRbacModule,
   type ISocialModule,
 } from "../../di";
+import {
+  type ITelegramRequiredSubscriptionChannelConfiguration,
+  resolveTelegramRequiredSubscriptionChannelConfiguration,
+} from "./telegram-required-subscription-channel";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
@@ -158,15 +162,15 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.fileStorageModule = fileStorageModule;
   }
 
-  telegramRequiredChannelName =
-    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME || "наш Telegram-канал";
-  telegramRequiredChannelLink =
-    TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
-    (TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME
-      ? `https://t.me/${TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME}`
-      : "https://t.me");
-
   statusMessages = telegramBotServiceMessages;
+
+  protected getTelegramRequiredSubscriptionChannelConfiguration(): ITelegramRequiredSubscriptionChannelConfiguration {
+    return resolveTelegramRequiredSubscriptionChannelConfiguration({
+      id: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID,
+      name: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME,
+      link: TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK,
+    });
+  }
 
   protected getTelegramCommandDefinitions(): ITelegramCommandDefinition[] {
     return [
@@ -1838,13 +1842,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
       const secretKey = RBAC_SECRET_KEY;
 
-      if (
-        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID &&
-        (!TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK ||
-          !TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME)
-      ) {
+      const telegramRequiredSubscriptionChannel =
+        this.getTelegramRequiredSubscriptionChannelConfiguration();
+
+      if (telegramRequiredSubscriptionChannel.isPartiallyConfigured) {
         throw new Error(
-          "Configuration error. Telegram required subscription channel information is incomplete - expected TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK in .env",
+          "Configuration error. Telegram required subscription channel information is incomplete. Set TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_ID, TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME, and TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_LINK together, or omit all three to disable subscription enforcement.",
         );
       }
 
@@ -1923,6 +1926,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         });
 
       if (
+        telegramRequiredSubscriptionChannel.isConfigured &&
         requiredTelegramChannelSubscriptionRbacModuleRole &&
         !requiredTelegramChannelSubscriptionRbacModuleSubjectToRole
       ) {
@@ -1934,16 +1938,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleThreadId,
             data: {
               description:
-                this.statusMessages
-                  .openRouterRequiredTelegamChannelSubscriptionError.ru,
+                `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
+                `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
               interaction: {
                 inline_keyboard: [
                   [
                     {
-                      text:
-                        TELEGRAM_SERVICE_REQUIRED_SUBSCRIPTION_CHANNEL_NAME ||
-                        "Subscribe",
-                      url: this.telegramRequiredChannelLink,
+                      text: telegramRequiredSubscriptionChannel.name,
+                      url: telegramRequiredSubscriptionChannel.link,
                     },
                   ],
                 ],
