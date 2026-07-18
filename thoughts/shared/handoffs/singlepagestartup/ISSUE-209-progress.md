@@ -52,14 +52,14 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Completed: 2026-07-17T23:58:00Z
 - [x] Automated verification: PASSED 2026-07-17T23:58:00Z
 
-**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (66), RBAC (264), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Manual Telegram verification remains intentionally unchecked for the user.
+**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (66), RBAC (265), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Manual Telegram verification remains intentionally unchecked for the user.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 6 -->
+<!-- incident-count: 7 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -115,6 +115,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Removed the obsolete suppression without changing the test mock; Social lint passes.
 - **Reusable Pattern**: Rule-specific suppressions must match the plugin set of the owning Nx target.
 
+### Incident 7 — Telegram delivery restored stale placeholder content
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: `/assistant` remained on “Готовлю меню управления ассистентом…” even though Agent had generated the complete menu and callback keyboard.
+- **Root Cause**: The asynchronous message-create notification persisted Telegram's `sourceSystemId` by spreading its stale create-time message snapshot, overwriting a newer menu update.
+- **Fix**: Changed the delivery completion write to patch only `sourceSystemId` and added a BDD race-regression scenario.
+- **Reusable Pattern**: Asynchronous delivery acknowledgements must patch transport identifiers only; they must never write an earlier full entity snapshot over concurrent content updates.
+
 ## Summary
 
 ### Changes Made
@@ -138,4 +147,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T00:09:31Z
+**Last updated**: 2026-07-18T00:30:40Z

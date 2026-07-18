@@ -32,7 +32,7 @@ Closes #209
 ## Verification
 
 - [x] `npx nx run @sps/agent:jest:test --runInBand` — 13 suites, 66 tests.
-- [x] `NEXT_PUBLIC_API_SERVICE_URL=http://localhost:4000 API_SERVICE_URL=http://localhost:4000 npx nx run @sps/rbac:jest:test --runInBand` — 64 suites, 264 tests.
+- [x] `NEXT_PUBLIC_API_SERVICE_URL=http://localhost:4000 API_SERVICE_URL=http://localhost:4000 npx nx run @sps/rbac:jest:test --runInBand` — 64 suites, 265 tests.
 - [x] `npx nx run telegram:jest:test --runInBand` — 3 suites, 21 tests.
 - [x] Agent, RBAC, and API integration targets pass.
 - [x] Agent and RBAC TypeScript builds plus the Telegram build pass.
@@ -52,5 +52,7 @@ Closes #209
   of inactivity expires the session; the user restarts it with `/assistant`.
 - Telegram callback data contains compact opaque tokens and remains within the
   64-byte transport limit.
+- Telegram delivery completion patches only `sourceSystemId`, preventing a late
+  notification acknowledgement from restoring stale placeholder content.
 - Existing unrelated OpenRouter and chat-composer working-tree changes were
   preserved and excluded from this PR.

@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T00:09:31Z
+last_updated: 2026-07-18T00:30:40Z
 status: active
 current_phase: complete
 ---
@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 9 -->
+<!-- incident-count: 10 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -145,8 +145,19 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Avoid rule-specific suppressions in test mocks unless the owning Nx lint target loads the corresponding plugin.
 - **References**: `libs/modules/social/models/profile/frontend/component/src/lib/singlepage/chat-profile-avatar/Component.spec.tsx`.
 
+### Incident 10 — Telegram delivery restored stale placeholder content
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Manual Telegram verification showed `/assistant` permanently displaying the initial loading placeholder without buttons.
+- **Root Cause**: After Agent updated the Social message with the complete menu, the slower create-notification path saved Telegram's message id by spreading `extendedSocialModuleMessage`, restoring the stale placeholder description and empty interaction object.
+- **Fix**: The notification completion path now patches only `sourceSystemId`; a BDD regression test verifies that late delivery cannot overwrite newer message content.
+- **Preventive Action**: Persist asynchronous transport acknowledgements as minimal partial updates rather than full entity snapshots captured before I/O.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
 - Protected route work is incomplete until the intended non-admin actor's dynamic permission provisioning is tested.
 - Telegram callback tests must use production-length UUIDs even when callback payloads ultimately carry opaque tokens.
+- Late delivery acknowledgements must patch only transport-owned identifiers so they cannot overwrite concurrent message edits.

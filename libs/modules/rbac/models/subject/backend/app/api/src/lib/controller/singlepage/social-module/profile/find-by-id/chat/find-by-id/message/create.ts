@@ -561,7 +561,6 @@ export class Handler {
               await socialModuleMessageApi.update({
                 id: props.extendedSocialModuleMessage.id,
                 data: {
-                  ...props.extendedSocialModuleMessage,
                   sourceSystemId: notificationServiceNotificationSourceSystemId,
                 },
                 options: {
