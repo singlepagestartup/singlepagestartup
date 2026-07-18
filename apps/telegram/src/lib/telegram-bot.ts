@@ -145,6 +145,10 @@ const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
 export class TelegarmBot {
   instance: GrammyBot<TelegramBotContext>;
   webhookHandler: ReturnType<typeof webhookCallback>;
+  private telegramPublishedCommands: Array<{
+    command: string;
+    description: string;
+  }> = [];
   private mediaGroupBuffer = new Map<
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
@@ -173,6 +177,26 @@ export class TelegarmBot {
     }
 
     return String(messageThreadId);
+  }
+
+  private getTelegramCommandTopicTitle(props: { description: string }) {
+    const commandMatch = props.description
+      .trim()
+      .match(/^\/([a-z0-9_]+)(?=\s|$)/i);
+    const command = commandMatch?.[1]?.toLowerCase();
+
+    if (!command) {
+      return;
+    }
+
+    const publishedCommand = this.telegramPublishedCommands?.find(
+      (item) => item.command.toLowerCase() === command,
+    );
+
+    return (publishedCommand?.description.trim() || `/${command}`).slice(
+      0,
+      128,
+    );
   }
 
   private isTelegramForumTopicServiceMessage(props: { ctx: GrammyContext }) {
@@ -650,6 +674,7 @@ export class TelegarmBot {
         },
       },
     });
+    this.telegramPublishedCommands = commands;
 
     await Promise.all([
       this.instance.api.setMyCommands(commands),
@@ -1490,6 +1515,15 @@ export class TelegarmBot {
       );
     }
 
+    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
+    const isMentioned = this.shouldHandleIncomingMessageInChat({
+      ctx: props.ctx,
+    });
+
+    if (isGroup && !isMentioned) {
+      return;
+    }
+
     const {
       rbacModuleSubject,
       socialModuleProfile,
@@ -1505,53 +1539,42 @@ export class TelegarmBot {
       botUsername: TELEGRAM_SERVICE_BOT_USERNAME,
       description: props.data.description,
     });
-
-    const isGroup = props.ctx.chat?.id && props.ctx.chat.id < 0;
-    const isMentioned = this.shouldHandleIncomingMessageInChat({
-      ctx: props.ctx,
+    const commandTopicTitle = this.getTelegramCommandTopicTitle({
+      description: sanitizedDescription,
     });
-
-    if (!isGroup) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            ...props.data,
-            description: sanitizedDescription,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
+    const targetSocialModuleThread =
+      commandTopicTitle && !this.getTelegramMessageThreadId({ ctx: props.ctx })
+        ? await rbacModuleSubjectApi.socialModuleChatFindByIdThreadCreate({
+            id: rbacModuleSubject.id,
+            socialModuleChatId: socialModuleChat.id,
+            data: {
+              title: commandTopicTitle,
             },
+            options: {
+              headers: {
+                Authorization: "Bearer " + jwtToken,
+              },
+            },
+          })
+        : socialModuleThread;
+
+    return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
+      {
+        id: rbacModuleSubject.id,
+        socialModuleChatId: socialModuleChat.id,
+        socialModuleThreadId: targetSocialModuleThread.id,
+        socialModuleProfileId: socialModuleProfile.id,
+        data: {
+          ...props.data,
+          description: sanitizedDescription,
+        },
+        options: {
+          headers: {
+            Authorization: "Bearer " + jwtToken,
           },
         },
-      );
-    }
-
-    if (isMentioned) {
-      return await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate(
-        {
-          id: rbacModuleSubject.id,
-          socialModuleChatId: socialModuleChat.id,
-          socialModuleThreadId: socialModuleThread.id,
-          socialModuleProfileId: socialModuleProfile.id,
-          data: {
-            ...props.data,
-            description: sanitizedDescription,
-          },
-          options: {
-            headers: {
-              Authorization: "Bearer " + jwtToken,
-            },
-          },
-        },
-      );
-    }
-
-    return;
+      },
+    );
   }
 
   private async flushMediaGroup(props: { mediaGroupId: string }) {

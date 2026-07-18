@@ -62,6 +62,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] All live operations remained inside Telegram topic `112981`; the active one-profile baseline was restored to RU/EN title, MCP enabled, no Avatar, zero linked Skills, and one original Knowledge document.
 - [x] Reopening the original 15.5 KB Knowledge document in topic `113050` produced a bounded interactive menu and a separate `.txt` attachment with the complete 15,832-byte UTF-8 content; no `MESSAGE_TOO_LONG` occurred.
 - [x] Avatar opens a dedicated photo page with the effective custom/default image, Replace/Delete/Open/Back controls, and safe text-to-photo presentation replacement; the live custom avatar was preserved during verification.
+- [x] `/assistant` from All Messages created Telegram topic `113080` and delivered its menu there; `/assistant` and ordinary conversation text sent inside `113080` remained in that topic without creating another thread.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -69,7 +70,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 15 -->
+<!-- incident-count: 16 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -206,6 +207,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Added custom/default avatar resolution, a photo-based page with Replace/Delete/Open/Back controls, relation-only reset through the existing subject-scoped endpoint, and transport support for safe text/photo transitions and photo-caption edits.
 - **Reusable Pattern**: File tools should expose the effective asset before mutation, reuse canonical relations for reset semantics, and test transport media-mode changes as part of the conversation contract.
 
+### Incident 16 — Slash commands bypassed Telegram topic creation
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: `/assistant` launched from All Messages stored its session in the default thread, so editor input could trigger Telegram's unrelated ordinary-message topic creation instead of updating the profile draft.
+- **Root Cause**: Telegram's client-side topic creation applies to ordinary messages but not native commands, and the adapter did not provision a topic before persisting commands.
+- **Fix**: The adapter now creates a topic through the canonical subject-scoped RBAC thread action when a command has no `message_thread_id`, persists the command into that returned Social thread, and reuses the existing thread when a command already belongs to a topic.
+- **Reusable Pattern**: Stateful command routing must determine the final transport thread before command persistence and Agent dispatch.
+
 ## Summary
 
 ### Changes Made
@@ -218,6 +228,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Avatar management now resolves the same latest image as the web sidebar, falls back to the canonical File Storage default, and provides a dedicated photo page with replace/reset controls.
 - Chat-local profile updates preserve omitted localized content and MCP configuration.
 - Knowledge reads return complete UTF-8 TXT attachments while keeping the interactive Telegram page below message limits.
+- Main-flow Telegram commands now create a topic-backed Social thread before Agent dispatch, while commands and editor input inside an existing topic remain scoped to that topic.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -234,4 +245,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T13:41:24Z
+**Last updated**: 2026-07-18T21:13:46Z

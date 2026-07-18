@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T13:41:24Z
+last_updated: 2026-07-18T21:13:46Z
 status: active
 current_phase: complete
 ---
@@ -51,14 +51,14 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Code Review
 
-- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks. Review follow-ups now export Knowledge reads as TXT files and provide a dedicated photo-based Avatar page with replace/reset controls and a File Storage default.
+- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks. Review follow-ups now export Knowledge reads as TXT files, provide a dedicated photo-based Avatar page, and route main-flow commands into newly created Telegram topics before Agent conversation dispatch.
 - Notes: Telegram Web A occasionally rendered Bot API message edits only after the next incoming update; Bot API, Social action/message, and Notification records all confirmed the correct state before the client caught up. Live access covered one private sender/topic; group, multi-sender, zero/multiple-profile, permission-loss, and record-removal variants remain covered by the committed BDD suites.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 18 -->
+<!-- incident-count: 19 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -240,6 +240,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Model media-management tools as read-first pages with explicit replace/reset operations, and test both custom/default resolution plus text-to-photo presentation transitions.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/avatar/update.ts`; `libs/modules/file-storage/models/file/sdk/model/src/lib/index.ts`; `libs/modules/notification/models/notification/backend/app/api/src/lib/service/singlepage/index.ts`.
 
+### Incident 19 — Main-flow commands started conversations outside Telegram topics
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: `/assistant` sent from All Messages opened its Agent conversation against the default Social thread; subsequent editor text had no Telegram `message_thread_id` and was interpreted by the normal main-flow behavior as a request to create an unrelated AI topic.
+- **Root Cause**: Telegram creates topics automatically for ordinary main-flow messages but not for native slash commands, while the adapter persisted every command to the bootstrap default thread before Agent dispatch.
+- **Fix**: Telegram ingestion now detects a slash command without `message_thread_id`, creates a topic-backed Social thread through the existing subject-scoped RBAC thread endpoint, and persists the original command directly into that new thread. Commands already carrying `message_thread_id` reuse the bootstrap-resolved thread unchanged.
+- **Preventive Action**: Establish the transport thread before persisting any command that starts a stateful interaction; cover both main-flow creation and existing-topic reuse at the adapter boundary.
+- **References**: `apps/telegram/src/lib/telegram-bot.ts`; `apps/telegram/src/lib/telegram-bot.spec.ts`; Telegram topic `113080` live verification.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -254,3 +264,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Partial management routes must merge the current mutable record before calling generic update SDKs when omitted fields are contractually preserved.
 - Telegram presentation text must remain bounded; complete Knowledge bodies belong in TXT attachments delivered through the canonical Social/File Storage/Notification path.
 - Media-management conversations should resolve and show the effective asset first, represent deletion as a relation reset to the canonical default, and explicitly handle text/photo presentation mode changes.
+- Telegram command ingestion must resolve or create the final topic-backed Social thread before the command message reaches Agent; conversation state cannot be moved safely after dispatch.
