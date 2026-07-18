@@ -1316,6 +1316,7 @@ describe("Given: Telegram automatic chat participants", () => {
       ownerRbacSubjectId: "owner-subject",
       socialModuleChatId: "chat-1",
       personalAiSocialModuleProfile: personalAiProfile,
+      isPrivateTelegramChat: false,
       headers: {
         "X-RBAC-SECRET-KEY": "test-rbac-secret",
       },
@@ -1357,5 +1358,103 @@ describe("Given: Telegram automatic chat participants", () => {
       ownerRbacSubjectId: "owner-subject",
       socialModuleProfileId: "other-personal-ai-profile",
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a private Telegram chat contains a stale automatic personal AI profile created for the bot and a manually connected AI profile.
+   * When: automatic participants are synchronized for the human sender.
+   * Then: the stale automatic profile link is removed while the manually connected AI profile remains available.
+   */
+  it("When: a private chat is synchronized Then: stale personal AI links are removed", async () => {
+    const personalAiProfile = {
+      id: "personal-ai-profile",
+      slug: "telegram-personal-ai-agent-owner-1",
+      variant: "artificial-intelligence",
+    };
+    const profilesToChats = {
+      find: jest.fn().mockResolvedValue([
+        {
+          id: "manual-ai-relation",
+          profileId: "manual-ai-profile",
+          chatId: "chat-1",
+          variant: "default",
+        },
+        {
+          id: "stale-personal-relation",
+          profileId: "stale-personal-ai-profile",
+          chatId: "chat-1",
+          variant: "telegram-personal-ai-agent",
+        },
+        {
+          id: "current-personal-relation",
+          profileId: "personal-ai-profile",
+          chatId: "chat-1",
+          variant: "telegram-personal-ai-agent",
+        },
+      ]),
+    };
+    const profile = {
+      find: jest.fn().mockImplementation((props: any) => {
+        const filters = props?.params?.filters?.and || [];
+        const slugFilter = filters.find(
+          (filter: any) => filter.column === "slug",
+        );
+
+        if (slugFilter?.value === "telegram-bot") {
+          return Promise.resolve([]);
+        }
+
+        return Promise.resolve([
+          {
+            id: "manual-ai-profile",
+            slug: "manual-ai",
+            variant: "artificial-intelligence",
+          },
+          {
+            id: "stale-personal-ai-profile",
+            slug: "telegram-personal-ai-agent-bot",
+            variant: "artificial-intelligence",
+          },
+          personalAiProfile,
+        ]);
+      }),
+    };
+    const service = new Service({
+      findById: jest.fn(),
+      identity: {} as any,
+      subjectsToIdentities: {} as any,
+      subjectsToSocialModuleProfiles: {} as any,
+      socialModule: {
+        profile,
+        profilesToChats,
+      } as any,
+      ensureProfileManagementAccess: jest.fn().mockResolvedValue({}),
+    });
+
+    await (service as any).synchronizeTelegramAutomaticProfilesForChat({
+      ownerRbacSubjectId: "owner-subject",
+      socialModuleChatId: "chat-1",
+      personalAiSocialModuleProfile: personalAiProfile,
+      isPrivateTelegramChat: true,
+      headers: {
+        "X-RBAC-SECRET-KEY": "test-rbac-secret",
+      },
+    });
+
+    expect(mockSocialModuleProfilesToChatsDelete).toHaveBeenCalledTimes(1);
+    expect(mockSocialModuleProfilesToChatsDelete).toHaveBeenCalledWith({
+      id: "stale-personal-relation",
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "test-rbac-secret",
+        },
+      },
+    });
+    expect(mockSocialModuleProfilesToChatsDelete).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "manual-ai-relation",
+      }),
+    );
   });
 });

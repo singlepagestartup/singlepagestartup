@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T21:13:46Z
+last_updated: 2026-07-18T21:50:35Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 19 -->
+<!-- incident-count: 20 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -250,6 +250,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Establish the transport thread before persisting any command that starts a stateful interaction; cover both main-flow creation and existing-topic reuse at the adapter boundary.
 - **References**: `apps/telegram/src/lib/telegram-bot.ts`; `apps/telegram/src/lib/telegram-bot.spec.ts`; Telegram topic `113080` live verification.
 
+### Incident 20 — Bot-created topic service messages provisioned a second personal assistant
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: The `/assistant` selector in a private chat displayed both the human sender's personal AI profile and `Telegram personal AI agent for steady-magenta-urial-4603`.
+- **Root Cause**: Telegram emitted `forum_topic_created` with `from.is_bot=true` after the bot created a command topic. The generic message handler sent that service update through RBAC bootstrap, which provisioned a personal AI profile for the bot identity and connected it to the same chat; automatic participant synchronization deduplicated relations per profile but preserved the second distinct personal profile.
+- **Fix**: Telegram now rejects bot-authored messages before bootstrap. Private-chat bootstrap also reconciles automatic `telegram-personal-ai-agent` relations to the current human sender while preserving manually connected AI profiles and group-chat multi-profile behavior. Removed the single erroneous runtime relation and verified a fresh `/assistant` in topic `113095` opens the one-profile home directly.
+- **Preventive Action**: Filter bot-authored service updates before identity/bootstrap work, and make private-chat automatic participant reconciliation self-heal stale personal-agent links.
+- **References**: `apps/telegram/src/lib/telegram-bot.ts`; `apps/telegram/src/lib/telegram-bot.spec.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts`; Telegram topic `113095` live verification.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -265,3 +275,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Telegram presentation text must remain bounded; complete Knowledge bodies belong in TXT attachments delivered through the canonical Social/File Storage/Notification path.
 - Media-management conversations should resolve and show the effective asset first, represent deletion as a relation reset to the canonical default, and explicitly handle text/photo presentation mode changes.
 - Telegram command ingestion must resolve or create the final topic-backed Social thread before the command message reaches Agent; conversation state cannot be moved safely after dispatch.
+- Bot-authored Telegram service messages must be rejected before RBAC bootstrap, and private-chat automatic personal-agent links must reconcile to the current human sender without deleting manually connected AI profiles.

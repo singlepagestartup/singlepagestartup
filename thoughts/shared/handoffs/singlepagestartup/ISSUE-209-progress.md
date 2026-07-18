@@ -63,6 +63,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Reopening the original 15.5 KB Knowledge document in topic `113050` produced a bounded interactive menu and a separate `.txt` attachment with the complete 15,832-byte UTF-8 content; no `MESSAGE_TOO_LONG` occurred.
 - [x] Avatar opens a dedicated photo page with the effective custom/default image, Replace/Delete/Open/Back controls, and safe text-to-photo presentation replacement; the live custom avatar was preserved during verification.
 - [x] `/assistant` from All Messages created Telegram topic `113080` and delivered its menu there; `/assistant` and ordinary conversation text sent inside `113080` remained in that topic without creating another thread.
+- [x] Bot-authored `forum_topic_created` updates no longer provision personal assistants; the stale bot-owned automatic link was removed and a fresh `/assistant` in topic `113095` opened the single human-owned profile directly.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -70,7 +71,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 16 -->
+<!-- incident-count: 17 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -216,6 +217,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: The adapter now creates a topic through the canonical subject-scoped RBAC thread action when a command has no `message_thread_id`, persists the command into that returned Social thread, and reuses the existing thread when a command already belongs to a topic.
 - **Reusable Pattern**: Stateful command routing must determine the final transport thread before command persistence and Agent dispatch.
 
+### Incident 17 — Bot-created topic updates added a second private-chat assistant
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: The private-chat assistant selector showed the human's personal AI profile plus a second profile whose owner identity was the Telegram bot itself.
+- **Root Cause**: Telegram delivered the bot-created topic service message with `from.is_bot=true`; the generic message path bootstrapped that sender and created/connected a personal AI profile for it.
+- **Fix**: Reject bot-authored messages before bootstrap, reconcile private-chat automatic personal-agent relations to the current sender, remove the one erroneous runtime relation, and retain manually connected AI profiles plus group multi-profile behavior.
+- **Reusable Pattern**: Service updates authored by the bot are transport lifecycle signals, not user identities; filter them before persistence and self-heal private-chat automatic membership.
+
 ## Summary
 
 ### Changes Made
@@ -229,6 +239,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Chat-local profile updates preserve omitted localized content and MCP configuration.
 - Knowledge reads return complete UTF-8 TXT attachments while keeping the interactive Telegram page below message limits.
 - Main-flow Telegram commands now create a topic-backed Social thread before Agent dispatch, while commands and editor input inside an existing topic remain scoped to that topic.
+- Bot-authored topic service updates are ignored before RBAC bootstrap, and private chats self-heal stale automatic personal-agent links without removing manually connected AI profiles.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -245,4 +256,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T21:13:46Z
+**Last updated**: 2026-07-18T21:50:35Z

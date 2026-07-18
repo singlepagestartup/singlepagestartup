@@ -1472,6 +1472,7 @@ export class Service {
     ownerRbacSubjectId?: string;
     socialModuleChatId: string;
     personalAiSocialModuleProfile: ISocialModuleProfile;
+    isPrivateTelegramChat: boolean;
     headers: Record<string, string>;
   }) {
     const existingRelations =
@@ -1600,6 +1601,24 @@ export class Service {
         continue;
       }
 
+      if (
+        props.isPrivateTelegramChat &&
+        relation.variant === "telegram-personal-ai-agent" &&
+        profile.id !== props.personalAiSocialModuleProfile.id
+      ) {
+        if (relation.id) {
+          await socialModuleProfilesToChatsApi.delete({
+            id: relation.id,
+            options: {
+              headers: props.headers,
+            },
+          });
+          removedRelationIds.push(relation.id);
+        }
+
+        continue;
+      }
+
       const profileRelations = keptRelationsByProfileId.get(profile.id) || [];
       profileRelations.push(relation);
       keptRelationsByProfileId.set(profile.id, profileRelations);
@@ -1662,7 +1681,7 @@ export class Service {
 
     if (removedRelationIds.length) {
       console.warn(
-        "telegram/bootstrap: removed duplicate automatic profile links",
+        "telegram/bootstrap: removed stale or duplicate automatic profile links",
         {
           socialModuleChatId: props.socialModuleChatId,
           removedRelationIds,
@@ -2071,6 +2090,7 @@ export class Service {
       ownerRbacSubjectId: subject.id,
       socialModuleChatId: chat.id,
       personalAiSocialModuleProfile: personalAiAgent.socialModuleProfile,
+      isPrivateTelegramChat: Number(props.chatId) > 0,
       headers,
     });
 

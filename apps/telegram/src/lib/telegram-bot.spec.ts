@@ -53,10 +53,36 @@ jest.mock("@sps/backend-utils", () => {
 });
 
 import {
+  isTelegramBotAuthoredMessage,
   isTelegramMessageAddressedToBot,
   normalizeTelegramTransportControls,
   TelegarmBot,
 } from "./telegram-bot";
+
+describe("Given: Telegram bot-authored service messages", () => {
+  /**
+   * BDD Scenario
+   * Given: Telegram emits forum_topic_created after the bot creates a command topic.
+   * When: the adapter decides whether the service message belongs to a human sender.
+   * Then: it rejects the bot-authored message before RBAC bootstrap can provision a personal AI agent for the bot.
+   */
+  it("When: the sender is a bot Then: the message is ignored", () => {
+    expect(
+      isTelegramBotAuthoredMessage({
+        from: {
+          is_bot: true,
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isTelegramBotAuthoredMessage({
+        from: {
+          is_bot: false,
+        },
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("Given: the Agent Telegram command catalog", () => {
   /**

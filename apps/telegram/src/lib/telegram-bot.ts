@@ -140,6 +140,12 @@ export function isTelegramMessageAddressedToBot(
   );
 }
 
+export function isTelegramBotAuthoredMessage(message?: {
+  from?: { is_bot?: boolean };
+}) {
+  return message?.from?.is_bot === true;
+}
+
 const TELEGRAM_LEARN_CHUNK_DEBOUNCE_MS = 1_500;
 
 export class TelegarmBot {
@@ -537,6 +543,10 @@ export class TelegarmBot {
     });
 
     this.instance.on("message", async (ctx) => {
+      if (isTelegramBotAuthoredMessage(ctx.message)) {
+        return;
+      }
+
       console.log("🚀 ~ init ~ on message ~ ctx.message", ctx.message);
 
       const telegramForumTopicCreated = this.getTelegramForumTopicCreated({
