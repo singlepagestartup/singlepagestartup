@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T22:45:50Z
+last_updated: 2026-07-18T23:20:49Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 22 -->
+<!-- incident-count: 23 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -280,6 +280,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Any persisted UI/control-plane message that must remain visible but is not model conversation must carry a durable metadata exclusion marker; generation gates must enforce it both at dispatch and during historical context assembly.
 - **References**: `libs/modules/social/models/message/sdk/model/src/lib/system-message-metadata.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts`.
 
+### Incident 23 — Direct OpenRouter status replies bypassed the central system marker
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Five subscription/token status messages selected in Telegram topic `113124` still had empty `{}` metadata, so the persisted exclusion contract could not guarantee that they would stay out of later model context.
+- **Root Cause**: Premium and checkout replies are protected by the central Telegram reply path after Incident 22, but required-subscription, missing-subscription, insufficient-token, and OpenRouter-error branches create Social messages directly inside `openRouterReplyMessageCreate`. Those direct writes bypassed `telegramBotReplyMessageCreate`; the five already persisted messages also predated the complete marker rollout.
+- **Fix**: Added one reusable Agent metadata wrapper and applied it to every direct OpenRouter status write, including threaded and non-threaded fallbacks. Added BDD coverage for the missing-subscription response and updated all existing OpenRouter fallback assertions. Backfilled exactly Social source message IDs `5423`–`5427` in the local topic and verified that all five now store `systemMessage.excludeFromOpenRouter: true`.
+- **Preventive Action**: Any direct Social message creation path that represents UI, billing, access, or transport status must use the same persisted system-message wrapper as command replies; live verification must inspect stored metadata rather than infer it from visible text.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/open-router-reply.spec.ts`; Telegram topic `113124`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -298,3 +308,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Bot-authored Telegram service messages must be rejected before RBAC bootstrap, and private-chat automatic personal-agent links must reconcile to the current human sender without deleting manually connected AI profiles.
 - Telegram document messages normally have no description; text-capable editors must resolve their canonical File Storage attachment before treating the input as empty or enforcing inline-message limits.
 - Conversation-state suppression is not a durable history policy; internal control-plane messages need persisted metadata and defense-in-depth filtering at both generation dispatch and context collection.
+- Central reply helpers do not protect direct SDK writes automatically; every status-message creation branch must apply the shared system metadata contract explicitly.

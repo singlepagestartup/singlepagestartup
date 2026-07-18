@@ -56,6 +56,13 @@ const mockedThreadMessageCreate =
 const mockedMessageCreate =
   rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate as jest.Mock;
 const mockedSocialMessageUpdate = socialModuleMessageApi.update as jest.Mock;
+const openRouterStatusMetadata = {
+  systemMessage: {
+    version: 1,
+    source: "agent.openrouter.status",
+    excludeFromOpenRouter: true,
+  },
+};
 
 function createService() {
   const service = Object.create(Service.prototype) as Service;
@@ -97,6 +104,9 @@ function createService() {
     },
   };
   (service as any).statusMessages = {
+    openRouterNotFoundSubscription: {
+      ru: "Нет активной подписки",
+    },
     openRouterNotEnoughTokens: {
       ru: "Недостаточно токенов",
     },
@@ -393,6 +403,71 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
 
   /**
    * BDD Scenario
+   * Given: a Telegram user has no role granting a payable OpenRouter subscription.
+   * When: Agent creates the subscription status response instead of generating.
+   * Then: the response is marked as system traffic and cannot enter later OpenRouter context.
+   */
+  it("marks the missing-subscription response as excluded from OpenRouter", async () => {
+    const service = createService();
+    const statusMessage = { id: "subscription-status-message" };
+
+    (service as any).rbacModule.subjectsToRoles.find = jest
+      .fn()
+      .mockResolvedValue([]);
+    mockedThreadMessageCreate.mockResolvedValue(statusMessage);
+
+    await expect(
+      service.openRouterReplyMessageCreate({
+        jwtToken: "caller-jwt",
+        rbacModuleSubject: {
+          id: "caller-subject",
+        } as any,
+        shouldReplySocialModuleProfile: {
+          id: "assistant-profile",
+        } as any,
+        socialModuleChat: {
+          id: "chat-1",
+        } as any,
+        socialModuleMessage: {
+          id: "message-1",
+          description: "Hello",
+        } as any,
+        messageFromSocialModuleProfile: {
+          id: "sender-profile",
+        } as any,
+      }),
+    ).resolves.toBe(statusMessage);
+
+    expect(mockedThreadMessageCreate).toHaveBeenCalledWith({
+      id: "caller-subject",
+      socialModuleProfileId: "assistant-profile",
+      socialModuleChatId: "chat-1",
+      socialModuleThreadId: "thread-1",
+      data: {
+        description: "Нет активной подписки",
+        interaction: {
+          inline_keyboard: [
+            [
+              {
+                text: "Premium",
+                callback_data: "command_premium",
+              },
+            ],
+          ],
+        },
+        metadata: openRouterStatusMetadata,
+      },
+      options: {
+        headers: {
+          Authorization: "Bearer caller-jwt",
+        },
+      },
+    });
+    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
+  });
+
+  /**
+   * BDD Scenario
    * Given: the OpenRouter billing layer rejects a follow-up request because the subject is already negative.
    * When: the agent service catches that route error while replying in-thread.
    * Then: it posts the existing not-enough-tokens message in the same thread and triggers the premium upsell helper.
@@ -435,6 +510,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleThreadId: "thread-1",
       data: {
         description: "Недостаточно токенов",
+        metadata: openRouterStatusMetadata,
       },
       options: {
         headers: {
@@ -498,6 +574,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleThreadId: "thread-1",
       data: {
         description: "Ошибка OpenRouter",
+        metadata: openRouterStatusMetadata,
       },
       options: {
         headers: {
@@ -552,6 +629,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleThreadId: "thread-1",
       data: {
         description: "Ошибка OpenRouter",
+        metadata: openRouterStatusMetadata,
       },
       options: {
         headers: {
@@ -747,6 +825,7 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
       socialModuleThreadId: "thread-1",
       data: {
         description: "Ошибка OpenRouter",
+        metadata: openRouterStatusMetadata,
       },
       options: {
         headers: {

@@ -1318,13 +1318,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleThreadId,
-        data: {
-          ...props.data,
-          metadata: withSocialMessageSystemMetadata({
-            metadata: props.data.metadata,
-            source: "agent.telegram.system-reply",
-          }),
-        },
+        data: this.withSystemMessageMetadata({
+          data: props.data,
+          source: "agent.telegram.system-reply",
+        }),
         options: {
           headers: {
             Authorization: "Bearer " + props.jwtToken,
@@ -1332,6 +1329,19 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
     );
+  }
+
+  protected withSystemMessageMetadata<TData extends object>(props: {
+    data: TData & { metadata?: Record<string, unknown> };
+    source: string;
+  }) {
+    return {
+      ...props.data,
+      metadata: withSocialMessageSystemMetadata({
+        metadata: props.data.metadata,
+        source: props.source,
+      }),
+    };
   }
 
   protected async markTelegramSystemMessage(props: {
@@ -2343,21 +2353,24 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
-                `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: telegramRequiredSubscriptionChannel.name,
-                      url: telegramRequiredSubscriptionChannel.link,
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  `${this.statusMessages.openRouterRequiredTelegamChannelSubscriptionError.ru}\n\n` +
+                  `[${telegramRequiredSubscriptionChannel.name}](${telegramRequiredSubscriptionChannel.link})`,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: telegramRequiredSubscriptionChannel.name,
+                        url: telegramRequiredSubscriptionChannel.link,
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2374,20 +2387,23 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description:
-                this.statusMessages.openRouterNotFoundSubscription.ru,
-              interaction: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: "Premium",
-                      callback_data: "command_premium",
-                    },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description:
+                  this.statusMessages.openRouterNotFoundSubscription.ru,
+                interaction: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "Premium",
+                        callback_data: "command_premium",
+                      },
+                    ],
                   ],
-                ],
+                },
               },
-            },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2449,9 +2465,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
                 socialModuleThreadId,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -2465,9 +2485,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
                 id: props.rbacModuleSubject.id,
                 socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
                 socialModuleChatId: props.socialModuleChat.id,
-                data: {
-                  description: this.statusMessages.openRouterNotEnoughTokens.ru,
-                },
+                data: this.withSystemMessageMetadata({
+                  source: "agent.openrouter.status",
+                  data: {
+                    description:
+                      this.statusMessages.openRouterNotEnoughTokens.ru,
+                  },
+                }),
                 options: {
                   headers: {
                     Authorization: "Bearer " + props.jwtToken,
@@ -2503,9 +2527,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
             socialModuleThreadId,
-            data: {
-              description: this.statusMessages.openRouterError.ru,
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,
@@ -2519,9 +2546,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             id: props.rbacModuleSubject.id,
             socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
             socialModuleChatId: props.socialModuleChat.id,
-            data: {
-              description: this.statusMessages.openRouterError.ru,
-            },
+            data: this.withSystemMessageMetadata({
+              source: "agent.openrouter.status",
+              data: {
+                description: this.statusMessages.openRouterError.ru,
+              },
+            }),
             options: {
               headers: {
                 Authorization: "Bearer " + props.jwtToken,

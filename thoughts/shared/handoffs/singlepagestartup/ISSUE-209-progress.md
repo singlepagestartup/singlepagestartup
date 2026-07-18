@@ -66,6 +66,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Bot-authored `forum_topic_created` updates no longer provision personal assistants; the stale bot-owned automatic link was removed and a fresh `/assistant` in topic `113095` opened the single human-owned profile directly.
 - [x] Knowledge create/edit now resolves persisted text attachments instead of relying on an empty Telegram document caption; the real 15,770-byte `content.txt` is reachable from the live API, and Agent BDD covers the complete file-to-Knowledge mutation beyond 4,000 characters.
 - [x] Telegram commands, management replies, and active assistant-editor inputs now persist `systemMessage.excludeFromOpenRouter: true`; Agent and RBAC independently reject marked generation triggers, and RBAC omits them from later thread context.
+- [x] Subscription, token-limit, channel-requirement, and OpenRouter-error replies now use the same system marker even on direct SDK creation paths; existing topic `113124` messages `5423`–`5427` were backfilled and verified.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -73,7 +74,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 19 -->
+<!-- incident-count: 20 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -246,6 +247,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Added the shared `systemMessage.excludeFromOpenRouter` marker, set it centrally for Telegram commands, active editor inputs, and system replies, and enforced it in both Agent dispatch and RBAC trigger/history processing while retaining `/new` reset behavior.
 - **Reusable Pattern**: Visible system traffic needs a persisted exclusion contract; session-local routing guards alone cannot keep it out of future model context.
 
+### Incident 20 — Direct OpenRouter status writes missed the system marker
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: The five subscription/token messages visible in Telegram topic `113124` had empty metadata even after the durable exclusion contract was introduced.
+- **Root Cause**: Several OpenRouter status branches write Social messages directly instead of using the central Telegram reply helper, and the visible records predated the complete rollout.
+- **Fix**: Wrapped every direct required-subscription, missing-subscription, insufficient-token, and OpenRouter-error write with `systemMessage.excludeFromOpenRouter: true`, added BDD assertions, and backfilled source message IDs `5423`–`5427` in the local runtime database.
+- **Reusable Pattern**: Audit direct SDK message creates whenever introducing cross-cutting message metadata; central helper coverage alone is insufficient.
+
 ## Summary
 
 ### Changes Made
@@ -262,6 +272,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Main-flow Telegram commands now create a topic-backed Social thread before Agent dispatch, while commands and editor input inside an existing topic remain scoped to that topic.
 - Bot-authored topic service updates are ignored before RBAC bootstrap, and private chats self-heal stale automatic personal-agent links without removing manually connected AI profiles.
 - Telegram command, assistant-management, and Avatar/editor messages carry a durable system marker and are excluded from OpenRouter triggers and thread history.
+- Subscription and OpenRouter status replies, including direct fallback writes, carry the same durable exclusion marker; the five reported runtime records were backfilled.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -278,4 +289,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T22:45:50Z
+**Last updated**: 2026-07-18T23:20:49Z
