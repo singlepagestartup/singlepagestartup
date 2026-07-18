@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T06:37:47Z
+last_updated: 2026-07-18T11:37:00Z
 status: active
 current_phase: complete
 ---
@@ -49,11 +49,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Outputs: `thoughts/shared/handoffs/singlepagestartup/ISSUE-209-progress.md`; https://github.com/singlepagestartup/singlepagestartup/pull/210
 - Notes: No post-plan scope changes were present in GitHub comments. Existing unrelated OpenRouter/frontend working-tree edits were preserved and excluded from the implementation commit.
 
+### Code Review
+
+- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks.
+- Notes: Telegram Web A occasionally rendered Bot API message edits only after the next incoming update; Bot API, Social action/message, and Notification records all confirmed the correct state before the client caught up. Live access covered one private sender/topic; group, multi-sender, zero/multiple-profile, permission-loss, and record-removal variants remain covered by the committed BDD suites.
+
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 15 -->
+<!-- incident-count: 16 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -205,6 +210,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Distinguish server presentation defects from client delivery failures by correlating Browser send status, webhook updates, persisted source message ids, and server transport logs before changing application code.
 - **References**: Browser evidence for the issue 209 manual verification session; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
 
+### Incident 16 — Partial profile updates reset sibling configuration
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Saving localized Profile text through the real RBAC route cleared `allowedMcpServerIds`; earlier MCP-only saves could likewise clear localized profile fields.
+- **Root Cause**: The chat-local profile handler forwarded only requested fields to the generic Social update SDK, whose normalized update payload applied defaults to omitted JSON fields.
+- **Fix**: The handler now reloads the current authorized profile and submits a complete mutable-field snapshot with only requested values replaced. Added BDD coverage for both MCP-only and localized-text-only updates, then verified the real partial PATCH preserves RU/EN title and the enabled MCP server together.
+- **Preventive Action**: Partial management routes built on generic model updates must hydrate and merge the current mutable record when omission is supposed to mean preservation.
+- **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/update.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/update.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -216,3 +231,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Configuration toggles must not reuse normalizers that discard legacy values when the product contract promises to preserve them.
 - Cross-surface file workflows require verification of the read projection after the mutation, not only the upload call.
 - A pending Telegram Web send must be correlated with webhook and persistence evidence before it is treated as a bot response failure.
+- Partial management routes must merge the current mutable record before calling generic update SDKs when omitted fields are contractually preserved.

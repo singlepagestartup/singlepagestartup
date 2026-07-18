@@ -52,14 +52,22 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Completed: 2026-07-17T23:58:00Z
 - [x] Automated verification: PASSED 2026-07-17T23:58:00Z
 
-**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (66), RBAC (265), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Manual Telegram verification remains intentionally unchecked for the user.
+**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (66), RBAC (265), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Live Telegram Browser verification was completed during code review.
+
+## Live Browser Verification
+
+- [x] `/assistant` publishes one complete menu with no loading placeholder.
+- [x] Profile draft cancel/save, locale preservation, MCP toggle, Avatar upload/read projection, Skills create/edit/link/unlink, and Knowledge create/edit/reindex/cancel/delete work end to end.
+- [x] `/cancel`, `/exit`, `/stop`, Close, TTL expiry, API restart, stale callbacks, and concurrent duplicate callbacks are safe and idempotent.
+- [x] All live operations remained inside Telegram topic `112981`; the active one-profile baseline was restored to RU/EN title, MCP enabled, no Avatar, zero linked Skills, and one original Knowledge document.
+- [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
 
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 12 -->
+<!-- incident-count: 13 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -169,6 +177,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Kept the current account data intact because Telegram warns that logout removes Secret Chats; remaining Browser scenarios require the user to sign in again first.
 - **Reusable Pattern**: Correlate client send indicators with webhook, persistence, and transport logs before attributing a missing response to server code.
 
+### Incident 13 — Partial profile updates reset sibling configuration
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: A localized Profile save cleared the enabled MCP server because the route forwarded only requested fields to a generic update path that normalized omitted JSON fields to defaults.
+- **Root Cause**: The chat-local profile update handler did not merge the current mutable profile before calling the Social SDK.
+- **Fix**: Reload and merge all mutable fields before applying the requested partial update; added MCP-only and profile-text-only BDD regressions and verified the real API preserves RU/EN title and MCP together.
+- **Reusable Pattern**: Partial management endpoints must explicitly preserve omitted sibling fields when their downstream update primitive applies defaults.
+
 ## Summary
 
 ### Changes Made
@@ -179,6 +196,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Profile, MCP, avatar, Skill, and Knowledge workflows use the Telegram sender subject JWT and fresh RBAC revalidation.
 - Profile drafts now expose current values, Skip/Clear, and explicit Save while preserving non-Russian locales; MCP toggles preserve unknown stored IDs.
 - Assistant home now resolves and exposes the same latest avatar image as the web profile sidebar.
+- Chat-local profile updates preserve omitted localized content and MCP configuration.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -190,8 +208,9 @@ completed_date: 2026-07-18T00:09:31Z
 
 - [x] All phases completed
 - [x] All automated verification passed
+- [x] Live Telegram Browser verification completed for the available private topic/sender
 - [ ] Issue marked as Done
 
 ---
 
-**Last updated**: 2026-07-18T08:06:17Z
+**Last updated**: 2026-07-18T11:37:00Z
