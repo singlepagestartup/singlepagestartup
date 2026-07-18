@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 11 -->
+<!-- incident-count: 13 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -165,6 +165,26 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Do not expose loading entities for fast server-local reads when the final transport payload can be assembled before the create operation.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
 
+### Incident 12 — Profile editor did not implement the approved draft controls
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Live Telegram verification showed a blank sequential Profile editor with only Cancel; it did not show current values, support skip/clear, or require an explicit final save.
+- **Root Cause**: The initial reducer stored only newly submitted strings and executed the RBAC mutation as soon as the fourth message arrived. The update also replaced localized objects with `{ ru }`, discarding other locales.
+- **Fix**: Profile drafts are now prefilled, show the active current value, support Skip and optional-field Clear, render a bounded review step, save only after explicit confirmation, and merge Russian values into freshly reloaded localized records.
+- **Preventive Action**: Conversation editor tests must assert both the intermediate draft controls and the exact mutation boundary, including preservation of data outside the edited locale.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
+
+### Incident 13 — MCP toggle removed unknown stored identifiers
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: The MCP page stated that unknown saved IDs would remain unchanged, but toggling a supported server submitted only supported IDs and silently removed stale entries.
+- **Root Cause**: Agent reused the shared MCP normalization helper, whose contract intentionally filters unsupported identifiers, despite the conversation plan requiring lossless preservation of existing configuration.
+- **Fix**: The conversation now adds or removes only the selected catalogued ID while retaining every other configured identifier; the existing BDD scenario now asserts the stale ID survives.
+- **Preventive Action**: When UI copy promises preservation, mutation tests must include unknown legacy values and assert the complete submitted collection.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -172,3 +192,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Telegram callback tests must use production-length UUIDs even when callback payloads ultimately carry opaque tokens.
 - Late delivery acknowledgements must patch only transport-owned identifiers so they cannot overwrite concurrent message edits.
 - Initial and replacement conversation presentations should be fully rendered before publication when callbacks do not depend on the transport message id.
+- Prefilled localized editors must merge the edited locale into freshly loaded records and expose an explicit save boundary.
+- Configuration toggles must not reuse normalizers that discard legacy values when the product contract promises to preserve them.

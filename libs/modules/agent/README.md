@@ -101,3 +101,9 @@ message API. If an edit fails, Agent creates one already-complete replacement
 and invalidates the old callback nonce/revision. This design is currently
 single-process; a future shared store can implement the same interface without
 changing conversation definitions or tools.
+
+The Profile editor starts from the current Russian values, supports keeping or
+clearing optional fields, and requires an explicit final save. Profile writes
+merge the Russian values into the latest localized records so other locales are
+not discarded. MCP toggles change only the selected supported descriptor and
+preserve unknown identifiers that may have been stored by an older deployment.

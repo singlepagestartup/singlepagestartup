@@ -91,3 +91,10 @@ is created. Navigation edits that message when possible, while a complete
 replacement invalidates older controls. Restart/expiry recovery is to run
 `/assistant` again, and a future distributed store can replace the current store
 through DI.
+
+Profile editing is a prefilled four-field draft. The sender can keep each
+current value, clear optional subtitle/description values, review the complete
+draft, and then save explicitly. The save re-reads authorization and merges the
+Russian draft into the latest localized profile fields. MCP changes preserve
+unknown stored identifiers while allowing only catalogued descriptors to be
+toggled.

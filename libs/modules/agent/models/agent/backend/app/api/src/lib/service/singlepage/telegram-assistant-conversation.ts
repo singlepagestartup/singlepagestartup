@@ -1,7 +1,6 @@
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import {
   type IModel as ISocialModuleProfile,
-  setMcpServerEnabled,
   supportedMcpServerDescriptors,
 } from "@sps/social/models/profile/sdk/model";
 import type { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model";
@@ -250,10 +249,48 @@ export class TelegramAssistantConversation {
         navigate("profile");
         return {};
       case "profile_edit":
-        await this.requireManageableProfile(context, state.selectedProfileId);
-        state.editor = { kind: "profile", field: "adminTitle", values: {} };
+        {
+          const profile = await this.requireManageableProfile(
+            context,
+            state.selectedProfileId,
+          );
+          state.editor = {
+            kind: "profile",
+            field: "adminTitle",
+            values: {
+              adminTitle: profile.adminTitle || "",
+              title: this.localizedByLocale(profile.title, "ru"),
+              subtitle: this.localizedByLocale(profile.subtitle, "ru"),
+              description: this.localizedByLocale(profile.description, "ru"),
+            },
+          };
+        }
         state.page = "profile";
         return {};
+      case "skip":
+        if (state.editor?.kind !== "profile") {
+          throw new Error("Пропуск для этого редактора не поддерживается.");
+        }
+        this.advanceProfileEditor(state.editor);
+        return {
+          notice: { kind: "info", text: "Текущее значение сохранено." },
+        };
+      case "clear":
+        if (
+          state.editor?.kind !== "profile" ||
+          !["subtitle", "description"].includes(state.editor.field)
+        ) {
+          throw new Error("Это поле нельзя очистить.");
+        }
+        state.editor.values[state.editor.field] = "";
+        this.advanceProfileEditor(state.editor);
+        return { notice: { kind: "info", text: "Поле очищено." } };
+      case "save":
+        if (state.editor?.kind !== "profile" || state.editor.field !== "save") {
+          throw new Error("Сохранение больше недоступно.");
+        }
+        await this.saveProfileEditor(context, state);
+        return { notice: { kind: "success", text: "Изменения сохранены." } };
       case "mcp":
         await this.requireManageableProfile(context, state.selectedProfileId);
         navigate("mcp");
@@ -521,28 +558,7 @@ export class TelegramAssistantConversation {
     editor.values[editor.field] = value;
 
     if (editor.kind === "profile") {
-      const fields = ["adminTitle", "title", "subtitle", "description"];
-      const index = fields.indexOf(editor.field);
-
-      if (index < fields.length - 1) {
-        editor.field = fields[index + 1];
-        return;
-      }
-
-      await this.requireManageableProfile(context, state.selectedProfileId);
-      await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate(
-        {
-          ...this.requestProps(context, state),
-          data: {
-            adminTitle: String(editor.values.adminTitle),
-            title: { ru: String(editor.values.title) },
-            subtitle: { ru: String(editor.values.subtitle) },
-            description: { ru: String(editor.values.description) },
-          },
-        },
-      );
-      state.editor = undefined;
-      state.page = "profile";
+      this.advanceProfileEditor(editor);
       return;
     }
 
@@ -710,10 +726,28 @@ export class TelegramAssistantConversation {
         slug: "slug",
         file: "изображение",
       };
+      if (state.editor.kind === "profile" && state.editor.field === "save") {
+        rows.push([button("Сохранить", "save"), button("Отмена", "cancel")]);
+
+        return {
+          description: `${noticeText}Проверьте изменения профиля:\nAdmin title: ${this.editorValue(state.editor.values.adminTitle)}\nНазвание: ${this.editorValue(state.editor.values.title)}\nПодзаголовок: ${this.editorValue(state.editor.values.subtitle)}\nОписание: ${this.editorValue(state.editor.values.description)}`,
+          interaction: { inline_keyboard: rows },
+        };
+      }
+
+      if (state.editor.kind === "profile") {
+        const actions = [button("Пропустить", "skip")];
+
+        if (["subtitle", "description"].includes(state.editor.field)) {
+          actions.push(button("Очистить", "clear"));
+        }
+
+        rows.push(actions);
+      }
       rows.push([button("Отмена", "cancel")]);
 
       return {
-        description: `${noticeText}Редактор: пришлите ${labels[state.editor.field] || state.editor.field}.${state.editor.kind === "avatar" ? "\nПоддерживается Telegram photo или image-документ." : ""}`,
+        description: `${noticeText}Редактор: пришлите ${labels[state.editor.field] || state.editor.field}.${state.editor.kind === "profile" ? `\nТекущее значение: ${this.editorValue(state.editor.values[state.editor.field])}` : ""}${state.editor.kind === "avatar" ? "\nПоддерживается Telegram photo или image-документ." : ""}`,
         interaction: { inline_keyboard: rows },
       };
     }
@@ -1055,20 +1089,16 @@ export class TelegramAssistantConversation {
       context,
       state.selectedProfileId,
     );
-    const enabled = (profile.allowedMcpServerIds || []).includes(descriptor.id);
-    const supportedCurrent = (profile.allowedMcpServerIds || []).filter(
-      (id: string) =>
-        supportedMcpServerDescriptors.some((item) => item.id === id),
-    );
+    const configuredIdentifiers = profile.allowedMcpServerIds || [];
+    const enabled = configuredIdentifiers.includes(descriptor.id);
+    const allowedMcpServerIds = enabled
+      ? configuredIdentifiers.filter((id: string) => id !== descriptor.id)
+      : [...new Set([...configuredIdentifiers, descriptor.id])];
     await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate(
       {
         ...this.requestProps(context, state),
         data: {
-          allowedMcpServerIds: setMcpServerEnabled(
-            supportedCurrent,
-            descriptor.id,
-            !enabled,
-          ),
+          allowedMcpServerIds,
         },
       },
     );
@@ -1195,6 +1225,74 @@ export class TelegramAssistantConversation {
     const record = value as Record<string, unknown>;
 
     return String(record.ru || record.en || Object.values(record)[0] || "");
+  }
+
+  protected localizedByLocale(value: unknown, locale: string) {
+    if (typeof value === "string") return value;
+    if (!value || typeof value !== "object") return "";
+
+    return String((value as Record<string, unknown>)[locale] || "");
+  }
+
+  protected localizedRecord(value: unknown) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return {};
+    }
+
+    return { ...(value as Record<string, unknown>) };
+  }
+
+  protected editorValue(value: unknown) {
+    const text = String(value || "");
+
+    if (!text) return "—";
+    return text.length > 240 ? `${text.slice(0, 237)}…` : text;
+  }
+
+  protected advanceProfileEditor(editor: ITelegramConversationState["editor"]) {
+    if (!editor || editor.kind !== "profile") return;
+    const fields = ["adminTitle", "title", "subtitle", "description"];
+    const index = fields.indexOf(editor.field);
+
+    editor.field = index >= fields.length - 1 ? "save" : fields[index + 1];
+  }
+
+  protected async saveProfileEditor(
+    context: ITelegramAssistantConversationContext,
+    state: ITelegramConversationState,
+  ) {
+    const editor = state.editor;
+
+    if (!editor || editor.kind !== "profile" || editor.field !== "save") {
+      throw new Error("Редактор профиля не готов к сохранению.");
+    }
+
+    const profile = await this.requireManageableProfile(
+      context,
+      state.selectedProfileId,
+    );
+    await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate(
+      {
+        ...this.requestProps(context, state),
+        data: {
+          adminTitle: String(editor.values.adminTitle),
+          title: {
+            ...this.localizedRecord(profile.title),
+            ru: String(editor.values.title),
+          },
+          subtitle: {
+            ...this.localizedRecord(profile.subtitle),
+            ru: String(editor.values.subtitle),
+          },
+          description: {
+            ...this.localizedRecord(profile.description),
+            ru: String(editor.values.description),
+          },
+        },
+      },
+    );
+    state.editor = undefined;
+    state.page = "profile";
   }
 
   protected errorMessage(error: unknown) {

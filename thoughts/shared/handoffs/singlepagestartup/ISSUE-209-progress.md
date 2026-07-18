@@ -59,7 +59,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 8 -->
+<!-- incident-count: 10 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -133,6 +133,24 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Agent now resolves all server data and creates the complete menu in one operation; edit failure also creates a complete replacement instead of a recovery placeholder.
 - **Reusable Pattern**: Build server-backed interactive presentations before publication whenever their callback identity is independent of the transport message id.
 
+### Incident 9 — Profile editor omitted draft controls and locale preservation
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: The live editor exposed only Cancel, hid current values, auto-saved on the fourth message, and could replace all localized content with Russian-only objects.
+- **Root Cause**: The reducer modeled field collection but not the plan's prefilled draft and explicit-save boundary.
+- **Fix**: Added current-value rendering, Skip, optional Clear, review/Save, fresh authorization recheck, and locale-preserving merge semantics with BDD coverage.
+- **Reusable Pattern**: Test editor draft state separately from its mutation boundary and include unrelated localized values in fixtures.
+
+### Incident 10 — MCP toggle contradicted its legacy-ID preservation copy
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Toggling SinglePageStartup MCP removed an unknown stored ID even though the menu said it would remain unchanged.
+- **Root Cause**: The shared normalizer intentionally filters unsupported IDs, but this management flow requires lossless legacy preservation.
+- **Fix**: Agent now toggles only the chosen supported identifier and leaves all other values untouched; the BDD expectation includes the legacy ID.
+- **Reusable Pattern**: Collection mutation tests must include legacy/unknown members whenever UI semantics promise preservation.
+
 ## Summary
 
 ### Changes Made
@@ -141,6 +159,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Telegram remains a transport-only ingestion/publication adapter with no grammY Conversations runtime.
 - Subject-scoped RBAC now exposes manageable profiles and bounded Skill/Knowledge management, including relation-only unlink and dynamic non-admin grants.
 - Profile, MCP, avatar, Skill, and Knowledge workflows use the Telegram sender subject JWT and fresh RBAC revalidation.
+- Profile drafts now expose current values, Skip/Clear, and explicit Save while preserving non-Russian locales; MCP toggles preserve unknown stored IDs.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -156,4 +175,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T06:37:47Z
+**Last updated**: 2026-07-18T07:20:00Z

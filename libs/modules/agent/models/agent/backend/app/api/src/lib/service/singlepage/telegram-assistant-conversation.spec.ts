@@ -234,6 +234,15 @@ describe("TelegramAssistantConversation", () => {
 
     expect(
       mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate,
+    ).not.toHaveBeenCalled();
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Сохранить"),
+      harness.transport,
+    );
+
+    expect(
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "sender-subject",
@@ -258,11 +267,90 @@ describe("TelegramAssistantConversation", () => {
 
   /**
    * BDD Scenario
+   * Given: a localized profile with optional fields and an active editor.
+   * When: the sender skips unchanged values, clears an optional field, and explicitly saves.
+   * Then: current values are visible and non-Russian locales are preserved.
+   */
+  it("When: profile fields are skipped or cleared Then: explicit save preserves other locales", async () => {
+    const harness = createHarness();
+    const localizedProfile = {
+      ...profile,
+      title: { en: "Assistant", ru: "Ассистент" },
+      subtitle: { en: "Helper", ru: "Помощник" },
+      description: { en: "Description", ru: "Описание" },
+    };
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFind.mockResolvedValue(
+      [localizedProfile],
+    );
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Профиль"),
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Редактировать"),
+      harness.transport,
+    );
+
+    expect(lastData(harness.transport).description).toContain(
+      "Текущее значение: Assistant One",
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Пропустить"),
+      harness.transport,
+    );
+    await harness.conversation.handleMessage(
+      context,
+      { id: "new-title", description: "Новый ассистент" } as any,
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Очистить"),
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Пропустить"),
+      harness.transport,
+    );
+
+    expect(
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate,
+    ).not.toHaveBeenCalled();
+    expect(lastData(harness.transport).description).toContain(
+      "Проверьте изменения профиля",
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Сохранить"),
+      harness.transport,
+    );
+
+    expect(
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          adminTitle: "Assistant One",
+          title: { en: "Assistant", ru: "Новый ассистент" },
+          subtitle: { en: "Helper", ru: "" },
+          description: { en: "Description", ru: "Описание" },
+        },
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
    * Given: a supported MCP descriptor and an unknown stored descriptor.
    * When: the sender toggles the supported descriptor.
    * Then: Agent sends the supported selection and the RBAC route preserves stale IDs.
    */
-  it("When: MCP is toggled Then: only a supported identifier is submitted", async () => {
+  it("When: MCP is toggled Then: the supported identifier changes without dropping legacy values", async () => {
     const harness = createHarness();
     mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFind.mockResolvedValue(
       [{ ...profile, allowedMcpServerIds: ["retired-server"] }],
@@ -283,7 +371,9 @@ describe("TelegramAssistantConversation", () => {
       mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdUpdate,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { allowedMcpServerIds: ["singlepagestartup"] },
+        data: {
+          allowedMcpServerIds: ["retired-server", "singlepagestartup"],
+        },
       }),
     );
   });
