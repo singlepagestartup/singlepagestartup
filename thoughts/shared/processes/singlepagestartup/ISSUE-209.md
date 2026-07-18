@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 14 -->
+<!-- incident-count: 15 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -195,6 +195,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Avatar workflow tests must cover both the write path and the subsequent read projection in every supported management surface.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/di.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/bootstrap.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-avatar.spec.ts`.
 
+### Incident 15 — Telegram Web session stopped delivering outgoing updates
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: The Browser retained older placeholder bubbles and showed later `/assistant` messages as pending even though the server had already delivered a complete one-message menu for the latest received command.
+- **Root Cause**: Telegram Web A reported an explicit authorization error and requested logout plus phone-number login; the pending commands never reached the webhook or database.
+- **Fix**: Verified the webhook and server independently, preserved the user's session instead of logging out automatically because Telegram warns that logout removes Secret Chats, and requested a fresh user login in the selected Browser before continuing live QA.
+- **Preventive Action**: Distinguish server presentation defects from client delivery failures by correlating Browser send status, webhook updates, persisted source message ids, and server transport logs before changing application code.
+- **References**: Browser evidence for the issue 209 manual verification session; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -205,3 +215,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Prefilled localized editors must merge the edited locale into freshly loaded records and expose an explicit save boundary.
 - Configuration toggles must not reuse normalizers that discard legacy values when the product contract promises to preserve them.
 - Cross-surface file workflows require verification of the read projection after the mutation, not only the upload call.
+- A pending Telegram Web send must be correlated with webhook and persistence evidence before it is treated as a bot response failure.

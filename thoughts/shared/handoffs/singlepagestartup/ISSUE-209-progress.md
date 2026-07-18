@@ -59,7 +59,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 11 -->
+<!-- incident-count: 12 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -160,6 +160,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Added latest-relation resolution matching the web sidebar and rendered avatar status plus a current-image link on Telegram home.
 - **Reusable Pattern**: Cross-surface media parity requires read-after-write projection coverage, not only mutation coverage.
 
+### Incident 12 — Telegram Web authorization blocked the remaining live QA
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: New `/assistant` messages stayed pending in Web A and never reached the webhook, while a previously received command had already produced the complete one-message menu.
+- **Root Cause**: Telegram Web displayed its own authorization error and required logout followed by phone-number login.
+- **Fix**: Kept the current account data intact because Telegram warns that logout removes Secret Chats; remaining Browser scenarios require the user to sign in again first.
+- **Reusable Pattern**: Correlate client send indicators with webhook, persistence, and transport logs before attributing a missing response to server code.
+
 ## Summary
 
 ### Changes Made
@@ -185,4 +194,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T07:55:00Z
+**Last updated**: 2026-07-18T08:06:17Z
