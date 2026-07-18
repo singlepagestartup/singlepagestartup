@@ -78,7 +78,12 @@ function createHarness() {
 }
 
 function lastData(transport: ReturnType<typeof createHarness>["transport"]) {
-  return transport.update.mock.calls.at(-1)?.[1];
+  const createOrder = transport.create.mock.invocationCallOrder.at(-1) || -1;
+  const updateOrder = transport.update.mock.invocationCallOrder.at(-1) || -1;
+
+  return createOrder > updateOrder
+    ? transport.create.mock.calls.at(-1)?.[0]
+    : transport.update.mock.calls.at(-1)?.[1];
 }
 
 function callback(
@@ -141,6 +146,11 @@ describe("TelegramAssistantConversation", () => {
     expect(lastData(single.transport).description).toContain("Assistant One");
     expect(lastData(single.transport).description).toContain(
       "Профиль ассистента открыт",
+    );
+    expect(single.transport.create).toHaveBeenCalledTimes(1);
+    expect(single.transport.update).not.toHaveBeenCalled();
+    expect(lastData(single.transport).description).not.toContain(
+      "Готовлю меню",
     );
 
     const multiple = createHarness();
@@ -696,15 +706,15 @@ describe("TelegramAssistantConversation", () => {
    * BDD Scenario
    * Given: Telegram can no longer edit the original presentation message.
    * When: the sender navigates with its current button.
-   * Then: Agent creates one replacement presentation and invalidates old controls.
+   * Then: Agent creates one complete replacement presentation without a loading placeholder and invalidates old controls.
    */
   it("When: presentation edit fails Then: one replacement carries the current menu", async () => {
     const harness = createHarness();
     await harness.conversation.enter(context, harness.transport);
     const oldProfileButton = callback(harness.transport, "Профиль");
-    harness.transport.update
-      .mockRejectedValueOnce(new Error("message cannot be edited"))
-      .mockResolvedValue({ id: "presentation-2" });
+    harness.transport.update.mockRejectedValueOnce(
+      new Error("message cannot be edited"),
+    );
     harness.transport.create.mockResolvedValueOnce({
       id: "presentation-2",
       sourceSystemId: "telegram-message-2",
@@ -716,9 +726,18 @@ describe("TelegramAssistantConversation", () => {
       harness.transport,
     );
 
-    expect(harness.transport.create).toHaveBeenCalledWith({
-      description: "Восстанавливаю актуальное меню…",
-    });
+    expect(harness.transport.create).toHaveBeenCalledTimes(2);
+    expect(harness.transport.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        description: expect.stringContaining("Профиль"),
+        interaction: expect.objectContaining({
+          inline_keyboard: expect.any(Array),
+        }),
+      }),
+    );
+    expect(lastData(harness.transport).description).not.toContain(
+      "Восстанавливаю актуальное меню",
+    );
     expect(
       (await harness.runtime.get(context.key))?.presentationMessageId,
     ).toBe("presentation-2");

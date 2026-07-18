@@ -94,8 +94,10 @@ key. A service restart deliberately removes only this transient UI state; the
 underlying profile, skill, Knowledge, and avatar records remain persistent. Old
 or expired buttons instruct the user to run `/assistant` again.
 
-The runtime keeps one presentation message and edits it through the canonical
-subject-scoped Social message API. If that edit fails, it creates one
-replacement and invalidates the old callback nonce/revision. This design is
-currently single-process; a future shared store can implement the same
-interface without changing conversation definitions or tools.
+The runtime builds the complete presentation text and inline keyboard before it
+creates the first Social message; it does not publish a loading placeholder.
+Navigation edits that presentation through the canonical subject-scoped Social
+message API. If an edit fails, Agent creates one already-complete replacement
+and invalidates the old callback nonce/revision. This design is currently
+single-process; a future shared store can implement the same interface without
+changing conversation definitions or tools.

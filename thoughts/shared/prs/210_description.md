@@ -16,6 +16,8 @@ Closes #209
 - Adds a singleton process-local conversation engine keyed by Telegram chat,
   topic, and sender, with a 30-minute TTL, serialized transitions, stale-control
   protection, compact callbacks, and bounded edit-or-replace presentation.
+- Builds the complete server-backed menu and inline keyboard before initial or
+  replacement publication; no loading placeholder message is created.
 - Implements profile selection plus Profile, MCP, Avatar, Skills, and Knowledge
   workflows in Agent, with cancellation, confirmations, pagination, error
   recovery, and authorization revalidation.

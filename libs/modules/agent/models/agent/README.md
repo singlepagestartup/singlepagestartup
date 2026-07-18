@@ -85,6 +85,9 @@ revision reservation make repeated clicks stale before domain mutations run.
 Every page reloads mutable data through subject-scoped RBAC server SDKs signed
 for the sender subject. Profile selection and authorization are therefore
 rechecked at the domain boundary instead of being trusted from callback data.
-Navigation edits one Social presentation message when possible; replacement
-invalidates older controls. Restart/expiry recovery is to run `/assistant`
-again, and a future distributed store can replace the current store through DI.
+Agent resolves server data and builds the complete text plus inline keyboard
+before publishing the first Social presentation message; no loading placeholder
+is created. Navigation edits that message when possible, while a complete
+replacement invalidates older controls. Restart/expiry recovery is to run
+`/assistant` again, and a future distributed store can replace the current store
+through DI.

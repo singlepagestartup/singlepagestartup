@@ -622,30 +622,14 @@ export class TelegramAssistantConversation {
     state: ITelegramConversationState,
     transport: ITelegramAssistantConversationTransport,
     notice?: TNotice,
-    allowReplacement = true,
   ): Promise<unknown> {
-    if (!state.presentationMessageId) {
-      const created = await transport.create({
-        description: "Готовлю меню управления ассистентом…",
-      });
-
-      if (!created.id) return created;
-
-      const attached = await this.runtime.update(context.key, (draft) => {
-        draft.presentationMessageId = created.id;
-        draft.presentationMessageSourceSystemId =
-          created.sourceSystemId || undefined;
-      });
-
-      if (!attached) return created;
-
-      return this.render(context, attached, transport, notice, false);
-    }
-
     let data: ITelegramAssistantMessageData;
+    const renderState = state.presentationMessageId
+      ? state
+      : { ...state, revision: state.revision + 1 };
 
     try {
-      data = await this.renderData(context, state, notice);
+      data = await this.renderData(context, renderState, notice);
     } catch (error) {
       await this.runtime.terminate(context.key);
       data = {
@@ -654,26 +638,50 @@ export class TelegramAssistantConversation {
       };
     }
 
+    if (!state.presentationMessageId) {
+      const created = await transport.create(data);
+
+      if (!created.id) return created;
+
+      await this.runtime.update(context.key, (draft) => {
+        draft.presentationMessageId = created.id;
+        draft.presentationMessageSourceSystemId =
+          created.sourceSystemId || undefined;
+      });
+
+      return created;
+    }
+
     try {
       return await transport.update(state.presentationMessageId, data);
     } catch (error) {
-      if (!allowReplacement) throw error;
+      let replacementData: ITelegramAssistantMessageData;
 
-      const replacement = await transport.create({
-        description: "Восстанавливаю актуальное меню…",
-      });
+      try {
+        replacementData = await this.renderData(
+          context,
+          { ...state, revision: state.revision + 1 },
+          notice,
+        );
+      } catch (renderError) {
+        await this.runtime.terminate(context.key);
+        replacementData = {
+          description: `${this.errorMessage(renderError)}\n\nДиалог закрыт. Повторите /assistant после восстановления доступа.`,
+          interaction: { inline_keyboard: [] },
+        };
+      }
+
+      const replacement = await transport.create(replacementData);
 
       if (!replacement.id) throw error;
 
-      const attached = await this.runtime.update(context.key, (draft) => {
+      await this.runtime.update(context.key, (draft) => {
         draft.presentationMessageId = replacement.id;
         draft.presentationMessageSourceSystemId =
           replacement.sourceSystemId || undefined;
       });
 
-      if (!attached) return replacement;
-
-      return this.render(context, attached, transport, notice, false);
+      return replacement;
     }
   }
 

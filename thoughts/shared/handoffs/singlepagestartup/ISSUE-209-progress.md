@@ -59,7 +59,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 7 -->
+<!-- incident-count: 8 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -124,6 +124,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Changed the delivery completion write to patch only `sourceSystemId` and added a BDD race-regression scenario.
 - **Reusable Pattern**: Asynchronous delivery acknowledgements must patch transport identifiers only; they must never write an earlier full entity snapshot over concurrent content updates.
 
+### Incident 8 — Initial presentation unnecessarily used a loading placeholder
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: After the stale-write fix, manual verification still exposed the loading message before any usable controls.
+- **Root Cause**: The initial implementation created a placeholder solely to obtain a Social message id, then rendered and updated the real menu even though callback encoding does not require that id.
+- **Fix**: Agent now resolves all server data and creates the complete menu in one operation; edit failure also creates a complete replacement instead of a recovery placeholder.
+- **Reusable Pattern**: Build server-backed interactive presentations before publication whenever their callback identity is independent of the transport message id.
+
 ## Summary
 
 ### Changes Made
@@ -147,4 +156,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T00:30:40Z
+**Last updated**: 2026-07-18T06:37:47Z

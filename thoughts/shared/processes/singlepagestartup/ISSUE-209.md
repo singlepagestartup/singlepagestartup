@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T00:30:40Z
+last_updated: 2026-07-18T06:37:47Z
 status: active
 current_phase: complete
 ---
@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 10 -->
+<!-- incident-count: 11 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -155,9 +155,20 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Persist asynchronous transport acknowledgements as minimal partial updates rather than full entity snapshots captured before I/O.
 - **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.spec.ts`.
 
+### Incident 11 — Initial presentation unnecessarily used a loading placeholder
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: A new `/assistant` invocation visibly published “Готовлю меню управления ассистентом…” before any usable menu controls.
+- **Root Cause**: Agent created a placeholder to obtain the presentation message id, attached that id to runtime state, and only then rendered the menu. Callback identity uses the session nonce/revision and does not depend on the Telegram or Social message id.
+- **Fix**: Initial render now builds the complete server-backed menu against the post-attach callback revision and creates it once. Edit fallback similarly builds and creates one complete replacement.
+- **Preventive Action**: Do not expose loading entities for fast server-local reads when the final transport payload can be assembled before the create operation.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
 - Protected route work is incomplete until the intended non-admin actor's dynamic permission provisioning is tested.
 - Telegram callback tests must use production-length UUIDs even when callback payloads ultimately carry opaque tokens.
 - Late delivery acknowledgements must patch only transport-owned identifiers so they cannot overwrite concurrent message edits.
+- Initial and replacement conversation presentations should be fully rendered before publication when callbacks do not depend on the transport message id.
