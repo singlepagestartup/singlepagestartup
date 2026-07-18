@@ -68,7 +68,7 @@ function createHarness() {
     }),
     update: jest.fn().mockResolvedValue({ id: "presentation-1" }),
     resolveProfileAvatar: jest.fn().mockResolvedValue(undefined),
-    resolveAvatarFile: jest.fn().mockResolvedValue(undefined),
+    resolveEditorFile: jest.fn().mockResolvedValue(undefined),
   };
 
   return {
@@ -908,6 +908,55 @@ describe("TelegramAssistantConversation", () => {
 
   /**
    * BDD Scenario
+   * Given: the Knowledge content editor and a persisted UTF-8 text document.
+   * When: the sender uploads content that is longer than a Telegram text message.
+   * Then: Agent reads the file and creates the Knowledge document with its complete content.
+   */
+  it("When: a Knowledge text file arrives Then: its complete content is saved", async () => {
+    const harness = createHarness();
+    const content = "Келлеры в ЖК\n\n" + "Подробное описание.\n".repeat(800);
+    harness.transport.resolveEditorFile.mockResolvedValue(
+      new File([content], "content.txt", { type: "text/plain" }),
+    );
+
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Знания"),
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Создать документ"),
+      harness.transport,
+    );
+    await harness.conversation.handleMessage(
+      context,
+      { id: "knowledge-title", description: "Келлеры в ЖК" } as any,
+      harness.transport,
+    );
+    await harness.conversation.handleMessage(
+      context,
+      { id: "knowledge-content-file", description: "" } as any,
+      harness.transport,
+    );
+
+    expect(content.length).toBeGreaterThan(4_000);
+    expect(
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentCreate,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { title: "Келлеры в ЖК", description: content.trim() },
+      }),
+    );
+    expect((await harness.runtime.get(context.key))?.editor).toBeUndefined();
+    expect(lastData(harness.transport).description).toContain(
+      "Изменения сохранены",
+    );
+  });
+
+  /**
+   * BDD Scenario
    * Given: the Avatar editor and a persisted incoming image.
    * When: the sender uploads that image.
    * Then: the existing subject-scoped avatar action receives it.
@@ -915,7 +964,7 @@ describe("TelegramAssistantConversation", () => {
   it("When: avatar image arrives Then: canonical avatar action is reused", async () => {
     const harness = createHarness();
     const image = new File(["image"], "avatar.jpg", { type: "image/jpeg" });
-    harness.transport.resolveAvatarFile.mockResolvedValue(image);
+    harness.transport.resolveEditorFile.mockResolvedValue(image);
     await harness.conversation.enter(context, harness.transport);
     await harness.conversation.handleCallback(
       context,

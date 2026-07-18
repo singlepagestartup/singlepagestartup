@@ -52,7 +52,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Completed: 2026-07-17T23:58:00Z
 - [x] Automated verification: PASSED 2026-07-17T23:58:00Z
 
-**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (66), RBAC (265), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Live Telegram Browser verification was completed during code review.
+**Notes**: Documented Agent/Telegram/RBAC ownership and restart recovery; verified production-length callback limits, photo-only dispatch, presentation fallback, permission loss, duplicate destructive clicks, and existing OpenRouter routing. Agent (77), RBAC (265), Telegram (21), Agent/RBAC/API integration suites, Telegram build, Agent/RBAC/Social/Knowledge/API/Telegram lint/build checks, formatting, schema/snapshot search, and live grammY reference search pass. Live Telegram Browser verification was completed during code review.
 
 ## Live Browser Verification
 
@@ -64,6 +64,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Avatar opens a dedicated photo page with the effective custom/default image, Replace/Delete/Open/Back controls, and safe text-to-photo presentation replacement; the live custom avatar was preserved during verification.
 - [x] `/assistant` from All Messages created Telegram topic `113080` and delivered its menu there; `/assistant` and ordinary conversation text sent inside `113080` remained in that topic without creating another thread.
 - [x] Bot-authored `forum_topic_created` updates no longer provision personal assistants; the stale bot-owned automatic link was removed and a fresh `/assistant` in topic `113095` opened the single human-owned profile directly.
+- [x] Knowledge create/edit now resolves persisted text attachments instead of relying on an empty Telegram document caption; the real 15,770-byte `content.txt` is reachable from the live API, and Agent BDD covers the complete file-to-Knowledge mutation beyond 4,000 characters.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -71,7 +72,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 17 -->
+<!-- incident-count: 18 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -226,6 +227,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Reject bot-authored messages before bootstrap, reconcile private-chat automatic personal-agent relations to the current sender, remove the one erroneous runtime relation, and retain manually connected AI profiles plus group multi-profile behavior.
 - **Reusable Pattern**: Service updates authored by the bot are transport lifecycle signals, not user identities; filter them before persistence and self-heal private-chat automatic membership.
 
+### Incident 18 — Knowledge file input was treated as empty text
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Uploading `content.txt` on the Knowledge content step left `social.message.description` empty, so Agent rejected the input even though Telegram ingestion had stored the file successfully.
+- **Root Cause**: Only the Avatar editor resolved message-to-File Storage attachments; every textual editor read `message.description` and shared a 4,000-character bound.
+- **Fix**: Added a reusable persisted editor-file resolver in Agent transport, read supported text files for Knowledge content, preserved normal typed content, added a separate large-content bound, and covered both the File Storage resolution and full Knowledge create mutation with BDD.
+- **Reusable Pattern**: An attachment-bearing Social message and a text-bearing Social message are distinct input shapes; editor validation must normalize both before checking emptiness or length.
+
 ## Summary
 
 ### Changes Made
@@ -238,6 +248,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Avatar management now resolves the same latest image as the web sidebar, falls back to the canonical File Storage default, and provides a dedicated photo page with replace/reset controls.
 - Chat-local profile updates preserve omitted localized content and MCP configuration.
 - Knowledge reads return complete UTF-8 TXT attachments while keeping the interactive Telegram page below message limits.
+- Knowledge create/edit content accepts persisted UTF-8 text attachments through the canonical Social/File Storage relation, including bodies larger than Telegram text messages.
 - Main-flow Telegram commands now create a topic-backed Social thread before Agent dispatch, while commands and editor input inside an existing topic remain scoped to that topic.
 - Bot-authored topic service updates are ignored before RBAC bootstrap, and private chats self-heal stale automatic personal-agent links without removing manually connected AI profiles.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
@@ -256,4 +267,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T21:50:35Z
+**Last updated**: 2026-07-18T22:22:38Z

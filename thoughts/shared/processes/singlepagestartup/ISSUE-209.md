@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T21:50:35Z
+last_updated: 2026-07-18T22:22:38Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 20 -->
+<!-- incident-count: 21 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -260,6 +260,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Filter bot-authored service updates before identity/bootstrap work, and make private-chat automatic participant reconciliation self-heal stale personal-agent links.
 - **References**: `apps/telegram/src/lib/telegram-bot.ts`; `apps/telegram/src/lib/telegram-bot.spec.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/telegram/bootstrap.ts`; Telegram topic `113095` live verification.
 
+### Incident 21 — Knowledge content editor ignored persisted text attachments
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: During Knowledge creation, a 15.4 KB `content.txt` reached Telegram and File Storage, but the editor reported that the value was empty and remained on the content step.
+- **Root Cause**: The generic editor consumed only `social.message.description`; Telegram documents without captions intentionally persist an empty description, while their content lives behind the Social message-to-File Storage relation. The shared 4,000-character editor guard would also have rejected the file body after resolution.
+- **Fix**: Agent's conversation transport now resolves the persisted editor attachment through the canonical Social/File Storage services. Knowledge create/edit content accepts UTF-8 TXT, Markdown, CSV, JSON, XML, YAML, and other `text/*` files, strips an optional BOM, preserves inline input, and applies a separate one-million-character content bound. Avatar input reuses the same resolver while retaining its image-only validation.
+- **Preventive Action**: Every editor that accepts media must test the persisted attachment path with an empty message description and production-sized content beyond Telegram's text-message limit.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-editor-file.spec.ts`; Telegram topic `113101`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -276,3 +286,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Media-management conversations should resolve and show the effective asset first, represent deletion as a relation reset to the canonical default, and explicitly handle text/photo presentation mode changes.
 - Telegram command ingestion must resolve or create the final topic-backed Social thread before the command message reaches Agent; conversation state cannot be moved safely after dispatch.
 - Bot-authored Telegram service messages must be rejected before RBAC bootstrap, and private-chat automatic personal-agent links must reconcile to the current human sender without deleting manually connected AI profiles.
+- Telegram document messages normally have no description; text-capable editors must resolve their canonical File Storage attachment before treating the input as empty or enforcing inline-message limits.

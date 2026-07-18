@@ -13,6 +13,19 @@ import type {
 } from "./telegram-conversation";
 
 const pageSize = 6;
+const inlineEditorValueMaxLength = 4_000;
+const knowledgeContentMaxLength = 1_000_000;
+const knowledgeTextFileExtensions = new Set([
+  "csv",
+  "json",
+  "log",
+  "markdown",
+  "md",
+  "txt",
+  "xml",
+  "yaml",
+  "yml",
+]);
 
 export interface ITelegramAssistantMessageData {
   description: string;
@@ -50,7 +63,7 @@ export interface ITelegramAssistantConversationTransport {
   ): Promise<
     { url: string; alt?: string; file?: File; isDefault?: boolean } | undefined
   >;
-  resolveAvatarFile(message: ISocialModuleMessage): Promise<File | undefined>;
+  resolveEditorFile(message: ISocialModuleMessage): Promise<File | undefined>;
 }
 
 type TNotice = { kind: "success" | "error" | "info"; text: string };
@@ -568,7 +581,7 @@ export class TelegramAssistantConversation {
     if (!editor) return;
 
     if (editor.kind === "avatar") {
-      const file = await transport.resolveAvatarFile(message);
+      const file = await transport.resolveEditorFile(message);
 
       if (!file || !file.type.startsWith("image/")) {
         throw new Error("Пришлите фотографию или изображение как файл.");
@@ -586,7 +599,24 @@ export class TelegramAssistantConversation {
       return;
     }
 
-    const value = message.description?.trim();
+    const isKnowledgeContent =
+      (editor.kind === "knowledge-create" ||
+        editor.kind === "knowledge-edit") &&
+      editor.field === "description";
+    const editorFile = isKnowledgeContent
+      ? await transport.resolveEditorFile(message)
+      : undefined;
+    let value = message.description?.trim();
+
+    if (editorFile) {
+      if (!this.isKnowledgeTextFile(editorFile)) {
+        throw new Error(
+          "Для содержимого знания поддерживаются текстовые файлы: TXT, Markdown, CSV, JSON, XML и YAML.",
+        );
+      }
+
+      value = (await editorFile.text()).replace(/^\uFEFF/, "").trim();
+    }
 
     if (!value) {
       throw new Error(
@@ -594,8 +624,14 @@ export class TelegramAssistantConversation {
       );
     }
 
-    if (value.length > 4_000) {
-      throw new Error("Значение слишком длинное (максимум 4000 символов).");
+    const maxLength = isKnowledgeContent
+      ? knowledgeContentMaxLength
+      : inlineEditorValueMaxLength;
+
+    if (value.length > maxLength) {
+      throw new Error(
+        `Значение слишком длинное (максимум ${maxLength.toLocaleString("ru-RU")} символов).`,
+      );
     }
 
     if (
@@ -682,6 +718,23 @@ export class TelegramAssistantConversation {
     state.editor = undefined;
     state.page = "knowledge";
     state.selectedEntityId = undefined;
+  }
+
+  protected isKnowledgeTextFile(file: File) {
+    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    const type = file.type.toLowerCase();
+
+    return (
+      type.startsWith("text/") ||
+      [
+        "application/json",
+        "application/ld+json",
+        "application/xml",
+        "application/x-yaml",
+        "application/yaml",
+      ].includes(type) ||
+      knowledgeTextFileExtensions.has(extension)
+    );
   }
 
   protected async render(

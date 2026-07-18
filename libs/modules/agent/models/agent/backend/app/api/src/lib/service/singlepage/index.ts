@@ -864,8 +864,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         ),
       resolveProfileAvatar: (profileId) =>
         this.resolveTelegramAssistantProfileAvatar(profileId),
-      resolveAvatarFile: (message) =>
-        this.resolveTelegramAssistantAvatarFile(message),
+      resolveEditorFile: (message) =>
+        this.resolveTelegramAssistantEditorFile(message),
     };
   }
 
@@ -963,7 +963,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     );
   }
 
-  protected async resolveTelegramAssistantAvatarFile(
+  protected async resolveTelegramAssistantEditorFile(
     message: ISocialModuleMessage,
   ) {
     const relations =
@@ -989,7 +989,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       id: relation.fileStorageModuleFileId,
     });
 
-    if (!file?.file || !String(file.mimeType || "").startsWith("image/")) {
+    if (!file?.file) {
       return;
     }
 
@@ -1000,8 +1000,11 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       files: [
         {
           title: file.title || file.adminTitle || file.id,
-          extension: file.extension || "jpg",
-          type: file.mimeType || "image/jpeg",
+          extension:
+            file.extension ||
+            String(file.file).split("?")[0].split(".").pop() ||
+            "bin",
+          type: file.mimeType || "application/octet-stream",
           url,
         },
       ],
