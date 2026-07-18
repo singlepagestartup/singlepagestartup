@@ -678,6 +678,56 @@ describe("TelegramAssistantConversation", () => {
 
   /**
    * BDD Scenario
+   * Given: a Knowledge document whose content exceeds Telegram's message limit.
+   * When: the sender opens that document from the assistant menu.
+   * Then: Agent sends the complete content as a TXT file and keeps the menu text bounded.
+   */
+  it("When: a long Knowledge document opens Then: its content is sent as a TXT file", async () => {
+    const harness = createHarness();
+    const document = {
+      id: "document-long",
+      title: 'Release / notes: "Summer"',
+      description: "Полное содержимое\n" + "x".repeat(6_000),
+    };
+    mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdKnowledgeDocumentFind.mockResolvedValue(
+      [document],
+    );
+
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Знания"),
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Release"),
+      harness.transport,
+    );
+
+    const fileMessage = harness.transport.create.mock.calls.find(
+      ([data]) => data.files?.length,
+    )?.[0];
+    const file = fileMessage?.files?.[0];
+
+    expect(fileMessage?.description).toContain("Knowledge-документ");
+    expect(file).toBeInstanceOf(File);
+    expect(file?.name).toBe("Release - notes- -Summer-.txt");
+    expect(file?.type).toBe("text/plain");
+    await expect(file?.text()).resolves.toBe(
+      `${document.title}\n\n${document.description}`,
+    );
+    expect(lastData(harness.transport).description.length).toBeLessThan(4_096);
+    expect(lastData(harness.transport).description).not.toContain(
+      document.description,
+    );
+    expect(lastData(harness.transport).description).toContain(
+      "Содержимое отправлено отдельным TXT-файлом.",
+    );
+  });
+
+  /**
+   * BDD Scenario
    * Given: one linked Knowledge document.
    * When: the sender creates, edits, and explicitly reindexes documents.
    * Then: each distinct subject-scoped Knowledge action is invoked with current data.

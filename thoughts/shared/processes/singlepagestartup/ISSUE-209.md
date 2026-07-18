@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T11:37:00Z
+last_updated: 2026-07-18T12:15:26Z
 status: active
 current_phase: complete
 ---
@@ -51,14 +51,14 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Code Review
 
-- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks.
+- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks. A review follow-up now exports Knowledge reads as TXT files so long content never enters a Telegram presentation message.
 - Notes: Telegram Web A occasionally rendered Bot API message edits only after the next incoming update; Bot API, Social action/message, and Notification records all confirmed the correct state before the client caught up. Live access covered one private sender/topic; group, multi-sender, zero/multiple-profile, permission-loss, and record-removal variants remain covered by the committed BDD suites.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 16 -->
+<!-- incident-count: 17 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -220,6 +220,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Partial management routes built on generic model updates must hydrate and merge the current mutable record when omission is supposed to mean preservation.
 - **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/update.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/update.spec.ts`.
 
+### Incident 17 — Knowledge reads exceeded Telegram's message limit
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Opening the original Knowledge document failed with Telegram `400 Bad Request: MESSAGE_TOO_LONG`, leaving its inline button apparently unresponsive.
+- **Root Cause**: The document page embedded the complete Knowledge description in `editMessageText`; the delivery path also filtered attachments to images and routed every non-empty set through `sendMediaGroup`, which is invalid for one TXT document.
+- **Fix**: Agent now keeps the interactive page bounded and creates a canonical Social/File Storage message containing the full UTF-8 Knowledge text as a `.txt` file. Notification accepts reachable non-image attachments, recognizes TXT, and uses `sendDocument` for a single document while preserving topic options and upload fallback.
+- **Preventive Action**: Treat large server content as an attachment at the Agent presentation boundary, and cover both the bounded menu payload and the final Telegram attachment method with BDD plus live Browser verification.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/notification/models/notification/backend/app/api/src/lib/service/singlepage/index.ts`; Telegram topic `113050` live verification.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -232,3 +242,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Cross-surface file workflows require verification of the read projection after the mutation, not only the upload call.
 - A pending Telegram Web send must be correlated with webhook and persistence evidence before it is treated as a bot response failure.
 - Partial management routes must merge the current mutable record before calling generic update SDKs when omitted fields are contractually preserved.
+- Telegram presentation text must remain bounded; complete Knowledge bodies belong in TXT attachments delivered through the canonical Social/File Storage/Notification path.

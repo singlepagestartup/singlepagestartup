@@ -16,6 +16,7 @@ const pageSize = 6;
 
 export interface ITelegramAssistantMessageData {
   description: string;
+  files?: File[];
   interaction?: {
     inline_keyboard: Array<
       Array<{
@@ -50,6 +51,15 @@ export interface ITelegramAssistantConversationTransport {
 }
 
 type TNotice = { kind: "success" | "error" | "info"; text: string };
+
+type TTransitionOutcome = {
+  notice?: TNotice;
+  close?: boolean;
+  textFile?: {
+    caption: string;
+    file: File;
+  };
+};
 
 export class TelegramAssistantConversation {
   constructor(readonly runtime: ITelegramConversationRuntime) {}
@@ -116,6 +126,7 @@ export class TelegramAssistantConversation {
   ) {
     let notice: TNotice | undefined;
     let shouldClose = false;
+    let textFile: TTransitionOutcome["textFile"];
 
     try {
       const result = await this.runtime.consumeCallback(
@@ -128,6 +139,7 @@ export class TelegramAssistantConversation {
           });
           notice = outcome.notice;
           shouldClose = Boolean(outcome.close);
+          textFile = outcome.textFile;
         },
       );
 
@@ -142,6 +154,13 @@ export class TelegramAssistantConversation {
 
       if (shouldClose) {
         return this.terminate(context, transport);
+      }
+
+      if (textFile) {
+        await transport.create({
+          description: textFile.caption,
+          files: [textFile.file],
+        });
       }
 
       return this.render(context, result.state, transport, notice);
@@ -208,7 +227,7 @@ export class TelegramAssistantConversation {
     context: ITelegramAssistantConversationContext,
     state: ITelegramConversationState,
     input: { action: string; token?: string },
-  ): Promise<{ notice?: TNotice; close?: boolean }> {
+  ): Promise<TTransitionOutcome> {
     const navigate = (page: TTelegramAssistantPage) => {
       state.page = page;
       state.editor = undefined;
@@ -400,7 +419,13 @@ export class TelegramAssistantConversation {
         state.selectedEntityId = document.id;
         state.page = "document";
         state.confirmation = undefined;
-        return {};
+        return {
+          notice: {
+            kind: "success",
+            text: "Содержимое отправлено отдельным TXT-файлом.",
+          },
+          textFile: this.knowledgeDocumentTextFile(document),
+        };
       }
       case "doc_new":
         await this.requireManageableProfile(context, state.selectedProfileId);
@@ -931,7 +956,7 @@ export class TelegramAssistantConversation {
       documents.slice(0, pageSize).forEach((document) => {
         rows.push([
           button(
-            document.title || document.id,
+            this.truncateText(document.title || document.id, 60),
             "doc_open",
             this.entityToken(String(document.id)),
           ),
@@ -969,9 +994,34 @@ export class TelegramAssistantConversation {
       );
     }
     return {
-      description: `${noticeText}${state.confirmation ? "Подтвердите окончательное удаление Knowledge-документа." : `Документ: ${document?.title || "Новый"}\n\n${document?.description || ""}`}`,
+      description: `${noticeText}${state.confirmation ? "Подтвердите окончательное удаление Knowledge-документа." : `Документ: ${this.truncateText(document?.title || "Новый", 300)}\n\nСодержимое документа передаётся отдельным TXT-файлом.`}`,
       interaction: { inline_keyboard: rows },
     };
+  }
+
+  protected knowledgeDocumentTextFile(document: {
+    id: string;
+    title?: string | null;
+    description?: string | null;
+  }) {
+    const title = document.title?.trim() || `knowledge-${document.id}`;
+    const safeFileName =
+      title
+        .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+        .replace(/[. ]+$/g, "")
+        .slice(0, 120) || `knowledge-${document.id}`;
+    const content = [title, document.description || ""].join("\n\n");
+
+    return {
+      caption: `Knowledge-документ «${this.truncateText(title, 180)}»`,
+      file: new File([content], `${safeFileName}.txt`, {
+        type: "text/plain",
+      }),
+    };
+  }
+
+  protected truncateText(value: string, limit: number) {
+    return value.length > limit ? `${value.slice(0, limit - 1)}…` : value;
   }
 
   protected async manageableProfiles(

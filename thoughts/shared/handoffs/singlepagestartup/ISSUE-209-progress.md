@@ -60,6 +60,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Profile draft cancel/save, locale preservation, MCP toggle, Avatar upload/read projection, Skills create/edit/link/unlink, and Knowledge create/edit/reindex/cancel/delete work end to end.
 - [x] `/cancel`, `/exit`, `/stop`, Close, TTL expiry, API restart, stale callbacks, and concurrent duplicate callbacks are safe and idempotent.
 - [x] All live operations remained inside Telegram topic `112981`; the active one-profile baseline was restored to RU/EN title, MCP enabled, no Avatar, zero linked Skills, and one original Knowledge document.
+- [x] Reopening the original 15.5 KB Knowledge document in topic `113050` produced a bounded interactive menu and a separate `.txt` attachment with the complete 15,832-byte UTF-8 content; no `MESSAGE_TOO_LONG` occurred.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -67,7 +68,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 13 -->
+<!-- incident-count: 14 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -186,6 +187,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Reload and merge all mutable fields before applying the requested partial update; added MCP-only and profile-text-only BDD regressions and verified the real API preserves RU/EN title and MCP together.
 - **Reusable Pattern**: Partial management endpoints must explicitly preserve omitted sibling fields when their downstream update primitive applies defaults.
 
+### Incident 14 — Knowledge detail rendering exceeded Telegram limits
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Clicking the original Knowledge item raised Telegram `MESSAGE_TOO_LONG` because its full body was passed to `editMessageText`.
+- **Root Cause**: Knowledge detail rendering had no large-content boundary, while Notification admitted only image attachments and used media groups even for a single file.
+- **Fix**: Agent exports the complete Knowledge body as a UTF-8 TXT through the existing Social message/File Storage pipeline and renders only a bounded summary. Notification now accepts reachable documents and uses `sendDocument` for one TXT attachment.
+- **Reusable Pattern**: Keep interactive Telegram text bounded and send large read results as canonical file attachments; test the provider method as well as the conversation payload.
+
 ## Summary
 
 ### Changes Made
@@ -197,6 +207,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Profile drafts now expose current values, Skip/Clear, and explicit Save while preserving non-Russian locales; MCP toggles preserve unknown stored IDs.
 - Assistant home now resolves and exposes the same latest avatar image as the web profile sidebar.
 - Chat-local profile updates preserve omitted localized content and MCP configuration.
+- Knowledge reads return complete UTF-8 TXT attachments while keeping the interactive Telegram page below message limits.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -213,4 +224,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T11:37:00Z
+**Last updated**: 2026-07-18T12:15:26Z
