@@ -107,3 +107,6 @@ clearing optional fields, and requires an explicit final save. Profile writes
 merge the Russian values into the latest localized records so other locales are
 not discarded. MCP toggles change only the selected supported descriptor and
 preserve unknown identifiers that may have been stored by an older deployment.
+The home page resolves the latest profile/File Storage relation using the same
+ordering as the web sidebar, reports whether an avatar is set, and exposes the
+current image through an inline link.

@@ -26,6 +26,7 @@ export interface ISocialModule {
   chatsToActions: IReadService;
   threadsToMessages: IReadService;
   threadsToActions: IReadService;
+  profilesToFileStorageModuleFiles: IReadService;
   messagesToFileStorageModuleFiles: IReadService;
 }
 

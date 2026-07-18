@@ -67,6 +67,7 @@ function createHarness() {
       sourceSystemId: "telegram-message-1",
     }),
     update: jest.fn().mockResolvedValue({ id: "presentation-1" }),
+    resolveProfileAvatar: jest.fn().mockResolvedValue(undefined),
     resolveAvatarFile: jest.fn().mockResolvedValue(undefined),
   };
 
@@ -143,7 +144,7 @@ describe("TelegramAssistantConversation", () => {
 
     const single = createHarness();
     await single.conversation.enter(context, single.transport);
-    expect(lastData(single.transport).description).toContain("Assistant One");
+    expect(lastData(single.transport).description).toContain("Ассистент");
     expect(lastData(single.transport).description).toContain(
       "Профиль ассистента открыт",
     );
@@ -162,6 +163,32 @@ describe("TelegramAssistantConversation", () => {
       "Выберите AI-ассистента",
     );
     expect(callback(multiple.transport, "Assistant Two")).toContain("select");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the selected profile has a current image relation.
+   * When: the assistant home is rendered.
+   * Then: Telegram exposes the avatar status and a link to the current image.
+   */
+  it("When: a profile avatar exists Then: home exposes the current image", async () => {
+    const harness = createHarness();
+    harness.transport.resolveProfileAvatar.mockResolvedValue({
+      url: "https://files.example.com/avatar.png",
+      alt: "Assistant avatar",
+    });
+
+    await harness.conversation.enter(context, harness.transport);
+
+    expect(lastData(harness.transport).description).toContain(
+      "Аватар: установлен",
+    );
+    expect(
+      lastData(harness.transport).interaction.inline_keyboard.flat(),
+    ).toContainEqual({
+      text: "Открыть текущий аватар",
+      url: "https://files.example.com/avatar.png",
+    });
   });
 
   /**
@@ -201,7 +228,7 @@ describe("TelegramAssistantConversation", () => {
     expect((await harness.runtime.get(context.key))?.selectedProfileId).toBe(
       profiles[6].id,
     );
-    expect(lastData(harness.transport).description).toContain("Assistant 7");
+    expect(lastData(harness.transport).description).toContain("Ассистент");
   });
 
   /**

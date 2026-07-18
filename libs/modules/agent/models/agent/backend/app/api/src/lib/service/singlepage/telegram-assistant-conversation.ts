@@ -43,6 +43,9 @@ export interface ITelegramAssistantConversationTransport {
     socialModuleMessageId: string,
     data: ITelegramAssistantMessageData,
   ): Promise<unknown>;
+  resolveProfileAvatar(
+    profileId: string,
+  ): Promise<{ url: string; alt?: string } | undefined>;
   resolveAvatarFile(message: ISocialModuleMessage): Promise<File | undefined>;
 }
 
@@ -645,7 +648,7 @@ export class TelegramAssistantConversation {
       : { ...state, revision: state.revision + 1 };
 
     try {
-      data = await this.renderData(context, renderState, notice);
+      data = await this.renderData(context, renderState, transport, notice);
     } catch (error) {
       await this.runtime.terminate(context.key);
       data = {
@@ -677,6 +680,7 @@ export class TelegramAssistantConversation {
         replacementData = await this.renderData(
           context,
           { ...state, revision: state.revision + 1 },
+          transport,
           notice,
         );
       } catch (renderError) {
@@ -704,6 +708,7 @@ export class TelegramAssistantConversation {
   protected async renderData(
     context: ITelegramAssistantConversationContext,
     state: ITelegramConversationState,
+    transport: ITelegramAssistantConversationTransport,
     notice?: TNotice,
   ): Promise<ITelegramAssistantMessageData> {
     const rows: NonNullable<
@@ -784,14 +789,18 @@ export class TelegramAssistantConversation {
     const backToHome = [button("Назад", "home")];
 
     if (state.page === "home") {
+      const avatar = await transport.resolveProfileAvatar(profile.id);
       rows.push(
         [button("Профиль", "profile"), button("MCP", "mcp")],
         [button("Навыки", "skills"), button("Знания", "knowledge")],
         [button("Аватар", "avatar"), button("Обновить", "refresh")],
-        [button("Сменить", "selector"), button("Закрыть", "close")],
       );
+      if (avatar) {
+        rows.push([{ text: "Открыть текущий аватар", url: avatar.url }]);
+      }
+      rows.push([button("Сменить", "selector"), button("Закрыть", "close")]);
       return {
-        description: `${noticeText}AI-ассистент: ${this.profileTitle(profile)}\n${this.localized(profile.subtitle) || "Без подзаголовка"}\n\n${this.localized(profile.description) || "Описание не задано"}`,
+        description: `${noticeText}AI-ассистент: ${this.profileDisplayName(profile)}\n${this.localized(profile.subtitle) || "Без подзаголовка"}\nАватар: ${avatar ? "установлен" : "не задан"}\n\n${this.localized(profile.description) || "Описание не задано"}`,
         interaction: { inline_keyboard: rows },
       };
     }
@@ -1214,6 +1223,15 @@ export class TelegramAssistantConversation {
     return (
       profile.adminTitle ||
       this.localized(profile.title) ||
+      profile.slug ||
+      profile.id
+    );
+  }
+
+  protected profileDisplayName(profile: ISocialModuleProfile) {
+    return (
+      this.localized(profile.title) ||
+      profile.adminTitle ||
       profile.slug ||
       profile.id
     );

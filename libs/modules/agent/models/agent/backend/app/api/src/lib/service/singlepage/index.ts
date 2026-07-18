@@ -859,8 +859,55 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           },
         ),
+      resolveProfileAvatar: (profileId) =>
+        this.resolveTelegramAssistantProfileAvatar(profileId),
       resolveAvatarFile: (message) =>
         this.resolveTelegramAssistantAvatarFile(message),
+    };
+  }
+
+  protected async resolveTelegramAssistantProfileAvatar(profileId: string) {
+    const relations =
+      await this.socialModule.profilesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "profileId", method: "eq", value: profileId }],
+          },
+          orderBy: {
+            and: [
+              { column: "orderIndex", method: "desc" },
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+    const relation = relations?.[0];
+
+    if (!relation?.fileStorageModuleFileId) {
+      return;
+    }
+
+    const file = await this.fileStorageModule.file.findById({
+      id: relation.fileStorageModuleFileId,
+    });
+    const extension = String(
+      file?.extension || file?.file?.split("?")[0].split(".").pop() || "",
+    ).toLowerCase();
+    const isImage =
+      String(file?.mimeType || "").startsWith("image/") ||
+      ["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"].includes(extension);
+
+    if (!file?.file || !isImage) {
+      return;
+    }
+
+    return {
+      url: /^https?:\/\//.test(String(file.file))
+        ? String(file.file)
+        : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`,
+      alt: file.alt || file.adminTitle || undefined,
     };
   }
 

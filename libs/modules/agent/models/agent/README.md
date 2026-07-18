@@ -98,3 +98,7 @@ draft, and then save explicitly. The save re-reads authorization and merges the
 Russian draft into the latest localized profile fields. MCP changes preserve
 unknown stored identifiers while allowing only catalogued descriptors to be
 toggled.
+
+Assistant home resolves the latest profile avatar relation through Agent read
+services. Telegram shows whether the avatar is configured and provides an
+inline link to the same File Storage image rendered by the web profile sidebar.

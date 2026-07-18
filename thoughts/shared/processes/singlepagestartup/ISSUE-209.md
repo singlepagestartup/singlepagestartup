@@ -53,7 +53,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 13 -->
+<!-- incident-count: 14 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -185,6 +185,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: When UI copy promises preservation, mutation tests must include unknown legacy values and assert the complete submitted collection.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.spec.ts`.
 
+### Incident 14 — Assistant home omitted the current avatar
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: The Avatar editor persisted images correctly, but the Telegram home page did not show whether an avatar existed or expose the current image as required by the approved plan.
+- **Root Cause**: Agent DI contained the message-to-file relation needed for incoming uploads but not the profile-to-file relation needed to project the selected profile's current avatar.
+- **Fix**: Added the profile/File Storage read service to Agent DI, resolved the latest image using the web sidebar's ordering, and rendered avatar status plus an inline link on home.
+- **Preventive Action**: Avatar workflow tests must cover both the write path and the subsequent read projection in every supported management surface.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/di.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/bootstrap.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-avatar.spec.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -194,3 +204,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Initial and replacement conversation presentations should be fully rendered before publication when callbacks do not depend on the transport message id.
 - Prefilled localized editors must merge the edited locale into freshly loaded records and expose an explicit save boundary.
 - Configuration toggles must not reuse normalizers that discard legacy values when the product contract promises to preserve them.
+- Cross-surface file workflows require verification of the read projection after the mutation, not only the upload call.

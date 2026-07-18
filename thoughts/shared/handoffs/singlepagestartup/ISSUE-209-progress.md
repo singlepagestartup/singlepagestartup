@@ -59,7 +59,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 10 -->
+<!-- incident-count: 11 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -151,6 +151,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Agent now toggles only the chosen supported identifier and leaves all other values untouched; the BDD expectation includes the legacy ID.
 - **Reusable Pattern**: Collection mutation tests must include legacy/unknown members whenever UI semantics promise preservation.
 
+### Incident 11 — Telegram home omitted the persisted avatar projection
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Avatar upload used the canonical RBAC/File Storage action, but home did not report or expose the currently selected avatar.
+- **Root Cause**: Agent had no profile-to-file read service in its transport-independent DI surface.
+- **Fix**: Added latest-relation resolution matching the web sidebar and rendered avatar status plus a current-image link on Telegram home.
+- **Reusable Pattern**: Cross-surface media parity requires read-after-write projection coverage, not only mutation coverage.
+
 ## Summary
 
 ### Changes Made
@@ -160,6 +169,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Subject-scoped RBAC now exposes manageable profiles and bounded Skill/Knowledge management, including relation-only unlink and dynamic non-admin grants.
 - Profile, MCP, avatar, Skill, and Knowledge workflows use the Telegram sender subject JWT and fresh RBAC revalidation.
 - Profile drafts now expose current values, Skip/Clear, and explicit Save while preserving non-Russian locales; MCP toggles preserve unknown stored IDs.
+- Assistant home now resolves and exposes the same latest avatar image as the web profile sidebar.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -175,4 +185,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T07:20:00Z
+**Last updated**: 2026-07-18T07:55:00Z
