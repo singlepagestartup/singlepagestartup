@@ -3,7 +3,8 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 start_date: 2026-07-17T22:47:04Z
 plan_file: thoughts/shared/plans/singlepagestartup/ISSUE-209.md
-status: in_progress
+status: complete
+completed_date: 2026-07-18T00:09:31Z
 ---
 
 # Implementation Progress: ISSUE-209 - Add Telegram assistant profile management conversations
@@ -126,8 +127,8 @@ status: in_progress
 
 ### Pull Request
 
-- [ ] PR created: —
-- [ ] PR number: —
+- [x] PR created: https://github.com/singlepagestartup/singlepagestartup/pull/210
+- [x] PR number: 210
 
 ### Final Status
 
@@ -137,4 +138,4 @@ status: in_progress
 
 ---
 
-**Last updated**: 2026-07-17T23:58:00Z
+**Last updated**: 2026-07-18T00:09:31Z
