@@ -168,10 +168,10 @@ describe("TelegramAssistantConversation", () => {
   /**
    * BDD Scenario
    * Given: the selected profile has a current image relation.
-   * When: the assistant home is rendered.
-   * Then: Telegram exposes the avatar status and a link to the current image.
+   * When: the sender opens the dedicated Avatar page.
+   * Then: Telegram exposes the current image and replacement/reset actions there.
    */
-  it("When: a profile avatar exists Then: home exposes the current image", async () => {
+  it("When: a profile avatar exists Then: the Avatar page exposes its controls", async () => {
     const harness = createHarness();
     harness.transport.resolveProfileAvatar.mockResolvedValue({
       url: "https://files.example.com/avatar.png",
@@ -179,9 +179,24 @@ describe("TelegramAssistantConversation", () => {
     });
 
     await harness.conversation.enter(context, harness.transport);
+    expect(lastData(harness.transport).description).toContain(
+      "Аватар: собственный",
+    );
+    expect(
+      lastData(harness.transport).interaction.inline_keyboard.flat(),
+    ).not.toContainEqual({
+      text: "Открыть текущий аватар",
+      url: "https://files.example.com/avatar.png",
+    });
+
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Аватар"),
+      harness.transport,
+    );
 
     expect(lastData(harness.transport).description).toContain(
-      "Аватар: установлен",
+      "Текущий: собственный",
     );
     expect(
       lastData(harness.transport).interaction.inline_keyboard.flat(),
@@ -189,6 +204,84 @@ describe("TelegramAssistantConversation", () => {
       text: "Открыть текущий аватар",
       url: "https://files.example.com/avatar.png",
     });
+    expect(callback(harness.transport, "Заменить")).toContain("avatar_replace");
+    expect(callback(harness.transport, "Удалить")).toContain("avatar_reset");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the profile uses the File Storage default assistant avatar.
+   * When: the sender opens the Avatar page.
+   * Then: the page identifies the default and does not offer a redundant reset.
+   */
+  it("When: the default avatar is active Then: reset is hidden", async () => {
+    const harness = createHarness();
+    harness.transport.resolveProfileAvatar.mockResolvedValue({
+      url: "https://files.example.com/default.png",
+      alt: "Default assistant avatar",
+      isDefault: true,
+    });
+
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Аватар"),
+      harness.transport,
+    );
+
+    expect(lastData(harness.transport).description).toContain(
+      "Текущий: дефолтный",
+    );
+    expect(() => callback(harness.transport, "Удалить")).toThrow(
+      "Button not found",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: the current avatar can be downloaded as a Telegram image.
+   * When: the sender enters and leaves the Avatar page.
+   * Then: the text menu is replaced by a photo menu and restored with fresh callbacks.
+   */
+  it("When: avatar media is available Then: the Avatar page is a photo menu", async () => {
+    const harness = createHarness();
+    const image = new File(["avatar"], "avatar.jpg", { type: "image/jpeg" });
+    harness.transport.resolveProfileAvatar.mockResolvedValue({
+      url: "https://files.example.com/avatar.jpg",
+      file: image,
+      isDefault: false,
+    });
+
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Аватар"),
+      harness.transport,
+    );
+
+    expect(harness.transport.create).toHaveBeenCalledTimes(2);
+    expect(lastData(harness.transport)).toEqual(
+      expect.objectContaining({
+        files: [image],
+        presentationMediaUrl: "https://files.example.com/avatar.jpg",
+      }),
+    );
+    expect(harness.transport.update).toHaveBeenCalledWith("presentation-1", {
+      description: "Меню продолжено в новом сообщении.",
+      interaction: { inline_keyboard: [] },
+    });
+
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Назад"),
+      harness.transport,
+    );
+
+    expect(harness.transport.create).toHaveBeenCalledTimes(3);
+    expect(lastData(harness.transport).files).toBeUndefined();
+    expect(lastData(harness.transport).description).toContain(
+      "AI-ассистент: Ассистент",
+    );
   });
 
   /**
@@ -829,6 +922,11 @@ describe("TelegramAssistantConversation", () => {
       callback(harness.transport, "Аватар"),
       harness.transport,
     );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Заменить"),
+      harness.transport,
+    );
     await harness.conversation.handleMessage(
       context,
       { id: "photo-message", description: "" } as any,
@@ -842,6 +940,46 @@ describe("TelegramAssistantConversation", () => {
         id: "sender-subject",
         data: { file: image },
       }),
+    );
+    expect(lastData(harness.transport).description).toContain(
+      "Аватар ассистента",
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a profile currently uses a custom avatar.
+   * When: the sender chooses Delete on the Avatar page.
+   * Then: the subject-scoped action receives reset and the page remains open.
+   */
+  it("When: avatar reset is chosen Then: the canonical action selects the default", async () => {
+    const harness = createHarness();
+    harness.transport.resolveProfileAvatar.mockResolvedValue({
+      url: "https://files.example.com/avatar.png",
+      isDefault: false,
+    });
+    await harness.conversation.enter(context, harness.transport);
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Аватар"),
+      harness.transport,
+    );
+    await harness.conversation.handleCallback(
+      context,
+      callback(harness.transport, "Удалить"),
+      harness.transport,
+    );
+
+    expect(
+      mockRbacApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "sender-subject",
+        data: { reset: true },
+      }),
+    );
+    expect(lastData(harness.transport).description).toContain(
+      "Установлен дефолтный аватар",
     );
   });
 

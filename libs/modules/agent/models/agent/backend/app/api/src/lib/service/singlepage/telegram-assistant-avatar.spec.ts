@@ -9,19 +9,21 @@ import { Service } from "./index";
 function createService(props: {
   relations?: Array<{ fileStorageModuleFileId?: string }>;
   file?: Record<string, unknown>;
+  defaultFiles?: Array<Record<string, unknown>>;
 }) {
   const service = Object.create(Service.prototype) as Service;
   const relationsFind = jest.fn().mockResolvedValue(props.relations || []);
   const fileFindById = jest.fn().mockResolvedValue(props.file);
+  const fileFind = jest.fn().mockResolvedValue(props.defaultFiles || []);
 
   (service as any).socialModule = {
     profilesToFileStorageModuleFiles: { find: relationsFind },
   };
   (service as any).fileStorageModule = {
-    file: { findById: fileFindById },
+    file: { find: fileFind, findById: fileFindById },
   };
 
-  return { service, relationsFind, fileFindById };
+  return { service, relationsFind, fileFind, fileFindById };
 }
 
 describe("Telegram assistant current avatar projection", () => {
@@ -47,6 +49,7 @@ describe("Telegram assistant current avatar projection", () => {
     ).resolves.toEqual({
       url: expect.stringMatching(/\/public\/avatar\.png$/),
       alt: "Assistant avatar",
+      isDefault: false,
     });
     expect(relationsFind).toHaveBeenCalledWith({
       params: {
@@ -85,5 +88,53 @@ describe("Telegram assistant current avatar projection", () => {
     await expect(
       (service as any).resolveTelegramAssistantProfileAvatar("profile-1"),
     ).resolves.toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a profile has no custom image relation and File Storage has the personal-assistant default.
+   * When: Agent resolves the current avatar.
+   * Then: the default image is returned and marked so the conversation can hide reset.
+   */
+  it("When: no custom image exists Then: the File Storage default is returned", async () => {
+    const { service, fileFind } = createService({
+      defaultFiles: [
+        {
+          id: "default-file",
+          variant: "default-social-module-personal-assistant",
+          file: "/assistant-default.webp",
+          mimeType: "image/webp",
+          alt: "Default assistant avatar",
+        },
+      ],
+    });
+
+    await expect(
+      (service as any).resolveTelegramAssistantProfileAvatar("profile-1"),
+    ).resolves.toEqual({
+      url: expect.stringMatching(/\/public\/assistant-default\.webp$/),
+      alt: "Default assistant avatar",
+      isDefault: true,
+    });
+    expect(fileFind).toHaveBeenCalledWith({
+      params: {
+        filters: {
+          and: [
+            {
+              column: "variant",
+              method: "eq",
+              value: "default-social-module-personal-assistant",
+            },
+          ],
+        },
+        orderBy: {
+          and: [
+            { column: "updatedAt", method: "desc" },
+            { column: "createdAt", method: "desc" },
+          ],
+        },
+        limit: 1,
+      },
+    });
   });
 });

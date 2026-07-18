@@ -29,7 +29,10 @@ import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/serv
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
-import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
+import {
+  defaultSocialModulePersonalAssistantVariant,
+  IModel as IFileStorageModuleFile,
+} from "@sps/file-storage/models/file/sdk/model";
 import { api as notificationNotificationApi } from "@sps/notification/models/notification/sdk/server";
 import * as jwt from "hono/jwt";
 import { blobifyFiles, logger } from "@sps/backend-utils";
@@ -841,12 +844,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     props: ITelegramBotReplyContext,
   ): ITelegramAssistantConversationTransport {
     return {
-      create: (data) =>
-        this.telegramBotReplyMessageCreate({
-          ...props,
-          data,
-        }),
-      update: (socialModuleMessageId, data) =>
+      create: ({ presentationMediaUrl: _presentationMediaUrl, ...data }) =>
+        this.telegramBotReplyMessageCreate({ ...props, data }),
+      update: (
+        socialModuleMessageId,
+        { presentationMediaUrl: _presentationMediaUrl, ...data },
+      ) =>
         rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
           {
             id: props.rbacModuleSubject.id,
@@ -884,31 +887,80 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       });
     const relation = relations?.[0];
+    let file = relation?.fileStorageModuleFileId
+      ? await this.fileStorageModule.file.findById({
+          id: relation.fileStorageModuleFileId,
+        })
+      : undefined;
+    let isDefault =
+      file?.variant === defaultSocialModulePersonalAssistantVariant;
 
-    if (!relation?.fileStorageModuleFileId) {
+    if (!this.isTelegramAssistantAvatarImage(file)) {
+      const defaultFiles = await this.fileStorageModule.file.find({
+        params: {
+          filters: {
+            and: [
+              {
+                column: "variant",
+                method: "eq",
+                value: defaultSocialModulePersonalAssistantVariant,
+              },
+            ],
+          },
+          orderBy: {
+            and: [
+              { column: "updatedAt", method: "desc" },
+              { column: "createdAt", method: "desc" },
+            ],
+          },
+          limit: 1,
+        },
+      });
+      file = defaultFiles?.[0];
+      isDefault = true;
+    }
+
+    if (!this.isTelegramAssistantAvatarImage(file)) {
       return;
     }
 
-    const file = await this.fileStorageModule.file.findById({
-      id: relation.fileStorageModuleFileId,
-    });
+    const url = /^https?:\/\//.test(String(file.file))
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const previewFiles = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension:
+            file.extension || String(file.file).split(".").pop() || "jpg",
+          type: file.mimeType || "image/jpeg",
+          url,
+        },
+      ],
+    }).catch(() => []);
+
+    return {
+      url,
+      alt: file.alt || file.adminTitle || undefined,
+      ...(previewFiles[0] ? { file: previewFiles[0] } : {}),
+      isDefault,
+    };
+  }
+
+  protected isTelegramAssistantAvatarImage(
+    file?: Partial<IFileStorageModuleFile> | null,
+  ): boolean {
     const extension = String(
       file?.extension || file?.file?.split("?")[0].split(".").pop() || "",
     ).toLowerCase();
-    const isImage =
-      String(file?.mimeType || "").startsWith("image/") ||
-      ["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"].includes(extension);
 
-    if (!file?.file || !isImage) {
-      return;
-    }
-
-    return {
-      url: /^https?:\/\//.test(String(file.file))
-        ? String(file.file)
-        : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`,
-      alt: file.alt || file.adminTitle || undefined,
-    };
+    return Boolean(
+      file?.file &&
+        (String(file?.mimeType || "").startsWith("image/") ||
+          ["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"].includes(
+            extension,
+          )),
+    );
   }
 
   protected async resolveTelegramAssistantAvatarFile(

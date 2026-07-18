@@ -12,10 +12,14 @@ import { api as templateApi } from "@sps/notification/models/template/sdk/server
 
 const mockTelegramSendDocument = jest.fn();
 const mockTelegramSendMessage = jest.fn();
+const mockTelegramEditMessageCaption = jest.fn();
+const mockTelegramEditMessageText = jest.fn();
 
 jest.mock("grammy", () => ({
   Bot: jest.fn().mockImplementation(() => ({
     api: {
+      editMessageCaption: mockTelegramEditMessageCaption,
+      editMessageText: mockTelegramEditMessageText,
       sendDocument: mockTelegramSendDocument,
       sendMessage: mockTelegramSendMessage,
     },
@@ -83,10 +87,49 @@ describe("notification send service", () => {
     jest.resetAllMocks();
     (jest.requireMock("grammy").Bot as jest.Mock).mockImplementation(() => ({
       api: {
+        editMessageCaption: mockTelegramEditMessageCaption,
+        editMessageText: mockTelegramEditMessageText,
         sendDocument: mockTelegramSendDocument,
         sendMessage: mockTelegramSendMessage,
       },
     }));
+  });
+
+  /**
+   * BDD Scenario: edit a Telegram photo menu.
+   *
+   * Given: a notification source message is a photo with a caption.
+   * When: the shared Telegram editor receives a new menu state.
+   * Then: it falls back from text editing to caption editing with the same keyboard.
+   */
+  it("edits a media caption when the Telegram message has no text", async () => {
+    mockTelegramEditMessageText.mockRejectedValue(
+      new Error("Bad Request: there is no text in the message to edit"),
+    );
+    mockTelegramEditMessageCaption.mockResolvedValue({ message_id: 10 });
+    const service = createService();
+
+    await service.telegramEditMessage({
+      chatId: "chat-1",
+      messageId: "10",
+      text: "Аватар ассистента",
+      interaction: {
+        inline_keyboard: [[{ text: "Назад", callback_data: "back" }]],
+      },
+    });
+
+    expect(mockTelegramEditMessageText).toHaveBeenCalled();
+    expect(mockTelegramEditMessageCaption).toHaveBeenCalledWith(
+      "chat-1",
+      10,
+      expect.objectContaining({
+        caption: "Аватар ассистента",
+        parse_mode: "MarkdownV2",
+        reply_markup: {
+          inline_keyboard: [[{ text: "Назад", callback_data: "back" }]],
+        },
+      }),
+    );
   });
 
   /**

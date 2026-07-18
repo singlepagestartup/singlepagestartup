@@ -17,9 +17,7 @@ export interface IProps {
   tag?: string;
   revalidate?: number;
   options?: Partial<NextRequestOptions>;
-  data: {
-    file: File;
-  };
+  data: { file: File; reset?: false } | { reset: true; file?: never };
 }
 
 export type IResult = {

@@ -17,6 +17,7 @@ const pageSize = 6;
 export interface ITelegramAssistantMessageData {
   description: string;
   files?: File[];
+  presentationMediaUrl?: string;
   interaction?: {
     inline_keyboard: Array<
       Array<{
@@ -46,7 +47,9 @@ export interface ITelegramAssistantConversationTransport {
   ): Promise<unknown>;
   resolveProfileAvatar(
     profileId: string,
-  ): Promise<{ url: string; alt?: string } | undefined>;
+  ): Promise<
+    { url: string; alt?: string; file?: File; isDefault?: boolean } | undefined
+  >;
   resolveAvatarFile(message: ISocialModuleMessage): Promise<File | undefined>;
 }
 
@@ -324,9 +327,29 @@ export class TelegramAssistantConversation {
         };
       case "avatar":
         await this.requireManageableProfile(context, state.selectedProfileId);
+        navigate("avatar");
+        return {};
+      case "avatar_replace":
+        await this.requireManageableProfile(context, state.selectedProfileId);
         state.page = "avatar";
         state.editor = { kind: "avatar", field: "file", values: {} };
         return {};
+      case "avatar_reset":
+        await this.requireManageableProfile(context, state.selectedProfileId);
+        await rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdProfileFindByIdAvatarUpdate(
+          {
+            ...this.requestProps(context, state),
+            data: { reset: true },
+          },
+        );
+        state.page = "avatar";
+        state.editor = undefined;
+        return {
+          notice: {
+            kind: "success",
+            text: "Установлен дефолтный аватар.",
+          },
+        };
       case "skills":
         await this.requireManageableProfile(context, state.selectedProfileId);
         navigate("skills");
@@ -475,7 +498,7 @@ export class TelegramAssistantConversation {
         if (state.editor?.kind.startsWith("skill")) state.page = "skills";
         if (state.editor?.kind.startsWith("knowledge"))
           state.page = "knowledge";
-        if (state.editor?.kind === "avatar") state.page = "home";
+        if (state.editor?.kind === "avatar") state.page = "avatar";
         state.editor = undefined;
         state.confirmation = undefined;
         return { notice: { kind: "info", text: "Редактирование отменено." } };
@@ -559,7 +582,7 @@ export class TelegramAssistantConversation {
         },
       );
       state.editor = undefined;
-      state.page = "home";
+      state.page = "avatar";
       return;
     }
 
@@ -682,18 +705,54 @@ export class TelegramAssistantConversation {
       };
     }
 
-    if (!state.presentationMessageId) {
-      const created = await transport.create(data);
-
-      if (!created.id) return created;
+    const rememberPresentation = async (
+      created: { id?: string; sourceSystemId?: string | null },
+      presentationMediaUrl?: string,
+    ) => {
+      if (!created.id) return;
 
       await this.runtime.update(context.key, (draft) => {
         draft.presentationMessageId = created.id;
         draft.presentationMessageSourceSystemId =
           created.sourceSystemId || undefined;
+        draft.presentationMediaUrl = presentationMediaUrl;
       });
+    };
+
+    if (!state.presentationMessageId) {
+      const created = await transport.create(data);
+
+      if (!created.id) return created;
+
+      await rememberPresentation(created, data.presentationMediaUrl);
 
       return created;
+    }
+
+    if (state.presentationMediaUrl !== data.presentationMediaUrl) {
+      await transport
+        .update(state.presentationMessageId, {
+          description: "Меню продолжено в новом сообщении.",
+          interaction: { inline_keyboard: [] },
+        })
+        .catch(() => undefined);
+
+      const replacementData = await this.renderData(
+        context,
+        { ...state, revision: state.revision + 1 },
+        transport,
+        notice,
+      );
+      const replacement = await transport.create(replacementData);
+
+      if (!replacement.id) return replacement;
+
+      await rememberPresentation(
+        replacement,
+        replacementData.presentationMediaUrl,
+      );
+
+      return replacement;
     }
 
     try {
@@ -724,6 +783,7 @@ export class TelegramAssistantConversation {
         draft.presentationMessageId = replacement.id;
         draft.presentationMessageSourceSystemId =
           replacement.sourceSystemId || undefined;
+        draft.presentationMediaUrl = replacementData.presentationMediaUrl;
       });
 
       return replacement;
@@ -776,8 +836,23 @@ export class TelegramAssistantConversation {
       }
       rows.push([button("Отмена", "cancel")]);
 
+      if (state.editor.kind === "avatar") {
+        const profile = await this.requireManageableProfile(
+          context,
+          state.selectedProfileId,
+        );
+        const avatar = await transport.resolveProfileAvatar(profile.id);
+
+        return {
+          description: `${noticeText}Редактор: пришлите изображение.\nПоддерживается Telegram photo или image-документ.`,
+          files: avatar?.file ? [avatar.file] : undefined,
+          presentationMediaUrl: avatar?.file ? avatar.url : undefined,
+          interaction: { inline_keyboard: rows },
+        };
+      }
+
       return {
-        description: `${noticeText}Редактор: пришлите ${labels[state.editor.field] || state.editor.field}.${state.editor.kind === "profile" ? `\nТекущее значение: ${this.editorValue(state.editor.values[state.editor.field])}` : ""}${state.editor.kind === "avatar" ? "\nПоддерживается Telegram photo или image-документ." : ""}`,
+        description: `${noticeText}Редактор: пришлите ${labels[state.editor.field] || state.editor.field}.${state.editor.kind === "profile" ? `\nТекущее значение: ${this.editorValue(state.editor.values[state.editor.field])}` : ""}`,
         interaction: { inline_keyboard: rows },
       };
     }
@@ -820,12 +895,9 @@ export class TelegramAssistantConversation {
         [button("Навыки", "skills"), button("Знания", "knowledge")],
         [button("Аватар", "avatar"), button("Обновить", "refresh")],
       );
-      if (avatar) {
-        rows.push([{ text: "Открыть текущий аватар", url: avatar.url }]);
-      }
       rows.push([button("Сменить", "selector"), button("Закрыть", "close")]);
       return {
-        description: `${noticeText}AI-ассистент: ${this.profileDisplayName(profile)}\n${this.localized(profile.subtitle) || "Без подзаголовка"}\nАватар: ${avatar ? "установлен" : "не задан"}\n\n${this.localized(profile.description) || "Описание не задано"}`,
+        description: `${noticeText}AI-ассистент: ${this.profileDisplayName(profile)}\n${this.localized(profile.subtitle) || "Без подзаголовка"}\nАватар: ${avatar ? (avatar.isDefault ? "дефолтный" : "собственный") : "не настроен"}\n\n${this.localized(profile.description) || "Описание не задано"}`,
         interaction: { inline_keyboard: rows },
       };
     }
@@ -861,9 +933,19 @@ export class TelegramAssistantConversation {
     }
 
     if (state.page === "avatar") {
-      rows.push([button("Отмена", "cancel")]);
+      const avatar = await transport.resolveProfileAvatar(profile.id);
+      rows.push([button("Заменить", "avatar_replace")]);
+      if (avatar && !avatar.isDefault) {
+        rows.push([button("Удалить", "avatar_reset")]);
+      }
+      if (avatar) {
+        rows.push([{ text: "Открыть текущий аватар", url: avatar.url }]);
+      }
+      rows.push(backToHome);
       return {
-        description: `${noticeText}Пришлите новую фотографию ассистента. Последнее изображение станет актуальным аватаром.`,
+        description: `${noticeText}Аватар ассистента\nТекущий: ${avatar ? (avatar.isDefault ? "дефолтный" : "собственный") : "не настроен"}${avatar ? `\n\n[Показать текущий аватар](${avatar.url})` : "\n\nДефолтный аватар не настроен в File Storage."}`,
+        files: avatar?.file ? [avatar.file] : undefined,
+        presentationMediaUrl: avatar?.file ? avatar.url : undefined,
         interaction: { inline_keyboard: rows },
       };
     }

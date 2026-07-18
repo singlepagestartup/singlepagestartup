@@ -208,17 +208,33 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
           ? parseInt(props.messageId, 10)
           : props.messageId;
 
-      await bot.api.editMessageText(
-        props.chatId,
-        normalizedMessageId,
-        formattedText,
-        {
-          parse_mode: parseMode,
-          ...(inlineKeyboard
-            ? { reply_markup: { inline_keyboard: inlineKeyboard } }
-            : {}),
-        },
-      );
+      const options = {
+        parse_mode: parseMode,
+        ...(inlineKeyboard
+          ? { reply_markup: { inline_keyboard: inlineKeyboard } }
+          : {}),
+      };
+
+      try {
+        await bot.api.editMessageText(
+          props.chatId,
+          normalizedMessageId,
+          formattedText,
+          options,
+        );
+      } catch (error) {
+        if (
+          !(error instanceof Error) ||
+          !error.message.includes("there is no text in the message to edit")
+        ) {
+          throw error;
+        }
+
+        await bot.api.editMessageCaption(props.chatId, normalizedMessageId, {
+          caption: formattedText,
+          ...options,
+        });
+      }
     } catch (error) {
       if (
         error instanceof Error &&

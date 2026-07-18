@@ -61,6 +61,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] `/cancel`, `/exit`, `/stop`, Close, TTL expiry, API restart, stale callbacks, and concurrent duplicate callbacks are safe and idempotent.
 - [x] All live operations remained inside Telegram topic `112981`; the active one-profile baseline was restored to RU/EN title, MCP enabled, no Avatar, zero linked Skills, and one original Knowledge document.
 - [x] Reopening the original 15.5 KB Knowledge document in topic `113050` produced a bounded interactive menu and a separate `.txt` attachment with the complete 15,832-byte UTF-8 content; no `MESSAGE_TOO_LONG` occurred.
+- [x] Avatar opens a dedicated photo page with the effective custom/default image, Replace/Delete/Open/Back controls, and safe text-to-photo presentation replacement; the live custom avatar was preserved during verification.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -68,7 +69,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 14 -->
+<!-- incident-count: 15 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -196,6 +197,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Agent exports the complete Knowledge body as a UTF-8 TXT through the existing Social message/File Storage pipeline and renders only a bounded summary. Notification now accepts reachable documents and uses `sendDocument` for one TXT attachment.
 - **Reusable Pattern**: Keep interactive Telegram text bounded and send large read results as canonical file attachments; test the provider method as well as the conversation payload.
 
+### Incident 15 — Avatar was an upload editor instead of a media-management page
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Clicking Avatar entered upload mode directly and did not present the current/default image or a delete-to-default action.
+- **Root Cause**: The first workflow implemented only the Avatar write path and rendered every assistant presentation as text.
+- **Fix**: Added custom/default avatar resolution, a photo-based page with Replace/Delete/Open/Back controls, relation-only reset through the existing subject-scoped endpoint, and transport support for safe text/photo transitions and photo-caption edits.
+- **Reusable Pattern**: File tools should expose the effective asset before mutation, reuse canonical relations for reset semantics, and test transport media-mode changes as part of the conversation contract.
+
 ## Summary
 
 ### Changes Made
@@ -205,7 +215,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Subject-scoped RBAC now exposes manageable profiles and bounded Skill/Knowledge management, including relation-only unlink and dynamic non-admin grants.
 - Profile, MCP, avatar, Skill, and Knowledge workflows use the Telegram sender subject JWT and fresh RBAC revalidation.
 - Profile drafts now expose current values, Skip/Clear, and explicit Save while preserving non-Russian locales; MCP toggles preserve unknown stored IDs.
-- Assistant home now resolves and exposes the same latest avatar image as the web profile sidebar.
+- Avatar management now resolves the same latest image as the web sidebar, falls back to the canonical File Storage default, and provides a dedicated photo page with replace/reset controls.
 - Chat-local profile updates preserve omitted localized content and MCP configuration.
 - Knowledge reads return complete UTF-8 TXT attachments while keeping the interactive Telegram page below message limits.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
@@ -224,4 +234,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T12:15:26Z
+**Last updated**: 2026-07-18T13:41:24Z

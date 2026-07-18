@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T12:15:26Z
+last_updated: 2026-07-18T13:41:24Z
 status: active
 current_phase: complete
 ---
@@ -51,14 +51,14 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 ### Code Review
 
-- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks. A review follow-up now exports Knowledge reads as TXT files so long content never enters a Telegram presentation message.
+- Summary: Completed live Browser verification in the authenticated Telegram Web session for Profile, MCP, Avatar, Skills, Knowledge, cancellation/closure, TTL/restart stale controls, concurrent duplicate callbacks, and topic routing. Restored all profile data and removed temporary linked Skill, Knowledge, and Avatar records after the checks. Review follow-ups now export Knowledge reads as TXT files and provide a dedicated photo-based Avatar page with replace/reset controls and a File Storage default.
 - Notes: Telegram Web A occasionally rendered Bot API message edits only after the next incoming update; Bot API, Social action/message, and Notification records all confirmed the correct state before the client caught up. Live access covered one private sender/topic; group, multi-sender, zero/multiple-profile, permission-loss, and record-removal variants remain covered by the committed BDD suites.
 
 ## Incident Log
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 17 -->
+<!-- incident-count: 18 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -230,6 +230,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Treat large server content as an attachment at the Agent presentation boundary, and cover both the bounded menu payload and the final Telegram attachment method with BDD plus live Browser verification.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/notification/models/notification/backend/app/api/src/lib/service/singlepage/index.ts`; Telegram topic `113050` live verification.
 
+### Incident 18 — Avatar action lacked a dedicated media page and reset semantics
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: The Avatar button opened the upload editor immediately, while the current image was exposed only as a home-page link; there was no page-level preview, replace action, or delete-to-default action.
+- **Root Cause**: The initial conversation modeled Avatar only as an upload mutation and treated absence of a profile/File relation as “not configured”; it had no canonical default variant or media-aware presentation transition.
+- **Fix**: Added `default-social-module-personal-assistant` to File Storage variants, resolved the latest custom image or that default, rendered the Avatar page as a Telegram photo with Replace/Delete/Open/Back controls, and extended the existing subject-scoped Avatar endpoint with relation-only reset. Notification now falls back from text editing to caption editing for photo menus, while Agent recreates the presentation when switching between text and photo modes.
+- **Preventive Action**: Model media-management tools as read-first pages with explicit replace/reset operations, and test both custom/default resolution plus text-to-photo presentation transitions.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/profile/find-by-id/avatar/update.ts`; `libs/modules/file-storage/models/file/sdk/model/src/lib/index.ts`; `libs/modules/notification/models/notification/backend/app/api/src/lib/service/singlepage/index.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -243,3 +253,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - A pending Telegram Web send must be correlated with webhook and persistence evidence before it is treated as a bot response failure.
 - Partial management routes must merge the current mutable record before calling generic update SDKs when omitted fields are contractually preserved.
 - Telegram presentation text must remain bounded; complete Knowledge bodies belong in TXT attachments delivered through the canonical Social/File Storage/Notification path.
+- Media-management conversations should resolve and show the effective asset first, represent deletion as a relation reset to the canonical default, and explicitly handle text/photo presentation mode changes.

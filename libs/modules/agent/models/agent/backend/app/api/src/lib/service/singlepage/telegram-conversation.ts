@@ -53,6 +53,7 @@ export interface ITelegramConversationState {
   >;
   presentationMessageId?: string;
   presentationMessageSourceSystemId?: string;
+  presentationMediaUrl?: string;
   createdAt: number;
   updatedAt: number;
   expiresAt: number;
