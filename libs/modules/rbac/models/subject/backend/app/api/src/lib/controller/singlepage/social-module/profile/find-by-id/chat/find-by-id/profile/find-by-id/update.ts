@@ -56,9 +56,27 @@ export class Handler {
       }
 
       if ("allowedMcpServerIds" in data) {
-        updateData.allowedMcpServerIds = this.toAllowedMcpServerIds(
+        const supportedIdentifiers = this.toAllowedMcpServerIds(
           data.allowedMcpServerIds,
         );
+        const currentProfile =
+          typeof socialModuleProfileApi.findById === "function"
+            ? await socialModuleProfileApi.findById({
+                id: targetSocialModuleProfileId,
+                options: {
+                  headers: { "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY },
+                },
+              })
+            : undefined;
+        const staleIdentifiers = (
+          currentProfile?.allowedMcpServerIds || []
+        ).filter(
+          (identifier: string) => !isSupportedMcpServerIdentifier(identifier),
+        );
+        updateData.allowedMcpServerIds = [
+          ...staleIdentifiers,
+          ...supportedIdentifiers,
+        ] as TSupportedMcpServerIdentifier[];
       }
 
       if ("title" in data) {

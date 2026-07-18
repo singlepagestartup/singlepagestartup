@@ -4,7 +4,7 @@ import {
   responsePipe,
   transformResponseItem,
 } from "@sps/shared-utils";
-import { IModel as IKnowledgeModuleDocument } from "@sps/knowledge/models/document/sdk/model";
+import { IModel as ISocialModuleSkill } from "@sps/social/models/skill/sdk/model";
 
 export interface IProps {
   id: string;
@@ -13,44 +13,30 @@ export interface IProps {
   targetSocialModuleProfileId: string;
   limit?: number;
   offset?: number;
+  search?: string;
   host?: string;
-  tag?: string;
-  revalidate?: number;
   options?: Partial<NextRequestOptions>;
 }
 
-export type IResult = IKnowledgeModuleDocument[];
+export type IResult = ISocialModuleSkill[];
 
 export async function action(props: IProps): Promise<IResult> {
-  const {
-    id,
-    socialModuleProfileId,
-    socialModuleChatId,
-    targetSocialModuleProfileId,
-    options,
-    host = serverHost,
-  } = props;
-
-  const requestOptions: NextRequestOptions = {
-    credentials: "include",
-    method: "GET",
-    ...options,
-    next: {
-      ...options?.next,
-    },
-  };
-
   const query = new URLSearchParams();
   if (props.limit !== undefined) query.set("limit", String(props.limit));
   if (props.offset !== undefined) query.set("offset", String(props.offset));
+  if (props.search) query.set("search", props.search);
   const suffix = query.size ? `?${query}` : "";
+  const requestOptions: NextRequestOptions = {
+    credentials: "include",
+    method: "GET",
+    ...props.options,
+    next: { ...props.options?.next },
+  };
   const res = await fetch(
-    `${host}${route}/${id}/social-module/profiles/${socialModuleProfileId}/chats/${socialModuleChatId}/profiles/${targetSocialModuleProfileId}/knowledge/documents${suffix}`,
+    `${props.host ?? serverHost}${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/skills/available${suffix}`,
     requestOptions,
   );
-  const json = await responsePipe<{ data: IResult }>({
-    res,
-  });
+  const json = await responsePipe<{ data: IResult }>({ res });
 
   return transformResponseItem<IResult>(json);
 }

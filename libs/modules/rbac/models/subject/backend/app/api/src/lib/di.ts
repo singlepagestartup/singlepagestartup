@@ -13,6 +13,10 @@ export interface IUpdateService extends IReadService {
 
 export interface ICreateUpdateService extends ICreateService, IUpdateService {}
 
+export interface ICreateDeleteService extends ICreateService {
+  delete: (props: { id: string }) => Promise<any>;
+}
+
 export interface IExtendedReadService extends IReadService {
   findByIdExtended: (props: { id: string }) => Promise<any>;
 }
@@ -40,7 +44,7 @@ export interface ISocialModule {
   attribute: IReadService;
   attributeKey: IReadService;
   profilesToChats: IReadService;
-  profilesToSkills: ICreateService;
+  profilesToSkills: ICreateDeleteService;
   profilesToKnowledgeModuleDocuments: ICreateService;
   profilesToMessages: IReadService;
   profilesToActions: IReadService;

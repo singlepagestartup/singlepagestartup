@@ -1,9 +1,9 @@
 /**
- * BDD Suite: profile-scoped Knowledge RBAC provisioning.
+ * BDD Suite: profile-scoped assistant management RBAC provisioning.
  *
  * Given: a Telegram owner rbac.subject and its personal AI social.profile.
- * When: Knowledge access is ensured.
- * Then: one profile-specific owner role, five permissions, and existing RBAC relations are created idempotently.
+ * When: assistant management access is ensured.
+ * Then: one profile-specific owner role, fourteen permissions, and existing RBAC relations are created idempotently.
  */
 
 import {
@@ -65,8 +65,8 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
 
     expect(second.role.id).toBe(first.role.id);
     expect(role.rows).toHaveLength(1);
-    expect(permission.rows).toHaveLength(5);
-    expect(rolesToPermissions.rows).toHaveLength(5);
+    expect(permission.rows).toHaveLength(14);
+    expect(rolesToPermissions.rows).toHaveLength(14);
     expect(subjectsToRoles.rows).toEqual([
       expect.objectContaining({
         subjectId: "owner-subject-id",
@@ -109,8 +109,8 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
     });
 
     expect(role.rows).toHaveLength(1);
-    expect(permission.rows).toHaveLength(10);
-    expect(rolesToPermissions.rows).toHaveLength(10);
+    expect(permission.rows).toHaveLength(28);
+    expect(rolesToPermissions.rows).toHaveLength(28);
     expect(subjectsToRoles.rows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ subjectId: "telegram-owner-subject-id" }),
@@ -132,10 +132,12 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
       socialModuleProfileId: profileId,
     });
 
-    expect(descriptors).toHaveLength(5);
-    expect(descriptors.every(({ path }) => path.includes(profileId))).toBe(
-      true,
-    );
+    expect(descriptors).toHaveLength(14);
+    expect(
+      descriptors
+        .filter(({ path }) => !path.endsWith("/profiles"))
+        .every(({ path }) => path.includes(profileId)),
+    ).toBe(true);
     expect(
       descriptors.every(
         ({ path }) =>
@@ -145,12 +147,7 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
     ).toBe(true);
     expect(
       descriptors
-        .filter(
-          ({ method, path }) =>
-            method === "PATCH" ||
-            method === "DELETE" ||
-            path.endsWith("/reindex"),
-        )
+        .filter(({ path }) => path.includes("/knowledge/documents/"))
         .every(({ path }) => path.includes("[knowledge.documents.id]")),
     ).toBe(true);
     expect(
@@ -158,5 +155,29 @@ describe("Given: a profile-specific Knowledge owner grant", () => {
         path.includes("[target.social.profiles.id]"),
       ),
     ).toBe(false);
+    expect(descriptors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          method: "GET",
+          path: expect.stringMatching(/\/profiles$/),
+        }),
+        expect.objectContaining({
+          method: "PATCH",
+          path: expect.stringMatching(new RegExp(`/profiles/${profileId}$`)),
+        }),
+        expect.objectContaining({
+          method: "POST",
+          path: expect.stringMatching(/\/avatar$/),
+        }),
+        expect.objectContaining({
+          method: "GET",
+          path: expect.stringMatching(/\/skills\/available$/),
+        }),
+        expect.objectContaining({
+          method: "DELETE",
+          path: expect.stringContaining("/skills/[social.skills.id]"),
+        }),
+      ]),
+    );
   });
 });

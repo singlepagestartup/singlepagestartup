@@ -21,6 +21,11 @@ class StartupService extends Service {
         description: "Custom startup command",
         target: "telegram-bot",
       },
+      {
+        command: "/assistant",
+        description: "Startup assistant",
+        conversationId: "startup-assistant-profile-management",
+      },
     ];
 
     return this.mergeTelegramCommandDefinitions({
@@ -116,6 +121,10 @@ describe("Agent Telegram command registry", () => {
           description: "Custom startup command",
         },
         {
+          command: "assistant",
+          description: "Startup assistant",
+        },
+        {
           command: "knowledge",
           description: "Использовать знания профиля",
         },
@@ -124,6 +133,55 @@ describe("Agent Telegram command registry", () => {
           description: "Добавить сообщение в знания профиля",
         },
       ]),
+    );
+    expect(
+      result.find((command) => command.command === "assistant"),
+    ).not.toHaveProperty("conversationId");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: assistant management is an Agent-owned conversation command.
+   * When: Agent resolves the built-in command and its termination aliases.
+   * Then: every definition targets the Telegram bot and carries the same serializable conversation id.
+   */
+  it("owns the assistant conversation command lifecycle", () => {
+    const service = Object.create(Service.prototype) as Service;
+
+    for (const command of ["/assistant", "/cancel", "/exit", "/stop"]) {
+      const result = (service as any).findTelegramCommandDefinition({
+        description: command,
+      });
+
+      expect(result.definition).toEqual(
+        expect.objectContaining({
+          command,
+          conversationId: "assistant-profile-management",
+          target: "telegram-bot",
+        }),
+      );
+      expect(result.definition.handleMessage).toEqual(expect.any(Function));
+    }
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a child project replaces the assistant conversation implementation.
+   * When: Agent resolves the startup-overridden command.
+   * Then: the replacement conversation id is used without changing Telegram code.
+   */
+  it("allows startup to replace assistant conversation metadata", () => {
+    const service = Object.create(StartupService.prototype) as StartupService;
+    const assistant = (service as any).findTelegramCommandDefinition({
+      description: "/assistant",
+    });
+
+    expect(assistant.definition).toEqual(
+      expect.objectContaining({
+        command: "/assistant",
+        conversationId: "startup-assistant-profile-management",
+        description: "Startup assistant",
+      }),
     );
   });
 
@@ -144,7 +202,7 @@ describe("Agent Telegram command registry", () => {
               description: "Запомнить материал",
             },
             {
-              command: "/premium",
+              command: "/assistant",
               enabled: false,
             },
           ],
@@ -164,7 +222,7 @@ describe("Agent Telegram command registry", () => {
     expect(result).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          command: "premium",
+          command: "assistant",
         }),
       ]),
     );

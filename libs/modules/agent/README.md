@@ -78,3 +78,24 @@ the Agent server SDK and publishes it with `setMyCommands` when the bot starts.
 `social.thread` is the source of truth for Telegram topics. Native Telegram UI
 rename/delete/close events are ignored for SPS data; command flows and SPS UI
 flows are responsible for create/update/delete.
+
+### Assistant management conversations
+
+`/assistant` and its Profile, MCP, Avatar, Skills, and Knowledge tools are owned
+by `agent.agent.service`. `/cancel`, `/exit`, and `/stop` terminate the active
+conversation for the same sender and thread. While an editor is active, Agent
+consumes its next text or image message before the normal AI reaction path, so
+editor input is not also sent to OpenRouter.
+
+The default store is process-local memory behind an Agent conversation-store
+interface. Sessions are isolated by SPS chat id, resolved SPS thread id, and
+sender profile id, expire after 30 minutes of inactivity, and are serialized per
+key. A service restart deliberately removes only this transient UI state; the
+underlying profile, skill, Knowledge, and avatar records remain persistent. Old
+or expired buttons instruct the user to run `/assistant` again.
+
+The runtime keeps one presentation message and edits it through the canonical
+subject-scoped Social message API. If that edit fails, it creates one
+replacement and invalidates the old callback nonce/revision. This design is
+currently single-process; a future shared store can implement the same
+interface without changing conversation definitions or tools.

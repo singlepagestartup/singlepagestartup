@@ -66,3 +66,25 @@ Telegram-compatible command names and descriptions. On transport startup,
 internal RBAC service key and calls `setMyCommands` before setting the webhook.
 This keeps Agent as the command source of truth while preserving the application
 boundary and startup DI override.
+
+## Telegram Assistant Conversation
+
+The built-in `/assistant` definition starts
+`telegram-assistant-profile-management` inside the SinglePage Agent service.
+The same registry owns `/cancel`, `/exit`, and `/stop`; the Telegram adapter
+persists these commands like every other inbound message and never owns a
+parallel conversation registry.
+
+The conversation runtime is an explicitly singleton-scoped, replaceable
+in-memory store. Its canonical key is `social.chat.id + social.thread.id +
+sender social.profile.id`. Records contain only transient navigation/editor
+state, a session nonce, a monotonic revision, presentation message identity,
+and a 30-minute idle expiry. Per-key transition serialization and callback
+revision reservation make repeated clicks stale before domain mutations run.
+
+Every page reloads mutable data through subject-scoped RBAC server SDKs signed
+for the sender subject. Profile selection and authorization are therefore
+rechecked at the domain boundary instead of being trusted from callback data.
+Navigation edits one Social presentation message when possible; replacement
+invalidates older controls. Restart/expiry recovery is to run `/assistant`
+again, and a future distributed store can replace the current store through DI.

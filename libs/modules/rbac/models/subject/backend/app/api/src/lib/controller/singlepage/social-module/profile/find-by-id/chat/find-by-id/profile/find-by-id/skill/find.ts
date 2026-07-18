@@ -2,7 +2,7 @@ import { getHttpErrorType } from "@sps/backend-utils";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Service } from "../../../../../../../../../../service";
-import { findProfileSkillIds, requireParam } from "./helpers";
+import { findProfileSkillIds, parsePagination, requireParam } from "./helpers";
 
 export class Handler {
   service: Service;
@@ -17,9 +17,11 @@ export class Handler {
         c,
         "targetSocialModuleProfileId",
       );
+      const pagination = parsePagination(c);
       const skillIds = await findProfileSkillIds({
         service: this.service,
         targetSocialModuleProfileId,
+        ...pagination,
       });
 
       if (!skillIds.length) {

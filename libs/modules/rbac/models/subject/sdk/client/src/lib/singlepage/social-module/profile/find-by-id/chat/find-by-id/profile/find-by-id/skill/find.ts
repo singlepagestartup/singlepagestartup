@@ -23,7 +23,7 @@ export type IResult =
   IParentResult["ISocialModuleProfileFindByIdChatFindByIdProfileFindByIdSkillFindResult"];
 
 export function action(props: IProps) {
-  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/skills`;
+  const queryKey = `${route}/${props.id}/social-module/profiles/${props.socialModuleProfileId}/chats/${props.socialModuleChatId}/profiles/${props.targetSocialModuleProfileId}/skills?limit=${props.limit ?? ""}&offset=${props.offset ?? ""}`;
   const { meta: userMeta, ...restReactQueryOptions } =
     props.reactQueryOptions ?? {};
 

@@ -3,6 +3,11 @@ export interface IReadService {
   findById: (props: { id: string }) => Promise<any>;
 }
 
+export type {
+  ITelegramConversationRuntime,
+  ITelegramConversationStore,
+} from "./service/singlepage/telegram-conversation";
+
 export interface IHostPageReadService extends IReadService {
   urls: (props?: any) => Promise<any>;
 }
@@ -21,6 +26,7 @@ export interface ISocialModule {
   chatsToActions: IReadService;
   threadsToMessages: IReadService;
   threadsToActions: IReadService;
+  messagesToFileStorageModuleFiles: IReadService;
 }
 
 export interface IRbacModule {
@@ -68,6 +74,10 @@ export interface IHostModule {
 }
 
 export const AgentDI = {
+  ITelegramConversationStore: Symbol.for("agent.telegram.conversation.store"),
+  ITelegramConversationRuntime: Symbol.for(
+    "agent.telegram.conversation.runtime",
+  ),
   ISocialModule: Symbol.for("agent.social.module"),
   IRbacModule: Symbol.for("agent.rbac.module"),
   IEcommerceModule: Symbol.for("agent.ecommerce.module"),

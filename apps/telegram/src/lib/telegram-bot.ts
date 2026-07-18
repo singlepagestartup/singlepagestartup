@@ -16,10 +16,6 @@ import {
   webhookCallback,
   Context as GrammyContext,
 } from "grammy";
-import {
-  Conversation,
-  ConversationFlavor as GrammyConversationFlavor,
-} from "@grammyjs/conversations";
 import { IModel as IRbacSubject } from "@sps/rbac/models/subject/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as agentModuleAgentApi } from "@sps/agent/models/agent/sdk/server";
@@ -35,7 +31,7 @@ import {
   type TelegramVoiceMessageData,
 } from "./telegram-voice-message";
 
-export type TelegramBotContext = GrammyContext & GrammyConversationFlavor;
+export type TelegramBotContext = GrammyContext;
 
 type TelegramAttachmentCandidate = {
   fileId: string;
@@ -157,14 +153,6 @@ export class TelegarmBot {
     string,
     { messages: GrammyContext[]; timer: ReturnType<typeof setTimeout> }
   >();
-  conversations: {
-    path: string;
-    handler: (
-      conversation: Conversation<any>,
-      ctx: GrammyContext & GrammyConversationFlavor,
-    ) => void;
-  }[] = [];
-
   constructor() {
     if (!TELEGRAM_SERVICE_BOT_TOKEN) {
       return;
@@ -174,16 +162,7 @@ export class TelegarmBot {
       TELEGRAM_SERVICE_BOT_TOKEN || "",
     );
 
-    this.addServiceActions();
-
     this.webhookHandler = webhookCallback(this.instance, "hono") as any;
-  }
-
-  addServiceActions() {
-    this.instance.command(["cancel", "exit", "stop"], async (ctx) => {
-      await ctx.conversation.exit();
-      await ctx.reply("Leaving.");
-    });
   }
 
   private getTelegramMessageThreadId(props: { ctx: GrammyContext }) {
@@ -320,7 +299,7 @@ export class TelegarmBot {
   }
 
   /**
-   * Should be called after routes and conversations are added
+   * Should be called after routes are added
    */
   init() {
     this.instance.on("chat_member", async (ctx) => {

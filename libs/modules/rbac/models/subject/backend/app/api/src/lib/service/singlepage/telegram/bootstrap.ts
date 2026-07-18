@@ -58,6 +58,10 @@ type IResolvePersonalAiAgent = (props: {
   rbacModuleSubject: IRbacSubject;
   socialModuleProfile: ISocialModuleProfile;
 }>;
+type IEnsureProfileManagementAccess = (props: {
+  ownerRbacSubjectId: string;
+  socialModuleProfileId: string;
+}) => Promise<unknown>;
 
 interface IChatRelation {
   id?: string;
@@ -78,6 +82,7 @@ export interface IConstructorProps {
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent?: IResolvePersonalAiAgent;
+  ensureProfileManagementAccess?: IEnsureProfileManagementAccess;
 }
 
 export class Service {
@@ -87,6 +92,7 @@ export class Service {
   subjectsToIdentities: SubjectsToIdentitiesService;
   subjectsToSocialModuleProfiles: SubjectsToSocialModuleProfilesService;
   resolvePersonalAiAgent: IResolvePersonalAiAgent;
+  ensureProfileManagementAccess: IEnsureProfileManagementAccess;
 
   constructor(props: IConstructorProps) {
     this.findById = props.findById;
@@ -101,6 +107,8 @@ export class Service {
           "Configuration error. Telegram personal AI agent resolver is not configured.",
         );
       });
+    this.ensureProfileManagementAccess =
+      props.ensureProfileManagementAccess || (async () => undefined);
   }
 
   protected getSdkHeaders() {
@@ -1461,6 +1469,7 @@ export class Service {
   }
 
   protected async synchronizeTelegramAutomaticProfilesForChat(props: {
+    ownerRbacSubjectId?: string;
     socialModuleChatId: string;
     personalAiSocialModuleProfile: ISocialModuleProfile;
     headers: Record<string, string>;
@@ -1659,6 +1668,22 @@ export class Service {
           removedRelationIds,
         },
       );
+    }
+
+    if (props.ownerRbacSubjectId) {
+      for (const profile of profilesById.values()) {
+        if (
+          profile.variant !== "artificial-intelligence" ||
+          profile.id === props.personalAiSocialModuleProfile.id
+        ) {
+          continue;
+        }
+
+        await this.ensureProfileManagementAccess({
+          ownerRbacSubjectId: props.ownerRbacSubjectId,
+          socialModuleProfileId: profile.id,
+        });
+      }
     }
   }
 
@@ -2043,6 +2068,7 @@ export class Service {
     });
 
     await this.synchronizeTelegramAutomaticProfilesForChat({
+      ownerRbacSubjectId: subject.id,
       socialModuleChatId: chat.id,
       personalAiSocialModuleProfile: personalAiAgent.socialModuleProfile,
       headers,

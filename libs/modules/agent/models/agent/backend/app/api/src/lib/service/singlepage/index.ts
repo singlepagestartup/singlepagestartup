@@ -43,11 +43,21 @@ import {
   type INotificationModule,
   type IRbacModule,
   type ISocialModule,
+  type ITelegramConversationRuntime,
 } from "../../di";
 import {
   type ITelegramRequiredSubscriptionChannelConfiguration,
   resolveTelegramRequiredSubscriptionChannelConfiguration,
 } from "./telegram-required-subscription-channel";
+import {
+  TELEGRAM_ASSISTANT_CALLBACK_PREFIX,
+  type ITelegramConversationKey,
+} from "./telegram-conversation";
+import {
+  TelegramAssistantConversation,
+  type ITelegramAssistantConversationContext,
+  type ITelegramAssistantConversationTransport,
+} from "./telegram-assistant-conversation";
 
 const activeSubscriptionProductsCheckoutMessage =
   "Checking out order has active subscription products.";
@@ -93,6 +103,16 @@ export type ITelegramBotReplyContext = {
     }
 );
 
+type ITelegramConversationSourceContext = {
+  shouldReplySocialModuleProfile: ISocialModuleProfile;
+  socialModuleChat: ISocialModuleChat;
+  socialModuleThreadId?: string;
+  messageFromSocialModuleProfile: ISocialModuleProfile | null;
+} & (
+  | { socialModuleMessage: ISocialModuleMessage }
+  | { socialModuleAction: ISocialModuleAction }
+);
+
 export type TTelegramCommandTarget = "telegram-bot" | "artificial-intelligence";
 
 export type ITelegramCommandMessageContext = ITelegramBotReplyContext & {
@@ -110,6 +130,7 @@ export interface ITelegramCommandDefinition {
   command: string;
   description: string;
   target: TTelegramCommandTarget;
+  conversationId?: string;
   handleMessage?: (props: ITelegramCommandMessageContext) => Promise<unknown>;
   handleCallbackQuery?: (
     props: ITelegramCommandCallbackContext,
@@ -138,6 +159,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   hostModule: IHostModule;
   notificationModule: INotificationModule;
   fileStorageModule: IFileStorageModule;
+  telegramConversationRuntime: ITelegramConversationRuntime;
 
   constructor(
     @inject(DI.IRepository) repository: Repository,
@@ -150,6 +172,8 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     @inject(AgentDI.INotificationModule)
     notificationModule: INotificationModule,
     @inject(AgentDI.IFileStorageModule) fileStorageModule: IFileStorageModule,
+    @inject(AgentDI.ITelegramConversationRuntime)
+    telegramConversationRuntime: ITelegramConversationRuntime,
   ) {
     super(repository);
     this.socialModule = socialModule;
@@ -160,6 +184,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     this.hostModule = hostModule;
     this.notificationModule = notificationModule;
     this.fileStorageModule = fileStorageModule;
+    this.telegramConversationRuntime = telegramConversationRuntime;
   }
 
   statusMessages = telegramBotServiceMessages;
@@ -225,6 +250,32 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             },
           }),
       },
+      {
+        command: "/assistant",
+        description: "Управлять AI-ассистентом",
+        target: "telegram-bot",
+        conversationId: "assistant-profile-management",
+        handleMessage: (props) =>
+          this.telegramAssistantConversationEnter(props),
+      },
+      ...["/cancel", "/exit", "/stop"].map(
+        (command): ITelegramCommandDefinition => {
+          const descriptions: Record<string, string> = {
+            "/cancel": "Отменить текущий диалог",
+            "/exit": "Завершить текущий диалог",
+            "/stop": "Остановить текущий диалог",
+          };
+
+          return {
+            command,
+            description: descriptions[command],
+            target: "telegram-bot",
+            conversationId: "assistant-profile-management",
+            handleMessage: (props) =>
+              this.telegramAssistantConversationExit(props),
+          };
+        },
+      ),
       ...["/threads", "/thread_new", "/thread_rename", "/thread_delete"].map(
         (command): ITelegramCommandDefinition => {
           const descriptions: Record<string, string> = {
@@ -514,6 +565,14 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             description: props.socialModuleMessage.description,
           })
         : undefined;
+    const telegramConversationKey =
+      props.socialModuleChat.variant === "telegram" &&
+      this.telegramConversationRuntime
+        ? await this.resolveTelegramConversationKey(props)
+        : undefined;
+    const activeTelegramConversation = telegramConversationKey
+      ? await this.telegramConversationRuntime.get(telegramConversationKey)
+      : undefined;
 
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
@@ -529,6 +588,22 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             messageFromSocialModuleProfile:
               props.messageFromSocialModuleProfile,
           });
+        } else if (activeTelegramConversation) {
+          const replyContext: ITelegramBotReplyContext = {
+            ...props,
+            jwtToken,
+            rbacModuleSubject,
+          };
+          const conversationContext =
+            await this.getTelegramAssistantConversationContext({
+              ...replyContext,
+              telegramConversationKey,
+            });
+          await this.getTelegramAssistantConversation().handleMessage(
+            conversationContext,
+            props.socialModuleMessage,
+            this.getTelegramAssistantConversationTransport(replyContext),
+          );
         }
       } else if ("socialModuleAction" in props) {
         if (props.socialModuleAction.payload?.telegram?.callback_query) {
@@ -548,6 +623,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       props.shouldReplySocialModuleProfile.variant === "artificial-intelligence"
     ) {
       if ("socialModuleMessage" in props) {
+        if (activeTelegramConversation) {
+          return;
+        }
+
         if (telegramCommand?.definition.target === "telegram-bot") {
           return;
         }
@@ -676,6 +755,160 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       rbacModuleSubject: messageFromRbacModuleSubject,
       jwtToken: messageFromRbacModuleSubjectJwt,
     };
+  }
+
+  protected async telegramAssistantConversationEnter(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().enter(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected async telegramAssistantConversationExit(
+    props: ITelegramCommandMessageContext,
+  ) {
+    const context = await this.getTelegramAssistantConversationContext(props);
+
+    return this.getTelegramAssistantConversation().terminate(
+      context,
+      this.getTelegramAssistantConversationTransport(props),
+    );
+  }
+
+  protected getTelegramAssistantConversation() {
+    return new TelegramAssistantConversation(this.telegramConversationRuntime);
+  }
+
+  protected async resolveTelegramConversationKey(
+    props: ITelegramConversationSourceContext,
+  ): Promise<ITelegramConversationKey | undefined> {
+    if (!RBAC_SECRET_KEY || !props.messageFromSocialModuleProfile?.id) {
+      return;
+    }
+
+    const threadId = await this.resolveThreadIdForReplyContext({
+      ...props,
+      secretKey: RBAC_SECRET_KEY,
+    });
+
+    return {
+      chatId: props.socialModuleChat.id,
+      threadId,
+      senderProfileId: props.messageFromSocialModuleProfile.id,
+    };
+  }
+
+  protected async getTelegramAssistantConversationContext(
+    props: ITelegramBotReplyContext & {
+      telegramConversationKey?: ITelegramConversationKey;
+    },
+  ): Promise<ITelegramAssistantConversationContext> {
+    if (!props.messageFromSocialModuleProfile?.id) {
+      throw new Error(
+        "Validation error. Telegram conversation sender profile is missing",
+      );
+    }
+
+    const key =
+      props.telegramConversationKey ||
+      (await this.resolveTelegramConversationKey(props));
+
+    if (!key) {
+      throw new Error(
+        "Validation error. Telegram conversation key cannot be resolved",
+      );
+    }
+
+    const requesterSubject = await this.getMessageFromRbacModuleSubject(props);
+    const requesterJwtToken = await this.signRbacModuleSubjectJwt({
+      rbacModuleSubject: requesterSubject,
+    });
+
+    return {
+      key,
+      requesterSubject,
+      requesterProfileId: props.messageFromSocialModuleProfile.id,
+      socialModuleChatId: props.socialModuleChat.id,
+      requesterJwtToken,
+    };
+  }
+
+  protected getTelegramAssistantConversationTransport(
+    props: ITelegramBotReplyContext,
+  ): ITelegramAssistantConversationTransport {
+    return {
+      create: (data) =>
+        this.telegramBotReplyMessageCreate({
+          ...props,
+          data,
+        }),
+      update: (socialModuleMessageId, data) =>
+        rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageUpdate(
+          {
+            id: props.rbacModuleSubject.id,
+            socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
+            socialModuleChatId: props.socialModuleChat.id,
+            socialModuleMessageId,
+            data,
+            options: {
+              headers: { Authorization: `Bearer ${props.jwtToken}` },
+            },
+          },
+        ),
+      resolveAvatarFile: (message) =>
+        this.resolveTelegramAssistantAvatarFile(message),
+    };
+  }
+
+  protected async resolveTelegramAssistantAvatarFile(
+    message: ISocialModuleMessage,
+  ) {
+    const relations =
+      await this.socialModule.messagesToFileStorageModuleFiles.find({
+        params: {
+          filters: {
+            and: [{ column: "messageId", method: "eq", value: message.id }],
+          },
+          orderBy: {
+            and: [{ column: "orderIndex", method: "desc" }],
+          },
+        },
+      });
+    const relation = relations?.find(
+      (item) => typeof item.fileStorageModuleFileId === "string",
+    );
+
+    if (!relation?.fileStorageModuleFileId) {
+      return;
+    }
+
+    const file = await this.fileStorageModule.file.findById({
+      id: relation.fileStorageModuleFileId,
+    });
+
+    if (!file?.file || !String(file.mimeType || "").startsWith("image/")) {
+      return;
+    }
+
+    const url = String(file.file).includes("http")
+      ? String(file.file)
+      : `${NEXT_PUBLIC_API_SERVICE_URL}/public${file.file}`;
+    const files = await blobifyFiles({
+      files: [
+        {
+          title: file.title || file.adminTitle || file.id,
+          extension: file.extension || "jpg",
+          type: file.mimeType || "image/jpeg",
+          url,
+        },
+      ],
+    });
+
+    return files[0];
   }
 
   protected formatTelegramThreadTitle(props: {
@@ -980,7 +1213,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
   }
 
   protected async resolveThreadIdForReplyContext(
-    props: ITelegramBotReplyContext & {
+    props: ITelegramConversationSourceContext & {
       secretKey: string;
     },
   ) {
@@ -1026,6 +1259,18 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
 
     if (!callbackQueryData) {
       throw new Error("Validation error. Callback query data is missing");
+    }
+
+    if (
+      callbackQueryData.startsWith(`${TELEGRAM_ASSISTANT_CALLBACK_PREFIX}:`)
+    ) {
+      const context = await this.getTelegramAssistantConversationContext(props);
+
+      return this.getTelegramAssistantConversation().handleCallback(
+        context,
+        callbackQueryData,
+        this.getTelegramAssistantConversationTransport(props),
+      );
     }
 
     if (callbackQueryData.startsWith("command_")) {

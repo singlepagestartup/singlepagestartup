@@ -64,7 +64,9 @@ function requireParam(
 export class Middleware {
   constructor(private readonly service: IService) {}
 
-  init(): MiddlewareHandler<any, any, {}> {
+  init(
+    options: { requireLinkedSkill?: boolean } = {},
+  ): MiddlewareHandler<any, any, {}> {
     return createMiddleware(async (c, next) => {
       try {
         const id = requireParam(c, "id");
@@ -94,7 +96,7 @@ export class Middleware {
           socialModuleChatId,
         });
 
-        if (socialModuleSkillId) {
+        if (socialModuleSkillId && options.requireLinkedSkill !== false) {
           await this.assertTargetSkillAccess({
             targetSocialModuleProfileId,
             socialModuleSkillId,
@@ -116,7 +118,7 @@ export class Middleware {
     });
   }
 
-  private async assertRequestingProfileAccess(props: {
+  async assertRequestingProfileAccess(props: {
     subjectId: string;
     socialModuleProfileId: string;
   }) {
@@ -148,7 +150,7 @@ export class Middleware {
     }
   }
 
-  private async assertTargetAgentProfileAccess(props: {
+  async assertTargetAgentProfileAccess(props: {
     targetSocialModuleProfileId: string;
     socialModuleChatId: string;
   }) {
@@ -246,7 +248,7 @@ export class Middleware {
     }
   }
 
-  private async assertTargetSkillAccess(props: {
+  async assertTargetSkillAccess(props: {
     targetSocialModuleProfileId: string;
     socialModuleSkillId: string;
   }) {
@@ -277,7 +279,7 @@ export class Middleware {
     }
   }
 
-  private async assertTargetKnowledgeDocumentAccess(props: {
+  async assertTargetKnowledgeDocumentAccess(props: {
     targetSocialModuleProfileId: string;
     knowledgeModuleDocumentId: string;
   }) {

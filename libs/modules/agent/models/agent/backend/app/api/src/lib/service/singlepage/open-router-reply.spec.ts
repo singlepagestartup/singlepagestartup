@@ -538,6 +538,97 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
 
   /**
    * BDD Scenario
+   * Given: one Telegram sender has an active assistant conversation while another sender does not.
+   * When: the Agent dispatches ordinary messages from both senders to an AI profile.
+   * Then: the active conversation input suppresses OpenRouter and the unrelated message keeps the normal AI flow.
+   */
+  it("suppresses OpenRouter only for the active Telegram conversation key", async () => {
+    const service = Object.create(Service.prototype) as Service;
+    const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
+    const getConversation = jest
+      .fn()
+      .mockImplementation(async (key: { senderProfileId: string }) =>
+        key.senderProfileId === "active-sender"
+          ? { conversationId: "telegram-assistant-profile-management" }
+          : undefined,
+      );
+
+    (service as any).openRouterReplyMessageCreate =
+      openRouterReplyMessageCreate;
+    (service as any).telegramConversationRuntime = {
+      get: getConversation,
+    };
+    (service as any).resolveTelegramConversationKey = jest
+      .fn()
+      .mockImplementation(async (props: any) => ({
+        chatId: props.socialModuleChat.id,
+        threadId: "thread-1",
+        senderProfileId: props.messageFromSocialModuleProfile.id,
+      }));
+    (service as any).rbacModule = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([
+          {
+            subjectId: "rbac-subject",
+          },
+        ]),
+      },
+      subject: {
+        findById: jest.fn().mockResolvedValue({
+          id: "rbac-subject",
+        }),
+      },
+    };
+
+    const commonProps = {
+      shouldReplySocialModuleProfile: {
+        id: "ai-profile",
+        slug: "personal-ai",
+        variant: "artificial-intelligence",
+      } as any,
+      socialModuleChat: {
+        id: "chat-1",
+        variant: "telegram",
+      } as any,
+      socialModuleMessage: {
+        id: "message-1",
+        description: "Editor input",
+      } as any,
+    };
+
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      messageFromSocialModuleProfile: {
+        id: "active-sender",
+      } as any,
+    });
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      socialModuleMessage: {
+        id: "message-2",
+        description: "Ordinary prompt",
+      } as any,
+      messageFromSocialModuleProfile: {
+        id: "unrelated-sender",
+      } as any,
+    });
+
+    expect(getConversation).toHaveBeenCalledTimes(2);
+    expect(openRouterReplyMessageCreate).toHaveBeenCalledTimes(1);
+    expect(openRouterReplyMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        socialModuleMessage: expect.objectContaining({
+          id: "message-2",
+        }),
+        messageFromSocialModuleProfile: expect.objectContaining({
+          id: "unrelated-sender",
+        }),
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
    * Given: Telegram ingests a direct /learn command without transport rewriting.
    * When: Agent dispatches connected automatic profiles.
    * Then: the AI profile receives the command and the telegram-bot profile skips it.

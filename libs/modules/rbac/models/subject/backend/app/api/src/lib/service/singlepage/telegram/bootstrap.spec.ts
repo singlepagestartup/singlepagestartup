@@ -1226,6 +1226,7 @@ describe("Given: Telegram automatic chat participants", () => {
    * Then: every connected AI remains while only the duplicate relation is removed.
    */
   it("When: participants are synchronized Then: connected AI profiles are preserved", async () => {
+    const ensureProfileManagementAccess = jest.fn().mockResolvedValue({});
     const personalAiProfile = {
       id: "personal-ai-profile",
       slug: "telegram-personal-ai-agent-owner-1",
@@ -1308,9 +1309,11 @@ describe("Given: Telegram automatic chat participants", () => {
         profile,
         profilesToChats,
       } as any,
+      ensureProfileManagementAccess,
     });
 
     await (service as any).synchronizeTelegramAutomaticProfilesForChat({
+      ownerRbacSubjectId: "owner-subject",
       socialModuleChatId: "chat-1",
       personalAiSocialModuleProfile: personalAiProfile,
       headers: {
@@ -1344,6 +1347,15 @@ describe("Given: Telegram automatic chat participants", () => {
           "X-RBAC-SECRET-KEY": "test-rbac-secret",
         },
       },
+    });
+    expect(ensureProfileManagementAccess).toHaveBeenCalledTimes(2);
+    expect(ensureProfileManagementAccess).toHaveBeenCalledWith({
+      ownerRbacSubjectId: "owner-subject",
+      socialModuleProfileId: "global-ai-profile",
+    });
+    expect(ensureProfileManagementAccess).toHaveBeenCalledWith({
+      ownerRbacSubjectId: "owner-subject",
+      socialModuleProfileId: "other-personal-ai-profile",
     });
   });
 });

@@ -12,10 +12,13 @@
 
 const mockBlobifyFiles = jest.fn();
 const mockTelegramCommands = jest.fn();
+const mockTelegramMessageCreate = jest.fn();
 
 jest.mock("@sps/shared-utils", () => {
   return {
     NEXT_PUBLIC_TELEGRAM_SERVICE_URL: "https://telegram.example.com",
+    RBAC_JWT_SECRET: "jwt-secret",
+    RBAC_JWT_TOKEN_LIFETIME_IN_SECONDS: 3600,
     RBAC_SECRET_KEY: "rbac-secret",
     TELEGRAM_SERVICE_BOT_TOKEN: "telegram-token",
     TELEGRAM_SERVICE_BOT_USERNAME: "singlepagestartup_bot",
@@ -26,6 +29,16 @@ jest.mock("@sps/agent/models/agent/sdk/server", () => {
   return {
     api: {
       telegramCommands: (...args: unknown[]) => mockTelegramCommands(...args),
+    },
+  };
+});
+
+jest.mock("@sps/rbac/models/subject/sdk/server", () => {
+  return {
+    api: {
+      socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate: (
+        ...args: unknown[]
+      ) => mockTelegramMessageCreate(...args),
     },
   };
 });
@@ -214,6 +227,53 @@ describe("Given: Telegram transport controls", () => {
       }),
     ).toBe(false);
   });
+
+  /**
+   * BDD Scenario
+   * Given: assistant lifecycle commands are owned by the Agent service.
+   * When: Telegram receives one of those commands in a private chat.
+   * Then: the adapter persists the command unchanged instead of consuming it locally.
+   */
+  it.each(["/assistant", "/cancel", "/exit", "/stop"])(
+    "When: %s is received Then: it is forwarded through RBAC ingestion",
+    async (command) => {
+      mockTelegramMessageCreate.mockResolvedValue({ id: "message-id" });
+      const bot = Object.create(TelegarmBot.prototype) as any;
+      bot.rbacModuleSubjectWithSocialModuleProfileAndChatFindOrCreate = jest
+        .fn()
+        .mockResolvedValue({
+          rbacModuleSubject: { id: "subject-id" },
+          socialModuleProfile: { id: "profile-id" },
+          socialModuleChat: { id: "chat-id" },
+          socialModuleThread: { id: "thread-id" },
+        });
+      bot.signSubjectJwt = jest.fn().mockResolvedValue("jwt-token");
+      bot.shouldHandleIncomingMessageInChat = jest.fn().mockReturnValue(true);
+
+      await bot.handleIncomingMessage({
+        ctx: {
+          chat: { id: 1 },
+          from: { id: 2 },
+          message: { text: command },
+        },
+        data: {
+          description: command,
+          sourceSystemId: "telegram-message-id",
+        },
+      });
+
+      expect(mockTelegramMessageCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            description: command,
+          }),
+          socialModuleChatId: "chat-id",
+          socialModuleProfileId: "profile-id",
+          socialModuleThreadId: "thread-id",
+        }),
+      );
+    },
+  );
 });
 
 describe("Given: background processing of an incoming Telegram message", () => {

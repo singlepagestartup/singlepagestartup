@@ -50,6 +50,8 @@ export function normalizeSkillPayload(value: Record<string, any>) {
 export async function findProfileSkillIds(props: {
   service: Service;
   targetSocialModuleProfileId: string;
+  limit?: number;
+  offset?: number;
 }) {
   const relations = await props.service.socialModule.profilesToSkills.find({
     params: {
@@ -74,6 +76,8 @@ export async function findProfileSkillIds(props: {
           },
         ],
       },
+      ...(props.limit === undefined ? {} : { limit: props.limit }),
+      ...(props.offset === undefined ? {} : { offset: props.offset }),
     },
   });
 
@@ -84,6 +88,29 @@ export async function findProfileSkillIds(props: {
         return typeof skillId === "string" && Boolean(skillId);
       }) || []
   );
+}
+
+export function parsePagination(c: Context) {
+  const rawLimit = c.req.query("limit");
+  const rawOffset = c.req.query("offset");
+  const parsedLimit = rawLimit === undefined ? undefined : Number(rawLimit);
+  const parsedOffset = rawOffset === undefined ? undefined : Number(rawOffset);
+
+  if (
+    parsedLimit !== undefined &&
+    (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 50)
+  ) {
+    throw new Error("Validation error. limit must be an integer from 1 to 50");
+  }
+
+  if (
+    parsedOffset !== undefined &&
+    (!Number.isInteger(parsedOffset) || parsedOffset < 0)
+  ) {
+    throw new Error("Validation error. offset must be a non-negative integer");
+  }
+
+  return { limit: parsedLimit, offset: parsedOffset };
 }
 
 function toRequiredString(value: unknown, field: string) {
