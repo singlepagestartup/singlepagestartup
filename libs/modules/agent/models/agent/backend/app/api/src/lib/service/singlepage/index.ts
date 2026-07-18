@@ -16,7 +16,11 @@ import { Table } from "@sps/agent/models/agent/backend/repository/database";
 import { Repository } from "../../repository";
 import { IModel as ISocialModuleProfile } from "@sps/social/models/profile/sdk/model";
 import { IModel as ISocialModuleChat } from "@sps/social/models/chat/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  isSocialMessageExcludedFromOpenRouter,
+  withSocialMessageSystemMetadata,
+} from "@sps/social/models/message/sdk/model";
 import {
   IModel as ISocialModuleThread,
   selectPrimaryLinkedThread,
@@ -26,6 +30,7 @@ import { IModel as IRbacModuleSubject } from "@sps/rbac/models/subject/sdk/model
 import { IModel as IEcommerceModuleProduct } from "@sps/ecommerce/models/product/sdk/model";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
 import { api as socialModuleThreadApi } from "@sps/social/models/thread/sdk/server";
+import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import { api as socialModuleChatsToThreadsApi } from "@sps/social/relations/chats-to-threads/sdk/server";
 import { api as socialModuleThreadsToMessagesApi } from "@sps/social/relations/threads-to-messages/sdk/server";
 import { IModel as IEcommerceModuleProductsToFileStorageFiles } from "@sps/ecommerce/relations/products-to-file-storage-module-files/sdk/model";
@@ -69,6 +74,7 @@ const openRouterTerminalMessageWrittenMarker =
 
 interface ISocialModuleTelegramMessageData {
   description: string;
+  metadata?: Record<string, unknown>;
   interaction?:
     | {
         inline_keyboard: {
@@ -580,6 +586,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
     if (props.shouldReplySocialModuleProfile.slug === "telegram-bot") {
       if ("socialModuleMessage" in props) {
         if (telegramCommand?.definition.target === "telegram-bot") {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.command",
+          });
           await this.telegramBotCommandReplyMessageCreate({
             jwtToken,
             rbacModuleSubject,
@@ -592,6 +602,10 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
               props.messageFromSocialModuleProfile,
           });
         } else if (activeTelegramConversation) {
+          await this.markTelegramSystemMessage({
+            socialModuleMessage: props.socialModuleMessage,
+            source: "agent.telegram.assistant-conversation",
+          });
           const replyContext: ITelegramBotReplyContext = {
             ...props,
             jwtToken,
@@ -1304,7 +1318,13 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         socialModuleProfileId: props.shouldReplySocialModuleProfile.id,
         socialModuleChatId: props.socialModuleChat.id,
         socialModuleThreadId,
-        data: props.data,
+        data: {
+          ...props.data,
+          metadata: withSocialMessageSystemMetadata({
+            metadata: props.data.metadata,
+            source: "agent.telegram.system-reply",
+          }),
+        },
         options: {
           headers: {
             Authorization: "Bearer " + props.jwtToken,
@@ -1312,6 +1332,41 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         },
       },
     );
+  }
+
+  protected async markTelegramSystemMessage(props: {
+    socialModuleMessage: ISocialModuleMessage;
+    source: string;
+  }) {
+    if (!RBAC_SECRET_KEY) {
+      throw new Error("Configuration error. RBAC_SECRET_KEY not set");
+    }
+
+    if (
+      isSocialMessageExcludedFromOpenRouter(props.socialModuleMessage.metadata)
+    ) {
+      return props.socialModuleMessage;
+    }
+
+    const metadata = withSocialMessageSystemMetadata({
+      metadata: props.socialModuleMessage.metadata,
+      source: props.source,
+    });
+    const updatedMessage = await socialModuleMessageApi.update({
+      id: props.socialModuleMessage.id,
+      data: {
+        metadata,
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": RBAC_SECRET_KEY,
+        },
+      },
+    });
+
+    props.socialModuleMessage.metadata = metadata;
+
+    return updatedMessage;
   }
 
   protected async resolveThreadIdForReplyContext(
@@ -2198,7 +2253,12 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
         );
       }
 
-      if (!props.socialModuleMessage.description?.trim()) {
+      if (
+        isSocialMessageExcludedFromOpenRouter(
+          props.socialModuleMessage.metadata,
+        ) ||
+        !props.socialModuleMessage.description?.trim()
+      ) {
         return;
       }
 

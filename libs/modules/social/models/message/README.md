@@ -18,7 +18,9 @@ Messages store social chat content and interaction data.
 - `interaction`: interaction payload (JSON).
 - `metadata`: opaque JSON extension point for module-owned request, processing,
   and audit contracts. Social persists this field but does not interpret RBAC,
-  OpenRouter, Knowledge, or agent-specific keys.
+  OpenRouter, Knowledge, or agent-specific keys. Internal messages use the
+  shared `systemMessage` envelope with `excludeFromOpenRouter: true` when they
+  must remain visible in chat but must not enter generation triggers or context.
 
 ## Variants
 

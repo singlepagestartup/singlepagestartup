@@ -29,6 +29,14 @@ jest.mock("@sps/rbac/models/subject/sdk/server", () => {
   };
 });
 
+jest.mock("@sps/social/models/message/sdk/server", () => {
+  return {
+    api: {
+      update: jest.fn(),
+    },
+  };
+});
+
 jest.mock("hono/jwt", () => {
   return {
     sign: jest.fn(),
@@ -37,6 +45,7 @@ jest.mock("hono/jwt", () => {
 
 import { Service } from "./index";
 import { api as rbacModuleSubjectApi } from "@sps/rbac/models/subject/sdk/server";
+import { api as socialModuleMessageApi } from "@sps/social/models/message/sdk/server";
 import * as jwt from "hono/jwt";
 
 const mockedSign = jwt.sign as jest.Mock;
@@ -46,6 +55,7 @@ const mockedThreadMessageCreate =
   rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdThreadFindByIdMessageCreate as jest.Mock;
 const mockedMessageCreate =
   rbacModuleSubjectApi.socialModuleProfileFindByIdChatFindByIdMessageCreate as jest.Mock;
+const mockedSocialMessageUpdate = socialModuleMessageApi.update as jest.Mock;
 
 function createService() {
   const service = Object.create(Service.prototype) as Service;
@@ -102,6 +112,283 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedSign.mockResolvedValue("signed-jwt");
+  });
+
+  /**
+   * BDD Scenario
+   * Given: Agent creates a Telegram command or assistant-management reply.
+   * When: the reply is persisted in the current thread.
+   * Then: it carries the system marker while preserving other metadata.
+   */
+  it("marks every Telegram system reply as excluded from OpenRouter", async () => {
+    const service = createService();
+
+    mockedThreadMessageCreate.mockResolvedValue({ id: "reply-message" });
+
+    await (service as any).telegramBotReplyMessageCreate({
+      jwtToken: "caller-jwt",
+      rbacModuleSubject: {
+        id: "caller-subject",
+      },
+      shouldReplySocialModuleProfile: {
+        id: "telegram-bot-profile",
+      },
+      socialModuleChat: {
+        id: "chat-1",
+      },
+      socialModuleMessage: {
+        id: "message-1",
+        description: "/assistant",
+      },
+      messageFromSocialModuleProfile: {
+        id: "sender-profile",
+      },
+      data: {
+        description: "Профиль ассистента открыт.",
+        metadata: {
+          telegram: {
+            presentation: true,
+          },
+        },
+      },
+    });
+
+    expect(mockedThreadMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          description: "Профиль ассистента открыт.",
+          metadata: {
+            telegram: {
+              presentation: true,
+            },
+            systemMessage: {
+              version: 1,
+              source: "agent.telegram.system-reply",
+              excludeFromOpenRouter: true,
+            },
+          },
+        },
+      }),
+    );
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a published Telegram bot command enters Agent dispatch.
+   * When: Agent routes the command to its system handler.
+   * Then: the originating command message is excluded from later generations.
+   */
+  it("marks Telegram bot command inputs as excluded from OpenRouter", async () => {
+    const service = Object.create(Service.prototype) as Service;
+    const commandReply = jest.fn().mockResolvedValue(undefined);
+
+    mockedSocialMessageUpdate.mockResolvedValue({ id: "message-command" });
+    (service as any).rbacModule = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
+      },
+      subject: {
+        findById: jest.fn().mockResolvedValue({ id: "bot-subject" }),
+      },
+    };
+    (service as any).telegramConversationRuntime = {
+      get: jest.fn().mockResolvedValue(undefined),
+    };
+    (service as any).resolveTelegramConversationKey = jest
+      .fn()
+      .mockResolvedValue({
+        chatId: "chat-1",
+        threadId: "thread-1",
+        senderProfileId: "sender-profile",
+      });
+    (service as any).telegramBotCommandReplyMessageCreate = commandReply;
+
+    await service.agentSocialModuleProfileHandler({
+      shouldReplySocialModuleProfile: {
+        id: "telegram-bot-profile",
+        slug: "telegram-bot",
+      } as any,
+      socialModuleChat: {
+        id: "chat-1",
+        variant: "telegram",
+      } as any,
+      socialModuleMessage: {
+        id: "message-command",
+        description: "/assistant",
+      } as any,
+      socialModuleThreadId: "thread-1",
+      messageFromSocialModuleProfile: {
+        id: "sender-profile",
+      } as any,
+    });
+
+    expect(mockedSocialMessageUpdate).toHaveBeenCalledWith({
+      id: "message-command",
+      data: {
+        metadata: {
+          systemMessage: {
+            version: 1,
+            source: "agent.telegram.command",
+            excludeFromOpenRouter: true,
+          },
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(commandReply).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * BDD Scenario
+   * Given: an avatar file arrives while the Telegram assistant editor is active.
+   * When: Agent consumes the file as conversation input.
+   * Then: the persisted input is marked as system traffic before the editor handles it.
+   */
+  it("marks active Telegram assistant input before consuming an avatar", async () => {
+    const service = Object.create(Service.prototype) as Service;
+    const handleMessage = jest.fn().mockResolvedValue(undefined);
+    const transport = {};
+
+    mockedSocialMessageUpdate.mockResolvedValue({ id: "message-avatar" });
+    (service as any).rbacModule = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ subjectId: "bot-subject" }]),
+      },
+      subject: {
+        findById: jest.fn().mockResolvedValue({ id: "bot-subject" }),
+      },
+    };
+    (service as any).telegramConversationRuntime = {
+      get: jest.fn().mockResolvedValue({
+        conversationId: "assistant-profile-management",
+      }),
+    };
+    (service as any).resolveTelegramConversationKey = jest
+      .fn()
+      .mockResolvedValue({
+        chatId: "chat-1",
+        threadId: "thread-1",
+        senderProfileId: "sender-profile",
+      });
+    (service as any).getTelegramAssistantConversationContext = jest
+      .fn()
+      .mockResolvedValue({ key: "conversation-key" });
+    (service as any).getTelegramAssistantConversation = jest.fn(() => ({
+      handleMessage,
+    }));
+    (service as any).getTelegramAssistantConversationTransport = jest.fn(
+      () => transport,
+    );
+
+    const avatarMessage = {
+      id: "message-avatar",
+      description: "",
+      metadata: {
+        telegram: {
+          sourceMessageIds: [501],
+        },
+      },
+    };
+
+    await service.agentSocialModuleProfileHandler({
+      shouldReplySocialModuleProfile: {
+        id: "telegram-bot-profile",
+        slug: "telegram-bot",
+      } as any,
+      socialModuleChat: {
+        id: "chat-1",
+        variant: "telegram",
+      } as any,
+      socialModuleMessage: avatarMessage as any,
+      socialModuleThreadId: "thread-1",
+      messageFromSocialModuleProfile: {
+        id: "sender-profile",
+      } as any,
+    });
+
+    expect(mockedSocialMessageUpdate).toHaveBeenCalledWith({
+      id: "message-avatar",
+      data: {
+        metadata: {
+          telegram: {
+            sourceMessageIds: [501],
+          },
+          systemMessage: {
+            version: 1,
+            source: "agent.telegram.assistant-conversation",
+            excludeFromOpenRouter: true,
+          },
+        },
+      },
+      options: {
+        headers: {
+          "X-RBAC-SECRET-KEY": "rbac-secret",
+        },
+      },
+    });
+    expect(handleMessage).toHaveBeenCalledWith(
+      { key: "conversation-key" },
+      avatarMessage,
+      transport,
+    );
+    expect(avatarMessage.metadata).toEqual({
+      telegram: {
+        sourceMessageIds: [501],
+      },
+      systemMessage: {
+        version: 1,
+        source: "agent.telegram.assistant-conversation",
+        excludeFromOpenRouter: true,
+      },
+    });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: a system-marked message reaches the Agent OpenRouter fallback path.
+   * When: reply generation is considered.
+   * Then: Agent stops before resolving a thread or calling the RBAC route.
+   */
+  it("skips system-marked prompts before OpenRouter generation", async () => {
+    const service = createService();
+
+    await expect(
+      service.openRouterReplyMessageCreate({
+        jwtToken: "caller-jwt",
+        rbacModuleSubject: {
+          id: "caller-subject",
+        } as any,
+        shouldReplySocialModuleProfile: {
+          id: "assistant-profile",
+        } as any,
+        socialModuleChat: {
+          id: "chat-1",
+        } as any,
+        socialModuleMessage: {
+          id: "message-1",
+          description: "Профиль ассистента открыт.",
+          metadata: {
+            systemMessage: {
+              version: 1,
+              source: "agent.telegram.system-reply",
+              excludeFromOpenRouter: true,
+            },
+          },
+        } as any,
+        messageFromSocialModuleProfile: {
+          id: "sender-profile",
+        } as any,
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(
+      (service as any).resolveThreadIdForMessageInChat,
+    ).not.toHaveBeenCalled();
+    expect(mockedReactByOpenRouter).not.toHaveBeenCalled();
   });
 
   /**

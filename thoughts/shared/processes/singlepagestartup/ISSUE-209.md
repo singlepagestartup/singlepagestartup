@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-18T22:22:38Z
+last_updated: 2026-07-18T22:45:50Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 21 -->
+<!-- incident-count: 22 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -270,6 +270,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Every editor that accepts media must test the persisted attachment path with an empty message description and production-sized content beyond Telegram's text-message limit.
 - **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-editor-file.spec.ts`; Telegram topic `113101`.
 
+### Incident 22 — Telegram management traffic remained eligible for later AI context
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: Telegram command messages, assistant-management menus, and editor inputs such as Avatar uploads were suppressed only while a conversation session was active; after the session closed, those persisted Social messages could still be collected as history for a later OpenRouter response.
+- **Root Cause**: Suppression depended on transient Agent conversation state and brittle text comparisons. Social message metadata had no shared internal-message contract, and the OpenRouter history collector did not have a durable exclusion marker.
+- **Fix**: Added the shared `systemMessage` metadata envelope with `excludeFromOpenRouter: true`. Agent marks Telegram-bot command inputs, active assistant editor inputs, and every system reply through its central service paths. Agent rejects marked triggers before calling RBAC, while RBAC independently rejects marked triggers and removes marked history messages without breaking `/new` context-reset semantics.
+- **Preventive Action**: Any persisted UI/control-plane message that must remain visible but is not model conversation must carry a durable metadata exclusion marker; generation gates must enforce it both at dispatch and during historical context assembly.
+- **References**: `libs/modules/social/models/message/sdk/model/src/lib/system-message-metadata.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/react-by-openrouter.ts`.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -287,3 +297,4 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Telegram command ingestion must resolve or create the final topic-backed Social thread before the command message reaches Agent; conversation state cannot be moved safely after dispatch.
 - Bot-authored Telegram service messages must be rejected before RBAC bootstrap, and private-chat automatic personal-agent links must reconcile to the current human sender without deleting manually connected AI profiles.
 - Telegram document messages normally have no description; text-capable editors must resolve their canonical File Storage attachment before treating the input as empty or enforcing inline-message limits.
+- Conversation-state suppression is not a durable history policy; internal control-plane messages need persisted metadata and defense-in-depth filtering at both generation dispatch and context collection.

@@ -65,6 +65,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] `/assistant` from All Messages created Telegram topic `113080` and delivered its menu there; `/assistant` and ordinary conversation text sent inside `113080` remained in that topic without creating another thread.
 - [x] Bot-authored `forum_topic_created` updates no longer provision personal assistants; the stale bot-owned automatic link was removed and a fresh `/assistant` in topic `113095` opened the single human-owned profile directly.
 - [x] Knowledge create/edit now resolves persisted text attachments instead of relying on an empty Telegram document caption; the real 15,770-byte `content.txt` is reachable from the live API, and Agent BDD covers the complete file-to-Knowledge mutation beyond 4,000 characters.
+- [x] Telegram commands, management replies, and active assistant-editor inputs now persist `systemMessage.excludeFromOpenRouter: true`; Agent and RBAC independently reject marked generation triggers, and RBAC omits them from later thread context.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -72,7 +73,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 18 -->
+<!-- incident-count: 19 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -236,6 +237,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Added a reusable persisted editor-file resolver in Agent transport, read supported text files for Knowledge content, preserved normal typed content, added a separate large-content bound, and covered both the File Storage resolution and full Knowledge create mutation with BDD.
 - **Reusable Pattern**: An attachment-bearing Social message and a text-bearing Social message are distinct input shapes; editor validation must normalize both before checking emptiness or length.
 
+### Incident 19 — Transient conversation suppression did not protect later OpenRouter history
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: Command menus and Avatar/editor traffic could become ordinary OpenRouter history after the in-memory conversation closed, even though immediate generation was suppressed while it was active.
+- **Root Cause**: The system had no durable Social-message metadata contract for internal control-plane traffic; context eligibility relied on active session state and selected text-value filters.
+- **Fix**: Added the shared `systemMessage.excludeFromOpenRouter` marker, set it centrally for Telegram commands, active editor inputs, and system replies, and enforced it in both Agent dispatch and RBAC trigger/history processing while retaining `/new` reset behavior.
+- **Reusable Pattern**: Visible system traffic needs a persisted exclusion contract; session-local routing guards alone cannot keep it out of future model context.
+
 ## Summary
 
 ### Changes Made
@@ -251,6 +261,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Knowledge create/edit content accepts persisted UTF-8 text attachments through the canonical Social/File Storage relation, including bodies larger than Telegram text messages.
 - Main-flow Telegram commands now create a topic-backed Social thread before Agent dispatch, while commands and editor input inside an existing topic remain scoped to that topic.
 - Bot-authored topic service updates are ignored before RBAC bootstrap, and private chats self-heal stale automatic personal-agent links without removing manually connected AI profiles.
+- Telegram command, assistant-management, and Avatar/editor messages carry a durable system marker and are excluded from OpenRouter triggers and thread history.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -267,4 +278,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-18T22:22:38Z
+**Last updated**: 2026-07-18T22:45:50Z

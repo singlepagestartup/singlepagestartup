@@ -36,7 +36,10 @@ import {
   type IOpenRouterToolChoice,
 } from "@sps/shared-third-parties";
 import { IModel as IFileStorageModuleFile } from "@sps/file-storage/models/file/sdk/model";
-import { IModel as ISocialModuleMessage } from "@sps/social/models/message/sdk/model";
+import {
+  IModel as ISocialModuleMessage,
+  isSocialMessageExcludedFromOpenRouter,
+} from "@sps/social/models/message/sdk/model";
 import {
   getLocalizedProfilePlainText,
   IModel as ISocialModuleProfile,
@@ -1029,6 +1032,12 @@ export class Handler {
         );
       }
 
+      if (isSocialMessageExcludedFromOpenRouter(socialModuleMessage.metadata)) {
+        throw new Error(
+          "Validation error. System social-module messages cannot trigger OpenRouter generation.",
+        );
+      }
+
       const aiReactionRequest = this.resolveAiReactionRequest({
         data,
         socialModuleMessage,
@@ -1137,6 +1146,14 @@ export class Handler {
               // Soft context reset marker: keep messages only after the latest /new.
               if (messageDescription.startsWith("/new")) {
                 context.length = 0;
+                continue;
+              }
+
+              if (
+                isSocialMessageExcludedFromOpenRouter(
+                  socialModuleMessage.metadata,
+                )
+              ) {
                 continue;
               }
 
