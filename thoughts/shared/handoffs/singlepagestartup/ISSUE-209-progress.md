@@ -68,6 +68,7 @@ completed_date: 2026-07-18T00:09:31Z
 - [x] Telegram commands, management replies, and active assistant-editor inputs now persist `systemMessage.excludeFromOpenRouter: true`; Agent and RBAC independently reject marked generation triggers, and RBAC omits them from later thread context.
 - [x] Subscription, token-limit, channel-requirement, and OpenRouter-error replies now use the same system marker even on direct SDK creation paths; existing topic `113124` messages `5423`–`5427` were backfilled and verified.
 - [x] A clean MCP run in topic `113101` delivered `🛠 Вызов инструментов` with `List SPS modules` before the separate AI answer, persisted `systemMessage.excludeFromOpenRouter: true` plus `actionId/runId/toolCount`, and recorded one traced tool call in the final reply.
+- [x] With the Knowledge detail menu still open in topic `113162`, an ordinary question remained non-system, invoked two MCP tools, and received the five-article answer; the stale message `5461` marker was corrected and the exact `model-favorites` URL now returns `200`.
 - [x] Group/multi-sender, zero/multiple-profile, permission-loss, and missing-record variants remain covered by BDD because the authenticated Browser session exposed only one private sender and one manageable profile.
 
 ## Incident Log
@@ -75,7 +76,7 @@ completed_date: 2026-07-18T00:09:31Z
 > Read this section FIRST before starting any implementation work.
 > Parallel agents: check here for known pitfalls before debugging independently.
 
-<!-- incident-count: 21 -->
+<!-- incident-count: 22 -->
 
 ### Incident 1 — Generic test:file script cannot resolve an Nx project
 
@@ -266,6 +267,15 @@ completed_date: 2026-07-18T00:09:31Z
 - **Fix**: Added a bounded Telegram projection from the canonical action, awaited its notification before final reply creation, marked it as excluded from OpenRouter, and removed insert-time JSON defaults from partial update parsing. BDD, TypeScript, and a clean live Telegram/DB trace verify the result.
 - **Reusable Pattern**: Ordered transport projections must await delivery, and partial updates must not inject defaults for omitted durable fields.
 
+### Incident 22 — Read-only assistant menus suppressed normal AI questions
+
+- **Occurrences**: 1
+- **Stage**: Manual review follow-up
+- **Symptom**: A question sent from a Knowledge detail page stayed unanswered because the open `/assistant` session classified it as management input; a simultaneous subject-favorites request logged an unrelated 401.
+- **Root Cause**: Agent checked only for conversation existence rather than active editor state, while model favorites unnecessarily required profile/chat membership despite being stored by subject id.
+- **Fix**: Limit management interception, system marking, and AI suppression to active editors; let read-only menus coexist with normal prompts. Removed the redundant favorites relation check, corrected source message `5461`, added BDD coverage, and verified the live Telegram/MCP response plus a `200` favorites response.
+- **Reusable Pattern**: Model input capture as an explicit editor state, and align authorization checks with the resource actually read or written.
+
 ## Summary
 
 ### Changes Made
@@ -284,6 +294,7 @@ completed_date: 2026-07-18T00:09:31Z
 - Telegram command, assistant-management, and Avatar/editor messages carry a durable system marker and are excluded from OpenRouter triggers and thread history.
 - Subscription and OpenRouter status replies, including direct fallback writes, carry the same durable exclusion marker; the five reported runtime records were backfilled.
 - Telegram now presents the canonical tool execution heading/list before the final AI answer, with durable exclusion and execution metadata preserved through transport acknowledgement.
+- Read-only `/assistant` menus now coexist with normal AI conversation; only active editors consume and exclude incoming messages, and subject-scoped model favorites no longer fail on incidental profile/chat membership.
 - Regression coverage and operational documentation include expiry/restart loss, stale controls, duplicate clicks, topic/sender isolation, and OpenRouter suppression.
 
 ### Pull Request
@@ -300,4 +311,4 @@ completed_date: 2026-07-18T00:09:31Z
 
 ---
 
-**Last updated**: 2026-07-19T07:38:33Z
+**Last updated**: 2026-07-19T08:30:01Z

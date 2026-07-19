@@ -3,7 +3,7 @@ issue_number: 209
 issue_title: "Add Telegram assistant profile management conversations"
 repository: singlepagestartup
 created_at: 2026-07-17T20:25:18Z
-last_updated: 2026-07-19T07:38:33Z
+last_updated: 2026-07-19T08:30:01Z
 status: active
 current_phase: complete
 ---
@@ -58,7 +58,7 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 
 > Record only substantive incidents: debugging sessions, wrong assumptions, tool friction, helper failures, workflow gaps, or repeated recoveries.
 
-<!-- incident-count: 24 -->
+<!-- incident-count: 25 -->
 
 ### Incident 1 — GitHub API blocked by sandbox network
 
@@ -300,6 +300,16 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - **Preventive Action**: Reuse canonical execution telemetry for transport projections, await any message that must precede a dependent reply, and test partial update schemas for injected defaults that can clobber durable metadata.
 - **References**: `libs/modules/rbac/models/subject/backend/app/api/src/lib/service/singlepage/social-module/profile/ai/execution-action.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/message/create.ts`; `libs/modules/social/models/message/backend/repository/database/src/lib/index.ts`; Telegram topic `113101` live verification.
 
+### Incident 25 — Read-only assistant menus swallowed ordinary AI prompts
+
+- **Phase**: Code Review
+- **Occurrences**: 1
+- **Symptom**: An ordinary question sent while the `/assistant` Knowledge detail page remained open was persisted but received no AI response; an unrelated web `model-favorites` request also logged a profile/chat 401 at the same time.
+- **Root Cause**: Agent treated any active assistant conversation as an input editor, marked the prompt as `agent.telegram.assistant-conversation`, and blocked every connected AI profile even when the conversation state had no editor. Separately, subject-scoped model favorites required the requester's owned profile to be a chat participant even though favorites are keyed only by subject.
+- **Fix**: Assistant conversations now consume and mark messages only while an editor is active; read-only menus leave ordinary prompts eligible for AI dispatch. The favorites handler relies on the existing subject/profile ownership middleware and no longer requires the unrelated profile/chat relation. Removed the single incorrect marker from source message `5461`. A live question in topic `113162` invoked two MCP tools and received a five-article answer while the Knowledge menu remained open; the exact favorites URL now returns `200`.
+- **Preventive Action**: Conversation presence and editor-input capture are distinct states; generation suppression must be tied to the latter. Subject-scoped settings endpoints must not add resource-membership checks for path context they do not read or expose.
+- **References**: `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/index.ts`; `libs/modules/agent/models/agent/backend/app/api/src/lib/service/singlepage/telegram-assistant-conversation.ts`; `libs/modules/rbac/models/subject/backend/app/api/src/lib/controller/singlepage/social-module/profile/find-by-id/chat/find-by-id/openrouter/model-favorites.ts`; Telegram topic `113162` live verification.
+
 ## Reusable Learnings
 
 - GitHub helper connectivity failures must be retried unchanged with escalated network access rather than replaced by raw `gh` commands.
@@ -320,3 +330,5 @@ Tracks cross-phase execution notes, incidents, reusable fixes, and workflow lear
 - Conversation-state suppression is not a durable history policy; internal control-plane messages need persisted metadata and defense-in-depth filtering at both generation dispatch and context collection.
 - Central reply helpers do not protect direct SDK writes automatically; every status-message creation branch must apply the shared system metadata contract explicitly.
 - Transport-visible tool telemetry should be projected from the canonical execution action, delivered before its dependent answer, and protected from partial-update default clobbering.
+- Read-only conversation menus must not capture ordinary prompts; only active editor state should mark input as system traffic or suppress AI dispatch.
+- Subject-scoped preferences should rely on subject ownership and must not require incidental chat membership when their storage and response are chat-independent.

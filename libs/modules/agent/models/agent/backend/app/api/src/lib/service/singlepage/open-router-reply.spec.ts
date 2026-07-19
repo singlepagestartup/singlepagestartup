@@ -275,6 +275,10 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
     (service as any).telegramConversationRuntime = {
       get: jest.fn().mockResolvedValue({
         conversationId: "assistant-profile-management",
+        editor: {
+          kind: "avatar",
+          field: "file",
+        },
       }),
     };
     (service as any).resolveTelegramConversationKey = jest
@@ -355,6 +359,93 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
         excludeFromOpenRouter: true,
       },
     });
+  });
+
+  /**
+   * BDD Scenario
+   * Given: /assistant remains open on a read-only menu page in a Telegram topic.
+   * When: the sender writes an ordinary natural-language prompt.
+   * Then: Agent neither marks it as management traffic nor blocks the AI reply.
+   */
+  it("lets ordinary prompts reach AI while the assistant menu is idle", async () => {
+    const service = Object.create(Service.prototype) as Service;
+    const handleMessage = jest.fn();
+    const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
+
+    (service as any).rbacModule = {
+      subjectsToSocialModuleProfiles: {
+        find: jest.fn().mockResolvedValue([{ subjectId: "reply-subject" }]),
+      },
+      subject: {
+        findById: jest.fn().mockResolvedValue({ id: "reply-subject" }),
+      },
+    };
+    (service as any).telegramConversationRuntime = {
+      get: jest.fn().mockResolvedValue({
+        conversationId: "assistant-profile-management",
+        page: "knowledge-document",
+        editor: undefined,
+      }),
+    };
+    (service as any).resolveTelegramConversationKey = jest
+      .fn()
+      .mockResolvedValue({
+        chatId: "chat-1",
+        threadId: "thread-1",
+        senderProfileId: "sender-profile",
+      });
+    (service as any).getTelegramAssistantConversation = jest.fn(() => ({
+      handleMessage,
+    }));
+    (service as any).openRouterReplyMessageCreate =
+      openRouterReplyMessageCreate;
+
+    const commonProps = {
+      socialModuleChat: {
+        id: "chat-1",
+        variant: "telegram",
+      },
+      socialModuleMessage: {
+        id: "ordinary-prompt",
+        description: "Сколько на сайте статей? О чем они?",
+      },
+      socialModuleThreadId: "thread-1",
+      messageFromSocialModuleProfile: {
+        id: "sender-profile",
+      },
+    } as any;
+
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      shouldReplySocialModuleProfile: {
+        id: "telegram-bot-profile",
+        slug: "telegram-bot",
+      },
+    });
+
+    expect(handleMessage).not.toHaveBeenCalled();
+    expect(mockedSocialMessageUpdate).not.toHaveBeenCalled();
+
+    await service.agentSocialModuleProfileHandler({
+      ...commonProps,
+      shouldReplySocialModuleProfile: {
+        id: "assistant-profile",
+        slug: "assistant-profile",
+        variant: "artificial-intelligence",
+      },
+    });
+
+    expect(openRouterReplyMessageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shouldReplySocialModuleProfile: expect.objectContaining({
+          id: "assistant-profile",
+        }),
+        socialModuleMessage: expect.objectContaining({
+          id: "ordinary-prompt",
+        }),
+      }),
+    );
+    expect(mockedSocialMessageUpdate).not.toHaveBeenCalled();
   });
 
   /**
@@ -904,18 +995,24 @@ describe("Given: agent OpenRouter reply fallback and prompt gating", () => {
 
   /**
    * BDD Scenario
-   * Given: one Telegram sender has an active assistant conversation while another sender does not.
+   * Given: one Telegram sender has an active assistant editor while another sender does not.
    * When: the Agent dispatches ordinary messages from both senders to an AI profile.
-   * Then: the active conversation input suppresses OpenRouter and the unrelated message keeps the normal AI flow.
+   * Then: the active editor input suppresses OpenRouter and the unrelated message keeps the normal AI flow.
    */
-  it("suppresses OpenRouter only for the active Telegram conversation key", async () => {
+  it("suppresses OpenRouter only for the active Telegram editor key", async () => {
     const service = Object.create(Service.prototype) as Service;
     const openRouterReplyMessageCreate = jest.fn().mockResolvedValue(undefined);
     const getConversation = jest
       .fn()
       .mockImplementation(async (key: { senderProfileId: string }) =>
         key.senderProfileId === "active-sender"
-          ? { conversationId: "telegram-assistant-profile-management" }
+          ? {
+              conversationId: "telegram-assistant-profile-management",
+              editor: {
+                kind: "profile",
+                field: "title",
+              },
+            }
           : undefined,
       );
 

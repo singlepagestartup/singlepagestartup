@@ -167,6 +167,42 @@ describe("TelegramAssistantConversation", () => {
 
   /**
    * BDD Scenario
+   * Given: the assistant management conversation is open on a read-only menu page.
+   * When: the sender writes an ordinary natural-language prompt.
+   * Then: the conversation declines the message so the AI profile can process it.
+   */
+  it("When: no editor is active Then: ordinary text is not consumed", async () => {
+    const harness = createHarness();
+
+    await harness.conversation.enter(context, harness.transport);
+    harness.transport.create.mockClear();
+    harness.transport.update.mockClear();
+
+    await expect(
+      harness.conversation.handleMessage(
+        context,
+        {
+          id: "ordinary-prompt",
+          description: "Сколько на сайте статей? О чем они?",
+        } as any,
+        harness.transport,
+      ),
+    ).resolves.toBe(false);
+
+    expect(harness.transport.create).not.toHaveBeenCalled();
+    expect(harness.transport.update).not.toHaveBeenCalled();
+    const current = await harness.runtime.get(context.key);
+
+    expect(current).toEqual(
+      expect.objectContaining({
+        page: "home",
+      }),
+    );
+    expect(current?.editor).toBeUndefined();
+  });
+
+  /**
+   * BDD Scenario
    * Given: the selected profile has a current image relation.
    * When: the sender opens the dedicated Avatar page.
    * Then: Telegram exposes the current image and replacement/reset actions there.

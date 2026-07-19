@@ -207,11 +207,7 @@ export class TelegramAssistantConversation {
     }
 
     if (!current.editor) {
-      await this.render(context, current, transport, {
-        kind: "info",
-        text: "Используйте кнопки текущего меню или завершите диалог командой /cancel.",
-      });
-      return true;
+      return false;
     }
 
     try {

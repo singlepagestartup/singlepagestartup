@@ -601,7 +601,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
             messageFromSocialModuleProfile:
               props.messageFromSocialModuleProfile,
           });
-        } else if (activeTelegramConversation) {
+        } else if (activeTelegramConversation?.editor) {
           await this.markTelegramSystemMessage({
             socialModuleMessage: props.socialModuleMessage,
             source: "agent.telegram.assistant-conversation",
@@ -640,7 +640,7 @@ export class Service extends CRUDService<(typeof Table)["$inferSelect"]> {
       props.shouldReplySocialModuleProfile.variant === "artificial-intelligence"
     ) {
       if ("socialModuleMessage" in props) {
-        if (activeTelegramConversation) {
+        if (activeTelegramConversation?.editor) {
           return;
         }
 
